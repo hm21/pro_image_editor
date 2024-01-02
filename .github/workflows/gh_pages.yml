@@ -2,7 +2,7 @@ name: GH-Pages
 on:
   push:
     branches:
-      - main
+      - stable
 
 jobs:
   build:
@@ -10,15 +10,18 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
           channel: master
-      - name: Install Dependencies
+          flutter-version: '3.16.5'
+      - name: Install Package Dependencies
+        run: flutter pub get
+      - name: Install Example Dependencies
         run: flutter pub get
         working-directory: ./example
       - name: Build Web
-        run: flutter build web --release
+        run: flutter build web
         working-directory: ./example
       - name: Deploy
         run: |
