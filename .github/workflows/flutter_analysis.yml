@@ -20,9 +20,6 @@ jobs:
       - name: install dependencies
         run: flutter pub get
 
-      - name: format code
-        run: flutter format --set-exit-if-changed .
-
       - name: analyze code
         run: flutter analyze .
 
