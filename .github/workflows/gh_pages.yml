@@ -29,7 +29,7 @@ jobs:
           git init
           git config user.name "hm21"
           git config user.email "alex.frei@hotmail.ch"
-          git remote add secure-origin https://username:${secrets.GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git remote add secure-origin https://github.com/${{ github.repository }}.git
           git checkout -b gh-pages
           git add .
           git commit -m "Deployed Github Pages"
