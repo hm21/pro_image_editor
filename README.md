@@ -7,8 +7,8 @@
     <a href="https://pub.dartlang.org/packages/pro_image_editor">
         <img src="https://img.shields.io/pub/v/pro_image_editor.svg" alt="pub package">
     </a>
-    <a href="https://opensource.org/licenses/MIT">
-        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+    <a href="https://img.shields.io/github/license/hm21/pro_image_editor">
+        <img src="https://img.shields.io/github/license/hm21/pro_image_editor" alt="License: MIT">
     </a>
     <a href="https://github.com/hm21/pro_image_editor/issues">
         <img src="https://img.shields.io/github/issues/hm21/pro_image_editor" alt="GitHub issues">
@@ -23,13 +23,9 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
   <a href="https://hm21.github.io/pro_image_editor">
     <img src="/assets/showcase.png?raw=true" width=450 />
+      <br/>
+      Demo Website
   </a>
-<!-- TODO: Write demo
-<h2 >Demo</h2>
-<div>
-https://flutter-hm21.web.app/pro_image_editor
-</div>
- -->
 
 ## Table of contents
 
