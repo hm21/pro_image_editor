@@ -28,7 +28,7 @@ jobs:
           cd example/build/web
           git init
           git config user.name "hm21"
-          git config user.email "alex.frei@waio.ch"
+          git config user.email "alex.frei@hotmail.ch"
           git remote add secure-origin https://username:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           git checkout -b gh-pages
           git add .

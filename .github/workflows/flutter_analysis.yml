@@ -2,7 +2,7 @@ name: Flutter Analysis
 on:
   push:
     branches:
-      - main
+      - stable
   pull_request:
   workflow_dispatch:
 
