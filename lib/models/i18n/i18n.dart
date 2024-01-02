@@ -162,12 +162,12 @@ class I18n {
   /// )
   /// ```
   const I18n({
-    this.various = const I18nVarious(),
     this.paintEditor = const I18nPaintingEditor(),
     this.textEditor = const I18nTextEditor(),
     this.cropRotateEditor = const I18nCropRotateEditor(),
     this.filterEditor = const I18nFilterEditor(),
     this.emojiEditor = const I18nEmojiEditor(),
+    this.various = const I18nVarious(),
     this.cancel = 'Cancel',
     this.undo = 'Undo',
     this.redo = 'Redo',

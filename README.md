@@ -3,15 +3,27 @@
 <!-- TODO: Remove banner  -->
 # In Progress!
 
-A Flutter image editor: Seamlessly enhance your images with user-friendly editing features.
+<p>
+    <a href="https://pub.dartlang.org/packages/pro_image_editor">
+        <img src="https://img.shields.io/pub/v/pro_image_editor.svg" alt="pub package">
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+    </a>
+    <a href="https://github.com/hm21/pro_image_editor/issues">
+        <img src="https://img.shields.io/github/issues/hm21/pro_image_editor" alt="GitHub issues">
+    </a>
+    <a href="https://hm21.github.io/pro_image_editor">
+        <img src="https://img.shields.io/badge/web-demo---?&color=0f7dff" alt="Web Demo">
+    </a>
+</p>
 
-<div>
+The ProImageEditor is a Flutter widget designed for image editing within your application. It provides a flexible and convenient way to integrate image editing capabilities into your Flutter project. 
 
-[![pub package](https://img.shields.io/pub/v/pro_image_editor.svg)](https://pub.dartlang.org/packages/pro_image_editor)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/hm21/pro_image_editor)](https://github.com/hm21/pro_image_editor/issues)
 
-</div>
+  <a href="https://hm21.github.io/pro_image_editor">
+    <img src="/assets/showcase.png?raw=true" width=450 />
+  </a>
 <!-- TODO: Write demo
 <h2 >Demo</h2>
 <div>
@@ -21,36 +33,100 @@ https://flutter-hm21.web.app/pro_image_editor
 
 ## Table of contents
 
-- [Preview](#preview)
-- [Example](#example)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](LICENSE)
+- **[📷 Preview](#preview)**
+- **[✨ Features](#features)**
+- **[🔧 Getting started](#getting-started)**
+  - [Android](#android)
+  - [Web](#web)
+- **[❓ Usage](#usage)**
+  - [Open the editor in a new page](#open-the-editor-in-a-new-page)
+  - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
+  - [Highly configurable](#highly-configurable)
+- **[📚 Documentation](#documentation)**
+- **[🤝 Contributing](#contributing)**
+- **[📜 License](LICENSE)**
+- **[📜 Notices](NOTICES)**
 
 
-<h2>Preview</h2>
-<!-- TODO: write preview -->
+
+## Preview
+<table>
+  <tr>
+    <td align="center">
+      <b>Painting-Editor</b>
+      <br />
+      <img src="/assets/paint-editor.gif" alt="Paint-Editor" />
+    </td>
+    <td align="center">
+      <b>Text-Editor</b>
+      <br />
+      <img src="assets/text-editor.gif" alt="Text-Editor" />
+    </td>
+    <td align="center">
+      <b>Crop-Rotate-Editor</b>
+      <br />
+      <img src="assets/crop-rotate-editor.gif" alt="Crop-Rotate-Editor" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <b>Filter-Editor</b>
+      <br />
+      <img src="assets/filter-editor.gif" alt="Filter-Editor" />
+    </td>
+    <td align="center">
+      <b>Emoji-Editor</b>
+      <br />
+      <img src="assets/emoji-editor.gif" alt="Emoji-Editor" />
+    </td>
+  </tr>
+</table>
+
+
+## Features
+
+- ✅ Painting-Editor
+  - ✅ Color picker
+  - ✅ Multiple forms like arrow, rectangle, circle and freestyle
+- ✅ Text-Editor
+  - ✅ Color picker
+  - ✅ Align-Text => left, right and center
+  - ✅ Multiple background modes like in whatsapp
+- ✅ Crop-Rotate-Editor
+- ✅ Filter-Editor
+- ✅ Emoji-Picker
+- ✅ Move and scalable layers
+- ✅ Helper lines for better positioning
+- ✅ Undo and redo function
+- ✅ Use your image directly from memory, asset, file or network
+- ✅ Each icon can be changed
+- ✅ Any text can be translated
+- ✅ Many custom configurations for each subeditor
+- ✅ Custom theme for each editor
+- ✅ Selectable design mode between Material and Cupertino
+- ✅ Interactive layers
+- ✅ Hit detection for painted layers
+
+
+#### Future Features
+- ✨ Enhanced crop editor with improved performance (No dependencies on `image_editor` and `extended_image`)
+- ✨ Improved layer movement and scaling functionality for desktop devices
+- ✨ Stickers support
+
 
 ## Getting started
 
-### Installation
+### Android
 
-```sh
-flutter pub add pro_image_editor
-```
-
-#### Android
-
-To enable smooth hit vibrations, you need to include the `VIBRATE` permission in your `AndroidManifest.xml` file. Here's how you can do it:
+To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE` permission to your `AndroidManifest.xml` file.
 
 ``` xml
 <uses-permission android:name="android.permission.VIBRATE"/>
 ```
 
-#### Web
+### Web
 
-If you're displaying emojis on the web and want them to have color by default (especially if you're not using a custom font like "Noto Emoji"), 
-you can achieve this by adding the "useColorEmoji: true" parameter as shown in the code snippet below:
+If you're displaying emoji on the web and want them to be colored by default (especially if you're not using a custom font like Noto Emoji), you can achieve this by adding the `useColorEmoji: true` parameter, as shown in the code snippet below:
 
 ```html
 <body>
@@ -74,7 +150,7 @@ you can achieve this by adding the "useColorEmoji: true" parameter as shown in t
 ```
 
 
-#### iOS, macOS, Linux, Windows
+### iOS, macOS, Linux, Windows
 
 No further action is required.
 
@@ -82,131 +158,561 @@ No further action is required.
 <br/>
 
 
-<h2>Example</h2>
+## Usage
 
 Import first the image editor like below:
 ```dart
 import 'package:pro_image_editor/pro_image_editor.dart';
 ```
 
+#### Open the editor in a new page
 
-#### Simple example
+```dart
+void _openEditor() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProImageEditor.network(
+        'https://picsum.photos/id/237/2000',
+        onImageEditingComplete: (byte) async {
+          /*
+            `Your code for handling the edited image. Upload it to your server as an example.`
 
-Use the image editor without any custom configurations.
+            You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
+            or without async, so that the loading-dialog closes immediately.
+          */
+          Navigator.pop(context);
+        },
+      ),
+    ),
+  );
+}
+```
+
+#### Show the editor inside of a widget 
 
 ```dart
 @override
 Widget build(BuildContext context) {
     return Scaffold(
         body: ProImageEditor.network(
-        'https://picsum.photos/id/237/2000',
+          'https://picsum.photos/id/237/2000',
+           onImageEditingComplete: (Uint8List bytes) async {
+              /*
+               `Your code for handling the edited image. Upload it to your server as an example.`
+
+               You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
+               or without async, so that the loading-dialog closes immediately.
+              */
+           },
         ),
     );
 }
 ```
-#### Complex example
 
-Customize the image editor to suit your preferences. Of course, each class like `I18nTextEditor` includes more configuration options
+#### Highly configurable
+
+Customize the image editor to suit your preferences. Of course, each class like `I18nTextEditor` includes more configuration options.
 
 ```dart
 return Scaffold(
     appBar: AppBar(
-    title: const Text('Pro-Image-Editor')
+      title: const Text('Pro-Image-Editor')
     ),
     body: ProImageEditor.network(
         'https://picsum.photos/id/237/2000',
             key: _editor,
+            onImageEditingComplete: (Uint8List bytes) async {
+              /*
+               `Your code for handling the edited image. Upload it to your server as an example.`
+
+               You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
+               or without async, so that the loading-dialog closes immediately.
+              */
+            },
             configs: ProImageEditorConfigs(
-            activePreferredOrientations: [
-                DeviceOrientation.portraitUp,
-                DeviceOrientation.portraitDown,
-                DeviceOrientation.landscapeLeft,
-                DeviceOrientation.landscapeRight,
-            ],
-            i18n: const I18n(
-                various: I18nVarious(),
-                paintEditor: I18nPaintingEditor(),
-                textEditor: I18nTextEditor(),
-                cropRotateEditor: I18nCropRotateEditor(),
-                filterEditor: I18nFilterEditor(filters: I18nFilters()),
-                emojiEditor: I18nEmojiEditor(),
-                // More translations...
-            ),
-            helperLines: const HelperLines(
-                showVerticalLine: true,
-                showHorizontalLine: true,
-                showRotateLine: true,
-                hitVibration: true,
-            ),
-            customWidgets: const ProImageEditorCustomWidgets(),
-            imageEditorTheme: const ImageEditorTheme(
-                layerHoverCursor: SystemMouseCursors.move,
-                helperLine: HelperLineTheme(
-                    horizontalColor: Color(0xFF1565C0),
-                    verticalColor: Color(0xFF1565C0),
-                    rotateColor: Color(0xFFE91E63),
-                ),
-                paintingEditor: PaintingEditorTheme(),
-                textEditor: TextEditorTheme(),
-                cropRotateEditor: CropRotateEditorTheme(),
-                filterEditor: FilterEditorTheme(),
-                emojiEditor: EmojiEditorTheme(),
-                background: Color.fromARGB(255, 22, 22, 22),
-                loadingDialogTextColor: Color(0xFFE1E1E1),
-                uiOverlayStyle: SystemUiOverlayStyle(
-                statusBarColor: Color(0x42000000),
-                statusBarIconBrightness: Brightness.light,
-                systemNavigationBarIconBrightness: Brightness.light,
-                statusBarBrightness: Brightness.dark,
-                systemNavigationBarColor: Color(0xFF000000),
-                ),
-            ),
-            icons: const ImageEditorIcons(
-                paintingEditor: IconsPaintingEditor(),
-                textEditor: IconsTextEditor(),
-                cropRotateEditor: IconsCropRotateEditor(),
-                filterEditor: IconsFilterEditor(),
-                emojiEditor: IconsEmojiEditor(),
-                closeEditor: Icons.clear,
-                doneIcon: Icons.done,
-                applyChanges: Icons.done,
-                backButton: Icons.arrow_back,
-                undoAction: Icons.undo,
-                redoAction: Icons.redo,
-                removeElementZone: Icons.delete_outline_rounded,
-            ),
-            paintEditorConfigs: const PaintEditorConfigs(),
-            textEditorConfigs: const TextEditorConfigs(),
-            cropRotateEditorConfigs: const CropRotateEditorConfigs(),
-            filterEditorConfigs: FilterEditorConfigs(),
-            emojiEditorConfigs: const EmojiEditorConfigs(),
-            designMode: ImageEditorDesignModeE.material,
-            heroTag: 'hero',
-            theme: ThemeData(
-                useMaterial3: true,
-                colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.blue.shade800,
-                brightness: Brightness.dark,
-                ),
-            ),
+              activePreferredOrientations: [
+                  DeviceOrientation.portraitUp,
+                  DeviceOrientation.portraitDown,
+                  DeviceOrientation.landscapeLeft,
+                  DeviceOrientation.landscapeRight,
+              ],
+              i18n: const I18n(
+                  various: I18nVarious(),
+                  paintEditor: I18nPaintingEditor(),
+                  textEditor: I18nTextEditor(),
+                  cropRotateEditor: I18nCropRotateEditor(),
+                  filterEditor: I18nFilterEditor(filters: I18nFilters()),
+                  emojiEditor: I18nEmojiEditor(),
+                  // More translations...
+              ),
+              helperLines: const HelperLines(
+                  showVerticalLine: true,
+                  showHorizontalLine: true,
+                  showRotateLine: true,
+                  hitVibration: true,
+              ),
+              customWidgets: const ProImageEditorCustomWidgets(),
+              imageEditorTheme: const ImageEditorTheme(
+                  layerHoverCursor: SystemMouseCursors.move,
+                  helperLine: HelperLineTheme(
+                      horizontalColor: Color(0xFF1565C0),
+                      verticalColor: Color(0xFF1565C0),
+                      rotateColor: Color(0xFFE91E63),
+                  ),
+                  paintingEditor: PaintingEditorTheme(),
+                  textEditor: TextEditorTheme(),
+                  cropRotateEditor: CropRotateEditorTheme(),
+                  filterEditor: FilterEditorTheme(),
+                  emojiEditor: EmojiEditorTheme(),
+                  background: Color.fromARGB(255, 22, 22, 22),
+                  loadingDialogTextColor: Color(0xFFE1E1E1),
+                  uiOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Color(0x42000000),
+                  statusBarIconBrightness: Brightness.light,
+                  systemNavigationBarIconBrightness: Brightness.light,
+                  statusBarBrightness: Brightness.dark,
+                  systemNavigationBarColor: Color(0xFF000000),
+                  ),
+              ),
+              icons: const ImageEditorIcons(
+                  paintingEditor: IconsPaintingEditor(),
+                  textEditor: IconsTextEditor(),
+                  cropRotateEditor: IconsCropRotateEditor(),
+                  filterEditor: IconsFilterEditor(),
+                  emojiEditor: IconsEmojiEditor(),
+                  closeEditor: Icons.clear,
+                  doneIcon: Icons.done,
+                  applyChanges: Icons.done,
+                  backButton: Icons.arrow_back,
+                  undoAction: Icons.undo,
+                  redoAction: Icons.redo,
+                  removeElementZone: Icons.delete_outline_rounded,
+              ),
+              paintEditorConfigs: const PaintEditorConfigs(),
+              textEditorConfigs: const TextEditorConfigs(),
+              cropRotateEditorConfigs: const CropRotateEditorConfigs(),
+              filterEditorConfigs: FilterEditorConfigs(),
+              emojiEditorConfigs: const EmojiEditorConfigs(),
+              designMode: ImageEditorDesignModeE.material,
+              heroTag: 'hero',
+              theme: ThemeData(
+                  useMaterial3: true,
+                  colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.blue.shade800,
+                  brightness: Brightness.dark,
+                  ),
+              ),
         ),
     )
 );
 ```
 
 
-<h2>Documentation</h2>
+## Documentation
+
+### Interactive layers
+
+Each layer, whether it's an emoji, text, or painting, is interactive, allowing you to manipulate them in various ways. You can move and scale layers using intuitive gestures. Holding a layer with one finger enables you to move it across the canvas. Holding a layer with one finger and using another to pinch or spread allows you to scale and rotate the layer.
+
+On desktop devices, you can click and hold a layer with the mouse to move it. Additionally, using the mouse wheel lets you scale the layer. To rotate a layer, simply press the 'Shift' or 'Ctrl' key while interacting with it.
 
 
-## Contributing
+### Editor Widget
+| Property                  | Description                                                              |
+|---------------------------|--------------------------------------------------------------------------|
+| `byteArray`               | Image data as a `Uint8List` from memory.                                 |
+| `file`                    | File object representing the image file.                                 |
+| `assetPath`               | Path to the image asset.                                                |
+| `networkUrl`              | URL of the image to be loaded from the network.                          |
+| `onImageEditingComplete`  | Callback function that is invoked when editing is finished and returns the edited image as a `Uint8List`. |
+| `configs`                 | Configuration options for the image editor.                              |
+
+
+#### Constructors
+
+##### `ProImageEditor.memory`
+
+Creates a `ProImageEditor` widget for editing an image from memory.
+
+##### `ProImageEditor.file`
+
+Creates a `ProImageEditor` widget for editing an image from a file.
+
+##### `ProImageEditor.asset`
+
+Creates a `ProImageEditor` widget for editing an image from an asset.
+
+##### `ProImageEditor.network`
+
+Creates a `ProImageEditor` widget for editing an image from a network URL.
+
+### ProImageEditorConfigs
+ | Property Name              | Description                                                                                                                    | Default Value                                               |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| `i18n`                    | Internationalization settings for the Image Editor.                                                                            | `I18n()`                                       |
+| `helperLines`             | Configuration options for helper lines in the Image Editor.                                                                    | `HelperLines()`                                |
+| `customWidgets`           | Custom widgets to be used in the Image Editor.                                                                                 | `ImageEditorCustomWidgets()`                 |
+| `imageEditorTheme`        | Theme settings for the Image Editor.                                                                                           | `ImageEditorTheme()`                           |
+| `icons`                   | Icons to be used in the Image Editor.                                                                                         | `ImageEditorIcons()`                           |
+| `paintEditorConfigs`      | Configuration options for the Paint Editor.                                                                                    | `PaintEditorConfigs()`                          |
+| `textEditorConfigs`       | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                           |
+| `cropRotateEditorConfigs` | Configuration options for the Crop and Rotate Editor.                                                                         | `CropRotateEditorConfigs()`                     |
+| `filterEditorConfigs`     | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                         |
+| `emojiEditorConfigs`      | Configuration options for the Emoji Editor.                                                                                   | `EmojiEditorConfigs()`                          |
+| `designMode`              | The design mode for the Image Editor.                                                                                         | `ImageEditorDesignModeE.material`                           |
+| `theme`                   | The theme to be used for the Image Editor.                                                                                     | `null`                                                      |
+| `heroTag`                 | A unique hero tag for the Image Editor widget.                                                                                  | `'Pro-Image-Editor-Hero'`                                  |
+| `activePreferredOrientations` | The editor currently supports only 'portraitUp' orientation. After closing the editor, it will revert to your default settings. | `[DeviceOrientation.portraitUp, DeviceOrientation.portraitDown, DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]` |
+
+
+<details>
+  <summary><b>i18n</b> </summary>
+
+| Property             | Description                                                 | Default Value             |
+|----------------------|-------------------------------------------------------------|---------------------------|
+| `paintEditor`        | Translations and messages specific to the painting editor.  | `I18nPaintingEditor()`    |
+| `textEditor`         | Translations and messages specific to the text editor.       | `I18nTextEditor()`        |
+| `cropRotateEditor`   | Translations and messages specific to the crop and rotate editor. | `I18nCropRotateEditor()` |
+| `filterEditor`       | Translations and messages specific to the filter editor.      | `I18nFilterEditor()`     |
+| `emojiEditor`        | Translations and messages specific to the emoji editor.       | `I18nEmojiEditor()`      |
+| `various`            | Translations and messages for various parts of the editor. | `I18nVarious()`           |
+| `cancel`             | The text for the "Cancel" button.                             | `'Cancel'`                |
+| `undo`               | The text for the "Undo" action.                               | `'Undo'`                  |
+| `redo`               | The text for the "Redo" action.                               | `'Redo'`                  |
+| `done`               | The text for the "Done" action.                               | `'Done'`                  |
+| `remove`             | The text for the "Remove" action.                             | `'Remove'`                |
+| `doneLoadingMsg`     | Message displayed while changes are being applied.           | `'Changes are being applied'` |
+
+#### `i18n paintEditor`
+
+| Property                 | Description                                                    | Default Value      |
+|--------------------------|----------------------------------------------------------------|--------------------|
+| `bottomNavigationBarText`| Text for the bottom navigation bar item                        | `'Paint'`            |
+| `freestyle`              | Text for the "Freestyle" painting mode                         | `'Freestyle'`        |
+| `arrow`                  | Text for the "Arrow" painting mode                             | `'Arrow'`            |
+| `line`                   | Text for the "Line" painting mode                              | `'Line'`             |
+| `rectangle`              | Text for the "Rectangle" painting mode                         | `'Rectangle'`        |
+| `circle`                 | Text for the "Circle" painting mode                            | `'Circle'`           |
+| `dashLine`               | Text for the "Dash line" painting mode                         | `'Dash line'`        |
+| `lineWidth`              | Text for the "Line width" tooltip                              | `'Line width'`       |
+| `toggleFill`             | Text for the "Toggle fill" tooltip                             | `'Toggle fill'`      |
+| `undo`                   | Text for the "Undo" button                                     | `'Undo'`             |
+| `redo`                   | Text for the "Redo" button                                     | `'Redo'`             |
+| `done`                   | Text for the "Done" button                                     | `'Done'`             |
+| `back`                   | Text for the "Back" button                                     | `'Back'`             |
+| `smallScreenMoreTooltip` | Tooltip text for the "More" option on small screens            | `'More'`             |
+
+
+#### `i18n textEditor`
+
+| Property                 | Description                                        | Default Value      |
+|--------------------------|----------------------------------------------------|--------------------|
+| `bottomNavigationBarText`| Text for the bottom navigation bar item            | `'Text'`             |
+| `inputHintText`          | Placeholder text displayed in the text input field| `'Enter text'`       |
+| `done`                   | Text for the "Done" button                          | `'Done'`             |
+| `back`                   | Text for the "Back" button                          | `'Back'`             |
+| `textAlign`              | Text for the "Align text" setting                   | `'Align text'`       |
+| `backgroundMode`         | Text for the "Background mode" setting              | `'Background mode'`  |
+| `smallScreenMoreTooltip` | Tooltip text for the "More" option on small screens| `'More'`             |
+
+
+#### `i18n cropRotateEditor`
+
+| Property                 | Description                                        | Default Value                    |
+|--------------------------|----------------------------------------------------|----------------------------------|
+| `bottomNavigationBarText`| Text for the bottom navigation bar item            | `'Crop/ Rotate'`                   |
+| `rotate`                 | Text for the "Rotate" tooltip                      | `'Rotate'`                         |
+| `ratio`                  | Text for the "Ratio" tooltip                       | `'Ratio'`                          |
+| `back`                   | Text for the "Back" button                          | `'Back'`                           |
+| `done`                   | Text for the "Done" button                          | `'Done'`                           |
+| `applyChangesDialogMsg`  | Text for the message during the application of changes| `'Please wait while applying changes...'` |
+| `prepareImageDialogMsg`  | Text for the message when preparing the image      | `'Please wait while preparing the image...'` |
+| `aspectRatioFree`        | Text for the "Free" aspect ratio option             | `'Free'`                           |
+| `aspectRatioOriginal`    | Text for the "Original" aspect ratio option         | `'Original'`                       |
+| `smallScreenMoreTooltip` | Tooltip text for the "More" option on small screens| `'More'`                           |
+
+
+#### `i18n filterEditor`
+
+| Property                 | Description                                        | Default Value                    |
+|--------------------------|----------------------------------------------------|----------------------------------|
+| `applyFilterDialogMsg`   | Text displayed when a filter is being applied    | `'Filter is being applied.'`       |
+| `bottomNavigationBarText`| Text for the bottom navigation bar item            | `'Filter'`                         |
+| `back`                   | Text for the "Back" button in the Filter Editor   | `'Back'`                           |
+| `done`                   | Text for the "Done" button in the Filter Editor   | `'Done'`                           |
+| `filters`                | Internationalization settings for individual filters| `I18nFilters()`                              |
+
+
+#### `i18n emojiEditor`
+| Property                  | Description                                                            | Default Value |
+|---------------------------|------------------------------------------------------------------------|---------------|
+| `bottomNavigationBarText` | Text for the bottom navigation bar item that opens the Emoji Editor.   | 'Emoji'       |
+
+
+#### `i18n various`
+
+| Property                      | Description                                                             | Default Value                                         |
+| ----------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
+| `loadingDialogMsg`            | Text for the loading dialog message.                                    | `'Please wait...'`                                      |
+| `closeEditorWarningTitle`     | Title for the warning message when closing the Image Editor.            | `'Close Image Editor?'`                                 |
+| `closeEditorWarningMessage`   | Warning message when closing the Image Editor.                          | `'Are you sure you want to close the Image Editor? Your changes will not be saved.'` |
+| `closeEditorWarningConfirmBtn`| Text for the confirmation button in the close editor warning dialog.    | `'OK'`                                                  |
+| `closeEditorWarningCancelBtn` | Text for the cancel button in the close editor warning dialog.         | `'Cancel'`                                              |
+</details>
+
+
+<details>
+  <summary><b>helperLines</b></summary>
+
+| Property             | Description                                                                                   | Default Value |
+|----------------------|-----------------------------------------------------------------------------------------------|---------------|
+| `showVerticalLine`   | Specifies whether to show the vertical helper line.                                           | `true`        |
+| `showHorizontalLine` | Specifies whether to show the horizontal helper line.                                         | `true`        |
+| `showRotateLine`     | Specifies whether to show the rotate helper line.                                             | `true`        |
+| `hitVibration`       | Controls whether haptic feedback is enabled when a layer intersects with a helper line. When set to `true`, haptic feedback is triggered when a layer's position or boundary intersects with a helper line, providing tactile feedback to the user. This feature enhances the user experience by providing feedback on layer alignment. By default, this option is set to `true`, enabling haptic feedback for hit detection with helper lines. You can set it to `false` to disable haptic feedback. | `true`        |
+</details>
+
+
+<details>
+  <summary><b>customWidgets</b></summary>
+
+| Property                | Description                                                           |
+| ----------------------- | --------------------------------------------------------------------- |
+| `removeLayer`           | A custom widget for removing a layer or element from the editor interface. |
+| `appBar`                | A custom app bar widget for the top navigation bar.                   |
+| `appBarPaintingEditor`  | A custom app bar widget for the painting editor component.            |
+| `appBarTextEditor`      | A custom app bar widget for the text editor component.                |
+| `appBarCropRotateEditor`| A custom app bar widget for the crop and rotate editor component.     |
+| `appBarFilterEditor`    | A custom app bar widget for the filter editor component.              |
+| `bottomNavigationBar`   | A custom widget for the bottom navigation bar.                        |
+</details>
+
+<details>
+  <summary><b>imageEditorTheme</b></summary>
+
+| Property                   | Description                                                       | Default Value                                     |
+| -------------------------- | ----------------------------------------------------------------- | -------------------------------------------------- |
+| `paintingEditor`           | Theme for the painting editor.                                    | `PaintingEditorTheme()`                            |
+| `textEditor`               | Theme for the text editor.                                        | `TextEditorTheme()`                                |
+| `cropRotateEditor`         | Theme for the crop & rotate editor.                               | `CropRotateEditorTheme()`                          |
+| `filterEditor`             | Theme for the filter editor.                                      | `FilterEditorTheme()`                              |
+| `emojiEditor`              | Theme for the emoji editor.                                       | `EmojiEditorTheme()`                               |
+| `helperLine`               | Theme for helper lines in the image editor.                       | `HelperLineTheme()`                                |
+| `background`               | Background color for the image editor.                            | `imageEditorBackgroundColor`                       |
+| `loadingDialogTextColor`   | Text color for loading dialogs.                                   | `imageEditorTextColor`                             |
+| `uiOverlayStyle`           | System UI overlay style for the image editor.                      | See default values in the class definition        |
+| `layerHoverCursor`         | Cursor style when hovering over a layer.                           | `SystemMouseCursors.move`     |
+
+#### Theme paintingEditor
+| Property                        | Description                                           | Default Value       |
+| ------------------------------- | ----------------------------------------------------- | ------------------- |
+| `appBarBackgroundColor`         | Background color of the app bar in the painting editor. | `imageEditorAppBarColor` (Default theme value) |
+| `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
+| `background`                    | Background color of the painting editor.             | `imageEditorBackgroundColor` (Default theme value) |
+| `bottomBarColor`                | Background color of the bottom navigation bar.       | `imageEditorAppBarColor` (Default theme value) |
+| `bottomBarActiveItemColor`      | Color of active items in the bottom navigation bar.  | `imageEditorPrimaryColor` (Default theme value) |
+| `bottomBarInactiveItemColor`    | Color of inactive items in the bottom navigation bar.| `Color(0xFFEEEEEE)` |
+| `lineWidthBottomSheetColor`     | Color of the bottom sheet used to select line width.| `Color(0xFF252728)` |
+
+#### Theme textEditor
+| Property                        | Description                                           | Default Value       |
+| ------------------------------- | ----------------------------------------------------- | ------------------- |
+| `appBarBackgroundColor`         | Background color of the app bar in the text editor.  | `imageEditorAppBarColor` (Default theme value) |
+| `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
+| `background`                    | Background color of the text editor.                 | `Color(0x9B000000)` |
+| `inputHintColor`                | Color of input hints in the text editor.             | `Color(0xFFBDBDBD)` |
+| `inputCursorColor`              | Color of the input cursor in the text editor.        | `imageEditorPrimaryColor` (Default theme value) |
+
+
+#### Theme cropRotateEditor
+| Property                        | Description                                           | Default Value       |
+| ------------------------------- | ----------------------------------------------------- | ------------------- |
+| `appBarBackgroundColor`         | Background color of the app bar in the crop and rotate editor. | `imageEditorAppBarColor` (Default theme value) |
+| `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
+| `background`                    | Background color of the crop and rotate editor.     | `imageEditorBackgroundColor` (Default theme value) |
+| `cropCornerColor`               | Color of the crop corners.                            | `imageEditorPrimaryColor` (Default theme value) |
+
+
+#### Theme filterEditor
+| Property                        | Description                                           | Default Value       |
+| ------------------------------- | ----------------------------------------------------- | ------------------- |
+| `appBarBackgroundColor`         | Background color of the app bar in the filter editor. | `imageEditorAppBarColor` (Default theme value) |
+| `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
+| `background`                    | Background color of the filter editor.               | `imageEditorBackgroundColor` (Default theme value) |
+| `previewTextColor`              | Color of the preview text.                            | `Color(0xFFE1E1E1)` |
+
+
+#### Theme emojiEditor
+| Property                  | Description                                           | Default Value                   |
+| ------------------------- | ----------------------------------------------------- | ------------------------------- |
+| `background`              | Background color of the emoji editor widget.         | `imageEditorBackgroundColor`     |
+| `indicatorColor`          | Color of the category indicator.                      | `imageEditorPrimaryColor`        |
+| `iconColorSelected`       | Color of the category icon when selected.            | `imageEditorPrimaryColor`        |
+| `iconColor`               | Color of the category icons.                          | `Color(0xFF9E9E9E)`              |
+| `skinToneDialogBgColor`   | Background color of the skin tone dialog.             | `Color(0xFF252728)`              |
+| `skinToneIndicatorColor`  | Color of the small triangle next to skin tone emojis. | `Color(0xFF9E9E9E)`              |
+
+
+#### Theme helperLine
+| Property             | Description                                             | Default Value   |
+| -------------------- | ------------------------------------------------------- | ---------------- |
+| `horizontalColor`    | Color of horizontal helper lines.                       | `Color(0xFF1565C0)` (Blue) |
+| `verticalColor`      | Color of vertical helper lines.                         | `Color(0xFF1565C0)` (Blue) |
+| `rotateColor`        | Color of rotation helper lines.                         | `Color(0xFFE91E63)` (Pink) |
+</details>
+
+<details>
+  <summary><b>icons</b></summary>
+
+| Property              | Description                                          | Default Value              |
+| --------------------- | ---------------------------------------------------- | -------------------------- |
+| `closeEditor`         | The icon for closing the editor without saving.     | `Icons.clear`              |
+| `doneIcon`            | The icon for applying changes and closing the editor.| `Icons.done`               |
+| `backButton`          | The icon for the back button.                        | `Icons.arrow_back`         |
+| `applyChanges`        | The icon for applying changes in the editor.         | `Icons.done`               |
+| `undoAction`          | The icon for undoing the last action.                | `Icons.undo`               |
+| `redoAction`          | The icon for redoing the last undone action.         | `Icons.redo`               |
+| `removeElementZone`   | The icon for removing an element/layer like an emoji.| `Icons.delete_outline_rounded` |
+| `paintingEditor`      | Customizable icons for the Painting Editor component.| `IconsPaintingEditor` |
+| `textEditor`          | Customizable icons for the Text Editor component.    | `IconsTextEditor`   |
+| `cropRotateEditor`    | Customizable icons for the Crop and Rotate Editor component.| `IconsCropRotateEditor` |
+| `filterEditor`        | Customizable icons for the Filter Editor component.  | `IconsFilterEditor` |
+| `emojiEditor`         | Customizable icons for the Emoji Editor component.   | `IconsEmojiEditor` |
+
+#### icons paintingEditor
+| Property       | Description                                     | Default Value         |
+| -------------- | ----------------------------------------------- | ----------------------|
+| `bottomNavBar` | The icon for the bottom navigation bar.         | `Icons.edit_rounded`  |
+| `lineWeight`   | The icon for adjusting line weight.             | `Icons.line_weight_rounded` |
+| `freeStyle`    | The icon for the freehand drawing tool.         | `Icons.edit`          |
+| `arrow`        | The icon for the arrow drawing tool.            | `Icons.arrow_right_alt_outlined` |
+| `line`         | The icon for the straight line drawing tool.    | `Icons.horizontal_rule` |
+| `fill`         | The icon for filling the background.            | `Icons.format_color_fill` |
+| `noFill`       | The icon for not filling the background.        | `Icons.format_color_reset` |
+| `rectangle`    | The icon for the rectangle drawing tool.        | `Icons.crop_free`     |
+| `circle`       | The icon for the circle drawing tool.           | `Icons.lens_outlined` |
+| `dashLine`     | The icon for the dashed line drawing tool.      | `Icons.power_input`   |
+
+#### icons textEditor
+| Property        | Description                               | Default Value                        |
+| --------------- | ----------------------------------------- | ------------------------------------ |
+| `bottomNavBar`  | The icon for the bottom navigation bar.   | `Icons.text_fields`                  |
+| `alignLeft`     | The icon for aligning text to the left.   | `Icons.align_horizontal_left_rounded` |
+| `alignCenter`   | The icon for aligning text to the center. | `Icons.align_horizontal_center_rounded` |
+| `alignRight`    | The icon for aligning text to the right.  | `Icons.align_horizontal_right_rounded` |
+| `backgroundMode`| The icon for toggling background mode.    | `Icons.layers_rounded`               |
+
+
+#### icons cropRotateEditor
+| Property        | Description                  | Default Value                             |
+| --------------- | ---------------------------- | ----------------------------------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar| `Icons.crop_rotate_rounded`               |
+| `rotate`        | Icon for the rotate action    | `Icons.rotate_90_degrees_ccw_outlined`   |
+| `aspectRatio`   | Icon for the aspect ratio action | `Icons.crop`                            |
+
+#### icons filterEditor
+| Property        | Description                    | Default Value |
+| --------------- | ------------------------------ | ------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar  | `Icons.filter` |
+
+
+#### icons emojiEditor
+| Property        | Description                          | Default Value                       |
+| --------------- | ------------------------------------ | ----------------------------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar        | `Icons.sentiment_satisfied_alt_rounded` |
+</details>
+
+<details>
+  <summary><b>paintEditorConfigs</b></summary>
+ 
+| Property                        | Description                                       | Default Value                |
+| --------------------------------| ------------------------------------------------- | -----------------------------|
+| `enabled`                        | Indicates whether the paint editor is enabled.     | `true`                       |
+| `hasOptionFreeStyle`             | Indicates whether the free-style drawing option is available. | `true`  |
+| `hasOptionArrow`                 | Indicates whether the arrow drawing option is available. | `true`    |
+| `hasOptionLine`                  | Indicates whether the line drawing option is available.  | `true`   |
+| `hasOptionRect`                  | Indicates whether the rectangle drawing option is available.  | `true`  |
+| `hasOptionCircle`                | Indicates whether the circle drawing option is available.  | `true`  |
+| `hasOptionDashLine`              | Indicates whether the dash line drawing option is available. | `true`  |
+| `showColorPicker`                | Indicates whether the color picker is visible.           | `true`   |
+| `canToggleFill`                  | Indicates whether the fill option can be toggled.         | `true`  |
+| `canChangeLineWidth`             | Indicates whether the line width can be changed.         | `true`  |
+| `initialFill`                   | Indicates the initial fill state.                       | `false`  |
+| `freeStyleHighPerformanceScaling` | Enables high-performance scaling for free-style drawing. | Platform-specific (mobile: `true`, desktop: `false`) |
+| `initialStrokeWidth`             | Indicates the initial stroke width.                    | `10.0`   |
+| `initialColor`                  | Indicates the initial drawing color.                   | `Color(0xffff0000)`   |
+| `initialPaintMode`              | Indicates the initial paint mode.                      | `PaintModeE.freeStyle` |
+</details>
+
+<details>
+  <summary><b>textEditorConfigs</b></summary>
+
+| Property                    | Description                                          | Default Value                              |
+|-----------------------------|------------------------------------------------------|--------------------------------------------|
+| `enabled`                   | Indicates whether the text editor is enabled.        | `true`                                     |
+| `canToggleTextAlign`        | Determines if the text alignment options can be toggled. | `true`                                  |
+| `canToggleBackgroundMode`   | Determines if the background mode can be toggled.    | `true`                                     |
+| `initFontSize`              | The initial font size for text.                      | `24.0`                                     |
+| `initialTextAlign`          | The initial text alignment for the layer.            | `TextAlign.center`                         |
+| `initialBackgroundColorMode`| The initial background color mode for the layer.      | `LayerBackgroundColorModeE.backgroundAndColor` |
+</details>
+
+<details>
+  <summary><b>cropRotateEditorConfigs</b></summary>
+
+| Property              | Description                                       | Default Value           |
+|-----------------------|---------------------------------------------------|-------------------------|
+| `enabled`             | Indicates whether the editor is enabled.         | `true`                  |
+| `canRotate`           | Indicates whether the image can be rotated.     | `true`                  |
+| `canChangeAspectRatio`| Indicates whether the aspect ratio can be changed. | `true`                  |
+| `initAspectRatio`     | The initial aspect ratio for cropping.           | `CropAspectRatios.custom` |
+</details>
+
+<details>
+  <summary><b>filterEditorConfigs</b></summary>
+
+| Property      | Description                                     | Default Value |
+|---------------|-------------------------------------------------|---------------|
+| `enabled`     | Indicates whether the filter editor is enabled. | `true`        |
+| `filterList`  | A list of color filter generators to apply.    | `null`        |
+</details>
+
+<details>
+  <summary><b>emojiEditorConfigs</b></summary>
+
+| Property                               | Description                                                                                           | Default Value         |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------|-----------------------|
+| `enabled`                              | Indicates whether the emoji editor is enabled.                                                        | `true`                |
+| `initScale`                            | The initial scale for displaying emojis.                                                              | `5.0`                 |
+| `recentTabBehavior`                    | Defines the behavior of the recent tab (Recent, Popular).                                              | `RecentTabBehavior.RECENT` |
+| `enableSkinTones`                      | Enables the feature to select skin tones for certain emojis.                                           | `true`                |
+| `recentsLimit`                         | Limits the number of recently used emojis that will be saved.                                          | `28`                  |
+| `textStyle`                            | Custom emoji text style to apply to emoji characters in the grid.                                      | `TextStyle(fontFamilyFallback: ['Apple Color Emoji'])` |
+| `checkPlatformCompatibility`           | Verify that emoji glyph is supported by the platform (Android only).                                    | `true`                |
+| `emojiSet`                             | Custom emojis; if set, overrides default emojis provided by the library.                                | `null`                |
+| `initCategory`                         | The initial [Category] that will be selected. The corresponding category button in the bottom bar will be darkened. | `Category.RECENT`     |
+| `verticalSpacing`                      | Vertical spacing between emojis.                                                                       | `0`                   |
+| `horizontalSpacing`                    | Horizontal spacing between emojis.                                                                     | `0`                   |
+| `gridPadding`                          | The padding of the GridView, default is [EdgeInsets.zero].                                             | `EdgeInsets.zero`     |
+| `replaceEmojiOnLimitExceed`            | Determines whether to replace the latest emoji in the recents list when the limit is exceeded.       | `false`               |
+| `categoryIcons`                        | Determines the icons to display for each [Category].                                                    | `CategoryIcons()`     |
+| `customSkinColorOverlayHorizontalOffset`| Customize skin color overlay horizontal offset, especially useful when EmojiPicker is not aligned to the left border of the screen. | `null` |
+</details>
+
+
+
+<br/>
+
+### Contributing
 
 I welcome contributions from the open-source community to make this project even better. Whether you want to report a bug, suggest a new feature, or contribute code, I appreciate your help.
 
-### Bug Reports and Feature Requests
+#### Bug Reports and Feature Requests
 
 If you encounter a bug or have an idea for a new feature, please open an issue on my [GitHub Issues](https://github.com/hm21/pro_image_editor/issues) page. I will review it and discuss the best approach to address it.
 
-### Code Contributions
+#### Code Contributions
 
 If you'd like to contribute code to this project, please follow these steps:
 
@@ -216,3 +722,27 @@ If you'd like to contribute code to this project, please follow these steps:
 ```bash
 git clone https://github.com/hm21/pro_image_editor.git
 ```
+
+<br/>
+
+### Inspiration
+
+This package is inspired by the [image_editor_plus](https://pub.dev/packages/image_editor_plus) package, which is also a great tool for image editing in Flutter.
+
+<br/>
+
+### Included Packages
+
+This package uses several Flutter packages to provide a seamless editing experience. Here's a list of the packages used in this project:
+
+- [image_editor](https://pub.dev/packages/image_editor) 
+- [extended_image](https://pub.dev/packages/extended_image) 
+- [rounded_background_text](https://pub.dev/packages/rounded_background_text)
+- [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
+- [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
+- [screenshot](https://pub.dev/packages/screenshot)
+- [vibration](https://pub.dev/packages/vibration)
+- [image](https://pub.dev/packages/image)
+- [http](https://pub.dev/packages/http)
+
+These packages play a crucial role in enabling various features and functionalities in this package.

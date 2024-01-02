@@ -49,7 +49,7 @@ class FilterEditor extends StatefulWidget {
   final I18n i18n;
 
   /// Custom widgets configuration for the editor.
-  final ProImageEditorCustomWidgets customWidgets;
+  final ImageEditorCustomWidgets customWidgets;
 
   /// Icons used in the editor.
   final ImageEditorIcons icons;
@@ -118,7 +118,7 @@ class FilterEditor extends StatefulWidget {
     required ThemeData theme,
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
@@ -173,7 +173,7 @@ class FilterEditor extends StatefulWidget {
     required ThemeData theme,
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
@@ -228,7 +228,7 @@ class FilterEditor extends StatefulWidget {
     required ThemeData theme,
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
@@ -281,7 +281,7 @@ class FilterEditor extends StatefulWidget {
     required ThemeData theme,
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
@@ -336,7 +336,7 @@ class FilterEditor extends StatefulWidget {
     required ThemeData theme,
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
@@ -571,6 +571,7 @@ class FilterEditorState extends State<FilterEditor> {
               filterPreviewButton(
                 filter: _filters[i],
                 name: _filters[i].name,
+                index: i,
               ),
           ],
         ),
@@ -579,8 +580,13 @@ class FilterEditorState extends State<FilterEditor> {
   }
 
   /// Create a button for filter preview.
-  Widget filterPreviewButton({required filter, required String name}) {
+  Widget filterPreviewButton({
+    required filter,
+    required String name,
+    required int index,
+  }) {
     return GestureDetector(
+      key: ValueKey('Filter-$name-$index'),
       onTap: () {
         selectedFilter = filter;
         setState(() {});
@@ -589,16 +595,16 @@ class FilterEditorState extends State<FilterEditor> {
         Container(
           height: 64,
           width: 64,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(48),
+            borderRadius: BorderRadius.circular(7),
             border: Border.all(
-              color: Colors.black,
-              width: 2,
+              color: const Color(0xFF242424),
+              width: 1,
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(48),
+            borderRadius: BorderRadius.circular(7),
             child: ImageWithFilter(
               image: EditorImage(
                 file: widget.file,

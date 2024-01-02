@@ -246,13 +246,13 @@ class _LayerWidgetState extends State<LayerWidget> {
   /// Build the text widget
   Widget _buildText() {
     var layer = _layer as TextLayerData;
-    double horizontalHelper = 6 * layer.scale;
+    double horizontalHelper = 10 * layer.scale;
     return Container(
       // Fix Hit-Box
       padding: EdgeInsets.only(
         left: horizontalHelper,
         right: horizontalHelper,
-        bottom: 5.2 * layer.scale,
+        bottom: 6.4 * layer.scale,
       ),
       child: RoundedBackgroundText(
         layer.text.toString(),
@@ -262,6 +262,7 @@ class _LayerWidgetState extends State<LayerWidget> {
           fontSize: widget.textFontSize * _layer.scale,
           fontWeight: FontWeight.w400,
           color: layer.color,
+          height: 1.55,
         ),
       ),
     );

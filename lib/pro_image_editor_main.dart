@@ -28,6 +28,8 @@ import 'widgets/layer_widget.dart';
 import 'widgets/loading_dialog.dart';
 import 'widgets/pro_image_editor_desktop_mode.dart';
 
+typedef ImageEditingCompleteCallback = Future<void> Function(Uint8List bytes);
+
 /// A widget for image editing using ProImageEditor.
 ///
 /// `ProImageEditor` provides a versatile image editing widget for Flutter applications.
@@ -64,6 +66,13 @@ class ProImageEditor extends StatefulWidget {
   /// File object representing the image file.
   final File? file;
 
+  /// A callback function that will be called when the editing is done,
+  /// and it returns the edited image as a Uint8List.
+  ///
+  /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
+  /// when the editing is completed.
+  final ImageEditingCompleteCallback onImageEditingComplete;
+
   /// Configuration options for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -77,8 +86,12 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The [configs] parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
+  ///
+  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// and it returns the edited image as a Uint8List.
   const ProImageEditor._({
     super.key,
+    required this.onImageEditingComplete,
     this.byteArray,
     this.assetPath,
     this.networkUrl,
@@ -92,60 +105,92 @@ class ProImageEditor extends StatefulWidget {
   /// Creates a `ProImageEditor` widget for editing an image from memory.
   ///
   /// The `byteArray` parameter should contain the image data as a `Uint8List`.
+  ///
+  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// various configuration options. If not specified, default settings will be used.
+  ///
+  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// and it returns the edited image as a Uint8List.
   factory ProImageEditor.memory(
     Uint8List byteArray, {
     Key? key,
+    required ImageEditingCompleteCallback onImageEditingComplete,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
   }) {
     return ProImageEditor._(
       key: key,
       byteArray: byteArray,
       configs: configs,
+      onImageEditingComplete: onImageEditingComplete,
     );
   }
 
   /// Creates a `ProImageEditor` widget for editing an image from a file.
   ///
   /// The `file` parameter should point to the image file.
+  ///
+  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// various configuration options. If not specified, default settings will be used.
+  ///
+  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// and it returns the edited image as a Uint8List.
   factory ProImageEditor.file(
     File file, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    required ImageEditingCompleteCallback onImageEditingComplete,
   }) {
     return ProImageEditor._(
       key: key,
       file: file,
       configs: configs,
+      onImageEditingComplete: onImageEditingComplete,
     );
   }
 
   /// Creates a `ProImageEditor` widget for editing an image from an asset.
   ///
   /// The `assetPath` parameter should specify the path to the image asset.
+  ///
+  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// various configuration options. If not specified, default settings will be used.
+  ///
+  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// and it returns the edited image as a Uint8List.
   factory ProImageEditor.asset(
     String assetPath, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    required ImageEditingCompleteCallback onImageEditingComplete,
   }) {
     return ProImageEditor._(
       key: key,
       assetPath: assetPath,
       configs: configs,
+      onImageEditingComplete: onImageEditingComplete,
     );
   }
 
   /// Creates a `ProImageEditor` widget for editing an image from a network URL.
   ///
   /// The `networkUrl` parameter should specify the URL of the image to be loaded.
+  ///
+  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// various configuration options. If not specified, default settings will be used.
+  ///
+  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// and it returns the edited image as a Uint8List.
   factory ProImageEditor.network(
     String networkUrl, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    required ImageEditingCompleteCallback onImageEditingComplete,
   }) {
     return ProImageEditor._(
       key: key,
       networkUrl: networkUrl,
       configs: configs,
+      onImageEditingComplete: onImageEditingComplete,
     );
   }
 
@@ -1283,10 +1328,12 @@ class ProImageEditorState extends State<ProImageEditor> {
       );
 
     var bytes = await _screenshotCtrl.capture(pixelRatio: _pixelRatio);
-    if (!mounted) return;
-    loading.hide(context);
 
-    Navigator.pop(context, bytes);
+    if (bytes != null) {
+      await widget.onImageEditingComplete(bytes);
+    }
+
+    if (mounted) loading.hide(context);
   }
 
   /// Close the image editor.

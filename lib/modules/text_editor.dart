@@ -33,7 +33,7 @@ class TextEditor extends StatefulWidget {
   final I18n i18n;
 
   /// Custom widgets to be used in the text editor.
-  final ProImageEditorCustomWidgets customWidgets;
+  final ImageEditorCustomWidgets customWidgets;
 
   /// Icons used in the text editor.
   final ImageEditorIcons icons;
@@ -58,7 +58,7 @@ class TextEditor extends StatefulWidget {
     this.configs = const TextEditorConfigs(),
     this.icons = const ImageEditorIcons(),
     this.i18n = const I18n(),
-    this.customWidgets = const ProImageEditorCustomWidgets(),
+    this.customWidgets = const ImageEditorCustomWidgets(),
     this.imageEditorTheme = const ImageEditorTheme(),
     required this.theme,
   });

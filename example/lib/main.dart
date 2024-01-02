@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade800),
         useMaterial3: true,
       ),
+      debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
     );
   }
@@ -60,7 +61,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => ProImageEditor.asset('assets/demo.png'),
+                      builder: (context) => ProImageEditor.asset(
+                        'assets/demo.png',
+                        onImageEditingComplete: (bytes) async {
+                          Navigator.pop(context);
+                        },
+                      ),
                     ),
                   );
                 },
@@ -79,7 +85,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       File file = File(result.files.single.path!);
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => ProImageEditor.file(file),
+                          builder: (context) => ProImageEditor.file(
+                            file,
+                            onImageEditingComplete: (Uint8List bytes) async {
+                              Navigator.pop(context);
+                            },
+                          ),
                         ),
                       );
                     }
@@ -110,6 +121,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         builder: (context) => ProImageEditor.memory(
                           bytes,
                           key: _editor,
+                          onImageEditingComplete: (bytes) async {
+                            Navigator.pop(context);
+                          },
                           configs: ProImageEditorConfigs(
                             activePreferredOrientations: [
                               DeviceOrientation.portraitUp,
@@ -230,7 +244,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               showRotateLine: true,
                               hitVibration: true,
                             ),
-                            customWidgets: const ProImageEditorCustomWidgets(),
+                            customWidgets: const ImageEditorCustomWidgets(),
                             imageEditorTheme: const ImageEditorTheme(
                               layerHoverCursor: SystemMouseCursors.move,
                               helperLine: HelperLineTheme(
@@ -403,10 +417,14 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 30),
               OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).push(
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(
                       builder: (context) => ProImageEditor.network(
                         'https://picsum.photos/id/237/2000',
+                        onImageEditingComplete: (byte) async {
+                          Navigator.pop(context);
+                        },
                       ),
                     ),
                   );

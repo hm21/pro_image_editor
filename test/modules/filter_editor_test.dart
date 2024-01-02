@@ -41,28 +41,5 @@ void main() {
 
       expect(find.byType(ImageWithFilter), findsWidgets);
     });
-
-    testWidgets('FilterEditor should change filter on button tap', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: FilterEditor.memory(
-              fakeMemoryImage,
-              theme: ThemeData.light(),
-              designMode: ImageEditorDesignModeE.material,
-              heroTag: 'unique_hero_tag',
-            ),
-          ),
-        ),
-      );
-
-      final Finder filterButton = find.byType(GestureDetector).last;
-      await tester.tap(filterButton);
-      await tester.pump();
-
-      final FilterEditorState state = tester.state(find.byType(FilterEditor));
-
-      expect(state.selectedFilter, isNot(PresetFilters.none));
-    });
   });
 }

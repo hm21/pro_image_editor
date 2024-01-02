@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-/// The `CustomWidgets` class encapsulates custom widget components that can be
+/// The `ImageEditorCustomWidgets` class encapsulates custom widget components that can be
 /// used within various parts of the application's user interface. It provides
 /// flexibility for customizing the appearance and behavior of specific UI elements
 /// such as app bars, bottom navigation bars, and more.
@@ -8,7 +8,7 @@ import 'package:flutter/widgets.dart';
 /// Usage:
 ///
 /// ```dart
-/// CustomWidgets customUI = CustomWidgets(
+/// ImageEditorCustomWidgets customUI = ImageEditorCustomWidgets(
 ///   appBar: CustomAppBar(),
 ///   bottomNavigationBar: CustomBottomNavigationBar(),
 ///   // Additional custom widgets...
@@ -41,14 +41,14 @@ import 'package:flutter/widgets.dart';
 /// Example Usage:
 ///
 /// ```dart
-/// CustomWidgets customUI = CustomWidgets(
+/// ImageEditorCustomWidgets customUI = ImageEditorCustomWidgets(
 ///   appBar: CustomAppBar(),
 ///   bottomNavigationBar: CustomBottomNavigationBar(),
 /// );
 /// ```
 ///
 /// Please refer to the documentation of individual properties and methods for more details.
-class ProImageEditorCustomWidgets {
+class ImageEditorCustomWidgets {
   /// A custom widget for removing a layer or element from the editor interface.
   final Widget? removeLayer;
 
@@ -71,7 +71,7 @@ class ProImageEditorCustomWidgets {
   final Widget? bottomNavigationBar;
 
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
-  const ProImageEditorCustomWidgets({
+  const ImageEditorCustomWidgets({
     this.removeLayer,
     this.appBar,
     this.appBarPaintingEditor,

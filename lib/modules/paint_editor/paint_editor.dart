@@ -46,7 +46,7 @@ class PaintingEditor extends StatefulWidget {
   final ThemeData theme;
 
   /// Custom widget overrides for the editor.
-  final ProImageEditorCustomWidgets customWidgets;
+  final ImageEditorCustomWidgets customWidgets;
 
   /// Internationalization settings for text localization.
   final I18n i18n;
@@ -88,7 +88,7 @@ class PaintingEditor extends StatefulWidget {
     this.imageEditorTheme = const ImageEditorTheme(),
     this.configs = const PaintEditorConfigs(),
     this.i18n = const I18n(),
-    this.customWidgets = const ProImageEditorCustomWidgets(),
+    this.customWidgets = const ImageEditorCustomWidgets(),
     this.icons = const ImageEditorIcons(),
     required this.imageSize,
     this.layers,
@@ -107,7 +107,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -142,7 +142,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -175,7 +175,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -208,7 +208,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -240,7 +240,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),

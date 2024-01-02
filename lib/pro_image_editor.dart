@@ -1,6 +1,6 @@
 library pro_image_editor;
 
-export 'pro_image_editor_main.dart';
+export 'pro_image_editor_main.dart' hide ImageEditingCompleteCallback;
 
 export 'package:pro_image_editor/utils/converters.dart';
 

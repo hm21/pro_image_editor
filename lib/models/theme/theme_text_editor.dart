@@ -64,7 +64,7 @@ class TextEditorTheme {
   const TextEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
-    this.background = const Color.fromARGB(155, 0, 0, 0),
+    this.background = const Color(0x9B000000),
     this.inputHintColor = const Color(0xFFBDBDBD),
     this.inputCursorColor = imageEditorPrimaryColor,
   });

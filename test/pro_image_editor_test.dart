@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
@@ -14,7 +16,10 @@ import 'fake/fake_image.dart';
 void main() {
   testWidgets('ProImageEditor initializes correctly', (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
-      home: ProImageEditor.memory(fakeMemoryImage),
+      home: ProImageEditor.memory(
+        fakeMemoryImage,
+        onImageEditingComplete: (Uint8List bytes) async {},
+      ),
     ));
 
     expect(find.byType(ProImageEditor), findsOneWidget);
@@ -22,7 +27,11 @@ void main() {
 
   group('ProImageEditor open subeditors', () {
     testWidgets('ProImageEditor opens PaintingEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(home: ProImageEditor.memory(fakeMemoryImage)));
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        onImageEditingComplete: (Uint8List bytes) async {},
+      )));
 
       final openBtn = find.byKey(const ValueKey('open-painting-editor-btn'));
       expect(openBtn, findsOneWidget);
@@ -33,7 +42,11 @@ void main() {
     });
 
     testWidgets('ProImageEditor opens TextEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(home: ProImageEditor.memory(fakeMemoryImage)));
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        onImageEditingComplete: (Uint8List bytes) async {},
+      )));
 
       final openBtn = find.byKey(const ValueKey('open-text-editor-btn'));
       expect(openBtn, findsOneWidget);
@@ -44,7 +57,11 @@ void main() {
     });
 
     testWidgets('ProImageEditor opens CropRotateEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(home: ProImageEditor.memory(fakeMemoryImage)));
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        onImageEditingComplete: (Uint8List bytes) async {},
+      )));
 
       final openBtn = find.byKey(const ValueKey('open-crop-rotate-editor-btn'));
       expect(openBtn, findsOneWidget);
@@ -55,7 +72,11 @@ void main() {
     });
 
     testWidgets('ProImageEditor opens FilterEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(home: ProImageEditor.memory(fakeMemoryImage)));
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        onImageEditingComplete: (Uint8List bytes) async {},
+      )));
 
       final openBtn = find.byKey(const ValueKey('open-filter-editor-btn'));
       expect(openBtn, findsOneWidget);
@@ -66,7 +87,11 @@ void main() {
     });
 
     testWidgets('ProImageEditor opens EmojiEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(home: ProImageEditor.memory(fakeMemoryImage)));
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        onImageEditingComplete: (Uint8List bytes) async {},
+      )));
 
       final openBtn = find.byKey(const ValueKey('open-emoji-editor-btn'));
       expect(openBtn, findsOneWidget);
@@ -81,7 +106,11 @@ void main() {
   });
 
   testWidgets('ProImageEditor performs undo and redo action', (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: ProImageEditor.memory(fakeMemoryImage)));
+    await tester.pumpWidget(MaterialApp(
+        home: ProImageEditor.memory(
+      fakeMemoryImage,
+      onImageEditingComplete: (Uint8List bytes) async {},
+    )));
 
     // Open text editor
     final openBtn = find.byKey(const ValueKey('open-text-editor-btn'));

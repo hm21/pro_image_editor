@@ -31,7 +31,7 @@ class ProImageEditorConfigs {
   final HelperLines helperLines;
 
   /// Custom widgets to be used in the Image Editor.
-  final ProImageEditorCustomWidgets customWidgets;
+  final ImageEditorCustomWidgets customWidgets;
 
   /// Theme settings for the Image Editor.
   final ImageEditorTheme imageEditorTheme;
@@ -83,7 +83,7 @@ class ProImageEditorConfigs {
     ],
     this.i18n = const I18n(),
     this.helperLines = const HelperLines(),
-    this.customWidgets = const ProImageEditorCustomWidgets(),
+    this.customWidgets = const ImageEditorCustomWidgets(),
     this.imageEditorTheme = const ImageEditorTheme(),
     this.icons = const ImageEditorIcons(),
     this.paintEditorConfigs = const PaintEditorConfigs(),

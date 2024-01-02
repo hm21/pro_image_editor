@@ -48,7 +48,7 @@ class CropRotateEditor extends StatefulWidget {
   final I18n i18n;
 
   /// Custom widgets configuration for the editor.
-  final ProImageEditorCustomWidgets customWidgets;
+  final ImageEditorCustomWidgets customWidgets;
 
   /// Icons used in the editor.
   final ImageEditorIcons icons;
@@ -140,7 +140,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -207,7 +207,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -274,7 +274,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -333,7 +333,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
@@ -394,7 +394,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     I18n i18n = const I18n(),
-    ProImageEditorCustomWidgets customWidgets = const ProImageEditorCustomWidgets(),
+    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
