@@ -14,6 +14,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: master
+          flutter-version: '3.16.5'
       - name: Install Package Dependencies
         run: flutter pub get
       - name: Install Example Dependencies
