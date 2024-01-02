@@ -1,3 +1,6 @@
-## 0.0.1
-
-* TODO: Describe initial release.
+## 1.0.0
+Implement PaintingEditor
+Implement TextEditor
+Implement CropRotateEditor
+Implement FilterEditor
+Implement EmojiEditor
