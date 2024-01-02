@@ -47,16 +47,14 @@ class LoadingDialog {
     }
     _isVisible = true;
 
-    bool isCupertinoDesign = designMode == ImageEditorDesignModeE.cupertino;
-
     return showAdaptiveDialog(
       context: context,
       barrierDismissible: isDismissible,
       builder: (context) {
         if (_isDisposed) Navigator.of(context).pop();
         return AlertDialog.adaptive(
-          backgroundColor: isCupertinoDesign ? null : theme.cardColor,
-          contentPadding: isCupertinoDesign ? null : const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          backgroundColor: theme.cardColor,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           content: PopScope(
             canPop: isDismissible,
             child: ConstrainedBox(

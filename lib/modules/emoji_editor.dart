@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/editor_configs/emoji_editor_configs.dart';
@@ -103,7 +102,7 @@ class EmojiEditorState extends State<EmojiEditor> {
   Config _buildEmojiPickerConfig(BoxConstraints constraints) {
     return Config(
       columns: _calculateColumns(constraints),
-      emojiSizeMax: _calculateEmojiSize(),
+      emojiSizeMax: 32,
       skinToneDialogBgColor: widget.imageEditorTheme.emojiEditor.skinToneDialogBgColor,
       skinToneIndicatorColor: widget.imageEditorTheme.emojiEditor.skinToneIndicatorColor,
       bgColor: widget.imageEditorTheme.emojiEditor.background,
@@ -134,7 +133,4 @@ class EmojiEditorState extends State<EmojiEditor> {
 
   /// Calculates the number of columns for the EmojiPicker.
   int _calculateColumns(BoxConstraints constraints) => max(1, 10 / 400 * constraints.maxWidth - 1).floor();
-
-  /// Calculates the maximum emoji size.
-  double _calculateEmojiSize() => 32 * (defaultTargetPlatform == TargetPlatform.iOS ? 1.30 : 1.0);
 }

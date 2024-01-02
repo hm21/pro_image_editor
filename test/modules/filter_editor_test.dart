@@ -1,4 +1,3 @@
-import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/modules/filter_editor.dart';

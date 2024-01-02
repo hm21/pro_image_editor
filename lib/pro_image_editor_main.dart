@@ -1711,6 +1711,7 @@ class ProImageEditorState extends State<ProImageEditor> {
           emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
           enabledHitDetection: _enabledHitDetection,
           freeStyleHighPerformanceScaling: _freeStyleHighPerformanceScaling,
+          designMode: widget.configs.designMode,
           onTap: (layer) async {
             if (layer is TextLayerData) {
               _onTextLayerTap(layer);

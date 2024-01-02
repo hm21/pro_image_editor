@@ -3,12 +3,14 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/utils/theme_functions.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
 import '../models/i18n/i18n.dart';
 import '../models/layer.dart';
 import '../modules/paint_editor/utils/draw/draw_canvas.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
+import '../utils/design_mode.dart';
 import 'dashed_border.dart';
 import 'pro_image_editor_desktop_mode.dart';
 
@@ -44,6 +46,9 @@ class LayerWidget extends StatefulWidget {
   /// Font size for text layers.
   final double textFontSize;
 
+  /// The design mode of the editor.
+  final ImageEditorDesignModeE designMode;
+
   /// Enables high-performance scaling for free-style drawing when set to `true`.
   ///
   /// When this option is enabled, it optimizes scaling for improved performance.
@@ -55,21 +60,22 @@ class LayerWidget extends StatefulWidget {
   final bool enabledHitDetection;
 
   /// Creates a [LayerWidget] with the specified properties.
-  const LayerWidget({
-    Key? key,
-    required this.padding,
-    required this.layerData,
-    required this.onTapDown,
-    required this.onTapUp,
-    required this.onTap,
-    required this.layerHoverCursor,
-    required this.onRemoveTap,
-    required this.i18n,
-    required this.textFontSize,
-    required this.emojiTextStyle,
-    required this.enabledHitDetection,
-    required this.freeStyleHighPerformanceScaling,
-  }) : super(key: key);
+  const LayerWidget(
+      {Key? key,
+      required this.padding,
+      required this.layerData,
+      required this.onTapDown,
+      required this.onTapUp,
+      required this.onTap,
+      required this.layerHoverCursor,
+      required this.onRemoveTap,
+      required this.i18n,
+      required this.textFontSize,
+      required this.emojiTextStyle,
+      required this.enabledHitDetection,
+      required this.freeStyleHighPerformanceScaling,
+      required this.designMode})
+      : super(key: key);
 
   @override
   createState() => _LayerWidgetState();
@@ -271,11 +277,16 @@ class _LayerWidgetState extends State<LayerWidget> {
   /// Build the emoji widget
   Widget _buildEmoji() {
     var layer = _layer as EmojiLayerData;
-    return Text(
-      layer.emoji.toString(),
-      textAlign: TextAlign.center,
-      style: widget.emojiTextStyle.copyWith(
-        fontSize: widget.textFontSize * _layer.scale,
+    return Material(
+      // Prevent hero animation bug
+      type: MaterialType.transparency,
+      textStyle: platformTextStyle(context, widget.designMode),
+      child: Text(
+        layer.emoji.toString(),
+        textAlign: TextAlign.center,
+        style: widget.emojiTextStyle.copyWith(
+          fontSize: widget.textFontSize * _layer.scale,
+        ),
       ),
     );
   }

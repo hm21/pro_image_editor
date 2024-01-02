@@ -735,6 +735,7 @@ class PaintingEditorState extends State<PaintingEditor> {
           fit: StackFit.expand,
           children: widget.layers!.map((layerItem) {
             return LayerWidget(
+              designMode: widget.designMode,
               layerHoverCursor: widget.imageEditorTheme.layerHoverCursor,
               padding: widget.paddingHelper ?? EdgeInsets.zero,
               layerData: layerItem,
