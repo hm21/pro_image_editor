@@ -41,6 +41,7 @@ void main() {
                 emojiTextStyle: const TextStyle(fontSize: 16.0),
                 enabledHitDetection: true,
                 freeStyleHighPerformanceScaling: true,
+                freeStyleHighPerformanceMoving: true,
               ),
             ],
           ),

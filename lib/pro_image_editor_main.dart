@@ -296,6 +296,10 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// When `true`, enables optimized scaling for improved performance.
   bool _freeStyleHighPerformanceScaling = false;
 
+  /// Controls high-performance moving for free-style drawing.
+  /// When `true`, enables optimized moving for improved performance.
+  bool _freeStyleHighPerformanceMoving = false;
+
   /// Enables or disables hit detection.
   /// When `true`, allows detecting user interactions with the painted layer.
   bool _enabledHitDetection = true;
@@ -728,6 +732,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _enabledHitDetection = false;
     if (detail.pointerCount == 1) {
       if (_activeScale) return;
+      _freeStyleHighPerformanceMoving = widget.configs.paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
       _activeLayer.offset = Offset(
         _activeLayer.offset.dx + detail.focalPointDelta.dx,
         _activeLayer.offset.dy + detail.focalPointDelta.dy,
@@ -830,6 +835,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     _enabledHitDetection = true;
     _freeStyleHighPerformanceScaling = false;
+    _freeStyleHighPerformanceMoving = false;
     _showHorizontalHelperLine = false;
     _showVerticalHelperLine = false;
     _showRotationHelperLine = false;
@@ -1711,6 +1717,7 @@ class ProImageEditorState extends State<ProImageEditor> {
           emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
           enabledHitDetection: _enabledHitDetection,
           freeStyleHighPerformanceScaling: _freeStyleHighPerformanceScaling,
+          freeStyleHighPerformanceMoving: _freeStyleHighPerformanceMoving,
           designMode: widget.configs.designMode,
           onTap: (layer) async {
             if (layer is TextLayerData) {

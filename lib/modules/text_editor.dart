@@ -180,7 +180,7 @@ class TextEditorState extends State<TextEditor> {
     if (_textCtrl.text.trim().isNotEmpty) {
       Navigator.of(context).pop(
         TextLayerData(
-          text: _textCtrl.text,
+          text: _textCtrl.text.trim(),
           background: _getBackgroundColor,
           color: _getTextColor,
           align: align,

@@ -636,6 +636,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `canChangeLineWidth`             | Indicates whether the line width can be changed.         | `true`  |
 | `initialFill`                   | Indicates the initial fill state.                       | `false`  |
 | `freeStyleHighPerformanceScaling` | Enables high-performance scaling for free-style drawing. | Platform-specific (mobile: `true`, desktop: `false`) |
+| `freeStyleHighPerformanceMoving` | Enables high-performance moving for free-style drawing. | Platform-specific (mobile-web: `true`, other: `false`) |
 | `initialStrokeWidth`             | Indicates the initial stroke width.                    | `10.0`   |
 | `initialColor`                  | Indicates the initial drawing color.                   | `Color(0xffff0000)`   |
 | `initialPaintMode`              | Indicates the initial paint mode.                      | `PaintModeE.freeStyle` |

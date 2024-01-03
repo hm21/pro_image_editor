@@ -13,15 +13,18 @@ import 'dart:ui';
 /// - [scale]: The scaling factor applied to the coordinates of the lines.
 /// - [freeStyleHighPerformanceScaling]: Controls high-performance scaling for freehand
 ///   drawing. When set to `true`, it enables optimized scaling for improved performance.
+/// - [freeStyleHighPerformanceScaling]: Controls high-performance moving for freehand
+///   drawing. When set to `true`, it enables optimized moving for improved performance.
 void drawFreeStyle({
   required List<Offset?> offsets,
   required Canvas canvas,
   required Paint painter,
   required double scale,
   required bool freeStyleHighPerformanceScaling,
+  required bool freeStyleHighPerformanceMoving,
 }) {
   painter.strokeCap = StrokeCap.round; // Set strokeCap outside the loop
-  if (!freeStyleHighPerformanceScaling) {
+  if (!freeStyleHighPerformanceScaling && !freeStyleHighPerformanceMoving) {
     for (int i = 0; i < offsets.length - 1; i++) {
       if (offsets[i] != null && offsets[i + 1] != null) {
         final path0 = Path()

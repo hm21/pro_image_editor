@@ -748,6 +748,7 @@ class PaintingEditorState extends State<PaintingEditor> {
               i18n: widget.i18n,
               enabledHitDetection: false,
               freeStyleHighPerformanceScaling: false,
+              freeStyleHighPerformanceMoving: false,
             );
           }).toList()),
     );

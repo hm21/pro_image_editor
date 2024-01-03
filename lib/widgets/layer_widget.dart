@@ -55,6 +55,12 @@ class LayerWidget extends StatefulWidget {
   /// By default, it's set to `true` on mobile devices and `false` on desktop devices.
   final bool freeStyleHighPerformanceScaling;
 
+  /// Enables high-performance moving for free-style drawing when set to `true`.
+  ///
+  /// When this option is enabled, it optimizes moving for improved performance.
+  /// By default, it's set to `true` only on mobile-web devices.
+  final bool freeStyleHighPerformanceMoving;
+
   /// Enables or disables hit detection.
   /// When set to `true`, it allows detecting user interactions with the interface.
   final bool enabledHitDetection;
@@ -74,6 +80,7 @@ class LayerWidget extends StatefulWidget {
       required this.emojiTextStyle,
       required this.enabledHitDetection,
       required this.freeStyleHighPerformanceScaling,
+      required this.freeStyleHighPerformanceMoving,
       required this.designMode})
       : super(key: key);
 
@@ -255,10 +262,11 @@ class _LayerWidgetState extends State<LayerWidget> {
     double horizontalHelper = 10 * layer.scale;
     return Container(
       // Fix Hit-Box
+      color: Colors.blue,
       padding: EdgeInsets.only(
         left: horizontalHelper,
         right: horizontalHelper,
-        bottom: 6.4 * layer.scale,
+        bottom: widget.textFontSize * 1.3 * 0.175 * layer.scale,
       ),
       child: RoundedBackgroundText(
         layer.text.toString(),
@@ -268,7 +276,7 @@ class _LayerWidgetState extends State<LayerWidget> {
           fontSize: widget.textFontSize * _layer.scale,
           fontWeight: FontWeight.w400,
           color: layer.color,
-          height: 1.55,
+          backgroundColor: Colors.amber,
         ),
       ),
     );
@@ -306,6 +314,7 @@ class _LayerWidgetState extends State<LayerWidget> {
           scale: widget.layerData.scale,
           enabledHitDetection: widget.enabledHitDetection,
           freeStyleHighPerformanceScaling: widget.freeStyleHighPerformanceScaling,
+          freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,
         ),
       ),
     );

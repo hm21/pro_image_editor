@@ -19,6 +19,10 @@ class DrawCanvas extends CustomPainter {
   /// When `true`, enables optimized scaling for improved performance.
   bool freeStyleHighPerformanceScaling = false;
 
+  /// Controls high-performance moving for free-style drawing.
+  /// When `true`, enables optimized moving for improved performance.
+  bool freeStyleHighPerformanceMoving = false;
+
   /// Enables or disables hit detection.
   /// When `true`, allows detecting user interactions with the interface.
   bool enabledHitDetection = true;
@@ -29,6 +33,7 @@ class DrawCanvas extends CustomPainter {
     required this.scale,
     required this.enabledHitDetection,
     required this.freeStyleHighPerformanceScaling,
+    required this.freeStyleHighPerformanceMoving,
   });
 
   @override
@@ -48,6 +53,7 @@ class DrawCanvas extends CustomPainter {
       start: item.offsets[0],
       end: item.offsets[1],
       freeStyleHighPerformanceScaling: freeStyleHighPerformanceScaling,
+      freeStyleHighPerformanceMoving: freeStyleHighPerformanceMoving,
     );
   }
 

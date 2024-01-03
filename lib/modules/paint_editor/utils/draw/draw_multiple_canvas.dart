@@ -30,6 +30,7 @@ class DrawImage extends CustomPainter {
         start: item.offsets[0],
         end: item.offsets[1],
         freeStyleHighPerformanceScaling: false,
+        freeStyleHighPerformanceMoving: false,
       );
     }
 
@@ -44,6 +45,7 @@ class DrawImage extends CustomPainter {
         start: _paintCtrl.start,
         end: _paintCtrl.end,
         freeStyleHighPerformanceScaling: false,
+        freeStyleHighPerformanceMoving: false,
       );
     }
   }

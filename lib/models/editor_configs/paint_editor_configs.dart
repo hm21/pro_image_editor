@@ -67,6 +67,12 @@ class PaintEditorConfigs {
   /// By default, it's set to `true` on mobile devices and `false` on desktop devices.
   final bool? freeStyleHighPerformanceScaling;
 
+  /// Enables high-performance moving for free-style drawing when set to `true`.
+  ///
+  /// When this option is enabled, it optimizes moving for improved performance.
+  /// By default, it's set to `true` only on mobile-web devices.
+  final bool? freeStyleHighPerformanceMoving;
+
   /// Indicates the initial stroke width.
   final double initialStrokeWidth;
 
@@ -93,6 +99,7 @@ class PaintEditorConfigs {
     this.initialFill = false,
     this.showColorPicker = true,
     this.freeStyleHighPerformanceScaling,
+    this.freeStyleHighPerformanceMoving,
     this.initialStrokeWidth = 10.0,
     this.initialColor = const Color(0xffff0000),
     this.initialPaintMode = PaintModeE.freeStyle,

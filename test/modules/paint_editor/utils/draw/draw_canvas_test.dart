@@ -36,6 +36,7 @@ void main() {
                 scale: 1.0,
                 enabledHitDetection: true,
                 freeStyleHighPerformanceScaling: true,
+                freeStyleHighPerformanceMoving: true,
               ),
             ),
           ),

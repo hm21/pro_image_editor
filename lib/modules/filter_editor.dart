@@ -585,6 +585,7 @@ class FilterEditorState extends State<FilterEditor> {
     required String name,
     required int index,
   }) {
+    var size = const Size(64, 64);
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),
       onTap: () {
@@ -593,8 +594,8 @@ class FilterEditorState extends State<FilterEditor> {
       },
       child: Column(children: [
         Container(
-          height: 64,
-          width: 64,
+          height: size.height,
+          width: size.width,
           margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(7),
@@ -612,6 +613,7 @@ class FilterEditorState extends State<FilterEditor> {
                 networkUrl: widget.networkUrl,
                 assetPath: widget.assetPath,
               ),
+              size: size,
               designMode: widget.designMode,
               filter: filter,
               fit: BoxFit.cover,
@@ -644,6 +646,8 @@ class ImageWithFilter extends StatelessWidget {
   /// The design mode of the editor.
   final ImageEditorDesignModeE designMode;
 
+  final Size? size;
+
   /// Creates an `ImageWithFilter` widget.
   ///
   /// The [image] and [filter] parameters are required. The [fit] parameter
@@ -654,6 +658,7 @@ class ImageWithFilter extends StatelessWidget {
     required this.image,
     required this.filter,
     required this.designMode,
+    this.size,
     this.fit,
     this.opacity = 1,
   });
@@ -667,15 +672,26 @@ class ImageWithFilter extends StatelessWidget {
         designMode: designMode,
       );
     } else {
-      return Opacity(
-        opacity: opacity,
-        child: filter.build(
+      return Stack(
+        children: [
           AutoImage(
             image,
             fit: fit,
             designMode: designMode,
           ),
-        ),
+          Opacity(
+            opacity: opacity,
+            child: filter.build(
+              AutoImage(
+                image,
+                fit: fit,
+                width: size?.width,
+                height: size?.height,
+                designMode: designMode,
+              ),
+            ),
+          ),
+        ],
       );
     }
   }

@@ -28,6 +28,9 @@ import 'draw_free_style.dart';
 /// - [freeStyleHighPerformanceScaling]: Controls high-performance scaling for
 ///   free-style drawing. When set to `true`, it enables optimized scaling for
 ///   improved performance.
+/// - [freeStyleHighPerformanceMoving]: Controls high-performance moving for
+///   free-style drawing. When set to `true`, it enables optimized moving for
+///   improved performance.
 void drawElement({
   required Canvas canvas,
   required Size size,
@@ -35,6 +38,7 @@ void drawElement({
   required List<Offset?> offsets,
   required Paint painter,
   required bool freeStyleHighPerformanceScaling,
+  required bool freeStyleHighPerformanceMoving,
   double scale = 1,
   Offset? start,
   Offset? end,
@@ -47,6 +51,7 @@ void drawElement({
         painter: painter,
         scale: scale,
         freeStyleHighPerformanceScaling: freeStyleHighPerformanceScaling,
+        freeStyleHighPerformanceMoving: freeStyleHighPerformanceMoving,
       );
       break;
     case PaintModeE.line:
