@@ -92,7 +92,7 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
   Uint8List? val;
 
   ///crop rect base on raw image
-  Uint8List data = isDesktop && extendedImage.image is ExtendedNetworkImageProvider
+  Uint8List data = (isDesktop || isWebMobile) && extendedImage.image is ExtendedNetworkImageProvider
       ? await _loadNetwork(extendedImage.image as ExtendedNetworkImageProvider)
       : rawImage;
 
@@ -109,7 +109,7 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
 
   Image? src;
   //LoadBalancer lb;
-  if (isDesktop) {
+  if (isDesktop || isWebMobile) {
     src = decodeImage(data);
   } else {
     src = await compute(decodeImage, data);
@@ -163,7 +163,7 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
   if (src != null) {
     final bool onlyOneFrame = src.numFrames == 1;
     //If there's only one frame, encode it to jpg.
-    if (isDesktop) {
+    if (isDesktop || isWebMobile) {
       fileData = onlyOneFrame ? encodeJpg(Image.from(src.frames.first)) : encodeGif(src);
     } else {
       //fileData = await lb.run<List<int>, Image>(encodeJpg, src);
