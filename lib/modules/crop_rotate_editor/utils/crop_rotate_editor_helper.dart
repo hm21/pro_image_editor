@@ -48,7 +48,7 @@ Future<Uint8List?> cropImage({
   required ImageProvider imageProvider,
   required bool isExtendedResizeImage,
 }) {
-  return isDesktop
+  return isDesktop || isWebMobile
       ? cropImageDataWithDartLibrary(
           rawImage: rawImage,
           editAction: editAction,
