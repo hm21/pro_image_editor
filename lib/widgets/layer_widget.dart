@@ -262,7 +262,6 @@ class _LayerWidgetState extends State<LayerWidget> {
     double horizontalHelper = 10 * layer.scale;
     return Container(
       // Fix Hit-Box
-      color: Colors.blue,
       padding: EdgeInsets.only(
         left: horizontalHelper,
         right: horizontalHelper,
@@ -276,7 +275,6 @@ class _LayerWidgetState extends State<LayerWidget> {
           fontSize: widget.textFontSize * _layer.scale,
           fontWeight: FontWeight.w400,
           color: layer.color,
-          backgroundColor: Colors.amber,
         ),
       ),
     );

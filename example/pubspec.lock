@@ -387,10 +387,10 @@ packages:
     dependency: transitive
     description:
       name: rounded_background_text
-      sha256: "3acb9cc5a122cc25f11c5ff425e8ed9f103905e2171c19b7cd005cadecadd136"
+      sha256: b965b5ee4b08db7b1fa240ce2f93561e452973d7b0c37a82b5b88a381ec4f6c3
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.3"
+    version: "0.5.0"
   screenshot:
     dependency: transitive
     description:

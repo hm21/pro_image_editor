@@ -105,8 +105,9 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
 #### Future Features
-- ✨ Enhanced crop editor with improved performance (No dependencies on `image_editor` and `extended_image`)
+- ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 - ✨ Improved layer movement and scaling functionality for desktop devices
+- ✨ Enhanced crop editor with improved performance (No dependencies on `image_editor` and `extended_image`)
 - ✨ Stickers support
 
 
@@ -122,7 +123,7 @@ To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE
 
 ### Web
 
-If you're displaying emoji on the web and want them to be colored by default (especially if you're not using a custom font like Noto Emoji), you can achieve this by adding the `useColorEmoji: true` parameter, as shown in the code snippet below:
+If you're displaying emoji on the web and want them to be colored by default (especially if you're not using a custom font like Noto Emoji), you can achieve this by adding the `useColorEmoji: true` parameter to your `index.html`, as shown in the code snippet below:
 
 ```html
 <body>
@@ -144,6 +145,35 @@ If you're displaying emoji on the web and want them to be colored by default (es
   </script>
 </body>
 ```
+<br/>
+
+To ensure compatibility with older Android phones and ensure that all filters you use work correctly, it's advisable to consider using the Canvaskit renderer. The default HTML renderer may encounter issues with certain filters on some devices.
+
+To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `index.html`:
+
+```html
+<body>
+  <script>
+    window.addEventListener('load', function(ev) {
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function (engineInitializer) {
+          engineInitializer.initializeEngine({
+            useColorEmoji: true,
+            renderer:'canvaskit', // add this parameter
+          }).then(function (appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+```
+
+By making this change, you can enhance filter compatibility and ensure a smoother experience on older Android phones and various mobile web devices.
 
 
 ### iOS, macOS, Linux, Windows

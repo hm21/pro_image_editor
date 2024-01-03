@@ -50,6 +50,7 @@
         onEntrypointLoaded: function (engineInitializer) {
           engineInitializer.initializeEngine({
             useColorEmoji: true,
+            renderer:'canvaskit'
           }).then(function (appRunner) {
             appRunner.runApp();
           });
