@@ -7,6 +7,7 @@ class AdaptiveDialog extends StatefulWidget {
   final Widget title;
   final Widget content;
   final List<AdaptiveDialogAction> actions;
+  final Brightness brightness;
 
   const AdaptiveDialog({
     super.key,
@@ -14,6 +15,7 @@ class AdaptiveDialog extends StatefulWidget {
     required this.title,
     required this.content,
     required this.actions,
+    required this.brightness,
   });
 
   @override
@@ -24,10 +26,13 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
   @override
   Widget build(BuildContext context) {
     if (widget.designMode == ImageEditorDesignModeE.cupertino) {
-      return CupertinoAlertDialog(
-        title: widget.title,
-        content: widget.content,
-        actions: widget.actions,
+      return CupertinoTheme(
+        data: CupertinoTheme.of(context).copyWith(brightness: widget.brightness),
+        child: CupertinoAlertDialog(
+          title: widget.title,
+          content: widget.content,
+          actions: widget.actions,
+        ),
       );
     } else {
       return AlertDialog(
