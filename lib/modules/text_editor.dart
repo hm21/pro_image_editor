@@ -116,10 +116,7 @@ class TextEditorState extends State<TextEditor> {
 
   /// Calculates the contrast color for a given color.
   Color _getContrastColor(Color color) {
-    int d = 0;
-    double luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
-
-    d = luminance > 0.65 ? 0 : 255;
+    int d = color.computeLuminance() > 0.5 ? 0 : 255;
 
     return Color.fromARGB(color.alpha, d, d, d);
   }

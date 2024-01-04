@@ -256,26 +256,43 @@ class _LayerWidgetState extends State<LayerWidget> {
     }
   }
 
+  double getLineHeight(TextStyle style) {
+    final span = TextSpan(text: 'X', style: style);
+    final painter = TextPainter(
+      text: span,
+      textAlign: TextAlign.left,
+      textDirection: TextDirection.ltr,
+    );
+
+    painter.layout();
+    return painter.preferredLineHeight;
+  }
+
   /// Build the text widget
   Widget _buildText() {
+    var fontSize = widget.textFontSize * _layer.scale;
     var layer = _layer as TextLayerData;
-    double horizontalHelper = 10 * layer.scale;
+    var style = TextStyle(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w400,
+      color: layer.color,
+    );
+
+    double height = getLineHeight(style);
+    const horizontalPaddingFactor = 0.3;
+
     return Container(
       // Fix Hit-Box
       padding: EdgeInsets.only(
-        left: horizontalHelper,
-        right: horizontalHelper,
-        bottom: widget.textFontSize * 1.3 * 0.175 * layer.scale,
+        left: height * horizontalPaddingFactor,
+        right: height * horizontalPaddingFactor,
+        bottom: height * 0.175 / 2,
       ),
       child: RoundedBackgroundText(
         layer.text.toString(),
         backgroundColor: layer.background,
         textAlign: layer.align,
-        style: TextStyle(
-          fontSize: widget.textFontSize * _layer.scale,
-          fontWeight: FontWeight.w400,
-          color: layer.color,
-        ),
+        style: style,
       ),
     );
   }

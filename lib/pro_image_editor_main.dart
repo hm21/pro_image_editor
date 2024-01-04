@@ -424,14 +424,35 @@ class ProImageEditorState extends State<ProImageEditor> {
     final key = event.logicalKey.keyLabel;
 
     if (mounted && event is KeyDownEvent) {
-      if (key == 'Escape') {
-        if (!_activeCrop && !_openDialog) {
-          if (_openEditor) {
-            Navigator.pop(context);
-          } else {
-            closeEditor();
+      switch (key) {
+        case 'Escape':
+          if (!_activeCrop && !_openDialog) {
+            if (_openEditor) {
+              Navigator.pop(context);
+            } else {
+              closeEditor();
+            }
           }
-        }
+          break;
+
+        case 'Subtract':
+        case 'Numpad Subtract':
+        case 'Page Down':
+        case 'Arrow Down':
+          _keyboardZoom(true);
+          break;
+        case 'Add':
+        case 'Numpad Add':
+        case 'Page Up':
+        case 'Arrow Up':
+          _keyboardZoom(false);
+          break;
+        case 'Arrow Left':
+          _keyboardRotate(true);
+          break;
+        case 'Arrow Right':
+          _keyboardRotate(false);
+          break;
       }
     }
 
@@ -1383,6 +1404,32 @@ class ProImageEditorState extends State<ProImageEditor> {
       ),
     );
     _openDialog = false;
+  }
+
+  /// Handles Keyboard zoom event
+  void _keyboardRotate(bool left) {
+    if (left) {
+      _activeLayer.rotation -= 0.087266;
+    } else {
+      _activeLayer.rotation += 0.087266;
+    }
+    setState(() {});
+  }
+
+  /// Handles Keyboard zoom event
+  void _keyboardZoom(bool zoomIn) {
+    double factor = _activeLayer is PaintingLayerData
+        ? 0.1
+        : _activeLayer is TextLayerData
+            ? 0.15
+            : widget.configs.textEditorConfigs.initFontSize / 50;
+    if (zoomIn) {
+      _activeLayer.scale -= factor;
+      _activeLayer.scale = max(0.1, _activeLayer.scale);
+    } else {
+      _activeLayer.scale += factor;
+    }
+    setState(() {});
   }
 
   /// Handles mouse scroll events.
