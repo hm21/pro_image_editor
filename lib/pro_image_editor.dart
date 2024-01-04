@@ -9,6 +9,7 @@ export 'package:pro_image_editor/models/icons/icons.dart';
 export 'package:pro_image_editor/models/theme/theme.dart';
 export 'package:pro_image_editor/models/helper_lines.dart';
 export 'package:pro_image_editor/models/custom_widgets.dart';
+export 'package:pro_image_editor/utils/pro_image_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/paint_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/text_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/crop_rotate_editor_configs.dart';

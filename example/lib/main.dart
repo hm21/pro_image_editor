@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/utils/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 void main() {
