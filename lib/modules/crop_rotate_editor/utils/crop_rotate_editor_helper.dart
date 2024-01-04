@@ -92,7 +92,8 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
   Uint8List? val;
 
   ///crop rect base on raw image
-  Uint8List data = (isDesktop || isWebMobile) && extendedImage.image is ExtendedNetworkImageProvider
+  Uint8List data = (isDesktop || isWebMobile) &&
+          extendedImage.image is ExtendedNetworkImageProvider
       ? await _loadNetwork(extendedImage.image as ExtendedNetworkImageProvider)
       : rawImage;
 
@@ -164,10 +165,14 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
     final bool onlyOneFrame = src.numFrames == 1;
     //If there's only one frame, encode it to jpg.
     if (isDesktop || isWebMobile) {
-      fileData = onlyOneFrame ? encodeJpg(Image.from(src.frames.first)) : encodeGif(src);
+      fileData = onlyOneFrame
+          ? encodeJpg(Image.from(src.frames.first))
+          : encodeGif(src);
     } else {
       //fileData = await lb.run<List<int>, Image>(encodeJpg, src);
-      fileData = onlyOneFrame ? await compute(encodeJpg, src) : await compute(encodeGif, src);
+      fileData = onlyOneFrame
+          ? await compute(encodeJpg, src)
+          : await compute(encodeGif, src);
     }
   }
   val = Uint8List.fromList(fileData!);
@@ -217,7 +222,8 @@ Future<Uint8List?> cropImageDataWithNativeLibrary({
   }
 
   if (action.needFlip) {
-    option.addOption(FlipOption(horizontal: flipHorizontal, vertical: flipVertical));
+    option.addOption(
+        FlipOption(horizontal: flipHorizontal, vertical: flipVertical));
   }
 
   if (action.hasRotateAngle) {
@@ -290,7 +296,8 @@ Future<Uint8List> _loadNetwork(ExtendedNetworkImageProvider key) async {
     return response!.bodyBytes;
   } on OperationCanceledError catch (_) {
     debugPrint('User cancel request ${key.url}.');
-    return Future<Uint8List>.error(StateError('User cancel request ${key.url}.'));
+    return Future<Uint8List>.error(
+        StateError('User cancel request ${key.url}.'));
   } catch (e) {
     return Future<Uint8List>.error(StateError('failed load ${key.url}. \n $e'));
   }

@@ -49,7 +49,9 @@ class _BottomSheetHeaderRowState extends State<BottomSheetHeaderRow> {
               icon: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: widget.theme.brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  color: widget.theme.brightness == Brightness.dark
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: Icon(

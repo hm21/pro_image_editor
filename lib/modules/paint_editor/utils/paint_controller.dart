@@ -191,5 +191,6 @@ class PaintingController extends ChangeNotifier {
   }
 
   /// Indicates whether the current mode requires filling (e.g., circle or rectangle).
-  bool get needFill => mode == PaintModeE.circle || mode == PaintModeE.rect ? fill : false;
+  bool get needFill =>
+      mode == PaintModeE.circle || mode == PaintModeE.rect ? fill : false;
 }

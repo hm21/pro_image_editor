@@ -6,7 +6,8 @@ import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dar
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
 
 void main() {
-  testWidgets('DrawCanvas should handle hit testing for different modes', (WidgetTester tester) async {
+  testWidgets('DrawCanvas should handle hit testing for different modes',
+      (WidgetTester tester) async {
     // Define a list of modes to test
     final paintModes = [
       PaintModeE.line,

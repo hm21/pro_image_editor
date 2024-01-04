@@ -7,7 +7,8 @@ import 'package:pro_image_editor/widgets/layer_widget.dart';
 
 void main() {
   group('TextEditor Tests', () {
-    testWidgets('TextEditor should build without error', (WidgetTester tester) async {
+    testWidgets('TextEditor should build without error',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -40,12 +41,14 @@ void main() {
       expect(find.text('Hello, World!'), findsOneWidget);
     });
 
-    testWidgets('TextEditor toggleTextAlign toggles text alignment correctly', (WidgetTester tester) async {
+    testWidgets('TextEditor toggleTextAlign toggles text alignment correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: TextEditor(
-              configs: const TextEditorConfigs(initialTextAlign: TextAlign.left),
+              configs:
+                  const TextEditorConfigs(initialTextAlign: TextAlign.left),
               theme: ThemeData.dark(),
               designMode: ImageEditorDesignModeE.material,
             ),
@@ -88,14 +91,18 @@ void main() {
       );
     });
 
-    testWidgets('TextEditor toggleBackgroundMode toggles background mode correctly', (WidgetTester tester) async {
+    testWidgets(
+        'TextEditor toggleBackgroundMode toggles background mode correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: TextEditor(
               theme: ThemeData.dark(),
               designMode: ImageEditorDesignModeE.material,
-              configs: const TextEditorConfigs(initialBackgroundColorMode: LayerBackgroundColorModeE.onlyColor),
+              configs: const TextEditorConfigs(
+                  initialBackgroundColorMode:
+                      LayerBackgroundColorModeE.onlyColor),
             ),
           ),
         ),
@@ -113,24 +120,29 @@ void main() {
 
       // Verify that the initial color mode is ColorMode.onlyColor.
       expect(
-        (tester.state<TextEditorState>(find.byType(TextEditor))).backgroundColorMode,
+        (tester.state<TextEditorState>(find.byType(TextEditor)))
+            .backgroundColorMode,
         LayerBackgroundColorModeE.onlyColor,
       );
 
       // Tap a button that triggers toggleBackgroundMode.
-      await tester.tap(find.byKey(const ValueKey('BackgroundModeColorIconButton')));
+      await tester
+          .tap(find.byKey(const ValueKey('BackgroundModeColorIconButton')));
 
       // Verify that the color mode is now ColorMode.backgroundAndColor.
       expect(
-        (tester.state<TextEditorState>(find.byType(TextEditor))).backgroundColorMode,
+        (tester.state<TextEditorState>(find.byType(TextEditor)))
+            .backgroundColorMode,
         LayerBackgroundColorModeE.backgroundAndColor,
       );
 
       // Tap the button again to toggle the color mode to ColorMode.background.
-      await tester.tap(find.byKey(const ValueKey('BackgroundModeColorIconButton')));
+      await tester
+          .tap(find.byKey(const ValueKey('BackgroundModeColorIconButton')));
 
       expect(
-        (tester.state<TextEditorState>(find.byType(TextEditor))).backgroundColorMode,
+        (tester.state<TextEditorState>(find.byType(TextEditor)))
+            .backgroundColorMode,
         LayerBackgroundColorModeE.background,
       );
     });

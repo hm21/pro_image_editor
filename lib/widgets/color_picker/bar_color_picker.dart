@@ -108,11 +108,13 @@ class _BarColorPickerState extends State<BarColorPicker> {
     }
 
     // Initialize 'percent' based on 'initPosition' or target 'initialColor'.
-    percent = widget.initPosition ?? _estimateColorPositionInGradient(colors, widget.initialColor);
+    percent = widget.initPosition ??
+        _estimateColorPositionInGradient(colors, widget.initialColor);
   }
 
   /// Estimates the position of a color within the gradient.
-  double _estimateColorPositionInGradient(List<Color> gradientColors, Color targetColor) {
+  double _estimateColorPositionInGradient(
+      List<Color> gradientColors, Color targetColor) {
     double minDistance = double.infinity;
     double estimatedPosition = 0.0;
 
@@ -259,7 +261,10 @@ class _BarColorPickerState extends State<BarColorPicker> {
       left = thumbRadius;
       top = (thumbRadius * 2 - barHeight) / 2;
     } else {
-      gradient = LinearGradient(colors: colors, begin: Alignment.topCenter, end: Alignment.bottomCenter);
+      gradient = LinearGradient(
+          colors: colors,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter);
       left = (thumbRadius * 2 - barWidth) / 2;
       top = thumbRadius;
     }
@@ -280,9 +285,12 @@ class _BarColorPickerState extends State<BarColorPicker> {
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onPanDown: (details) => handleTouch(details.globalPosition, context, gradient),
-      onPanStart: (details) => handleTouch(details.globalPosition, context, gradient),
-      onPanUpdate: (details) => handleTouch(details.globalPosition, context, gradient),
+      onPanDown: (details) =>
+          handleTouch(details.globalPosition, context, gradient),
+      onPanStart: (details) =>
+          handleTouch(details.globalPosition, context, gradient),
+      onPanUpdate: (details) =>
+          handleTouch(details.globalPosition, context, gradient),
       child: Padding(
         padding: const EdgeInsets.only(left: 10, right: 5),
         child: Stack(
@@ -293,7 +301,8 @@ class _BarColorPickerState extends State<BarColorPicker> {
   }
 
   /// calculate colors picked from palette and update our states.
-  void handleTouch(Offset globalPosition, BuildContext context, Gradient gradient) {
+  void handleTouch(
+      Offset globalPosition, BuildContext context, Gradient gradient) {
     var box = context.findRenderObject() as RenderBox;
     var localPosition = box.globalToLocal(globalPosition);
     double percent;
@@ -313,7 +322,8 @@ class _BarColorPickerState extends State<BarColorPicker> {
         break;
       case PickMode.grey:
         final channel = (0xff * percent).toInt();
-        widget.colorListener(Color.fromARGB(0xff, channel, channel, channel).value);
+        widget.colorListener(
+            Color.fromARGB(0xff, channel, channel, channel).value);
         break;
     }
   }

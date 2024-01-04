@@ -164,7 +164,8 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _checkHitIsOutsideInCanvas() {
-    return _layerType == _LayerType.canvas && !(_layer as PaintingLayerData).item.hit;
+    return _layerType == _LayerType.canvas &&
+        !(_layer as PaintingLayerData).item.hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and rotation.
@@ -328,7 +329,8 @@ class _LayerWidgetState extends State<LayerWidget> {
           item: layer.item,
           scale: widget.layerData.scale,
           enabledHitDetection: widget.enabledHitDetection,
-          freeStyleHighPerformanceScaling: widget.freeStyleHighPerformanceScaling,
+          freeStyleHighPerformanceScaling:
+              widget.freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,
         ),
       ),

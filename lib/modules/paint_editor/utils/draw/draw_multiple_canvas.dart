@@ -51,5 +51,6 @@ class DrawImage extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(DrawImage oldDelegate) => oldDelegate._paintCtrl != _paintCtrl;
+  bool shouldRepaint(DrawImage oldDelegate) =>
+      oldDelegate._paintCtrl != _paintCtrl;
 }

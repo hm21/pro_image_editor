@@ -8,7 +8,8 @@ import '../../../fake/fake_image.dart';
 void main() {
   group('Image Crop Tests', () {
     final EditActionDetails editAction = EditActionDetails();
-    final Rect cropRect = Rect.fromPoints(const Offset(10, 10), const Offset(50, 50));
+    final Rect cropRect =
+        Rect.fromPoints(const Offset(10, 10), const Offset(50, 50));
     final ExtendedImage extendedImage = ExtendedImage(
       image: MemoryImage(fakeMemoryImage),
     );

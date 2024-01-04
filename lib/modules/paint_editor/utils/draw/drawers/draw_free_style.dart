@@ -40,8 +40,10 @@ void drawFreeStyle({
 
     for (int i = 0; i < offsets.length - 1; i++) {
       if (offsets[i] != null && offsets[i + 1] != null) {
-        final startPoint = Offset(offsets[i]!.dx * scale, offsets[i]!.dy * scale);
-        final endPoint = Offset(offsets[i + 1]!.dx * scale, offsets[i + 1]!.dy * scale);
+        final startPoint =
+            Offset(offsets[i]!.dx * scale, offsets[i]!.dy * scale);
+        final endPoint =
+            Offset(offsets[i + 1]!.dx * scale, offsets[i + 1]!.dy * scale);
 
         if (i == 0) {
           path.moveTo(startPoint.dx, startPoint.dy); // Move to the first point

@@ -18,13 +18,17 @@ class PlatformCircularProgressIndicator extends StatefulWidget {
   });
 
   @override
-  State<PlatformCircularProgressIndicator> createState() => _PlatformCircularProgressIndicatorState();
+  State<PlatformCircularProgressIndicator> createState() =>
+      _PlatformCircularProgressIndicatorState();
 }
 
-class _PlatformCircularProgressIndicatorState extends State<PlatformCircularProgressIndicator> {
+class _PlatformCircularProgressIndicatorState
+    extends State<PlatformCircularProgressIndicator> {
   @override
   Widget build(BuildContext context) {
     // Conditionally choose the progress indicator based on the platform.
-    return widget.designMode == ImageEditorDesignModeE.material ? const CircularProgressIndicator() : const CupertinoActivityIndicator();
+    return widget.designMode == ImageEditorDesignModeE.material
+        ? const CircularProgressIndicator()
+        : const CupertinoActivityIndicator();
   }
 }

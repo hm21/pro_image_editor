@@ -14,7 +14,8 @@ import '../../fake/fake_image.dart';
 
 void main() {
   group('PaintingCanvas Tests', () {
-    testWidgets('Initializes with memory constructor', (WidgetTester tester) async {
+    testWidgets('Initializes with memory constructor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: PaintingCanvas.memory(
           fakeMemoryImage,
@@ -31,7 +32,8 @@ void main() {
 
       expect(find.byType(PaintingCanvas), findsOneWidget);
     });
-    testWidgets('Initializes with network constructor', (WidgetTester tester) async {
+    testWidgets('Initializes with network constructor',
+        (WidgetTester tester) async {
       mockNetworkImagesFor(() async {
         await tester.pumpWidget(MaterialApp(
           home: PaintingCanvas.network(
@@ -50,7 +52,8 @@ void main() {
         expect(find.byType(PaintingCanvas), findsOneWidget);
       });
     });
-    testWidgets('Initializes with file constructor', (WidgetTester tester) async {
+    testWidgets('Initializes with file constructor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: PaintingCanvas.file(
           fakeFileImage,
@@ -68,7 +71,8 @@ void main() {
       expect(find.byType(PaintingCanvas), findsOneWidget);
     });
 
-    testWidgets('Handles gestures and updates painting', (WidgetTester tester) async {
+    testWidgets('Handles gestures and updates painting',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: PaintingCanvas.memory(
           fakeMemoryImage,
@@ -83,7 +87,8 @@ void main() {
         ),
       ));
 
-      final PaintingCanvasState state = tester.state(find.byType(PaintingCanvas));
+      final PaintingCanvasState state =
+          tester.state(find.byType(PaintingCanvas));
 
       // Simulate scale start gesture
       const Offset startPoint = Offset(50, 50);
@@ -119,7 +124,8 @@ void main() {
         ),
       ));
 
-      final PaintingCanvasState state = tester.state(find.byType(PaintingCanvas));
+      final PaintingCanvasState state =
+          tester.state(find.byType(PaintingCanvas));
 
       // Simulate scale start gesture
       const Offset startPoint = Offset(50, 50);
@@ -167,7 +173,8 @@ void main() {
         ),
       ));
 
-      final PaintingCanvasState state = tester.state(find.byType(PaintingCanvas));
+      final PaintingCanvasState state =
+          tester.state(find.byType(PaintingCanvas));
 
       // Simulate scale start gesture
       const Offset startPoint = Offset(50, 50);
@@ -188,7 +195,8 @@ void main() {
 
       // Verify that the exported items match the expected result
       expect(exportedItems, isNotEmpty); // Assuming there are painted items
-      expect(exportedItems.first, isA<PaintingLayerData>()); // Check the type of exported items
+      expect(exportedItems.first,
+          isA<PaintingLayerData>()); // Check the type of exported items
     });
   });
 }

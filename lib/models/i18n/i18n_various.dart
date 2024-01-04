@@ -24,7 +24,8 @@ class I18nVarious {
   const I18nVarious({
     this.loadingDialogMsg = 'Please wait...',
     this.closeEditorWarningTitle = 'Close Image Editor?',
-    this.closeEditorWarningMessage = 'Are you sure you want to close the Image Editor? Your changes will not be saved.',
+    this.closeEditorWarningMessage =
+        'Are you sure you want to close the Image Editor? Your changes will not be saved.',
     this.closeEditorWarningConfirmBtn = 'OK',
     this.closeEditorWarningCancelBtn = 'Cancel',
   });

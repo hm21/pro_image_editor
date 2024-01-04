@@ -46,6 +46,7 @@ class TextEditorConfigs {
     this.canToggleBackgroundMode = true,
     this.initFontSize = 24.0,
     this.initialTextAlign = TextAlign.center,
-    this.initialBackgroundColorMode = LayerBackgroundColorModeE.backgroundAndColor,
+    this.initialBackgroundColorMode =
+        LayerBackgroundColorModeE.backgroundAndColor,
   });
 }

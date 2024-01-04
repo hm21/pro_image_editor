@@ -1,4 +1,5 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart' show RecentTabBehavior, CategoryIcons, Category, CategoryEmoji;
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
+    show RecentTabBehavior, CategoryIcons, Category, CategoryEmoji;
 import 'package:flutter/widgets.dart';
 
 /// Configuration options for an emoji editor.

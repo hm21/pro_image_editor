@@ -69,7 +69,8 @@ class DrawCanvas extends CustomPainter {
   bool hitTest(Offset position) {
     if (!enabledHitDetection) return true;
     var offsets = item.offsets;
-    var strokeW = isDesktop ? item.strokeWidth * scale : max(item.strokeWidth, 30);
+    var strokeW =
+        isDesktop ? item.strokeWidth * scale : max(item.strokeWidth, 30);
     var strokeHalfW = strokeW / 2;
     switch (item.mode) {
       case PaintModeE.line:
@@ -105,7 +106,8 @@ class DrawCanvas extends CustomPainter {
         }
         break;
       case PaintModeE.rect:
-        final rect = Rect.fromPoints(item.offsets[0]! * scale, item.offsets[1]! * scale);
+        final rect =
+            Rect.fromPoints(item.offsets[0]! * scale, item.offsets[1]! * scale);
         if (item.fill) {
           item.hit = rect.contains(position);
         } else {
@@ -114,16 +116,21 @@ class DrawCanvas extends CustomPainter {
           final right = rect.right - strokeHalfW;
           final bottom = rect.bottom - strokeHalfW;
 
-          item.hit = position.dx < left || position.dx > right || position.dy < top || position.dy > bottom;
+          item.hit = position.dx < left ||
+              position.dx > right ||
+              position.dy < top ||
+              position.dy > bottom;
         }
         break;
       case PaintModeE.circle:
         final path = Path();
         final insideStrokePath = Path();
         if (item.fill) {
-          path.addOval(Rect.fromPoints(item.offsets[0]! * scale, item.offsets[1]! * scale));
+          path.addOval(Rect.fromPoints(
+              item.offsets[0]! * scale, item.offsets[1]! * scale));
         } else {
-          var ovalRect = Rect.fromPoints(item.offsets[0]! * scale, item.offsets[1]! * scale);
+          var ovalRect = Rect.fromPoints(
+              item.offsets[0]! * scale, item.offsets[1]! * scale);
           double centerX = (ovalRect.left + ovalRect.right) / 2;
           double centerY = (ovalRect.top + ovalRect.bottom) / 2;
 
@@ -143,7 +150,8 @@ class DrawCanvas extends CustomPainter {
             ),
           );
         }
-        item.hit = path.contains(position) && !insideStrokePath.contains(position);
+        item.hit =
+            path.contains(position) && !insideStrokePath.contains(position);
         break;
       default:
         item.hit = true;
@@ -158,7 +166,13 @@ class DrawCanvas extends CustomPainter {
     required double strokeHalfWidth,
     required Offset position,
   }) {
-    if (start.dx.isNaN || start.dy.isNaN || end.dx.isNaN || end.dy.isNaN || strokeHalfWidth.isNaN || position.dx.isNaN || position.dy.isNaN) {
+    if (start.dx.isNaN ||
+        start.dy.isNaN ||
+        end.dx.isNaN ||
+        end.dy.isNaN ||
+        strokeHalfWidth.isNaN ||
+        position.dx.isNaN ||
+        position.dy.isNaN) {
       // Handle NaN values gracefully, e.g., return false or throw an error.
       return false;
     }
@@ -171,7 +185,8 @@ class DrawCanvas extends CustomPainter {
     final normalizedVector = vector / vector.distance;
 
     // Calculate the perpendicular vector
-    final perpendicularVector = Offset(-normalizedVector.dy, normalizedVector.dx);
+    final perpendicularVector =
+        Offset(-normalizedVector.dy, normalizedVector.dx);
 
     // Define the four points that represent the rounded line
     final startPoint = start + perpendicularVector * strokeHalfWidth;
@@ -212,7 +227,8 @@ class DrawCanvas extends CustomPainter {
   }) {
     final vector = end - start;
     final normalizedVector = vector / vector.distance;
-    final perpendicularVector = Offset(-normalizedVector.dy, normalizedVector.dx);
+    final perpendicularVector =
+        Offset(-normalizedVector.dy, normalizedVector.dx);
 
     double x = perpendicularVector.dx * strokeHalfWidth;
     double y = perpendicularVector.dy * strokeHalfWidth;

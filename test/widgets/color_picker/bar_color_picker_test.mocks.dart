@@ -9,8 +9,10 @@ import 'package:flutter/foundation.dart' as _i4;
 import 'package:flutter/material.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
-import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart' as _i5;
-import 'package:pro_image_editor/widgets/color_picker/color_picker_configs.dart' as _i6;
+import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart'
+    as _i5;
+import 'package:pro_image_editor/widgets/color_picker/color_picker_configs.dart'
+    as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -35,7 +37,8 @@ class _FakeColor_0 extends _i1.SmartFake implements _i2.Color {
         );
 }
 
-class _FakeState_1<T extends _i3.StatefulWidget> extends _i1.SmartFake implements _i3.State<T> {
+class _FakeState_1<T extends _i3.StatefulWidget> extends _i1.SmartFake
+    implements _i3.State<T> {
   _FakeState_1(
     Object parent,
     Invocation parentInvocation,
@@ -45,10 +48,12 @@ class _FakeState_1<T extends _i3.StatefulWidget> extends _i1.SmartFake implement
         );
 
   @override
-  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) => super.toString();
+  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) =>
+      super.toString();
 }
 
-class _FakeStatefulElement_2 extends _i1.SmartFake implements _i3.StatefulElement {
+class _FakeStatefulElement_2 extends _i1.SmartFake
+    implements _i3.StatefulElement {
   _FakeStatefulElement_2(
     Object parent,
     Invocation parentInvocation,
@@ -58,10 +63,12 @@ class _FakeStatefulElement_2 extends _i1.SmartFake implements _i3.StatefulElemen
         );
 
   @override
-  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) => super.toString();
+  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) =>
+      super.toString();
 }
 
-class _FakeDiagnosticsNode_3 extends _i1.SmartFake implements _i3.DiagnosticsNode {
+class _FakeDiagnosticsNode_3 extends _i1.SmartFake
+    implements _i3.DiagnosticsNode {
   _FakeDiagnosticsNode_3(
     Object parent,
     Invocation parentInvocation,
@@ -217,7 +224,8 @@ class MockBarColorPicker extends _i1.Mock implements _i5.BarColorPicker {
       ) as String);
 
   @override
-  void debugFillProperties(_i4.DiagnosticPropertiesBuilder? properties) => super.noSuchMethod(
+  void debugFillProperties(_i4.DiagnosticPropertiesBuilder? properties) =>
+      super.noSuchMethod(
         Invocation.method(
           #debugFillProperties,
           [properties],
@@ -354,5 +362,6 @@ class MockBarColorPicker extends _i1.Mock implements _i5.BarColorPicker {
       ) as List<_i3.DiagnosticsNode>);
 
   @override
-  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) => super.toString();
+  String toString({_i3.DiagnosticLevel? minLevel = _i3.DiagnosticLevel.info}) =>
+      super.toString();
 }

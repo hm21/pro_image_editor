@@ -54,7 +54,8 @@ class LoadingDialog {
         if (_isDisposed) Navigator.of(context).pop();
         return AlertDialog.adaptive(
           backgroundColor: theme.cardColor,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           content: PopScope(
             canPop: isDismissible,
             child: ConstrainedBox(

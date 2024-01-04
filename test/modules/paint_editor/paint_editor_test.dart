@@ -9,7 +9,8 @@ import '../../fake/fake_image.dart';
 
 void main() {
   group('PaintingEditor Tests', () {
-    testWidgets('Initializes with memory constructor', (WidgetTester tester) async {
+    testWidgets('Initializes with memory constructor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: PaintingEditor.memory(
           fakeMemoryImage,
@@ -20,7 +21,8 @@ void main() {
 
       expect(find.byType(PaintingEditor), findsOneWidget);
     });
-    testWidgets('Initializes with network constructor', (WidgetTester tester) async {
+    testWidgets('Initializes with network constructor',
+        (WidgetTester tester) async {
       mockNetworkImagesFor(() async {
         await tester.pumpWidget(MaterialApp(
           home: PaintingEditor.network(
@@ -33,7 +35,8 @@ void main() {
         expect(find.byType(PaintingEditor), findsOneWidget);
       });
     });
-    testWidgets('Initializes with file constructor', (WidgetTester tester) async {
+    testWidgets('Initializes with file constructor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: PaintingEditor.file(
           fakeFileImage,

@@ -1,8 +1,5 @@
 <h1>pro_image_editor</h1>
 
-<!-- TODO: Remove banner  -->
-# In Progress!
-
 <p>
     <a href="https://pub.dartlang.org/packages/pro_image_editor">
         <img src="https://img.shields.io/pub/v/pro_image_editor.svg" alt="pub package">
@@ -22,7 +19,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
   <a href="https://hm21.github.io/pro_image_editor">
-    <img src="/assets/showcase.png?raw=true" width=450 />
+    <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/showcase.png?raw=true" width=450 />
       <br/>
       Demo Website
   </a>
@@ -51,29 +48,29 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
     <td align="center">
       <b>Painting-Editor</b>
       <br />
-      <img src="/assets/paint-editor.gif" alt="Paint-Editor" />
+      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
     </td>
     <td align="center">
       <b>Text-Editor</b>
       <br />
-      <img src="assets/text-editor.gif" alt="Text-Editor" />
+      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
     </td>
     <td align="center">
       <b>Crop-Rotate-Editor</b>
       <br />
-      <img src="assets/crop-rotate-editor.gif" alt="Crop-Rotate-Editor" />
+      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
     </td>
   </tr>
   <tr>
     <td align="center">
       <b>Filter-Editor</b>
       <br />
-      <img src="assets/filter-editor.gif" alt="Filter-Editor" />
+      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true" alt="Filter-Editor" />
     </td>
     <td align="center">
       <b>Emoji-Editor</b>
       <br />
-      <img src="assets/emoji-editor.gif" alt="Emoji-Editor" />
+      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
     </td>
   </tr>
 </table>

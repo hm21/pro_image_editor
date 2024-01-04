@@ -12,13 +12,10 @@ topics:
   - image
   - widget
   - editor
-  - pro-image-editor
   - painting
-  - crop
-  - filter
 
 screenshots:
-  - description: "Showcase"
+  - description: "Showcase from the Image Editor"
     path: assets/showcase.png
 
 platforms:

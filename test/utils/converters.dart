@@ -10,7 +10,8 @@ void main() {
   group('converters tests', () {
     test('fetchImageAsUint8List', () async {
       mockNetworkImagesFor(() async {
-        final Uint8List imageBytes = await fetchImageAsUint8List(fakeNetworkImage);
+        final Uint8List imageBytes =
+            await fetchImageAsUint8List(fakeNetworkImage);
 
         expect(imageBytes, isNotNull);
       });
