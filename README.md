@@ -43,37 +43,18 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
 ## Preview
-<table>
-  <tr>
-    <td align="center">
-      <b>Painting-Editor</b>
-      <br />
-      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
-    </td>
-    <td align="center">
-      <b>Text-Editor</b>
-      <br />
-      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
-    </td>
-    <td align="center">
-      <b>Crop-Rotate-Editor</b>
-      <br />
-      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <b>Filter-Editor</b>
-      <br />
-      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true" alt="Filter-Editor" />
-    </td>
-    <td align="center">
-      <b>Emoji-Editor</b>
-      <br />
-      <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
-    </td>
-  </tr>
-</table>
+| **Painting-Editor** | **Text-Editor** |
+| :------------------: | :-------------: |
+| ![Paint-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true) | ![Text-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true) |
+
+| **Crop-Rotate-Editor** | **Filter-Editor** |
+| :--------------------: | :---------------: |
+| ![Crop-Rotate-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true) | ![Filter-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true) |
+
+| **Emoji-Editor** | **&nbsp;** |
+| :--------------: | :--------: |
+| ![Emoji-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true) | |
+
 
 
 ## Features
