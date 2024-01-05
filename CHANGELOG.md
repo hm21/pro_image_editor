@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 1.0.3
+- Update README.md with improved preview image
+
 ## Version 1.0.2
 - Improved accessibility: `ProImageEditorConfigs` is now directly exported for easier integration and usage.
 
@@ -9,7 +12,7 @@
 - Formatted Dart code across various modules for improved consistency
 - Added documentation to adaptive_dialog.dart for better code understanding
 
-## 1.0.0
+## Version 1.0.0
 - Implement PaintingEditor
 - Implement TextEditor
 - Implement CropRotateEditor

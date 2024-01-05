@@ -43,17 +43,60 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
 ## Preview
-| **Painting-Editor** | **Text-Editor** |
-| :------------------: | :-------------: |
-| ![Paint-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true) | ![Text-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true) |
+<table>
+  <thead>
+    <tr>
+      <th align="center">Paint-Editor</th>
+      <th align="center">Text-Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
+      </td>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table>
+  <thead>
+    <tr>
+      <th align="center">Crop-Rotate-Editor</th>
+      <th align="center">Filter-Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+   <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
+      </td>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true" alt="Filter-Editor" />
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-| **Crop-Rotate-Editor** | **Filter-Editor** |
-| :--------------------: | :---------------: |
-| ![Crop-Rotate-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true) | ![Filter-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true) |
-
-| **Emoji-Editor** | **&nbsp;** |
-| :--------------: | :--------: |
-| ![Emoji-Editor](https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true) | |
+<table>
+  <thead>
+    <tr>
+      <th align="center">Emoji-Editor</th>
+      <th align="center"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
+      </td>
+      <td align="center" width="50%">
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 
 
