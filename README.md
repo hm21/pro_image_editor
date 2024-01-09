@@ -5,7 +5,7 @@
         <img src="https://img.shields.io/pub/v/pro_image_editor.svg" alt="pub package">
     </a>
     <a href="https://img.shields.io/github/license/hm21/pro_image_editor">
-        <img src="https://img.shields.io/github/license/hm21/pro_image_editor" alt="License: MIT">
+        <img src="https://img.shields.io/github/license/hm21/pro_image_editor" alt="License">
     </a>
     <a href="https://github.com/hm21/pro_image_editor/issues">
         <img src="https://img.shields.io/github/issues/hm21/pro_image_editor" alt="GitHub issues">

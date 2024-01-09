@@ -49,7 +49,6 @@ class I18nFilterEditor {
 }
 
 class I18nFilters {
-  final String applyFilterDialogMsg;
   final String none;
   final String addictiveBlue;
   final String addictiveRed;
@@ -104,7 +103,6 @@ class I18nFilters {
   ///
   /// ```dart
   /// I18nFilters(
-  ///   applyFilterDialogMsg: 'Applying Filter...',
   ///   none: 'No Filter',
   ///   addictiveBlue: 'Addictive Blue',
   ///   addictiveRed: 'Addictive Red',
@@ -113,7 +111,6 @@ class I18nFilters {
   /// )
   /// ```
   const I18nFilters({
-    this.applyFilterDialogMsg = 'Filter is being applied.',
     this.none = 'No Filter',
     this.addictiveBlue = 'AddictiveBlue',
     this.addictiveRed = 'AddictiveRed',

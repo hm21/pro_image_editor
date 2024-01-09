@@ -183,8 +183,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                 back: 'Back',
                                 done: 'Done',
                                 filters: I18nFilters(
-                                  applyFilterDialogMsg:
-                                      'Filter is being applied.',
                                   none: 'No Filter',
                                   addictiveBlue: 'AddictiveBlue',
                                   addictiveRed: 'AddictiveRed',

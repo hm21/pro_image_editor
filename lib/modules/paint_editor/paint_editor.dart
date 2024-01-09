@@ -686,8 +686,9 @@ class PaintingEditorState extends State<PaintingEditor> {
                             ),
                             icon: Icon(item.icon, color: color),
                             onPressed: () {
-                              if (_imageKey.currentState != null)
+                              if (_imageKey.currentState != null) {
                                 _imageKey.currentState!.mode = item.mode;
+                              }
                               setState(() {});
                             },
                           );
