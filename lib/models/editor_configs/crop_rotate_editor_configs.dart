@@ -1,4 +1,4 @@
-import 'package:extended_image/extended_image.dart';
+import '../../modules/crop_rotate_editor/utils/crop_aspect_ratios.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -23,6 +23,9 @@ class CropRotateEditorConfigs {
   /// Indicating whether the image can be rotated.
   final bool canRotate;
 
+  /// Indicating whether the image can be flipped.
+  final bool canFlip;
+
   /// Indicating whether the aspect ratio of the image can be changed.
   final bool canChangeAspectRatio;
 
@@ -40,6 +43,7 @@ class CropRotateEditorConfigs {
   const CropRotateEditorConfigs({
     this.enabled = true,
     this.canRotate = true,
+    this.canFlip = true,
     this.canChangeAspectRatio = true,
     this.initAspectRatio = CropAspectRatios.custom,
   });

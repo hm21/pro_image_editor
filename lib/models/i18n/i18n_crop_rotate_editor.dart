@@ -6,6 +6,9 @@ class I18nCropRotateEditor {
   /// Text for the "Rotate" tooltip.
   final String rotate;
 
+  /// Text for the "Flip" tooltip.
+  final String flip;
+
   /// Text for the "Ratio" tooltip.
   final String ratio;
 
@@ -54,6 +57,7 @@ class I18nCropRotateEditor {
   const I18nCropRotateEditor({
     this.bottomNavigationBarText = 'Crop/ Rotate',
     this.rotate = 'Rotate',
+    this.flip = 'Flip',
     this.ratio = 'Ratio',
     this.back = 'Back',
     this.done = 'Done',

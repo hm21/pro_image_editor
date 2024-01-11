@@ -34,8 +34,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  image_editor: ^1.3.0
-  extended_image: ^8.2.0
   rounded_background_text: ^0.5.0
   colorfilter_generator: ^0.0.8
   screenshot: ^2.1.0

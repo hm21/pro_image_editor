@@ -11,6 +11,9 @@ class IconsCropRotateEditor {
   /// The icon for the aspect ratio action.
   final IconData aspectRatio;
 
+  /// The icon for the flip action.
+  final IconData flip;
+
   /// Creates an instance of [IconsCropRotateEditor] with customizable icon settings.
   ///
   /// You can provide custom icons for various actions in the Crop/Rotate Editor component.
@@ -33,5 +36,6 @@ class IconsCropRotateEditor {
     this.bottomNavBar = Icons.crop_rotate_rounded,
     this.rotate = Icons.rotate_90_degrees_ccw_outlined,
     this.aspectRatio = Icons.crop,
+    this.flip = Icons.flip,
   });
 }
