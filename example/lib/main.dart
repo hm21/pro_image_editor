@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/utils/aspect_ratios.dart';
+import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_aspect_ratios.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 

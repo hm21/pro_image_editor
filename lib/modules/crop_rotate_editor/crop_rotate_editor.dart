@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui' show Image, lerpDouble;
+import 'dart:ui' show Image;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_aspect_ratio_options.dart';
+import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 import '../../models/crop_rotate_editor_response.dart';
 import '../../models/custom_widgets.dart';
@@ -14,14 +16,13 @@ import '../../models/editor_image.dart';
 import '../../models/theme/theme.dart';
 import '../../models/i18n/i18n.dart';
 import '../../models/icons/icons.dart';
+import '../../utils/debounce.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/platform_popup_menu.dart';
 import 'utils/crop_aspect_ratios.dart';
 import '../../utils/design_mode.dart';
-import 'utils/crop_aspect_ratio_button.dart';
-import '../../models/aspect_ratio_item.dart';
-import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/loading_dialog.dart';
+import 'utils/crop_corner_painter.dart';
 
 /// The `CropRotateEditor` widget is used for cropping and rotating images.
 /// It provides various constructors for loading images from different sources and allows users to crop and rotate the image.
@@ -63,9 +64,6 @@ class CropRotateEditor extends StatefulWidget {
   /// The theme configuration specific to the image editor.
   final ImageEditorTheme imageEditorTheme;
 
-  /// The image data with layers (if any) for editing.
-  final Uint8List? bytesWithLayers;
-
   /// Configuration settings for the CropRotateEditor.
   ///
   /// This parameter allows you to customize the behavior and appearance of the CropRotateEditor.
@@ -76,6 +74,9 @@ class CropRotateEditor extends StatefulWidget {
 
   /// A unique hero tag for the image.
   final String heroTag;
+
+// TODO: write doc
+  final Widget? layersWidget;
 
   /// Private constructor for creating a `CropRotateEditor` widget.
   const CropRotateEditor._({
@@ -93,7 +94,7 @@ class CropRotateEditor extends StatefulWidget {
     required this.imageSize,
     required this.heroTag,
     required this.configs,
-    this.bytesWithLayers,
+    this.layersWidget,
   }) : assert(
           byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
@@ -112,7 +113,6 @@ class CropRotateEditor extends StatefulWidget {
   /// - `icons`: An ImageEditorIcons object for customizing the icons used in the editor (required).
   /// - `designMode`: An ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor (required).
   /// - `imageEditorTheme`: An ImageEditorTheme object for customizing the overall theme of the editor (required).
-  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `heroTag`: A unique hero tag for the image (required).
   /// - `configs`: Configuration settings for the CropRotateEditor (required).
@@ -148,7 +148,7 @@ class CropRotateEditor extends StatefulWidget {
     required Size imageSize,
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    Widget? layersWidget,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -159,7 +159,7 @@ class CropRotateEditor extends StatefulWidget {
       icons: icons,
       designMode: designMode,
       imageEditorTheme: imageEditorTheme,
-      bytesWithLayers: bytesWithLayers,
+      layersWidget: layersWidget,
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
@@ -182,7 +182,6 @@ class CropRotateEditor extends StatefulWidget {
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `heroTag`: A unique hero tag for the image (required).
   /// - `configs`: Configuration settings for the CropRotateEditor (required).
-  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
   ///
   /// Returns:
   /// A CropRotateEditor widget configured with the provided parameters and the image loaded from the File.
@@ -215,7 +214,7 @@ class CropRotateEditor extends StatefulWidget {
     required Size imageSize,
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    Widget? layersWidget,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -226,7 +225,7 @@ class CropRotateEditor extends StatefulWidget {
       icons: icons,
       designMode: designMode,
       imageEditorTheme: imageEditorTheme,
-      bytesWithLayers: bytesWithLayers,
+      layersWidget: layersWidget,
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
@@ -249,7 +248,6 @@ class CropRotateEditor extends StatefulWidget {
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `heroTag`: A unique hero tag for the image (required).
   /// - `configs`: Configuration settings for the CropRotateEditor (required).
-  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
   ///
   /// Returns:
   /// A CropRotateEditor widget configured with the provided parameters and the image loaded from the asset.
@@ -282,7 +280,7 @@ class CropRotateEditor extends StatefulWidget {
     required Size imageSize,
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    Widget? layersWidget,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -293,7 +291,7 @@ class CropRotateEditor extends StatefulWidget {
       icons: icons,
       designMode: designMode,
       imageEditorTheme: imageEditorTheme,
-      bytesWithLayers: bytesWithLayers,
+      layersWidget: layersWidget,
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
@@ -341,7 +339,7 @@ class CropRotateEditor extends StatefulWidget {
     required Size imageSize,
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    Widget? layersWidget,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -352,7 +350,7 @@ class CropRotateEditor extends StatefulWidget {
       icons: icons,
       designMode: designMode,
       imageEditorTheme: imageEditorTheme,
-      bytesWithLayers: bytesWithLayers,
+      layersWidget: layersWidget,
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
@@ -402,7 +400,7 @@ class CropRotateEditor extends StatefulWidget {
     required Size imageSize,
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    Widget? layersWidget,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
@@ -418,7 +416,7 @@ class CropRotateEditor extends StatefulWidget {
         icons: icons,
         designMode: designMode,
         imageEditorTheme: imageEditorTheme,
-        bytesWithLayers: bytesWithLayers,
+        layersWidget: layersWidget,
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
@@ -433,7 +431,7 @@ class CropRotateEditor extends StatefulWidget {
         icons: icons,
         designMode: designMode,
         imageEditorTheme: imageEditorTheme,
-        bytesWithLayers: bytesWithLayers,
+        layersWidget: layersWidget,
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
@@ -448,7 +446,7 @@ class CropRotateEditor extends StatefulWidget {
         icons: icons,
         designMode: designMode,
         imageEditorTheme: imageEditorTheme,
-        bytesWithLayers: bytesWithLayers,
+        layersWidget: layersWidget,
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
@@ -463,7 +461,7 @@ class CropRotateEditor extends StatefulWidget {
         icons: icons,
         designMode: designMode,
         imageEditorTheme: imageEditorTheme,
-        bytesWithLayers: bytesWithLayers,
+        layersWidget: layersWidget,
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
@@ -484,29 +482,30 @@ class CropRotateEditor extends StatefulWidget {
 class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderStateMixin {
   late AnimationController _rotateCtrl;
   late AnimationController _scaleCtrl;
-  late AnimationController _flipCtrl;
 
   late Animation<double> _rotateAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _flipAnimation;
 
   late EditorImage _image;
 
   int _rotationCount = 0;
   late double _aspectRatio;
-  bool flipX = false;
-  bool flipY = false;
+  bool _flipX = false;
+  bool _flipY = false;
   bool _cropping = false;
-  bool _flipped = false;
   bool _showWidgets = false;
+
+  double _zoomFactor = 1;
   double _oldScaleFactor = 1;
-  bool _inited = false;
+  double _screenPadding = 20;
+  Offset _translate = Offset(0, 0);
 
   Rect _cropRect = Rect.zero;
   Rect _viewRect = Rect.zero;
   late BoxConstraints _contentConstraints;
 
-  final _screenPadding = const EdgeInsets.all(20);
+  /// Debounce for scaling actions in the editor.
+  bool _interactionActive = false;
 
   @override
   void initState() {
@@ -516,14 +515,11 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   /// Initializes the editor with default settings.
   void _initializeEditor() {
-    _rotateCtrl = AnimationController(duration: const Duration(milliseconds: 200), vsync: this);
+    _rotateCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     _rotateAnimation = Tween<double>(begin: 0, end: 0).animate(_rotateCtrl);
 
-    _scaleCtrl = AnimationController(duration: const Duration(milliseconds: 200), vsync: this);
+    _scaleCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     _scaleAnimation = Tween<double>(begin: 1, end: 1).animate(_scaleCtrl);
-
-    _flipCtrl = AnimationController(duration: const Duration(milliseconds: 200), vsync: this);
-    _flipAnimation = Tween<double>(begin: 0, end: 0).animate(_flipCtrl);
 
     _image = EditorImage(
       byteArray: widget.byteArray,
@@ -532,12 +528,15 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       networkUrl: widget.networkUrl,
     );
     _aspectRatio = widget.configs.initAspectRatio ?? CropAspectRatios.custom;
-    _cropRect = Rect.fromLTWH(0, 0, widget.imageSize.width.toDouble(), widget.imageSize.height.toDouble());
-    _viewRect = Rect.fromLTWH(0, 0, widget.imageSize.width.toDouble(), widget.imageSize.height.toDouble());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _delayedInit();
-      _showWidgets = true;
+      _calcCropRect();
+
+      Future.delayed(const Duration(milliseconds: 200)).whenComplete(() {
+        setState(() {
+          _showWidgets = true;
+        });
+      });
     });
   }
 
@@ -548,13 +547,14 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     super.dispose();
   }
 
-  /// Performs a delayed initialization to ensure UI is ready.
-  Future<void> _delayedInit() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (mounted) {
-      setState(() => _inited = true);
-    }
-  }
+  double get _imgWidth => widget.imageSize.width;
+  double get _imgHeight => widget.imageSize.height;
+  bool get _imageSticksToScreenWidth => _imgWidth >= _contentConstraints.maxWidth;
+  bool get _rotated90deg => _rotationCount % 2 != 0;
+  Size get _imgSize => Size(
+        _rotated90deg ? _imgHeight : _imgWidth,
+        _rotated90deg ? _imgWidth : _imgHeight,
+      );
 
   /// Handles the crop image operation.
   Future<void> done() async {
@@ -636,9 +636,9 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   void flip() {
     setState(() {
       if (_rotationCount % 2 != 0) {
-        flipY = !flipY;
+        _flipY = !_flipY;
       } else {
-        flipX = !flipX;
+        _flipX = !_flipX;
       }
     });
   }
@@ -652,23 +652,15 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       ..reset()
       ..forward();
 
-    bool transformedWidth = widget.imageSize.width >= _contentConstraints.maxWidth;
-    bool rotated90deg = _rotationCount % 2 != 0;
-
     Size screenSize = Size(
-      _contentConstraints.maxWidth - (transformedWidth ? 0 : kToolbarHeight),
-      _contentConstraints.maxHeight - (transformedWidth ? 0 : kToolbarHeight),
+      _contentConstraints.maxWidth,
+      _contentConstraints.maxHeight,
     );
 
-    Size imgSize = Size(
-      rotated90deg ? widget.imageSize.height : widget.imageSize.width,
-      rotated90deg ? widget.imageSize.width : widget.imageSize.height,
-    );
+    double scaleX = screenSize.width / _imgSize.width;
+    double scaleY = screenSize.height / _imgSize.height;
 
-    double scaleX = screenSize.width / imgSize.width;
-    double scaleY = screenSize.height / imgSize.height;
-
-    double scale = !rotated90deg ? 1 : min(scaleX, scaleY);
+    double scale = !_rotated90deg ? 1 : min(scaleX, scaleY);
     _scaleCtrl.animateTo(scale, curve: Curves.ease);
     _scaleAnimation = Tween<double>(begin: _oldScaleFactor, end: scale).animate(_scaleCtrl);
     _scaleCtrl
@@ -676,6 +668,22 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       ..forward();
 
     _oldScaleFactor = scale;
+    _calcCropRect();
+  }
+
+  void _calcCropRect() {
+    double imgSizeRatio = _imgHeight / _imgWidth;
+
+    double padding = _screenPadding * 2;
+    double newImgW = (_rotated90deg ? _imgSize.height : _imgSize.width) - padding;
+    double newImgH = (_rotated90deg ? _imgSize.width : _imgSize.height) - padding;
+
+    double cropWidth = _imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
+    double cropHeight = _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
+
+    _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
+    _viewRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
+    //TODO:   setState(() {});
   }
 
   /// Opens a dialog to select from predefined aspect ratios.
@@ -742,6 +750,50 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         }
         // Add similar logic for other corners...
       });
+    } else {
+      _translate += details.delta;
+      _setOffsetLimits();
+      setState(() {});
+    }
+  }
+
+  void _setOffsetLimits() {
+    double cropW = _cropRect.width;
+    double minX = (cropW * _zoomFactor - cropW) / 2;
+    double minY = (cropW * _zoomFactor - cropW) / 2;
+
+    if (_translate.dx > minX) {
+      _translate = Offset(minX, _translate.dy);
+    }
+    if (_translate.dx < -minX) {
+      _translate = Offset(-minX, _translate.dy);
+    }
+    if (_translate.dy > minY) {
+      _translate = Offset(_translate.dx, minY);
+    }
+    if (_translate.dy < -minY) {
+      _translate = Offset(-minY, _translate.dy);
+    }
+
+    print('-----------');
+    print(_zoomFactor);
+    print(minX);
+    print(_translate.dx);
+  }
+
+  void _mouseScroll(PointerSignalEvent event) {
+    if (event is PointerScrollEvent) {
+      double factor = 0.1;
+      if (event.scrollDelta.dy > 0) {
+        _zoomFactor -= factor;
+        _zoomFactor = max(1, _zoomFactor);
+      } else if (event.scrollDelta.dy < 0) {
+        _zoomFactor += factor;
+        _zoomFactor = min(7, _zoomFactor);
+      }
+      // TODO: Zoom to exact mouse position
+      _setOffsetLimits();
+      setState(() {});
     }
   }
 
@@ -755,76 +807,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
           child: Scaffold(
             backgroundColor: widget.imageEditorTheme.cropRotateEditor.background,
             appBar: _buildAppBar(constraints),
-            body: LayoutBuilder(builder: (context, contentConstraints) {
-              _contentConstraints = contentConstraints;
-              return Padding(
-                padding: _screenPadding,
-                child: GestureDetector(
-                  onPanStart: _onDragStart,
-                  onPanUpdate: _onDragUpdate,
-                  child: Center(
-                    child: AnimatedBuilder(
-                      animation: _rotateAnimation,
-                      builder: (context, child) => Transform.rotate(
-                        angle: _rotateAnimation.value,
-                        alignment: Alignment.center,
-                        child: child,
-                      ),
-                      child: Stack(
-                        children: [
-                          Hero(
-                            tag: widget.heroTag,
-                            child: Transform.flip(
-                              flipX: flipX,
-                              flipY: flipY,
-                              child: AnimatedBuilder(
-                                animation: _scaleAnimation,
-                                builder: (context, child) => Transform.scale(
-                                  scale: _scaleAnimation.value,
-                                  alignment: Alignment.center,
-                                  child: child,
-                                ),
-                                child: AutoImage(
-                                  _image,
-                                  designMode: widget.designMode,
-                                ),
-                              ),
-                            ),
-                          ),
-                          /* AnimatedOpacity(
-                              opacity: _showWidgets ? 1 : 0,
-                              duration: const Duration(milliseconds: 200),
-                              child: CustomPaint(
-                                isComplex: true,
-                                willChange: true,
-                                painter: ImagePainter(
-                                  cropRect: _cropRect,
-                                  viewRect: _viewRect,
-                                  cropPadding: _screenPadding,
-                                  imageEditorTheme: widget.imageEditorTheme,
-                                ),
-                              ),
-                            ), */
-                        ],
-                      ),
-                    ),
-                  ),
-                ), /* Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AutoImage(
-                        _image,
-                        designMode: widget.designMode,
-                      ),
-                      CropRotateEditorRect(
-                        size: widget.imageSize,
-                        padding: padding,
-                        color: widget.imageEditorTheme.cropRotateEditor.cropCornerColor,
-                      ),
-                    ], // _buildBody(),
-                  ), */
-              );
-            }),
+            body: _buildBody(),
           ),
         ),
       );
@@ -914,6 +897,140 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         );
   }
 
+  Widget _buildBody() {
+    /// TODO: remove me
+    return LayoutBuilder(builder: (context, constraints) {
+      _contentConstraints = constraints;
+      _calcCropRect();
+      return _buildMouseListener(
+        child: _buildGestureDetector(
+          child: _buildRotationTransform(
+            child: _buildPaintContainer(
+              child: _buildFlipTransform(
+                child: _buildRotationScaleTransform(
+                  child: _buildCropPainter(
+                    child: _buildUserScaleTransform(
+                      child: _buildTranslate(
+                        child: _buildImage(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Listener _buildMouseListener({required Widget child}) {
+    return Listener(
+      onPointerSignal: isDesktop ? _mouseScroll : null,
+      child: child,
+    );
+  }
+
+  GestureDetector _buildGestureDetector({required Widget child}) {
+    return GestureDetector(
+      onPanStart: _onDragStart,
+      onPanUpdate: _onDragUpdate,
+      child: child,
+    );
+  }
+
+  AnimatedBuilder _buildRotationTransform({required Widget child}) {
+    return AnimatedBuilder(
+      animation: _rotateAnimation,
+      builder: (context, child) => Transform.rotate(
+        angle: _rotateAnimation.value,
+        alignment: Alignment.center,
+        child: child,
+      ),
+      child: child,
+    );
+  }
+
+  Transform _buildFlipTransform({required Widget child}) {
+    return Transform.flip(
+      flipX: _flipX,
+      flipY: _flipY,
+      child: child,
+    );
+  }
+
+  Transform _buildUserScaleTransform({required Widget child}) {
+    return Transform.scale(
+      scale: _zoomFactor,
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Transform _buildTranslate({required Widget child}) {
+    return Transform.translate(
+      offset: _translate,
+      child: child,
+    );
+  }
+
+  AnimatedBuilder _buildRotationScaleTransform({required Widget child}) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) => Transform.scale(
+        scale: _scaleAnimation.value,
+        alignment: Alignment.center,
+        child: child,
+      ),
+      child: child,
+    );
+  }
+
+  Container _buildCropPainter({required Widget child}) {
+    return Container(
+      color: Colors.amber.withOpacity(0.3), // TODO: deleteme
+      child: CustomPaint(
+        isComplex: _showWidgets,
+        willChange: _showWidgets,
+        foregroundPainter: _showWidgets
+            ? CropCornerPainter(
+                cropRect: _cropRect,
+                viewRect: _viewRect,
+                scaleFactor: _zoomFactor,
+                interactionActive: _interactionActive,
+                screenSize: Size(
+                  _contentConstraints.maxWidth,
+                  _contentConstraints.maxHeight,
+                ),
+                imageEditorTheme: widget.imageEditorTheme,
+              )
+            : null,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildPaintContainer({required Widget child}) {
+    return Align(
+      alignment: Alignment.center,
+      child: Padding(
+        padding: EdgeInsets.all(_screenPadding),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    return Hero(
+      tag: widget.heroTag,
+      child: AutoImage(
+        _image,
+        fit: BoxFit.contain,
+        designMode: widget.designMode,
+      ),
+    );
+  }
+
   /// Builds and returns an IconButton for applying changes.
   Widget _buildDoneBtn() {
     return IconButton(
@@ -934,70 +1051,6 @@ class CropRotateEditorRes {
     required this.result,
     required this.image,
   });
-}
-
-class ImagePainter extends CustomPainter {
-  final Rect cropRect;
-  final Rect viewRect;
-  final ImageEditorTheme imageEditorTheme;
-  final EdgeInsets cropPadding;
-
-  ImagePainter({
-    required this.cropPadding,
-    required this.cropRect,
-    required this.viewRect,
-    required this.imageEditorTheme,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Drawing the cropping overlay
-    final paint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
-      ..style = PaintingStyle.fill;
-
-    // Cover the area outside the cropRect
-/*     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, cropRect.top), paint);
-    canvas.drawRect(Rect.fromLTWH(0, cropRect.bottom, size.width, size.height - cropRect.bottom), paint);
-    canvas.drawRect(Rect.fromLTWH(0, cropRect.top, cropRect.left, cropRect.height), paint); */
-    //canvas.drawRect(Rect.fromLTWH(0, size.height, size.width, size.width - cropRect.height), paint);
-
-    // Optionally, draw draggable handles at the corners
-    final handlePaint = Paint()
-      ..color = imageEditorTheme.cropRotateEditor.cropCornerColor
-      ..style = PaintingStyle.fill;
-
-    double cornerLength = 50;
-    double cornerWidth = 7;
-
-    Path cornerPath = Path();
-
-    double cropWidth = cropRect.width - cropPadding.horizontal;
-    double cropHeight = cropRect.height - cropPadding.vertical;
-
-    /// Top-Left
-    cornerPath.addRect(Rect.fromLTWH(0, 0, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(0, 0, cornerWidth, cornerLength));
-
-    /// Top-Right
-    cornerPath.addRect(Rect.fromLTWH(cropWidth - cornerLength, 0, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(cropWidth - cornerWidth, 0, cornerWidth, cornerLength));
-
-    /// Bottom-Left
-    cornerPath.addRect(Rect.fromLTWH(0, cropHeight - cornerWidth, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(0, cropHeight - cornerLength, cornerWidth, cornerLength));
-
-    /// Bottom-Right
-    cornerPath.addRect(Rect.fromLTWH(cropWidth - cornerLength, cropHeight - cornerWidth, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(cropWidth - cornerWidth, cropHeight - cornerLength, cornerWidth, cornerLength));
-
-    canvas.drawPath(cornerPath, handlePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return oldDelegate is! ImagePainter || oldDelegate.cropRect != cropRect || oldDelegate.viewRect != viewRect;
-  }
 }
 
 enum CropAreaPart {
