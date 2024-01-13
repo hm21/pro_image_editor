@@ -77,7 +77,8 @@ class EmojiEditorState extends State<EmojiEditor> {
   }
 
   /// Builds a SizedBox containing the EmojiPicker with dynamic sizing.
-  Widget _buildEmojiPickerSizedBox(BoxConstraints constraints, BuildContext context) {
+  Widget _buildEmojiPickerSizedBox(
+      BoxConstraints constraints, BuildContext context) {
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(10),
@@ -86,12 +87,14 @@ class EmojiEditorState extends State<EmojiEditor> {
       child: SizedBox(
         height: max(
           50,
-          min(320, constraints.maxHeight) - MediaQuery.of(context).padding.bottom,
+          min(320, constraints.maxHeight) -
+              MediaQuery.of(context).padding.bottom,
         ),
         child: EmojiPicker(
           key: const ValueKey('Emoji-Picker'),
           textEditingController: _controller,
-          onEmojiSelected: (category, emoji) => {Navigator.pop(context, EmojiLayerData(emoji: emoji.emoji))},
+          onEmojiSelected: (category, emoji) =>
+              {Navigator.pop(context, EmojiLayerData(emoji: emoji.emoji))},
           config: _buildEmojiPickerConfig(constraints),
         ),
       ),
@@ -103,8 +106,10 @@ class EmojiEditorState extends State<EmojiEditor> {
     return Config(
       columns: _calculateColumns(constraints),
       emojiSizeMax: 32,
-      skinToneDialogBgColor: widget.imageEditorTheme.emojiEditor.skinToneDialogBgColor,
-      skinToneIndicatorColor: widget.imageEditorTheme.emojiEditor.skinToneIndicatorColor,
+      skinToneDialogBgColor:
+          widget.imageEditorTheme.emojiEditor.skinToneDialogBgColor,
+      skinToneIndicatorColor:
+          widget.imageEditorTheme.emojiEditor.skinToneIndicatorColor,
       bgColor: widget.imageEditorTheme.emojiEditor.background,
       indicatorColor: widget.imageEditorTheme.emojiEditor.indicatorColor,
       iconColorSelected: widget.imageEditorTheme.emojiEditor.iconColorSelected,
@@ -122,9 +127,12 @@ class EmojiEditorState extends State<EmojiEditor> {
       noRecents: const SizedBox.shrink(),
       tabIndicatorAnimDuration: kTabScrollDuration,
       categoryIcons: widget.configs.categoryIcons,
-      buttonMode: widget.designMode == ImageEditorDesignModeE.cupertino ? ButtonMode.CUPERTINO : ButtonMode.MATERIAL,
+      buttonMode: widget.designMode == ImageEditorDesignModeE.cupertino
+          ? ButtonMode.CUPERTINO
+          : ButtonMode.MATERIAL,
       checkPlatformCompatibility: widget.configs.checkPlatformCompatibility,
-      customSkinColorOverlayHorizontalOffset: widget.configs.customSkinColorOverlayHorizontalOffset,
+      customSkinColorOverlayHorizontalOffset:
+          widget.configs.customSkinColorOverlayHorizontalOffset,
       loadingIndicator: const Center(
         child: CircularProgressIndicator(),
       ),
@@ -132,5 +140,6 @@ class EmojiEditorState extends State<EmojiEditor> {
   }
 
   /// Calculates the number of columns for the EmojiPicker.
-  int _calculateColumns(BoxConstraints constraints) => max(1, 10 / 400 * constraints.maxWidth - 1).floor();
+  int _calculateColumns(BoxConstraints constraints) =>
+      max(1, 10 / 400 * constraints.maxWidth - 1).floor();
 }

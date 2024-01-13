@@ -5,7 +5,8 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 
 void main() {
   group('StickerEditor Tests', () {
-    testWidgets('StickerEditor widget should be created', (WidgetTester tester) async {
+    testWidgets('StickerEditor widget should be created',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: StickerEditor(
           configs: StickerEditorConfigs(
