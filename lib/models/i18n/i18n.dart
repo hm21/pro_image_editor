@@ -2,6 +2,7 @@ import 'i18n_crop_rotate_editor.dart';
 import 'i18n_emoji_editor.dart';
 import 'i18n_filter_editor.dart';
 import 'i18n_painting_editor.dart';
+import 'i18n_sticker_editor.dart';
 import 'i18n_text_editor.dart';
 import 'i18n_various.dart';
 
@@ -10,6 +11,7 @@ export 'i18n_text_editor.dart';
 export 'i18n_painting_editor.dart';
 export 'i18n_filter_editor.dart';
 export 'i18n_emoji_editor.dart';
+export 'i18n_sticker_editor.dart';
 export 'i18n_crop_rotate_editor.dart';
 
 /// The `I18n` class provides internationalization settings for the image editor
@@ -106,6 +108,9 @@ class I18n {
   /// Translations and messages specific to the emoji editor.
   final I18nEmojiEditor emojiEditor;
 
+  /// Translations and messages specific to the sticker editor.
+  final I18nStickerEditor stickerEditor;
+
   /// Translations and messages specific to the crop and rotate editor.
   final I18nCropRotateEditor cropRotateEditor;
 
@@ -167,6 +172,7 @@ class I18n {
     this.cropRotateEditor = const I18nCropRotateEditor(),
     this.filterEditor = const I18nFilterEditor(),
     this.emojiEditor = const I18nEmojiEditor(),
+    this.stickerEditor = const I18nStickerEditor(),
     this.various = const I18nVarious(),
     this.cancel = 'Cancel',
     this.undo = 'Undo',

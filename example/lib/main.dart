@@ -75,8 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
               if (!kIsWeb) ...[
                 OutlinedButton.icon(
                   onPressed: () async {
-                    FilePickerResult? result =
-                        await FilePicker.platform.pickFiles(
+                    FilePickerResult? result = await FilePicker.platform.pickFiles(
                       type: FileType.image,
                     );
 
@@ -134,8 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               various: I18nVarious(
                                 loadingDialogMsg: 'Please wait...',
                                 closeEditorWarningTitle: 'Close Image Editor?',
-                                closeEditorWarningMessage:
-                                    'Are you sure you want to close the Image Editor? Your changes will not be saved.',
+                                closeEditorWarningMessage: 'Are you sure you want to close the Image Editor? Your changes will not be saved.',
                                 closeEditorWarningConfirmBtn: 'OK',
                                 closeEditorWarningCancelBtn: 'Cancel',
                               ),
@@ -177,8 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 smallScreenMoreTooltip: 'More',
                               ),
                               filterEditor: I18nFilterEditor(
-                                applyFilterDialogMsg:
-                                    'Filter is being applied.',
+                                applyFilterDialogMsg: 'Filter is being applied.',
                                 bottomNavigationBarText: 'Filter',
                                 back: 'Back',
                                 done: 'Done',
@@ -230,6 +227,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               emojiEditor: I18nEmojiEditor(
                                 bottomNavigationBarText: 'Emoji',
+                              ),
+                              stickerEditor: I18nStickerEditor(
+                                bottomNavigationBarText: 'I18nStickerEditor',
                               ),
                               cancel: 'Cancel',
                               undo: 'Undo',
@@ -288,13 +288,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                 skinToneDialogBgColor: Color(0xFF252728),
                                 skinToneIndicatorColor: Color(0xFF9E9E9E),
                               ),
+                              stickerEditor: StickerEditorTheme(),
                               background: Color.fromARGB(255, 22, 22, 22),
                               loadingDialogTextColor: Color(0xFFE1E1E1),
                               uiOverlayStyle: SystemUiOverlayStyle(
                                 statusBarColor: Color(0x42000000),
                                 statusBarIconBrightness: Brightness.light,
-                                systemNavigationBarIconBrightness:
-                                    Brightness.light,
+                                systemNavigationBarIconBrightness: Brightness.light,
                                 statusBarBrightness: Brightness.dark,
                                 systemNavigationBarColor: Color(0xFF000000),
                               ),
@@ -315,10 +315,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               textEditor: IconsTextEditor(
                                 bottomNavBar: Icons.text_fields,
                                 alignLeft: Icons.align_horizontal_left_rounded,
-                                alignCenter:
-                                    Icons.align_horizontal_center_rounded,
-                                alignRight:
-                                    Icons.align_horizontal_right_rounded,
+                                alignCenter: Icons.align_horizontal_center_rounded,
+                                alignRight: Icons.align_horizontal_right_rounded,
                                 backgroundMode: Icons.layers_rounded,
                               ),
                               cropRotateEditor: IconsCropRotateEditor(
@@ -330,8 +328,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 bottomNavBar: Icons.filter,
                               ),
                               emojiEditor: IconsEmojiEditor(
-                                bottomNavBar:
-                                    Icons.sentiment_satisfied_alt_rounded,
+                                bottomNavBar: Icons.sentiment_satisfied_alt_rounded,
+                              ),
+                              stickerEditor: IconsStickerEditor(
+                                bottomNavBar: Icons.layers_outlined,
                               ),
                               closeEditor: Icons.clear,
                               doneIcon: Icons.done,
@@ -364,11 +364,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               canToggleBackgroundMode: true,
                               initFontSize: 24.0,
                               initialTextAlign: TextAlign.center,
-                              initialBackgroundColorMode:
-                                  LayerBackgroundColorModeE.backgroundAndColor,
+                              initialBackgroundColorMode: LayerBackgroundColorModeE.backgroundAndColor,
                             ),
-                            cropRotateEditorConfigs:
-                                const CropRotateEditorConfigs(
+                            cropRotateEditorConfigs: const CropRotateEditorConfigs(
                               enabled: true,
                               canRotate: true,
                               canChangeAspectRatio: true,
@@ -384,8 +382,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               recentTabBehavior: RecentTabBehavior.RECENT,
                               enableSkinTones: true,
                               recentsLimit: 28,
-                              textStyle: TextStyle(
-                                  fontFamilyFallback: ['Apple Color Emoji']),
+                              textStyle: TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
                               checkPlatformCompatibility: true,
                               emojiSet:
                                   null /*  [
@@ -438,6 +435,92 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 icon: const Icon(Icons.public_outlined),
                 label: const Text('Editor from network'),
+              ),
+              const SizedBox(height: 30),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProImageEditor.network(
+                        'https://picsum.photos/2000',
+                        onImageEditingComplete: (bytes) async {
+                          Navigator.pop(context);
+                        },
+                        configs: ProImageEditorConfigs(
+                          stickerEditorConfigs: StickerEditorConfigs(
+                            enabled: true,
+                            buildStickers: (setLayer) {
+                              return ClipRRect(
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                child: Container(
+                                  color: const Color.fromARGB(255, 224, 239, 251),
+                                  child: GridView.builder(
+                                    padding: const EdgeInsets.all(16),
+                                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                      maxCrossAxisExtent: 150,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 10,
+                                    ),
+                                    itemCount: 21,
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, index) {
+                                      Widget widget = ClipRRect(
+                                        borderRadius: BorderRadius.circular(7),
+                                        child: Image.network(
+                                          'https://picsum.photos/id/${(index + 3) * 3}/2000',
+                                          width: 120,
+                                          height: 120,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            return AnimatedSwitcher(
+                                              layoutBuilder: (currentChild, previousChildren) {
+                                                return SizedBox(
+                                                  width: 120,
+                                                  height: 120,
+                                                  child: Stack(
+                                                    fit: StackFit.expand,
+                                                    alignment: Alignment.center,
+                                                    children: <Widget>[
+                                                      ...previousChildren,
+                                                      if (currentChild != null) currentChild,
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                              duration: const Duration(milliseconds: 200),
+                                              child: loadingProgress == null
+                                                  ? child
+                                                  : Center(
+                                                      child: CircularProgressIndicator(
+                                                        value: loadingProgress.expectedTotalBytes != null
+                                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                            : null,
+                                                      ),
+                                                    ),
+                                            );
+                                          },
+                                        ),
+                                      );
+                                      return GestureDetector(
+                                        onTap: () => setLayer(widget),
+                                        child: MouseRegion(
+                                          cursor: SystemMouseCursors.click,
+                                          child: widget,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.layers_outlined),
+                label: const Text('Editor with Stickers'),
               ),
             ],
           ),

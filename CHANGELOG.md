@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.0
+- Introducing the "Sticker" editor for seamless loading of stickers and widgets directly into the editor.
+
 ## Version 1.0.3
 - Update README.md with improved preview image
 

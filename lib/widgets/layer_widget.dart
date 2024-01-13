@@ -46,6 +46,9 @@ class LayerWidget extends StatefulWidget {
   /// Font size for text layers.
   final double textFontSize;
 
+  /// The initial width of the stickers in the editor.
+  final double stickerInitWidth;
+
   /// The design mode of the editor.
   final ImageEditorDesignModeE designMode;
 
@@ -77,6 +80,7 @@ class LayerWidget extends StatefulWidget {
       required this.onRemoveTap,
       required this.i18n,
       required this.textFontSize,
+      required this.stickerInitWidth,
       required this.emojiTextStyle,
       required this.enabledHitDetection,
       required this.freeStyleHighPerformanceScaling,
@@ -97,14 +101,22 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   @override
   void initState() {
-    if (widget.layerData is TextLayerData) {
-      _layerType = _LayerType.text;
-    } else if (widget.layerData is EmojiLayerData) {
-      _layerType = _LayerType.emoji;
-    } else if (widget.layerData is PaintingLayerData) {
-      _layerType = _LayerType.canvas;
-    } else {
-      _layerType = _LayerType.unkown;
+    switch (widget.layerData.runtimeType) {
+      case TextLayerData:
+        _layerType = _LayerType.text;
+        break;
+      case EmojiLayerData:
+        _layerType = _LayerType.emoji;
+        break;
+      case StickerLayerData:
+        _layerType = _LayerType.sticker;
+        break;
+      case PaintingLayerData:
+        _layerType = _LayerType.canvas;
+        break;
+      default:
+        _layerType = _LayerType.unknown;
+        break;
     }
 
     super.initState();
@@ -164,8 +176,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _checkHitIsOutsideInCanvas() {
-    return _layerType == _LayerType.canvas &&
-        !(_layer as PaintingLayerData).item.hit;
+    return _layerType == _LayerType.canvas && !(_layer as PaintingLayerData).item.hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and rotation.
@@ -250,6 +261,8 @@ class _LayerWidgetState extends State<LayerWidget> {
         return _buildEmoji();
       case _LayerType.text:
         return _buildText();
+      case _LayerType.sticker:
+        return _buildSticker();
       case _LayerType.canvas:
         return _buildCanvas();
       default:
@@ -315,6 +328,18 @@ class _LayerWidgetState extends State<LayerWidget> {
     );
   }
 
+  /// Build the sticker widget
+  Widget _buildSticker() {
+    var layer = _layer as StickerLayerData;
+    return SizedBox(
+      width: widget.stickerInitWidth * layer.scale,
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: layer.sticker,
+      ),
+    );
+  }
+
   /// Build the canvas widget
   Widget _buildCanvas() {
     var layer = _layer as PaintingLayerData;
@@ -329,8 +354,7 @@ class _LayerWidgetState extends State<LayerWidget> {
           item: layer.item,
           scale: widget.layerData.scale,
           enabledHitDetection: widget.enabledHitDetection,
-          freeStyleHighPerformanceScaling:
-              widget.freeStyleHighPerformanceScaling,
+          freeStyleHighPerformanceScaling: widget.freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,
         ),
       ),
@@ -339,7 +363,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 }
 
 // ignore: camel_case_types
-enum _LayerType { emoji, text, canvas, unkown }
+enum _LayerType { emoji, text, sticker, canvas, unknown }
 
 /// Enumeration for controlling the background color mode of the text layer.
 enum LayerBackgroundColorModeE {

@@ -34,6 +34,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - **[❓ Usage](#usage)**
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
+  - [Own stickers or widgets](#own-stickers-or-widgets)
   - [Highly configurable](#highly-configurable)
 - **[📚 Documentation](#documentation)**
 - **[🤝 Contributing](#contributing)**
@@ -84,7 +85,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <thead>
     <tr>
       <th align="center">Emoji-Editor</th>
-      <th align="center"></th>
+      <th align="center">Sticker/ Widget Editor</th>
     </tr>
   </thead>
   <tbody>
@@ -93,6 +94,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
       </td>
       <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
       </td>
     </tr>
   </tbody>
@@ -123,13 +125,13 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Selectable design mode between Material and Cupertino
 - ✅ Interactive layers
 - ✅ Hit detection for painted layers
+- ✅ Loading of stickers or widgets in the editor
 
 
 #### Future Features
-- ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 - ✨ Improved layer movement and scaling functionality for desktop devices
+- ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 - ✨ Enhanced crop editor with improved performance (No dependencies on `image_editor` and `extended_image`)
-- ✨ Stickers support
 
 
 ## Getting started
@@ -257,6 +259,88 @@ Widget build(BuildContext context) {
 }
 ```
 
+#### Own stickers or widgets
+
+To display stickers or widgets in the ProImageEditor, you have the flexibility to customize and load your own content. The `buildStickers` method allows you to define your own logic for loading stickers, whether from a backend, assets, or local storage, and then push them into the editor. The example below demonstrates how to load images that can serve as stickers and then add them to the editor:
+
+```dart
+ProImageEditor.network(
+  'https://picsum.photos/id/156/2000',
+  onImageEditingComplete: (bytes) async {
+    Navigator.pop(context);
+  },
+  configs: ProImageEditorConfigs(
+    stickerEditorConfigs: StickerEditorConfigs(
+      enabled: true,
+      buildStickers: (setLayer) {
+         return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: Container(
+            color: const Color.fromARGB(255, 224, 239, 251),
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 150,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+              ),
+              itemCount: 21,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                Widget widget = ClipRRect(
+                  borderRadius: BorderRadius.circular(7),
+                  child: Image.network(
+                    'https://picsum.photos/id/${(index + 3) * 3}/2000',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      return AnimatedSwitcher(
+                        layoutBuilder: (currentChild, previousChildren) {
+                          return SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                ...previousChildren,
+                                if (currentChild != null) currentChild,
+                              ],
+                            ),
+                          );
+                        },
+                        duration: const Duration(milliseconds: 200),
+                        child: loadingProgress == null
+                            ? child
+                            : Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                      );
+                    },
+                  ),
+                );
+                return GestureDetector(
+                  onTap: () => setLayer(widget),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: widget,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+),
+```
+
 #### Highly configurable
 
 Customize the image editor to suit your preferences. Of course, each class like `I18nTextEditor` includes more configuration options.
@@ -291,6 +375,7 @@ return Scaffold(
                   cropRotateEditor: I18nCropRotateEditor(),
                   filterEditor: I18nFilterEditor(filters: I18nFilters()),
                   emojiEditor: I18nEmojiEditor(),
+                  stickerEditor: I18nStickerEditor(),
                   // More translations...
               ),
               helperLines: const HelperLines(
@@ -312,6 +397,7 @@ return Scaffold(
                   cropRotateEditor: CropRotateEditorTheme(),
                   filterEditor: FilterEditorTheme(),
                   emojiEditor: EmojiEditorTheme(),
+                  stickerEditor: StickerEditorTheme(),
                   background: Color.fromARGB(255, 22, 22, 22),
                   loadingDialogTextColor: Color(0xFFE1E1E1),
                   uiOverlayStyle: SystemUiOverlayStyle(
@@ -328,6 +414,7 @@ return Scaffold(
                   cropRotateEditor: IconsCropRotateEditor(),
                   filterEditor: IconsFilterEditor(),
                   emojiEditor: IconsEmojiEditor(),
+                  stickerEditor: IconsStickerEditor(),
                   closeEditor: Icons.clear,
                   doneIcon: Icons.done,
                   applyChanges: Icons.done,
@@ -341,6 +428,45 @@ return Scaffold(
               cropRotateEditorConfigs: const CropRotateEditorConfigs(),
               filterEditorConfigs: FilterEditorConfigs(),
               emojiEditorConfigs: const EmojiEditorConfigs(),
+              stickerEditorConfigs: StickerEditorConfigs(
+                enabled: true,
+                buildStickers: (setLayer) {
+                  return ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    child: Container(
+                      color: const Color.fromARGB(255, 224, 239, 251),
+                      child: GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 150,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                        ),
+                        itemCount: 21,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          Widget widget = ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Image.network(
+                              'https://picsum.photos/id/${(index + 3) * 3}/2000',
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                          return GestureDetector(
+                            onTap: () => setLayer(widget),
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: widget,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
               designMode: ImageEditorDesignModeE.material,
               heroTag: 'hero',
               theme: ThemeData(
@@ -399,37 +525,39 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 |---------------------------|--------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
 | `i18n`                    | Internationalization settings for the Image Editor.                                                                            | `I18n()`                                       |
 | `helperLines`             | Configuration options for helper lines in the Image Editor.                                                                    | `HelperLines()`                                |
-| `customWidgets`           | Custom widgets to be used in the Image Editor.                                                                                 | `ImageEditorCustomWidgets()`                 |
+| `customWidgets`           | Custom widgets to be used in the Image Editor.                                                                                 | `ImageEditorCustomWidgets()`                   |
 | `imageEditorTheme`        | Theme settings for the Image Editor.                                                                                           | `ImageEditorTheme()`                           |
-| `icons`                   | Icons to be used in the Image Editor.                                                                                         | `ImageEditorIcons()`                           |
-| `paintEditorConfigs`      | Configuration options for the Paint Editor.                                                                                    | `PaintEditorConfigs()`                          |
-| `textEditorConfigs`       | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                           |
-| `cropRotateEditorConfigs` | Configuration options for the Crop and Rotate Editor.                                                                         | `CropRotateEditorConfigs()`                     |
-| `filterEditorConfigs`     | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                         |
-| `emojiEditorConfigs`      | Configuration options for the Emoji Editor.                                                                                   | `EmojiEditorConfigs()`                          |
-| `designMode`              | The design mode for the Image Editor.                                                                                         | `ImageEditorDesignModeE.material`                           |
-| `theme`                   | The theme to be used for the Image Editor.                                                                                     | `null`                                                      |
-| `heroTag`                 | A unique hero tag for the Image Editor widget.                                                                                  | `'Pro-Image-Editor-Hero'`                                  |
+| `icons`                   | Icons to be used in the Image Editor.                                                                                          | `ImageEditorIcons()`                           |
+| `paintEditorConfigs`      | Configuration options for the Paint Editor.                                                                                    | `PaintEditorConfigs()`                         |
+| `textEditorConfigs`       | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                          |
+| `cropRotateEditorConfigs` | Configuration options for the Crop and Rotate Editor.                                                                          | `CropRotateEditorConfigs()`                    |
+| `filterEditorConfigs`     | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                        |
+| `emojiEditorConfigs`      | Configuration options for the Emoji Editor.                                                                                    | `EmojiEditorConfigs()`                         |
+| `stickerEditorConfigs`    | Configuration options for the Sticker Editor.                                                                                  | `StickerEditorConfigs()`                       |
+| `designMode`              | The design mode for the Image Editor.                                                                                          | `ImageEditorDesignModeE.material`              |
+| `theme`                   | The theme to be used for the Image Editor.                                                                                     | `null`                                         |
+| `heroTag`                 | A unique hero tag for the Image Editor widget.                                                                                 | `'Pro-Image-Editor-Hero'`                      |
 | `activePreferredOrientations` | The editor currently supports only 'portraitUp' orientation. After closing the editor, it will revert to your default settings. | `[DeviceOrientation.portraitUp, DeviceOrientation.portraitDown, DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]` |
 
 
 <details>
   <summary><b>i18n</b> </summary>
-
-| Property             | Description                                                 | Default Value             |
-|----------------------|-------------------------------------------------------------|---------------------------|
-| `paintEditor`        | Translations and messages specific to the painting editor.  | `I18nPaintingEditor()`    |
-| `textEditor`         | Translations and messages specific to the text editor.       | `I18nTextEditor()`        |
+ 
+| Property             | Description                                                   | Default Value             |
+|----------------------|---------------------------------------------------------------|---------------------------|
+| `paintEditor`        | Translations and messages specific to the painting editor.    | `I18nPaintingEditor()`    |
+| `textEditor`         | Translations and messages specific to the text editor.        | `I18nTextEditor()`        |
 | `cropRotateEditor`   | Translations and messages specific to the crop and rotate editor. | `I18nCropRotateEditor()` |
-| `filterEditor`       | Translations and messages specific to the filter editor.      | `I18nFilterEditor()`     |
-| `emojiEditor`        | Translations and messages specific to the emoji editor.       | `I18nEmojiEditor()`      |
-| `various`            | Translations and messages for various parts of the editor. | `I18nVarious()`           |
+| `filterEditor`       | Translations and messages specific to the filter editor.      | `I18nFilterEditor()`      |
+| `emojiEditor`        | Translations and messages specific to the emoji editor.       | `I18nEmojiEditor()`       |
+| `stickerEditor`      | Translations and messages specific to the sticker editor.     | `I18nStickerEditor()`     |
+| `various`            | Translations and messages for various parts of the editor.    | `I18nVarious()`           |
 | `cancel`             | The text for the "Cancel" button.                             | `'Cancel'`                |
 | `undo`               | The text for the "Undo" action.                               | `'Undo'`                  |
 | `redo`               | The text for the "Redo" action.                               | `'Redo'`                  |
 | `done`               | The text for the "Done" action.                               | `'Done'`                  |
 | `remove`             | The text for the "Remove" action.                             | `'Remove'`                |
-| `doneLoadingMsg`     | Message displayed while changes are being applied.           | `'Changes are being applied'` |
+| `doneLoadingMsg`     | Message displayed while changes are being applied.            | `'Changes are being applied'` |
 
 #### `i18n paintEditor`
 
@@ -497,6 +625,12 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `bottomNavigationBarText` | Text for the bottom navigation bar item that opens the Emoji Editor.   | 'Emoji'       |
 
 
+#### `i18n stickerEditor`
+| Property                  | Description                                                            | Default Value |
+|---------------------------|------------------------------------------------------------------------|---------------|
+| `bottomNavigationBarText` | Text for the bottom navigation bar item that opens the Sticker Editor. | 'Stickers'    |
+
+
 #### `i18n various`
 
 | Property                      | Description                                                             | Default Value                                         |
@@ -545,6 +679,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `cropRotateEditor`         | Theme for the crop & rotate editor.                               | `CropRotateEditorTheme()`                          |
 | `filterEditor`             | Theme for the filter editor.                                      | `FilterEditorTheme()`                              |
 | `emojiEditor`              | Theme for the emoji editor.                                       | `EmojiEditorTheme()`                               |
+| `stickerEditor`            | Theme for the sticker editor.                                     | `StickerEditorTheme()`                               |
 | `helperLine`               | Theme for helper lines in the image editor.                       | `HelperLineTheme()`                                |
 | `background`               | Background color for the image editor.                            | `imageEditorBackgroundColor`                       |
 | `loadingDialogTextColor`   | Text color for loading dialogs.                                   | `imageEditorTextColor`                             |
@@ -591,14 +726,19 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 
 #### Theme emojiEditor
-| Property                  | Description                                           | Default Value                   |
-| ------------------------- | ----------------------------------------------------- | ------------------------------- |
-| `background`              | Background color of the emoji editor widget.         | `imageEditorBackgroundColor`     |
+| Property                  | Description                                           | Default Value                    |
+| ------------------------- | ----------------------------------------------------- | -------------------------------- |
+| `background`              | Background color of the emoji editor widget.          | `imageEditorBackgroundColor`     |
 | `indicatorColor`          | Color of the category indicator.                      | `imageEditorPrimaryColor`        |
-| `iconColorSelected`       | Color of the category icon when selected.            | `imageEditorPrimaryColor`        |
+| `iconColorSelected`       | Color of the category icon when selected.             | `imageEditorPrimaryColor`        |
 | `iconColor`               | Color of the category icons.                          | `Color(0xFF9E9E9E)`              |
 | `skinToneDialogBgColor`   | Background color of the skin tone dialog.             | `Color(0xFF252728)`              |
 | `skinToneIndicatorColor`  | Color of the small triangle next to skin tone emojis. | `Color(0xFF9E9E9E)`              |
+
+
+#### Theme stickerEditor
+| Property                  | Description                                           | Default Value                   |
+| ------------------------- | ----------------------------------------------------- | ------------------------------- |
 
 
 #### Theme helperLine
@@ -614,18 +754,19 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 | Property              | Description                                          | Default Value              |
 | --------------------- | ---------------------------------------------------- | -------------------------- |
-| `closeEditor`         | The icon for closing the editor without saving.     | `Icons.clear`              |
+| `closeEditor`         | The icon for closing the editor without saving.      | `Icons.clear`              |
 | `doneIcon`            | The icon for applying changes and closing the editor.| `Icons.done`               |
 | `backButton`          | The icon for the back button.                        | `Icons.arrow_back`         |
 | `applyChanges`        | The icon for applying changes in the editor.         | `Icons.done`               |
 | `undoAction`          | The icon for undoing the last action.                | `Icons.undo`               |
 | `redoAction`          | The icon for redoing the last undone action.         | `Icons.redo`               |
 | `removeElementZone`   | The icon for removing an element/layer like an emoji.| `Icons.delete_outline_rounded` |
-| `paintingEditor`      | Customizable icons for the Painting Editor component.| `IconsPaintingEditor` |
-| `textEditor`          | Customizable icons for the Text Editor component.    | `IconsTextEditor`   |
+| `paintingEditor`      | Customizable icons for the Painting Editor component.| `IconsPaintingEditor`      |
+| `textEditor`          | Customizable icons for the Text Editor component.    | `IconsTextEditor`          |
 | `cropRotateEditor`    | Customizable icons for the Crop and Rotate Editor component.| `IconsCropRotateEditor` |
-| `filterEditor`        | Customizable icons for the Filter Editor component.  | `IconsFilterEditor` |
-| `emojiEditor`         | Customizable icons for the Emoji Editor component.   | `IconsEmojiEditor` |
+| `filterEditor`        | Customizable icons for the Filter Editor component.  | `IconsFilterEditor`        |
+| `emojiEditor`         | Customizable icons for the Emoji Editor component.   | `IconsEmojiEditor`         |
+| `stickerEditor`       | Customizable icons for the Sticker Editor component. | `IconsStickerEditor`       |
 
 #### icons paintingEditor
 | Property       | Description                                     | Default Value         |
@@ -652,22 +793,29 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 
 #### icons cropRotateEditor
-| Property        | Description                  | Default Value                             |
-| --------------- | ---------------------------- | ----------------------------------------- |
-| `bottomNavBar`  | Icon for bottom navigation bar| `Icons.crop_rotate_rounded`               |
+| Property        | Description                   | Default Value                            |
+| --------------- | ----------------------------- | ---------------------------------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar| `Icons.crop_rotate_rounded`              |
 | `rotate`        | Icon for the rotate action    | `Icons.rotate_90_degrees_ccw_outlined`   |
-| `aspectRatio`   | Icon for the aspect ratio action | `Icons.crop`                            |
+| `aspectRatio`   | Icon for the aspect ratio action | `Icons.crop`                          |
 
 #### icons filterEditor
-| Property        | Description                    | Default Value |
-| --------------- | ------------------------------ | ------------- |
-| `bottomNavBar`  | Icon for bottom navigation bar  | `Icons.filter` |
+| Property        | Description                    | Default Value  |
+| --------------- | ------------------------------ | -------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar | `Icons.filter` |
 
 
 #### icons emojiEditor
 | Property        | Description                          | Default Value                       |
 | --------------- | ------------------------------------ | ----------------------------------- |
-| `bottomNavBar`  | Icon for bottom navigation bar        | `Icons.sentiment_satisfied_alt_rounded` |
+| `bottomNavBar`  | Icon for bottom navigation bar       | `Icons.sentiment_satisfied_alt_rounded` |
+
+
+#### icons stickerEditor
+| Property        | Description                          | Default Value                       |
+| --------------- | ------------------------------------ | ----------------------------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar       | `Icons.layers_outlined`             |
+
 </details>
 
 <details>
@@ -747,6 +895,17 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `categoryIcons`                        | Determines the icons to display for each [Category].                                                    | `CategoryIcons()`     |
 | `customSkinColorOverlayHorizontalOffset`| Customize skin color overlay horizontal offset, especially useful when EmojiPicker is not aligned to the left border of the screen. | `null` |
 </details>
+
+<details>
+  <summary><b>stickerEditorConfigs</b></summary>
+
+| Feature           | Description                                              | Default Value |
+|-------------------|----------------------------------------------------------|---------------|
+| `enabled`         | Enables or disables the sticker editor.                  | `false`       |
+| `initWidth`       | Sets the initial width of stickers in logical pixels.    | `100`         |
+| `buildStickers`   | A callback to build custom stickers in the editor.       |               |
+</details>
+
 
 
 

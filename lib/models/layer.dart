@@ -216,3 +216,30 @@ class PaintingLayerData extends Layer {
   /// Returns the size of the layer after applying the scaling factor.
   Size get size => Size(rawSize.width * scale, rawSize.height * scale);
 }
+
+class StickerLayerData extends Layer {
+  /// The sticker to display on the layer.
+  Widget sticker;
+
+  /// Creates an instance of StickerLayerData.
+  ///
+  /// The [sticker] parameter is required, and other properties are optional.
+  StickerLayerData({
+    required this.sticker,
+    Offset? offset,
+    double? opacity,
+    double? rotation,
+    double? scale,
+    String? id,
+    bool? flipX,
+    bool? flipY,
+  }) : super(
+          offset: offset,
+          opacity: opacity,
+          rotation: rotation,
+          scale: scale,
+          id: id,
+          flipX: flipX,
+          flipY: flipY,
+        );
+}

@@ -4,10 +4,12 @@ import 'icons_crop_rotate_editor.dart';
 import 'icons_emoji_editor.dart';
 import 'icons_filter_editor.dart';
 import 'icons_painting_editor.dart';
+import 'icons_sticker_editor.dart';
 import 'icons_text_editor.dart';
 
 export 'icons_crop_rotate_editor.dart';
 export 'icons_emoji_editor.dart';
+export 'icons_sticker_editor.dart';
 export 'icons_filter_editor.dart';
 export 'icons_painting_editor.dart';
 export 'icons_text_editor.dart';
@@ -50,6 +52,9 @@ class ImageEditorIcons {
   /// Icons for the Emoji Editor component.
   final IconsEmojiEditor emojiEditor;
 
+  /// Icons for the Sticker Editor component.
+  final IconsStickerEditor stickerEditor;
+
   /// Creates an instance of [ImageEditorIcons] with customizable icon settings.
   ///
   /// You can provide custom icons for various actions in the Image Editor component.
@@ -66,6 +71,7 @@ class ImageEditorIcons {
   /// - [cropRotateEditor]: Customizable icons for the Crop and Rotate Editor component.
   /// - [filterEditor]: Customizable icons for the Filter Editor component.
   /// - [emojiEditor]: Customizable icons for the Emoji Editor component.
+  /// - [stickerEditor]: Customizable icons for the Sticker Editor component.
   ///
   /// If no custom icons are provided, default icons are used for each action.
   ///
@@ -114,6 +120,7 @@ class ImageEditorIcons {
     this.cropRotateEditor = const IconsCropRotateEditor(),
     this.filterEditor = const IconsFilterEditor(),
     this.emojiEditor = const IconsEmojiEditor(),
+    this.stickerEditor = const IconsStickerEditor(),
     this.closeEditor = Icons.clear,
     this.doneIcon = Icons.done,
     this.applyChanges = Icons.done,
