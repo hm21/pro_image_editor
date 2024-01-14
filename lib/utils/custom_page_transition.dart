@@ -36,14 +36,12 @@ class CustomPageRouteBuilder<T> extends PageRouteBuilder<T> {
   /// Navigator.of(context).push(customPageRoute);
   /// ```
   CustomPageRouteBuilder({
-    required RoutePageBuilder pageBuilder,
+    required super.pageBuilder,
     required this.pageTransitionsBuilder,
-  }) : super(pageBuilder: pageBuilder);
+  });
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
-    return pageTransitionsBuilder.buildTransitions(
-        this, context, animation, secondaryAnimation, child);
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    return pageTransitionsBuilder.buildTransitions(this, context, animation, secondaryAnimation, child);
   }
 }

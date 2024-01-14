@@ -70,7 +70,7 @@ class LayerWidget extends StatefulWidget {
 
   /// Creates a [LayerWidget] with the specified properties.
   const LayerWidget(
-      {Key? key,
+      {super.key,
       required this.padding,
       required this.layerData,
       required this.onTapDown,
@@ -85,8 +85,7 @@ class LayerWidget extends StatefulWidget {
       required this.enabledHitDetection,
       required this.freeStyleHighPerformanceScaling,
       required this.freeStyleHighPerformanceMoving,
-      required this.designMode})
-      : super(key: key);
+      required this.designMode});
 
   @override
   createState() => _LayerWidgetState();
@@ -102,16 +101,16 @@ class _LayerWidgetState extends State<LayerWidget> {
   @override
   void initState() {
     switch (widget.layerData.runtimeType) {
-      case TextLayerData:
+      case const (TextLayerData):
         _layerType = _LayerType.text;
         break;
-      case EmojiLayerData:
+      case const (EmojiLayerData):
         _layerType = _LayerType.emoji;
         break;
-      case StickerLayerData:
+      case const (StickerLayerData):
         _layerType = _LayerType.sticker;
         break;
-      case PaintingLayerData:
+      case const (PaintingLayerData):
         _layerType = _LayerType.canvas;
         break;
       default:
@@ -176,8 +175,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _checkHitIsOutsideInCanvas() {
-    return _layerType == _LayerType.canvas &&
-        !(_layer as PaintingLayerData).item.hit;
+    return _layerType == _LayerType.canvas && !(_layer as PaintingLayerData).item.hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and rotation.
@@ -355,8 +353,7 @@ class _LayerWidgetState extends State<LayerWidget> {
           item: layer.item,
           scale: widget.layerData.scale,
           enabledHitDetection: widget.enabledHitDetection,
-          freeStyleHighPerformanceScaling:
-              widget.freeStyleHighPerformanceScaling,
+          freeStyleHighPerformanceScaling: widget.freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,
         ),
       ),

@@ -49,13 +49,10 @@ class Layer {
 
   /// Generates a unique ID based on the current time.
   String _generateUniqueId() {
-    const String characters =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const String characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
     final Random random = Random();
-    final String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000)
-        .toRadixString(36)
-        .padLeft(8, '0');
+    final String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toRadixString(36).padLeft(8, '0');
 
     String randomPart = '';
     for (int i = 0; i < 20; i++) {
@@ -103,22 +100,14 @@ class TextLayerData extends Layer {
     this.color = Colors.white,
     this.background = Colors.transparent,
     this.align = TextAlign.left,
-    Offset? offset,
-    double? opacity,
-    double? rotation,
-    double? scale,
-    String? id,
-    bool? flipX,
-    bool? flipY,
-  }) : super(
-          offset: offset,
-          opacity: opacity,
-          rotation: rotation,
-          scale: scale,
-          id: id,
-          flipX: flipX,
-          flipY: flipY,
-        );
+    super.offset,
+    super.opacity,
+    super.rotation,
+    super.scale,
+    super.id,
+    super.flipX,
+    super.flipY,
+  });
 }
 
 /// A class representing a layer with emoji content.
@@ -146,22 +135,14 @@ class EmojiLayerData extends Layer {
   /// The [emoji] parameter is required, and other properties are optional.
   EmojiLayerData({
     required this.emoji,
-    Offset? offset,
-    double? opacity,
-    double? rotation,
-    double? scale,
-    String? id,
-    bool? flipX,
-    bool? flipY,
-  }) : super(
-          offset: offset,
-          opacity: opacity,
-          rotation: rotation,
-          scale: scale,
-          id: id,
-          flipX: flipX,
-          flipY: flipY,
-        );
+    super.offset,
+    super.opacity,
+    super.rotation,
+    super.scale,
+    super.id,
+    super.flipX,
+    super.flipY,
+  });
 }
 
 /// A class representing a layer with custom painting content.
@@ -196,22 +177,14 @@ class PaintingLayerData extends Layer {
   PaintingLayerData({
     required this.item,
     required this.rawSize,
-    Offset? offset,
-    double? opacity,
-    double? rotation,
-    double? scale,
-    String? id,
-    bool? flipX,
-    bool? flipY,
-  }) : super(
-          offset: offset,
-          opacity: opacity,
-          rotation: rotation,
-          scale: scale,
-          id: id,
-          flipX: flipX,
-          flipY: flipY,
-        );
+    super.offset,
+    super.opacity,
+    super.rotation,
+    super.scale,
+    super.id,
+    super.flipX,
+    super.flipY,
+  });
 
   /// Returns the size of the layer after applying the scaling factor.
   Size get size => Size(rawSize.width * scale, rawSize.height * scale);
@@ -226,20 +199,12 @@ class StickerLayerData extends Layer {
   /// The [sticker] parameter is required, and other properties are optional.
   StickerLayerData({
     required this.sticker,
-    Offset? offset,
-    double? opacity,
-    double? rotation,
-    double? scale,
-    String? id,
-    bool? flipX,
-    bool? flipY,
-  }) : super(
-          offset: offset,
-          opacity: opacity,
-          rotation: rotation,
-          scale: scale,
-          id: id,
-          flipX: flipX,
-          flipY: flipY,
-        );
+    super.offset,
+    super.opacity,
+    super.rotation,
+    super.scale,
+    super.id,
+    super.flipX,
+    super.flipY,
+  });
 }

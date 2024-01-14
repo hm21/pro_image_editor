@@ -26,13 +26,13 @@ class AdaptiveDialog extends StatefulWidget {
   /// The [actions] is a list of [AdaptiveDialogAction] widgets to include as buttons.
   /// The [brightness] controls the brightness of the dialog.
   const AdaptiveDialog({
-    Key? key,
+    super.key,
     required this.designMode,
     required this.title,
     required this.content,
     required this.actions,
     required this.brightness,
-  }) : super(key: key);
+  });
 
   @override
   State<AdaptiveDialog> createState() => _AdaptiveDialogState();
@@ -45,8 +45,7 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
     if (widget.designMode == ImageEditorDesignModeE.cupertino) {
       // Return a Cupertino-style dialog when in Cupertino design mode.
       return CupertinoTheme(
-        data:
-            CupertinoTheme.of(context).copyWith(brightness: widget.brightness),
+        data: CupertinoTheme.of(context).copyWith(brightness: widget.brightness),
         child: CupertinoAlertDialog(
           title: widget.title,
           content: widget.content,
@@ -81,11 +80,11 @@ class AdaptiveDialogAction extends StatefulWidget {
   /// The [onPressed] callback is executed when the button is pressed.
   /// The [child] widget is displayed as the action button.
   const AdaptiveDialogAction({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.child,
     required this.designMode,
-  }) : super(key: key);
+  });
 
   @override
   State<AdaptiveDialogAction> createState() => _AdaptiveDialogActionState();
@@ -97,8 +96,7 @@ class _AdaptiveDialogActionState extends State<AdaptiveDialogAction> {
   Widget build(BuildContext context) {
     if (widget.designMode == ImageEditorDesignModeE.cupertino) {
       // Return a Cupertino-style action when in Cupertino design mode.
-      return CupertinoDialogAction(
-          onPressed: widget.onPressed, child: widget.child);
+      return CupertinoDialogAction(onPressed: widget.onPressed, child: widget.child);
     } else {
       // Return a Material-style action for other design modes.
       return TextButton(onPressed: widget.onPressed, child: widget.child);
