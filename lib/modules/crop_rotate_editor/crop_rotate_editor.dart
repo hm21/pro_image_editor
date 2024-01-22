@@ -98,7 +98,10 @@ class CropRotateEditor extends StatefulWidget {
     required this.configs,
     this.bytesWithLayers,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -491,7 +494,8 @@ class CropRotateEditor extends StatefulWidget {
         onUpdateUI: onUpdateUI,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -504,7 +508,8 @@ class CropRotateEditor extends StatefulWidget {
 /// This class handles the state and UI for an image editor
 /// that supports cropping, rotating, and aspect ratio adjustments.
 class CropRotateEditorState extends State<CropRotateEditor> {
-  final GlobalKey<ExtendedImageEditorState> _editorKey = GlobalKey<ExtendedImageEditorState>();
+  final GlobalKey<ExtendedImageEditorState> _editorKey =
+      GlobalKey<ExtendedImageEditorState>();
 
   late EditorImage _image;
 
@@ -551,8 +556,12 @@ class CropRotateEditorState extends State<CropRotateEditor> {
   /// Returns a list of predefined aspect ratios.
   List<AspectRatioItem> get _aspectRatios {
     return [
-      AspectRatioItem(text: widget.i18n.cropRotateEditor.aspectRatioFree, value: CropAspectRatios.custom),
-      AspectRatioItem(text: widget.i18n.cropRotateEditor.aspectRatioOriginal, value: CropAspectRatios.original),
+      AspectRatioItem(
+          text: widget.i18n.cropRotateEditor.aspectRatioFree,
+          value: CropAspectRatios.custom),
+      AspectRatioItem(
+          text: widget.i18n.cropRotateEditor.aspectRatioOriginal,
+          value: CropAspectRatios.original),
       AspectRatioItem(text: '1*1', value: CropAspectRatios.ratio1_1),
       AspectRatioItem(text: '4*3', value: CropAspectRatios.ratio4_3),
       AspectRatioItem(text: '3*4', value: CropAspectRatios.ratio3_4),
@@ -594,7 +603,8 @@ class CropRotateEditorState extends State<CropRotateEditor> {
         imageHeight: _editor.image!.height,
         extendedImage: _editor.widget.extendedImageState.imageWidget,
         imageProvider: _editor.widget.extendedImageState.imageProvider,
-        isExtendedResizeImage: _editor.widget.extendedImageState.imageProvider is ExtendedResizeImage,
+        isExtendedResizeImage: _editor.widget.extendedImageState.imageProvider
+            is ExtendedResizeImage,
       );
     } finally {
       if (mounted) {
@@ -702,9 +712,12 @@ class CropRotateEditorState extends State<CropRotateEditor> {
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: widget.imageEditorTheme.uiOverlayStyle,
         child: Theme(
-          data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+          data: widget.theme.copyWith(
+              tooltipTheme:
+                  widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
-            backgroundColor: widget.imageEditorTheme.cropRotateEditor.background,
+            backgroundColor:
+                widget.imageEditorTheme.cropRotateEditor.background,
             appBar: _buildAppBar(constraints),
             body: SafeArea(
               child: Stack(
@@ -724,8 +737,10 @@ class CropRotateEditorState extends State<CropRotateEditor> {
     return widget.customWidgets.appBarCropRotateEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: widget.imageEditorTheme.cropRotateEditor.appBarBackgroundColor,
-          foregroundColor: widget.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
+          backgroundColor:
+              widget.imageEditorTheme.cropRotateEditor.appBarBackgroundColor,
+          foregroundColor:
+              widget.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.i18n.cropRotateEditor.back,
@@ -778,7 +793,8 @@ class CropRotateEditorState extends State<CropRotateEditor> {
                       onTap: () {
                         rotate();
 
-                        if (widget.designMode == ImageEditorDesignModeE.cupertino) {
+                        if (widget.designMode ==
+                            ImageEditorDesignModeE.cupertino) {
                           Navigator.pop(context);
                         }
                       },
@@ -823,7 +839,8 @@ class CropRotateEditorState extends State<CropRotateEditor> {
                   fit: BoxFit.contain,
                   mode: ExtendedImageMode.editor,
                   extendedImageEditorKey: _editorKey,
-                  initEditorConfigHandler: (ExtendedImageState? state) => config,
+                  initEditorConfigHandler: (ExtendedImageState? state) =>
+                      config,
                   cacheRawData: true,
                 )
               : _image.hasFile
@@ -833,7 +850,8 @@ class CropRotateEditorState extends State<CropRotateEditor> {
                       fit: BoxFit.contain,
                       mode: ExtendedImageMode.editor,
                       extendedImageEditorKey: _editorKey,
-                      initEditorConfigHandler: (ExtendedImageState? state) => config,
+                      initEditorConfigHandler: (ExtendedImageState? state) =>
+                          config,
                       cacheRawData: true,
                     )
                   : _image.hasNetworkUrl
@@ -843,7 +861,8 @@ class CropRotateEditorState extends State<CropRotateEditor> {
                           fit: BoxFit.contain,
                           mode: ExtendedImageMode.editor,
                           extendedImageEditorKey: _editorKey,
-                          initEditorConfigHandler: (ExtendedImageState? state) => config,
+                          initEditorConfigHandler:
+                              (ExtendedImageState? state) => config,
                           cacheRawData: true,
                         )
                       : ExtendedImage.asset(
@@ -852,7 +871,8 @@ class CropRotateEditorState extends State<CropRotateEditor> {
                           fit: BoxFit.contain,
                           mode: ExtendedImageMode.editor,
                           extendedImageEditorKey: _editorKey,
-                          initEditorConfigHandler: (ExtendedImageState? state) => config,
+                          initEditorConfigHandler:
+                              (ExtendedImageState? state) => config,
                           cacheRawData: true,
                         ),
         ),
@@ -880,8 +900,10 @@ class CropRotateEditorState extends State<CropRotateEditor> {
                     img,
                     designMode: widget.designMode,
                     fit: BoxFit.contain,
-                    width: widget.imageSize.width + config.cropRectPadding.horizontal,
-                    height: widget.imageSize.height + config.cropRectPadding.vertical,
+                    width: widget.imageSize.width +
+                        config.cropRectPadding.horizontal,
+                    height: widget.imageSize.height +
+                        config.cropRectPadding.vertical,
                   ),
                 )
               : const SizedBox.expand()),

@@ -45,7 +45,8 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
     if (widget.designMode == ImageEditorDesignModeE.cupertino) {
       // Return a Cupertino-style dialog when in Cupertino design mode.
       return CupertinoTheme(
-        data: CupertinoTheme.of(context).copyWith(brightness: widget.brightness),
+        data:
+            CupertinoTheme.of(context).copyWith(brightness: widget.brightness),
         child: CupertinoAlertDialog(
           title: widget.title,
           content: widget.content,
@@ -96,7 +97,8 @@ class _AdaptiveDialogActionState extends State<AdaptiveDialogAction> {
   Widget build(BuildContext context) {
     if (widget.designMode == ImageEditorDesignModeE.cupertino) {
       // Return a Cupertino-style action when in Cupertino design mode.
-      return CupertinoDialogAction(onPressed: widget.onPressed, child: widget.child);
+      return CupertinoDialogAction(
+          onPressed: widget.onPressed, child: widget.child);
     } else {
       // Return a Material-style action for other design modes.
       return TextButton(onPressed: widget.onPressed, child: widget.child);

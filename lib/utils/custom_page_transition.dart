@@ -41,7 +41,9 @@ class CustomPageRouteBuilder<T> extends PageRouteBuilder<T> {
   });
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-    return pageTransitionsBuilder.buildTransitions(this, context, animation, secondaryAnimation, child);
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return pageTransitionsBuilder.buildTransitions(
+        this, context, animation, secondaryAnimation, child);
   }
 }
