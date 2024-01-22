@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.1.0
+- Added functionality to extend the appbar with custom widgets, providing users with more flexibility in customizing the app's header.
+
 ## Version 2.0.0
 - Introducing the "Sticker" editor for seamless loading of stickers and widgets directly into the editor.
 

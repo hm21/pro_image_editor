@@ -74,6 +74,9 @@ class ProImageEditor extends StatefulWidget {
   /// when the editing is completed.
   final ImageEditingCompleteCallback onImageEditingComplete;
 
+  /// A callback function that can be used to update the UI from custom widgets.
+  final Function? onUpdateUI;
+
   /// Configuration options for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -90,9 +93,12 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
+  ///
+  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
   const ProImageEditor._({
     super.key,
     required this.onImageEditingComplete,
+    this.onUpdateUI,
     this.byteArray,
     this.assetPath,
     this.networkUrl,
@@ -112,10 +118,13 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
+  ///
+  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.memory(
     Uint8List byteArray, {
     Key? key,
     required ImageEditingCompleteCallback onImageEditingComplete,
+    Function? onUpdateUI,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
   }) {
     return ProImageEditor._(
@@ -123,6 +132,7 @@ class ProImageEditor extends StatefulWidget {
       byteArray: byteArray,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -135,17 +145,21 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
+  ///
+  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.file(
     File file, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
+    Function? onUpdateUI,
   }) {
     return ProImageEditor._(
       key: key,
       file: file,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -158,17 +172,21 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
+  ///
+  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.asset(
     String assetPath, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
+    Function? onUpdateUI,
   }) {
     return ProImageEditor._(
       key: key,
       assetPath: assetPath,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -181,17 +199,21 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
+  ///
+  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.network(
     String networkUrl, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
+    Function? onUpdateUI,
   }) {
     return ProImageEditor._(
       key: key,
       networkUrl: networkUrl,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -612,6 +634,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _imageHeight = h / _pixelRatio;
     _inited = true;
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Copy a layer to create a new instance of the same type.
@@ -863,6 +886,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       _scaleDebounce(() => _activeScale = false);
     }
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Handle the end of a scaling operation.
@@ -880,6 +904,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _showHelperLines = false;
     hoverRemoveBtn = false;
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Rotate a layer.
@@ -1000,6 +1025,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   void _onTextLayerTap(TextLayerData layerData) async {
     TextLayerData? layer = await _openPage(
       TextEditor(
+        key: textEditor,
         layer: layerData,
         heroTag: layerData.id,
         i18n: widget.configs.i18n,
@@ -1009,6 +1035,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         configs: widget.configs.textEditorConfigs,
         designMode: widget.configs.designMode,
         theme: _theme,
+        onUpdateUI: widget.onUpdateUI,
       ),
       duration: const Duration(milliseconds: 50),
     );
@@ -1038,6 +1065,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     }
 
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Opens the painting editor.
@@ -1048,6 +1076,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _openEditor = true;
     await _openPage<List<PaintingLayerData>>(
       PaintingEditor.autoSource(
+        key: paintingEditor,
         file: _image.file,
         byteArray: _image.byteArray,
         assetPath: _image.assetPath,
@@ -1068,6 +1097,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         ),
         designMode: widget.configs.designMode,
         emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
+        onUpdateUI: widget.onUpdateUI,
       ),
       duration: const Duration(milliseconds: 150),
     ).then((List<PaintingLayerData>? paintingLayers) {
@@ -1077,6 +1107,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         }
 
         setState(() {});
+        widget.onUpdateUI?.call();
       }
     });
     _openEditor = false;
@@ -1089,6 +1120,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _openEditor = true;
     TextLayerData? layer = await _openPage(
       TextEditor(
+        key: textEditor,
         i18n: widget.configs.i18n,
         icons: widget.configs.icons,
         imageEditorTheme: widget.configs.imageEditorTheme,
@@ -1096,6 +1128,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         configs: widget.configs.textEditorConfigs,
         designMode: widget.configs.designMode,
         theme: _theme,
+        onUpdateUI: widget.onUpdateUI,
       ),
       duration: const Duration(milliseconds: 50),
     );
@@ -1110,6 +1143,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     addLayer(layer);
 
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Opens the crop editor.
@@ -1147,7 +1181,9 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     _openPage<CropRotateEditorRes?>(
       CropRotateEditor.autoSource(
+        key: cropRotateEditor,
         file: img.file,
+        onUpdateUI: widget.onUpdateUI,
         byteArray: img.byteArray,
         assetPath: img.assetPath,
         networkUrl: img.networkUrl,
@@ -1251,6 +1287,7 @@ class ProImageEditorState extends State<ProImageEditor> {
           _imageWidth = w / _pixelRatio;
           _imageHeight = h / _pixelRatio;
           setState(() {});
+          widget.onUpdateUI?.call();
         }
       }
     });
@@ -1268,6 +1305,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _openEditor = true;
     Uint8List? filterAppliedImage = await _openPage(
       FilterEditor.autoSource(
+        key: filterEditor,
         file: _image.file,
         byteArray: _image.byteArray,
         assetPath: _image.assetPath,
@@ -1280,6 +1318,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         imageEditorTheme: widget.configs.imageEditorTheme,
         customWidgets: widget.configs.customWidgets,
         configs: widget.configs.filterEditorConfigs,
+        onUpdateUI: widget.onUpdateUI,
       ),
     );
     _openEditor = false;
@@ -1287,6 +1326,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     if (filterAppliedImage == null) return;
     _image = EditorImage(byteArray: filterAppliedImage);
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Opens the emoji editor.
@@ -1320,6 +1360,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     addLayer(layer);
 
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Opens the sticker editor as a modal bottom sheet.
@@ -1345,6 +1386,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     addLayer(layer);
 
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Undo the last editing action.
@@ -1357,6 +1399,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         _editPosition--;
         _decodeImage();
       });
+      widget.onUpdateUI?.call();
     }
   }
 
@@ -1371,6 +1414,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         _editPosition++;
         _decodeImage();
       });
+      widget.onUpdateUI?.call();
     }
   }
 
@@ -1457,6 +1501,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       _activeLayer.rotation += 0.087266;
     }
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Handles Keyboard zoom event
@@ -1473,6 +1518,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       _activeLayer.scale += factor;
     }
     setState(() {});
+    widget.onUpdateUI?.call();
   }
 
   /// Handles mouse scroll events.
@@ -1501,6 +1547,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         }
       }
       setState(() {});
+      widget.onUpdateUI?.call();
     }
   }
 
@@ -1509,6 +1556,12 @@ class ProImageEditorState extends State<ProImageEditor> {
         top: (_screen.height - _screenPadding.top - _screenPadding.bottom - _imageHeight) / 2,
         left: (_screen.width - _screenPadding.left - _screenPadding.right - _imageWidth) / 2,
       );
+
+  /// Determines whether undo actions can be performed on the current state.
+  bool get canUndo => _editPosition > 0;
+
+  /// Determines whether redo actions can be performed on the current state.
+  bool get canRedo => _editPosition < _changes.length - 1;
 
   @override
   Widget build(BuildContext context) {
@@ -1539,6 +1592,7 @@ class ProImageEditorState extends State<ProImageEditor> {
             constraints.maxHeight,
           );
         }
+
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: widget.configs.imageEditorTheme.uiOverlayStyle,
           child: Theme(
@@ -1559,50 +1613,50 @@ class ProImageEditorState extends State<ProImageEditor> {
   }
 
   PreferredSizeWidget? _buildAppBar() {
-    return widget.configs.customWidgets.appBar ??
-        (_selectedLayer >= 0
-            ? null
-            : AppBar(
-                automaticallyImplyLeading: false,
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.black,
-                actions: [
-                  IconButton(
-                    tooltip: widget.configs.i18n.cancel,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(widget.configs.icons.closeEditor),
-                    onPressed: closeEditor,
+    return _selectedLayer >= 0
+        ? null
+        : widget.configs.customWidgets.appBar ??
+            AppBar(
+              automaticallyImplyLeading: false,
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.black,
+              actions: [
+                IconButton(
+                  tooltip: widget.configs.i18n.cancel,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(widget.configs.icons.closeEditor),
+                  onPressed: closeEditor,
+                ),
+                const Spacer(),
+                IconButton(
+                  key: const ValueKey('TextEditorMainUndoButton'),
+                  tooltip: widget.configs.i18n.undo,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(
+                    widget.configs.icons.undoAction,
+                    color: _editPosition > 0 ? Colors.white : Colors.white.withAlpha(80),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    key: const ValueKey('TextEditorMainUndoButton'),
-                    tooltip: widget.configs.i18n.undo,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(
-                      widget.configs.icons.undoAction,
-                      color: _editPosition > 0 ? Colors.white : Colors.white.withAlpha(80),
-                    ),
-                    onPressed: undoAction,
+                  onPressed: undoAction,
+                ),
+                IconButton(
+                  key: const ValueKey('TextEditorMainRedoButton'),
+                  tooltip: widget.configs.i18n.redo,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(
+                    widget.configs.icons.redoAction,
+                    color: _editPosition < _changes.length - 1 ? Colors.white : Colors.white.withAlpha(80),
                   ),
-                  IconButton(
-                    key: const ValueKey('TextEditorMainRedoButton'),
-                    tooltip: widget.configs.i18n.redo,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(
-                      widget.configs.icons.redoAction,
-                      color: _editPosition < _changes.length - 1 ? Colors.white : Colors.white.withAlpha(80),
-                    ),
-                    onPressed: redoAction,
-                  ),
-                  IconButton(
-                    tooltip: widget.configs.i18n.done,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(widget.configs.icons.doneIcon),
-                    iconSize: 28,
-                    onPressed: doneEditing,
-                  ),
-                ],
-              ));
+                  onPressed: redoAction,
+                ),
+                IconButton(
+                  tooltip: widget.configs.i18n.done,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(widget.configs.icons.doneIcon),
+                  iconSize: 28,
+                  onPressed: doneEditing,
+                ),
+              ],
+            );
   }
 
   Widget _buildBody() {
@@ -1680,109 +1734,109 @@ class ProImageEditorState extends State<ProImageEditor> {
     var bottomTextStyle = const TextStyle(fontSize: 10.0, color: Colors.white);
     double bottomIconSize = 22.0;
 
-    return widget.configs.customWidgets.bottomNavigationBar ??
-        (_selectedLayer >= 0
-            ? null
-            : Theme(
-                data: _theme,
-                child: Scrollbar(
-                  controller: _bottomBarScrollCtrl,
-                  scrollbarOrientation: ScrollbarOrientation.top,
-                  thickness: isDesktop ? null : 0,
-                  child: BottomAppBar(
-                    height: kToolbarHeight,
-                    color: Colors.black,
-                    padding: EdgeInsets.zero,
-                    child: Center(
-                      child: SingleChildScrollView(
-                        controller: _bottomBarScrollCtrl,
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: min(_screen.width, 500),
-                            maxWidth: 500,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                if (widget.configs.paintEditorConfigs.enabled)
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-painting-editor-btn'),
-                                    label: Text(widget.configs.i18n.paintEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                    icon: Icon(
-                                      widget.configs.icons.paintingEditor.bottomNavBar,
-                                      size: bottomIconSize,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: openPaintingEditor,
+    return _selectedLayer >= 0
+        ? null
+        : widget.configs.customWidgets.bottomNavigationBar ??
+            Theme(
+              data: _theme,
+              child: Scrollbar(
+                controller: _bottomBarScrollCtrl,
+                scrollbarOrientation: ScrollbarOrientation.top,
+                thickness: isDesktop ? null : 0,
+                child: BottomAppBar(
+                  height: kToolbarHeight,
+                  color: Colors.black,
+                  padding: EdgeInsets.zero,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      controller: _bottomBarScrollCtrl,
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: min(_screen.width, 500),
+                          maxWidth: 500,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              if (widget.configs.paintEditorConfigs.enabled)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-painting-editor-btn'),
+                                  label: Text(widget.configs.i18n.paintEditor.bottomNavigationBarText, style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget.configs.icons.paintingEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
                                   ),
-                                if (widget.configs.textEditorConfigs.enabled)
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-text-editor-btn'),
-                                    label: Text(widget.configs.i18n.textEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                    icon: Icon(
-                                      widget.configs.icons.textEditor.bottomNavBar,
-                                      size: bottomIconSize,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: openTextEditor,
+                                  onPressed: openPaintingEditor,
+                                ),
+                              if (widget.configs.textEditorConfigs.enabled)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-text-editor-btn'),
+                                  label: Text(widget.configs.i18n.textEditor.bottomNavigationBarText, style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget.configs.icons.textEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
                                   ),
-                                if (widget.configs.cropRotateEditorConfigs.enabled)
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-crop-rotate-editor-btn'),
-                                    label: Text(widget.configs.i18n.cropRotateEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                    icon: Icon(
-                                      widget.configs.icons.cropRotateEditor.bottomNavBar,
-                                      size: bottomIconSize,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: openCropEditor,
+                                  onPressed: openTextEditor,
+                                ),
+                              if (widget.configs.cropRotateEditorConfigs.enabled)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-crop-rotate-editor-btn'),
+                                  label: Text(widget.configs.i18n.cropRotateEditor.bottomNavigationBarText, style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget.configs.icons.cropRotateEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
                                   ),
-                                if (widget.configs.filterEditorConfigs.enabled)
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-filter-editor-btn'),
-                                    label: Text(widget.configs.i18n.filterEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                    icon: Icon(
-                                      widget.configs.icons.filterEditor.bottomNavBar,
-                                      size: bottomIconSize,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: openFilterEditor,
+                                  onPressed: openCropEditor,
+                                ),
+                              if (widget.configs.filterEditorConfigs.enabled)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-filter-editor-btn'),
+                                  label: Text(widget.configs.i18n.filterEditor.bottomNavigationBarText, style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget.configs.icons.filterEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
                                   ),
-                                if (widget.configs.emojiEditorConfigs.enabled)
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-emoji-editor-btn'),
-                                    label: Text(widget.configs.i18n.emojiEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                    icon: Icon(
-                                      widget.configs.icons.emojiEditor.bottomNavBar,
-                                      size: bottomIconSize,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: openEmojiEditor,
+                                  onPressed: openFilterEditor,
+                                ),
+                              if (widget.configs.emojiEditorConfigs.enabled)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-emoji-editor-btn'),
+                                  label: Text(widget.configs.i18n.emojiEditor.bottomNavigationBarText, style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget.configs.icons.emojiEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
                                   ),
-                                if (widget.configs.stickerEditorConfigs?.enabled == true)
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-sticker-editor-btn'),
-                                    label: Text(widget.configs.i18n.stickerEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                    icon: Icon(
-                                      widget.configs.icons.stickerEditor.bottomNavBar,
-                                      size: bottomIconSize,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: openStickerEditor,
+                                  onPressed: openEmojiEditor,
+                                ),
+                              if (widget.configs.stickerEditorConfigs?.enabled == true)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-sticker-editor-btn'),
+                                  label: Text(widget.configs.i18n.stickerEditor.bottomNavigationBarText, style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget.configs.icons.stickerEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
                                   ),
-                              ],
-                            ),
+                                  onPressed: openStickerEditor,
+                                ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ));
+              ),
+            );
   }
 
   Widget _buildLayers() {
@@ -1814,6 +1868,7 @@ class ProImageEditorState extends State<ProImageEditor> {
               if (hoverRemoveBtn) _removeLayer(_selectedLayer);
               _selectedLayer = -1;
             });
+            widget.onUpdateUI?.call();
           },
           onTapDown: () {
             _selectedLayer = i;
@@ -1822,6 +1877,7 @@ class ProImageEditorState extends State<ProImageEditor> {
             setState(() {
               _removeLayer(_layers.indexWhere((element) => element.id == layerItem.id), layer: layerItem);
             });
+            widget.onUpdateUI?.call();
           },
           i18n: widget.configs.i18n,
         );

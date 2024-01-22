@@ -63,13 +63,17 @@ class FilterEditor extends StatefulWidget {
   /// Configuration settings for the `FilterEditor`.
   final FilterEditorConfigs configs;
 
+  /// A callback function that can be used to update the UI from custom widgets.
+  final Function? onUpdateUI;
+
   /// Private constructor for creating a `FilterEditor` widget.
   const FilterEditor._({
-    Key? key,
+    super.key,
     this.byteArray,
     this.file,
     this.assetPath,
     this.networkUrl,
+    this.onUpdateUI,
     required this.theme,
     required this.designMode,
     required this.i18n,
@@ -79,10 +83,7 @@ class FilterEditor extends StatefulWidget {
     required this.heroTag,
     required this.configs,
   }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
+          byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -126,6 +127,7 @@ class FilterEditor extends StatefulWidget {
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
+    Function? onUpdateUI,
   }) {
     return FilterEditor._(
       key: key,
@@ -138,6 +140,7 @@ class FilterEditor extends StatefulWidget {
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -181,6 +184,7 @@ class FilterEditor extends StatefulWidget {
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
+    Function? onUpdateUI,
   }) {
     return FilterEditor._(
       key: key,
@@ -193,6 +197,7 @@ class FilterEditor extends StatefulWidget {
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -236,6 +241,7 @@ class FilterEditor extends StatefulWidget {
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
+    Function? onUpdateUI,
   }) {
     return FilterEditor._(
       key: key,
@@ -248,6 +254,7 @@ class FilterEditor extends StatefulWidget {
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -289,6 +296,7 @@ class FilterEditor extends StatefulWidget {
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
+    Function? onUpdateUI,
   }) {
     return FilterEditor._(
       key: key,
@@ -301,6 +309,7 @@ class FilterEditor extends StatefulWidget {
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -344,6 +353,7 @@ class FilterEditor extends StatefulWidget {
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
+    Function? onUpdateUI,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
@@ -361,6 +371,7 @@ class FilterEditor extends StatefulWidget {
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else if (file != null) {
       return FilterEditor.file(
@@ -374,6 +385,7 @@ class FilterEditor extends StatefulWidget {
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else if (networkUrl != null) {
       return FilterEditor.network(
@@ -387,6 +399,7 @@ class FilterEditor extends StatefulWidget {
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else if (assetPath != null) {
       return FilterEditor.asset(
@@ -400,10 +413,10 @@ class FilterEditor extends StatefulWidget {
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -461,14 +474,12 @@ class FilterEditorState extends State<FilterEditor> {
   }
 
   /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters =>
-      widget.configs.filterList ?? presetFiltersList;
+  List<ColorFilterGenerator> get _filters => widget.configs.filterList ?? presetFiltersList;
 
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(
-          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: widget.imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -486,10 +497,8 @@ class FilterEditorState extends State<FilterEditor> {
     return widget.customWidgets.appBarFilterEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.filterEditor.appBarForegroundColor,
+          backgroundColor: widget.imageEditorTheme.filterEditor.appBarBackgroundColor,
+          foregroundColor: widget.imageEditorTheme.filterEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.i18n.filterEditor.back,
@@ -552,6 +561,7 @@ class FilterEditorState extends State<FilterEditor> {
                       onChanged: (value) {
                         filterOpacity = value;
                         setState(() {});
+                        widget.onUpdateUI?.call();
                       },
                     ),
             ),
@@ -599,6 +609,7 @@ class FilterEditorState extends State<FilterEditor> {
       onTap: () {
         selectedFilter = filter;
         setState(() {});
+        widget.onUpdateUI?.call();
       },
       child: Column(children: [
         Container(
@@ -630,9 +641,7 @@ class FilterEditorState extends State<FilterEditor> {
         ),
         Text(
           widget.i18n.filterEditor.filters.getFilterI18n(name),
-          style: TextStyle(
-              fontSize: 12,
-              color: widget.imageEditorTheme.filterEditor.previewTextColor),
+          style: TextStyle(fontSize: 12, color: widget.imageEditorTheme.filterEditor.previewTextColor),
         ),
       ]),
     );

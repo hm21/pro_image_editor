@@ -19,26 +19,36 @@ class LayerDashedBorderHelper extends StatefulWidget {
   });
 
   @override
-  State<LayerDashedBorderHelper> createState() =>
-      _LayerDashedBorderHelperState();
+  State<LayerDashedBorderHelper> createState() => _LayerDashedBorderHelperState();
 }
 
 class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {
   @override
   Widget build(BuildContext context) {
     return widget.child;
-    /* TODO: Write code for desktop devices
+    /*  TODO: Write code for desktop devices */
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        CustomPaint(
-          painter: DashedBorderPainter(color: widget.color),
-          child: widget.child,
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: CustomPaint(
+            painter: DashedBorderPainter(color: widget.color),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                child: Center(child: widget.child),
+              ),
+            ),
+          ),
         ),
         Positioned(
-          top: -7,
-          left: -7,
+          top: 0,
+          left: 0,
           child: DraggablePoint(
+            icon: Icons.pinch_outlined,
+            cursor: SystemMouseCursors.click,
             onDrag: (Offset offset) {
               setState(() {
                 /* width += offset.dx;
@@ -48,9 +58,11 @@ class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {
           ),
         ),
         Positioned(
-          top: -7,
-          right: -7,
+          top: 0,
+          right: 0,
           child: DraggablePoint(
+            icon: Icons.swipe_outlined,
+            cursor: SystemMouseCursors.click,
             onDrag: (Offset offset) {
               setState(() {
                 /*  width -= offset.dx;
@@ -60,9 +72,11 @@ class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {
           ),
         ),
         Positioned(
-          bottom: -7,
-          left: -7,
+          bottom: 0,
+          left: 0,
           child: DraggablePoint(
+            icon: Icons.delete_outline,
+            cursor: SystemMouseCursors.click,
             onDrag: (Offset offset) {
               setState(() {
                 /*  width += offset.dx;
@@ -72,9 +86,11 @@ class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {
           ),
         ),
         Positioned(
-          bottom: -7,
-          right: -7,
+          bottom: 0,
+          right: 0,
           child: DraggablePoint(
+            icon: Icons.close,
+            cursor: SystemMouseCursors.click,
             onDrag: (Offset offset) {
               setState(() {
                 widget.layerData.scale -= offset.dx;
@@ -84,12 +100,8 @@ class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {
             },
           ),
         ),
-        Positioned.fill(
-          child: widget.child,
-        ),
       ],
     );
- */
   }
 }
 
@@ -162,23 +174,32 @@ class DashedBorderPainter extends CustomPainter {
 
 class DraggablePoint extends StatelessWidget {
   final Function(Offset) onDrag;
+  final IconData icon;
+  final MouseCursor cursor;
 
   const DraggablePoint({
     super.key,
     required this.onDrag,
+    required this.icon,
+    required this.cursor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 0.2,
+    return MouseRegion(
+      cursor: cursor,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          border: Border.all(width: 0.2),
+          borderRadius: BorderRadius.circular(100),
+          color: Colors.white,
         ),
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
+        child: Icon(
+          icon,
+          color: const Color(0xFF000000),
+          size: 20,
+        ),
       ),
     );
   }
