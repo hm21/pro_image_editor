@@ -464,7 +464,13 @@ class PaintingEditorState extends State<PaintingEditor> {
     setFill(_fill);
   }
 
-  bool get fillBackground => _fill;
+  /// Set the PaintMode for the current state and trigger an update if provided.
+  void setMode(PaintModeE mode) {
+    if (_imageKey.currentState != null) {
+      _imageKey.currentState!.mode = mode;
+    }
+    widget.onUpdateUI?.call();
+  }
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
@@ -497,6 +503,15 @@ class PaintingEditorState extends State<PaintingEditor> {
 
   /// Determines whether redo actions can be performed on the current state.
   bool get canRedo => _imageKey.currentState?.canRedo == true;
+
+  /// Get the current PaintMode from the ImageKey's currentState.
+  PaintModeE? get paintMode => _imageKey.currentState?.mode;
+
+  /// Get the current PaintMode.
+  PaintModeE? get mode => _imageKey.currentState?.mode;
+
+  /// Get the fillBackground status.
+  bool get fillBackground => _fill;
 
   @override
   Widget build(BuildContext context) {
@@ -690,65 +705,66 @@ class PaintingEditorState extends State<PaintingEditor> {
   /// Returns a [Widget] representing the bottom navigation bar.
   Widget _buildBottomBar() {
     if (paintModes.length <= 1) return const SizedBox.shrink();
-    return Theme(
-      data: widget.theme,
-      child: Scrollbar(
-        controller: _bottomBarScrollCtrl,
-        scrollbarOrientation: ScrollbarOrientation.top,
-        thickness: isDesktop ? null : 0,
-        child: BottomAppBar(
-          height: kToolbarHeight,
-          color: widget.imageEditorTheme.paintingEditor.bottomBarColor,
-          padding: EdgeInsets.zero,
-          child: Center(
-            child: SingleChildScrollView(
-              controller: _bottomBarScrollCtrl,
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: min(MediaQuery.of(context).size.width, 500),
-                  maxWidth: 500,
-                ),
-                child: Wrap(
-                  direction: Axis.horizontal,
-                  alignment: WrapAlignment.spaceAround,
-                  children: <Widget>[
-                    ...List.generate(
-                      paintModes.length,
-                      (index) => Builder(
-                        builder: (_) {
-                          var item = paintModes[index];
-                          var color = _imageKey.currentState?.mode == item.mode
-                              ? widget.imageEditorTheme.paintingEditor
-                                  .bottomBarActiveItemColor
-                              : widget.imageEditorTheme.paintingEditor
-                                  .bottomBarInactiveItemColor;
-
-                          return FlatIconTextButton(
-                            label: Text(
-                              item.label,
-                              style: TextStyle(fontSize: 10.0, color: color),
-                            ),
-                            icon: Icon(item.icon, color: color),
-                            onPressed: () {
-                              if (_imageKey.currentState != null) {
-                                _imageKey.currentState!.mode = item.mode;
-                              }
-                              setState(() {});
-                              widget.onUpdateUI?.call();
-                            },
-                          );
-                        },
-                      ),
+    return widget.customWidgets.bottomBarPaintingEditor ??
+        Theme(
+          data: widget.theme,
+          child: Scrollbar(
+            controller: _bottomBarScrollCtrl,
+            scrollbarOrientation: ScrollbarOrientation.top,
+            thickness: isDesktop ? null : 0,
+            child: BottomAppBar(
+              height: kToolbarHeight,
+              color: widget.imageEditorTheme.paintingEditor.bottomBarColor,
+              padding: EdgeInsets.zero,
+              child: Center(
+                child: SingleChildScrollView(
+                  controller: _bottomBarScrollCtrl,
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: min(MediaQuery.of(context).size.width, 500),
+                      maxWidth: 500,
                     ),
-                  ],
+                    child: Wrap(
+                      direction: Axis.horizontal,
+                      alignment: WrapAlignment.spaceAround,
+                      children: <Widget>[
+                        ...List.generate(
+                          paintModes.length,
+                          (index) => Builder(
+                            builder: (_) {
+                              var item = paintModes[index];
+                              var color =
+                                  _imageKey.currentState?.mode == item.mode
+                                      ? widget.imageEditorTheme.paintingEditor
+                                          .bottomBarActiveItemColor
+                                      : widget.imageEditorTheme.paintingEditor
+                                          .bottomBarInactiveItemColor;
+
+                              return FlatIconTextButton(
+                                label: Text(
+                                  item.label,
+                                  style:
+                                      TextStyle(fontSize: 10.0, color: color),
+                                ),
+                                icon: Icon(item.icon, color: color),
+                                onPressed: () {
+                                  setMode(item.mode);
+                                  setState(() {});
+                                  widget.onUpdateUI?.call();
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   /// Builds the painting canvas for the editor.

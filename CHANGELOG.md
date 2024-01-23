@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.2.0
+- Added functionality to extend the bottomAppBar with custom widgets, providing users with more flexibility in customizing the bottom bar.
+
 ## Version 2.1.1
 - Improved Dart code formatting
 

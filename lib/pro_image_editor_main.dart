@@ -1671,9 +1671,7 @@ class ProImageEditorState extends State<ProImageEditor> {
                 resizeToAvoidBottomInset: false,
                 appBar: _buildAppBar(),
                 body: _buildBody(),
-                bottomNavigationBar:
-                    widget.configs.customWidgets.bottomNavigationBar ??
-                        _buildBottomNavBar(),
+                bottomNavigationBar: _buildBottomNavBar(),
               ),
             ),
           ),
