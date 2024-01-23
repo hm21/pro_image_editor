@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.1.1
+- Improved Dart code formatting
+
 ## Version 2.1.0
 - Added functionality to extend the appbar with custom widgets, providing users with more flexibility in customizing the app's header.
 
