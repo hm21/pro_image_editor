@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.2.1
+- Fixed close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1#issuecomment-1905984568)
+
 ## Version 2.2.0
 - Added functionality to extend the bottomAppBar with custom widgets, providing users with more flexibility in customizing the bottom bar.
 

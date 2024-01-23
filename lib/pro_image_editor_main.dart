@@ -330,6 +330,9 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// When `true`, allows detecting user interactions with the painted layer.
   bool _enabledHitDetection = true;
 
+  /// Flag to track if editing is completed.
+  bool _doneEditing = false;
+
   /// The pixel ratio of the device's screen.
   double _pixelRatio = 1;
 
@@ -1486,6 +1489,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     if (_editPosition <= 0 && _layers.isEmpty) {
       return Navigator.pop(context);
     }
+    _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
       ..show(
         context,
@@ -1642,9 +1646,9 @@ class ProImageEditorState extends State<ProImageEditor> {
         );
     if (_imageNeedDecode) _decodeImage();
     return PopScope(
-      canPop: _editPosition <= 0,
+      canPop: _editPosition <= 0 || _doneEditing,
       onPopInvoked: (didPop) {
-        if (_editPosition > 0) {
+        if (_editPosition > 0 && !_doneEditing) {
           closeWarning();
         }
       },
