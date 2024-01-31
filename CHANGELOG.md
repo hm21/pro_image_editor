@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.2.2
+- Fixed example bug for `emojiSet`, details in [GitHub issue #2](https://github.com/hm21/pro_image_editor/issues/2#issue-2110634675)
+
 ## Version 2.2.1
 - Fixed close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1#issuecomment-1905984568)
 

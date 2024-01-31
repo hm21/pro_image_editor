@@ -395,14 +395,18 @@ class _MyHomePageState extends State<MyHomePage> {
                               textStyle: TextStyle(
                                   fontFamilyFallback: ['Apple Color Emoji']),
                               checkPlatformCompatibility: true,
-                              emojiSet:
-                                  null /*  [
+                              emojiSet: [
                                 CategoryEmoji(
                                   Category.ANIMALS,
-                                  [Emoji.fromJson({})],
+                                  [
+                                    Emoji(
+                                      'emoji',
+                                      'name',
+                                      hasSkinTone: false,
+                                    ),
+                                  ],
                                 )
-                              ] */
-                              ,
+                              ],
                               verticalSpacing: 0,
                               horizontalSpacing: 0,
                               gridPadding: EdgeInsets.zero,
