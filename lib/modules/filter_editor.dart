@@ -83,10 +83,7 @@ class FilterEditor extends StatefulWidget {
     required this.heroTag,
     required this.configs,
   }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
+          byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -419,8 +416,7 @@ class FilterEditor extends StatefulWidget {
         onUpdateUI: onUpdateUI,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -478,14 +474,12 @@ class FilterEditorState extends State<FilterEditor> {
   }
 
   /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters =>
-      widget.configs.filterList ?? presetFiltersList;
+  List<ColorFilterGenerator> get _filters => widget.configs.filterList ?? presetFiltersList;
 
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(
-          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: widget.imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -503,10 +497,8 @@ class FilterEditorState extends State<FilterEditor> {
     return widget.customWidgets.appBarFilterEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.filterEditor.appBarForegroundColor,
+          backgroundColor: widget.imageEditorTheme.filterEditor.appBarBackgroundColor,
+          foregroundColor: widget.imageEditorTheme.filterEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.i18n.filterEditor.back,
@@ -533,6 +525,7 @@ class FilterEditorState extends State<FilterEditor> {
         controller: screenshotController,
         child: Hero(
           tag: widget.heroTag,
+          createRectTween: (begin, end) => RectTween(begin: begin, end: end),
           child: ImageWithFilter(
             image: EditorImage(
               file: widget.file,
@@ -649,9 +642,7 @@ class FilterEditorState extends State<FilterEditor> {
         ),
         Text(
           widget.i18n.filterEditor.filters.getFilterI18n(name),
-          style: TextStyle(
-              fontSize: 12,
-              color: widget.imageEditorTheme.filterEditor.previewTextColor),
+          style: TextStyle(fontSize: 12, color: widget.imageEditorTheme.filterEditor.previewTextColor),
         ),
       ]),
     );
