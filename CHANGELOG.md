@@ -1,10 +1,13 @@
 # Changelog
 
+## Version 2.2.3
+- **Enhancement:** Improved the fly animation within the Hero widget to provide a smoother and more visually appealing experience.
+
 ## Version 2.2.2
-- Fixed example bug for `emojiSet`, details in [GitHub issue #2](https://github.com/hm21/pro_image_editor/issues/2#issue-2110634675)
+- **Fixed:** example bug for `emojiSet`, details in [GitHub issue #2](https://github.com/hm21/pro_image_editor/issues/2#issue-2110634675)
 
 ## Version 2.2.1
-- Fixed close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1#issuecomment-1905984568)
+- **Fixed:** close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1#issuecomment-1905984568)
 
 ## Version 2.2.0
 - Added functionality to extend the bottomAppBar with custom widgets, providing users with more flexibility in customizing the bottom bar.
