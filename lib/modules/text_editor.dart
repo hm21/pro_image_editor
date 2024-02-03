@@ -6,10 +6,10 @@ import 'package:rounded_background_text/rounded_background_text.dart';
 
 import '../models/custom_widgets.dart';
 import '../models/editor_configs/text_editor_configs.dart';
-import '../models/theme/theme.dart';
 import '../models/i18n/i18n.dart';
 import '../models/icons/icons.dart';
 import '../models/layer.dart';
+import '../models/theme/theme.dart';
 import '../widgets/color_picker/bar_color_picker.dart';
 import '../widgets/color_picker/color_picker_configs.dart';
 import '../widgets/layer_widget.dart';
@@ -103,7 +103,10 @@ class TextEditorState extends State<TextEditor> {
       _textCtrl.text = widget.layer!.text;
       align = widget.layer!.align;
       backgroundColorMode = widget.layer!.colorMode!;
-      _primaryColor = backgroundColorMode == LayerBackgroundColorModeE.background ? widget.layer!.background : widget.layer!.color;
+      _primaryColor =
+          backgroundColorMode == LayerBackgroundColorModeE.background
+              ? widget.layer!.background
+              : widget.layer!.color;
       _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       _colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
@@ -163,7 +166,8 @@ class TextEditorState extends State<TextEditor> {
   /// Toggles the background mode between various color modes.
   void toggleBackgroundMode() {
     setState(() {
-      backgroundColorMode = backgroundColorMode == LayerBackgroundColorModeE.onlyColor
+      backgroundColorMode = backgroundColorMode ==
+              LayerBackgroundColorModeE.onlyColor
           ? LayerBackgroundColorModeE.backgroundAndColor
           : backgroundColorMode == LayerBackgroundColorModeE.backgroundAndColor
               ? LayerBackgroundColorModeE.background
@@ -202,13 +206,17 @@ class TextEditorState extends State<TextEditor> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Theme(
-          data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+          data: widget.theme.copyWith(
+              tooltipTheme:
+                  widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
             backgroundColor: widget.imageEditorTheme.textEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
             // For desktop devices where there is no physical keyboard, we can center it as we do in the editor.
-            bottomNavigationBar: isDesktop ? const SizedBox(height: kBottomNavigationBarHeight) : null,
+            bottomNavigationBar: isDesktop
+                ? const SizedBox(height: kBottomNavigationBarHeight)
+                : null,
           ),
         );
       },
@@ -220,8 +228,10 @@ class TextEditorState extends State<TextEditor> {
     return widget.customWidgets.appBarTextEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: widget.imageEditorTheme.textEditor.appBarBackgroundColor,
-          foregroundColor: widget.imageEditorTheme.textEditor.appBarForegroundColor,
+          backgroundColor:
+              widget.imageEditorTheme.textEditor.appBarBackgroundColor,
+          foregroundColor:
+              widget.imageEditorTheme.textEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.i18n.textEditor.back,
@@ -268,7 +278,8 @@ class TextEditorState extends State<TextEditor> {
                               : widget.icons.textEditor.alignCenter),
                       onTap: () {
                         toggleTextAlign();
-                        if (widget.designMode == ImageEditorDesignModeE.cupertino) {
+                        if (widget.designMode ==
+                            ImageEditorDesignModeE.cupertino) {
                           Navigator.pop(context);
                         }
                       },
@@ -279,7 +290,8 @@ class TextEditorState extends State<TextEditor> {
                       icon: Icon(widget.icons.textEditor.backgroundMode),
                       onTap: () {
                         toggleBackgroundMode();
-                        if (widget.designMode == ImageEditorDesignModeE.cupertino) {
+                        if (widget.designMode ==
+                            ImageEditorDesignModeE.cupertino) {
                           Navigator.pop(context);
                         }
                       },
@@ -306,7 +318,7 @@ class TextEditorState extends State<TextEditor> {
   /// Builds the body of the text editor.
   Widget _buildBody() {
     return GestureDetector(
-      behavior: HitTestBehavior.translucent,
+      // behavior: HitTestBehavior.translucent,
       onTap: done,
       child: Stack(
         children: [
@@ -363,7 +375,8 @@ class TextEditorState extends State<TextEditor> {
                 children: [
                   Hero(
                     tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
-                    createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                    createRectTween: (begin, end) =>
+                        RectTween(begin: begin, end: end),
                     child: RoundedBackgroundText(
                       _textCtrl.text,
                       backgroundColor: _getBackgroundColor,
@@ -384,17 +397,23 @@ class TextEditorState extends State<TextEditor> {
                       keyboardType: TextInputType.multiline,
                       textInputAction: TextInputAction.newline,
                       textCapitalization: TextCapitalization.sentences,
-                      textAlign: _textCtrl.text.isEmpty ? TextAlign.center : align,
+                      textAlign:
+                          _textCtrl.text.isEmpty ? TextAlign.center : align,
                       maxLines: null,
-                      cursorColor: widget.imageEditorTheme.textEditor.inputCursorColor,
+                      cursorColor:
+                          widget.imageEditorTheme.textEditor.inputCursorColor,
                       cursorHeight: widget.configs.initFontSize * 1.2,
                       scrollPhysics: const NeverScrollableScrollPhysics(),
                       decoration: InputDecoration(
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.fromLTRB(12, _numLines <= 1 ? 4 : 0, 12, 0),
-                          hintText: _textCtrl.text.isEmpty ? widget.i18n.textEditor.inputHintText : '',
+                          contentPadding: EdgeInsets.fromLTRB(
+                              12, _numLines <= 1 ? 4 : 0, 12, 0),
+                          hintText: _textCtrl.text.isEmpty
+                              ? widget.i18n.textEditor.inputHintText
+                              : '',
                           hintStyle: TextStyle(
-                            color: widget.imageEditorTheme.textEditor.inputHintColor,
+                            color: widget
+                                .imageEditorTheme.textEditor.inputHintColor,
                             fontSize: widget.configs.initFontSize,
                             fontWeight: FontWeight.w400,
                             height: 1.35,

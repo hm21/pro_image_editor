@@ -40,7 +40,7 @@ class I18nTextEditor {
   /// )
   /// ```
   const I18nTextEditor({
-    this.inputHintText = 'Enter text',
+    this.inputHintText = 'Enter text !!!!',
     this.bottomNavigationBarText = 'Text',
     this.back = 'Back',
     this.done = 'Done',
