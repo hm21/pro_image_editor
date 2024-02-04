@@ -1829,7 +1829,7 @@ class ProImageEditorState extends State<ProImageEditor> {
                 thickness: isDesktop ? null : 0,
                 child: BottomAppBar(
                   height: kToolbarHeight,
-                  color: Colors.red,
+                  color: widget.configs.bottomBarColor,
                   padding: EdgeInsets.zero,
                   child: Center(
                     child: SingleChildScrollView(

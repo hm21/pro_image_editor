@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/editor_configs/sticker_editor_configs.dart';
 
+import '../../utils/design_mode.dart';
 import '../custom_widgets.dart';
+import '../helper_lines.dart';
+import '../i18n/i18n.dart';
+import '../icons/icons.dart';
+import '../theme/theme.dart';
 import 'crop_rotate_editor_configs.dart';
 import 'emoji_editor_configs.dart';
 import 'filter_editor_configs.dart';
 import 'paint_editor_configs.dart';
 import 'text_editor_configs.dart';
-import '../helper_lines.dart';
-import '../i18n/i18n.dart';
-import '../icons/icons.dart';
-import '../theme/theme.dart';
-import '../../utils/design_mode.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -61,6 +61,9 @@ class ProImageEditorConfigs {
   /// The design mode for the Image Editor.
   final ImageEditorDesignModeE designMode;
 
+  /// Bottom Bar Color
+  final Color bottomBarColor;
+
   /// Creates an instance of [ProImageEditorConfigs].
   /// - The `theme` specifies the theme for the Image Editor.
   /// - The `heroTag` is a unique tag for the Image Editor widget. By default, it is 'Pro-Image-Editor-Hero'.
@@ -90,6 +93,7 @@ class ProImageEditorConfigs {
     this.helperLines = const HelperLines(),
     this.customWidgets = const ImageEditorCustomWidgets(),
     this.imageEditorTheme = const ImageEditorTheme(),
+    this.bottomBarColor = Colors.black,
     this.icons = const ImageEditorIcons(),
     this.paintEditorConfigs = const PaintEditorConfigs(),
     this.textEditorConfigs = const TextEditorConfigs(),
