@@ -318,7 +318,7 @@ class TextEditorState extends State<TextEditor> {
   /// Builds the body of the text editor.
   Widget _buildBody() {
     return GestureDetector(
-      // behavior: HitTestBehavior.translucent,
+      behavior: HitTestBehavior.translucent,
       onTap: done,
       child: Stack(
         children: [

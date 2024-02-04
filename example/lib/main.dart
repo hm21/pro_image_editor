@@ -157,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 smallScreenMoreTooltip: 'More',
                               ),
                               textEditor: I18nTextEditor(
-                                inputHintText: 'Enter text !!!',
+                                inputHintText: 'Enter text',
                                 bottomNavigationBarText: 'Text',
                                 back: 'Back',
                                 done: 'Done',
