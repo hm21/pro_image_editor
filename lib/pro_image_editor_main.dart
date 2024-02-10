@@ -14,6 +14,9 @@ import 'models/changes/changes.dart';
 import 'models/changes/last_position.dart';
 import 'models/crop_rotate_editor_response.dart';
 import 'models/editor_image.dart';
+import 'models/import_export/export_state_history.dart';
+import 'models/import_export/export_state_history_configs.dart';
+import 'models/import_export/import_state_history.dart';
 import 'models/layer.dart';
 import 'modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'modules/emoji_editor.dart';
@@ -247,7 +250,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   late ScreenshotController _screenshotCtrl;
 
   /// List to track changes made to the image during editing.
-  final List<EditorImage> _changeList = [];
+  final List<EditorImage> _changeImgList = [];
 
   /// List to store the history of image editor changes.
   final List<ImageEditorChanges> _changes = [];
@@ -406,7 +409,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     _bottomBarScrollCtrl = ScrollController();
 
-    _changeList.add(EditorImage(
+    _changeImgList.add(EditorImage(
       assetPath: widget.assetPath,
       byteArray: widget.byteArray,
       file: widget.file,
@@ -489,17 +492,17 @@ class ProImageEditorState extends State<ProImageEditor> {
   List<Layer> get _layers => _changes[_editPosition].layers;
 
   /// Get the current image being edited from the change list.
-  EditorImage get _image => _changeList[_changes[_editPosition].bytesRefIndex];
+  EditorImage get _image => _changeImgList[_changes[_editPosition].bytesRefIndex];
 
   /// Set the current image being edited.
   ///
   /// This method adds the new image to the change list, creating a new editing state.
   set _image(EditorImage image) {
     _cleanForwardChanges();
-    _changeList.add(image);
+    _changeImgList.add(image);
     _changes.add(
       ImageEditorChanges(
-        bytesRefIndex: _changeList.length - 1,
+        bytesRefIndex: _changeImgList.length - 1,
         layers: _changes.last.layers,
       ),
     );
@@ -513,8 +516,8 @@ class ProImageEditorState extends State<ProImageEditor> {
     if (_changes.length > 1) {
       while (_editPosition < _changes.length - 1) {
         _changes.removeLast();
-        if (_changeList.length - 1 > _changes.last.bytesRefIndex) {
-          _changeList.removeLast();
+        if (_changeImgList.length - 1 > _changes.last.bytesRefIndex) {
+          _changeImgList.removeLast();
         }
       }
     }
@@ -526,10 +529,10 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// This method adds a cropped image to the editor and updates the editing state.
   void _addCroppedImg(List<Layer> layers, EditorImage image) {
     _cleanForwardChanges();
-    _changeList.add(image);
+    _changeImgList.add(image);
     _changes.add(
       ImageEditorChanges(
-        bytesRefIndex: _changeList.length - 1,
+        bytesRefIndex: _changeImgList.length - 1,
         layers: layers,
       ),
     );
@@ -541,11 +544,11 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// This method adds a new layer to the image editor and updates the editing state.
   void addLayer(Layer layer, {int removeLayerIndex = -1, EditorImage? image}) {
     _cleanForwardChanges();
-    if (image != null) _changeList.add(image);
+    if (image != null) _changeImgList.add(image);
 
     _changes.add(
       ImageEditorChanges(
-        bytesRefIndex: _changeList.length - 1,
+        bytesRefIndex: _changeImgList.length - 1,
         layers: List<Layer>.from(_changes.last.layers.map((e) => _copyLayer(e)))..add(layer),
       ),
     );
@@ -562,7 +565,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _cleanForwardChanges();
     _changes.add(
       ImageEditorChanges(
-        bytesRefIndex: _changeList.length - 1,
+        bytesRefIndex: _changeImgList.length - 1,
         layers: List.from(_changes.last.layers.map((e) => _copyLayer(e))),
       ),
     );
@@ -583,7 +586,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     layers.removeAt(layerPos);
     _changes.add(
       ImageEditorChanges(
-        bytesRefIndex: _changeList.length - 1,
+        bytesRefIndex: _changeImgList.length - 1,
         layers: layers,
       ),
     );
@@ -668,7 +671,6 @@ class ProImageEditorState extends State<ProImageEditor> {
       colorMode: layer.colorMode,
       colorPickerPosition: layer.colorPickerPosition,
       offset: Offset(layer.offset.dx, layer.offset.dy),
-      opacity: layer.opacity,
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,
@@ -682,7 +684,6 @@ class ProImageEditorState extends State<ProImageEditor> {
       id: layer.id,
       emoji: layer.emoji,
       offset: Offset(layer.offset.dx, layer.offset.dy),
-      opacity: layer.opacity,
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,
@@ -696,7 +697,6 @@ class ProImageEditorState extends State<ProImageEditor> {
       id: layer.id,
       sticker: layer.sticker,
       offset: Offset(layer.offset.dx, layer.offset.dy),
-      opacity: layer.opacity,
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,
@@ -709,7 +709,6 @@ class ProImageEditorState extends State<ProImageEditor> {
     return PaintingLayerData(
       id: layer.id,
       offset: Offset(layer.offset.dx, layer.offset.dy),
-      opacity: layer.opacity,
       rotation: layer.rotation,
       scale: layer.scale,
       flipX: layer.flipX,
@@ -1060,7 +1059,6 @@ class ProImageEditorState extends State<ProImageEditor> {
         ..flipX = layerData.flipX
         ..flipY = layerData.flipY
         ..offset = layerData.offset
-        ..opacity = layerData.opacity
         ..scale = layerData.scale
         ..rotation = layerData.rotation;
 
@@ -1566,6 +1564,14 @@ class ProImageEditorState extends State<ProImageEditor> {
 
   /// Determines whether redo actions can be performed on the current state.
   bool get canRedo => _editPosition < _changes.length - 1;
+
+  void importStateHistory(ImportStateHistory import) {
+    // TODO:
+  }
+
+  ExportStateHistory exportStateHistory({ExportEditorConfigs configs = const ExportEditorConfigs()}) {
+    return ExportStateHistory(_changes, _editPosition, configs: configs);
+  }
 
   @override
   Widget build(BuildContext context) {

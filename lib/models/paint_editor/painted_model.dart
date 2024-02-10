@@ -67,4 +67,22 @@ class PaintedModel {
       hit: hit,
     );
   }
+
+  Map toMap() {
+    List<Map<String, double>> offsetMaps = [];
+
+    for (var offset in offsets) {
+      if (offset != null) {
+        offsetMaps.add({'x': offset.dx, 'y': offset.dy});
+      }
+    }
+
+    return {
+      'mode': mode.name,
+      'offsets': offsetMaps,
+      'color': color.value,
+      'strokeWidth': strokeWidth,
+      'fill': fill,
+    };
+  }
 }
