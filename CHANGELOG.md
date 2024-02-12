@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.3.0
+- **Feat:** Enhance state history management
+
 ## Version 2.2.3
 - **Enhancement:** Improved the fly animation within the Hero widget to provide a smoother and more visually appealing experience.
 
