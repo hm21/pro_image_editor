@@ -1683,8 +1683,9 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     if (import.configs.mergeMode == ImportEditorMergeMode.replace) {
       _editPosition = import.editorPosition + 1;
-      if (import.imgStateHistory.isNotEmpty)
+      if (import.imgStateHistory.isNotEmpty) {
         _imgStateHistory = import.imgStateHistory;
+      }
       _stateHistory = [
         EditorStateHistory(bytesRefIndex: 0, filters: [], layers: []),
         ...import.stateHistory
