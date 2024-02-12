@@ -15,8 +15,6 @@ dependencies:
     path: ../
   cupertino_icons: ^1.0.2
   file_picker: ^6.1.1
-  # TODO: delete me
-  logger: ^2.0.2+1
 
 dev_dependencies:
   flutter_test:

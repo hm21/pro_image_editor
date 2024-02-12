@@ -5,18 +5,19 @@ import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../models/custom_widgets.dart';
-import '../models/editor_configs/filter_editor_configs.dart';
-import '../models/editor_image.dart';
-import '../models/theme/theme.dart';
-import '../models/i18n/i18n.dart';
-import '../models/icons/icons.dart';
-import '../utils/design_mode.dart';
-import '../widgets/auto_image.dart';
-import '../widgets/loading_dialog.dart';
-import '../widgets/pro_image_editor_desktop_mode.dart';
+import '../../models/custom_widgets.dart';
+import '../../models/editor_configs/filter_editor_configs.dart';
+import '../../models/editor_image.dart';
+import '../../models/theme/theme.dart';
+import '../../models/i18n/i18n.dart';
+import '../../models/icons/icons.dart';
+import '../../utils/design_mode.dart';
+import '../../widgets/loading_dialog.dart';
+import '../../widgets/pro_image_editor_desktop_mode.dart';
+import 'widgets/image_with_filter.dart';
 
 /// The `FilterEditor` widget allows users to apply filters to images.
 ///
@@ -66,6 +67,15 @@ class FilterEditor extends StatefulWidget {
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
 
+  /// Determines whether to return the image as a Uint8List when closing the editor.
+  ///
+  /// If set to `true`, when closing the editor, the editor will return the final image
+  /// as a Uint8List, including all applied filter states. If set to `false`, only
+  /// the filter states will be returned.
+  final bool convertToUint8List;
+
+  final List<FilterStateHistory>? activeFilters;
+
   /// Private constructor for creating a `FilterEditor` widget.
   const FilterEditor._({
     super.key,
@@ -74,6 +84,8 @@ class FilterEditor extends StatefulWidget {
     this.assetPath,
     this.networkUrl,
     this.onUpdateUI,
+    this.convertToUint8List = false,
+    this.activeFilters,
     required this.theme,
     required this.designMode,
     required this.i18n,
@@ -102,6 +114,7 @@ class FilterEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
   /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the in-memory image data.
@@ -128,6 +141,8 @@ class FilterEditor extends StatefulWidget {
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
+    bool convertToUint8List = false,
+    List<FilterStateHistory>? activeFilters,
   }) {
     return FilterEditor._(
       key: key,
@@ -141,6 +156,8 @@ class FilterEditor extends StatefulWidget {
       heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      activeFilters: activeFilters,
+      convertToUint8List: convertToUint8List,
     );
   }
 
@@ -159,6 +176,7 @@ class FilterEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
   /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the image loaded from the File.
@@ -185,6 +203,8 @@ class FilterEditor extends StatefulWidget {
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
+    bool convertToUint8List = false,
+    List<FilterStateHistory>? activeFilters,
   }) {
     return FilterEditor._(
       key: key,
@@ -198,6 +218,8 @@ class FilterEditor extends StatefulWidget {
       heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      activeFilters: activeFilters,
+      convertToUint8List: convertToUint8List,
     );
   }
 
@@ -216,6 +238,7 @@ class FilterEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
   /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the image loaded from the asset.
@@ -242,6 +265,8 @@ class FilterEditor extends StatefulWidget {
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
+    bool convertToUint8List = false,
+    List<FilterStateHistory>? activeFilters,
   }) {
     return FilterEditor._(
       key: key,
@@ -255,6 +280,8 @@ class FilterEditor extends StatefulWidget {
       heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      activeFilters: activeFilters,
+      convertToUint8List: convertToUint8List,
     );
   }
 
@@ -272,6 +299,7 @@ class FilterEditor extends StatefulWidget {
   /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
+  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the image loaded from the network URL.
@@ -297,6 +325,8 @@ class FilterEditor extends StatefulWidget {
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
+    bool convertToUint8List = false,
+    List<FilterStateHistory>? activeFilters,
   }) {
     return FilterEditor._(
       key: key,
@@ -310,6 +340,8 @@ class FilterEditor extends StatefulWidget {
       heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      activeFilters: activeFilters,
+      convertToUint8List: convertToUint8List,
     );
   }
 
@@ -330,6 +362,7 @@ class FilterEditor extends StatefulWidget {
   /// - `file`: An optional File object representing the image file to be loaded.
   /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
   /// - `networkUrl`: An optional String representing the network URL of the image to be loaded.
+  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the detected image source.
@@ -354,6 +387,8 @@ class FilterEditor extends StatefulWidget {
     FilterEditorConfigs configs = const FilterEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
+    bool convertToUint8List = false,
+    List<FilterStateHistory>? activeFilters,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
@@ -372,6 +407,8 @@ class FilterEditor extends StatefulWidget {
         heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        activeFilters: activeFilters,
+        convertToUint8List: convertToUint8List,
       );
     } else if (file != null) {
       return FilterEditor.file(
@@ -386,6 +423,8 @@ class FilterEditor extends StatefulWidget {
         heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        activeFilters: activeFilters,
+        convertToUint8List: convertToUint8List,
       );
     } else if (networkUrl != null) {
       return FilterEditor.network(
@@ -400,6 +439,8 @@ class FilterEditor extends StatefulWidget {
         heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        activeFilters: activeFilters,
+        convertToUint8List: convertToUint8List,
       );
     } else if (assetPath != null) {
       return FilterEditor.asset(
@@ -414,6 +455,8 @@ class FilterEditor extends StatefulWidget {
         heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        activeFilters: activeFilters,
+        convertToUint8List: convertToUint8List,
       );
     } else {
       throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
@@ -454,22 +497,30 @@ class FilterEditorState extends State<FilterEditor> {
   /// Handles the "Done" action, either by applying changes or closing the editor.
   void done() async {
     if (_createScreenshot) return;
-    _createScreenshot = true;
-    LoadingDialog loading = LoadingDialog()
-      ..show(
-        context,
-        i18n: widget.i18n,
-        theme: widget.theme,
-        designMode: widget.designMode,
-        message: widget.i18n.filterEditor.applyFilterDialogMsg,
-        imageEditorTheme: widget.imageEditorTheme,
-      );
-    var data = await screenshotController.capture();
-    _createScreenshot = false;
 
-    if (mounted) {
-      loading.hide(context);
-      Navigator.pop(context, data);
+    if (widget.convertToUint8List) {
+      _createScreenshot = true;
+      LoadingDialog loading = LoadingDialog()
+        ..show(
+          context,
+          i18n: widget.i18n,
+          theme: widget.theme,
+          designMode: widget.designMode,
+          message: widget.i18n.filterEditor.applyFilterDialogMsg,
+          imageEditorTheme: widget.imageEditorTheme,
+        );
+      var data = await screenshotController.capture();
+      _createScreenshot = false;
+      if (mounted) {
+        loading.hide(context);
+        Navigator.pop(context, data);
+      }
+    } else {
+      FilterStateHistory filter = FilterStateHistory(
+        filter: selectedFilter,
+        opacity: filterOpacity,
+      );
+      Navigator.pop(context, filter);
     }
   }
 
@@ -533,6 +584,7 @@ class FilterEditorState extends State<FilterEditor> {
               networkUrl: widget.networkUrl,
               assetPath: widget.assetPath,
             ),
+            activeFilters: widget.activeFilters,
             designMode: widget.designMode,
             filter: selectedFilter,
             fit: BoxFit.contain,
@@ -591,6 +643,7 @@ class FilterEditorState extends State<FilterEditor> {
                 filter: _filters[i],
                 name: _filters[i].name,
                 index: i,
+                activeFilters: widget.activeFilters,
               ),
           ],
         ),
@@ -600,9 +653,10 @@ class FilterEditorState extends State<FilterEditor> {
 
   /// Create a button for filter preview.
   Widget filterPreviewButton({
-    required filter,
+    required ColorFilterGenerator filter,
     required String name,
     required int index,
+    List<FilterStateHistory>? activeFilters,
   }) {
     var size = const Size(64, 64);
     return GestureDetector(
@@ -633,6 +687,7 @@ class FilterEditorState extends State<FilterEditor> {
                 networkUrl: widget.networkUrl,
                 assetPath: widget.assetPath,
               ),
+              activeFilters: widget.activeFilters,
               size: size,
               designMode: widget.designMode,
               filter: filter,
@@ -646,73 +701,5 @@ class FilterEditorState extends State<FilterEditor> {
         ),
       ]),
     );
-  }
-}
-
-/// A widget that displays an image with a customizable color filter applied to it.
-class ImageWithFilter extends StatelessWidget {
-  /// The image to be displayed.
-  final EditorImage image;
-
-  /// The color filter to be applied to the image.
-  final ColorFilterGenerator filter;
-
-  /// The BoxFit option to control how the image is fitted into the available space.
-  final BoxFit? fit;
-
-  /// The opacity of the image.
-  final double opacity;
-
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
-
-  final Size? size;
-
-  /// Creates an `ImageWithFilter` widget.
-  ///
-  /// The [image] and [filter] parameters are required. The [fit] parameter
-  /// allows you to specify how the image should be fitted, and the [opacity]
-  /// parameter controls the opacity of the image.
-  const ImageWithFilter({
-    super.key,
-    required this.image,
-    required this.filter,
-    required this.designMode,
-    this.size,
-    this.fit,
-    this.opacity = 1,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (filter.filters.isEmpty) {
-      return AutoImage(
-        image,
-        fit: fit,
-        designMode: designMode,
-      );
-    } else {
-      return Stack(
-        children: [
-          AutoImage(
-            image,
-            fit: fit,
-            designMode: designMode,
-          ),
-          Opacity(
-            opacity: opacity,
-            child: filter.build(
-              AutoImage(
-                image,
-                fit: fit,
-                width: size?.width,
-                height: size?.height,
-                designMode: designMode,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
   }
 }

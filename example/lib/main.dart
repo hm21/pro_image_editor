@@ -5,10 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/models/import_export/export_state_history_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
-import 'package:logger/logger.dart';
 
 void main() {
   runApp(const MyApp());
@@ -123,9 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           bytes,
                           key: _editor,
                           onImageEditingComplete: (bytes) async {
-                            /* Navigator.pop(context); */
-                            _editor.currentState?.exportStateHistory(configs: ExportEditorConfigs(redoHistory: false)).toJson();
-                            Logger().i(_editor.currentState?.exportStateHistory(configs: ExportEditorConfigs(redoHistory: false)).toMap());
+                            Navigator.pop(context);
                           },
                           configs: ProImageEditorConfigs(
                             activePreferredOrientations: [

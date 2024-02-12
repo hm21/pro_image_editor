@@ -1,13 +1,14 @@
+import '../filter_state_history.dart';
 import '../layer.dart';
 
-/// The `ImageEditorChanges` class represents changes made to an image in the image
+/// The `EditorStateHistory` class represents changes made to an image in the image
 /// editor. It contains information about the changes applied to the image, including
 /// a reference to the image data and a list of layers.
 ///
 /// Usage:
 ///
 /// ```dart
-/// ImageEditorChanges changes = ImageEditorChanges(
+/// EditorStateHistory changes = EditorStateHistory(
 ///   bytesRefIndex: 0,
 ///   layers: [
 ///     Layer(
@@ -30,8 +31,9 @@ import '../layer.dart';
 /// Example Usage:
 ///
 /// ```dart
-/// ImageEditorChanges changes = ImageEditorChanges(
+/// EditorStateHistory changes = EditorStateHistory(
 ///   bytesRefIndex: 0,
+///   filters: [],
 ///   layers: [
 ///     Layer(
 ///       name: 'Text Layer',
@@ -49,13 +51,15 @@ import '../layer.dart';
 ///
 /// Please refer to the documentation of individual properties and methods for more details.
 
-class ImageEditorChanges {
+class EditorStateHistory {
   // Save memory to ref to a sepperated array which contain only image changes and not also layer-changes
   int bytesRefIndex = 0;
   List<Layer> layers = [];
+  List<FilterStateHistory> filters = [];
 
-  ImageEditorChanges({
+  EditorStateHistory({
     required this.bytesRefIndex,
     required this.layers,
+    required this.filters,
   });
 }

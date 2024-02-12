@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../../models/custom_widgets.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
+import '../../models/filter_state_history.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/theme/theme.dart';
 import '../../models/i18n/i18n.dart';
@@ -15,13 +16,13 @@ import '../../models/icons/icons.dart';
 import '../../models/layer.dart';
 import '../../utils/design_mode.dart';
 import '../../utils/theme_functions.dart';
-import '../../widgets/auto_image.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
+import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'painting_canvas.dart';
 import 'utils/paint_editor_enum.dart';
 
@@ -81,6 +82,9 @@ class PaintingEditor extends StatefulWidget {
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
 
+  /// A list of applied filters to the editor.
+  final List<FilterStateHistory> filters;
+
   /// Constructs a PaintingEditor instance.
   ///
   /// The `PaintingEditor._` constructor should not be directly used. Instead, use one of the factory constructors.
@@ -104,11 +108,9 @@ class PaintingEditor extends StatefulWidget {
     this.layerFontSize = 24,
     this.stickerInitWidth = 100,
     this.designMode = ImageEditorDesignModeE.material,
+    required this.filters,
   }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
+          byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -130,6 +132,7 @@ class PaintingEditor extends StatefulWidget {
     double stickerInitWidth = 100.0,
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
+    List<FilterStateHistory>? filters,
   }) {
     return PaintingEditor._(
       key: key,
@@ -148,6 +151,7 @@ class PaintingEditor extends StatefulWidget {
       configs: configs,
       layerFontSize: layerFontSize,
       emojiTextStyle: emojiTextStyle,
+      filters: filters ?? [],
     );
   }
 
@@ -169,6 +173,7 @@ class PaintingEditor extends StatefulWidget {
     double stickerInitWidth = 100.0,
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
+    List<FilterStateHistory>? filters,
   }) {
     return PaintingEditor._(
       key: key,
@@ -185,6 +190,7 @@ class PaintingEditor extends StatefulWidget {
       paddingHelper: paddingHelper,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      filters: filters ?? [],
     );
   }
 
@@ -206,6 +212,7 @@ class PaintingEditor extends StatefulWidget {
     double stickerInitWidth = 100.0,
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
+    List<FilterStateHistory>? filters,
   }) {
     return PaintingEditor._(
       key: key,
@@ -222,6 +229,7 @@ class PaintingEditor extends StatefulWidget {
       paddingHelper: paddingHelper,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      filters: filters ?? [],
     );
   }
 
@@ -243,6 +251,7 @@ class PaintingEditor extends StatefulWidget {
     double stickerInitWidth = 100.0,
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
+    List<FilterStateHistory>? filters,
   }) {
     return PaintingEditor._(
       key: key,
@@ -259,6 +268,7 @@ class PaintingEditor extends StatefulWidget {
       paddingHelper: paddingHelper,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      filters: filters ?? [],
     );
   }
 
@@ -283,6 +293,7 @@ class PaintingEditor extends StatefulWidget {
     double stickerInitWidth = 100.0,
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
+    List<FilterStateHistory>? filters,
   }) {
     if (byteArray != null) {
       return PaintingEditor.memory(
@@ -300,6 +311,7 @@ class PaintingEditor extends StatefulWidget {
         paddingHelper: paddingHelper,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        filters: filters,
       );
     } else if (file != null) {
       return PaintingEditor.file(
@@ -317,6 +329,7 @@ class PaintingEditor extends StatefulWidget {
         paddingHelper: paddingHelper,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        filters: filters,
       );
     } else if (networkUrl != null) {
       return PaintingEditor.network(
@@ -334,6 +347,7 @@ class PaintingEditor extends StatefulWidget {
         paddingHelper: paddingHelper,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        filters: filters,
       );
     } else if (assetPath != null) {
       return PaintingEditor.asset(
@@ -351,10 +365,10 @@ class PaintingEditor extends StatefulWidget {
         paddingHelper: paddingHelper,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        filters: filters,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -518,9 +532,7 @@ class PaintingEditorState extends State<PaintingEditor> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: widget.imageEditorTheme.uiOverlayStyle,
       child: Theme(
-        data: widget.theme.copyWith(
-            tooltipTheme:
-                widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+        data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
         child: LayoutBuilder(builder: (context, constraints) {
           return Scaffold(
             resizeToAvoidBottomInset: false,
@@ -542,10 +554,8 @@ class PaintingEditorState extends State<PaintingEditor> {
     return widget.customWidgets.appBarPaintingEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.paintingEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.paintingEditor.appBarForegroundColor,
+          backgroundColor: widget.imageEditorTheme.paintingEditor.appBarBackgroundColor,
+          foregroundColor: widget.imageEditorTheme.paintingEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.i18n.paintEditor.back,
@@ -572,9 +582,7 @@ class PaintingEditorState extends State<PaintingEditor> {
                     tooltip: widget.i18n.paintEditor.toggleFill,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     icon: Icon(
-                      !_fill
-                          ? widget.icons.paintingEditor.noFill
-                          : widget.icons.paintingEditor.fill,
+                      !_fill ? widget.icons.paintingEditor.noFill : widget.icons.paintingEditor.fill,
                       color: Colors.white,
                     ),
                     onPressed: toggleFill,
@@ -618,15 +626,12 @@ class PaintingEditorState extends State<PaintingEditor> {
                       PopupMenuOption(
                         label: widget.i18n.paintEditor.toggleFill,
                         icon: Icon(
-                          !_fill
-                              ? widget.icons.paintingEditor.noFill
-                              : widget.icons.paintingEditor.fill,
+                          !_fill ? widget.icons.paintingEditor.noFill : widget.icons.paintingEditor.fill,
                         ),
                         onTap: () {
                           _fill = !_fill;
                           setFill(_fill);
-                          if (widget.designMode ==
-                              ImageEditorDesignModeE.cupertino) {
+                          if (widget.designMode == ImageEditorDesignModeE.cupertino) {
                             Navigator.pop(context);
                           }
                         },
@@ -679,17 +684,17 @@ class PaintingEditorState extends State<PaintingEditor> {
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              AutoImage(
-                EditorImage(
+              ImageWithMultipleFilters(
+                width: widget.imageSize.width,
+                height: widget.imageSize.height,
+                designMode: widget.designMode,
+                image: EditorImage(
                   assetPath: widget.assetPath,
                   byteArray: widget.byteArray,
                   file: widget.file,
                   networkUrl: widget.networkUrl,
                 ),
-                designMode: widget.designMode,
-                fit: BoxFit.contain,
-                width: widget.imageSize.width,
-                height: widget.imageSize.height,
+                filters: widget.filters,
               ),
               if (widget.layers != null) _buildLayerStack(),
               _buildPainter(),
@@ -734,18 +739,14 @@ class PaintingEditorState extends State<PaintingEditor> {
                           (index) => Builder(
                             builder: (_) {
                               var item = paintModes[index];
-                              var color =
-                                  _imageKey.currentState?.mode == item.mode
-                                      ? widget.imageEditorTheme.paintingEditor
-                                          .bottomBarActiveItemColor
-                                      : widget.imageEditorTheme.paintingEditor
-                                          .bottomBarInactiveItemColor;
+                              var color = _imageKey.currentState?.mode == item.mode
+                                  ? widget.imageEditorTheme.paintingEditor.bottomBarActiveItemColor
+                                  : widget.imageEditorTheme.paintingEditor.bottomBarInactiveItemColor;
 
                               return FlatIconTextButton(
                                 label: Text(
                                   item.label,
-                                  style:
-                                      TextStyle(fontSize: 10.0, color: color),
+                                  style: TextStyle(fontSize: 10.0, color: color),
                                 ),
                                 icon: Icon(item.icon, color: color),
                                 onPressed: () {
@@ -799,11 +800,7 @@ class PaintingEditorState extends State<PaintingEditor> {
       child: BarColorPicker(
         length: min(
           350,
-          MediaQuery.of(context).size.height -
-              MediaQuery.of(context).viewInsets.bottom -
-              kToolbarHeight -
-              MediaQuery.of(context).padding.top -
-              30,
+          MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom - kToolbarHeight - MediaQuery.of(context).padding.top - 30,
         ),
         horizontal: false,
         thumbColor: Colors.white,

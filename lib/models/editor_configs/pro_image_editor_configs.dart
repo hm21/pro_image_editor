@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/editor_configs/sticker_editor_configs.dart';
+import 'package:pro_image_editor/models/import_export/import_state_history.dart';
 
 import '../custom_widgets.dart';
 import 'crop_rotate_editor_configs.dart';
@@ -61,6 +62,9 @@ class ProImageEditorConfigs {
   /// The design mode for the Image Editor.
   final ImageEditorDesignModeE designMode;
 
+  /// Holds the initial state history of the Image Editor.
+  final ImportStateHistory? initStateHistory;
+
   /// Creates an instance of [ProImageEditorConfigs].
   /// - The `theme` specifies the theme for the Image Editor.
   /// - The `heroTag` is a unique tag for the Image Editor widget. By default, it is 'Pro-Image-Editor-Hero'.
@@ -77,6 +81,7 @@ class ProImageEditorConfigs {
   /// - The `emojiEditorConfigs` configures the Emoji Editor. By default, it uses an empty `EmojiEditorConfigs` instance.
   /// - The `stickerEditorConfigs` configures the Sticker Editor. By default, it uses an empty `stickerEditorConfigs` instance.
   /// - The `designMode` specifies the design mode for the Image Editor. By default, it is `ImageEditorDesignMode.material`.
+  /// - The `initStateHistory` holds the initial state history of the Image Editor.
   const ProImageEditorConfigs({
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
@@ -98,5 +103,6 @@ class ProImageEditorConfigs {
     this.emojiEditorConfigs = const EmojiEditorConfigs(),
     this.stickerEditorConfigs,
     this.designMode = ImageEditorDesignModeE.material,
+    this.initStateHistory,
   });
 }

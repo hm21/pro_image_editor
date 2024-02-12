@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/layer_widget.dart';
@@ -44,6 +45,84 @@ class Layer {
     this.flipY = flipY ?? false;
   }
 
+  factory Layer.fromMap(
+    Map map,
+    List<Uint8List> stickers,
+  ) {
+    Layer layer = Layer(
+      flipX: map['flipX'] ?? false,
+      flipY: map['flipY'] ?? false,
+      offset: Offset(map['x'] ?? 0, map['y'] ?? 0),
+      rotation: map['rotation'] ?? 0,
+      scale: map['scale'] ?? 1,
+    );
+
+    switch (map['type']) {
+      case 'text':
+        return TextLayerData(
+          flipX: layer.flipX,
+          flipY: layer.flipY,
+          offset: layer.offset,
+          rotation: layer.rotation,
+          scale: layer.scale,
+          text: map['text'] ?? '-',
+          colorMode: LayerBackgroundColorModeE.values.firstWhere((element) => element.name == map['colorMode']),
+          color: Color(map['color']),
+          background: Color(map['background']),
+          colorPickerPosition: map['colorPickerPosition'] ?? 0,
+          align: TextAlign.values.firstWhere((element) => element.name == map['align']),
+        );
+      case 'emoji':
+        return EmojiLayerData(
+          flipX: layer.flipX,
+          flipY: layer.flipY,
+          offset: layer.offset,
+          rotation: layer.rotation,
+          scale: layer.scale,
+          emoji: map['emoji'],
+        );
+      case 'painting':
+        return PaintingLayerData(
+          flipX: layer.flipX,
+          flipY: layer.flipY,
+          offset: layer.offset,
+          rotation: layer.rotation,
+          scale: layer.scale,
+          rawSize: Size(
+            map['rawSize']?['w'] ?? 0,
+            map['rawSize']?['h'] ?? 0,
+          ),
+          item: PaintedModel.fromMap(map['item'] ?? {}),
+        );
+      case 'sticker':
+        int stickerPosition = map['listPosition'] ?? -1;
+        Widget sticker = kDebugMode
+            ? Text(
+                'Sticker $stickerPosition not found',
+                style: const TextStyle(color: Colors.red, fontSize: 24),
+              )
+            : const SizedBox.shrink();
+        if (stickers.isNotEmpty && stickers.length > stickerPosition) {
+          sticker = Image.memory(
+            stickers[stickerPosition],
+            width: 100,
+            height: 100,
+          );
+        }
+
+        return StickerLayerData(
+          flipX: layer.flipX,
+          flipY: layer.flipY,
+          offset: layer.offset,
+          rotation: layer.rotation,
+          scale: layer.scale,
+          sticker: sticker,
+        );
+      default:
+        return layer;
+    }
+  }
+
   /// Generates a unique ID based on the current time.
   String _generateUniqueId() {
     const String characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -59,7 +138,11 @@ class Layer {
     return '$timestamp$randomPart';
   }
 
-  /// TODO: write docs
+  /// Converts this transform object to a Map.
+  ///
+  /// Returns a Map representing the properties of this layer object,
+  /// including the X and Y coordinates, rotation angle, scale factors, and
+  /// flip flags.
   Map toMap() {
     return {
       'x': offset.dx,
@@ -68,6 +151,7 @@ class Layer {
       'scale': scale,
       'flipX': flipX,
       'flipY': flipY,
+      'type': 'default',
     };
   }
 }
@@ -117,7 +201,6 @@ class TextLayerData extends Layer {
     super.flipY,
   });
 
-  /// TODO: write docs
   @override
   Map toMap() {
     return {
@@ -128,6 +211,7 @@ class TextLayerData extends Layer {
       'background': background.value,
       'colorPickerPosition': colorPickerPosition ?? 0,
       'align': align.name,
+      'type': 'text',
     };
   }
 }
@@ -164,12 +248,12 @@ class EmojiLayerData extends Layer {
     super.flipY,
   });
 
-  /// TODO: write docs
   @override
   Map toMap() {
     return {
       ...super.toMap(),
       'emoji': emoji,
+      'type': 'emoji',
     };
   }
 }
@@ -216,7 +300,6 @@ class PaintingLayerData extends Layer {
   /// Returns the size of the layer after applying the scaling factor.
   Size get size => Size(rawSize.width * scale, rawSize.height * scale);
 
-  /// TODO: write docs
   @override
   Map toMap() {
     return {
@@ -226,10 +309,25 @@ class PaintingLayerData extends Layer {
         'w': rawSize.width,
         'h': rawSize.height,
       },
+      'type': 'painting',
     };
   }
 }
 
+/// A class representing a layer with custom sticker content.
+///
+/// StickerLayerData is a subclass of [Layer] that allows you to display
+/// custom sticker content. You can specify properties like offset, rotation,
+/// scale, and more.
+///
+/// Example usage:
+/// ```dart
+/// StickerLayerData(
+///   offset: Offset(50.0, 50.0),
+///   rotation: -30.0,
+///   scale: 1.5,
+/// );
+/// ```
 class StickerLayerData extends Layer {
   /// The sticker to display on the layer.
   Widget sticker;
@@ -247,11 +345,15 @@ class StickerLayerData extends Layer {
     super.flipY,
   });
 
-  /// TODO: write docs
+  /// Converts this transform object to a Map suitable for representing a sticker.
+  ///
+  /// Returns a Map representing the properties of this transform object, augmented
+  /// with the specified [listPosition] indicating the position of the sticker in a list.
   Map toStickerMap(int listPosition) {
     return {
       ...toMap(),
       'listPosition': listPosition,
+      'type': 'sticker',
     };
   }
 }

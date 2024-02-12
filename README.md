@@ -36,6 +36,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
   - [Own stickers or widgets](#own-stickers-or-widgets)
   - [Highly configurable](#highly-configurable)
+  - [Import-Export state history](#import-export-state-history)
 - **[📚 Documentation](#documentation)**
 - **[🤝 Contributing](#contributing)**
 - **[📜 License](LICENSE)**
@@ -478,6 +479,63 @@ return Scaffold(
               ),
         ),
     )
+);
+```
+
+#### Import-Export state history
+
+The state history from the image editor can be exported and imported. However, it's important to note that the crop and rotate feature currently only allows exporting the final cropped image and not individual states. Additionally, all sticker widgets are converted into images and saved in that format during the export process.
+
+##### Export example
+
+```dart
+ await _editor.currentState?.exportStateHistory(
+    // All configurations are optional
+    configs: const ExportEditorConfigs(
+      exportPainting: true,
+      exportText: true,
+      exportCropRotate: false,
+      exportFilter: true,
+      exportEmoji: true,
+      exportSticker: true,
+      historySpan: ExportHistorySpan.all,
+    ),
+  ).toJson(); // or => toMap(), toFile()
+```
+##### Import example
+```dart
+ _editor.currentState?.importStateHistory(
+    // or => fromMap(), fromJsonFile()
+    ImportStateHistory.fromJson( 
+      /* Json-String from your exported state history */,
+      configs: const ImportEditorConfigs(
+        mergeMode: ImportEditorMergeMode.replace,
+        recalculateSizeAndPosition: true,
+      ),
+    ),
+  );
+```
+
+##### Initial import example
+
+If you wish to open the editor directly with your exported state history, you can do so by utilizing the import feature. Simply load the exported state history into the editor, and it will recreate the previous editing session, allowing you to continue where you left off.
+
+```dart
+ProImageEditor.memory(
+  bytes,
+  key: _editor,
+  onImageEditingComplete: (bytes) async {
+    /* Your code for handling the edited image. Upload it to your server as an example. */
+  },
+  configs: ProImageEditorConfigs(
+    initStateHistory: ImportStateHistory.fromJson( 
+      /* Json-String from your exported state history */,
+      configs: const ImportEditorConfigs(
+        mergeMode: ImportEditorMergeMode.replace,
+        recalculateSizeAndPosition: true,
+      ),
+    ),
+  ),
 );
 ```
 
