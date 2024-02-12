@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.3.1
+- **Fixed:** fix overflow bug in BottomAppBar, details in [GitHub issue #5](https://github.com/hm21/pro_image_editor/issues/5)
+
 ## Version 2.3.0
 - **Feat:** Enhance state history management
 

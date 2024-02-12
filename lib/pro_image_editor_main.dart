@@ -1905,7 +1905,7 @@ class ProImageEditorState extends State<ProImageEditor> {
                 scrollbarOrientation: ScrollbarOrientation.top,
                 thickness: isDesktop ? null : 0,
                 child: BottomAppBar(
-                  height: kToolbarHeight,
+                  height: kBottomNavigationBarHeight,
                   color: Colors.black,
                   padding: EdgeInsets.zero,
                   child: Center(

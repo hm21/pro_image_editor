@@ -13,11 +13,16 @@ class FlatIconTextButton extends TextButton {
     required Widget icon,
     required Widget label,
   }) : super(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            maximumSize:
+                const Size(double.infinity, kBottomNavigationBarHeight),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               icon,
-              const SizedBox(height: 4.0),
+              const SizedBox(height: 5.0),
               label,
             ],
           ),
