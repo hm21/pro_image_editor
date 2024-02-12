@@ -88,13 +88,16 @@ class ExportStateHistory {
       /// Add Crop-Rotate images
       /// TODO: Replace only with state after replace the crop-rotate-editor with
       /// own solution
-      if (_configs.exportCropRotate && !cropImagePostionHelper.containsKey(element.bytesRefIndex)) {
+      if (_configs.exportCropRotate &&
+          !cropImagePostionHelper.containsKey(element.bytesRefIndex)) {
         cropImagePostionHelper[element.bytesRefIndex] = cropRotateImages.length;
-        cropRotateImages.add(await _imgStateHistory[element.bytesRefIndex].safeByteArray);
+        cropRotateImages
+            .add(await _imgStateHistory[element.bytesRefIndex].safeByteArray);
       }
 
       var layerMap = {
-        if (_configs.exportCropRotate) 'listPosition': cropImagePostionHelper[element.bytesRefIndex] ?? 0,
+        if (_configs.exportCropRotate)
+          'listPosition': cropImagePostionHelper[element.bytesRefIndex] ?? 0,
         if (layers.isNotEmpty) 'layers': layers,
         if (filters.isNotEmpty) 'filters': filters,
       };
@@ -104,8 +107,10 @@ class ExportStateHistory {
 
     return {
       'version': ExportImportVersion.version_1_0_0,
-      'position':
-          _configs.historySpan == ExportHistorySpan.current || _configs.historySpan == ExportHistorySpan.currentAndForward ? 0 : _editorPosition - 1,
+      'position': _configs.historySpan == ExportHistorySpan.current ||
+              _configs.historySpan == ExportHistorySpan.currentAndForward
+          ? 0
+          : _editorPosition - 1,
       if (history.isNotEmpty) 'history': history,
       if (stickers.isNotEmpty) 'stickers': stickers,
       if (cropRotateImages.isNotEmpty) 'cropRotateImages': cropRotateImages,
@@ -158,9 +163,11 @@ class ExportStateHistory {
           (_configs.exportText && layer.runtimeType == TextLayerData) ||
           (_configs.exportEmoji && layer.runtimeType == EmojiLayerData)) {
         layers.add(layer.toMap());
-      } else if (_configs.exportSticker && layer.runtimeType == StickerLayerData) {
+      } else if (_configs.exportSticker &&
+          layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
-        stickers.add(await _screenshotController.captureFromWidget(layer.sticker));
+        stickers
+            .add(await _screenshotController.captureFromWidget(layer.sticker));
       }
     }
   }

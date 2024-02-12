@@ -8,7 +8,8 @@ import '../fake/fake_image.dart';
 
 void main() {
   group('FilterEditor Tests', () {
-    testWidgets('FilterEditor should build without error', (WidgetTester tester) async {
+    testWidgets('FilterEditor should build without error',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -25,7 +26,8 @@ void main() {
       expect(find.byType(FilterEditor), findsOneWidget);
     });
 
-    testWidgets('FilterEditor should have filter buttons', (WidgetTester tester) async {
+    testWidgets('FilterEditor should have filter buttons',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

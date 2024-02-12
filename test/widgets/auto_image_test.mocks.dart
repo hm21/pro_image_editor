@@ -58,7 +58,8 @@ class MockEditorImage extends _i1.Mock implements _i2.EditorImage {
   _i3.Future<_i4.Uint8List> get safeByteArray => (super.noSuchMethod(
         Invocation.getter(#safeByteArray),
         returnValue: _i3.Future<_i4.Uint8List>.value(_i4.Uint8List(0)),
-        returnValueForMissingStub: _i3.Future<_i4.Uint8List>.value(_i4.Uint8List(0)),
+        returnValueForMissingStub:
+            _i3.Future<_i4.Uint8List>.value(_i4.Uint8List(0)),
       ) as _i3.Future<_i4.Uint8List>);
 
   @override

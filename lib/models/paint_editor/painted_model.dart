@@ -64,7 +64,8 @@ class PaintedModel {
     }
 
     return PaintedModel(
-      mode: PaintModeE.values.firstWhere((element) => element.name == map['mode']),
+      mode: PaintModeE.values
+          .firstWhere((element) => element.name == map['mode']),
       offsets: offsets,
       color: Color(map['color']),
       strokeWidth: map['strokeWidth'] ?? 1,

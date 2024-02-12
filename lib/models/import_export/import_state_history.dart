@@ -48,7 +48,8 @@ class ImportStateHistory {
     }
 
     for (var image in List.from(map['cropRotateImages'] ?? [])) {
-      imgStateHistory.add(EditorImage(byteArray: Uint8List.fromList(List.from(image))));
+      imgStateHistory
+          .add(EditorImage(byteArray: Uint8List.fromList(List.from(image))));
     }
 
     for (var el in List.from(map['history'] ?? [])) {
@@ -73,7 +74,8 @@ class ImportStateHistory {
 
     return ImportStateHistory._(
       editorPosition: map['position'],
-      imgSize: Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
+      imgSize:
+          Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
       imgStateHistory: imgStateHistory,
       stateHistory: stateHistory,
       configs: configs,

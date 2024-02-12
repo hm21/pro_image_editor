@@ -66,11 +66,13 @@ class Layer {
           rotation: layer.rotation,
           scale: layer.scale,
           text: map['text'] ?? '-',
-          colorMode: LayerBackgroundColorModeE.values.firstWhere((element) => element.name == map['colorMode']),
+          colorMode: LayerBackgroundColorModeE.values
+              .firstWhere((element) => element.name == map['colorMode']),
           color: Color(map['color']),
           background: Color(map['background']),
           colorPickerPosition: map['colorPickerPosition'] ?? 0,
-          align: TextAlign.values.firstWhere((element) => element.name == map['align']),
+          align: TextAlign.values
+              .firstWhere((element) => element.name == map['align']),
         );
       case 'emoji':
         return EmojiLayerData(
@@ -125,10 +127,13 @@ class Layer {
 
   /// Generates a unique ID based on the current time.
   String _generateUniqueId() {
-    const String characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const String characters =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
     final Random random = Random();
-    final String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toRadixString(36).padLeft(8, '0');
+    final String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000)
+        .toRadixString(36)
+        .padLeft(8, '0');
 
     String randomPart = '';
     for (int i = 0; i < 20; i++) {

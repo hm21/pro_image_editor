@@ -14,7 +14,8 @@ import 'package:pro_image_editor/widgets/layer_widget.dart';
 import 'fake/fake_image.dart';
 
 void main() {
-  testWidgets('ProImageEditor initializes correctly', (WidgetTester tester) async {
+  testWidgets('ProImageEditor initializes correctly',
+      (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
       home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -26,7 +27,8 @@ void main() {
   });
 
   group('ProImageEditor open subeditors', () {
-    testWidgets('ProImageEditor opens PaintingEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens PaintingEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -56,7 +58,8 @@ void main() {
       expect(find.byType(TextEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens CropRotateEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens CropRotateEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -71,7 +74,8 @@ void main() {
       expect(find.byType(CropRotateEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens FilterEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens FilterEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -86,7 +90,8 @@ void main() {
       expect(find.byType(FilterEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens EmojiEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens EmojiEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -105,7 +110,8 @@ void main() {
     });
   });
 
-  testWidgets('ProImageEditor performs undo and redo action', (WidgetTester tester) async {
+  testWidgets('ProImageEditor performs undo and redo action',
+      (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
         home: ProImageEditor.memory(
       fakeMemoryImage,
