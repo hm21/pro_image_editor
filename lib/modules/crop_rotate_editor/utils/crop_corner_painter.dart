@@ -47,7 +47,16 @@ class CropCornerPainter extends CustomPainter {
     /// Draw top
     double heightVertical = (size.height * scaleFactor - size.height) / 2;
     double widthVertical = (size.width * scaleFactor - size.width) / 2;
+
     darkenPath.addRect(
+      Rect.fromCenter(
+        center: Offset(size.width / 2, size.height / 2),
+        width: size.width,
+        height: size.height,
+      ),
+    );
+
+    /*  darkenPath.addRect(
       Rect.fromCenter(
         center: Offset(size.width / 2, -heightVertical / 2),
         width: screenSize.width,
@@ -80,7 +89,7 @@ class CropCornerPainter extends CustomPainter {
         width: screenSize.width,
         height: heightVertical,
       ),
-    );
+    ); */
 
     canvas.drawPath(
         darkenPath,

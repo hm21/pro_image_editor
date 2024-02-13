@@ -757,7 +757,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     bool nearTopEdge = (localPosition.dy - _cropRect.top).abs() < edgeSize;
     bool nearBottomEdge = (localPosition.dy - _cropRect.bottom).abs() < edgeSize;
 
-    print(localPosition.dx);
     if (nearLeftEdge && nearTopEdge) {
       return CropAreaPart.topLeft;
     } else if (nearRightEdge && nearTopEdge) {
@@ -780,7 +779,10 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     // Convert the global position to local position
     Offset localPosition = details.localPosition;
 
-    if (_currentCropAreaPart != CropAreaPart.none) {
+    _translate += details.delta;
+    _setOffsetLimits();
+    setState(() {});
+    /*   if (_currentCropAreaPart != CropAreaPart.none) {
       // Update the _cropRect based on the dragged corner
       setState(() {
         // Example for one corner; implement similar logic for other corners
@@ -798,13 +800,13 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       _translate += details.delta;
       _setOffsetLimits();
       setState(() {});
-    }
+    } */
   }
 
   void _setOffsetLimits() {
-    double cropW = _cropRect.width;
-    double minX = (cropW * _zoomFactor - cropW) / 2;
-    double minY = (cropW * _zoomFactor - cropW) / 2;
+    double zoomFactor = _zoomFactor * _scaleAnimation.value;
+    double minX = (_imgWidth * zoomFactor - _imgWidth) / 2 / _zoomFactor;
+    double minY = (_imgHeight * _zoomFactor - _imgHeight) / 2 / _zoomFactor;
 
     if (_translate.dx > minX) {
       _translate = Offset(minX, _translate.dy);
@@ -816,13 +818,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       _translate = Offset(_translate.dx, minY);
     }
     if (_translate.dy < -minY) {
-      _translate = Offset(-minY, _translate.dy);
+      _translate = Offset(_translate.dx, -minY);
     }
-
-    print('-----------');
-    print(_zoomFactor);
-    print(minX);
-    print(_translate.dx);
   }
 
   void _mouseScroll(PointerSignalEvent event) {
@@ -942,7 +939,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   Widget _buildBody() {
-    /// TODO: remove me
     return LayoutBuilder(builder: (context, constraints) {
       _contentConstraints = constraints;
       _calcCropRect();
