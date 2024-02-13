@@ -1,6 +1,16 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
-    show RecentTabBehavior, CategoryIcons, Category, CategoryEmoji;
+    show
+        BottomActionBarConfig,
+        CategoryEmoji,
+        CategoryViewConfig,
+        DefaultEmojiTextStyle,
+        EmojiViewConfig,
+        SearchViewConfig,
+        SkinToneConfig,
+        defaultEmojiSet;
 import 'package:flutter/widgets.dart';
+
+import '../theme/theme_shared_values.dart';
 
 /// Configuration options for an emoji editor.
 ///
@@ -14,21 +24,15 @@ import 'package:flutter/widgets.dart';
 /// EmojiEditorConfigs(
 ///   enabled: true,
 ///   initScale: 5.0,
-///   recentTabBehavior: RecentTabBehavior.RECENT,
-///   enableSkinTones: true,
-///   recentsLimit: 28,
-///   textStyle: TextStyle(fontSize: 16.0),
-///   emojiSet: myCustomEmojiSet,
-///   verticalSpacing: 4.0,
-///   horizontalSpacing: 4.0,
-///   gridPadding: EdgeInsets.all(8.0),
-///   initCategory: Category.SMILEYS,
-///   replaceEmojiOnLimitExceed: false,
-///   categoryIcons: CategoryIcons(
-///     smileys: Icons.tag_faces,
-///     animals: Icons.pets,
-///   ),
-///   customSkinColorOverlayHorizontalOffset: 12.0,
+///   textStyle: TextStyle(fontSize: 16, color: Colors.black),
+///   checkPlatformCompatibility: true,
+///   emojiSet: customEmojiSet,
+///   searchViewConfig: SearchViewConfig(...),
+///   categoryViewConfig: CategoryViewConfig(...),
+///   emojiViewConfig: EmojiViewConfig(...),
+///   skinToneConfig: SkinToneConfig(...),
+///   bottomActionBarConfig: BottomActionBarConfig(...),
+///   swapCategoryAndBottomBar: true,
 /// );
 /// ```
 class EmojiEditorConfigs {
@@ -37,15 +41,6 @@ class EmojiEditorConfigs {
 
   /// The initial scale for displaying emojis.
   final double initScale;
-
-  /// Defines the behavior of the recent tab (Recent, Popular).
-  final RecentTabBehavior recentTabBehavior;
-
-  /// Enables the feature to select skin tones for certain emojis.
-  final bool enableSkinTones;
-
-  /// Limits the number of recently used emojis that will be saved.
-  final int recentsLimit;
 
   /// Custom emoji text style to apply to emoji characters in the grid.
   ///
@@ -59,31 +54,38 @@ class EmojiEditorConfigs {
   final bool checkPlatformCompatibility;
 
   /// Custom emojis; if set, overrides default emojis provided by the library.
-  final List<CategoryEmoji>? emojiSet;
+  final List<CategoryEmoji> emojiSet;
 
-  /// The initial [Category] that will be selected. The corresponding category
-  /// button in the bottom bar will be darkened.
-  final Category initCategory;
+  /// Configuration for the search view.
+  ///
+  /// This configures the appearance and behavior of the search view.
+  final SearchViewConfig? searchViewConfig;
 
-  /// Vertical spacing between emojis.
-  final double verticalSpacing;
+  /// Configuration for the category view.
+  ///
+  /// This configures the appearance and behavior of the category view.
+  final CategoryViewConfig? categoryViewConfig;
 
-  /// Horizontal spacing between emojis.
-  final double horizontalSpacing;
+  /// Configuration for the emoji view.
+  ///
+  /// This configures the appearance and behavior of the emoji view.
+  final EmojiViewConfig? emojiViewConfig;
 
-  /// The padding of the GridView, default is [EdgeInsets.zero].
-  final EdgeInsets gridPadding;
+  /// Configuration for the skin tone.
+  ///
+  /// This configures the appearance and behavior of the skin tone for emojis.
+  final SkinToneConfig skinToneConfig;
 
-  /// Determines whether to replace the latest emoji in the recents list when
-  /// the limit is exceeded.
-  final bool replaceEmojiOnLimitExceed;
+  /// Configuration for the bottom action bar.
+  ///
+  /// This configures the appearance and behavior of the bottom action bar.
+  final BottomActionBarConfig bottomActionBarConfig;
 
-  /// Determines the icons to display for each [Category].
-  final CategoryIcons categoryIcons;
-
-  /// Customize skin color overlay horizontal offset, especially useful when
-  /// EmojiPicker is not aligned to the left border of the screen.
-  final double? customSkinColorOverlayHorizontalOffset;
+  /// Determines whether to swap the positions of the category view and the bottom action bar.
+  ///
+  /// If true, the category view will be displayed at the bottom and the bottom action bar at the top.
+  /// If false, the category view will be displayed at the top and the bottom action bar at the bottom.
+  final bool swapCategoryAndBottomBar;
 
   /// Creates an instance of EmojiEditorConfigs with optional settings.
   ///
@@ -92,18 +94,23 @@ class EmojiEditorConfigs {
   const EmojiEditorConfigs({
     this.enabled = true,
     this.initScale = 5.0,
-    this.recentTabBehavior = RecentTabBehavior.RECENT,
-    this.enableSkinTones = true,
-    this.recentsLimit = 28,
-    this.textStyle = const TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
+    this.textStyle = DefaultEmojiTextStyle,
     this.checkPlatformCompatibility = true,
-    this.emojiSet,
-    this.verticalSpacing = 0,
-    this.horizontalSpacing = 0,
-    this.gridPadding = EdgeInsets.zero,
-    this.initCategory = Category.RECENT,
-    this.replaceEmojiOnLimitExceed = false,
-    this.categoryIcons = const CategoryIcons(),
-    this.customSkinColorOverlayHorizontalOffset,
+    this.emojiSet = defaultEmojiSet,
+    this.searchViewConfig,
+    this.bottomActionBarConfig = const BottomActionBarConfig(
+      buttonIconColor: imageEditorTextColor,
+      backgroundColor: imageEditorBackgroundColor,
+      buttonColor: imageEditorBackgroundColor,
+      showBackspaceButton: false,
+    ),
+    this.categoryViewConfig,
+    this.skinToneConfig = const SkinToneConfig(
+      enabled: true,
+      dialogBackgroundColor: Color(0xFF252728),
+      indicatorColor: Color(0xFF9E9E9E),
+    ),
+    this.swapCategoryAndBottomBar = true,
+    this.emojiViewConfig,
   });
 }

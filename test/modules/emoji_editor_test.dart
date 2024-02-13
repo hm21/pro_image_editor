@@ -33,19 +33,21 @@ void main() {
 
     testWidgets('EmojiEditor should set custom configs for EmojiPicker',
         (WidgetTester tester) async {
-      const horizontalSpacing = 50.0;
+      const swapCategoryAndBottomBar = false;
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: EmojiEditor(
-              configs: EmojiEditorConfigs(horizontalSpacing: horizontalSpacing),
+              configs: EmojiEditorConfigs(
+                  swapCategoryAndBottomBar: swapCategoryAndBottomBar),
             ),
           ),
         ),
       );
       final EmojiPicker emojiPicker =
           tester.widget<EmojiPicker>(find.byType(EmojiPicker).first);
-      expect(emojiPicker.config.horizontalSpacing, horizontalSpacing);
+      expect(emojiPicker.config.swapCategoryAndBottomBar,
+          swapCategoryAndBottomBar);
     });
   });
 }

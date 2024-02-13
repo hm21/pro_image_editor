@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
 import 'dart:io';
 
@@ -5,8 +7,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -284,14 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 previewTextColor: Color(0xFFE1E1E1),
                                 background: Color.fromARGB(255, 22, 22, 22),
                               ),
-                              emojiEditor: EmojiEditorTheme(
-                                background: Color.fromARGB(255, 22, 22, 22),
-                                indicatorColor: Color(0xFF004C9E),
-                                iconColorSelected: Color(0xFF004C9E),
-                                iconColor: Color(0xFF9E9E9E),
-                                skinToneDialogBgColor: Color(0xFF252728),
-                                skinToneIndicatorColor: Color(0xFF9E9E9E),
-                              ),
+                              emojiEditor: EmojiEditorTheme(),
                               stickerEditor: StickerEditorTheme(),
                               background: Color.fromARGB(255, 22, 22, 22),
                               loadingDialogTextColor: Color(0xFFE1E1E1),
@@ -389,13 +386,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             emojiEditorConfigs: const EmojiEditorConfigs(
                               enabled: true,
                               initScale: 5.0,
-                              recentTabBehavior: RecentTabBehavior.RECENT,
-                              enableSkinTones: true,
-                              recentsLimit: 28,
                               textStyle: TextStyle(
                                   fontFamilyFallback: ['Apple Color Emoji']),
                               checkPlatformCompatibility: true,
-                              emojiSet: [
+                              /*  emojiSet: [
                                 CategoryEmoji(
                                   Category.ANIMALS,
                                   [
@@ -406,14 +400,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ],
                                 )
-                              ],
-                              verticalSpacing: 0,
-                              horizontalSpacing: 0,
-                              gridPadding: EdgeInsets.zero,
-                              initCategory: Category.RECENT,
-                              replaceEmojiOnLimitExceed: false,
-                              categoryIcons: CategoryIcons(),
-                              customSkinColorOverlayHorizontalOffset: 0,
+                              ], */
                             ),
                             designMode: ImageEditorDesignModeE.material,
                             heroTag: 'hero',
@@ -549,6 +536,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 icon: const Icon(Icons.layers_outlined),
                 label: const Text('Editor with Stickers'),
+              ),
+              const SizedBox(height: 30),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProImageEditor.asset(
+                        'assets/demo.png',
+                        onImageEditingComplete: (bytes) async {
+                          Navigator.pop(context);
+                        },
+                        configs: ProImageEditorConfigs(
+                          emojiEditorConfigs: EmojiEditorConfigs(
+                            checkPlatformCompatibility: false,
+                            textStyle: DefaultEmojiTextStyle.copyWith(
+                              fontFamily:
+                                  GoogleFonts.notoColorEmoji().fontFamily,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.emoji_emotions_outlined),
+                label: const Text('Google-Font Emojis'),
               ),
             ],
           ),

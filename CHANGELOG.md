@@ -1,5 +1,12 @@
 # Changelog
 
+### Version 2.4.0
+#### Breaking Changes
+- Updated `emoji_picker_flutter` dependency to version 2.0.0. This version introduces significant enhancements, including:
+  - Improved configuration options for better customization.
+  - Addition of a new search function for easier emoji discovery.
+  - Expanded design options for enhanced visual appearance.
+
 ## Version 2.3.2
 - **style:** Enclose if statement in block in pro_image_editor_main.dart
 
