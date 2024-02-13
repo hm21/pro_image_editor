@@ -6,22 +6,23 @@ class FlatIconTextButton extends TextButton {
   ///
   /// The [icon] and [label] parameters are required, while the others are optional.
   FlatIconTextButton({
-    Key? key,
-    VoidCallback? onPressed,
-    Clip clipBehavior = Clip.none,
-    FocusNode? focusNode,
+    super.key,
+    super.onPressed,
+    super.clipBehavior,
+    super.focusNode,
     required Widget icon,
     required Widget label,
   }) : super(
-          key: key,
-          onPressed: onPressed,
-          clipBehavior: clipBehavior,
-          focusNode: focusNode,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            maximumSize:
+                const Size(double.infinity, kBottomNavigationBarHeight),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               icon,
-              const SizedBox(height: 4.0),
+              const SizedBox(height: 5.0),
               label,
             ],
           ),

@@ -56,6 +56,23 @@ class PaintedModel {
     this.hit = false,
   });
 
+  factory PaintedModel.fromMap(Map map) {
+    List<Offset> offsets = [];
+
+    for (var el in List.from(map['offsets'])) {
+      offsets.add(Offset(el['x'], el['y']));
+    }
+
+    return PaintedModel(
+      mode: PaintModeE.values
+          .firstWhere((element) => element.name == map['mode']),
+      offsets: offsets,
+      color: Color(map['color']),
+      strokeWidth: map['strokeWidth'] ?? 1,
+      fill: map['fill'] ?? false,
+    );
+  }
+
   /// Creates a copy of this PaintedModel instance.
   PaintedModel copy() {
     return PaintedModel(
@@ -66,5 +83,23 @@ class PaintedModel {
       fill: fill,
       hit: hit,
     );
+  }
+
+  Map toMap() {
+    List<Map<String, double>> offsetMaps = [];
+
+    for (var offset in offsets) {
+      if (offset != null) {
+        offsetMaps.add({'x': offset.dx, 'y': offset.dy});
+      }
+    }
+
+    return {
+      'mode': mode.name,
+      'offsets': offsetMaps,
+      'color': color.value,
+      'strokeWidth': strokeWidth,
+      'fill': fill,
+    };
   }
 }

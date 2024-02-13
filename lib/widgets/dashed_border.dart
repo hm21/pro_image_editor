@@ -175,23 +175,32 @@ class DashedBorderPainter extends CustomPainter {
 
 class DraggablePoint extends StatelessWidget {
   final Function(Offset) onDrag;
+  final IconData icon;
+  final MouseCursor cursor;
 
   const DraggablePoint({
     super.key,
     required this.onDrag,
+    required this.icon,
+    required this.cursor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 0.2,
+    return MouseRegion(
+      cursor: cursor,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          border: Border.all(width: 0.2),
+          borderRadius: BorderRadius.circular(100),
+          color: Colors.white,
         ),
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
+        child: Icon(
+          icon,
+          color: const Color(0xFF000000),
+          size: 20,
+        ),
       ),
     );
   }

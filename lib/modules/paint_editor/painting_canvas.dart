@@ -63,7 +63,7 @@ class PaintingCanvas extends StatefulWidget {
   ///
   /// See factory methods like [PaintingCanvas.network], [PaintingCanvas.asset], [PaintingCanvas.file], and [PaintingCanvas.memory] for creating instances of this widget with specific image sources.
   const PaintingCanvas._({
-    Key? key,
+    super.key,
     this.assetPath,
     this.networkUrl,
     this.byteArray,
@@ -76,7 +76,7 @@ class PaintingCanvas extends StatefulWidget {
     required this.icons,
     required this.configs,
     this.onUpdate,
-  }) : super(key: key);
+  });
 
   /// Create a [PaintingCanvas] widget with an image loaded from a network URL.
   ///

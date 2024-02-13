@@ -36,9 +36,9 @@ class CustomPageRouteBuilder<T> extends PageRouteBuilder<T> {
   /// Navigator.of(context).push(customPageRoute);
   /// ```
   CustomPageRouteBuilder({
-    required RoutePageBuilder pageBuilder,
+    required super.pageBuilder,
     required this.pageTransitionsBuilder,
-  }) : super(pageBuilder: pageBuilder);
+  });
 
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,

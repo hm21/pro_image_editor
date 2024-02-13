@@ -70,6 +70,9 @@ class ImageEditorCustomWidgets {
   /// A custom widget for the bottom navigation bar.
   final Widget? bottomNavigationBar;
 
+  /// A custom bottom bar widget for the painting editor component.
+  final Widget? bottomBarPaintingEditor;
+
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
   const ImageEditorCustomWidgets({
     this.removeLayer,
@@ -79,5 +82,6 @@ class ImageEditorCustomWidgets {
     this.appBarCropRotateEditor,
     this.appBarFilterEditor,
     this.bottomNavigationBar,
+    this.bottomBarPaintingEditor,
   });
 }

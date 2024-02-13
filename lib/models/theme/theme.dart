@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 
 import 'theme_crop_rotate_editor.dart';
 import 'theme_emoji_editor.dart';
@@ -14,6 +15,7 @@ export 'theme_filter_editor.dart';
 export 'theme_text_editor.dart';
 export 'theme_crop_rotate_editor.dart';
 export 'theme_helper_lines.dart';
+export 'theme_sticker_editor.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor components
@@ -30,6 +32,7 @@ export 'theme_helper_lines.dart';
 ///   cropRotateEditor: CropRotateEditorTheme(),
 ///   filterEditor: FilterEditorTheme(),
 ///   emojiEditor: EmojiEditorTheme(),
+///   stickerEditor: StickerEditorTheme(),
 /// );
 /// ```
 ///
@@ -46,6 +49,8 @@ export 'theme_helper_lines.dart';
 /// - `filterEditor`: Theme for the filter editor.
 ///
 /// - `emojiEditor`: Theme for the emoji editor.
+///
+/// - `stickerEditor`: Theme for the sticker editor.
 ///
 /// - `background`: Background color for the image editor.
 ///
@@ -86,6 +91,9 @@ class ImageEditorTheme {
   /// Theme for the emoji editor.
   final EmojiEditorTheme emojiEditor;
 
+  /// Theme for the sticker editor.
+  final StickerEditorTheme stickerEditor;
+
   /// Background color for the image editor.
   final Color background;
 
@@ -107,6 +115,7 @@ class ImageEditorTheme {
     this.cropRotateEditor = const CropRotateEditorTheme(),
     this.filterEditor = const FilterEditorTheme(),
     this.emojiEditor = const EmojiEditorTheme(),
+    this.stickerEditor = const StickerEditorTheme(),
     this.background = imageEditorBackgroundColor,
     this.loadingDialogTextColor = imageEditorTextColor,
     this.uiOverlayStyle = const SystemUiOverlayStyle(

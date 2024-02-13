@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'package:pro_image_editor/modules/emoji_editor.dart';
-import 'package:pro_image_editor/modules/filter_editor.dart';
+import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
 import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
 import 'package:pro_image_editor/modules/text_editor.dart';
 

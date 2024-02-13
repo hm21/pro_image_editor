@@ -47,6 +47,9 @@ class TextEditor extends StatefulWidget {
   /// The design mode of the editor.
   final ImageEditorDesignModeE designMode;
 
+  /// A callback function that can be used to update the UI from custom widgets.
+  final Function? onUpdateUI;
+
   /// Creates a `TextEditor` widget.
   ///
   /// The [heroTag], [layer], [i18n], [customWidgets], and [imageEditorTheme] parameters are required.
@@ -55,6 +58,7 @@ class TextEditor extends StatefulWidget {
     required this.designMode,
     this.heroTag,
     this.layer,
+    this.onUpdateUI,
     this.configs = const TextEditorConfigs(),
     this.icons = const ImageEditorIcons(),
     this.i18n = const I18n(),
@@ -114,6 +118,7 @@ class TextEditorState extends State<TextEditor> {
       setState(() {
         _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       });
+      widget.onUpdateUI?.call();
     });
   }
 
@@ -155,6 +160,7 @@ class TextEditorState extends State<TextEditor> {
               ? TextAlign.right
               : TextAlign.left;
     });
+    widget.onUpdateUI?.call();
   }
 
   /// Toggles the background mode between various color modes.
@@ -169,6 +175,7 @@ class TextEditorState extends State<TextEditor> {
                   ? LayerBackgroundColorModeE.backgroundAndColorWithOpacity
                   : LayerBackgroundColorModeE.onlyColor;
     });
+    widget.onUpdateUI?.call();
   }
 
   /// Closes the editor without applying changes.
@@ -342,6 +349,7 @@ class TextEditorState extends State<TextEditor> {
                   setState(() {
                     _primaryColor = Color(value);
                   });
+                  widget.onUpdateUI?.call();
                 },
               ),
             ),
@@ -367,6 +375,8 @@ class TextEditorState extends State<TextEditor> {
                 children: [
                   Hero(
                     tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
+                    createRectTween: (begin, end) =>
+                        RectTween(begin: begin, end: end),
                     child: RoundedBackgroundText(
                       _textCtrl.text,
                       backgroundColor: _getBackgroundColor,

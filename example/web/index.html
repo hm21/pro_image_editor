@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,7 +28,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>example</title>
   <link rel="manifest" href="manifest.json">
@@ -38,10 +39,52 @@
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
+
+  <style>
+    /* Loading indicator styles */
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Hide loading spinner when Flutter app is loaded */
+    .loading-spinner-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
 </head>
+
 <body>
+  <!-- Loading spinner -->
+  <div class="loading-spinner-wrapper">
+    <div class="loading-spinner"></div>
+    <p style="margin-top: 10px;">Flutter Loading...</p>
+  </div>
+
   <script>
-    window.addEventListener('load', function(ev) {
+    window.addEventListener('load', function (ev) {
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
@@ -50,13 +93,22 @@
         onEntrypointLoaded: function (engineInitializer) {
           engineInitializer.initializeEngine({
             useColorEmoji: true,
-            renderer:'canvaskit'
+            renderer: 'canvaskit'
           }).then(function (appRunner) {
             appRunner.runApp();
           });
         }
       });
     });
+
+    window.addEventListener('flutter-first-frame', function () {
+      var loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.style.display = 'none';
+        document.removeChild(loadingScreen);
+      }
+    });
   </script>
 </body>
+
 </html>

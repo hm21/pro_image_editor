@@ -26,13 +26,13 @@ class AdaptiveDialog extends StatefulWidget {
   /// The [actions] is a list of [AdaptiveDialogAction] widgets to include as buttons.
   /// The [brightness] controls the brightness of the dialog.
   const AdaptiveDialog({
-    Key? key,
+    super.key,
     required this.designMode,
     required this.title,
     required this.content,
     required this.actions,
     required this.brightness,
-  }) : super(key: key);
+  });
 
   @override
   State<AdaptiveDialog> createState() => _AdaptiveDialogState();
@@ -81,11 +81,11 @@ class AdaptiveDialogAction extends StatefulWidget {
   /// The [onPressed] callback is executed when the button is pressed.
   /// The [child] widget is displayed as the action button.
   const AdaptiveDialogAction({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.child,
     required this.designMode,
-  }) : super(key: key);
+  });
 
   @override
   State<AdaptiveDialogAction> createState() => _AdaptiveDialogActionState();

@@ -78,6 +78,11 @@ class CropRotateEditor extends StatefulWidget {
 // TODO: write doc
   final Widget? layersWidget;
 
+  /// A callback function that can be used to update the UI from custom widgets.
+  final Function? onUpdateUI;
+
+  final Uint8List? bytesWithLayers;
+
   /// Private constructor for creating a `CropRotateEditor` widget.
   const CropRotateEditor._({
     super.key,
@@ -85,6 +90,7 @@ class CropRotateEditor extends StatefulWidget {
     this.assetPath,
     this.networkUrl,
     this.file,
+    this.onUpdateUI,
     required this.theme,
     required this.i18n,
     required this.customWidgets,
@@ -95,6 +101,7 @@ class CropRotateEditor extends StatefulWidget {
     required this.heroTag,
     required this.configs,
     this.layersWidget,
+    this.bytesWithLayers,
   }) : assert(
           byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
@@ -116,6 +123,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `heroTag`: A unique hero tag for the image (required).
   /// - `configs`: Configuration settings for the CropRotateEditor (required).
+  /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
   /// A CropRotateEditor widget configured with the provided parameters and the in-memory image data.
@@ -149,6 +157,8 @@ class CropRotateEditor extends StatefulWidget {
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
     Widget? layersWidget,
+    Uint8List? bytesWithLayers,
+    Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -163,6 +173,7 @@ class CropRotateEditor extends StatefulWidget {
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -182,6 +193,9 @@ class CropRotateEditor extends StatefulWidget {
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `heroTag`: A unique hero tag for the image (required).
   /// - `configs`: Configuration settings for the CropRotateEditor (required).
+  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
+  /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
+  ///
   ///
   /// Returns:
   /// A CropRotateEditor widget configured with the provided parameters and the image loaded from the File.
@@ -215,6 +229,8 @@ class CropRotateEditor extends StatefulWidget {
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
     Widget? layersWidget,
+    Uint8List? bytesWithLayers,
+    Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -226,6 +242,8 @@ class CropRotateEditor extends StatefulWidget {
       designMode: designMode,
       imageEditorTheme: imageEditorTheme,
       layersWidget: layersWidget,
+      bytesWithLayers: bytesWithLayers,
+      onUpdateUI: onUpdateUI,
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
@@ -248,6 +266,8 @@ class CropRotateEditor extends StatefulWidget {
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `heroTag`: A unique hero tag for the image (required).
   /// - `configs`: Configuration settings for the CropRotateEditor (required).
+  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
+  /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
   /// A CropRotateEditor widget configured with the provided parameters and the image loaded from the asset.
@@ -281,6 +301,8 @@ class CropRotateEditor extends StatefulWidget {
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
     Widget? layersWidget,
+    Uint8List? bytesWithLayers,
+    Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -295,6 +317,7 @@ class CropRotateEditor extends StatefulWidget {
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -313,6 +336,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
   /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the image loaded from the network URL.
@@ -340,6 +364,8 @@ class CropRotateEditor extends StatefulWidget {
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
     Widget? layersWidget,
+    Uint8List? bytesWithLayers,
+    Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
@@ -354,6 +380,7 @@ class CropRotateEditor extends StatefulWidget {
       imageSize: imageSize,
       heroTag: heroTag,
       configs: configs,
+      onUpdateUI: onUpdateUI,
     );
   }
 
@@ -375,6 +402,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
   /// - `networkUrl`: An optional String representing the network URL of the image to be loaded.
   /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
   /// A FilterEditor widget configured with the provided parameters and the detected image source.
@@ -401,6 +429,8 @@ class CropRotateEditor extends StatefulWidget {
     required String heroTag,
     CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
     Widget? layersWidget,
+    Uint8List? bytesWithLayers,
+    Function? onUpdateUI,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
@@ -420,6 +450,7 @@ class CropRotateEditor extends StatefulWidget {
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else if (file != null) {
       return CropRotateEditor.file(
@@ -435,6 +466,7 @@ class CropRotateEditor extends StatefulWidget {
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else if (networkUrl != null) {
       return CropRotateEditor.network(
@@ -450,6 +482,7 @@ class CropRotateEditor extends StatefulWidget {
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else if (assetPath != null) {
       return CropRotateEditor.asset(
@@ -465,6 +498,7 @@ class CropRotateEditor extends StatefulWidget {
         imageSize: imageSize,
         heroTag: heroTag,
         configs: configs,
+        onUpdateUI: onUpdateUI,
       );
     } else {
       throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
@@ -545,6 +579,15 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     _rotateCtrl.dispose();
     _scaleCtrl.dispose();
     super.dispose();
+
+    /// Performs a delayed initialization to ensure UI is ready.
+    Future<void> _delayedInit() async {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (mounted) {
+        /*   setState(() => _inited = true); */
+        widget.onUpdateUI?.call();
+      }
+    }
   }
 
   double get _imgWidth => widget.imageSize.width;

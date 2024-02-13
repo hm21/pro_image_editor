@@ -38,6 +38,7 @@ void main() {
                 layerHoverCursor: SystemMouseCursors.click,
                 i18n: const I18n(),
                 textFontSize: 16.0,
+                stickerInitWidth: 100,
                 emojiTextStyle: const TextStyle(fontSize: 16.0),
                 enabledHitDetection: true,
                 freeStyleHighPerformanceScaling: true,
