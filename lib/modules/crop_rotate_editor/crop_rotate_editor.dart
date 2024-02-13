@@ -695,15 +695,16 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       ..reset()
       ..forward();
 
-    Size screenSize = Size(
-      _contentConstraints.maxWidth,
-      _contentConstraints.maxHeight,
+    Size contentSize = Size(
+      _contentConstraints.maxWidth - _screenPadding * 2,
+      _contentConstraints.maxHeight - _screenPadding * 2,
     );
+    bool shouldTransformY = contentSize.aspectRatio > _imgSize.aspectRatio;
 
-    double scaleX = screenSize.width / _imgSize.width;
-    double scaleY = screenSize.height / _imgSize.height;
+    double scaleX = contentSize.width / _imgSize.width;
+    double scaleY = contentSize.height / _imgSize.height;
 
-    double scale = !_rotated90deg ? 1 : min(scaleX, scaleY);
+    double scale = shouldTransformY ? scaleY : scaleX;
     _scaleCtrl.animateTo(scale, curve: Curves.ease);
     _scaleAnimation = Tween<double>(begin: _oldScaleFactor, end: scale).animate(_scaleCtrl);
     _scaleCtrl
@@ -1070,6 +1071,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         _image,
         fit: BoxFit.contain,
         designMode: widget.designMode,
+        width: _imgWidth,
+        height: _imgHeight,
       ),
     );
   }
