@@ -79,6 +79,9 @@ class ProImageEditor extends StatefulWidget {
   /// when the editing is completed.
   final ImageEditingCompleteCallback onImageEditingComplete;
 
+  /// A callback function that will be called before the image editor will close.
+  final Function? onCloseEditor;
+
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
 
@@ -93,16 +96,21 @@ class ProImageEditor extends StatefulWidget {
   /// The [byteArray], [assetPath], [networkUrl], and [file] parameters represent different
   /// sources of the image data. At least one of these parameters must not be null.
   ///
-  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// The `configs` parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
   ///
-  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
-  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
+  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
+  /// You can use this callback if you want to close the editor with your own parameters or if you want
+  /// to prevent Navigator.pop(context) from being automatically triggered.
+  ///
+  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
   const ProImageEditor._({
     super.key,
     required this.onImageEditingComplete,
+    this.onCloseEditor,
     this.onUpdateUI,
     this.byteArray,
     this.assetPath,
@@ -118,18 +126,23 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The `byteArray` parameter should contain the image data as a `Uint8List`.
   ///
-  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// The `configs` parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
   ///
-  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
-  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
+  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
+  /// You can use this callback if you want to close the editor with your own parameters or if you want
+  /// to prevent Navigator.pop(context) from being automatically triggered.
+  ///
+  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.memory(
     Uint8List byteArray, {
     Key? key,
     required ImageEditingCompleteCallback onImageEditingComplete,
     Function? onUpdateUI,
+    Function? onCloseEditor,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
   }) {
     return ProImageEditor._(
@@ -137,6 +150,7 @@ class ProImageEditor extends StatefulWidget {
       byteArray: byteArray,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -145,25 +159,31 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The `file` parameter should point to the image file.
   ///
-  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// The `configs` parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
   ///
-  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
-  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
+  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
+  /// You can use this callback if you want to close the editor with your own parameters or if you want
+  /// to prevent Navigator.pop(context) from being automatically triggered.
+  ///
+  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.file(
     File file, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
     Function? onUpdateUI,
+    Function? onCloseEditor,
   }) {
     return ProImageEditor._(
       key: key,
       file: file,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -172,25 +192,31 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The `assetPath` parameter should specify the path to the image asset.
   ///
-  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// The `configs` parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
   ///
-  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
-  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
+  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
+  /// You can use this callback if you want to close the editor with your own parameters or if you want
+  /// to prevent Navigator.pop(context) from being automatically triggered.
+  ///
+  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.asset(
     String assetPath, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
     Function? onUpdateUI,
+    Function? onCloseEditor,
   }) {
     return ProImageEditor._(
       key: key,
       assetPath: assetPath,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -199,25 +225,31 @@ class ProImageEditor extends StatefulWidget {
   ///
   /// The `networkUrl` parameter should specify the URL of the image to be loaded.
   ///
-  /// The [configs] parameter allows you to customize the image editing experience by providing
+  /// The `configs` parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
   ///
-  /// The [onImageEditingComplete] parameter is a callback function that will be called when the editing is done,
+  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
-  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
+  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
+  /// You can use this callback if you want to close the editor with your own parameters or if you want
+  /// to prevent Navigator.pop(context) from being automatically triggered.
+  ///
+  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
   factory ProImageEditor.network(
     String networkUrl, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
     Function? onUpdateUI,
+    Function? onCloseEditor,
   }) {
     return ProImageEditor._(
       key: key,
       networkUrl: networkUrl,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -1422,7 +1454,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// is in progress.
   void doneEditing() async {
     if (_editPosition <= 0 && _layers.isEmpty) {
-      return Navigator.pop(context);
+      return closeEditor();
     }
     _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
@@ -1442,6 +1474,8 @@ class ProImageEditorState extends State<ProImageEditor> {
     }
 
     if (mounted) loading.hide(context);
+
+    widget.onCloseEditor?.call();
   }
 
   /// Close the image editor.
@@ -1450,7 +1484,11 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// It navigates back to the previous screen or closes the modal editor.
   void closeEditor() {
     if (_editPosition <= 0) {
-      Navigator.pop(context);
+      if (widget.onCloseEditor == null) {
+        Navigator.pop(context);
+      } else {
+        widget.onCloseEditor!.call();
+      }
     } else {
       closeWarning();
     }
@@ -1477,7 +1515,11 @@ class ProImageEditorState extends State<ProImageEditor> {
             onPressed: () {
               _editPosition = 0;
               Navigator.pop(context, 'OK');
-              Navigator.pop(context);
+              if (widget.onCloseEditor == null) {
+                Navigator.pop(context);
+              } else {
+                widget.onCloseEditor!.call();
+              }
             },
             child: Text(widget.configs.i18n.various.closeEditorWarningConfirmBtn),
           ),
