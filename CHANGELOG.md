@@ -1,6 +1,9 @@
 # Changelog
 
-### Version 2.4.0
+## Version 2.4.1
+- **Fixed:** Hotfix to close the editor with custom parameters, details in [GitHub issue #6](https://github.com/hm21/pro_image_editor/issues/6)
+
+## Version 2.4.0
 #### Breaking Changes
 - Updated `emoji_picker_flutter` dependency to version 2.0.0. This version introduces significant enhancements, including:
   - Improved configuration options for better customization.
@@ -20,10 +23,10 @@
 - **Enhancement:** Improved the fly animation within the Hero widget to provide a smoother and more visually appealing experience.
 
 ## Version 2.2.2
-- **Fixed:** example bug for `emojiSet`, details in [GitHub issue #2](https://github.com/hm21/pro_image_editor/issues/2#issue-2110634675)
+- **Fixed:** example bug for `emojiSet`, details in [GitHub issue #2](https://github.com/hm21/pro_image_editor/issues/2)
 
 ## Version 2.2.1
-- **Fixed:** close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1#issuecomment-1905984568)
+- **Fixed:** close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1)
 
 ## Version 2.2.0
 - Added functionality to extend the bottomAppBar with custom widgets, providing users with more flexibility in customizing the bottom bar.
