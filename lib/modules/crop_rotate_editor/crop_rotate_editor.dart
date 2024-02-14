@@ -531,12 +531,13 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   double _zoomFactor = 1;
   double _oldScaleFactor = 1;
-  double _screenPadding = 20;
-  Offset _translate = Offset(0, 0);
+  final double _screenPadding = 20;
+  Offset _translate = const Offset(0, 0);
 
   Rect _cropRect = Rect.zero;
   Rect _viewRect = Rect.zero;
   late BoxConstraints _contentConstraints;
+  late BoxConstraints _renderedImgConstraints;
 
   /// Debounce for scaling actions in the editor.
   bool _interactionActive = false;
@@ -592,11 +593,19 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   double get _imgWidth => widget.imageSize.width;
   double get _imgHeight => widget.imageSize.height;
+
+  double get _renderedImgWidth => min(_renderedImgConstraints.maxWidth, _imgWidth);
+  double get _renderedImgHeight => min(_renderedImgConstraints.maxHeight, _imgHeight);
+
   bool get _imageSticksToScreenWidth => _imgWidth >= _contentConstraints.maxWidth;
   bool get _rotated90deg => _rotationCount % 2 != 0;
   Size get _imgSize => Size(
         _rotated90deg ? _imgHeight : _imgWidth,
         _rotated90deg ? _imgWidth : _imgHeight,
+      );
+  Size get _renderedImgSize => Size(
+        _rotated90deg ? _renderedImgHeight : _renderedImgWidth,
+        _rotated90deg ? _renderedImgWidth : _renderedImgHeight,
       );
 
   /// Handles the crop image operation.
@@ -699,10 +708,10 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       _contentConstraints.maxWidth - _screenPadding * 2,
       _contentConstraints.maxHeight - _screenPadding * 2,
     );
-    bool shouldTransformY = contentSize.aspectRatio > _imgSize.aspectRatio;
+    bool shouldTransformY = contentSize.aspectRatio > _renderedImgSize.aspectRatio;
 
-    double scaleX = contentSize.width / _imgSize.width;
-    double scaleY = contentSize.height / _imgSize.height;
+    double scaleX = contentSize.width / _renderedImgSize.width;
+    double scaleY = contentSize.height / _renderedImgSize.height;
 
     double scale = shouldTransformY ? scaleY : scaleX;
     _scaleCtrl.animateTo(scale, curve: Curves.ease);
@@ -773,13 +782,19 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   void _onDragStart(DragStartDetails details) {
     _currentCropAreaPart = _determineCropAreaPart(details.localPosition);
+    _interactionActive = true;
+    setState(() {});
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    _interactionActive = false;
+    setState(() {});
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
-    // Convert the global position to local position
-    Offset localPosition = details.localPosition;
+    var offset = _convertOffsetByTransformations(details.delta);
 
-    _translate += details.delta;
+    _translate += Offset(offset.dx, offset.dy);
     _setOffsetLimits();
     setState(() {});
     /*   if (_currentCropAreaPart != CropAreaPart.none) {
@@ -804,38 +819,83 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   void _setOffsetLimits() {
-    double zoomFactor = _zoomFactor * _scaleAnimation.value;
-    double minX = (_imgWidth * zoomFactor - _imgWidth) / 2 / _zoomFactor;
-    double minY = (_imgHeight * _zoomFactor - _imgHeight) / 2 / _zoomFactor;
+    if (_zoomFactor == 1) {
+      _translate = const Offset(0, 0);
+    } else {
+      double zoomFactor = _zoomFactor * _scaleAnimation.value;
 
-    if (_translate.dx > minX) {
-      _translate = Offset(minX, _translate.dy);
-    }
-    if (_translate.dx < -minX) {
-      _translate = Offset(-minX, _translate.dy);
-    }
-    if (_translate.dy > minY) {
-      _translate = Offset(_translate.dx, minY);
-    }
-    if (_translate.dy < -minY) {
-      _translate = Offset(_translate.dx, -minY);
+      double minX = (_renderedImgWidth * zoomFactor - _renderedImgWidth) / 2 / _zoomFactor;
+      double minY = (_renderedImgHeight * _zoomFactor - _renderedImgHeight) / 2 / _zoomFactor;
+
+      if (_rotated90deg) {}
+
+      var offset = _translate;
+
+      if (offset.dx > minX) {
+        _translate = Offset(minX, _translate.dy);
+      }
+      if (offset.dx < -minX) {
+        _translate = Offset(-minX, _translate.dy);
+      }
+      if (offset.dy > minY) {
+        _translate = Offset(_translate.dx, minY);
+      }
+      if (offset.dy < -minY) {
+        _translate = Offset(_translate.dx, -minY);
+      }
     }
   }
 
   void _mouseScroll(PointerSignalEvent event) {
     if (event is PointerScrollEvent) {
       double factor = 0.1;
-      if (event.scrollDelta.dy > 0) {
+      double delta = event.scrollDelta.dy;
+
+      if (delta > 0) {
         _zoomFactor -= factor;
         _zoomFactor = max(1, _zoomFactor);
-      } else if (event.scrollDelta.dy < 0) {
+      } else if (delta < 0) {
         _zoomFactor += factor;
         _zoomFactor = min(7, _zoomFactor);
       }
-      // TODO: Zoom to exact mouse position
+
+      if (delta < 0 && _zoomFactor < 7 && _zoomFactor > 1) {
+        double mouseX = _contentConstraints.maxWidth / 2 - event.position.dx;
+        double mouseY = _contentConstraints.maxHeight / 2 - event.position.dy;
+
+        double moveX = mouseX / (_zoomFactor * 10);
+        double moveY = mouseY / (_zoomFactor * 10);
+
+        var offset = _convertOffsetByTransformations(Offset(moveX, moveY));
+
+        double offsetX = _translate.dx + offset.dx;
+        double offsetY = _translate.dy + offset.dy;
+        _translate = Offset(offsetX, offsetY);
+      }
       _setOffsetLimits();
       setState(() {});
     }
+  }
+
+  Offset _convertOffsetByTransformations(Offset offset) {
+    int rotation = _rotationCount % 4;
+    double dx = offset.dx;
+    double dy = offset.dy;
+    if (rotation == 1) {
+      dx = offset.dy;
+      dy = -offset.dx;
+    } else if (rotation == 2) {
+      dx = -offset.dx;
+      dy = -offset.dy;
+    } else if (rotation == 3) {
+      dx = -offset.dy;
+      dy = offset.dx;
+    }
+
+    if (_flipX) dx *= -1;
+    if (_flipY) dy *= -1;
+
+    return Offset(dx, dy);
   }
 
   @override
@@ -975,6 +1035,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     return GestureDetector(
       onPanStart: _onDragStart,
       onPanUpdate: _onDragUpdate,
+      onPanEnd: _onDragEnd,
       child: child,
     );
   }
@@ -1034,6 +1095,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         willChange: _showWidgets,
         foregroundPainter: _showWidgets
             ? CropCornerPainter(
+                offset: _translate,
                 cropRect: _cropRect,
                 viewRect: _viewRect,
                 scaleFactor: _zoomFactor,
@@ -1063,12 +1125,23 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   Widget _buildImage() {
     return Hero(
       tag: widget.heroTag,
-      child: AutoImage(
-        _image,
-        fit: BoxFit.contain,
-        designMode: widget.designMode,
-        width: _imgWidth,
-        height: _imgHeight,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth,
+          maxWidth: _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            _renderedImgConstraints = constraints;
+            return AutoImage(
+              _image,
+              fit: BoxFit.contain,
+              designMode: widget.designMode,
+              width: _imgWidth,
+              height: _imgHeight,
+            );
+          },
+        ),
       ),
     );
   }

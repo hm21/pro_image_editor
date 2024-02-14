@@ -8,12 +8,17 @@ class CropCornerPainter extends CustomPainter {
   final Size screenSize;
   final ImageEditorTheme imageEditorTheme;
   final bool interactionActive;
+  final Offset offset;
 
-  double cornerLength = 50;
-  double cornerWidth = 7;
+  double cornerLength = 36;
+  double cornerWidth = 6;
+
+  double helperLineWidth = 0.5;
+
   final double scaleFactor;
 
   CropCornerPainter({
+    required this.offset,
     required this.cropRect,
     required this.viewRect,
     required this.screenSize,
@@ -24,102 +29,109 @@ class CropCornerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Calculate the middle point of the canvas
-    double centerX = size.width / 2;
-    double centerY = size.height / 2;
-
-    // Calculate the dimensions of your cropRect relative to the center point
-    double cropRectWidth = cropRect.width;
-    double cropRectHeight = cropRect.height;
-
-    // Calculate the top-left position of cropRect relative to the center point
-    double cropRectLeft = centerX - (cropRectWidth / 2);
-    double cropRectTop = centerY - (cropRectHeight / 2);
-
-    // Optionally, draw draggable handles at the corners using the same relative calculations
-    final cornerPaint = Paint()
-      ..color = imageEditorTheme.cropRotateEditor.cropCornerColor
-      ..style = PaintingStyle.fill;
-
-    /// Draw outline darken layers
-    Path darkenPath = Path();
-
-    /// Draw top
-    double heightVertical = (size.height * scaleFactor - size.height) / 2;
-    double widthVertical = (size.width * scaleFactor - size.width) / 2;
-
-    darkenPath.addRect(
-      Rect.fromCenter(
-        center: Offset(size.width / 2, size.height / 2),
-        width: size.width,
-        height: size.height,
-      ),
-    );
-
-    /*  darkenPath.addRect(
-      Rect.fromCenter(
-        center: Offset(size.width / 2, -heightVertical / 2),
-        width: screenSize.width,
-        height: heightVertical,
-      ),
-    );
-
-    /// Draw right
-    darkenPath.addRect(
-      Rect.fromCenter(
-        center: Offset(size.width + widthVertical / 2, size.height / 2),
-        width: widthVertical,
-        height: size.height,
-      ),
-    );
-
-    /// Draw left
-    darkenPath.addRect(
-      Rect.fromCenter(
-        center: Offset(-widthVertical / 2, size.height / 2),
-        width: widthVertical,
-        height: size.height,
-      ),
-    );
-
-    /// Draw bottom
-    darkenPath.addRect(
-      Rect.fromCenter(
-        center: Offset(size.width / 2, size.height + heightVertical / 2),
-        width: screenSize.width,
-        height: heightVertical,
-      ),
-    ); */
-
-    canvas.drawPath(
-        darkenPath,
-        Paint()
-          ..color = interactionActive ? Colors.black38 : Colors.black54
-          ..style = PaintingStyle.fill);
-
-    /// Draw corners
-    Path cornerPath = Path();
-
-    /// Top-Left
-    cornerPath.addRect(Rect.fromLTWH(0, 0, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(0, 0, cornerWidth, cornerLength));
-
-    /// Top-Right
-    cornerPath.addRect(Rect.fromLTWH(size.width - cornerLength, 0, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(size.width - cornerWidth, 0, cornerWidth, cornerLength));
-
-    /// Bottom-Left
-    cornerPath.addRect(Rect.fromLTWH(0, size.height - cornerWidth, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(0, size.height - cornerLength, cornerWidth, cornerLength));
-
-    /// Bottom-Right
-    cornerPath.addRect(Rect.fromLTWH(size.width - cornerLength, size.height - cornerWidth, cornerLength, cornerWidth));
-    cornerPath.addRect(Rect.fromLTWH(size.width - cornerWidth, size.height - cornerLength, cornerWidth, cornerLength));
-
-    canvas.drawPath(cornerPath, cornerPaint);
+    // TODO: Create rounded cropper and other aspect ratios
+    _drawDarkenOutside(canvas: canvas, size: size);
+    if (interactionActive) _drawHelperAreas(canvas: canvas, size: size);
+    _drawCorners(canvas: canvas, size: size);
   }
 
-  void _drawCorners() {}
+  void _drawDarkenOutside({
+    required Canvas canvas,
+    required Size size,
+  }) {
+    /// Draw outline darken layers
+    Path path = Path();
+    path.addRect(Rect.fromCenter(
+      center: Offset(
+        size.width / 2 + offset.dx * scaleFactor,
+        size.height / 2 + offset.dy * scaleFactor,
+      ),
+      width: size.width * scaleFactor,
+      height: size.height * scaleFactor,
+    ));
+
+    /// Create a path for the current rectangle
+    Path rectPath = Path()
+      ..addRect(
+        Rect.fromCenter(
+          center: Offset(size.width / 2, size.height / 2),
+          width: size.width,
+          height: size.height,
+        ),
+      );
+
+    /// Subtract the area of the current rectangle from the path for the entire canvas
+    path = Path.combine(PathOperation.difference, path, rectPath);
+
+    /// Draw the darkened area
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = interactionActive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.7)
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  void _drawCorners({
+    required Canvas canvas,
+    required Size size,
+  }) {
+    Path path = Path();
+
+    /// Top-Left
+    path.addRect(Rect.fromLTWH(0, 0, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(0, 0, cornerWidth, cornerLength));
+
+    /// Top-Right
+    path.addRect(Rect.fromLTWH(size.width - cornerLength, 0, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(size.width - cornerWidth, 0, cornerWidth, cornerLength));
+
+    /// Bottom-Left
+    path.addRect(Rect.fromLTWH(0, size.height - cornerWidth, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(0, size.height - cornerLength, cornerWidth, cornerLength));
+
+    /// Bottom-Right
+    path.addRect(Rect.fromLTWH(size.width - cornerLength, size.height - cornerWidth, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(size.width - cornerWidth, size.height - cornerLength, cornerWidth, cornerLength));
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = imageEditorTheme.cropRotateEditor.cropCornerColor
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  void _drawHelperAreas({
+    required Canvas canvas,
+    required Size size,
+  }) {
+    Path path = Path();
+
+    for (var i = 1; i < 3; i++) {
+      path.addRect(
+        Rect.fromLTWH(
+          size.width / 3 * i,
+          0,
+          helperLineWidth,
+          size.height,
+        ),
+      );
+      path.addRect(
+        Rect.fromLTWH(
+          0,
+          size.height / 3 * i,
+          size.width,
+          helperLineWidth,
+        ),
+      );
+    }
+
+    final cornerPaint = Paint()
+      ..color = imageEditorTheme.cropRotateEditor.helperLineColor
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, cornerPaint);
+  }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {

@@ -57,10 +57,14 @@ class CropRotateEditorTheme {
   /// Color of the crop corners.
   final Color cropCornerColor;
 
+  /// Color from the helper lines when moving the image.
+  final Color helperLineColor;
+
   /// Creates an instance of the `CropRotateEditorTheme` class with the specified theme properties.
   const CropRotateEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
+    this.helperLineColor = const Color(0xFF000000),
     this.background = imageEditorBackgroundColor,
     this.cropCornerColor = imageEditorPrimaryColor,
   });

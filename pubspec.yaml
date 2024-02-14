@@ -40,7 +40,6 @@ dependencies:
   vibration: ^1.8.4
   http: ^1.2.0
   emoji_picker_flutter: ^2.0.0
-  image: ^4.1.7
 
 dev_dependencies:
   flutter_test:

@@ -659,7 +659,6 @@ class ProImageEditorState extends State<ProImageEditor> {
     var widthRatio = w.toDouble() / _screen.width;
     var heightRatio = h.toDouble() / _screenInnerHeight;
     _pixelRatio = max(heightRatio, widthRatio);
-
     _imageWidth = w / _pixelRatio;
     _imageHeight = h / _pixelRatio;
     _inited = true;
