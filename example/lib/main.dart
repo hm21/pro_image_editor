@@ -129,12 +129,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             Navigator.pop(context);
                           },
                           configs: ProImageEditorConfigs(
-                            activePreferredOrientations: [
-                              DeviceOrientation.portraitUp,
-                              DeviceOrientation.portraitDown,
-                              DeviceOrientation.landscapeLeft,
-                              DeviceOrientation.landscapeRight,
-                            ],
                             i18n: const I18n(
                               various: I18nVarious(
                                 loadingDialogMsg: 'Please wait...',

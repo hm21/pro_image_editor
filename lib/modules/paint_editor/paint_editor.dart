@@ -820,6 +820,7 @@ class PaintingEditorState extends State<PaintingEditor> {
           MediaQuery.of(context).size.height -
               MediaQuery.of(context).viewInsets.bottom -
               kToolbarHeight -
+              kBottomNavigationBarHeight -
               MediaQuery.of(context).padding.top -
               30,
         ),

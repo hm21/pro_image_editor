@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.4.2
+- **Feat:** Add landscape mode for device orientation, details in [GitHub issue #7](https://github.com/hm21/pro_image_editor/issues/7)
+
 ## Version 2.4.1
 - **Fixed:** Hotfix to close the editor with custom parameters, details in [GitHub issue #6](https://github.com/hm21/pro_image_editor/issues/6)
 

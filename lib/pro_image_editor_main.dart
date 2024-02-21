@@ -442,6 +442,9 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Indicates whether the browser's context menu was enabled before any changes.
   bool _browserContextMenuBeforeEnabled = false;
 
+  /// Store the last device Orientation
+  int _deviceOrientation = 0;
+
   @override
   void initState() {
     super.initState();
@@ -467,7 +470,6 @@ class ProImageEditorState extends State<ProImageEditor> {
         .then((value) => _deviceCanCustomVibrate = value ?? false);
 
     ServicesBinding.instance.keyboard.addHandler(_onKey);
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     if (kIsWeb) {
       _browserContextMenuBeforeEnabled = BrowserContextMenu.enabled;
       BrowserContextMenu.disableContextMenu();
@@ -480,8 +482,6 @@ class ProImageEditorState extends State<ProImageEditor> {
     _bottomBarScrollCtrl.dispose();
     _scaleDebounce.dispose();
     _screenSizeDebouncer.dispose();
-    SystemChrome.setPreferredOrientations(
-        widget.configs.activePreferredOrientations);
     SystemChrome.setSystemUIOverlayStyle(_theme.brightness == Brightness.dark
         ? SystemUiOverlayStyle.light
         : SystemUiOverlayStyle.dark);
@@ -1771,43 +1771,48 @@ class ProImageEditorState extends State<ProImageEditor> {
           ),
         );
     if (_imageNeedDecode) _decodeImage();
-    return PopScope(
-      canPop: _editPosition <= 0 || _doneEditing,
-      onPopInvoked: (didPop) {
-        if (_editPosition > 0 && !_doneEditing) {
-          closeWarning();
-        }
-      },
-      child: LayoutBuilder(builder: (context, constraints) {
-        // Check if screensize changed to recalculate image size
-        if (_lastScreenSize.width != constraints.maxWidth ||
-            _lastScreenSize.height != constraints.maxHeight) {
-          _screenSizeDebouncer(() {
-            _decodeImage();
-          });
-          _lastScreenSize = Size(
-            constraints.maxWidth,
-            constraints.maxHeight,
-          );
-        }
+    return OrientationBuilder(builder: (context, orientation) {
+      if (_deviceOrientation != orientation.index) {
+        _deviceOrientation = orientation.index;
+      }
+      return PopScope(
+        canPop: _editPosition <= 0 || _doneEditing,
+        onPopInvoked: (didPop) {
+          if (_editPosition > 0 && !_doneEditing) {
+            closeWarning();
+          }
+        },
+        child: LayoutBuilder(builder: (context, constraints) {
+          // Check if screensize changed to recalculate image size
+          if (_lastScreenSize.width != constraints.maxWidth ||
+              _lastScreenSize.height != constraints.maxHeight) {
+            _screenSizeDebouncer(() {
+              _decodeImage();
+            });
+            _lastScreenSize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+          }
 
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: widget.configs.imageEditorTheme.uiOverlayStyle,
-          child: Theme(
-            data: _theme,
-            child: SafeArea(
-              child: Scaffold(
-                backgroundColor: widget.configs.imageEditorTheme.background,
-                resizeToAvoidBottomInset: false,
-                appBar: _buildAppBar(),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomNavBar(),
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: widget.configs.imageEditorTheme.uiOverlayStyle,
+            child: Theme(
+              data: _theme,
+              child: SafeArea(
+                child: Scaffold(
+                  backgroundColor: widget.configs.imageEditorTheme.background,
+                  resizeToAvoidBottomInset: false,
+                  appBar: _buildAppBar(),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomNavBar(),
+                ),
               ),
             ),
-          ),
-        );
-      }),
-    );
+          );
+        }),
+      );
+    });
   }
 
   PreferredSizeWidget? _buildAppBar() {
