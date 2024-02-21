@@ -23,9 +23,6 @@ class ProImageEditorConfigs {
   /// A unique hero tag for the Image Editor widget.
   final String heroTag;
 
-  /// The editor currently supports only 'portraitUp' orientation. After closing the editor, it will revert to your default settings.
-  final List<DeviceOrientation> activePreferredOrientations;
-
   /// Internationalization settings for the Image Editor.
   final I18n i18n;
 
@@ -85,12 +82,6 @@ class ProImageEditorConfigs {
   const ProImageEditorConfigs({
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
-    this.activePreferredOrientations = const [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ],
     this.i18n = const I18n(),
     this.helperLines = const HelperLines(),
     this.customWidgets = const ImageEditorCustomWidgets(),

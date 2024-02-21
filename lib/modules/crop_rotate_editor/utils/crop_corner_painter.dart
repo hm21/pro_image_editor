@@ -67,7 +67,9 @@ class CropCornerPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = interactionActive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.7)
+        ..color = interactionActive
+            ? Colors.black.withOpacity(0.5)
+            : Colors.black.withOpacity(0.7)
         ..style = PaintingStyle.fill,
     );
   }
@@ -83,16 +85,22 @@ class CropCornerPainter extends CustomPainter {
     path.addRect(Rect.fromLTWH(0, 0, cornerWidth, cornerLength));
 
     /// Top-Right
-    path.addRect(Rect.fromLTWH(size.width - cornerLength, 0, cornerLength, cornerWidth));
-    path.addRect(Rect.fromLTWH(size.width - cornerWidth, 0, cornerWidth, cornerLength));
+    path.addRect(
+        Rect.fromLTWH(size.width - cornerLength, 0, cornerLength, cornerWidth));
+    path.addRect(
+        Rect.fromLTWH(size.width - cornerWidth, 0, cornerWidth, cornerLength));
 
     /// Bottom-Left
-    path.addRect(Rect.fromLTWH(0, size.height - cornerWidth, cornerLength, cornerWidth));
-    path.addRect(Rect.fromLTWH(0, size.height - cornerLength, cornerWidth, cornerLength));
+    path.addRect(
+        Rect.fromLTWH(0, size.height - cornerWidth, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(
+        0, size.height - cornerLength, cornerWidth, cornerLength));
 
     /// Bottom-Right
-    path.addRect(Rect.fromLTWH(size.width - cornerLength, size.height - cornerWidth, cornerLength, cornerWidth));
-    path.addRect(Rect.fromLTWH(size.width - cornerWidth, size.height - cornerLength, cornerWidth, cornerLength));
+    path.addRect(Rect.fromLTWH(size.width - cornerLength,
+        size.height - cornerWidth, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(size.width - cornerWidth,
+        size.height - cornerLength, cornerWidth, cornerLength));
 
     canvas.drawPath(
       path,
@@ -135,6 +143,8 @@ class CropCornerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return oldDelegate is! CropCornerPainter || oldDelegate.cropRect != cropRect || oldDelegate.viewRect != viewRect;
+    return oldDelegate is! CropCornerPainter ||
+        oldDelegate.cropRect != cropRect ||
+        oldDelegate.viewRect != viewRect;
   }
 }

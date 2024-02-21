@@ -19,7 +19,8 @@ class LayerDashedBorderHelper extends StatefulWidget {
   });
 
   @override
-  State<LayerDashedBorderHelper> createState() => _LayerDashedBorderHelperState();
+  State<LayerDashedBorderHelper> createState() =>
+      _LayerDashedBorderHelperState();
 }
 
 class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {

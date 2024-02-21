@@ -24,8 +24,11 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
   /// Returns a list of predefined aspect ratios.
   List<AspectRatioItem> get _aspectRatios {
     return [
-      AspectRatioItem(text: widget.i18n.aspectRatioFree, value: CropAspectRatios.custom),
-      AspectRatioItem(text: widget.i18n.aspectRatioOriginal, value: CropAspectRatios.original),
+      AspectRatioItem(
+          text: widget.i18n.aspectRatioFree, value: CropAspectRatios.custom),
+      AspectRatioItem(
+          text: widget.i18n.aspectRatioOriginal,
+          value: CropAspectRatios.original),
       AspectRatioItem(text: '1/1', value: CropAspectRatios.ratio1_1),
       AspectRatioItem(text: '4/3', value: CropAspectRatios.ratio4_3),
       AspectRatioItem(text: '3/4', value: CropAspectRatios.ratio3_4),

@@ -81,7 +81,8 @@ class _MyHomePageState extends State<MyHomePage> {
               if (!kIsWeb) ...[
                 OutlinedButton.icon(
                   onPressed: () async {
-                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
                       type: FileType.image,
                     );
 
@@ -129,17 +130,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             Navigator.pop(context);
                           },
                           configs: ProImageEditorConfigs(
-                            activePreferredOrientations: [
-                              DeviceOrientation.portraitUp,
-                              DeviceOrientation.portraitDown,
-                              DeviceOrientation.landscapeLeft,
-                              DeviceOrientation.landscapeRight,
-                            ],
                             i18n: const I18n(
                               various: I18nVarious(
                                 loadingDialogMsg: 'Please wait...',
                                 closeEditorWarningTitle: 'Close Image Editor?',
-                                closeEditorWarningMessage: 'Are you sure you want to close the Image Editor? Your changes will not be saved.',
+                                closeEditorWarningMessage:
+                                    'Are you sure you want to close the Image Editor? Your changes will not be saved.',
                                 closeEditorWarningConfirmBtn: 'OK',
                                 closeEditorWarningCancelBtn: 'Cancel',
                               ),
@@ -181,7 +177,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 smallScreenMoreTooltip: 'More',
                               ),
                               filterEditor: I18nFilterEditor(
-                                applyFilterDialogMsg: 'Filter is being applied.',
+                                applyFilterDialogMsg:
+                                    'Filter is being applied.',
                                 bottomNavigationBarText: 'Filter',
                                 back: 'Back',
                                 done: 'Done',
@@ -293,7 +290,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               uiOverlayStyle: SystemUiOverlayStyle(
                                 statusBarColor: Color(0x42000000),
                                 statusBarIconBrightness: Brightness.light,
-                                systemNavigationBarIconBrightness: Brightness.light,
+                                systemNavigationBarIconBrightness:
+                                    Brightness.light,
                                 statusBarBrightness: Brightness.dark,
                                 systemNavigationBarColor: Color(0xFF000000),
                               ),
@@ -314,8 +312,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               textEditor: IconsTextEditor(
                                 bottomNavBar: Icons.text_fields,
                                 alignLeft: Icons.align_horizontal_left_rounded,
-                                alignCenter: Icons.align_horizontal_center_rounded,
-                                alignRight: Icons.align_horizontal_right_rounded,
+                                alignCenter:
+                                    Icons.align_horizontal_center_rounded,
+                                alignRight:
+                                    Icons.align_horizontal_right_rounded,
                                 backgroundMode: Icons.layers_rounded,
                               ),
                               cropRotateEditor: IconsCropRotateEditor(
@@ -327,7 +327,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 bottomNavBar: Icons.filter,
                               ),
                               emojiEditor: IconsEmojiEditor(
-                                bottomNavBar: Icons.sentiment_satisfied_alt_rounded,
+                                bottomNavBar:
+                                    Icons.sentiment_satisfied_alt_rounded,
                               ),
                               stickerEditor: IconsStickerEditor(
                                 bottomNavBar: Icons.layers_outlined,
@@ -363,9 +364,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               canToggleBackgroundMode: true,
                               initFontSize: 24.0,
                               initialTextAlign: TextAlign.center,
-                              initialBackgroundColorMode: LayerBackgroundColorModeE.backgroundAndColor,
+                              initialBackgroundColorMode:
+                                  LayerBackgroundColorModeE.backgroundAndColor,
                             ),
-                            cropRotateEditorConfigs: const CropRotateEditorConfigs(
+                            cropRotateEditorConfigs:
+                                const CropRotateEditorConfigs(
                               enabled: true,
                               canRotate: true,
                               canChangeAspectRatio: true,
@@ -378,7 +381,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             emojiEditorConfigs: const EmojiEditorConfigs(
                               enabled: true,
                               initScale: 5.0,
-                              textStyle: TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
+                              textStyle: TextStyle(
+                                  fontFamilyFallback: ['Apple Color Emoji']),
                               checkPlatformCompatibility: true,
                               /*  emojiSet: [
                                 CategoryEmoji(
@@ -444,12 +448,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             enabled: true,
                             buildStickers: (setLayer) {
                               return ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(20)),
                                 child: Container(
-                                  color: const Color.fromARGB(255, 224, 239, 251),
+                                  color:
+                                      const Color.fromARGB(255, 224, 239, 251),
                                   child: GridView.builder(
                                     padding: const EdgeInsets.all(16),
-                                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                    gridDelegate:
+                                        const SliverGridDelegateWithMaxCrossAxisExtent(
                                       maxCrossAxisExtent: 150,
                                       mainAxisSpacing: 10,
                                       crossAxisSpacing: 10,
@@ -464,9 +471,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                           width: 120,
                                           height: 120,
                                           fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, loadingProgress) {
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
                                             return AnimatedSwitcher(
-                                              layoutBuilder: (currentChild, previousChildren) {
+                                              layoutBuilder: (currentChild,
+                                                  previousChildren) {
                                                 return SizedBox(
                                                   width: 120,
                                                   height: 120,
@@ -475,18 +484,26 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     alignment: Alignment.center,
                                                     children: <Widget>[
                                                       ...previousChildren,
-                                                      if (currentChild != null) currentChild,
+                                                      if (currentChild != null)
+                                                        currentChild,
                                                     ],
                                                   ),
                                                 );
                                               },
-                                              duration: const Duration(milliseconds: 200),
+                                              duration: const Duration(
+                                                  milliseconds: 200),
                                               child: loadingProgress == null
                                                   ? child
                                                   : Center(
-                                                      child: CircularProgressIndicator(
-                                                        value: loadingProgress.expectedTotalBytes != null
-                                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        value: loadingProgress
+                                                                    .expectedTotalBytes !=
+                                                                null
+                                                            ? loadingProgress
+                                                                    .cumulativeBytesLoaded /
+                                                                loadingProgress
+                                                                    .expectedTotalBytes!
                                                             : null,
                                                       ),
                                                     ),
@@ -529,7 +546,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           emojiEditorConfigs: EmojiEditorConfigs(
                             checkPlatformCompatibility: false,
                             textStyle: DefaultEmojiTextStyle.copyWith(
-                              fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
+                              fontFamily:
+                                  GoogleFonts.notoColorEmoji().fontFamily,
                             ),
                           ),
                         ),
