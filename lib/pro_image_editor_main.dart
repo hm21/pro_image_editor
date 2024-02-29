@@ -80,9 +80,6 @@ class ProImageEditor extends StatefulWidget {
   /// Configuration options for the image editor.
   final ProImageEditorConfigs configs;
 
-  /// Optional watermark text
-  final String? watermark;
-
   /// Creates a `ProImageEditor` widget for image editing.
   ///
   /// Use one of the specific constructors like `memory`, `file`, `asset`, or `network`
@@ -106,7 +103,6 @@ class ProImageEditor extends StatefulWidget {
     this.assetPath,
     this.networkUrl,
     this.file,
-    this.watermark,
     this.configs = const ProImageEditorConfigs(),
   }) : assert(
           byteArray != null ||
@@ -141,7 +137,6 @@ class ProImageEditor extends StatefulWidget {
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
       onUpdateUI: onUpdateUI,
-      watermark: watermark,
     );
   }
 
@@ -170,7 +165,6 @@ class ProImageEditor extends StatefulWidget {
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
       onUpdateUI: onUpdateUI,
-      watermark: watermark,
     );
   }
 
@@ -199,7 +193,6 @@ class ProImageEditor extends StatefulWidget {
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
       onUpdateUI: onUpdateUI,
-      watermark: watermark,
     );
   }
 
@@ -228,7 +221,6 @@ class ProImageEditor extends StatefulWidget {
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
       onUpdateUI: onUpdateUI,
-      watermark: watermark,
     );
   }
 
@@ -1820,7 +1812,7 @@ class ProImageEditorState extends State<ProImageEditor> {
             if (_selectedLayer >= 0) _buildLayers(),
             _buildHelperLines(),
             if (_selectedLayer >= 0) _buildRemoveIcon(),
-            if (widget.watermark != null)
+            if (widget.configs.watermark != null)
               Align(
                 alignment: Alignment.bottomRight,
                 child: Text('$widget.watermark'),
