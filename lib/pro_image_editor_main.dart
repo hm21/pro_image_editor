@@ -1815,7 +1815,7 @@ class ProImageEditorState extends State<ProImageEditor> {
             if (widget.configs.watermark != null)
               Align(
                 alignment: Alignment.bottomRight,
-                child: Text('$widget.watermark'),
+                child: Text('${widget.configs.watermark}'),
               ),
           ],
         ),
