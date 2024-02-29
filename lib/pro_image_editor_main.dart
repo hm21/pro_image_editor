@@ -1747,7 +1747,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       height: _imageHeight,
       designMode: widget.configs.designMode,
     );
-
+    final configs = widget.configs;
     return Listener(
       onPointerSignal: isDesktop ? _mouseScroll : null,
       child: GestureDetector(
@@ -1799,6 +1799,15 @@ class ProImageEditorState extends State<ProImageEditor> {
                                   child: editorImage,
                                 ),
                                 if (_selectedLayer < 0) _buildLayers(),
+                                if (configs.watermark != null)
+                                  Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: Text(
+                                      '${configs.watermark}',
+                                      style: configs.watermarkStyle ??
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -1812,11 +1821,6 @@ class ProImageEditorState extends State<ProImageEditor> {
             if (_selectedLayer >= 0) _buildLayers(),
             _buildHelperLines(),
             if (_selectedLayer >= 0) _buildRemoveIcon(),
-            if (widget.configs.watermark != null)
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Text('${widget.configs.watermark}'),
-              ),
           ],
         ),
       ),

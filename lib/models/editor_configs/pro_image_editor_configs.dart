@@ -67,6 +67,8 @@ class ProImageEditorConfigs {
   /// Watermark Config
   final String? watermark;
 
+  final TextStyle? watermarkStyle;
+
   /// Creates an instance of [ProImageEditorConfigs].
   /// - The `theme` specifies the theme for the Image Editor.
   /// - The `heroTag` is a unique tag for the Image Editor widget. By default, it is 'Pro-Image-Editor-Hero'.
@@ -106,5 +108,6 @@ class ProImageEditorConfigs {
     this.stickerEditorConfigs,
     this.designMode = ImageEditorDesignModeE.material,
     this.watermark,
+    this.watermarkStyle,
   });
 }
