@@ -155,10 +155,10 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
   /// you can encode your image
   ///
   /// it costs much time and blocks ui.
-  //var fileData = encodeJpg(src);
+  //var fileData = encodePng(src);
 
   /// it will not block ui with using isolate.
-  //var fileData = await compute(encodeJpg, src);
+  //var fileData = await compute(encodePng, src);
   //var fileData = await isolateEncodeImage(src);
   Uint8List? fileData;
   if (src != null) {
@@ -166,12 +166,12 @@ Future<Uint8List?> cropImageDataWithDartLibrary({
     //If there's only one frame, encode it to jpg.
     if (isDesktop || isWebMobile) {
       fileData = onlyOneFrame
-          ? encodeJpg(Image.from(src.frames.first))
+          ? encodePng(Image.from(src.frames.first))
           : encodeGif(src);
     } else {
       //fileData = await lb.run<List<int>, Image>(encodeJpg, src);
       fileData = onlyOneFrame
-          ? await compute(encodeJpg, src)
+          ? await compute(encodePng, src)
           : await compute(encodeGif, src);
     }
   }
@@ -229,6 +229,8 @@ Future<Uint8List?> cropImageDataWithNativeLibrary({
   if (action.hasRotateAngle) {
     option.addOption(RotateOption(rotateAngle));
   }
+
+  option.outputFormat = const OutputFormat.png();
 
   final Uint8List? result = await ImageEditor.editImage(
     image: img,
