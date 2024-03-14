@@ -47,6 +47,7 @@ class ImageWithMultipleFilters extends StatelessWidget {
     }
 
     return Stack(
+      alignment: Alignment.center,
       children: [
         img,
         filteredImg,
