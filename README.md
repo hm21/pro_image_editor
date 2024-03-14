@@ -914,7 +914,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `canToggleBackgroundMode`    | Determines if the background mode can be toggled.        | `true`                                         |
 | `canChangeFontScale`         | Determines if the font scale can be change.              | `true`                                         |
 | `initFontSize`               | The initial font size for text.                          | `24.0`                                         |
-| `initialFontSize`            | The initial font scale for text.                         | `1.0`                                          |
+| `initFontScale`              | The initial font scale for text.                         | `1.0`                                          |
 | `maxFontScale`               | The max font scale for text.                             | `3.0`                                          |
 | `minFontSize`                | The min font scale for text.                             | `0.3`                                          |
 | `initialTextAlign`           | The initial text alignment for the layer.                | `TextAlign.center`                             |
