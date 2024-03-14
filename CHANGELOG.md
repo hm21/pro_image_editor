@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.4.5
+- **Feat:** Add parameter `allowCompleteWithEmptyEditing`. Details in [GitHub pull #11](https://github.com/hm21/pro_image_editor/pull/11)
+
 ## Version 2.4.4
 - **Fix:** Hotfix for transparent images that are not displaying correctly after crop/rotate. Details in [GitHub issue #10](https://github.com/hm21/pro_image_editor/issues/10)
 
