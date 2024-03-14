@@ -1,8 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
