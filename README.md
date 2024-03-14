@@ -805,7 +805,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `appBarBackgroundColor`         | Background color of the app bar in the blur editor.   | `imageEditorAppBarColor` (Default theme value) |
 | `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
 | `background`                    | Background color of the blur editor.                 | `imageEditorBackgroundColor` (Default theme value) |
-| `previewTextColor`              | Color of the preview text.                            | `Color(0xFFE1E1E1)` |
 
 
 #### Theme emojiEditor
