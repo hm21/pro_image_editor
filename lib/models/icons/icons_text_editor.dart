@@ -17,6 +17,12 @@ class IconsTextEditor {
   /// The icon for toggling background mode.
   final IconData backgroundMode;
 
+  /// The icon for changing font scale.
+  final IconData fontScale;
+
+  /// The icon for resetting font scale to preset value.
+  final IconData resetFontScale;
+
   /// Creates an instance of [IconsTextEditor] with customizable icon settings.
   ///
   /// You can provide custom icons for various actions in the Text Editor component.
@@ -45,6 +51,8 @@ class IconsTextEditor {
     this.alignLeft = Icons.align_horizontal_left_rounded,
     this.alignCenter = Icons.align_horizontal_center_rounded,
     this.alignRight = Icons.align_horizontal_right_rounded,
+    this.fontScale = Icons.format_size_rounded,
+    this.resetFontScale = Icons.refresh_rounded,
     this.backgroundMode = Icons.layers_rounded,
   });
 }

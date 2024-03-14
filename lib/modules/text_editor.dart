@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
@@ -10,6 +12,8 @@ import '../models/theme/theme.dart';
 import '../models/i18n/i18n.dart';
 import '../models/icons/icons.dart';
 import '../models/layer.dart';
+import '../utils/theme_functions.dart';
+import '../widgets/bottom_sheets_header_row.dart';
 import '../widgets/color_picker/bar_color_picker.dart';
 import '../widgets/color_picker/color_picker_configs.dart';
 import '../widgets/layer_widget.dart';
@@ -78,6 +82,7 @@ class TextEditorState extends State<TextEditor> {
   Color _primaryColor = Colors.black;
   late TextAlign align;
   late LayerBackgroundColorModeE backgroundColorMode;
+  late double fontScale;
   int _numLines = 0;
   double _colorPosition = 0;
 
@@ -85,6 +90,7 @@ class TextEditorState extends State<TextEditor> {
   void initState() {
     super.initState();
     align = widget.configs.initialTextAlign;
+    fontScale = widget.configs.initFontScale;
     backgroundColorMode = widget.configs.initialBackgroundColorMode;
     _initializeFromLayer();
     _setupTextControllerListener();
@@ -102,6 +108,7 @@ class TextEditorState extends State<TextEditor> {
     if (widget.layer != null) {
       _textCtrl.text = widget.layer!.text;
       align = widget.layer!.align;
+      fontScale = widget.layer!.fontScale;
       backgroundColorMode = widget.layer!.colorMode!;
       _primaryColor =
           backgroundColorMode == LayerBackgroundColorModeE.background
@@ -151,6 +158,11 @@ class TextEditorState extends State<TextEditor> {
                 : _getContrastColor(_primaryColor).withOpacity(0.5);
   }
 
+  /// Gets the text font size based on the selected font scale.
+  double get _getTextFontSize {
+    return widget.configs.initFontSize * fontScale;
+  }
+
   /// Toggles the text alignment between left, center, and right.
   void toggleTextAlign() {
     setState(() {
@@ -178,6 +190,75 @@ class TextEditorState extends State<TextEditor> {
     widget.onUpdateUI?.call();
   }
 
+  /// Displays a range slider for adjusting the line width of the painting tool.
+  ///
+  /// This method shows a range slider in a modal bottom sheet for adjusting the line width of the painting tool.
+  void openFontScaleBottomSheet() {
+    final presetFontScale = fontScale;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor:
+          widget.imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
+      builder: (BuildContext context) {
+        return Material(
+          color: Colors.transparent,
+          textStyle: platformTextStyle(context, widget.designMode),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  void updateFontScaleScale(double value) {
+                    fontScale = (value * 10).ceilToDouble() / 10;
+                    setState(() {});
+                    this.setState(() {});
+                  }
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      BottomSheetHeaderRow(
+                        title: '${widget.i18n.textEditor.fontScale} ${fontScale}x',
+                        theme: widget.theme,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Slider.adaptive(
+                                max: widget.configs.maxFontScale,
+                                min: widget.configs.minFontScale,
+                                divisions: (widget.configs.maxFontScale - widget.configs.minFontScale) ~/ 0.1,
+                                value: fontScale,
+                                onChanged: updateFontScaleScale,
+                              ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconTheme(
+                            data: Theme.of(context).primaryIconTheme,
+                            child: IconButton(
+                              onPressed: fontScale != presetFontScale ? () {
+                                updateFontScaleScale(presetFontScale);
+                              } : null,
+                              icon: Icon(
+                                widget.icons.textEditor.resetFontScale,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// Closes the editor without applying changes.
   void close() {
     Navigator.pop(context);
@@ -192,6 +273,7 @@ class TextEditorState extends State<TextEditor> {
           background: _getBackgroundColor,
           color: _getTextColor,
           align: align,
+          fontScale: fontScale,
           colorMode: backgroundColorMode,
           colorPickerPosition: _colorPosition,
         ),
@@ -252,6 +334,13 @@ class TextEditorState extends State<TextEditor> {
                           ? widget.icons.textEditor.alignRight
                           : widget.icons.textEditor.alignCenter),
                 ),
+              if (widget.configs.canChangeFontScale)
+                IconButton(
+                  key: const ValueKey('BackgroundModeFontScaleButton'),
+                  tooltip: widget.i18n.textEditor.fontScale,
+                  onPressed: openFontScaleBottomSheet,
+                  icon: Icon(widget.icons.textEditor.fontScale),
+                ),
               if (widget.configs.canToggleBackgroundMode)
                 IconButton(
                   key: const ValueKey('BackgroundModeColorIconButton'),
@@ -278,6 +367,18 @@ class TextEditorState extends State<TextEditor> {
                               : widget.icons.textEditor.alignCenter),
                       onTap: () {
                         toggleTextAlign();
+                        if (widget.designMode ==
+                            ImageEditorDesignModeE.cupertino) {
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+                  if (widget.configs.canChangeFontScale)
+                    PopupMenuOption(
+                      label: widget.i18n.textEditor.fontScale,
+                      icon: Icon(widget.icons.textEditor.fontScale),
+                      onTap: () {
+                        openFontScaleBottomSheet();
                         if (widget.designMode ==
                             ImageEditorDesignModeE.cupertino) {
                           Navigator.pop(context);
@@ -369,7 +470,7 @@ class TextEditorState extends State<TextEditor> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: SizedBox(
-              height: widget.configs.initFontSize * _numLines * 1.35 + 15,
+              height: _getTextFontSize * _numLines * 1.35 + 15,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -383,7 +484,7 @@ class TextEditorState extends State<TextEditor> {
                       textAlign: align,
                       style: TextStyle(
                         color: _getTextColor,
-                        fontSize: widget.configs.initFontSize,
+                        fontSize: _getTextFontSize,
                         fontWeight: FontWeight.w400,
                         height: 1.35,
                         letterSpacing: 0,
@@ -402,7 +503,7 @@ class TextEditorState extends State<TextEditor> {
                       maxLines: null,
                       cursorColor:
                           widget.imageEditorTheme.textEditor.inputCursorColor,
-                      cursorHeight: widget.configs.initFontSize * 1.2,
+                      cursorHeight: _getTextFontSize * 1.2,
                       scrollPhysics: const NeverScrollableScrollPhysics(),
                       decoration: InputDecoration(
                           border: InputBorder.none,
@@ -414,13 +515,13 @@ class TextEditorState extends State<TextEditor> {
                           hintStyle: TextStyle(
                             color: widget
                                 .imageEditorTheme.textEditor.inputHintColor,
-                            fontSize: widget.configs.initFontSize,
+                            fontSize: _getTextFontSize,
                             fontWeight: FontWeight.w400,
                             height: 1.35,
                           )),
                       style: TextStyle(
                         color: Colors.transparent,
-                        fontSize: widget.configs.initFontSize,
+                        fontSize: _getTextFontSize,
                         fontWeight: FontWeight.w400,
                         height: 1.35,
                         letterSpacing: 0,
