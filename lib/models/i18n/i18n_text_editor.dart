@@ -15,6 +15,9 @@ class I18nTextEditor {
   /// Text for the "Align text" setting.
   final String textAlign;
 
+  /// Text for the "Text scale" setting.
+  final String fontScale;
+
   /// Text for the "Background mode" setting.
   final String backgroundMode;
 
@@ -45,6 +48,7 @@ class I18nTextEditor {
     this.back = 'Back',
     this.done = 'Done',
     this.textAlign = 'Align text',
+    this.fontScale = 'Font scale',
     this.backgroundMode = 'Background mode',
     this.smallScreenMoreTooltip = 'More',
   });

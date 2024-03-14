@@ -111,6 +111,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Text-Editor
   - ✅ Color picker
   - ✅ Align-Text => left, right and center
+  - ✅ Change Text Scale
   - ✅ Multiple background modes like in whatsapp
 - ✅ Crop-Rotate-Editor
 - ✅ Filter-Editor
@@ -640,15 +641,16 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 #### `i18n textEditor`
 
-| Property                 | Description                                        | Default Value      |
-|--------------------------|----------------------------------------------------|--------------------|
-| `bottomNavigationBarText`| Text for the bottom navigation bar item            | `'Text'`             |
-| `inputHintText`          | Placeholder text displayed in the text input field| `'Enter text'`       |
-| `done`                   | Text for the "Done" button                          | `'Done'`             |
-| `back`                   | Text for the "Back" button                          | `'Back'`             |
-| `textAlign`              | Text for the "Align text" setting                   | `'Align text'`       |
-| `backgroundMode`         | Text for the "Background mode" setting              | `'Background mode'`  |
-| `smallScreenMoreTooltip` | Tooltip text for the "More" option on small screens| `'More'`             |
+| Property                  | Description                                         | Default Value       |
+|---------------------------|-----------------------------------------------------|---------------------|
+| `bottomNavigationBarText` | Text for the bottom navigation bar item             | `'Text'`            |
+| `inputHintText`           | Placeholder text displayed in the text input field  | `'Enter text'`      |
+| `done`                    | Text for the "Done" button                          | `'Done'`            |
+| `back`                    | Text for the "Back" button                          | `'Back'`            |
+| `textAlign`               | Text for the "Align text" setting                   | `'Align text'`      |
+| `fontScale`               | Text for the "Font Scale" setting                   | `'Font Scale'`      |
+| `backgroundMode`          | Text for the "Background mode" setting              | `'Background mode'` |
+| `smallScreenMoreTooltip`  | Tooltip text for the "More" option on small screens | `'More'`            |
 
 
 #### `i18n cropRotateEditor`
@@ -842,13 +844,15 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `dashLine`     | The icon for the dashed line drawing tool.      | `Icons.power_input`   |
 
 #### icons textEditor
-| Property        | Description                               | Default Value                        |
-| --------------- | ----------------------------------------- | ------------------------------------ |
-| `bottomNavBar`  | The icon for the bottom navigation bar.   | `Icons.text_fields`                  |
-| `alignLeft`     | The icon for aligning text to the left.   | `Icons.align_horizontal_left_rounded` |
-| `alignCenter`   | The icon for aligning text to the center. | `Icons.align_horizontal_center_rounded` |
-| `alignRight`    | The icon for aligning text to the right.  | `Icons.align_horizontal_right_rounded` |
-| `backgroundMode`| The icon for toggling background mode.    | `Icons.layers_rounded`               |
+| Property         | Description                                        | Default Value                           |
+|------------------|----------------------------------------------------|-----------------------------------------|
+| `bottomNavBar`   | The icon for the bottom navigation bar.            | `Icons.text_fields`                     |
+| `alignLeft`      | The icon for aligning text to the left.            | `Icons.align_horizontal_left_rounded`   |
+| `alignCenter`    | The icon for aligning text to the center.          | `Icons.align_horizontal_center_rounded` |
+| `alignRight`     | The icon for aligning text to the right.           | `Icons.align_horizontal_right_rounded`  |
+| `fontScale`      | The icon for changing font scale.                  | `Icons.format_size_rounded`             |
+| `resetFontScale` | The icon for resetting font scale to preset value. | `Icons.refresh_rounded`                 |
+| `backgroundMode` | The icon for toggling background mode.             | `Icons.layers_rounded`                  |
 
 
 #### icons cropRotateEditor
@@ -903,14 +907,18 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 <details>
   <summary><b>textEditorConfigs</b></summary>
 
-| Property                    | Description                                          | Default Value                              |
-|-----------------------------|------------------------------------------------------|--------------------------------------------|
-| `enabled`                   | Indicates whether the text editor is enabled.        | `true`                                     |
-| `canToggleTextAlign`        | Determines if the text alignment options can be toggled. | `true`                                  |
-| `canToggleBackgroundMode`   | Determines if the background mode can be toggled.    | `true`                                     |
-| `initFontSize`              | The initial font size for text.                      | `24.0`                                     |
-| `initialTextAlign`          | The initial text alignment for the layer.            | `TextAlign.center`                         |
-| `initialBackgroundColorMode`| The initial background color mode for the layer.      | `LayerBackgroundColorModeE.backgroundAndColor` |
+| Property                     | Description                                              | Default Value                                  |
+|------------------------------|----------------------------------------------------------|------------------------------------------------|
+| `enabled`                    | Indicates whether the text editor is enabled.            | `true`                                         |
+| `canToggleTextAlign`         | Determines if the text alignment options can be toggled. | `true`                                         |
+| `canToggleBackgroundMode`    | Determines if the background mode can be toggled.        | `true`                                         |
+| `canChangeFontScale`         | Determines if the font scale can be change.              | `true`                                         |
+| `initFontSize`               | The initial font size for text.                          | `24.0`                                         |
+| `initFontScale`              | The initial font scale for text.                         | `1.0`                                          |
+| `maxFontScale`               | The max font scale for text.                             | `3.0`                                          |
+| `minFontSize`                | The min font scale for text.                             | `0.3`                                          |
+| `initialTextAlign`           | The initial text alignment for the layer.                | `TextAlign.center`                             |
+| `initialBackgroundColorMode` | The initial background color mode for the layer.         | `LayerBackgroundColorModeE.backgroundAndColor` |
 </details>
 
 <details>

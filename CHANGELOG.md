@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.4.6
+- **Feat:** Add `Change Font Scale` feature to text editor. Details in [GitHub pull #14](https://github.com/hm21/pro_image_editor/pull/14)
+
 ## Version 2.4.5
 - **Feat:** Add parameter `allowCompleteWithEmptyEditing`. Details in [GitHub pull #11](https://github.com/hm21/pro_image_editor/pull/11)
 
