@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'icons_crop_rotate_editor.dart';
 import 'icons_emoji_editor.dart';
 import 'icons_filter_editor.dart';
+import 'icons_blur_editor.dart';
 import 'icons_painting_editor.dart';
 import 'icons_sticker_editor.dart';
 import 'icons_text_editor.dart';
@@ -11,6 +12,7 @@ export 'icons_crop_rotate_editor.dart';
 export 'icons_emoji_editor.dart';
 export 'icons_sticker_editor.dart';
 export 'icons_filter_editor.dart';
+export 'icons_blur_editor.dart';
 export 'icons_painting_editor.dart';
 export 'icons_text_editor.dart';
 
@@ -49,6 +51,9 @@ class ImageEditorIcons {
   /// Icons for the Filter Editor component.
   final IconsFilterEditor filterEditor;
 
+  /// Icons for the Blur Editor component.
+  final IconsBlurEditor blurEditor;
+
   /// Icons for the Emoji Editor component.
   final IconsEmojiEditor emojiEditor;
 
@@ -70,6 +75,7 @@ class ImageEditorIcons {
   /// - [textEditor]: Customizable icons for the Text Editor component.
   /// - [cropRotateEditor]: Customizable icons for the Crop and Rotate Editor component.
   /// - [filterEditor]: Customizable icons for the Filter Editor component.
+  /// - [blurEditor]: Customizable icons for the Blur Editor component.
   /// - [emojiEditor]: Customizable icons for the Emoji Editor component.
   /// - [stickerEditor]: Customizable icons for the Sticker Editor component.
   ///
@@ -101,6 +107,10 @@ class ImageEditorIcons {
   ///     bottomNavBar: Icons.filter,
   ///     // ... (customize other filter editor icons)
   ///   ),
+  ///   blurEditor: IconsBlurEditor(
+  ///     bottomNavBar: Icons.blur_on,
+  ///     // ... (customize other blur editor icons)
+  ///   ),
   ///   emojiEditor: IconsEmojiEditor(
   ///     bottomNavBar: Icons.sentiment_satisfied_alt_rounded,
   ///     // ... (customize other emoji editor icons)
@@ -119,6 +129,7 @@ class ImageEditorIcons {
     this.textEditor = const IconsTextEditor(),
     this.cropRotateEditor = const IconsCropRotateEditor(),
     this.filterEditor = const IconsFilterEditor(),
+    this.blurEditor = const IconsBlurEditor(),
     this.emojiEditor = const IconsEmojiEditor(),
     this.stickerEditor = const IconsStickerEditor(),
     this.closeEditor = Icons.clear,

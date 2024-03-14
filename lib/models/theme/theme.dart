@@ -4,6 +4,7 @@ import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 import 'theme_crop_rotate_editor.dart';
 import 'theme_emoji_editor.dart';
 import 'theme_filter_editor.dart';
+import 'theme_blur_editor.dart';
 import 'theme_helper_lines.dart';
 import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
@@ -12,6 +13,7 @@ import 'theme_text_editor.dart';
 export 'theme_emoji_editor.dart';
 export 'theme_painting_editor.dart';
 export 'theme_filter_editor.dart';
+export 'theme_blur_editor.dart';
 export 'theme_text_editor.dart';
 export 'theme_crop_rotate_editor.dart';
 export 'theme_helper_lines.dart';
@@ -31,6 +33,7 @@ export 'theme_sticker_editor.dart';
 ///   textEditor: TextEditorTheme(),
 ///   cropRotateEditor: CropRotateEditorTheme(),
 ///   filterEditor: FilterEditorTheme(),
+///   blurEditor: BlurEditorTheme(),
 ///   emojiEditor: EmojiEditorTheme(),
 ///   stickerEditor: StickerEditorTheme(),
 /// );
@@ -47,6 +50,8 @@ export 'theme_sticker_editor.dart';
 /// - `cropRotateEditor`: Theme for the crop & rotate editor.
 ///
 /// - `filterEditor`: Theme for the filter editor.
+///
+/// - `blurEditor`: Theme for the blur editor.
 ///
 /// - `emojiEditor`: Theme for the emoji editor.
 ///
@@ -88,6 +93,9 @@ class ImageEditorTheme {
   /// Theme for the filter editor.
   final FilterEditorTheme filterEditor;
 
+  /// Theme for the blur editor.
+  final BlurEditorTheme blurEditor;
+
   /// Theme for the emoji editor.
   final EmojiEditorTheme emojiEditor;
 
@@ -114,6 +122,7 @@ class ImageEditorTheme {
     this.textEditor = const TextEditorTheme(),
     this.cropRotateEditor = const CropRotateEditorTheme(),
     this.filterEditor = const FilterEditorTheme(),
+    this.blurEditor = const BlurEditorTheme(),
     this.emojiEditor = const EmojiEditorTheme(),
     this.stickerEditor = const StickerEditorTheme(),
     this.background = imageEditorBackgroundColor,

@@ -16,6 +16,7 @@ export 'package:pro_image_editor/models/editor_configs/crop_rotate_editor_config
 export 'package:pro_image_editor/models/editor_configs/filter_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/emoji_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/sticker_editor_configs.dart';
+export 'package:pro_image_editor/models/editor_configs/blur_editor_configs.dart';
 
 export 'package:pro_image_editor/models/import_export/export_state_history_configs.dart';
 export 'package:pro_image_editor/models/import_export/import_state_history.dart';

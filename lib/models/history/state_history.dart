@@ -1,4 +1,5 @@
 import '../filter_state_history.dart';
+import '../blur_state_history.dart';
 import '../layer.dart';
 
 /// The `EditorStateHistory` class represents changes made to an image in the image
@@ -33,6 +34,7 @@ import '../layer.dart';
 /// ```dart
 /// EditorStateHistory changes = EditorStateHistory(
 ///   bytesRefIndex: 0,
+///   blur: BlurStateHistory(blur: 0),
 ///   filters: [],
 ///   layers: [
 ///     Layer(
@@ -54,11 +56,13 @@ import '../layer.dart';
 class EditorStateHistory {
   // Save memory to ref to a sepperated array which contain only image changes and not also layer-changes
   int bytesRefIndex = 0;
+  BlurStateHistory blur = BlurStateHistory(blur: 0);
   List<Layer> layers = [];
   List<FilterStateHistory> filters = [];
 
   EditorStateHistory({
     required this.bytesRefIndex,
+    required this.blur,
     required this.layers,
     required this.filters,
   });

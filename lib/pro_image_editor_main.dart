@@ -16,6 +16,7 @@ import 'models/history/last_position.dart';
 import 'models/crop_rotate_editor_response.dart';
 import 'models/editor_image.dart';
 import 'models/filter_state_history.dart';
+import 'models/blur_state_history.dart';
 import 'models/import_export/export_state_history.dart';
 import 'models/import_export/export_state_history_configs.dart';
 import 'models/import_export/import_state_history.dart';
@@ -24,6 +25,7 @@ import 'modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'modules/emoji_editor.dart';
 import 'modules/filter_editor/filter_editor.dart';
 import 'modules/filter_editor/widgets/image_with_multiple_filters.dart';
+import 'modules/blur_editor.dart';
 import 'modules/paint_editor/paint_editor.dart';
 import 'modules/text_editor.dart';
 import 'utils/debounce.dart';
@@ -308,6 +310,9 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// A GlobalKey for the Filter Editor, used to access and control the state of the filter editor.
   final filterEditor = GlobalKey<FilterEditorState>();
 
+  /// A GlobalKey for the Blur Editor, used to access and control the state of the blur editor.
+  final blurEditor = GlobalKey<BlurEditorState>();
+
   /// A GlobalKey for the Emoji Editor, used to access and control the state of the emoji editor.
   final emojiEditor = GlobalKey<EmojiEditorState>();
 
@@ -496,8 +501,8 @@ class ProImageEditorState extends State<ProImageEditor> {
       networkUrl: widget.networkUrl,
     ));
 
-    _stateHistory
-        .add(EditorStateHistory(bytesRefIndex: 0, layers: [], filters: []));
+    _stateHistory.add(EditorStateHistory(
+        bytesRefIndex: 0, blur: BlurStateHistory(), layers: [], filters: []));
 
     Vibration.hasVibrator().then((value) => _deviceCanVibrate = value ?? false);
     Vibration.hasCustomVibrationsSupport()
@@ -576,6 +581,9 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Get the list of filters from the current image editor changes.
   List<FilterStateHistory> get _filters => _stateHistory[_editPosition].filters;
 
+  /// Get the blur state from the current image editor changes.
+  BlurStateHistory get _blur => _stateHistory[_editPosition].blur;
+
   /// Get the current image being edited from the change list.
   EditorImage get _image =>
       _imgStateHistory[_stateHistory[_editPosition].bytesRefIndex];
@@ -604,6 +612,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
+        blur: _blur,
         layers: layers,
         filters: _filters,
       ),
@@ -621,6 +630,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
+        blur: _blur,
         layers: List<Layer>.from(
             _stateHistory.last.layers.map((e) => _copyLayer(e)))
           ..add(layer),
@@ -641,6 +651,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
+        blur: _blur,
         layers: List.from(_stateHistory.last.layers.map((e) => _copyLayer(e))),
         filters: _filters,
       ),
@@ -664,6 +675,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
+        blur: _blur,
         layers: layers,
         filters: _filters,
       ),
@@ -1222,6 +1234,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         designMode: widget.configs.designMode,
         emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
         onUpdateUI: widget.onUpdateUI,
+        blur: _blur,
         filters: _filters,
       ),
       duration: const Duration(milliseconds: 150),
@@ -1283,7 +1296,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       networkUrl: _image.networkUrl,
     );
     Uint8List? bytesWithLayers;
-    if (_layers.isNotEmpty || _filters.isNotEmpty) {
+    if (_layers.isNotEmpty || _filters.isNotEmpty || _blur.blur != 0) {
       _activeCrop = true;
       LoadingDialog loading = LoadingDialog()
         ..show(
@@ -1447,6 +1460,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         configs: widget.configs.filterEditorConfigs,
         onUpdateUI: widget.onUpdateUI,
         activeFilters: _filters,
+        blur: _blur,
         convertToUint8List: false,
       ),
     );
@@ -1459,6 +1473,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
+        blur: _blur,
         layers: _layers,
         filters: [
           filterAppliedImage,
@@ -1532,6 +1547,52 @@ class ProImageEditorState extends State<ProImageEditor> {
     widget.onUpdateUI?.call();
   }
 
+  /// Opens the blur editor as a modal bottom sheet.
+  void openBlurEditor() async {
+    if (!mounted) return;
+    _openEditor = true;
+    BlurStateHistory? blur = await _openPage(
+      BlurEditor.autoSource(
+        key: blurEditor,
+        file: _image.file,
+        byteArray: _image.byteArray,
+        assetPath: _image.assetPath,
+        networkUrl: _image.networkUrl,
+        theme: _theme,
+        imageSize: Size(_imageWidth, _imageHeight),
+        i18n: widget.configs.i18n,
+        icons: widget.configs.icons,
+        heroTag: widget.configs.heroTag,
+        designMode: widget.configs.designMode,
+        imageEditorTheme: widget.configs.imageEditorTheme,
+        customWidgets: widget.configs.customWidgets,
+        configs: widget.configs.blurEditorConfigs,
+        onUpdateUI: widget.onUpdateUI,
+        filters: _filters,
+        convertToUint8List: false,
+        currentBlur: _blur,
+      ),
+    );
+    _openEditor = false;
+
+    if (blur == null) return;
+
+    _cleanForwardChanges();
+
+    _stateHistory.add(
+      EditorStateHistory(
+        bytesRefIndex: _imgStateHistory.length - 1,
+        blur: blur,
+        layers: _layers,
+        filters: _filters,
+      ),
+    );
+    _editPosition++;
+
+    setState(() {});
+    widget.onUpdateUI?.call();
+  }
+
   /// Undo the last editing action.
   ///
   /// This function allows the user to undo the most recent editing action performed on the image.
@@ -1572,11 +1633,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// is in progress.
   void doneEditing() async {
     if (_editPosition <= 0 && _layers.isEmpty) {
-      final allowCompleteWithEmptyEditing =
-          widget.allowCompleteWithEmptyEditing ?? false;
-      if (!allowCompleteWithEmptyEditing) {
-        return closeEditor();
-      }
+      return closeEditor();
     }
     _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
@@ -1767,7 +1824,11 @@ class ProImageEditorState extends State<ProImageEditor> {
         _imgStateHistory = import.imgStateHistory;
       }
       _stateHistory = [
-        EditorStateHistory(bytesRefIndex: 0, filters: [], layers: []),
+        EditorStateHistory(
+            bytesRefIndex: 0,
+            blur: BlurStateHistory(),
+            filters: [],
+            layers: []),
         ...import.stateHistory
       ];
     } else {
@@ -2072,6 +2133,21 @@ class ProImageEditorState extends State<ProImageEditor> {
                                   ),
                                   onPressed: openFilterEditor,
                                 ),
+                              if (widget.configs.blurEditorConfigs.enabled)
+                                FlatIconTextButton(
+                                  key: const ValueKey('open-blur-editor-btn'),
+                                  label: Text(
+                                      widget.configs.i18n.blurEditor
+                                          .bottomNavigationBarText,
+                                      style: bottomTextStyle),
+                                  icon: Icon(
+                                    widget
+                                        .configs.icons.blurEditor.bottomNavBar,
+                                    size: bottomIconSize,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: openBlurEditor,
+                                ),
                               if (widget.configs.emojiEditorConfigs.enabled)
                                 FlatIconTextButton(
                                   key: const ValueKey('open-emoji-editor-btn'),
@@ -2247,6 +2323,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       designMode: widget.configs.designMode,
       image: _image,
       filters: _filters,
+      blur: _blur,
     );
   }
 }

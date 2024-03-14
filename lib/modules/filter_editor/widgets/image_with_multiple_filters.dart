@@ -1,8 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_image.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 import '../../../models/filter_state_history.dart';
+import '../../../models/blur_state_history.dart';
 import '../../../widgets/auto_image.dart';
 import '../utils/generate_filtered_image.dart';
 
@@ -12,6 +15,7 @@ class ImageWithMultipleFilters extends StatelessWidget {
   final ImageEditorDesignModeE designMode;
   final List<FilterStateHistory> filters;
   final EditorImage image;
+  final BlurStateHistory blur;
 
   const ImageWithMultipleFilters({
     super.key,
@@ -20,6 +24,7 @@ class ImageWithMultipleFilters extends StatelessWidget {
     required this.designMode,
     required this.filters,
     required this.image,
+    required this.blur,
   });
 
   @override
@@ -45,6 +50,15 @@ class ImageWithMultipleFilters extends StatelessWidget {
       children: [
         img,
         filteredImg,
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blur.blur, sigmaY: blur.blur),
+          child: Container(
+            width: width,
+            height: height,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+          ),
+        ),
       ],
     );
   }
