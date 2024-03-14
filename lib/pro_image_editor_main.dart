@@ -79,6 +79,11 @@ class ProImageEditor extends StatefulWidget {
   /// when the editing is completed.
   final ImageEditingCompleteCallback onImageEditingComplete;
 
+  /// Whether [onImageEditingComplete] call with empty editing.
+  ///
+  /// The default value is false.
+  final bool? allowCompleteWithEmptyEditing;
+
   /// A callback function that will be called before the image editor will close.
   final Function? onCloseEditor;
 
@@ -102,6 +107,10 @@ class ProImageEditor extends StatefulWidget {
   /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
+  /// If `allowCompleteWithEmptyEditing` parameter is true,
+  /// `onImageEditingComplete` will be called even if user done nothing to image.
+  /// The default value is false.
+  ///
   /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
   /// You can use this callback if you want to close the editor with your own parameters or if you want
   /// to prevent Navigator.pop(context) from being automatically triggered.
@@ -110,6 +119,7 @@ class ProImageEditor extends StatefulWidget {
   const ProImageEditor._({
     super.key,
     required this.onImageEditingComplete,
+    this.allowCompleteWithEmptyEditing,
     this.onCloseEditor,
     this.onUpdateUI,
     this.byteArray,
@@ -135,6 +145,10 @@ class ProImageEditor extends StatefulWidget {
   /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
+  /// If `allowCompleteWithEmptyEditing` parameter is true,
+  /// `onImageEditingComplete` will be called even if user done nothing to image.
+  /// The default value is false.
+  ///
   /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
   /// You can use this callback if you want to close the editor with your own parameters or if you want
   /// to prevent Navigator.pop(context) from being automatically triggered.
@@ -144,6 +158,7 @@ class ProImageEditor extends StatefulWidget {
     Uint8List byteArray, {
     Key? key,
     required ImageEditingCompleteCallback onImageEditingComplete,
+    bool? allowCompleteWithEmptyEditing,
     Function? onUpdateUI,
     Function? onCloseEditor,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
@@ -153,6 +168,7 @@ class ProImageEditor extends StatefulWidget {
       byteArray: byteArray,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
       onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
@@ -168,6 +184,10 @@ class ProImageEditor extends StatefulWidget {
   /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
+  /// If `allowCompleteWithEmptyEditing` parameter is true,
+  /// `onImageEditingComplete` will be called even if user done nothing to image.
+  /// The default value is false.
+  ///
   /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
   /// You can use this callback if you want to close the editor with your own parameters or if you want
   /// to prevent Navigator.pop(context) from being automatically triggered.
@@ -178,6 +198,7 @@ class ProImageEditor extends StatefulWidget {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
+    bool? allowCompleteWithEmptyEditing,
     Function? onUpdateUI,
     Function? onCloseEditor,
   }) {
@@ -186,6 +207,7 @@ class ProImageEditor extends StatefulWidget {
       file: file,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
       onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
@@ -201,6 +223,10 @@ class ProImageEditor extends StatefulWidget {
   /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
+  /// If `allowCompleteWithEmptyEditing` parameter is true,
+  /// `onImageEditingComplete` will be called even if user done nothing to image.
+  /// The default value is false.
+  ///
   /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
   /// You can use this callback if you want to close the editor with your own parameters or if you want
   /// to prevent Navigator.pop(context) from being automatically triggered.
@@ -211,6 +237,7 @@ class ProImageEditor extends StatefulWidget {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
+    bool? allowCompleteWithEmptyEditing,
     Function? onUpdateUI,
     Function? onCloseEditor,
   }) {
@@ -219,6 +246,7 @@ class ProImageEditor extends StatefulWidget {
       assetPath: assetPath,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
       onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
@@ -234,6 +262,10 @@ class ProImageEditor extends StatefulWidget {
   /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
+  /// If `allowCompleteWithEmptyEditing` parameter is true,
+  /// `onImageEditingComplete` will be called even if user done nothing to image.
+  /// The default value is false.
+  ///
   /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
   /// You can use this callback if you want to close the editor with your own parameters or if you want
   /// to prevent Navigator.pop(context) from being automatically triggered.
@@ -244,6 +276,7 @@ class ProImageEditor extends StatefulWidget {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
+    bool? allowCompleteWithEmptyEditing,
     Function? onUpdateUI,
     Function? onCloseEditor,
   }) {
@@ -252,6 +285,7 @@ class ProImageEditor extends StatefulWidget {
       networkUrl: networkUrl,
       configs: configs,
       onImageEditingComplete: onImageEditingComplete,
+      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
       onCloseEditor: onCloseEditor,
       onUpdateUI: onUpdateUI,
     );
@@ -1538,7 +1572,10 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// is in progress.
   void doneEditing() async {
     if (_editPosition <= 0 && _layers.isEmpty) {
-      return closeEditor();
+      final allowCompleteWithEmptyEditing = widget.allowCompleteWithEmptyEditing ?? false;
+      if (!allowCompleteWithEmptyEditing) {
+        return closeEditor();
+      }
     }
     _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
