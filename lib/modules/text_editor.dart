@@ -205,51 +205,55 @@ class TextEditorState extends State<TextEditor> {
             physics: const ClampingScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: StatefulBuilder(
-                builder: (context, setState) {
-                  void updateFontScaleScale(double value) {
-                    fontScale = (value * 10).ceilToDouble() / 10;
-                    setState(() {});
-                    this.setState(() {});
-                  }
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      BottomSheetHeaderRow(
-                        title: '${widget.i18n.textEditor.fontScale} ${fontScale}x',
-                        theme: widget.theme,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Slider.adaptive(
-                                max: widget.configs.maxFontScale,
-                                min: widget.configs.minFontScale,
-                                divisions: (widget.configs.maxFontScale - widget.configs.minFontScale) ~/ 0.1,
-                                value: fontScale,
-                                onChanged: updateFontScaleScale,
-                              ),
+              child: StatefulBuilder(builder: (context, setState) {
+                void updateFontScaleScale(double value) {
+                  fontScale = (value * 10).ceilToDouble() / 10;
+                  setState(() {});
+                  this.setState(() {});
+                }
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    BottomSheetHeaderRow(
+                      title:
+                          '${widget.i18n.textEditor.fontScale} ${fontScale}x',
+                      theme: widget.theme,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider.adaptive(
+                            max: widget.configs.maxFontScale,
+                            min: widget.configs.minFontScale,
+                            divisions: (widget.configs.maxFontScale -
+                                    widget.configs.minFontScale) ~/
+                                0.1,
+                            value: fontScale,
+                            onChanged: updateFontScaleScale,
                           ),
-                          const SizedBox(width: 8),
-                          IconTheme(
-                            data: Theme.of(context).primaryIconTheme,
-                            child: IconButton(
-                              onPressed: fontScale != presetFontScale ? () {
-                                updateFontScaleScale(presetFontScale);
-                              } : null,
-                              icon: Icon(
-                                widget.icons.textEditor.resetFontScale,
-                              ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconTheme(
+                          data: Theme.of(context).primaryIconTheme,
+                          child: IconButton(
+                            onPressed: fontScale != presetFontScale
+                                ? () {
+                                    updateFontScaleScale(presetFontScale);
+                                  }
+                                : null,
+                            icon: Icon(
+                              widget.icons.textEditor.resetFontScale,
                             ),
                           ),
-                          const SizedBox(width: 2),
-                        ],
-                      ),
-                    ],
-                  );
-                }
-              ),
+                        ),
+                        const SizedBox(width: 2),
+                      ],
+                    ),
+                  ],
+                );
+              }),
             ),
           ),
         );
