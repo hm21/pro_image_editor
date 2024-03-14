@@ -22,7 +22,7 @@ class I18nBlurEditor {
   ///
   /// ```dart
   /// I18nBlurEditor(
-  ///   applyBlurDialogMsg: 'Applying Blur...',
+  ///   applyBlurDialogMsg: 'Blur is being applied.',
   ///   bottomNavigationBarText: 'Blur',
   ///   done: 'Apply',
   ///   back: 'Cancel',
