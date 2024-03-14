@@ -550,14 +550,15 @@ On desktop devices, you can click and hold a layer with the mouse to move it. Ad
 
 
 ### Editor Widget
-| Property                  | Description                                                              |
-|---------------------------|--------------------------------------------------------------------------|
-| `byteArray`               | Image data as a `Uint8List` from memory.                                 |
-| `file`                    | File object representing the image file.                                 |
-| `assetPath`               | Path to the image asset.                                                |
-| `networkUrl`              | URL of the image to be loaded from the network.                          |
-| `onImageEditingComplete`  | Callback function that is invoked when editing is finished and returns the edited image as a `Uint8List`. |
-| `configs`                 | Configuration options for the image editor.                              |
+| Property                        | Description                                                                                               |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------|
+| `byteArray`                     | Image data as a `Uint8List` from memory.                                                                  |
+| `file`                          | File object representing the image file.                                                                  |
+| `assetPath`                     | Path to the image asset.                                                                                  |
+| `networkUrl`                    | URL of the image to be loaded from the network.                                                           |
+| `onImageEditingComplete`        | Callback function that is invoked when editing is finished and returns the edited image as a `Uint8List`. |
+| `allowCompleteWithEmptyEditing` | Whether [onImageEditingComplete] call with empty editing.                                                 |                                                |
+| `configs`                       | Configuration options for the image editor.                                                               |
 
 
 #### Constructors
