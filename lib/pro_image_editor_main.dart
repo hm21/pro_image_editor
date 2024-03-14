@@ -765,6 +765,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       id: layer.id,
       text: layer.text,
       align: layer.align,
+      fontScale: layer.fontScale,
       background: Color(layer.background.value),
       color: Color(layer.color.value),
       colorMode: layer.colorMode,
@@ -1181,6 +1182,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         ..colorMode = layer.colorMode
         ..colorPickerPosition = layer.colorPickerPosition
         ..align = layer.align
+        ..fontScale = layer.fontScale
         ..id = layerData.id
         ..flipX = layerData.flipX
         ..flipY = layerData.flipY
