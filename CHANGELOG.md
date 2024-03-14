@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 2.5.1
+- **Feat:** Set theme for alert dialog. Details in [GitHub pull #16](https://github.com/hm21/pro_image_editor/pull/16)
+
+## Version 2.5.0
+- **Feat:** New editor `Blur-Editor`. Details in [GitHub pull #15](https://github.com/hm21/pro_image_editor/pull/15)
+
+## Version 2.4.6
+- **Feat:** Add `Change Font Scale` feature to text editor. Details in [GitHub pull #14](https://github.com/hm21/pro_image_editor/pull/14)
+
 ## Version 2.4.5
 - **Feat:** Add parameter `allowCompleteWithEmptyEditing`. Details in [GitHub pull #11](https://github.com/hm21/pro_image_editor/pull/11)
 
