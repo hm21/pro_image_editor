@@ -228,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                               blurEditor: I18nBlurEditor(
-                                applyBlurDialogMsg: 'Applying Blur...',
+                                applyBlurDialogMsg: 'Blur is being applied.',
                                 bottomNavigationBarText: 'Blur',
                                 back: 'Back',
                                 done: 'Done',
