@@ -115,6 +115,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - ✅ Multiple background modes like in whatsapp
 - ✅ Crop-Rotate-Editor
 - ✅ Filter-Editor
+- ✅ Blur-Editor
 - ✅ Emoji-Picker
 - ✅ Move and scalable layers
 - ✅ Helper lines for better positioning
@@ -592,6 +593,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditorConfigs`       | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                          |
 | `cropRotateEditorConfigs` | Configuration options for the Crop and Rotate Editor.                                                                          | `CropRotateEditorConfigs()`                    |
 | `filterEditorConfigs`     | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                        |
+| `blurEditorConfigs`       | Configuration options for the Blur Editor.                                                                                     | `BlurEditorConfigs()`                          |
 | `emojiEditorConfigs`      | Configuration options for the Emoji Editor.                                                                                    | `EmojiEditorConfigs()`                         |
 | `stickerEditorConfigs`    | Configuration options for the Sticker Editor.                                                                                  | `StickerEditorConfigs()`                       |
 | `designMode`              | The design mode for the Image Editor.                                                                                          | `ImageEditorDesignModeE.material`              |
@@ -609,6 +611,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditor`         | Translations and messages specific to the text editor.        | `I18nTextEditor()`        |
 | `cropRotateEditor`   | Translations and messages specific to the crop and rotate editor. | `I18nCropRotateEditor()` |
 | `filterEditor`       | Translations and messages specific to the filter editor.      | `I18nFilterEditor()`      |
+| `blurEditor`         | Translations and messages specific to the blur editor.        | `I18nBlurEditor()`        |
 | `emojiEditor`        | Translations and messages specific to the emoji editor.       | `I18nEmojiEditor()`       |
 | `stickerEditor`      | Translations and messages specific to the sticker editor.     | `I18nStickerEditor()`     |
 | `various`            | Translations and messages for various parts of the editor.    | `I18nVarious()`           |
@@ -680,6 +683,16 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `filters`                | Internationalization settings for individual filters| `I18nFilters()`                              |
 
 
+#### `i18n blurEditor`
+
+| Property                 | Description                                        | Default Value                    |
+|--------------------------|----------------------------------------------------|----------------------------------|
+| `applyBlurDialogMsg`     | Text displayed when a filter is being applied     | `'Blur is being applied.'`      |
+| `bottomNavigationBarText`| Text for the bottom navigation bar item           | `'Blur'`                           |
+| `back`                   | Text for the "Back" button in the Blur Editor     | `'Back'`                           |
+| `done`                   | Text for the "Done" button in the Blur Editor     | `'Done'`                           |
+
+
 #### `i18n emojiEditor`
 | Property                  | Description                                                            | Default Value |
 |---------------------------|------------------------------------------------------------------------|---------------|
@@ -727,6 +740,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `appBarTextEditor`      | A custom app bar widget for the text editor component.                |
 | `appBarCropRotateEditor`| A custom app bar widget for the crop and rotate editor component.     |
 | `appBarFilterEditor`    | A custom app bar widget for the filter editor component.              |
+| `appBarBlurEditor`      | A custom app bar widget for the blur editor component.                |
 | `bottomNavigationBar`   | A custom widget for the bottom navigation bar.                        |
 </details>
 
@@ -739,6 +753,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditor`               | Theme for the text editor.                                        | `TextEditorTheme()`                                |
 | `cropRotateEditor`         | Theme for the crop & rotate editor.                               | `CropRotateEditorTheme()`                          |
 | `filterEditor`             | Theme for the filter editor.                                      | `FilterEditorTheme()`                              |
+| `blurEditor`               | Theme for the blur editor.                                        | `BlurEditorTheme()`                                |
 | `emojiEditor`              | Theme for the emoji editor.                                       | `EmojiEditorTheme()`                               |
 | `stickerEditor`            | Theme for the sticker editor.                                     | `StickerEditorTheme()`                               |
 | `helperLine`               | Theme for helper lines in the image editor.                       | `HelperLineTheme()`                                |
@@ -786,6 +801,14 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `previewTextColor`              | Color of the preview text.                            | `Color(0xFFE1E1E1)` |
 
 
+#### Theme blurEditor
+| Property                        | Description                                           | Default Value       |
+| ------------------------------- | ----------------------------------------------------- | ------------------- |
+| `appBarBackgroundColor`         | Background color of the app bar in the blur editor.   | `imageEditorAppBarColor` (Default theme value) |
+| `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
+| `background`                    | Background color of the blur editor.                 | `imageEditorBackgroundColor` (Default theme value) |
+
+
 #### Theme emojiEditor
 | Property                  | Description                                           | Default Value                    |
 | ------------------------- | ----------------------------------------------------- | -------------------------------- |
@@ -826,6 +849,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditor`          | Customizable icons for the Text Editor component.    | `IconsTextEditor`          |
 | `cropRotateEditor`    | Customizable icons for the Crop and Rotate Editor component.| `IconsCropRotateEditor` |
 | `filterEditor`        | Customizable icons for the Filter Editor component.  | `IconsFilterEditor`        |
+| `blurEditor`          | Customizable icons for the Blur Editor component.    | `IconsBlurEditor`          |
 | `emojiEditor`         | Customizable icons for the Emoji Editor component.   | `IconsEmojiEditor`         |
 | `stickerEditor`       | Customizable icons for the Sticker Editor component. | `IconsStickerEditor`       |
 
@@ -867,6 +891,10 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | --------------- | ------------------------------ | -------------- |
 | `bottomNavBar`  | Icon for bottom navigation bar | `Icons.filter` |
 
+#### icons blurEditor
+| Property        | Description                    | Default Value   |
+| --------------- | ------------------------------ | --------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar | `Icons.blur_on` |
 
 #### icons emojiEditor
 | Property        | Description                          | Default Value                       |
@@ -939,6 +967,15 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 |---------------|-------------------------------------------------|---------------|
 | `enabled`     | Indicates whether the filter editor is enabled. | `true`        |
 | `filterList`  | A list of color filter generators to apply.    | `null`        |
+</details>
+
+<details>
+  <summary><b>blurEditorConfigs</b></summary>
+
+| Property      | Description                                     | Default Value |
+|---------------|-------------------------------------------------|---------------|
+| `enabled`     | Indicates whether the blur editor is enabled.   | `true`        |
+| `maxBlur`     | The maximum of blur to apply.                   | `2.0`         |
 </details>
 
 <details>

@@ -227,6 +227,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   xProII: 'Pro II',
                                 ),
                               ),
+                              blurEditor: I18nBlurEditor(
+                                applyBlurDialogMsg: 'Blur is being applied.',
+                                bottomNavigationBarText: 'Blur',
+                                back: 'Back',
+                                done: 'Done',
+                              ),
                               emojiEditor: I18nEmojiEditor(
                                 bottomNavigationBarText: 'Emoji',
                               ),
@@ -280,6 +286,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 appBarBackgroundColor: Color(0xFF000000),
                                 appBarForegroundColor: Color(0xFFE1E1E1),
                                 previewTextColor: Color(0xFFE1E1E1),
+                                background: Color.fromARGB(255, 22, 22, 22),
+                              ),
+                              blurEditor: BlurEditorTheme(
+                                appBarBackgroundColor: Color(0xFF000000),
+                                appBarForegroundColor: Color(0xFFE1E1E1),
                                 background: Color.fromARGB(255, 22, 22, 22),
                               ),
                               emojiEditor: EmojiEditorTheme(),
@@ -376,6 +387,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             filterEditorConfigs: FilterEditorConfigs(
                               enabled: true,
                               filterList: presetFiltersList,
+                            ),
+                            blurEditorConfigs: const BlurEditorConfigs(
+                              enabled: true,
+                              maxBlur: 3.0,
                             ),
                             emojiEditorConfigs: const EmojiEditorConfigs(
                               enabled: true,

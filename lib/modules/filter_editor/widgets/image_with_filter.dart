@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_image.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
+import 'package:pro_image_editor/models/blur_state_history.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/widgets/auto_image.dart';
 
@@ -28,6 +31,8 @@ class ImageWithFilter extends StatelessWidget {
 
   final List<FilterStateHistory>? activeFilters;
 
+  final BlurStateHistory? blur;
+
   /// Creates an `ImageWithFilter` widget.
   ///
   /// The [image] and [filter] parameters are required. The [fit] parameter
@@ -39,6 +44,7 @@ class ImageWithFilter extends StatelessWidget {
     required this.filter,
     required this.designMode,
     required this.activeFilters,
+    required this.blur,
     this.size,
     this.fit,
     this.opacity = 1,
@@ -55,7 +61,22 @@ class ImageWithFilter extends StatelessWidget {
     );
 
     if (filter.filters.isEmpty && activeFilters == null) {
-      return img;
+      if (blur == null) {
+        return img;
+      } else {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            img,
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blur!.blur, sigmaY: blur!.blur),
+              child: Container(
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+              ),
+            ),
+          ],
+        );
+      }
     } else {
       List<FilterStateHistory> filters = [
         FilterStateHistory(filter: filter, opacity: opacity),
@@ -70,13 +91,30 @@ class ImageWithFilter extends StatelessWidget {
           opacity: filter.opacity,
         );
       }
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          img,
-          filteredImg,
-        ],
-      );
+
+      if (blur == null) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            img,
+            filteredImg,
+          ],
+        );
+      } else {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            img,
+            filteredImg,
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blur!.blur, sigmaY: blur!.blur),
+              child: Container(
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+              ),
+            ),
+          ],
+        );
+      }
     }
   }
 }
