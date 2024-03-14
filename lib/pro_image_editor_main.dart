@@ -2063,8 +2063,8 @@ class ProImageEditorState extends State<ProImageEditor> {
                       scrollDirection: Axis.horizontal,
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          minWidth: min(_screen.width, 500),
-                          maxWidth: 500,
+                          minWidth: min(_screen.width, 600),
+                          maxWidth: 600,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
