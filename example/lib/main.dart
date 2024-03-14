@@ -291,7 +291,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               blurEditor: BlurEditorTheme(
                                 appBarBackgroundColor: Color(0xFF000000),
                                 appBarForegroundColor: Color(0xFFE1E1E1),
-                                previewTextColor: Color(0xFFE1E1E1),
                                 background: Color.fromARGB(255, 22, 22, 22),
                               ),
                               emojiEditor: EmojiEditorTheme(),

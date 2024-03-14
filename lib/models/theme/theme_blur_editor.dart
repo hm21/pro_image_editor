@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'theme_shared_values.dart';
 
 /// The `BlurEditorTheme` class defines the theme for the blur editor in the image editor.
-/// It includes properties such as colors for the app bar, background, and preview text.
+/// It includes properties such as colors for the app bar and background.
 ///
 /// Usage:
 ///
@@ -12,7 +12,6 @@ import 'theme_shared_values.dart';
 ///   appBarBackgroundColor: Colors.black,
 ///   appBarForegroundColor: Colors.white,
 ///   background: Colors.grey,
-///   previewTextColor: Colors.blue,
 /// );
 /// ```
 ///
@@ -24,8 +23,6 @@ import 'theme_shared_values.dart';
 ///
 /// - `background`: Background color of the blur editor.
 ///
-/// - `previewTextColor`: Color of the preview text.
-///
 /// Example Usage:
 ///
 /// ```dart
@@ -33,7 +30,6 @@ import 'theme_shared_values.dart';
 ///   appBarBackgroundColor: Colors.black,
 ///   appBarForegroundColor: Colors.white,
 ///   background: Colors.grey,
-///   previewTextColor: Colors.blue,
 /// );
 ///
 /// Color appBarBackgroundColor = BlurEditorTheme.appBarBackgroundColor;
@@ -50,14 +46,10 @@ class BlurEditorTheme {
   /// Background color of the blur editor.
   final Color background;
 
-  /// Color of the preview text.
-  final Color previewTextColor;
-
   /// Creates an instance of the `BlurEditorTheme` class with the specified theme properties.
   const BlurEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
-    this.previewTextColor = const Color(0xFFE1E1E1),
     this.background = imageEditorBackgroundColor,
   });
 }
