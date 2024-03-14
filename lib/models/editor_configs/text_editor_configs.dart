@@ -24,6 +24,9 @@ class TextEditorConfigs {
   /// Determines if the text alignment options can be toggled.
   final bool canToggleTextAlign;
 
+  /// Determines if the font scale can be change.
+  final bool canChangeFontScale;
+
   /// Determines if the background mode can be toggled.
   final bool canToggleBackgroundMode;
 
@@ -32,6 +35,15 @@ class TextEditorConfigs {
 
   /// The initial text alignment for the layer.
   final TextAlign initialTextAlign;
+
+  /// The initial font scale for text.
+  final double initFontScale;
+
+  /// The max font font scale for text.
+  final double maxFontScale;
+
+  /// The min font font scale for text.
+  final double minFontScale;
 
   /// The initial background color mode for the layer.
   final LayerBackgroundColorModeE initialBackgroundColorMode;
@@ -44,8 +56,12 @@ class TextEditorConfigs {
     this.enabled = true,
     this.canToggleTextAlign = true,
     this.canToggleBackgroundMode = true,
+    this.canChangeFontScale = true,
     this.initFontSize = 24.0,
     this.initialTextAlign = TextAlign.center,
+    this.initFontScale = 1.0,
+    this.maxFontScale = 3.0,
+    this.minFontScale = 0.3,
     this.initialBackgroundColorMode =
         LayerBackgroundColorModeE.backgroundAndColor,
   });
