@@ -1621,33 +1621,36 @@ class ProImageEditorState extends State<ProImageEditor> {
     _openDialog = true;
     await showAdaptiveDialog(
       context: context,
-      builder: (BuildContext context) => AdaptiveDialog(
-        designMode: widget.configs.designMode,
-        brightness: _theme.brightness,
-        title: Text(widget.configs.i18n.various.closeEditorWarningTitle),
-        content: Text(widget.configs.i18n.various.closeEditorWarningMessage),
-        actions: <AdaptiveDialogAction>[
-          AdaptiveDialogAction(
-            designMode: widget.configs.designMode,
-            onPressed: () => Navigator.pop(context, 'Cancel'),
-            child:
-                Text(widget.configs.i18n.various.closeEditorWarningCancelBtn),
-          ),
-          AdaptiveDialogAction(
-            designMode: widget.configs.designMode,
-            onPressed: () {
-              _editPosition = 0;
-              Navigator.pop(context, 'OK');
-              if (widget.onCloseEditor == null) {
-                Navigator.pop(context);
-              } else {
-                widget.onCloseEditor!.call();
-              }
-            },
-            child:
-                Text(widget.configs.i18n.various.closeEditorWarningConfirmBtn),
-          ),
-        ],
+      builder: (BuildContext context) => Theme(
+        data: _theme,
+        child: AdaptiveDialog(
+          designMode: widget.configs.designMode,
+          brightness: _theme.brightness,
+          title: Text(widget.configs.i18n.various.closeEditorWarningTitle),
+          content: Text(widget.configs.i18n.various.closeEditorWarningMessage),
+          actions: <AdaptiveDialogAction>[
+            AdaptiveDialogAction(
+              designMode: widget.configs.designMode,
+              onPressed: () => Navigator.pop(context, 'Cancel'),
+              child:
+                  Text(widget.configs.i18n.various.closeEditorWarningCancelBtn),
+            ),
+            AdaptiveDialogAction(
+              designMode: widget.configs.designMode,
+              onPressed: () {
+                _editPosition = 0;
+                Navigator.pop(context, 'OK');
+                if (widget.onCloseEditor == null) {
+                  Navigator.pop(context);
+                } else {
+                  widget.onCloseEditor!.call();
+                }
+              },
+              child: Text(
+                  widget.configs.i18n.various.closeEditorWarningConfirmBtn),
+            ),
+          ],
+        ),
       ),
     );
     _openDialog = false;
