@@ -1,7 +1,10 @@
 # Changelog
 
+## Version 2.5.3
+- **Feat:** Customize dialog colors in Cupertino design. Details in [GitHub pull #18](https://github.com/hm21/pro_image_editor/pull/18)
+
 ## Version 2.5.2
-- **Fix:** fix: The `allowCompleteWithEmptyEditing` logic was dropped by the committing.
+- **Fix:** The `allowCompleteWithEmptyEditing` logic was dropped by the committing. Details in [GitHub pull #17](https://github.com/hm21/pro_image_editor/pull/17)
 
 ## Version 2.5.1
 - **Feat:** Set theme for alert dialog. Details in [GitHub pull #16](https://github.com/hm21/pro_image_editor/pull/16)

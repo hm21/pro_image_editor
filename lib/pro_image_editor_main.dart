@@ -1690,6 +1690,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         child: AdaptiveDialog(
           designMode: widget.configs.designMode,
           brightness: _theme.brightness,
+          imageEditorTheme: widget.configs.imageEditorTheme,
           title: Text(widget.configs.i18n.various.closeEditorWarningTitle),
           content: Text(widget.configs.i18n.various.closeEditorWarningMessage),
           actions: <AdaptiveDialogAction>[

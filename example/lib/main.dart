@@ -111,7 +111,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       context,
                       theme: Theme.of(context),
                       imageEditorTheme: const ImageEditorTheme(
-                        loadingDialogTextColor: Colors.black,
+                        loadingDialogTheme: LoadingDialogTheme(
+                          textColor: Colors.black,
+                        ),
                       ),
                       designMode: ImageEditorDesignModeE.material,
                       i18n: const I18n(),
@@ -296,7 +298,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               emojiEditor: EmojiEditorTheme(),
                               stickerEditor: StickerEditorTheme(),
                               background: Color.fromARGB(255, 22, 22, 22),
-                              loadingDialogTextColor: Color(0xFFE1E1E1),
+                              loadingDialogTheme: LoadingDialogTheme(
+                                textColor: Color(0xFFE1E1E1),
+                              ),
                               uiOverlayStyle: SystemUiOverlayStyle(
                                 statusBarColor: Color(0x42000000),
                                 statusBarIconBrightness: Brightness.light,

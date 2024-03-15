@@ -1,11 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 
+import 'theme_adaptive_dialog.dart';
 import 'theme_crop_rotate_editor.dart';
 import 'theme_emoji_editor.dart';
 import 'theme_filter_editor.dart';
 import 'theme_blur_editor.dart';
 import 'theme_helper_lines.dart';
+import 'theme_loading_dialog.dart';
 import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
 import 'theme_text_editor.dart';
@@ -18,6 +20,8 @@ export 'theme_text_editor.dart';
 export 'theme_crop_rotate_editor.dart';
 export 'theme_helper_lines.dart';
 export 'theme_sticker_editor.dart';
+export 'theme_loading_dialog.dart';
+export 'theme_adaptive_dialog.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor components
@@ -63,6 +67,10 @@ export 'theme_sticker_editor.dart';
 ///
 /// - `uiOverlayStyle`: Defines the system UI overlay style for the image editor.
 ///
+/// - `loadingDialogTheme`: Theme for the loading dialog.
+///
+/// - `adaptiveDialogTheme`: Theme for the adaptive dialog.
+///
 /// Example Usage:
 ///
 /// ```dart
@@ -105,8 +113,11 @@ class ImageEditorTheme {
   /// Background color for the image editor.
   final Color background;
 
-  /// Text color for loading dialogs.
-  final Color loadingDialogTextColor;
+  /// Theme for the loading dialog.
+  final LoadingDialogTheme loadingDialogTheme;
+
+  /// Theme for the adaptive dialog.
+  final AdaptiveDialogTheme adaptiveDialogTheme;
 
   /// Defines the system UI overlay style for the image editor.
   final SystemUiOverlayStyle uiOverlayStyle;
@@ -125,8 +136,9 @@ class ImageEditorTheme {
     this.blurEditor = const BlurEditorTheme(),
     this.emojiEditor = const EmojiEditorTheme(),
     this.stickerEditor = const StickerEditorTheme(),
+    this.loadingDialogTheme = const LoadingDialogTheme(),
+    this.adaptiveDialogTheme = const AdaptiveDialogTheme(),
     this.background = imageEditorBackgroundColor,
-    this.loadingDialogTextColor = imageEditorTextColor,
     this.uiOverlayStyle = const SystemUiOverlayStyle(
       statusBarColor: Color(0x42000000),
       statusBarIconBrightness: Brightness.light,
