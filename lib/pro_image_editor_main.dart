@@ -1635,7 +1635,10 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// is in progress.
   void doneEditing() async {
     if (_editPosition <= 0 && _layers.isEmpty) {
-      return closeEditor();
+      final allowCompleteWithEmptyEditing = widget.allowCompleteWithEmptyEditing ?? false;
+      if (!allowCompleteWithEmptyEditing) {
+        return closeEditor();
+      }
     }
     _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
