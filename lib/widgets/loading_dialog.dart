@@ -80,7 +80,7 @@ class LoadingDialog {
                       designMode,
                     ).copyWith(
                       fontSize: 16,
-                      color: imageEditorTheme.loadingDialogTextColor,
+                      color: imageEditorTheme.loadingDialogTheme.textColor,
                     ),
                     textAlign: TextAlign.start,
                   ),
@@ -102,13 +102,17 @@ class LoadingDialog {
                 data: CupertinoTheme.of(context).copyWith(
                   brightness: theme.brightness,
                   primaryColor: theme.brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
+                      ? imageEditorTheme
+                          .loadingDialogTheme.cupertinoPrimaryColorDark
+                      : imageEditorTheme
+                          .loadingDialogTheme.cupertinoPrimaryColorLight,
                   textTheme: CupertinoTextThemeData(
                     textStyle: TextStyle(
                       color: theme.brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black,
+                          ? imageEditorTheme
+                              .loadingDialogTheme.cupertinoPrimaryColorDark
+                          : imageEditorTheme
+                              .loadingDialogTheme.cupertinoPrimaryColorLight,
                     ),
                   ),
                 ),
