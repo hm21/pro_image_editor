@@ -52,51 +52,54 @@ class LoadingDialog {
       barrierDismissible: isDismissible,
       builder: (context) {
         if (_isDisposed) Navigator.of(context).pop();
-        return AlertDialog.adaptive(
-          backgroundColor: theme.cardColor,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          content: PopScope(
-            canPop: isDismissible,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: StatefulBuilder(builder: (context, StateSetter setState) {
-                state = setState;
-                return Padding(
-                  padding: const EdgeInsets.only(top: 3.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 20.0),
-                        child: SizedBox(
-                          height: 40,
-                          width: 40,
-                          child: FittedBox(
-                            child: PlatformCircularProgressIndicator(
-                              designMode: designMode,
+        return Theme(
+          data: theme,
+          child: AlertDialog(
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            content: PopScope(
+              canPop: isDismissible,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child:
+                    StatefulBuilder(builder: (context, StateSetter setState) {
+                  state = setState;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 3.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20.0),
+                          child: SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: FittedBox(
+                              child: PlatformCircularProgressIndicator(
+                                designMode: designMode,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          _msg,
-                          style: platformTextStyle(
-                            context,
-                            designMode,
-                          ).copyWith(
-                            fontSize: 16,
-                            color: imageEditorTheme.loadingDialogTextColor,
+                        Expanded(
+                          child: Text(
+                            _msg,
+                            style: platformTextStyle(
+                              context,
+                              designMode,
+                            ).copyWith(
+                              fontSize: 16,
+                              color: imageEditorTheme.loadingDialogTextColor,
+                            ),
+                            textAlign: TextAlign.start,
                           ),
-                          textAlign: TextAlign.start,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                      ],
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         );
