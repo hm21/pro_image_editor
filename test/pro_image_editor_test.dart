@@ -183,12 +183,16 @@ void main() {
       await tester.tap(doneBtn);
       try {
         await tester.pumpAndSettle();
-      } catch(_) {}
+      } catch (_) {}
 
       expect(hasCompleteEdit, expectedHasCompleteEdit);
     }
 
-    await test(givingAllowCompleteWithEmptyEditing: true, expectedHasCompleteEdit: true);
-    await test(givingAllowCompleteWithEmptyEditing: false, expectedHasCompleteEdit: false);
+    await test(
+        givingAllowCompleteWithEmptyEditing: true,
+        expectedHasCompleteEdit: true);
+    await test(
+        givingAllowCompleteWithEmptyEditing: false,
+        expectedHasCompleteEdit: false);
   });
 }

@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.5.2
+- **Fix:** fix: The `allowCompleteWithEmptyEditing` logic was dropped by the committing.
+
 ## Version 2.5.1
 - **Feat:** Set theme for alert dialog. Details in [GitHub pull #16](https://github.com/hm21/pro_image_editor/pull/16)
 
