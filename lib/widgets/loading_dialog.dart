@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -47,59 +48,86 @@ class LoadingDialog {
     }
     _isVisible = true;
 
+    final content = PopScope(
+      canPop: isDismissible,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: StatefulBuilder(builder: (context, StateSetter setState) {
+          state = setState;
+          return Padding(
+            padding: const EdgeInsets.only(top: 3.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: FittedBox(
+                      child: PlatformCircularProgressIndicator(
+                        designMode: designMode,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _msg,
+                    style: platformTextStyle(
+                      context,
+                      designMode,
+                    ).copyWith(
+                      fontSize: 16,
+                      color: imageEditorTheme.loadingDialogTheme.textColor,
+                    ),
+                    textAlign: TextAlign.start,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+
     return showAdaptiveDialog(
       context: context,
       barrierDismissible: isDismissible,
       builder: (context) {
         if (_isDisposed) Navigator.of(context).pop();
-        return AlertDialog.adaptive(
-          backgroundColor: theme.cardColor,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          content: PopScope(
-            canPop: isDismissible,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: StatefulBuilder(builder: (context, StateSetter setState) {
-                state = setState;
-                return Padding(
-                  padding: const EdgeInsets.only(top: 3.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 20.0),
-                        child: SizedBox(
-                          height: 40,
-                          width: 40,
-                          child: FittedBox(
-                            child: PlatformCircularProgressIndicator(
-                              designMode: designMode,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          _msg,
-                          style: platformTextStyle(
-                            context,
-                            designMode,
-                          ).copyWith(
-                            fontSize: 16,
-                            color: imageEditorTheme.loadingDialogTextColor,
-                          ),
-                          textAlign: TextAlign.start,
-                        ),
-                      ),
-                    ],
+        return designMode == ImageEditorDesignModeE.cupertino
+            ? CupertinoTheme(
+                data: CupertinoTheme.of(context).copyWith(
+                  brightness: theme.brightness,
+                  primaryColor: theme.brightness == Brightness.dark
+                      ? imageEditorTheme
+                          .loadingDialogTheme.cupertinoPrimaryColorDark
+                      : imageEditorTheme
+                          .loadingDialogTheme.cupertinoPrimaryColorLight,
+                  textTheme: CupertinoTextThemeData(
+                    textStyle: TextStyle(
+                      color: theme.brightness == Brightness.dark
+                          ? imageEditorTheme
+                              .loadingDialogTheme.cupertinoPrimaryColorDark
+                          : imageEditorTheme
+                              .loadingDialogTheme.cupertinoPrimaryColorLight,
+                    ),
                   ),
-                );
-              }),
-            ),
-          ),
-        );
+                ),
+                child: CupertinoAlertDialog(
+                  content: content,
+                ),
+              )
+            : Theme(
+                data: theme,
+                child: AlertDialog(
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  content: content,
+                ),
+              );
       },
     );
   }

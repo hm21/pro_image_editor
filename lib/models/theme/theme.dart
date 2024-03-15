@@ -1,10 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 
+import 'theme_adaptive_dialog.dart';
 import 'theme_crop_rotate_editor.dart';
 import 'theme_emoji_editor.dart';
 import 'theme_filter_editor.dart';
+import 'theme_blur_editor.dart';
 import 'theme_helper_lines.dart';
+import 'theme_loading_dialog.dart';
 import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
 import 'theme_text_editor.dart';
@@ -12,10 +15,13 @@ import 'theme_text_editor.dart';
 export 'theme_emoji_editor.dart';
 export 'theme_painting_editor.dart';
 export 'theme_filter_editor.dart';
+export 'theme_blur_editor.dart';
 export 'theme_text_editor.dart';
 export 'theme_crop_rotate_editor.dart';
 export 'theme_helper_lines.dart';
 export 'theme_sticker_editor.dart';
+export 'theme_loading_dialog.dart';
+export 'theme_adaptive_dialog.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor components
@@ -31,6 +37,7 @@ export 'theme_sticker_editor.dart';
 ///   textEditor: TextEditorTheme(),
 ///   cropRotateEditor: CropRotateEditorTheme(),
 ///   filterEditor: FilterEditorTheme(),
+///   blurEditor: BlurEditorTheme(),
 ///   emojiEditor: EmojiEditorTheme(),
 ///   stickerEditor: StickerEditorTheme(),
 /// );
@@ -48,6 +55,8 @@ export 'theme_sticker_editor.dart';
 ///
 /// - `filterEditor`: Theme for the filter editor.
 ///
+/// - `blurEditor`: Theme for the blur editor.
+///
 /// - `emojiEditor`: Theme for the emoji editor.
 ///
 /// - `stickerEditor`: Theme for the sticker editor.
@@ -57,6 +66,10 @@ export 'theme_sticker_editor.dart';
 /// - `loadingDialogTextColor`: Text color for loading dialogs.
 ///
 /// - `uiOverlayStyle`: Defines the system UI overlay style for the image editor.
+///
+/// - `loadingDialogTheme`: Theme for the loading dialog.
+///
+/// - `adaptiveDialogTheme`: Theme for the adaptive dialog.
 ///
 /// Example Usage:
 ///
@@ -88,6 +101,9 @@ class ImageEditorTheme {
   /// Theme for the filter editor.
   final FilterEditorTheme filterEditor;
 
+  /// Theme for the blur editor.
+  final BlurEditorTheme blurEditor;
+
   /// Theme for the emoji editor.
   final EmojiEditorTheme emojiEditor;
 
@@ -97,8 +113,11 @@ class ImageEditorTheme {
   /// Background color for the image editor.
   final Color background;
 
-  /// Text color for loading dialogs.
-  final Color loadingDialogTextColor;
+  /// Theme for the loading dialog.
+  final LoadingDialogTheme loadingDialogTheme;
+
+  /// Theme for the adaptive dialog.
+  final AdaptiveDialogTheme adaptiveDialogTheme;
 
   /// Defines the system UI overlay style for the image editor.
   final SystemUiOverlayStyle uiOverlayStyle;
@@ -114,10 +133,12 @@ class ImageEditorTheme {
     this.textEditor = const TextEditorTheme(),
     this.cropRotateEditor = const CropRotateEditorTheme(),
     this.filterEditor = const FilterEditorTheme(),
+    this.blurEditor = const BlurEditorTheme(),
     this.emojiEditor = const EmojiEditorTheme(),
     this.stickerEditor = const StickerEditorTheme(),
+    this.loadingDialogTheme = const LoadingDialogTheme(),
+    this.adaptiveDialogTheme = const AdaptiveDialogTheme(),
     this.background = imageEditorBackgroundColor,
-    this.loadingDialogTextColor = imageEditorTextColor,
     this.uiOverlayStyle = const SystemUiOverlayStyle(
       statusBarColor: Color(0x42000000),
       statusBarIconBrightness: Brightness.light,

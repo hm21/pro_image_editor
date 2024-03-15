@@ -181,6 +181,9 @@ class TextLayerData extends Layer {
   /// The text alignment within the layer.
   TextAlign align;
 
+  /// The font scale for text, to make text bigger or smaller.
+  double fontScale;
+
   /// Creates a new text layer with customizable properties.
   ///
   /// The [text] parameter specifies the text content of the layer.
@@ -198,6 +201,7 @@ class TextLayerData extends Layer {
     this.color = Colors.white,
     this.background = Colors.transparent,
     this.align = TextAlign.left,
+    this.fontScale = 1.0,
     super.offset,
     super.rotation,
     super.scale,
@@ -216,6 +220,7 @@ class TextLayerData extends Layer {
       'background': background.value,
       'colorPickerPosition': colorPickerPosition ?? 0,
       'align': align.name,
+      'fontScale': fontScale,
       'type': 'text',
     };
   }

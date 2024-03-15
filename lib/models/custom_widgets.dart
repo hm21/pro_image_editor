@@ -35,6 +35,9 @@ import 'package:flutter/widgets.dart';
 /// - `appBarFilterEditor` (optional): A custom app bar widget specifically designed for
 ///   the filter editor component, if applicable.
 ///
+/// - `appBarBlurEditor` (optional): A custom app bar widget specifically designed for
+///   the blur editor component, if applicable.
+///
 /// - `bottomNavigationBar` (optional): A custom widget that can be used as a bottom
 ///   navigation bar in the application's user interface.
 ///
@@ -67,6 +70,9 @@ class ImageEditorCustomWidgets {
   /// A custom app bar widget for the filter editor component.
   final PreferredSizeWidget? appBarFilterEditor;
 
+  /// A custom app bar widget for the blur editor component.
+  final PreferredSizeWidget? appBarBlurEditor;
+
   /// A custom widget for the bottom navigation bar.
   final Widget? bottomNavigationBar;
 
@@ -81,6 +87,7 @@ class ImageEditorCustomWidgets {
     this.appBarTextEditor,
     this.appBarCropRotateEditor,
     this.appBarFilterEditor,
+    this.appBarBlurEditor,
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
   });

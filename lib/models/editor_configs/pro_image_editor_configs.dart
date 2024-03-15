@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/editor_configs/sticker_editor_configs.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history.dart';
 
@@ -7,6 +6,7 @@ import '../custom_widgets.dart';
 import 'crop_rotate_editor_configs.dart';
 import 'emoji_editor_configs.dart';
 import 'filter_editor_configs.dart';
+import 'blur_editor_configs.dart';
 import 'paint_editor_configs.dart';
 import 'text_editor_configs.dart';
 import '../helper_lines.dart';
@@ -50,6 +50,9 @@ class ProImageEditorConfigs {
   /// Configuration options for the Filter Editor.
   final FilterEditorConfigs filterEditorConfigs;
 
+  /// Configuration options for the Blur Editor.
+  final BlurEditorConfigs blurEditorConfigs;
+
   /// Configuration options for the Emoji Editor.
   final EmojiEditorConfigs emojiEditorConfigs;
 
@@ -91,6 +94,7 @@ class ProImageEditorConfigs {
     this.textEditorConfigs = const TextEditorConfigs(),
     this.cropRotateEditorConfigs = const CropRotateEditorConfigs(),
     this.filterEditorConfigs = const FilterEditorConfigs(),
+    this.blurEditorConfigs = const BlurEditorConfigs(),
     this.emojiEditorConfigs = const EmojiEditorConfigs(),
     this.stickerEditorConfigs,
     this.designMode = ImageEditorDesignModeE.material,

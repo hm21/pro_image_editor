@@ -9,6 +9,7 @@ import '../../models/custom_widgets.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/filter_state_history.dart';
+import '../../models/blur_state_history.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/theme/theme.dart';
 import '../../models/i18n/i18n.dart';
@@ -85,6 +86,9 @@ class PaintingEditor extends StatefulWidget {
   /// A list of applied filters to the editor.
   final List<FilterStateHistory> filters;
 
+  /// A blur state to the editor.
+  final BlurStateHistory blur;
+
   /// Constructs a PaintingEditor instance.
   ///
   /// The `PaintingEditor._` constructor should not be directly used. Instead, use one of the factory constructors.
@@ -109,6 +113,7 @@ class PaintingEditor extends StatefulWidget {
     this.stickerInitWidth = 100,
     this.designMode = ImageEditorDesignModeE.material,
     required this.filters,
+    required this.blur,
   }) : assert(
           byteArray != null ||
               file != null ||
@@ -136,6 +141,7 @@ class PaintingEditor extends StatefulWidget {
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
+    BlurStateHistory? blur,
   }) {
     return PaintingEditor._(
       key: key,
@@ -155,6 +161,7 @@ class PaintingEditor extends StatefulWidget {
       layerFontSize: layerFontSize,
       emojiTextStyle: emojiTextStyle,
       filters: filters ?? [],
+      blur: blur ?? BlurStateHistory(),
     );
   }
 
@@ -177,6 +184,7 @@ class PaintingEditor extends StatefulWidget {
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
+    BlurStateHistory? blur,
   }) {
     return PaintingEditor._(
       key: key,
@@ -194,6 +202,7 @@ class PaintingEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      blur: blur ?? BlurStateHistory(),
     );
   }
 
@@ -216,6 +225,7 @@ class PaintingEditor extends StatefulWidget {
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
+    BlurStateHistory? blur,
   }) {
     return PaintingEditor._(
       key: key,
@@ -233,6 +243,7 @@ class PaintingEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      blur: blur ?? BlurStateHistory(),
     );
   }
 
@@ -255,6 +266,7 @@ class PaintingEditor extends StatefulWidget {
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
+    BlurStateHistory? blur,
   }) {
     return PaintingEditor._(
       key: key,
@@ -272,6 +284,7 @@ class PaintingEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      blur: blur ?? BlurStateHistory(),
     );
   }
 
@@ -297,6 +310,7 @@ class PaintingEditor extends StatefulWidget {
     TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
+    BlurStateHistory? blur,
   }) {
     if (byteArray != null) {
       return PaintingEditor.memory(
@@ -315,6 +329,7 @@ class PaintingEditor extends StatefulWidget {
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
+        blur: blur,
       );
     } else if (file != null) {
       return PaintingEditor.file(
@@ -333,6 +348,7 @@ class PaintingEditor extends StatefulWidget {
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
+        blur: blur,
       );
     } else if (networkUrl != null) {
       return PaintingEditor.network(
@@ -351,6 +367,7 @@ class PaintingEditor extends StatefulWidget {
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
+        blur: blur,
       );
     } else if (assetPath != null) {
       return PaintingEditor.asset(
@@ -369,6 +386,7 @@ class PaintingEditor extends StatefulWidget {
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
+        blur: blur,
       );
     } else {
       throw ArgumentError(
@@ -708,6 +726,7 @@ class PaintingEditorState extends State<PaintingEditor> {
                   networkUrl: widget.networkUrl,
                 ),
                 filters: widget.filters,
+                blur: widget.blur,
               ),
               if (widget.layers != null) _buildLayerStack(),
               _buildPainter(),

@@ -7,6 +7,7 @@ import 'package:pro_image_editor/models/layer.dart';
 
 import '../editor_image.dart';
 import '../filter_state_history.dart';
+import '../blur_state_history.dart';
 import '../history/state_history.dart';
 
 /// This class represents the state history of an imported editor session.
@@ -53,9 +54,13 @@ class ImportStateHistory {
     }
 
     for (var el in List.from(map['history'] ?? [])) {
+      BlurStateHistory blur = BlurStateHistory();
       List<Layer> layers = [];
       List<FilterStateHistory> filters = [];
 
+      if (el['blur'] != null) {
+        blur = BlurStateHistory.fromMap(el['blur']);
+      }
       for (var layer in List.from(el['layers'] ?? [])) {
         layers.add(Layer.fromMap(layer, stickers));
       }
@@ -66,6 +71,7 @@ class ImportStateHistory {
       stateHistory.add(
         EditorStateHistory(
           bytesRefIndex: el['listPosition'] ?? 0,
+          blur: blur,
           layers: layers,
           filters: filters,
         ),

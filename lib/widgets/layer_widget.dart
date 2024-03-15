@@ -287,7 +287,7 @@ class _LayerWidgetState extends State<LayerWidget> {
     var fontSize = widget.textFontSize * _layer.scale;
     var layer = _layer as TextLayerData;
     var style = TextStyle(
-      fontSize: fontSize,
+      fontSize: fontSize * layer.fontScale,
       fontWeight: FontWeight.w400,
       color: layer.color,
     );

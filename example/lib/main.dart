@@ -86,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       type: FileType.image,
                     );
 
-                    if (result != null && mounted) {
+                    if (result != null && context.mounted) {
                       File file = File(result.files.single.path!);
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -112,15 +112,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       context,
                       theme: Theme.of(context),
                       imageEditorTheme: const ImageEditorTheme(
-                        loadingDialogTextColor: Colors.black,
+                        loadingDialogTheme: LoadingDialogTheme(
+                          textColor: Colors.black,
+                        ),
                       ),
                       designMode: ImageEditorDesignModeE.material,
                       i18n: const I18n(),
                     );
                   var url = 'https://picsum.photos/2000';
                   var bytes = await fetchImageAsUint8List(url);
-                  if (mounted) await loading.hide(context);
-                  if (mounted) {
+                  if (context.mounted) await loading.hide(context);
+                  if (context.mounted) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => ProImageEditor.memory(
@@ -228,6 +230,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   xProII: 'Pro II',
                                 ),
                               ),
+                              blurEditor: I18nBlurEditor(
+                                applyBlurDialogMsg: 'Blur is being applied.',
+                                bottomNavigationBarText: 'Blur',
+                                back: 'Back',
+                                done: 'Done',
+                              ),
                               emojiEditor: I18nEmojiEditor(
                                 bottomNavigationBarText: 'Emoji',
                               ),
@@ -283,10 +291,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                 previewTextColor: Color(0xFFE1E1E1),
                                 background: Color.fromARGB(255, 22, 22, 22),
                               ),
+                              blurEditor: BlurEditorTheme(
+                                appBarBackgroundColor: Color(0xFF000000),
+                                appBarForegroundColor: Color(0xFFE1E1E1),
+                                background: Color.fromARGB(255, 22, 22, 22),
+                              ),
                               emojiEditor: EmojiEditorTheme(),
                               stickerEditor: StickerEditorTheme(),
                               background: Color.fromARGB(255, 22, 22, 22),
-                              loadingDialogTextColor: Color(0xFFE1E1E1),
+                              loadingDialogTheme: LoadingDialogTheme(
+                                textColor: Color(0xFFE1E1E1),
+                              ),
                               uiOverlayStyle: SystemUiOverlayStyle(
                                 statusBarColor: Color(0x42000000),
                                 statusBarIconBrightness: Brightness.light,
@@ -377,6 +392,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             filterEditorConfigs: FilterEditorConfigs(
                               enabled: true,
                               filterList: presetFiltersList,
+                            ),
+                            blurEditorConfigs: const BlurEditorConfigs(
+                              enabled: true,
+                              maxBlur: 3.0,
                             ),
                             emojiEditorConfigs: const EmojiEditorConfigs(
                               enabled: true,

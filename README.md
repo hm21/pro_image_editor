@@ -111,9 +111,11 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Text-Editor
   - ✅ Color picker
   - ✅ Align-Text => left, right and center
+  - ✅ Change Text Scale
   - ✅ Multiple background modes like in whatsapp
 - ✅ Crop-Rotate-Editor
 - ✅ Filter-Editor
+- ✅ Blur-Editor
 - ✅ Emoji-Picker
 - ✅ Move and scalable layers
 - ✅ Helper lines for better positioning
@@ -550,14 +552,15 @@ On desktop devices, you can click and hold a layer with the mouse to move it. Ad
 
 
 ### Editor Widget
-| Property                  | Description                                                              |
-|---------------------------|--------------------------------------------------------------------------|
-| `byteArray`               | Image data as a `Uint8List` from memory.                                 |
-| `file`                    | File object representing the image file.                                 |
-| `assetPath`               | Path to the image asset.                                                |
-| `networkUrl`              | URL of the image to be loaded from the network.                          |
-| `onImageEditingComplete`  | Callback function that is invoked when editing is finished and returns the edited image as a `Uint8List`. |
-| `configs`                 | Configuration options for the image editor.                              |
+| Property                        | Description                                                                                               |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------|
+| `byteArray`                     | Image data as a `Uint8List` from memory.                                                                  |
+| `file`                          | File object representing the image file.                                                                  |
+| `assetPath`                     | Path to the image asset.                                                                                  |
+| `networkUrl`                    | URL of the image to be loaded from the network.                                                           |
+| `onImageEditingComplete`        | Callback function that is invoked when editing is finished and returns the edited image as a `Uint8List`. |
+| `allowCompleteWithEmptyEditing` | Whether [onImageEditingComplete] call with empty editing.                                                 |                                                |
+| `configs`                       | Configuration options for the image editor.                                                               |
 
 
 #### Constructors
@@ -590,6 +593,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditorConfigs`       | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                          |
 | `cropRotateEditorConfigs` | Configuration options for the Crop and Rotate Editor.                                                                          | `CropRotateEditorConfigs()`                    |
 | `filterEditorConfigs`     | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                        |
+| `blurEditorConfigs`       | Configuration options for the Blur Editor.                                                                                     | `BlurEditorConfigs()`                          |
 | `emojiEditorConfigs`      | Configuration options for the Emoji Editor.                                                                                    | `EmojiEditorConfigs()`                         |
 | `stickerEditorConfigs`    | Configuration options for the Sticker Editor.                                                                                  | `StickerEditorConfigs()`                       |
 | `designMode`              | The design mode for the Image Editor.                                                                                          | `ImageEditorDesignModeE.material`              |
@@ -607,6 +611,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditor`         | Translations and messages specific to the text editor.        | `I18nTextEditor()`        |
 | `cropRotateEditor`   | Translations and messages specific to the crop and rotate editor. | `I18nCropRotateEditor()` |
 | `filterEditor`       | Translations and messages specific to the filter editor.      | `I18nFilterEditor()`      |
+| `blurEditor`         | Translations and messages specific to the blur editor.        | `I18nBlurEditor()`        |
 | `emojiEditor`        | Translations and messages specific to the emoji editor.       | `I18nEmojiEditor()`       |
 | `stickerEditor`      | Translations and messages specific to the sticker editor.     | `I18nStickerEditor()`     |
 | `various`            | Translations and messages for various parts of the editor.    | `I18nVarious()`           |
@@ -639,15 +644,16 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 #### `i18n textEditor`
 
-| Property                 | Description                                        | Default Value      |
-|--------------------------|----------------------------------------------------|--------------------|
-| `bottomNavigationBarText`| Text for the bottom navigation bar item            | `'Text'`             |
-| `inputHintText`          | Placeholder text displayed in the text input field| `'Enter text'`       |
-| `done`                   | Text for the "Done" button                          | `'Done'`             |
-| `back`                   | Text for the "Back" button                          | `'Back'`             |
-| `textAlign`              | Text for the "Align text" setting                   | `'Align text'`       |
-| `backgroundMode`         | Text for the "Background mode" setting              | `'Background mode'`  |
-| `smallScreenMoreTooltip` | Tooltip text for the "More" option on small screens| `'More'`             |
+| Property                  | Description                                         | Default Value       |
+|---------------------------|-----------------------------------------------------|---------------------|
+| `bottomNavigationBarText` | Text for the bottom navigation bar item             | `'Text'`            |
+| `inputHintText`           | Placeholder text displayed in the text input field  | `'Enter text'`      |
+| `done`                    | Text for the "Done" button                          | `'Done'`            |
+| `back`                    | Text for the "Back" button                          | `'Back'`            |
+| `textAlign`               | Text for the "Align text" setting                   | `'Align text'`      |
+| `fontScale`               | Text for the "Font Scale" setting                   | `'Font Scale'`      |
+| `backgroundMode`          | Text for the "Background mode" setting              | `'Background mode'` |
+| `smallScreenMoreTooltip`  | Tooltip text for the "More" option on small screens | `'More'`            |
 
 
 #### `i18n cropRotateEditor`
@@ -675,6 +681,16 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `back`                   | Text for the "Back" button in the Filter Editor   | `'Back'`                           |
 | `done`                   | Text for the "Done" button in the Filter Editor   | `'Done'`                           |
 | `filters`                | Internationalization settings for individual filters| `I18nFilters()`                              |
+
+
+#### `i18n blurEditor`
+
+| Property                 | Description                                        | Default Value                    |
+|--------------------------|----------------------------------------------------|----------------------------------|
+| `applyBlurDialogMsg`     | Text displayed when a filter is being applied     | `'Blur is being applied.'`      |
+| `bottomNavigationBarText`| Text for the bottom navigation bar item           | `'Blur'`                           |
+| `back`                   | Text for the "Back" button in the Blur Editor     | `'Back'`                           |
+| `done`                   | Text for the "Done" button in the Blur Editor     | `'Done'`                           |
 
 
 #### `i18n emojiEditor`
@@ -724,6 +740,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `appBarTextEditor`      | A custom app bar widget for the text editor component.                |
 | `appBarCropRotateEditor`| A custom app bar widget for the crop and rotate editor component.     |
 | `appBarFilterEditor`    | A custom app bar widget for the filter editor component.              |
+| `appBarBlurEditor`      | A custom app bar widget for the blur editor component.                |
 | `bottomNavigationBar`   | A custom widget for the bottom navigation bar.                        |
 </details>
 
@@ -736,6 +753,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditor`               | Theme for the text editor.                                        | `TextEditorTheme()`                                |
 | `cropRotateEditor`         | Theme for the crop & rotate editor.                               | `CropRotateEditorTheme()`                          |
 | `filterEditor`             | Theme for the filter editor.                                      | `FilterEditorTheme()`                              |
+| `blurEditor`               | Theme for the blur editor.                                        | `BlurEditorTheme()`                                |
 | `emojiEditor`              | Theme for the emoji editor.                                       | `EmojiEditorTheme()`                               |
 | `stickerEditor`            | Theme for the sticker editor.                                     | `StickerEditorTheme()`                               |
 | `helperLine`               | Theme for helper lines in the image editor.                       | `HelperLineTheme()`                                |
@@ -783,6 +801,14 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `previewTextColor`              | Color of the preview text.                            | `Color(0xFFE1E1E1)` |
 
 
+#### Theme blurEditor
+| Property                        | Description                                           | Default Value       |
+| ------------------------------- | ----------------------------------------------------- | ------------------- |
+| `appBarBackgroundColor`         | Background color of the app bar in the blur editor.   | `imageEditorAppBarColor` (Default theme value) |
+| `appBarForegroundColor`         | Foreground color (text and icons) of the app bar.    | `Color(0xFFE1E1E1)` |
+| `background`                    | Background color of the blur editor.                 | `imageEditorBackgroundColor` (Default theme value) |
+
+
 #### Theme emojiEditor
 | Property                  | Description                                           | Default Value                    |
 | ------------------------- | ----------------------------------------------------- | -------------------------------- |
@@ -823,6 +849,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `textEditor`          | Customizable icons for the Text Editor component.    | `IconsTextEditor`          |
 | `cropRotateEditor`    | Customizable icons for the Crop and Rotate Editor component.| `IconsCropRotateEditor` |
 | `filterEditor`        | Customizable icons for the Filter Editor component.  | `IconsFilterEditor`        |
+| `blurEditor`          | Customizable icons for the Blur Editor component.    | `IconsBlurEditor`          |
 | `emojiEditor`         | Customizable icons for the Emoji Editor component.   | `IconsEmojiEditor`         |
 | `stickerEditor`       | Customizable icons for the Sticker Editor component. | `IconsStickerEditor`       |
 
@@ -841,13 +868,15 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `dashLine`     | The icon for the dashed line drawing tool.      | `Icons.power_input`   |
 
 #### icons textEditor
-| Property        | Description                               | Default Value                        |
-| --------------- | ----------------------------------------- | ------------------------------------ |
-| `bottomNavBar`  | The icon for the bottom navigation bar.   | `Icons.text_fields`                  |
-| `alignLeft`     | The icon for aligning text to the left.   | `Icons.align_horizontal_left_rounded` |
-| `alignCenter`   | The icon for aligning text to the center. | `Icons.align_horizontal_center_rounded` |
-| `alignRight`    | The icon for aligning text to the right.  | `Icons.align_horizontal_right_rounded` |
-| `backgroundMode`| The icon for toggling background mode.    | `Icons.layers_rounded`               |
+| Property         | Description                                        | Default Value                           |
+|------------------|----------------------------------------------------|-----------------------------------------|
+| `bottomNavBar`   | The icon for the bottom navigation bar.            | `Icons.text_fields`                     |
+| `alignLeft`      | The icon for aligning text to the left.            | `Icons.align_horizontal_left_rounded`   |
+| `alignCenter`    | The icon for aligning text to the center.          | `Icons.align_horizontal_center_rounded` |
+| `alignRight`     | The icon for aligning text to the right.           | `Icons.align_horizontal_right_rounded`  |
+| `fontScale`      | The icon for changing font scale.                  | `Icons.format_size_rounded`             |
+| `resetFontScale` | The icon for resetting font scale to preset value. | `Icons.refresh_rounded`                 |
+| `backgroundMode` | The icon for toggling background mode.             | `Icons.layers_rounded`                  |
 
 
 #### icons cropRotateEditor
@@ -862,6 +891,10 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | --------------- | ------------------------------ | -------------- |
 | `bottomNavBar`  | Icon for bottom navigation bar | `Icons.filter` |
 
+#### icons blurEditor
+| Property        | Description                    | Default Value   |
+| --------------- | ------------------------------ | --------------- |
+| `bottomNavBar`  | Icon for bottom navigation bar | `Icons.blur_on` |
 
 #### icons emojiEditor
 | Property        | Description                          | Default Value                       |
@@ -902,14 +935,18 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 <details>
   <summary><b>textEditorConfigs</b></summary>
 
-| Property                    | Description                                          | Default Value                              |
-|-----------------------------|------------------------------------------------------|--------------------------------------------|
-| `enabled`                   | Indicates whether the text editor is enabled.        | `true`                                     |
-| `canToggleTextAlign`        | Determines if the text alignment options can be toggled. | `true`                                  |
-| `canToggleBackgroundMode`   | Determines if the background mode can be toggled.    | `true`                                     |
-| `initFontSize`              | The initial font size for text.                      | `24.0`                                     |
-| `initialTextAlign`          | The initial text alignment for the layer.            | `TextAlign.center`                         |
-| `initialBackgroundColorMode`| The initial background color mode for the layer.      | `LayerBackgroundColorModeE.backgroundAndColor` |
+| Property                     | Description                                              | Default Value                                  |
+|------------------------------|----------------------------------------------------------|------------------------------------------------|
+| `enabled`                    | Indicates whether the text editor is enabled.            | `true`                                         |
+| `canToggleTextAlign`         | Determines if the text alignment options can be toggled. | `true`                                         |
+| `canToggleBackgroundMode`    | Determines if the background mode can be toggled.        | `true`                                         |
+| `canChangeFontScale`         | Determines if the font scale can be change.              | `true`                                         |
+| `initFontSize`               | The initial font size for text.                          | `24.0`                                         |
+| `initFontScale`              | The initial font scale for text.                         | `1.0`                                          |
+| `maxFontScale`               | The max font scale for text.                             | `3.0`                                          |
+| `minFontSize`                | The min font scale for text.                             | `0.3`                                          |
+| `initialTextAlign`           | The initial text alignment for the layer.                | `TextAlign.center`                             |
+| `initialBackgroundColorMode` | The initial background color mode for the layer.         | `LayerBackgroundColorModeE.backgroundAndColor` |
 </details>
 
 <details>
@@ -930,6 +967,15 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 |---------------|-------------------------------------------------|---------------|
 | `enabled`     | Indicates whether the filter editor is enabled. | `true`        |
 | `filterList`  | A list of color filter generators to apply.    | `null`        |
+</details>
+
+<details>
+  <summary><b>blurEditorConfigs</b></summary>
+
+| Property      | Description                                     | Default Value |
+|---------------|-------------------------------------------------|---------------|
+| `enabled`     | Indicates whether the blur editor is enabled.   | `true`        |
+| `maxBlur`     | The maximum of blur to apply.                   | `2.0`         |
 </details>
 
 <details>

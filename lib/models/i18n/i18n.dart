@@ -1,6 +1,7 @@
 import 'i18n_crop_rotate_editor.dart';
 import 'i18n_emoji_editor.dart';
 import 'i18n_filter_editor.dart';
+import 'i18n_blur_editor.dart';
 import 'i18n_painting_editor.dart';
 import 'i18n_sticker_editor.dart';
 import 'i18n_text_editor.dart';
@@ -10,6 +11,7 @@ export 'i18n_various.dart';
 export 'i18n_text_editor.dart';
 export 'i18n_painting_editor.dart';
 export 'i18n_filter_editor.dart';
+export 'i18n_blur_editor.dart';
 export 'i18n_emoji_editor.dart';
 export 'i18n_sticker_editor.dart';
 export 'i18n_crop_rotate_editor.dart';
@@ -37,6 +39,9 @@ export 'i18n_crop_rotate_editor.dart';
 ///   filterEditor: I18nFilterEditor(
 ///     // Define filter editor translations...
 ///   ),
+///   blurEditor: I18nBlurEditor(
+///     // Define blur editor translations...
+///   ),
 ///   emojiEditor: I18nEmojiEditor(
 ///     // Define emoji editor translations...
 ///   ),
@@ -60,6 +65,8 @@ export 'i18n_crop_rotate_editor.dart';
 ///   rotate editor.
 ///
 /// - `filterEditor`: Translations and messages specific to the filter editor.
+///
+/// - `blurEditor`: Translations and messages specific to the blur editor.
 ///
 /// - `emojiEditor`: Translations and messages specific to the emoji editor.
 ///
@@ -104,6 +111,9 @@ class I18n {
 
   /// Translations and messages specific to the filter editor.
   final I18nFilterEditor filterEditor;
+
+  /// Translations and messages specific to the blur editor.
+  final I18nBlurEditor blurEditor;
 
   /// Translations and messages specific to the emoji editor.
   final I18nEmojiEditor emojiEditor;
@@ -171,6 +181,7 @@ class I18n {
     this.textEditor = const I18nTextEditor(),
     this.cropRotateEditor = const I18nCropRotateEditor(),
     this.filterEditor = const I18nFilterEditor(),
+    this.blurEditor = const I18nBlurEditor(),
     this.emojiEditor = const I18nEmojiEditor(),
     this.stickerEditor = const I18nStickerEditor(),
     this.various = const I18nVarious(),
