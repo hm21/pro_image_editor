@@ -1635,7 +1635,8 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// is in progress.
   void doneEditing() async {
     if (_editPosition <= 0 && _layers.isEmpty) {
-      final allowCompleteWithEmptyEditing = widget.allowCompleteWithEmptyEditing ?? false;
+      final allowCompleteWithEmptyEditing =
+          widget.allowCompleteWithEmptyEditing ?? false;
       if (!allowCompleteWithEmptyEditing) {
         return closeEditor();
       }
@@ -1651,11 +1652,12 @@ class ProImageEditorState extends State<ProImageEditor> {
         imageEditorTheme: widget.configs.imageEditorTheme,
       );
 
-    var bytes = await _screenshotCtrl.capture(pixelRatio: _pixelRatio);
+    Uint8List bytes = Uint8List.fromList([]);
+    try {
+      bytes = await _screenshotCtrl.capture(pixelRatio: _pixelRatio) ?? bytes;
+    } catch (_) {}
 
-    if (bytes != null) {
-      await widget.onImageEditingComplete(bytes);
-    }
+    await widget.onImageEditingComplete(bytes);
 
     if (mounted) loading.hide(context);
 
@@ -1963,6 +1965,7 @@ class ProImageEditorState extends State<ProImageEditor> {
                   onPressed: redoAction,
                 ),
                 IconButton(
+                  key: const ValueKey('TextEditorMainDoneButton'),
                   tooltip: widget.configs.i18n.done,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   icon: Icon(widget.configs.icons.doneIcon),

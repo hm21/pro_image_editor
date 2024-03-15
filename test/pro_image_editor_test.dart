@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -158,5 +159,37 @@ void main() {
     // Ensure layer exist again
     final layers3 = find.byType(LayerWidget);
     expect(layers3, findsOneWidget);
+  });
+
+  testWidgets(
+      'ProImageEditor performs done action with allowCompleteWithEmptyEditing',
+      (WidgetTester tester) async {
+    Future test({
+      required bool givingAllowCompleteWithEmptyEditing,
+      required bool expectedHasCompleteEdit,
+    }) async {
+      var hasCompleteEdit = false;
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        allowCompleteWithEmptyEditing: givingAllowCompleteWithEmptyEditing,
+        onImageEditingComplete: (Uint8List bytes) async {
+          hasCompleteEdit = true;
+        },
+      )));
+
+      // Press done button without any editing;
+      final doneBtn = find.byKey(const ValueKey('TextEditorMainDoneButton'));
+      expect(doneBtn, findsOneWidget);
+      await tester.tap(doneBtn);
+      try {
+        await tester.pumpAndSettle();
+      } catch(_) {}
+
+      expect(hasCompleteEdit, expectedHasCompleteEdit);
+    }
+
+    await test(givingAllowCompleteWithEmptyEditing: true, expectedHasCompleteEdit: true);
+    await test(givingAllowCompleteWithEmptyEditing: false, expectedHasCompleteEdit: false);
   });
 }
