@@ -45,8 +45,19 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
     if (widget.designMode == ImageEditorDesignModeE.cupertino) {
       // Return a Cupertino-style dialog when in Cupertino design mode.
       return CupertinoTheme(
-        data:
-            CupertinoTheme.of(context).copyWith(brightness: widget.brightness),
+        data: CupertinoTheme.of(context).copyWith(
+          brightness: widget.brightness,
+          primaryColor: widget.brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+          textTheme: CupertinoTextThemeData(
+            textStyle: TextStyle(
+              color: widget.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+          ),
+        ),
         child: CupertinoAlertDialog(
           title: widget.title,
           content: widget.content,

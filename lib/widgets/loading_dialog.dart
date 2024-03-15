@@ -99,14 +99,21 @@ class LoadingDialog {
         if (_isDisposed) Navigator.of(context).pop();
         return designMode == ImageEditorDesignModeE.cupertino
             ? CupertinoTheme(
-                data: CupertinoTheme.of(context)
-                    .copyWith(brightness: theme.brightness),
-                child: CupertinoAlertDialog(
-                  content: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 20),
-                    child: content,
+                data: CupertinoTheme.of(context).copyWith(
+                  brightness: theme.brightness,
+                  primaryColor: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                  textTheme: CupertinoTextThemeData(
+                    textStyle: TextStyle(
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
                   ),
+                ),
+                child: CupertinoAlertDialog(
+                  content: content,
                 ),
               )
             : Theme(
