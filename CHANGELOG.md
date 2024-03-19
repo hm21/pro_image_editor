@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.5.4
+- **Feat:** Add the `strokeWidthOnChanged` callback. Details in [GitHub pull #19](https://github.com/hm21/pro_image_editor/pull/19)
+
 ## Version 2.5.3
 - **Feat:** Customize dialog colors in Cupertino design. Details in [GitHub pull #18](https://github.com/hm21/pro_image_editor/pull/18)
 
