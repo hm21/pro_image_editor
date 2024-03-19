@@ -441,7 +441,8 @@ class PaintingCanvas extends StatefulWidget {
         designMode: designMode,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -529,7 +530,9 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleEnd(ScaleEndDetails onEnd) {
     _paintCtrl.setInProgress(false);
-    if (_paintCtrl.start != null && _paintCtrl.end != null && (_paintCtrl.mode == PaintModeE.freeStyle)) {
+    if (_paintCtrl.start != null &&
+        _paintCtrl.end != null &&
+        (_paintCtrl.mode == PaintModeE.freeStyle)) {
       _addFreeStylePoints();
     } else if (_paintCtrl.start != null && _paintCtrl.end != null) {
       _addEndPoints();
@@ -580,7 +583,8 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   void showRangeSlider() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: widget.imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
+      backgroundColor:
+          widget.imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
       builder: (BuildContext context) {
         return Material(
           color: Colors.transparent,
@@ -682,15 +686,18 @@ class PaintingCanvasState extends State<PaintingCanvas> {
       var points = _findExtremePoints(e.offsets);
 
       Size size = Size(
-        ((points.leftTopmost?.dx ?? 0) - (points.rightBottommost?.dx ?? 0)).abs(),
-        ((points.leftTopmost?.dy ?? 0) - (points.rightBottommost?.dy ?? 0)).abs(),
+        ((points.leftTopmost?.dx ?? 0) - (points.rightBottommost?.dx ?? 0))
+            .abs(),
+        ((points.leftTopmost?.dy ?? 0) - (points.rightBottommost?.dy ?? 0))
+            .abs(),
       );
 
       bool onlyStrokeMode = e.mode == PaintModeE.freeStyle ||
           e.mode == PaintModeE.line ||
           e.mode == PaintModeE.dashLine ||
           e.mode == PaintModeE.arrow ||
-          ((e.mode == PaintModeE.rect || e.mode == PaintModeE.circle) && !e.fill);
+          ((e.mode == PaintModeE.rect || e.mode == PaintModeE.circle) &&
+              !e.fill);
 
       // Scale and offset the offsets of the painting layer
       double strokeHelperWidth = onlyStrokeMode ? e.strokeWidth : 0;

@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.5.5
+- **Fix:** Fix flutter analyze tests and format code.
+
 ## Version 2.5.4
 - **Feat:** Add the `strokeWidthOnChanged` callback. Details in [GitHub pull #19](https://github.com/hm21/pro_image_editor/pull/19)
 
