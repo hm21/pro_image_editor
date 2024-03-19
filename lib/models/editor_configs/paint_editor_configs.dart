@@ -82,7 +82,7 @@ class PaintEditorConfigs {
   /// Indicates the initial paint mode.
   final PaintModeE initialPaintMode;
 
-  /// The Function will call when the stroke width on changed.
+  /// A callback function that will be called when the stroke width on changed.
   final Function(double x)? strokeWidthOnChanged;
 
   /// Creates an instance of PaintEditorConfigs with optional settings.
