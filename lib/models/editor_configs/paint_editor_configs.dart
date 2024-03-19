@@ -82,6 +82,9 @@ class PaintEditorConfigs {
   /// Indicates the initial paint mode.
   final PaintModeE initialPaintMode;
 
+  /// A callback function that will be called when the stroke width on changed.
+  final Function(double x)? strokeWidthOnChanged;
+
   /// Creates an instance of PaintEditorConfigs with optional settings.
   ///
   /// By default, the editor is enabled, and most drawing tools are enabled.
@@ -103,5 +106,6 @@ class PaintEditorConfigs {
     this.initialStrokeWidth = 10.0,
     this.initialColor = const Color(0xffff0000),
     this.initialPaintMode = PaintModeE.freeStyle,
+    this.strokeWidthOnChanged,
   });
 }

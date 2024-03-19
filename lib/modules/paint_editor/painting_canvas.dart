@@ -610,6 +610,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
                       onChanged: (value) {
                         _paintCtrl.setStrokeWidth(value);
                         setState(() {});
+                        if(widget.configs.strokeWidthOnChanged != null) widget.configs.strokeWidthOnChanged!(value);
                       },
                     );
                   }),
