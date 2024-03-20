@@ -1,7 +1,12 @@
 # Changelog
 
+## Version 2.5.7
+#### Breaking Changes
+- Changed the way aspect ratios and the initial value are set.
+- I18n for crop aspect ratios must now be set in the crop-rotate editor configs.
+
 ## Version 2.5.6
-- **Feat:** Allow users to set only the required crop aspect ratios.
+- **Feat:** Allow users to set only the required crop aspect ratios. Details in [GitHub issue #20](https://github.com/hm21/pro_image_editor/issues/20)
 
 ## Version 2.5.5
 - **Fix:** Fix flutter analyze tests and format code.

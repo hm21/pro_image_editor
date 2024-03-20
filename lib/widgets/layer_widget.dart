@@ -290,6 +290,7 @@ class _LayerWidgetState extends State<LayerWidget> {
       fontSize: fontSize * layer.fontScale,
       fontWeight: FontWeight.w400,
       color: layer.color,
+      fontFamily: layer.fontFamily,
     );
 
     double height = getLineHeight(style);

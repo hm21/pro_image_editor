@@ -36,5 +36,5 @@ class AspectRatioItem {
   final double? value;
 
   /// Creates an instance of the `AspectRatioItem` class with the specified properties.
-  AspectRatioItem({this.value, required this.text});
+  const AspectRatioItem({this.value, required this.text});
 }

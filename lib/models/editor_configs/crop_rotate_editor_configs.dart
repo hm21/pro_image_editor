@@ -1,4 +1,4 @@
-import '../../modules/crop_rotate_editor/utils/crop_aspect_ratios.dart';
+import '../aspect_ratio_item.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -28,13 +28,13 @@ class CropRotateEditorConfigs {
 
   /// The initial aspect ratio for cropping.
   ///
-  /// This value determines the aspect ratio when cropping is enabled and
-  /// aspect ratio locking is enabled. By default, it uses the
-  /// `CropAspectRatios.custom` value.
-  final CropAspectRatios? initAspectRatio;
+  /// For free aspect ratio use `null` and for original aspect ratio use `0.0`.
+  final double? initAspectRatio;
 
   /// The allowed aspect ratios for cropping.
-  final List<CropAspectRatios> allowedAspectRatios;
+  ///
+  /// For free aspect ratio use `null` and for original aspect ratio use `0.0`.
+  final List<AspectRatioItem> aspectRatios;
 
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
   ///
@@ -44,15 +44,15 @@ class CropRotateEditorConfigs {
     this.enabled = true,
     this.canRotate = true,
     this.canChangeAspectRatio = true,
-    this.initAspectRatio = CropAspectRatios.custom,
-    this.allowedAspectRatios = const [
-      CropAspectRatios.custom,
-      CropAspectRatios.original,
-      CropAspectRatios.ratio1_1,
-      CropAspectRatios.ratio4_3,
-      CropAspectRatios.ratio3_4,
-      CropAspectRatios.ratio16_9,
-      CropAspectRatios.ratio9_16,
+    this.initAspectRatio,
+    this.aspectRatios = const [
+      AspectRatioItem(text: 'Free', value: null),
+      AspectRatioItem(text: 'Original', value: 0.0),
+      AspectRatioItem(text: '1*1', value: 1.0 / 1.0),
+      AspectRatioItem(text: '4*3', value: 4.0 / 3.0),
+      AspectRatioItem(text: '3*4', value: 3.0 / 4.0),
+      AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
+      AspectRatioItem(text: '9*16', value: 9.0 / 16.0)
     ],
   });
 }

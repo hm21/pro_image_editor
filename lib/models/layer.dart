@@ -184,6 +184,8 @@ class TextLayerData extends Layer {
   /// The font scale for text, to make text bigger or smaller.
   double fontScale;
 
+  String? fontFamily;
+
   /// Creates a new text layer with customizable properties.
   ///
   /// The [text] parameter specifies the text content of the layer.
@@ -192,10 +194,11 @@ class TextLayerData extends Layer {
   /// The [color] parameter specifies the text color (default is Colors.white).
   /// The [background] parameter defines the background color for the text (default is Colors.transparent).
   /// The [align] parameter determines the text alignment within the layer (default is TextAlign.left).
-  /// The other optional parameters such as [offset], [rotation], [scale], [id], [flipX], and [flipY]
+  /// The other optional parameters such as [fontFamily], [offset], [rotation], [scale], [id], [flipX], and [flipY]
   /// can be used to customize the position, appearance, and behavior of the text layer.
   TextLayerData({
     required this.text,
+    this.fontFamily,
     this.colorMode,
     this.colorPickerPosition,
     this.color = Colors.white,
@@ -221,6 +224,7 @@ class TextLayerData extends Layer {
       'colorPickerPosition': colorPickerPosition ?? 0,
       'align': align.name,
       'fontScale': fontScale,
+      'fontFamily': fontFamily,
       'type': 'text',
     };
   }

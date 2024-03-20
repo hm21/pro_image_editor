@@ -67,10 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (context) => ProImageEditor.asset(
                         'assets/demo.png',
                         onImageEditingComplete: (bytes) async {
-                          debugPrint('Image bytes: ${bytes.length}');
                           Navigator.pop(context);
                         },
-                        onCloseEditor: () => {debugPrint('closed')},
                       ),
                     ),
                   );
@@ -173,8 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ratio: 'Ratio',
                                 back: 'Back',
                                 done: 'Done',
-                                aspectRatioFree: 'Free',
-                                aspectRatioOriginal: 'Original',
                                 prepareImageDialogMsg: 'Please wait',
                                 applyChangesDialogMsg: 'Please wait',
                                 smallScreenMoreTooltip: 'More',
@@ -388,13 +384,19 @@ class _MyHomePageState extends State<MyHomePage> {
                               enabled: true,
                               canRotate: true,
                               canChangeAspectRatio: true,
-                              initAspectRatio: CropAspectRatios.custom,
-                              allowedAspectRatios: [
-                                CropAspectRatios.custom,
-                                CropAspectRatios.original,
-                                CropAspectRatios.ratio1_1,
-                                CropAspectRatios.ratio3_4,
-                                CropAspectRatios.ratio9_16,
+                              initAspectRatio: 0.0,
+                              aspectRatios: [
+                                AspectRatioItem(text: 'Free', value: null),
+                                AspectRatioItem(text: 'Original', value: 0.0),
+                                AspectRatioItem(text: '1*1', value: 1.0 / 1.0),
+                                AspectRatioItem(text: '3*2', value: 3.0 / 2.0),
+                                AspectRatioItem(text: '2*3', value: 2.0 / 3.0),
+                                AspectRatioItem(text: '4*3', value: 4.0 / 3.0),
+                                AspectRatioItem(text: '3*4', value: 3.0 / 4.0),
+                                AspectRatioItem(
+                                    text: '16*9', value: 16.0 / 9.0),
+                                AspectRatioItem(
+                                    text: '9*16', value: 9.0 / 16.0),
                               ],
                             ),
                             filterEditorConfigs: FilterEditorConfigs(

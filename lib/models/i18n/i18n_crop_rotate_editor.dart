@@ -21,12 +21,6 @@ class I18nCropRotateEditor {
   /// Text for the message displayed when preparing the image.
   final String prepareImageDialogMsg;
 
-  /// Text for the "Free" aspect ratio option.
-  final String aspectRatioFree;
-
-  /// Text for the "Original" aspect ratio option.
-  final String aspectRatioOriginal;
-
   /// The tooltip text displayed for the "More" option on small screens.
   final String smallScreenMoreTooltip;
 
@@ -45,8 +39,6 @@ class I18nCropRotateEditor {
   ///   ratio: 'Aspect Ratio',
   ///   back: 'Go Back',
   ///   done: 'Apply',
-  ///   aspectRatioFree: 'Free',
-  ///   aspectRatioOriginal: 'Original',
   ///   applyChangesDialogMsg: 'Please wait while applying changes...',
   ///   prepareImageDialogMsg: 'Please wait while preparing the image...',
   /// )
@@ -57,8 +49,6 @@ class I18nCropRotateEditor {
     this.ratio = 'Ratio',
     this.back = 'Back',
     this.done = 'Done',
-    this.aspectRatioFree = 'Free',
-    this.aspectRatioOriginal = 'Original',
     this.prepareImageDialogMsg = 'Please wait',
     this.applyChangesDialogMsg = 'Please wait',
     this.smallScreenMoreTooltip = 'More',

@@ -278,6 +278,7 @@ class TextEditorState extends State<TextEditor> {
           fontScale: fontScale,
           colorMode: backgroundColorMode,
           colorPickerPosition: _colorPosition,
+          // fontFamily: 'Roboto',
         ),
       );
     } else {
