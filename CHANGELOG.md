@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.5.6
+- **Feat:** Allow users to set only the required crop aspect ratios.
+
 ## Version 2.5.5
 - **Fix:** Fix flutter analyze tests and format code.
 

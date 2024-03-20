@@ -36,6 +36,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
   - [Own stickers or widgets](#own-stickers-or-widgets)
   - [Highly configurable](#highly-configurable)
+  - [Custom AppBar](#custom-appbar)
   - [Import-Export state history](#import-export-state-history)
 - **[📚 Documentation](#documentation)**
 - **[🤝 Contributing](#contributing)**
@@ -482,6 +483,364 @@ return Scaffold(
         ),
     )
 );
+```
+
+#### Custom AppBar
+
+Customize the AppBar with your own widgets. The same is also possible with the BottomBar.
+
+```dart
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+
+class Demo extends StatefulWidget {
+  const Demo({super.key});
+
+  @override
+  State<Demo> createState() => DemoState();
+}
+
+class DemoState extends State<Demo> {
+  final _editorKey = GlobalKey<ProImageEditorState>();
+  late StreamController _updateAppBarStream;
+
+  @override
+  void initState() {
+    _updateAppBarStream = StreamController.broadcast();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _updateAppBarStream.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProImageEditor.network(
+      'https://picsum.photos/id/237/2000',
+      key: _editorKey,
+      onImageEditingComplete: (byte) async {
+        Navigator.pop(context);
+      },
+      onUpdateUI: () {
+        _updateAppBarStream.add(null);
+      },
+      configs: ProImageEditorConfigs(
+        customWidgets: ImageEditorCustomWidgets(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Cancel',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.close),
+                      onPressed: _editorKey.currentState?.closeEditor,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                stream: _updateAppBarStream.stream,
+                builder: (_, __) {
+                  return IconButton(
+                    tooltip: 'Undo',
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    icon: Icon(
+                      Icons.undo,
+                      color: _editorKey.currentState?.canUndo == true ? Colors.white : Colors.white.withAlpha(80),
+                    ),
+                    onPressed: _editorKey.currentState?.undoAction,
+                  );
+                },
+              ),
+              StreamBuilder(
+                stream: _updateAppBarStream.stream,
+                builder: (_, __) {
+                  return IconButton(
+                    tooltip: 'Redo',
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    icon: Icon(
+                      Icons.redo,
+                      color: _editorKey.currentState?.canRedo == true ? Colors.white : Colors.white.withAlpha(80),
+                    ),
+                    onPressed: _editorKey.currentState?.redoAction,
+                  );
+                },
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Done',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.doneEditing,
+                    );
+                  }),
+            ],
+          ),
+          appBarPaintingEditor: AppBar(
+            automaticallyImplyLeading: false,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.close,
+                    );
+                  }),
+              const SizedBox(width: 80),
+              const Spacer(),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(
+                        Icons.line_weight_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.openLineWeightBottomSheet,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(
+                          _editorKey.currentState?.paintingEditor.currentState?.fillBackground == true
+                              ? Icons.format_color_reset
+                              : Icons.format_color_fill,
+                          color: Colors.white,
+                        ),
+                        onPressed: _editorKey.currentState?.paintingEditor.currentState?.toggleFill);
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Undo',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: Icon(
+                        Icons.undo,
+                        color: _editorKey.currentState?.paintingEditor.currentState?.canUndo == true ? Colors.white : Colors.white.withAlpha(80),
+                      ),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.undoAction,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Redo',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: Icon(
+                        Icons.redo,
+                        color: _editorKey.currentState?.paintingEditor.currentState?.canRedo == true ? Colors.white : Colors.white.withAlpha(80),
+                      ),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.redoAction,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Done',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+          appBarTextEditor: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.close,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.toggleTextAlign,
+                      icon: Icon(
+                        _editorKey.currentState?.textEditor.currentState?.align == TextAlign.left
+                            ? Icons.align_horizontal_left_rounded
+                            : _editorKey.currentState?.textEditor.currentState?.align == TextAlign.right
+                                ? Icons.align_horizontal_right_rounded
+                                : Icons.align_horizontal_center_rounded,
+                      ),
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.toggleBackgroundMode,
+                      icon: const Icon(Icons.layers_rounded),
+                    );
+                  }),
+              const Spacer(),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+          appBarCropRotateEditor: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.close,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      icon: const Icon(Icons.rotate_90_degrees_ccw_outlined),
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.rotate,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
+                      icon: const Icon(Icons.crop),
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.openAspectRatioOptions,
+                    );
+                  }),
+              const Spacer(),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+          appBarFilterEditor: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.filterEditor.currentState?.close,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.filterEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 ```
 
 #### Import-Export state history
@@ -958,6 +1317,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `canRotate`           | Indicates whether the image can be rotated.     | `true`                  |
 | `canChangeAspectRatio`| Indicates whether the aspect ratio can be changed. | `true`                  |
 | `initAspectRatio`     | The initial aspect ratio for cropping.           | `CropAspectRatios.custom` |
+| `allowedAspectRatios` | The allowed aspect ratios for cropping.          | `List with all options` |
 </details>
 
 <details>

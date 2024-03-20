@@ -67,8 +67,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (context) => ProImageEditor.asset(
                         'assets/demo.png',
                         onImageEditingComplete: (bytes) async {
+                          debugPrint('Image bytes: ${bytes.length}');
                           Navigator.pop(context);
                         },
+                        onCloseEditor: () => {debugPrint('closed')},
                       ),
                     ),
                   );
@@ -386,6 +388,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               enabled: true,
                               canRotate: true,
                               canChangeAspectRatio: true,
+                              initAspectRatio: CropAspectRatios.custom,
+                              allowedAspectRatios: [
+                                CropAspectRatios.custom,
+                                CropAspectRatios.original,
+                                CropAspectRatios.ratio1_1,
+                                CropAspectRatios.ratio3_4,
+                                CropAspectRatios.ratio9_16,
+                              ],
                             ),
                             filterEditorConfigs: FilterEditorConfigs(
                               enabled: true,

@@ -1,4 +1,4 @@
-import 'package:extended_image/extended_image.dart';
+import '../../modules/crop_rotate_editor/utils/crop_aspect_ratios.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -31,7 +31,10 @@ class CropRotateEditorConfigs {
   /// This value determines the aspect ratio when cropping is enabled and
   /// aspect ratio locking is enabled. By default, it uses the
   /// `CropAspectRatios.custom` value.
-  final double? initAspectRatio;
+  final CropAspectRatios? initAspectRatio;
+
+  /// The allowed aspect ratios for cropping.
+  final List<CropAspectRatios> allowedAspectRatios;
 
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
   ///
@@ -42,5 +45,14 @@ class CropRotateEditorConfigs {
     this.canRotate = true,
     this.canChangeAspectRatio = true,
     this.initAspectRatio = CropAspectRatios.custom,
+    this.allowedAspectRatios = const [
+      CropAspectRatios.custom,
+      CropAspectRatios.original,
+      CropAspectRatios.ratio1_1,
+      CropAspectRatios.ratio4_3,
+      CropAspectRatios.ratio3_4,
+      CropAspectRatios.ratio16_9,
+      CropAspectRatios.ratio9_16,
+    ],
   });
 }

@@ -21,6 +21,8 @@ import 'utils/aspect_ratio_button.dart';
 import '../../models/aspect_ratio_item.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/loading_dialog.dart';
+import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_aspect_ratios.dart'
+    as crop_configs;
 
 /// The `CropRotateEditor` widget is used for cropping and rotating images.
 /// It provides various constructors for loading images from different sources and allows users to crop and rotate the image.
@@ -533,7 +535,33 @@ class CropRotateEditorState extends State<CropRotateEditor> {
       file: widget.file,
       networkUrl: widget.networkUrl,
     );
-    _aspectRatio = widget.configs.initAspectRatio ?? _aspectRatios.first.value;
+    if (widget.configs.initAspectRatio != null) {
+      switch (widget.configs.initAspectRatio!) {
+        case crop_configs.CropAspectRatios.custom:
+          _aspectRatio = CropAspectRatios.custom;
+          break;
+        case crop_configs.CropAspectRatios.original:
+          _aspectRatio = CropAspectRatios.original;
+          break;
+        case crop_configs.CropAspectRatios.ratio1_1:
+          _aspectRatio = CropAspectRatios.ratio1_1;
+          break;
+        case crop_configs.CropAspectRatios.ratio4_3:
+          _aspectRatio = CropAspectRatios.ratio4_3;
+          break;
+        case crop_configs.CropAspectRatios.ratio3_4:
+          _aspectRatio = CropAspectRatios.ratio3_4;
+          break;
+        case crop_configs.CropAspectRatios.ratio16_9:
+          _aspectRatio = CropAspectRatios.ratio16_9;
+          break;
+        case crop_configs.CropAspectRatios.ratio9_16:
+          _aspectRatio = CropAspectRatios.ratio9_16;
+          break;
+      }
+    } else {
+      _aspectRatio = _aspectRatios.first.value;
+    }
     _cropLayerPainter = const EditorCropLayerPainter();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -556,17 +584,31 @@ class CropRotateEditorState extends State<CropRotateEditor> {
   /// Returns a list of predefined aspect ratios.
   List<AspectRatioItem> get _aspectRatios {
     return [
-      AspectRatioItem(
-          text: widget.i18n.cropRotateEditor.aspectRatioFree,
-          value: CropAspectRatios.custom),
-      AspectRatioItem(
-          text: widget.i18n.cropRotateEditor.aspectRatioOriginal,
-          value: CropAspectRatios.original),
-      AspectRatioItem(text: '1*1', value: CropAspectRatios.ratio1_1),
-      AspectRatioItem(text: '4*3', value: CropAspectRatios.ratio4_3),
-      AspectRatioItem(text: '3*4', value: CropAspectRatios.ratio3_4),
-      AspectRatioItem(text: '16*9', value: CropAspectRatios.ratio16_9),
-      AspectRatioItem(text: '9*16', value: CropAspectRatios.ratio9_16)
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.custom))
+        AspectRatioItem(
+            text: widget.i18n.cropRotateEditor.aspectRatioFree,
+            value: CropAspectRatios.custom),
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.original))
+        AspectRatioItem(
+            text: widget.i18n.cropRotateEditor.aspectRatioOriginal,
+            value: CropAspectRatios.original),
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.ratio1_1))
+        AspectRatioItem(text: '1*1', value: CropAspectRatios.ratio1_1),
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.ratio4_3))
+        AspectRatioItem(text: '4*3', value: CropAspectRatios.ratio4_3),
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.ratio3_4))
+        AspectRatioItem(text: '3*4', value: CropAspectRatios.ratio3_4),
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.ratio16_9))
+        AspectRatioItem(text: '16*9', value: CropAspectRatios.ratio16_9),
+      if (widget.configs.allowedAspectRatios
+          .contains(crop_configs.CropAspectRatios.ratio9_16))
+        AspectRatioItem(text: '9*16', value: CropAspectRatios.ratio9_16)
     ];
   }
 
