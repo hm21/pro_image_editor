@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.5.8
+- **Chore:** Dependency updates
+
 ## Version 2.5.7
 #### Breaking Changes
 - Changed the way aspect ratios and the initial value are set.
