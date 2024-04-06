@@ -51,7 +51,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <thead>
     <tr>
       <th align="center">WhatsApp-Design</th>
-      <th align="center">Paint-Editor</th>
+      <th align="center">Blur-Editor</th>
     </tr>
   </thead>
   <tbody>
@@ -60,7 +60,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/blur-editor.gif?raw=true" alt="Blur-Editor" />
       </td>
     </tr>
   </tbody>
@@ -68,17 +68,17 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">Paint-Editor</th>
       <th align="center">Text-Editor</th>
-      <th align="center">Blur-Editor</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/blur-editor.gif?raw=true" alt="Blur-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
       </td>
     </tr>
   </tbody>
