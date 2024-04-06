@@ -33,3 +33,5 @@ export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
     show Emoji, RecentTabBehavior, CategoryIcons, Category, CategoryEmoji;
 export 'package:colorfilter_generator/presets.dart'
     show presetFiltersList, PresetFilters;
+export 'package:colorfilter_generator/colorfilter_generator.dart';
+export 'package:colorfilter_generator/addons.dart';

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+export 'whatsapp/whatsapp_custom_text_styles.dart';
+
 /// The `ImageEditorCustomWidgets` class encapsulates custom widget components that can be
 /// used within various parts of the application's user interface. It provides
 /// flexibility for customizing the appearance and behavior of specific UI elements
@@ -79,6 +81,11 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the painting editor component.
   final Widget? bottomBarPaintingEditor;
 
+  /// When the theme mode is set to WhatsApp, users should be able to select
+  /// their own fonts in the text editor, similar to the font selection list at
+  /// the bottom of WhatsApp.
+  final List<TextStyle>? whatsAppCustomTextStyles;
+
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
   const ImageEditorCustomWidgets({
     this.removeLayer,
@@ -90,5 +97,6 @@ class ImageEditorCustomWidgets {
     this.appBarBlurEditor,
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
+    this.whatsAppCustomTextStyles,
   });
 }

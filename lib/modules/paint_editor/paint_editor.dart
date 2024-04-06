@@ -4,16 +4,16 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_appbar.dart';
+import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/models/theme/theme.dart';
 
-import '../../models/custom_widgets.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/filter_state_history.dart';
 import '../../models/blur_state_history.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
-import '../../models/theme/theme.dart';
-import '../../models/i18n/i18n.dart';
-import '../../models/icons/icons.dart';
 import '../../models/layer.dart';
 import '../../utils/design_mode.dart';
 import '../../utils/theme_functions.dart';
@@ -47,38 +47,14 @@ class PaintingEditor extends StatefulWidget {
   /// The overall theme for the editor, including colors and styles.
   final ThemeData theme;
 
-  /// Custom widget overrides for the editor.
-  final ImageEditorCustomWidgets customWidgets;
-
-  /// Internationalization settings for text localization.
-  final I18n i18n;
-
   /// The size of the image.
   final Size imageSize;
 
-  /// Icons used within the editor.
-  final ImageEditorIcons icons;
-
-  /// The design mode of the editor (e.g., material or custom).
-  final ImageEditorDesignModeE designMode;
-
-  /// The theme specific to the painting editor.
-  final ImageEditorTheme imageEditorTheme;
-
-  /// Configuration options for the painting editor.
-  final PaintEditorConfigs configs;
+  /// Configuration options for the editor.
+  final ProImageEditorConfigs configs;
 
   /// Additional padding for the editor.
   final EdgeInsets? paddingHelper;
-
-  /// The font size for text layers within the editor.
-  final double layerFontSize;
-
-  /// The initial width of the stickers in the editor.
-  final double stickerInitWidth;
-
-  /// Custom emoji text style to apply to emoji characters in the grid.
-  final TextStyle emojiTextStyle;
 
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
@@ -99,19 +75,11 @@ class PaintingEditor extends StatefulWidget {
     this.networkUrl,
     this.file,
     required this.theme,
-    this.imageEditorTheme = const ImageEditorTheme(),
-    this.configs = const PaintEditorConfigs(),
-    this.i18n = const I18n(),
-    this.customWidgets = const ImageEditorCustomWidgets(),
-    this.icons = const ImageEditorIcons(),
+    this.configs = const ProImageEditorConfigs(),
     required this.imageSize,
     this.layers,
     this.onUpdateUI,
-    this.emojiTextStyle = const TextStyle(),
     this.paddingHelper,
-    this.layerFontSize = 24,
-    this.stickerInitWidth = 100,
-    this.designMode = ImageEditorDesignModeE.material,
     required this.filters,
     required this.blur,
   }) : assert(
@@ -127,18 +95,10 @@ class PaintingEditor extends StatefulWidget {
     Uint8List byteArray, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    PaintEditorConfigs configs = const PaintEditorConfigs(),
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
-    double layerFontSize = 24.0,
-    double stickerInitWidth = 100.0,
-    TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
     BlurStateHistory? blur,
@@ -148,18 +108,10 @@ class PaintingEditor extends StatefulWidget {
       byteArray: byteArray,
       onUpdateUI: onUpdateUI,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      stickerInitWidth: stickerInitWidth,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
       imageSize: imageSize,
       layers: layers,
       paddingHelper: paddingHelper,
       configs: configs,
-      layerFontSize: layerFontSize,
-      emojiTextStyle: emojiTextStyle,
       filters: filters ?? [],
       blur: blur ?? BlurStateHistory(),
     );
@@ -170,18 +122,10 @@ class PaintingEditor extends StatefulWidget {
     File file, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    PaintEditorConfigs configs = const PaintEditorConfigs(),
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
-    double layerFontSize = 24.0,
-    double stickerInitWidth = 100.0,
-    TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
     BlurStateHistory? blur,
@@ -190,12 +134,6 @@ class PaintingEditor extends StatefulWidget {
       key: key,
       file: file,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      stickerInitWidth: stickerInitWidth,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
       imageSize: imageSize,
       layers: layers,
       paddingHelper: paddingHelper,
@@ -211,18 +149,10 @@ class PaintingEditor extends StatefulWidget {
     String assetPath, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    PaintEditorConfigs configs = const PaintEditorConfigs(),
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
-    double layerFontSize = 24.0,
-    double stickerInitWidth = 100.0,
-    TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
     BlurStateHistory? blur,
@@ -231,12 +161,6 @@ class PaintingEditor extends StatefulWidget {
       key: key,
       assetPath: assetPath,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      stickerInitWidth: stickerInitWidth,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
       imageSize: imageSize,
       layers: layers,
       paddingHelper: paddingHelper,
@@ -252,18 +176,10 @@ class PaintingEditor extends StatefulWidget {
     String networkUrl, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    PaintEditorConfigs configs = const PaintEditorConfigs(),
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
-    double layerFontSize = 24.0,
-    double stickerInitWidth = 100.0,
-    TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
     BlurStateHistory? blur,
@@ -272,12 +188,6 @@ class PaintingEditor extends StatefulWidget {
       key: key,
       networkUrl: networkUrl,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      stickerInitWidth: stickerInitWidth,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
       imageSize: imageSize,
       layers: layers,
       paddingHelper: paddingHelper,
@@ -292,12 +202,7 @@ class PaintingEditor extends StatefulWidget {
   factory PaintingEditor.autoSource({
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    PaintEditorConfigs configs = const PaintEditorConfigs(),
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required Size imageSize,
     Uint8List? byteArray,
     File? file,
@@ -305,9 +210,6 @@ class PaintingEditor extends StatefulWidget {
     String? networkUrl,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
-    double layerFontSize = 24.0,
-    double stickerInitWidth = 100.0,
-    TextStyle emojiTextStyle = const TextStyle(),
     Function? onUpdateUI,
     List<FilterStateHistory>? filters,
     BlurStateHistory? blur,
@@ -317,12 +219,6 @@ class PaintingEditor extends StatefulWidget {
         byteArray,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        stickerInitWidth: stickerInitWidth,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
         imageSize: imageSize,
         layers: layers,
         paddingHelper: paddingHelper,
@@ -336,12 +232,6 @@ class PaintingEditor extends StatefulWidget {
         file,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        stickerInitWidth: stickerInitWidth,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
         imageSize: imageSize,
         layers: layers,
         paddingHelper: paddingHelper,
@@ -355,12 +245,6 @@ class PaintingEditor extends StatefulWidget {
         networkUrl,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        stickerInitWidth: stickerInitWidth,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
         imageSize: imageSize,
         layers: layers,
         paddingHelper: paddingHelper,
@@ -374,12 +258,6 @@ class PaintingEditor extends StatefulWidget {
         assetPath,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        stickerInitWidth: stickerInitWidth,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
         imageSize: imageSize,
         layers: layers,
         paddingHelper: paddingHelper,
@@ -416,7 +294,7 @@ class PaintingEditorState extends State<PaintingEditor> {
 
   @override
   void initState() {
-    _fill = widget.configs.initialFill;
+    _fill = widget.configs.paintEditorConfigs.initialFill;
     _bottomBarScrollCtrl = ScrollController();
 
     _editorImage = EditorImage(
@@ -443,41 +321,41 @@ class PaintingEditorState extends State<PaintingEditor> {
   /// A list of [PaintModeBottomBarItem] representing the available drawing modes in the painting editor.
   /// The list is dynamically generated based on the configuration settings in the [PaintEditorConfigs] object.
   List<PaintModeBottomBarItem> get paintModes => [
-        if (widget.configs.hasOptionFreeStyle)
+        if (widget.configs.paintEditorConfigs.hasOptionFreeStyle)
           PaintModeBottomBarItem(
             mode: PaintModeE.freeStyle,
-            icon: widget.icons.paintingEditor.freeStyle,
-            label: widget.i18n.paintEditor.freestyle,
+            icon: widget.configs.icons.paintingEditor.freeStyle,
+            label: widget.configs.i18n.paintEditor.freestyle,
           ),
-        if (widget.configs.hasOptionArrow)
+        if (widget.configs.paintEditorConfigs.hasOptionArrow)
           PaintModeBottomBarItem(
             mode: PaintModeE.arrow,
-            icon: widget.icons.paintingEditor.arrow,
-            label: widget.i18n.paintEditor.arrow,
+            icon: widget.configs.icons.paintingEditor.arrow,
+            label: widget.configs.i18n.paintEditor.arrow,
           ),
-        if (widget.configs.hasOptionLine)
+        if (widget.configs.paintEditorConfigs.hasOptionLine)
           PaintModeBottomBarItem(
             mode: PaintModeE.line,
-            icon: widget.icons.paintingEditor.line,
-            label: widget.i18n.paintEditor.line,
+            icon: widget.configs.icons.paintingEditor.line,
+            label: widget.configs.i18n.paintEditor.line,
           ),
-        if (widget.configs.hasOptionRect)
+        if (widget.configs.paintEditorConfigs.hasOptionRect)
           PaintModeBottomBarItem(
             mode: PaintModeE.rect,
-            icon: widget.icons.paintingEditor.rectangle,
-            label: widget.i18n.paintEditor.rectangle,
+            icon: widget.configs.icons.paintingEditor.rectangle,
+            label: widget.configs.i18n.paintEditor.rectangle,
           ),
-        if (widget.configs.hasOptionCircle)
+        if (widget.configs.paintEditorConfigs.hasOptionCircle)
           PaintModeBottomBarItem(
             mode: PaintModeE.circle,
-            icon: widget.icons.paintingEditor.circle,
-            label: widget.i18n.paintEditor.circle,
+            icon: widget.configs.icons.paintingEditor.circle,
+            label: widget.configs.i18n.paintEditor.circle,
           ),
-        if (widget.configs.hasOptionDashLine)
+        if (widget.configs.paintEditorConfigs.hasOptionDashLine)
           PaintModeBottomBarItem(
             mode: PaintModeE.dashLine,
-            icon: widget.icons.paintingEditor.dashLine,
-            label: widget.i18n.paintEditor.dashLine,
+            icon: widget.configs.icons.paintingEditor.dashLine,
+            label: widget.configs.i18n.paintEditor.dashLine,
           ),
       ];
 
@@ -546,13 +424,17 @@ class PaintingEditorState extends State<PaintingEditor> {
   /// Get the current PaintMode.
   PaintModeE? get mode => _imageKey.currentState?.mode;
 
+  /// Get the active selected color.
+  Color get activeColor =>
+      _imageKey.currentState?.activeColor ?? Colors.black38;
+
   /// Get the fillBackground status.
   bool get fillBackground => _fill;
 
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: widget.imageEditorTheme.uiOverlayStyle,
+      value: widget.configs.imageEditorTheme.uiOverlayStyle,
       child: Theme(
         data: widget.theme.copyWith(
             tooltipTheme:
@@ -561,7 +443,8 @@ class PaintingEditorState extends State<PaintingEditor> {
           return Scaffold(
             resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
-            backgroundColor: widget.imageEditorTheme.paintingEditor.background,
+            backgroundColor:
+                widget.configs.imageEditorTheme.paintingEditor.background,
             key: _key,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
@@ -574,129 +457,138 @@ class PaintingEditorState extends State<PaintingEditor> {
 
   /// Builds the app bar for the painting editor.
   /// Returns a [PreferredSizeWidget] representing the app bar.
-  PreferredSizeWidget _buildAppBar(BoxConstraints constraints) {
-    return widget.customWidgets.appBarPaintingEditor ??
-        AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.paintingEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.paintingEditor.appBarForegroundColor,
-          actions: [
-            IconButton(
-              tooltip: widget.i18n.paintEditor.back,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.icons.backButton),
-              onPressed: close,
-            ),
-            if (_imageKey.currentState != null) ...[
-              if (constraints.maxWidth >= 300) ...[
-                if (constraints.maxWidth >= 380) const SizedBox(width: 80),
-                const Spacer(),
-                if (widget.configs.canChangeLineWidth)
+  PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
+    return widget.configs.customWidgets.appBarPaintingEditor ??
+        (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+            ? AppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: widget.configs.imageEditorTheme.paintingEditor
+                    .appBarBackgroundColor,
+                foregroundColor: widget.configs.imageEditorTheme.paintingEditor
+                    .appBarForegroundColor,
+                actions: [
                   IconButton(
-                    tooltip: widget.i18n.paintEditor.lineWidth,
+                    tooltip: widget.configs.i18n.paintEditor.back,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(
-                      widget.icons.paintingEditor.lineWeight,
-                      color: Colors.white,
-                    ),
-                    onPressed: openLineWeightBottomSheet,
+                    icon: Icon(widget.configs.icons.backButton),
+                    onPressed: close,
                   ),
-                if (widget.configs.canToggleFill)
-                  IconButton(
-                    tooltip: widget.i18n.paintEditor.toggleFill,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(
-                      !_fill
-                          ? widget.icons.paintingEditor.noFill
-                          : widget.icons.paintingEditor.fill,
-                      color: Colors.white,
-                    ),
-                    onPressed: toggleFill,
-                  ),
-                if (constraints.maxWidth >= 380) const Spacer(),
-                IconButton(
-                  tooltip: widget.i18n.paintEditor.undo,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(
-                    widget.icons.undoAction,
-                    color: canUndo ? Colors.white : Colors.white.withAlpha(80),
-                  ),
-                  onPressed: undoAction,
-                ),
-                IconButton(
-                  tooltip: widget.i18n.paintEditor.redo,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(
-                    widget.icons.redoAction,
-                    color: canRedo ? Colors.white : Colors.white.withAlpha(80),
-                  ),
-                  onPressed: redoAction,
-                ),
-                _buildDoneBtn(),
-              ] else ...[
-                const Spacer(),
-                _buildDoneBtn(),
-                PlatformPopupBtn(
-                  designMode: widget.designMode,
-                  title: widget.i18n.paintEditor.smallScreenMoreTooltip,
-                  options: [
-                    if (widget.configs.canChangeLineWidth)
-                      PopupMenuOption(
-                        label: widget.i18n.paintEditor.lineWidth,
-                        icon: Icon(
-                          widget.icons.paintingEditor.lineWeight,
+                  if (_imageKey.currentState != null) ...[
+                    if (constraints.maxWidth >= 300) ...[
+                      if (constraints.maxWidth >= 380)
+                        const SizedBox(width: 80),
+                      const Spacer(),
+                      if (widget.configs.paintEditorConfigs.canChangeLineWidth)
+                        IconButton(
+                          tooltip: widget.configs.i18n.paintEditor.lineWidth,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          icon: Icon(
+                            widget.configs.icons.paintingEditor.lineWeight,
+                            color: Colors.white,
+                          ),
+                          onPressed: openLineWeightBottomSheet,
                         ),
-                        onTap: openLineWeightBottomSheet,
-                      ),
-                    if (widget.configs.canToggleFill)
-                      PopupMenuOption(
-                        label: widget.i18n.paintEditor.toggleFill,
-                        icon: Icon(
-                          !_fill
-                              ? widget.icons.paintingEditor.noFill
-                              : widget.icons.paintingEditor.fill,
+                      if (widget.configs.paintEditorConfigs.canToggleFill)
+                        IconButton(
+                          tooltip: widget.configs.i18n.paintEditor.toggleFill,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          icon: Icon(
+                            !_fill
+                                ? widget.configs.icons.paintingEditor.noFill
+                                : widget.configs.icons.paintingEditor.fill,
+                            color: Colors.white,
+                          ),
+                          onPressed: toggleFill,
                         ),
-                        onTap: () {
-                          _fill = !_fill;
-                          setFill(_fill);
-                          if (widget.designMode ==
-                              ImageEditorDesignModeE.cupertino) {
-                            Navigator.pop(context);
-                          }
-                        },
-                      ),
-                    if (_imageKey.currentState!.canUndo)
-                      PopupMenuOption(
-                        label: widget.i18n.paintEditor.undo,
+                      if (constraints.maxWidth >= 380) const Spacer(),
+                      IconButton(
+                        tooltip: widget.configs.i18n.paintEditor.undo,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
-                          widget.icons.undoAction,
+                          widget.configs.icons.undoAction,
+                          color: canUndo
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
                         ),
-                        onTap: undoAction,
+                        onPressed: undoAction,
                       ),
-                    if (_imageKey.currentState!.canRedo)
-                      PopupMenuOption(
-                        label: widget.i18n.paintEditor.redo,
+                      IconButton(
+                        tooltip: widget.configs.i18n.paintEditor.redo,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
-                          widget.icons.redoAction,
+                          widget.configs.icons.redoAction,
+                          color: canRedo
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
                         ),
-                        onTap: redoAction,
+                        onPressed: redoAction,
                       ),
+                      _buildDoneBtn(),
+                    ] else ...[
+                      const Spacer(),
+                      _buildDoneBtn(),
+                      PlatformPopupBtn(
+                        designMode: widget.configs.designMode,
+                        title: widget
+                            .configs.i18n.paintEditor.smallScreenMoreTooltip,
+                        options: [
+                          if (widget
+                              .configs.paintEditorConfigs.canChangeLineWidth)
+                            PopupMenuOption(
+                              label: widget.configs.i18n.paintEditor.lineWidth,
+                              icon: Icon(
+                                widget.configs.icons.paintingEditor.lineWeight,
+                              ),
+                              onTap: openLineWeightBottomSheet,
+                            ),
+                          if (widget.configs.paintEditorConfigs.canToggleFill)
+                            PopupMenuOption(
+                              label: widget.configs.i18n.paintEditor.toggleFill,
+                              icon: Icon(
+                                !_fill
+                                    ? widget.configs.icons.paintingEditor.noFill
+                                    : widget.configs.icons.paintingEditor.fill,
+                              ),
+                              onTap: () {
+                                _fill = !_fill;
+                                setFill(_fill);
+                                if (widget.configs.designMode ==
+                                    ImageEditorDesignModeE.cupertino) {
+                                  Navigator.pop(context);
+                                }
+                              },
+                            ),
+                          if (_imageKey.currentState!.canUndo)
+                            PopupMenuOption(
+                              label: widget.configs.i18n.paintEditor.undo,
+                              icon: Icon(
+                                widget.configs.icons.undoAction,
+                              ),
+                              onTap: undoAction,
+                            ),
+                          if (_imageKey.currentState!.canRedo)
+                            PopupMenuOption(
+                              label: widget.configs.i18n.paintEditor.redo,
+                              icon: Icon(
+                                widget.configs.icons.redoAction,
+                              ),
+                              onTap: redoAction,
+                            ),
+                        ],
+                      ),
+                    ],
                   ],
-                ),
-              ],
-            ],
-          ],
-        );
+                ],
+              )
+            : null);
   }
 
   /// Builds and returns an IconButton for applying changes.
   Widget _buildDoneBtn() {
     return IconButton(
-      tooltip: widget.i18n.paintEditor.done,
+      tooltip: widget.configs.i18n.paintEditor.done,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      icon: Icon(widget.icons.applyChanges),
+      icon: Icon(widget.configs.icons.applyChanges),
       iconSize: 28,
       onPressed: done,
     );
@@ -710,7 +602,7 @@ class PaintingEditorState extends State<PaintingEditor> {
         data: widget.theme,
         child: Material(
           color: Colors.transparent,
-          textStyle: platformTextStyle(context, widget.designMode),
+          textStyle: platformTextStyle(context, widget.configs.designMode),
           child: Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none,
@@ -718,7 +610,7 @@ class PaintingEditorState extends State<PaintingEditor> {
               ImageWithMultipleFilters(
                 width: widget.imageSize.width,
                 height: widget.imageSize.height,
-                designMode: widget.designMode,
+                designMode: widget.configs.designMode,
                 image: EditorImage(
                   assetPath: widget.assetPath,
                   byteArray: widget.byteArray,
@@ -730,7 +622,28 @@ class PaintingEditorState extends State<PaintingEditor> {
               ),
               if (widget.layers != null) _buildLayerStack(),
               _buildPainter(),
-              if (widget.configs.showColorPicker) _buildColorPicker(),
+              if (widget.configs.paintEditorConfigs.showColorPicker)
+                _buildColorPicker(),
+              if (widget.configs.imageEditorTheme.editorMode ==
+                  ThemeEditorMode.whatsapp) ...[
+                WhatsAppPaintBottomBar(
+                  configs: widget.configs,
+                  strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
+                  onSetLineWidth: (val) {
+                    setState(() {
+                      _imageKey.currentState!.setStrokeWidth(val);
+                    });
+                  },
+                ),
+                WhatsAppPaintAppBar(
+                  configs: widget.configs,
+                  canUndo: canUndo,
+                  onDone: done,
+                  onTapUndo: undoAction,
+                  onClose: close,
+                  activeColor: activeColor,
+                ),
+              ]
             ],
           ),
         ),
@@ -740,68 +653,78 @@ class PaintingEditorState extends State<PaintingEditor> {
 
   /// Builds the bottom navigation bar of the painting editor.
   /// Returns a [Widget] representing the bottom navigation bar.
-  Widget _buildBottomBar() {
+  Widget? _buildBottomBar() {
     if (paintModes.length <= 1) return const SizedBox.shrink();
-    return widget.customWidgets.bottomBarPaintingEditor ??
-        Theme(
-          data: widget.theme,
-          child: Scrollbar(
-            controller: _bottomBarScrollCtrl,
-            scrollbarOrientation: ScrollbarOrientation.top,
-            thickness: isDesktop ? null : 0,
-            child: BottomAppBar(
-              height: kToolbarHeight,
-              color: widget.imageEditorTheme.paintingEditor.bottomBarColor,
-              padding: EdgeInsets.zero,
-              child: Center(
-                child: SingleChildScrollView(
+    return widget.configs.customWidgets.bottomBarPaintingEditor ??
+        (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+            ? Theme(
+                data: widget.theme,
+                child: Scrollbar(
                   controller: _bottomBarScrollCtrl,
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: min(MediaQuery.of(context).size.width, 500),
-                      maxWidth: 500,
-                    ),
-                    child: Wrap(
-                      direction: Axis.horizontal,
-                      alignment: WrapAlignment.spaceAround,
-                      children: <Widget>[
-                        ...List.generate(
-                          paintModes.length,
-                          (index) => Builder(
-                            builder: (_) {
-                              var item = paintModes[index];
-                              var color =
-                                  _imageKey.currentState?.mode == item.mode
-                                      ? widget.imageEditorTheme.paintingEditor
-                                          .bottomBarActiveItemColor
-                                      : widget.imageEditorTheme.paintingEditor
-                                          .bottomBarInactiveItemColor;
+                  scrollbarOrientation: ScrollbarOrientation.top,
+                  thickness: isDesktop ? null : 0,
+                  child: BottomAppBar(
+                    height: kToolbarHeight,
+                    color: widget
+                        .configs.imageEditorTheme.paintingEditor.bottomBarColor,
+                    padding: EdgeInsets.zero,
+                    child: Center(
+                      child: SingleChildScrollView(
+                        controller: _bottomBarScrollCtrl,
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth:
+                                min(MediaQuery.of(context).size.width, 500),
+                            maxWidth: 500,
+                          ),
+                          child: Wrap(
+                            direction: Axis.horizontal,
+                            alignment: WrapAlignment.spaceAround,
+                            children: <Widget>[
+                              ...List.generate(
+                                paintModes.length,
+                                (index) => Builder(
+                                  builder: (_) {
+                                    var item = paintModes[index];
+                                    var color = _imageKey.currentState?.mode ==
+                                            item.mode
+                                        ? widget
+                                            .configs
+                                            .imageEditorTheme
+                                            .paintingEditor
+                                            .bottomBarActiveItemColor
+                                        : widget
+                                            .configs
+                                            .imageEditorTheme
+                                            .paintingEditor
+                                            .bottomBarInactiveItemColor;
 
-                              return FlatIconTextButton(
-                                label: Text(
-                                  item.label,
-                                  style:
-                                      TextStyle(fontSize: 10.0, color: color),
+                                    return FlatIconTextButton(
+                                      label: Text(
+                                        item.label,
+                                        style: TextStyle(
+                                            fontSize: 10.0, color: color),
+                                      ),
+                                      icon: Icon(item.icon, color: color),
+                                      onPressed: () {
+                                        setMode(item.mode);
+                                        setState(() {});
+                                        widget.onUpdateUI?.call();
+                                      },
+                                    );
+                                  },
                                 ),
-                                icon: Icon(item.icon, color: color),
-                                onPressed: () {
-                                  setMode(item.mode);
-                                  setState(() {});
-                                  widget.onUpdateUI?.call();
-                                },
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        );
+              )
+            : null);
   }
 
   /// Builds the painting canvas for the editor.
@@ -813,13 +736,13 @@ class PaintingEditorState extends State<PaintingEditor> {
       networkUrl: _editorImage.networkUrl,
       byteArray: _editorImage.byteArray,
       assetPath: _editorImage.assetPath,
-      i18n: widget.i18n,
-      icons: widget.icons,
+      i18n: widget.configs.i18n,
+      icons: widget.configs.icons,
       theme: widget.theme,
-      designMode: widget.designMode,
+      designMode: widget.configs.designMode,
       imageSize: widget.imageSize,
-      imageEditorTheme: widget.imageEditorTheme,
-      configs: widget.configs,
+      imageEditorTheme: widget.configs.imageEditorTheme,
+      configs: widget.configs.paintEditorConfigs,
       onUpdate: () {
         setState(() {});
         widget.onUpdateUI?.call();
@@ -831,11 +754,16 @@ class PaintingEditorState extends State<PaintingEditor> {
   /// Returns a [Widget] representing the color picker.
   Widget _buildColorPicker() {
     return Positioned(
-      top: 10,
+      top: widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+          ? 10
+          : 60,
       right: 0,
       child: BarColorPicker(
+        configs: widget.configs,
         length: min(
-          350,
+          widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+              ? 350
+              : 200,
           MediaQuery.of(context).size.height -
               MediaQuery.of(context).viewInsets.bottom -
               kToolbarHeight -
@@ -847,9 +775,10 @@ class PaintingEditorState extends State<PaintingEditor> {
         thumbColor: Colors.white,
         cornerRadius: 10,
         pickMode: PickMode.color,
-        initialColor: widget.configs.initialColor,
+        initialColor: widget.configs.paintEditorConfigs.initialColor,
         colorListener: (int value) {
           _imageKey.currentState?.setColor(value);
+          setState(() {});
         },
       ),
     );
@@ -863,18 +792,20 @@ class PaintingEditorState extends State<PaintingEditor> {
           fit: StackFit.expand,
           children: widget.layers!.map((layerItem) {
             return LayerWidget(
-              designMode: widget.designMode,
-              layerHoverCursor: widget.imageEditorTheme.layerHoverCursor,
+              designMode: widget.configs.designMode,
+              layerHoverCursor:
+                  widget.configs.imageEditorTheme.layerHoverCursor,
               padding: widget.paddingHelper ?? EdgeInsets.zero,
               layerData: layerItem,
-              textFontSize: widget.layerFontSize,
-              emojiTextStyle: widget.emojiTextStyle,
-              stickerInitWidth: widget.stickerInitWidth,
+              textFontSize: widget.configs.textEditorConfigs.initFontSize,
+              emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
+              stickerInitWidth:
+                  widget.configs.stickerEditorConfigs?.initWidth ?? 100,
               onTap: (layerData) async {},
               onTapUp: () {},
               onTapDown: () {},
               onRemoveTap: () {},
-              i18n: widget.i18n,
+              i18n: widget.configs.i18n,
               enabledHitDetection: false,
               freeStyleHighPerformanceScaling: false,
               freeStyleHighPerformanceMoving: false,

@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.6.0
+- **Feat:** Added prebuilt design option inspired by WhatsApp design. Now the image editor includes a prebuilt design that closely resembles the visual style of WhatsApp, offering users a familiar and intuitive editing experience.
+
 ## Version 2.5.8
 - **Chore:** Dependency updates
 

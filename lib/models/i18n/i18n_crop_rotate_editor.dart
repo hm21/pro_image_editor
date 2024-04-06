@@ -12,8 +12,14 @@ class I18nCropRotateEditor {
   /// Text for the "Back" button.
   final String back;
 
+  /// Text for the "Cancel" button. Only available when the theme is set to `WhatsApp`.
+  final String cancel;
+
   /// Text for the "Done" button.
   final String done;
+
+  /// Text for the "Reset" button. Only available when the theme is set to `WhatsApp`.
+  final String reset;
 
   /// Text for the message displayed during the application of changes.
   final String applyChangesDialogMsg;
@@ -49,8 +55,10 @@ class I18nCropRotateEditor {
     this.ratio = 'Ratio',
     this.back = 'Back',
     this.done = 'Done',
+    this.cancel = 'Cancel',
     this.prepareImageDialogMsg = 'Please wait',
     this.applyChangesDialogMsg = 'Please wait',
     this.smallScreenMoreTooltip = 'More',
+    this.reset = 'Reset',
   });
 }

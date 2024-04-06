@@ -3,6 +3,7 @@ import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 
 import 'theme_adaptive_dialog.dart';
 import 'theme_crop_rotate_editor.dart';
+import 'theme_editor_mode.dart';
 import 'theme_emoji_editor.dart';
 import 'theme_filter_editor.dart';
 import 'theme_blur_editor.dart';
@@ -22,6 +23,7 @@ export 'theme_helper_lines.dart';
 export 'theme_sticker_editor.dart';
 export 'theme_loading_dialog.dart';
 export 'theme_adaptive_dialog.dart';
+export 'theme_editor_mode.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor components
@@ -125,8 +127,12 @@ class ImageEditorTheme {
   /// The cursor style when hovering over a layer.
   final SystemMouseCursor layerHoverCursor;
 
+  /// The pre designed theme for the editor like `simple` or `whatsapp`.
+  final ThemeEditorMode editorMode;
+
   /// Creates an instance of the `ImageEditorTheme` class with the specified theme properties.
   const ImageEditorTheme({
+    this.editorMode = ThemeEditorMode.simple,
     this.layerHoverCursor = SystemMouseCursors.move,
     this.helperLine = const HelperLineTheme(),
     this.paintingEditor = const PaintingEditorTheme(),

@@ -9,11 +9,13 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: StickerEditor(
-          configs: StickerEditorConfigs(
-            enabled: true,
-            buildStickers: (setLayer) {
-              return Container();
-            },
+          configs: ProImageEditorConfigs(
+            stickerEditorConfigs: StickerEditorConfigs(
+              enabled: true,
+              buildStickers: (setLayer) {
+                return Container();
+              },
+            ),
           ),
         ),
       ));

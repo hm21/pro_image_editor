@@ -290,7 +290,6 @@ class _LayerWidgetState extends State<LayerWidget> {
       fontSize: fontSize * layer.fontScale,
       fontWeight: FontWeight.w400,
       color: layer.color,
-      fontFamily: layer.fontFamily,
     );
 
     double height = getLineHeight(style);
@@ -307,7 +306,13 @@ class _LayerWidgetState extends State<LayerWidget> {
         layer.text.toString(),
         backgroundColor: layer.background,
         textAlign: layer.align,
-        style: style,
+        style: layer.textStyle?.copyWith(
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              color: style.color,
+              fontFamily: style.fontFamily,
+            ) ??
+            style,
       ),
     );
   }

@@ -17,7 +17,6 @@ void main() {
           key: GlobalKey(),
           theme: ThemeData.light(),
           imageSize: const Size(300, 300),
-          heroTag: 'test_hero_tag',
         ),
       ));
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
@@ -37,7 +36,6 @@ void main() {
           key: GlobalKey(),
           theme: ThemeData.light(),
           imageSize: const Size(300, 300),
-          heroTag: 'test_hero_tag',
         ),
       ));
 

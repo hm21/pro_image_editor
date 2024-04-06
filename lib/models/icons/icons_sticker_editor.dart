@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/pro_image_editor_icons.dart';
+
 /// Customizable icons for the Sticker Editor component.
 class IconsStickerEditor {
   /// The icon to be displayed in the bottom navigation bar.
@@ -19,6 +21,6 @@ class IconsStickerEditor {
   /// )
   /// ```
   const IconsStickerEditor({
-    this.bottomNavBar = Icons.layers_outlined,
+    this.bottomNavBar = ProImageEditorIcons.stickers,
   });
 }

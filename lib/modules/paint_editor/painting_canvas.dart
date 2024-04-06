@@ -475,6 +475,12 @@ class PaintingCanvasState extends State<PaintingCanvas> {
     super.dispose();
   }
 
+  /// Get the active selected color.
+  Color get activeColor => _paintCtrl.color;
+
+  /// Get the current stroke width
+  double get strokeWidth => _paintCtrl.strokeWidth;
+
   /// Undo the most recent paint action on the canvas.
   ///
   /// This method allows you to revert the most recent paint action performed on the canvas.
@@ -577,6 +583,15 @@ class PaintingCanvasState extends State<PaintingCanvas> {
     widget.onUpdate?.call();
   }
 
+  /// Set the stroke width.
+  void setStrokeWidth(double value) {
+    _paintCtrl.setStrokeWidth(value);
+    setState(() {});
+    if (widget.configs.strokeWidthOnChanged != null) {
+      widget.configs.strokeWidthOnChanged!(value);
+    }
+  }
+
   /// Displays a range slider for adjusting the line width of the painting tool.
   ///
   /// This method shows a range slider in a modal bottom sheet for adjusting the line width of the painting tool.
@@ -608,11 +623,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
                       divisions: 19,
                       value: _paintCtrl.strokeWidth,
                       onChanged: (value) {
-                        _paintCtrl.setStrokeWidth(value);
-                        setState(() {});
-                        if (widget.configs.strokeWidthOnChanged != null) {
-                          widget.configs.strokeWidthOnChanged!(value);
-                        }
+                        setStrokeWidth(value);
                       },
                     );
                   }),

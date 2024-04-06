@@ -57,11 +57,16 @@ class CropRotateEditorTheme {
   /// Color of the crop corners.
   final Color cropCornerColor;
 
+  /// Background color for the bottombar when the editor use WhatsApp as theme
+  /// and the designMode is set to Cupertino
+  final Color whatsappCupertinoBottomBarColor;
+
   /// Creates an instance of the `CropRotateEditorTheme` class with the specified theme properties.
   const CropRotateEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.background = imageEditorBackgroundColor,
     this.cropCornerColor = imageEditorPrimaryColor,
+    this.whatsappCupertinoBottomBarColor = const Color(0xFF303030),
   });
 }

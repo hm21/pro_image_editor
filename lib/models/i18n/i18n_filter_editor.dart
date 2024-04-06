@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Internationalization (i18n) settings for the Filter Editor component.
 class I18nFilterEditor {
   /// Text to display when a filter is being applied.
@@ -258,9 +256,6 @@ class I18nFilters {
       case 'X-Pro II':
         return xProII;
       default:
-        if (kDebugMode) {
-          debugPrint('Translation for filter $filterName not found');
-        }
         return filterName;
     }
   }

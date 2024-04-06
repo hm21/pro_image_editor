@@ -2,15 +2,22 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:io';
 
+import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
+import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
+import 'package:pro_image_editor/utils/design_mode.dart';
+import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:vibration/vibration.dart';
 
+import 'designs/whatsapp/whatsapp_filter_button.dart';
+import 'designs/whatsapp/whatsapp_sticker_editor.dart';
 import 'models/history/state_history.dart';
 import 'models/history/last_position.dart';
 import 'models/crop_rotate_editor_response.dart';
@@ -22,8 +29,9 @@ import 'models/import_export/export_state_history_configs.dart';
 import 'models/import_export/import_state_history.dart';
 import 'models/layer.dart';
 import 'modules/crop_rotate_editor/crop_rotate_editor.dart';
-import 'modules/emoji_editor.dart';
+import 'modules/emoji_editor/emoji_editor.dart';
 import 'modules/filter_editor/filter_editor.dart';
+import 'modules/filter_editor/widgets/filter_editor_item_list.dart';
 import 'modules/filter_editor/widgets/image_with_multiple_filters.dart';
 import 'modules/blur_editor.dart';
 import 'modules/paint_editor/paint_editor.dart';
@@ -453,7 +461,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       _screen.height -
       _screenPadding.top -
       _screenPadding.bottom -
-      kToolbarHeight * 2;
+      _allToolbarHeight;
 
   /// Getter for the X-coordinate of the middle of the screen.
   double get _screenMiddleX =>
@@ -477,6 +485,15 @@ class ProImageEditorState extends State<ProImageEditor> {
 
   /// Whether a dialog is currently open.
   bool _openDialog = false;
+
+  /// Represents the helper value for showing WhatsApp filters.
+  double _whatsAppFilterShowHelper = 0;
+
+  /// Represents the direction of swipe action.
+  SwipeMode _swipeDirection = SwipeMode.none;
+
+  /// Represents the start time of the swipe action.
+  DateTime _swipeStartTime = DateTime.now();
 
   /// Indicates whether the browser's context menu was enabled before any changes.
   bool _browserContextMenuBeforeEnabled = false;
@@ -587,6 +604,21 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Get the current image being edited from the change list.
   EditorImage get _image =>
       _imgStateHistory[_stateHistory[_editPosition].bytesRefIndex];
+
+  /// Returns the total height of all toolbars.
+  double get _allToolbarHeight => _appBarHeight + _bottomBarHeight;
+
+  /// Returns the height of the app bar.
+  double get _appBarHeight =>
+      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+          ? kToolbarHeight
+          : 0;
+
+  /// Returns the height of the bottom bar.
+  double get _bottomBarHeight =>
+      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+          ? kBottomNavigationBarHeight
+          : 0;
 
   /// Clean forward changes in the history.
   ///
@@ -772,6 +804,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       colorPickerPosition: layer.colorPickerPosition,
       offset: Offset(layer.offset.dx, layer.offset.dy),
       rotation: layer.rotation,
+      textStyle: layer.textStyle,
       scale: layer.scale,
       flipX: layer.flipX,
       flipY: layer.flipY,
@@ -858,9 +891,13 @@ class ProImageEditorState extends State<ProImageEditor> {
   ///
   /// This method is called when a scaling operation begins and initializes the necessary variables.
   void _onScaleStart(ScaleStartDetails details) {
-    if (_selectedLayer < 0) return;
+    _swipeDirection = SwipeMode.none;
+    _swipeStartTime = DateTime.now();
     _snapStartPosX = details.focalPoint.dx;
     _snapStartPosY = details.focalPoint.dy;
+
+    if (_selectedLayer < 0) return;
+
     var layer = _layers[_selectedLayer];
     _setTempLayer(layer);
     _baseScaleFactor = layer.scale;
@@ -890,7 +927,25 @@ class ProImageEditorState extends State<ProImageEditor> {
   ///
   /// This method is called during a scaling operation and updates the selected layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails detail) {
-    if (_selectedLayer < 0) return;
+    if (_selectedLayer < 0) {
+      if (widget.configs.imageEditorTheme.editorMode ==
+          ThemeEditorMode.whatsapp) {
+        _whatsAppFilterShowHelper -= detail.focalPointDelta.dy;
+        _whatsAppFilterShowHelper = max(0, min(120, _whatsAppFilterShowHelper));
+
+        double pointerOffset = _snapStartPosY - detail.focalPoint.dy;
+        if (pointerOffset > 20) {
+          _swipeDirection = SwipeMode.up;
+        } else if (pointerOffset < -20) {
+          _swipeDirection = SwipeMode.down;
+        }
+
+        setState(() {});
+      }
+      return;
+    }
+
+    if (_whatsAppFilterShowHelper > 0) return;
 
     _enabledHitDetection = false;
     if (detail.pointerCount == 1) {
@@ -1021,7 +1076,31 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Handle the end of a scaling operation.
   ///
   /// This method is called when a scaling operation ends and resets helper lines and flags.
-  void _onScaleEnd(ScaleEndDetails detail) {
+  void _onScaleEnd(ScaleEndDetails detail) async {
+    if (_selectedLayer < 0 &&
+        widget.configs.imageEditorTheme.editorMode ==
+            ThemeEditorMode.whatsapp) {
+      _showHelperLines = false;
+
+      if (_swipeDirection != SwipeMode.none &&
+          DateTime.now().difference(_swipeStartTime).inMilliseconds < 200) {
+        if (_swipeDirection == SwipeMode.up) {
+          _whatsAppFilterSheetAutoAnimation(true);
+        } else if (_swipeDirection == SwipeMode.down) {
+          _whatsAppFilterSheetAutoAnimation(false);
+        }
+      } else {
+        if (_whatsAppFilterShowHelper < 90) {
+          _whatsAppFilterSheetAutoAnimation(false);
+        } else {
+          _whatsAppFilterSheetAutoAnimation(true);
+        }
+      }
+
+      _whatsAppFilterShowHelper = max(0, min(120, _whatsAppFilterShowHelper));
+      setState(() {});
+    }
+
     if (!hoverRemoveBtn && _tempLayer != null) _updateTempLayer();
 
     _enabledHitDetection = true;
@@ -1152,22 +1231,19 @@ class ProImageEditorState extends State<ProImageEditor> {
   ///
   /// [layerData] - The text layer data to be edited.
   void _onTextLayerTap(TextLayerData layerData) async {
+    setState(() => _openEditor = true);
     TextLayerData? layer = await _openPage(
       TextEditor(
         key: textEditor,
         layer: layerData,
         heroTag: layerData.id,
-        i18n: widget.configs.i18n,
-        icons: widget.configs.icons,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        customWidgets: widget.configs.customWidgets,
-        configs: widget.configs.textEditorConfigs,
-        designMode: widget.configs.designMode,
+        configs: widget.configs,
         theme: _theme,
         onUpdateUI: widget.onUpdateUI,
       ),
       duration: const Duration(milliseconds: 50),
     );
+    setState(() => _openEditor = false);
 
     if (layer == null || !mounted) return;
 
@@ -1183,6 +1259,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         ..colorPickerPosition = layer.colorPickerPosition
         ..align = layer.align
         ..fontScale = layer.fontScale
+        ..textStyle = layer.textStyle
         ..id = layerData.id
         ..flipX = layerData.flipX
         ..flipY = layerData.flipY
@@ -1202,7 +1279,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// This method opens the painting editor and allows the user to draw on the current image.
   /// After closing the painting editor, any changes made are applied to the image's layers.
   void openPaintingEditor() async {
-    _openEditor = true;
+    setState(() => _openEditor = true);
     await _openPage<List<PaintingLayerData>>(
       PaintingEditor.autoSource(
         key: paintingEditor,
@@ -1210,31 +1287,23 @@ class ProImageEditorState extends State<ProImageEditor> {
         byteArray: _image.byteArray,
         assetPath: _image.assetPath,
         networkUrl: _image.networkUrl,
-        icons: widget.configs.icons,
         layers: _layers,
         theme: _theme,
-        i18n: widget.configs.i18n,
         imageSize: Size(_imageWidth, _imageHeight),
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        customWidgets: widget.configs.customWidgets,
-        layerFontSize: widget.configs.textEditorConfigs.initFontSize,
-        configs: widget.configs.paintEditorConfigs,
-        stickerInitWidth: widget.configs.stickerEditorConfigs?.initWidth ?? 100,
+        configs: widget.configs,
         paddingHelper: EdgeInsets.only(
           top: (_screen.height -
                       _screenPadding.top -
                       _screenPadding.bottom -
                       _imageHeight) /
                   2 -
-              kToolbarHeight,
+              _appBarHeight,
           left: (_screen.width -
                   _screenPadding.left -
                   _screenPadding.right -
                   _imageWidth) /
               2,
         ),
-        designMode: widget.configs.designMode,
-        emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
         onUpdateUI: widget.onUpdateUI,
         blur: _blur,
         filters: _filters,
@@ -1250,29 +1319,24 @@ class ProImageEditorState extends State<ProImageEditor> {
         widget.onUpdateUI?.call();
       }
     });
-    _openEditor = false;
+    setState(() => _openEditor = false);
   }
 
   /// Opens the text editor.
   ///
   /// This method opens the text editor, allowing the user to add or edit text layers on the image.
   void openTextEditor() async {
-    _openEditor = true;
+    setState(() => _openEditor = true);
     TextLayerData? layer = await _openPage(
       TextEditor(
         key: textEditor,
-        i18n: widget.configs.i18n,
-        icons: widget.configs.icons,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        customWidgets: widget.configs.customWidgets,
-        configs: widget.configs.textEditorConfigs,
-        designMode: widget.configs.designMode,
+        configs: widget.configs,
         theme: _theme,
         onUpdateUI: widget.onUpdateUI,
       ),
       duration: const Duration(milliseconds: 50),
     );
-    _openEditor = false;
+    setState(() => _openEditor = false);
 
     if (layer == null || !mounted) return;
     layer.offset = Offset(
@@ -1317,7 +1381,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _activeCrop = false;
     if (!mounted) return;
 
-    _openEditor = true;
+    setState(() => _openEditor = true);
 
     _openPage<CropRotateEditorRes?>(
       CropRotateEditor.autoSource(
@@ -1328,18 +1392,12 @@ class ProImageEditorState extends State<ProImageEditor> {
         assetPath: img.assetPath,
         networkUrl: img.networkUrl,
         bytesWithLayers: bytesWithLayers,
-        i18n: widget.configs.i18n,
-        icons: widget.configs.icons,
         theme: _theme,
         imageSize: Size(_imageWidth, _imageHeight),
-        heroTag: widget.configs.heroTag,
-        designMode: widget.configs.designMode,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        customWidgets: widget.configs.customWidgets,
-        configs: widget.configs.cropRotateEditorConfigs,
+        configs: widget.configs,
       ),
     ).then((response) async {
-      _openEditor = false;
+      setState(() => _openEditor = false);
       if (response != null) {
         CropRotateEditorResponse res = response.result;
         if (res.bytes != null) {
@@ -1444,7 +1502,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// `Uint8List`. If no filter is applied or the operation is canceled, the original image is retained.
   void openFilterEditor() async {
     if (!mounted) return;
-    _openEditor = true;
+    setState(() => _openEditor = true);
     FilterStateHistory? filterAppliedImage = await _openPage(
       FilterEditor.autoSource(
         key: filterEditor,
@@ -1453,20 +1511,14 @@ class ProImageEditorState extends State<ProImageEditor> {
         assetPath: _image.assetPath,
         networkUrl: _image.networkUrl,
         theme: _theme,
-        i18n: widget.configs.i18n,
-        icons: widget.configs.icons,
-        heroTag: widget.configs.heroTag,
-        designMode: widget.configs.designMode,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        customWidgets: widget.configs.customWidgets,
-        configs: widget.configs.filterEditorConfigs,
+        configs: widget.configs,
         onUpdateUI: widget.onUpdateUI,
         activeFilters: _filters,
         blur: _blur,
         convertToUint8List: false,
       ),
     );
-    _openEditor = false;
+    setState(() => _openEditor = false);
 
     if (filterAppliedImage == null) return;
 
@@ -1502,16 +1554,78 @@ class ProImageEditorState extends State<ProImageEditor> {
     EmojiLayerData? layer = await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
-      builder: (BuildContext context) => EmojiEditor(
-        i18n: widget.configs.i18n,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        designMode: widget.configs.designMode,
-        configs: widget.configs.emojiEditorConfigs,
-      ),
+      builder: (BuildContext context) => EmojiEditor(configs: widget.configs),
     );
     ServicesBinding.instance.keyboard.addHandler(_onKey);
     if (layer == null || !mounted) return;
     layer.scale = widget.configs.emojiEditorConfigs.initScale;
+    layer.offset = Offset(
+      _imageWidth / 2,
+      _imageHeight / 2,
+    );
+
+    addLayer(layer);
+
+    setState(() {});
+    widget.onUpdateUI?.call();
+  }
+
+  /// Opens the WhatsApp sticker editor.
+  ///
+  /// This method removes the keyboard handler, then depending on the design mode specified in the [configs] parameter of the widget, it either opens the WhatsAppStickerPage directly or shows it as a modal bottom sheet.
+  ///
+  /// If the design mode is set to [ImageEditorDesignModeE.material], the WhatsAppStickerPage is opened directly using [_openPage()]. Otherwise, it is displayed as a modal bottom sheet with specific configurations such as transparent background, black barrier color, and controlled scrolling.
+  ///
+  /// After the page is opened and a layer is returned, the keyboard handler is added back. If no layer is returned or the widget is not mounted, the method returns early.
+  ///
+  /// If the returned layer's runtime type is not StickerLayerData, the layer's scale is set to the initial scale specified in [emojiEditorConfigs] of the [configs] parameter. Regardless, the layer's offset is set to the center of the image.
+  ///
+  /// Finally, the layer is added, the UI is updated, and the widget's [onUpdateUI] callback is called if provided.
+  void openWhatsAppStickerEditor() async {
+    setState(() => _openEditor = true);
+    ServicesBinding.instance.keyboard.removeHandler(_onKey);
+
+    Layer? layer;
+    if (widget.configs.designMode == ImageEditorDesignModeE.material) {
+      layer = await _openPage(WhatsAppStickerPage(
+        configs: widget.configs,
+      ));
+    } else {
+      layer = await showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        barrierColor: Colors.black12,
+        showDragHandle: false,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+              clipBehavior: Clip.hardEdge,
+              child: WhatsAppStickerPage(
+                configs: widget.configs,
+              ),
+            ),
+          );
+        },
+      );
+    }
+    _openEditor = false;
+
+    ServicesBinding.instance.keyboard.addHandler(_onKey);
+    if (layer == null || !mounted) {
+      setState(() {});
+      return;
+    }
+
+    if (layer.runtimeType != StickerLayerData) {
+      layer.scale = widget.configs.emojiEditorConfigs.initScale;
+    }
     layer.offset = Offset(
       _imageWidth / 2,
       _imageHeight / 2,
@@ -1530,10 +1644,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       context: context,
       backgroundColor: Colors.black,
       builder: (BuildContext context) => StickerEditor(
-        i18n: widget.configs.i18n,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        designMode: widget.configs.designMode,
-        configs: widget.configs.stickerEditorConfigs!,
+        configs: widget.configs,
       ),
     );
     ServicesBinding.instance.keyboard.addHandler(_onKey);
@@ -1552,7 +1663,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Opens the blur editor as a modal bottom sheet.
   void openBlurEditor() async {
     if (!mounted) return;
-    _openEditor = true;
+    setState(() => _openEditor = true);
     BlurStateHistory? blur = await _openPage(
       BlurEditor.autoSource(
         key: blurEditor,
@@ -1575,7 +1686,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         currentBlur: _blur,
       ),
     );
-    _openEditor = false;
+    setState(() => _openEditor = false);
 
     if (blur == null) return;
 
@@ -1870,6 +1981,22 @@ class ProImageEditorState extends State<ProImageEditor> {
     );
   }
 
+  void _whatsAppFilterSheetAutoAnimation(bool up) async {
+    if (up) {
+      while (_whatsAppFilterShowHelper < 120) {
+        _whatsAppFilterShowHelper += 4;
+        setState(() {});
+        await Future.delayed(const Duration(milliseconds: 1));
+      }
+    } else {
+      while (_whatsAppFilterShowHelper > 0) {
+        _whatsAppFilterShowHelper -= 4;
+        setState(() {});
+        await Future.delayed(const Duration(milliseconds: 1));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _theme = widget.configs.theme ??
@@ -1904,7 +2031,6 @@ class ProImageEditorState extends State<ProImageEditor> {
               constraints.maxHeight,
             );
           }
-
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: widget.configs.imageEditorTheme.uiOverlayStyle,
             child: Theme(
@@ -1929,125 +2055,216 @@ class ProImageEditorState extends State<ProImageEditor> {
     return _selectedLayer >= 0
         ? null
         : widget.configs.customWidgets.appBar ??
-            AppBar(
-              automaticallyImplyLeading: false,
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.black,
-              actions: [
-                IconButton(
-                  tooltip: widget.configs.i18n.cancel,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(widget.configs.icons.closeEditor),
-                  onPressed: closeEditor,
-                ),
-                const Spacer(),
-                IconButton(
-                  key: const ValueKey('TextEditorMainUndoButton'),
-                  tooltip: widget.configs.i18n.undo,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(
-                    widget.configs.icons.undoAction,
-                    color: _editPosition > 0
-                        ? Colors.white
-                        : Colors.white.withAlpha(80),
-                  ),
-                  onPressed: undoAction,
-                ),
-                IconButton(
-                  key: const ValueKey('TextEditorMainRedoButton'),
-                  tooltip: widget.configs.i18n.redo,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(
-                    widget.configs.icons.redoAction,
-                    color: _editPosition < _stateHistory.length - 1
-                        ? Colors.white
-                        : Colors.white.withAlpha(80),
-                  ),
-                  onPressed: redoAction,
-                ),
-                IconButton(
-                  key: const ValueKey('TextEditorMainDoneButton'),
-                  tooltip: widget.configs.i18n.done,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(widget.configs.icons.doneIcon),
-                  iconSize: 28,
-                  onPressed: doneEditing,
-                ),
-              ],
-            );
+            (widget.configs.imageEditorTheme.editorMode ==
+                    ThemeEditorMode.simple
+                ? AppBar(
+                    automaticallyImplyLeading: false,
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black,
+                    actions: [
+                      IconButton(
+                        tooltip: widget.configs.i18n.cancel,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(widget.configs.icons.closeEditor),
+                        onPressed: closeEditor,
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        key: const ValueKey('TextEditorMainUndoButton'),
+                        tooltip: widget.configs.i18n.undo,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(
+                          widget.configs.icons.undoAction,
+                          color: _editPosition > 0
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
+                        ),
+                        onPressed: undoAction,
+                      ),
+                      IconButton(
+                        key: const ValueKey('TextEditorMainRedoButton'),
+                        tooltip: widget.configs.i18n.redo,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(
+                          widget.configs.icons.redoAction,
+                          color: _editPosition < _stateHistory.length - 1
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
+                        ),
+                        onPressed: redoAction,
+                      ),
+                      IconButton(
+                        key: const ValueKey('TextEditorMainDoneButton'),
+                        tooltip: widget.configs.i18n.done,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(widget.configs.icons.doneIcon),
+                        iconSize: 28,
+                        onPressed: doneEditing,
+                      ),
+                    ],
+                  )
+                : null);
   }
 
   Widget _buildBody() {
     var editorImage = _buildImageWithFilter();
 
-    return Listener(
-      onPointerSignal: isDesktop ? _mouseScroll : null,
-      child: GestureDetector(
-        onScaleStart: _onScaleStart,
-        onScaleUpdate: _onScaleUpdate,
-        onScaleEnd: _onScaleEnd,
-        child: Stack(
-          alignment: Alignment.center,
-          fit: StackFit.expand,
-          clipBehavior: Clip.none,
-          children: [
-            Hero(
-              tag: !_inited ? '--' : widget.configs.heroTag,
-              createRectTween: (begin, end) =>
-                  RectTween(begin: begin, end: end),
-              child: Center(
-                child: SizedBox(
-                  height: _imageHeight,
-                  width: _imageWidth,
-                  child: StreamBuilder<bool>(
-                      stream: _mouseMoveStream.stream,
-                      initialData: false,
-                      builder: (context, snapshot) {
-                        return MouseRegion(
-                          hitTestBehavior: HitTestBehavior.translucent,
-                          cursor: snapshot.data != true
-                              ? SystemMouseCursors.basic
-                              : widget
-                                  .configs.imageEditorTheme.layerHoverCursor,
-                          onHover: isDesktop
-                              ? (event) {
-                                  var hasHit = _layers.indexWhere((element) =>
-                                          element is PaintingLayerData &&
-                                          element.item.hit) >=
-                                      0;
-                                  if (hasHit != snapshot.data) {
-                                    _mouseMoveStream.add(hasHit);
-                                  }
-                                }
-                              : null,
-                          child: Screenshot(
-                            controller: _screenshotCtrl,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              clipBehavior: Clip.none,
-                              children: [
-                                Offstage(
-                                  offstage: !_inited,
-                                  child: editorImage,
-                                ),
-                                if (_selectedLayer < 0) _buildLayers(),
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
+    return LayoutBuilder(builder: (context, constraints) {
+      return Listener(
+        onPointerSignal: isDesktop ? _mouseScroll : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
+          child: Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            clipBehavior: Clip.none,
+            children: [
+              Transform.scale(
+                transformHitTests: false,
+                scale: 1 /
+                    constraints.maxHeight *
+                    (constraints.maxHeight - _whatsAppFilterShowHelper * 2),
+                child: Stack(
+                  alignment: Alignment.center,
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Hero(
+                      tag: !_inited ? '--' : widget.configs.heroTag,
+                      createRectTween: (begin, end) =>
+                          RectTween(begin: begin, end: end),
+                      child: Center(
+                        child: SizedBox(
+                          height: _imageHeight,
+                          width: _imageWidth,
+                          child: StreamBuilder<bool>(
+                              stream: _mouseMoveStream.stream,
+                              initialData: false,
+                              builder: (context, snapshot) {
+                                return MouseRegion(
+                                  hitTestBehavior: HitTestBehavior.translucent,
+                                  cursor: snapshot.data != true
+                                      ? SystemMouseCursors.basic
+                                      : widget.configs.imageEditorTheme
+                                          .layerHoverCursor,
+                                  onHover: isDesktop
+                                      ? (event) {
+                                          var hasHit = _layers.indexWhere(
+                                                  (element) =>
+                                                      element
+                                                          is PaintingLayerData &&
+                                                      element.item.hit) >=
+                                              0;
+                                          if (hasHit != snapshot.data) {
+                                            _mouseMoveStream.add(hasHit);
+                                          }
+                                        }
+                                      : null,
+                                  child: Screenshot(
+                                    controller: _screenshotCtrl,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Offstage(
+                                          offstage: !_inited,
+                                          child: editorImage,
+                                        ),
+                                        if (_selectedLayer < 0) _buildLayers(),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+                        ),
+                      ),
+                    ),
+                    // show same image solong decoding that screenshot is ready
+                    if (!_inited) editorImage,
+                    if (_selectedLayer >= 0) _buildLayers(),
+                    _buildHelperLines(),
+                    if (_selectedLayer >= 0) _buildRemoveIcon(),
+                  ],
                 ),
               ),
-            ),
-            // show same image solong decoding that screenshot is ready
-            if (!_inited) editorImage,
-            if (_selectedLayer >= 0) _buildLayers(),
-            _buildHelperLines(),
-            if (_selectedLayer >= 0) _buildRemoveIcon(),
-          ],
+              if (widget.configs.imageEditorTheme.editorMode ==
+                      ThemeEditorMode.whatsapp &&
+                  _selectedLayer < 0) ...[
+                WhatsAppAppBar(
+                  configs: widget.configs,
+                  onClose: closeEditor,
+                  onTapCropRotateEditor: openCropEditor,
+                  onTapStickerEditor: openWhatsAppStickerEditor,
+                  onTapPaintEditor: openPaintingEditor,
+                  onTapTextEditor: openTextEditor,
+                  onTapUndo: undoAction,
+                  canUndo: canUndo,
+                  openEditor: _openEditor,
+                ),
+                if (widget.configs.designMode ==
+                    ImageEditorDesignModeE.material)
+                  WhatsAppFilterBtn(
+                    configs: widget.configs,
+                    opacity: 1 - 1 / 120 * _whatsAppFilterShowHelper,
+                  ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: -120 + _whatsAppFilterShowHelper,
+                  child: Opacity(
+                    opacity:
+                        max(0, min(1, 1 / 120 * _whatsAppFilterShowHelper)),
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 7),
+                      color: widget.configs.imageEditorTheme.filterEditor
+                          .whatsAppBottomBarColor,
+                      child: FilterEditorItemList(
+                        itemScaleFactor:
+                            max(0, min(1, 1 / 120 * _whatsAppFilterShowHelper)),
+                        byteArray: widget.byteArray,
+                        file: widget.file,
+                        assetPath: widget.assetPath,
+                        networkUrl: widget.networkUrl,
+                        activeFilters: const [],
+                        blur: _blur,
+                        configs: widget.configs,
+                        selectedFilter: _filters.isNotEmpty
+                            ? _filters.first.filter
+                            : PresetFilters.none,
+                        onSelectFilter: (filter) {
+                          _cleanForwardChanges();
+
+                          _stateHistory.add(
+                            EditorStateHistory(
+                              bytesRefIndex: _imgStateHistory.length - 1,
+                              blur: _blur,
+                              layers: _layers,
+                              filters: [
+                                FilterStateHistory(
+                                  filter: filter,
+                                  opacity: 1,
+                                ),
+                              ],
+                            ),
+                          );
+                          _editPosition++;
+
+                          setState(() {});
+                          widget.onUpdateUI?.call();
+                        },
+                      ),
+                    ),
+                  ),
+                )
+              ]
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget? _buildBottomNavBar() {
@@ -2057,151 +2274,165 @@ class ProImageEditorState extends State<ProImageEditor> {
     return _selectedLayer >= 0
         ? null
         : widget.configs.customWidgets.bottomNavigationBar ??
-            Theme(
-              data: _theme,
-              child: Scrollbar(
-                controller: _bottomBarScrollCtrl,
-                scrollbarOrientation: ScrollbarOrientation.top,
-                thickness: isDesktop ? null : 0,
-                child: BottomAppBar(
-                  height: kBottomNavigationBarHeight,
-                  color: Colors.black,
-                  padding: EdgeInsets.zero,
-                  child: Center(
-                    child: SingleChildScrollView(
+            (widget.configs.imageEditorTheme.editorMode ==
+                    ThemeEditorMode.simple
+                ? Theme(
+                    data: _theme,
+                    child: Scrollbar(
                       controller: _bottomBarScrollCtrl,
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: min(_screen.width, 600),
-                          maxWidth: 600,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              if (widget.configs.paintEditorConfigs.enabled)
-                                FlatIconTextButton(
-                                  key: const ValueKey(
-                                      'open-painting-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.paintEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget.configs.icons.paintingEditor
-                                        .bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openPaintingEditor,
+                      scrollbarOrientation: ScrollbarOrientation.top,
+                      thickness: isDesktop ? null : 0,
+                      child: BottomAppBar(
+                        height: _bottomBarHeight,
+                        color: Colors.black,
+                        padding: EdgeInsets.zero,
+                        child: Center(
+                          child: SingleChildScrollView(
+                            controller: _bottomBarScrollCtrl,
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: min(_screen.width, 600),
+                                maxWidth: 600,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    if (widget
+                                        .configs.paintEditorConfigs.enabled)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-painting-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.paintEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.paintingEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openPaintingEditor,
+                                      ),
+                                    if (widget
+                                        .configs.textEditorConfigs.enabled)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-text-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.textEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.textEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openTextEditor,
+                                      ),
+                                    if (widget.configs.cropRotateEditorConfigs
+                                        .enabled)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-crop-rotate-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.cropRotateEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.cropRotateEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openCropEditor,
+                                      ),
+                                    if (widget
+                                        .configs.filterEditorConfigs.enabled)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-filter-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.filterEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.filterEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openFilterEditor,
+                                      ),
+                                    if (widget
+                                        .configs.blurEditorConfigs.enabled)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-blur-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.blurEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.blurEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openBlurEditor,
+                                      ),
+                                    if (widget
+                                        .configs.emojiEditorConfigs.enabled)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-emoji-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.emojiEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.emojiEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openEmojiEditor,
+                                      ),
+                                    if (widget.configs.stickerEditorConfigs
+                                            ?.enabled ==
+                                        true)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'open-sticker-editor-btn'),
+                                        label: Text(
+                                            widget.configs.i18n.stickerEditor
+                                                .bottomNavigationBarText,
+                                            style: bottomTextStyle),
+                                        icon: Icon(
+                                          widget.configs.icons.stickerEditor
+                                              .bottomNavBar,
+                                          size: bottomIconSize,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: openStickerEditor,
+                                      ),
+                                  ],
                                 ),
-                              if (widget.configs.textEditorConfigs.enabled)
-                                FlatIconTextButton(
-                                  key: const ValueKey('open-text-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.textEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget
-                                        .configs.icons.textEditor.bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openTextEditor,
-                                ),
-                              if (widget
-                                  .configs.cropRotateEditorConfigs.enabled)
-                                FlatIconTextButton(
-                                  key: const ValueKey(
-                                      'open-crop-rotate-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.cropRotateEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget.configs.icons.cropRotateEditor
-                                        .bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openCropEditor,
-                                ),
-                              if (widget.configs.filterEditorConfigs.enabled)
-                                FlatIconTextButton(
-                                  key: const ValueKey('open-filter-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.filterEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget.configs.icons.filterEditor
-                                        .bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openFilterEditor,
-                                ),
-                              if (widget.configs.blurEditorConfigs.enabled)
-                                FlatIconTextButton(
-                                  key: const ValueKey('open-blur-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.blurEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget
-                                        .configs.icons.blurEditor.bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openBlurEditor,
-                                ),
-                              if (widget.configs.emojiEditorConfigs.enabled)
-                                FlatIconTextButton(
-                                  key: const ValueKey('open-emoji-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.emojiEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget
-                                        .configs.icons.emojiEditor.bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openEmojiEditor,
-                                ),
-                              if (widget
-                                      .configs.stickerEditorConfigs?.enabled ==
-                                  true)
-                                FlatIconTextButton(
-                                  key:
-                                      const ValueKey('open-sticker-editor-btn'),
-                                  label: Text(
-                                      widget.configs.i18n.stickerEditor
-                                          .bottomNavigationBarText,
-                                      style: bottomTextStyle),
-                                  icon: Icon(
-                                    widget.configs.icons.stickerEditor
-                                        .bottomNavBar,
-                                    size: bottomIconSize,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: openStickerEditor,
-                                ),
-                            ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-            );
+                  )
+                : null);
   }
 
   Widget _buildLayers() {
@@ -2313,10 +2544,16 @@ class ProImageEditorState extends State<ProImageEditor> {
               height: kToolbarHeight,
               width: kToolbarHeight,
               decoration: BoxDecoration(
-                color: hoverRemoveBtn ? Colors.red : Colors.grey.shade800,
+                color: hoverRemoveBtn
+                    ? Colors.red
+                    : (widget.configs.imageEditorTheme.editorMode ==
+                            ThemeEditorMode.simple
+                        ? Colors.grey.shade800
+                        : Colors.black12),
                 borderRadius:
-                    const BorderRadius.only(bottomRight: Radius.circular(20)),
+                    const BorderRadius.only(bottomRight: Radius.circular(100)),
               ),
+              padding: const EdgeInsets.only(right: 12, bottom: 7),
               child: Center(
                 child: Icon(
                   widget.configs.icons.removeElementZone,

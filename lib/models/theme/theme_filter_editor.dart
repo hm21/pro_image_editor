@@ -53,11 +53,15 @@ class FilterEditorTheme {
   /// Color of the preview text.
   final Color previewTextColor;
 
+  /// Color from the background from the bottom bar.
+  final Color whatsAppBottomBarColor;
+
   /// Creates an instance of the `FilterEditorTheme` class with the specified theme properties.
   const FilterEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.previewTextColor = const Color(0xFFE1E1E1),
+    this.whatsAppBottomBarColor = const Color(0xFF121B22),
     this.background = imageEditorBackgroundColor,
   });
 }

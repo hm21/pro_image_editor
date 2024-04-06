@@ -35,6 +35,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
   - [Own stickers or widgets](#own-stickers-or-widgets)
+  - [WhatsApp-Design](#whatsapp-design)
   - [Highly configurable](#highly-configurable)
   - [Custom AppBar](#custom-appbar)
   - [Import-Export state history](#import-export-state-history)
@@ -49,17 +50,35 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">WhatsApp-Design</th>
       <th align="center">Paint-Editor</th>
-      <th align="center">Text-Editor</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
       </td>
       <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table>
+  <thead>
+    <tr>
+      <th align="center">Text-Editor</th>
+      <th align="center">Blur-Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%">
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
+      </td>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/blur-editor.gif?raw=true" alt="Blur-Editor" />
       </td>
     </tr>
   </tbody>
@@ -344,6 +363,156 @@ ProImageEditor.network(
   ),
 ),
 ```
+
+#### WhatsApp design
+
+The image editor offers a WhatsApp-themed option that mirrors the popular messaging app's design.
+The editor also follows the small changes that exist in the Material (Android) and Cupertino (iOS) version.
+
+```dart
+Navigator.of(context).push(
+  MaterialPageRoute(
+    builder: (context) => ProImageEditor.network(
+      'https://picsum.photos/id/176/2000',
+      onImageEditingComplete: (bytes) async {
+         /*
+          Your code for handling the edited image. Upload it to your server as an example.
+
+          You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
+          or without async, so that the loading-dialog closes immediately.
+        */
+        Navigator.pop(context);
+      },
+      configs: ProImageEditorConfigs(
+        designMode: ImageEditorDesignModeE.material,
+        customWidgets: ImageEditorCustomWidgets(whatsAppCustomTextStyles: [
+          GoogleFonts.roboto(),
+          GoogleFonts.averiaLibre(),
+          GoogleFonts.lato(),
+          GoogleFonts.comicNeue(),
+          GoogleFonts.actor(),
+          GoogleFonts.odorMeanChey(),
+          GoogleFonts.nabla(),
+        ]),
+        imageEditorTheme: const ImageEditorTheme(
+          editorMode: ThemeEditorMode.whatsapp,
+          helperLine: HelperLineTheme(
+            horizontalColor: Color.fromARGB(255, 129, 218, 88),
+            verticalColor: Color.fromARGB(255, 129, 218, 88),
+          ),
+        ),
+        paintEditorConfigs: const PaintEditorConfigs(
+          initialStrokeWidth: 5,
+        ),
+        filterEditorConfigs: FilterEditorConfigs(filterList: [
+          ColorFilterGenerator(
+            name: "None",
+            filters: [],
+          ),
+          ColorFilterGenerator(
+            name: "Pop",
+            filters: [
+              ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
+              ColorFilterAddons.saturation(0.1),
+              ColorFilterAddons.contrast(0.05),
+            ],
+          ),
+          ColorFilterGenerator(
+            name: "B&W",
+            filters: [
+              ColorFilterAddons.grayscale(),
+              ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
+              ColorFilterAddons.brightness(0.1),
+            ],
+          ),
+          ColorFilterGenerator(
+            name: "Cool",
+            filters: [
+              ColorFilterAddons.addictiveColor(0, 0, 20),
+            ],
+          ),
+          ColorFilterGenerator(
+            name: "Chrome",
+            filters: [
+              ColorFilterAddons.contrast(0.15),
+              ColorFilterAddons.saturation(0.2),
+            ],
+          ),
+          ColorFilterGenerator(
+            name: "Film",
+            filters: [
+              ColorFilterAddons.brightness(.05),
+              ColorFilterAddons.saturation(-0.03),
+            ],
+          ),
+        ]),
+        stickerEditorConfigs: StickerEditorConfigs(
+          enabled: true,
+          onSearchChanged: (value) {
+            /// Filter your stickers
+            debugPrint(value);
+          },
+          buildStickers: (setLayer) {
+            List<String> demoTitels = ['Recent', 'Favorites', 'Shapes', 'Funny', 'Boring', 'Frog', 'Snow', 'More'];
+            List<Widget> slivers = [];
+            int offset = 0;
+            for (var element in demoTitels) {
+              slivers.addAll([
+                _buildDemoStickersTitle(element),
+                _buildDemoStickers(offset, setLayer),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              ]);
+              offset += 20;
+            }
+
+            return Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                    child: CustomScrollView(
+                      slivers: slivers,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 50,
+                  color: Colors.grey.shade800,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.watch_later_outlined),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.mood),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.pets),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.coronavirus),
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  ),
+);
+```
+
 
 #### Highly configurable
 
