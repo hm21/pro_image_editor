@@ -28,7 +28,7 @@ class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.configs.customWidgets.whatsAppCustomTextStyles == null) {
+    if (widget.configs.textEditorConfigs.whatsAppCustomTextStyles == null) {
       return const SizedBox.shrink();
     }
 
@@ -51,7 +51,7 @@ class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
   }
 
   List<Widget> _buildIconBtns() {
-    var items = widget.configs.customWidgets.whatsAppCustomTextStyles!;
+    var items = widget.configs.textEditorConfigs.whatsAppCustomTextStyles!;
     return List.generate(
       items.length,
       (index) {

@@ -81,10 +81,11 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the painting editor component.
   final Widget? bottomBarPaintingEditor;
 
-  /// When the theme mode is set to WhatsApp, users should be able to select
-  /// their own fonts in the text editor, similar to the font selection list at
-  /// the bottom of WhatsApp.
-  final List<TextStyle>? whatsAppCustomTextStyles;
+  /// The widget that is below the `Filter` button in the material design.
+  /// You can create a text field and send button just like in whatsapp.
+  ///
+  /// Available in the WhatsApp theme only.
+  final Widget? whatsAppBottomWidget;
 
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
   const ImageEditorCustomWidgets({
@@ -97,6 +98,6 @@ class ImageEditorCustomWidgets {
     this.appBarBlurEditor,
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
-    this.whatsAppCustomTextStyles,
+    this.whatsAppBottomWidget,
   });
 }

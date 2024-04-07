@@ -1,13 +1,11 @@
 import 'dart:io';
 
-import 'package:colorfilter_generator/colorfilter_generator.dart';
-import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/blur_state_history.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../../models/editor_image.dart';

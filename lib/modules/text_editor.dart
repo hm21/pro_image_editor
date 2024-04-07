@@ -73,7 +73,7 @@ class TextEditorState extends State<TextEditor> {
         widget.configs.textEditorConfigs.initialBackgroundColorMode;
 
     _customTextStyle = widget.layer?.textStyle ??
-        widget.configs.customWidgets.whatsAppCustomTextStyles?.first ??
+        widget.configs.textEditorConfigs.whatsAppCustomTextStyles?.first ??
         const TextStyle();
     _initializeFromLayer();
     _setupTextControllerListener();

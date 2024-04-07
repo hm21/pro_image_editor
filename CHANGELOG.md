@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.6.2
+- **feat:** Add a custom widget option to the Whatsapp design. This allows user to create same as in whatsapp, a text field with a send button or any other widget they want.
+
 ## Version 2.6.1
 - **docs:** Update README for better image viewing
 

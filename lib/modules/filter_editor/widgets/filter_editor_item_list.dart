@@ -115,7 +115,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             constraints:
                 BoxConstraints(minWidth: MediaQuery.of(context).size.width),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 15, 8, 10),
+              padding:
+                  EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.end,
                 alignment: WrapAlignment.spaceAround,
@@ -208,7 +209,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     required int index,
     List<FilterStateHistory>? activeFilters,
   }) {
-    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode;
+    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode ||
+        (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
     var size = const Size(58, 88);
 
     return Transform.scale(

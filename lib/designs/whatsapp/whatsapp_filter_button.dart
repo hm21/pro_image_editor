@@ -63,6 +63,8 @@ class _WhatsAppFilterBtnState extends State<WhatsAppFilterBtn>
   @override
   Widget build(BuildContext context) {
     return Positioned(
+      left: 0,
+      right: 0,
       bottom: 50 + widget.configs.filterEditorConfigs.whatsAppFilterTextOffsetY,
       child: Opacity(
         opacity: max(0, min(1, widget.opacity)),
@@ -72,10 +74,13 @@ class _WhatsAppFilterBtnState extends State<WhatsAppFilterBtn>
             return Transform.translate(
               offset: Offset(0, _animation.value),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Icon(Icons.keyboard_arrow_up),
                   Text(
-                      widget.configs.i18n.filterEditor.bottomNavigationBarText),
+                    widget.configs.i18n.filterEditor.bottomNavigationBarText,
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             );

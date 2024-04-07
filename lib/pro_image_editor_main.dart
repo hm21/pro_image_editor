@@ -2192,79 +2192,93 @@ class ProImageEditorState extends State<ProImageEditor> {
               ),
               if (widget.configs.imageEditorTheme.editorMode ==
                       ThemeEditorMode.whatsapp &&
-                  _selectedLayer < 0) ...[
-                WhatsAppAppBar(
-                  configs: widget.configs,
-                  onClose: closeEditor,
-                  onTapCropRotateEditor: openCropEditor,
-                  onTapStickerEditor: openWhatsAppStickerEditor,
-                  onTapPaintEditor: openPaintingEditor,
-                  onTapTextEditor: openTextEditor,
-                  onTapUndo: undoAction,
-                  canUndo: canUndo,
-                  openEditor: _openEditor,
-                ),
-                if (widget.configs.designMode ==
-                    ImageEditorDesignModeE.material)
-                  WhatsAppFilterBtn(
-                    configs: widget.configs,
-                    opacity: 1 - 1 / 120 * _whatsAppFilterShowHelper,
-                  ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: -120 + _whatsAppFilterShowHelper,
-                  child: Opacity(
-                    opacity:
-                        max(0, min(1, 1 / 120 * _whatsAppFilterShowHelper)),
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 7),
-                      color: widget.configs.imageEditorTheme.filterEditor
-                          .whatsAppBottomBarColor,
-                      child: FilterEditorItemList(
-                        itemScaleFactor:
-                            max(0, min(1, 1 / 120 * _whatsAppFilterShowHelper)),
-                        byteArray: widget.byteArray,
-                        file: widget.file,
-                        assetPath: widget.assetPath,
-                        networkUrl: widget.networkUrl,
-                        activeFilters: const [],
-                        blur: _blur,
-                        configs: widget.configs,
-                        selectedFilter: _filters.isNotEmpty
-                            ? _filters.first.filter
-                            : PresetFilters.none,
-                        onSelectFilter: (filter) {
-                          _cleanForwardChanges();
-
-                          _stateHistory.add(
-                            EditorStateHistory(
-                              bytesRefIndex: _imgStateHistory.length - 1,
-                              blur: _blur,
-                              layers: _layers,
-                              filters: [
-                                FilterStateHistory(
-                                  filter: filter,
-                                  opacity: 1,
-                                ),
-                              ],
-                            ),
-                          );
-                          _editPosition++;
-
-                          setState(() {});
-                          widget.onUpdateUI?.call();
-                        },
-                      ),
-                    ),
-                  ),
-                )
-              ]
+                  _selectedLayer < 0)
+                ..._buildWhatsAppWidgets()
             ],
           ),
         ),
       );
     });
+  }
+
+  List<Widget> _buildWhatsAppWidgets() {
+    double opacity = max(0, min(1, 1 - 1 / 120 * _whatsAppFilterShowHelper));
+    return [
+      WhatsAppAppBar(
+        configs: widget.configs,
+        onClose: closeEditor,
+        onTapCropRotateEditor: openCropEditor,
+        onTapStickerEditor: openWhatsAppStickerEditor,
+        onTapPaintEditor: openPaintingEditor,
+        onTapTextEditor: openTextEditor,
+        onTapUndo: undoAction,
+        canUndo: canUndo,
+        openEditor: _openEditor,
+      ),
+      if (widget.configs.designMode == ImageEditorDesignModeE.material)
+        WhatsAppFilterBtn(
+          configs: widget.configs,
+          opacity: opacity,
+        ),
+      if (widget.configs.customWidgets.whatsAppBottomWidget != null)
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Opacity(
+            opacity: opacity,
+            child: widget.configs.customWidgets.whatsAppBottomWidget!,
+          ),
+        ),
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: -120 + _whatsAppFilterShowHelper,
+        child: Opacity(
+          opacity: max(0, min(1, 1 / 120 * _whatsAppFilterShowHelper)),
+          child: Container(
+            margin: const EdgeInsets.only(top: 7),
+            color: widget
+                .configs.imageEditorTheme.filterEditor.whatsAppBottomBarColor,
+            child: FilterEditorItemList(
+              itemScaleFactor:
+                  max(0, min(1, 1 / 120 * _whatsAppFilterShowHelper)),
+              byteArray: widget.byteArray,
+              file: widget.file,
+              assetPath: widget.assetPath,
+              networkUrl: widget.networkUrl,
+              activeFilters: const [],
+              blur: _blur,
+              configs: widget.configs,
+              selectedFilter: _filters.isNotEmpty
+                  ? _filters.first.filter
+                  : PresetFilters.none,
+              onSelectFilter: (filter) {
+                _cleanForwardChanges();
+
+                _stateHistory.add(
+                  EditorStateHistory(
+                    bytesRefIndex: _imgStateHistory.length - 1,
+                    blur: _blur,
+                    layers: _layers,
+                    filters: [
+                      FilterStateHistory(
+                        filter: filter,
+                        opacity: 1,
+                      ),
+                    ],
+                  ),
+                );
+                _editPosition++;
+
+                setState(() {});
+                widget.onUpdateUI?.call();
+              },
+            ),
+          ),
+        ),
+      ),
+    ];
   }
 
   Widget? _buildBottomNavBar() {

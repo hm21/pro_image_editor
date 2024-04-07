@@ -605,17 +605,17 @@ class _MyHomePageState extends State<MyHomePage> {
                           Navigator.pop(context);
                         },
                         configs: ProImageEditorConfigs(
-                          designMode: ImageEditorDesignModeE.material,
-                          customWidgets: ImageEditorCustomWidgets(
-                              whatsAppCustomTextStyles: [
-                                GoogleFonts.roboto(),
-                                GoogleFonts.averiaLibre(),
-                                GoogleFonts.lato(),
-                                GoogleFonts.comicNeue(),
-                                GoogleFonts.actor(),
-                                GoogleFonts.odorMeanChey(),
-                                GoogleFonts.nabla(),
-                              ]),
+                          textEditorConfigs: TextEditorConfigs(
+                            whatsAppCustomTextStyles: [
+                              GoogleFonts.roboto(),
+                              GoogleFonts.averiaLibre(),
+                              GoogleFonts.lato(),
+                              GoogleFonts.comicNeue(),
+                              GoogleFonts.actor(),
+                              GoogleFonts.odorMeanChey(),
+                              GoogleFonts.nabla(),
+                            ],
+                          ),
                           imageEditorTheme: const ImageEditorTheme(
                             editorMode: ThemeEditorMode.whatsapp,
                             helperLine: HelperLineTheme(
@@ -627,50 +627,53 @@ class _MyHomePageState extends State<MyHomePage> {
                           paintEditorConfigs: const PaintEditorConfigs(
                             initialStrokeWidth: 5,
                           ),
-                          filterEditorConfigs: FilterEditorConfigs(filterList: [
-                            ColorFilterGenerator(
-                              name: "None",
-                              filters: [],
-                            ),
-                            ColorFilterGenerator(
-                              name: "Pop",
-                              filters: [
-                                ColorFilterAddons.colorOverlay(
-                                    255, 225, 80, 0.08),
-                                ColorFilterAddons.saturation(0.1),
-                                ColorFilterAddons.contrast(0.05),
-                              ],
-                            ),
-                            ColorFilterGenerator(
-                              name: "B&W",
-                              filters: [
-                                ColorFilterAddons.grayscale(),
-                                ColorFilterAddons.colorOverlay(
-                                    100, 28, 210, 0.03),
-                                ColorFilterAddons.brightness(0.1),
-                              ],
-                            ),
-                            ColorFilterGenerator(
-                              name: "Cool",
-                              filters: [
-                                ColorFilterAddons.addictiveColor(0, 0, 20),
-                              ],
-                            ),
-                            ColorFilterGenerator(
-                              name: "Chrome",
-                              filters: [
-                                ColorFilterAddons.contrast(0.15),
-                                ColorFilterAddons.saturation(0.2),
-                              ],
-                            ),
-                            ColorFilterGenerator(
-                              name: "Film",
-                              filters: [
-                                ColorFilterAddons.brightness(.05),
-                                ColorFilterAddons.saturation(-0.03),
-                              ],
-                            ),
-                          ]),
+                          filterEditorConfigs: FilterEditorConfigs(
+                            whatsAppFilterTextOffsetY: 90,
+                            filterList: [
+                              ColorFilterGenerator(
+                                name: "None",
+                                filters: [],
+                              ),
+                              ColorFilterGenerator(
+                                name: "Pop",
+                                filters: [
+                                  ColorFilterAddons.colorOverlay(
+                                      255, 225, 80, 0.08),
+                                  ColorFilterAddons.saturation(0.1),
+                                  ColorFilterAddons.contrast(0.05),
+                                ],
+                              ),
+                              ColorFilterGenerator(
+                                name: "B&W",
+                                filters: [
+                                  ColorFilterAddons.grayscale(),
+                                  ColorFilterAddons.colorOverlay(
+                                      100, 28, 210, 0.03),
+                                  ColorFilterAddons.brightness(0.1),
+                                ],
+                              ),
+                              ColorFilterGenerator(
+                                name: "Cool",
+                                filters: [
+                                  ColorFilterAddons.addictiveColor(0, 0, 20),
+                                ],
+                              ),
+                              ColorFilterGenerator(
+                                name: "Chrome",
+                                filters: [
+                                  ColorFilterAddons.contrast(0.15),
+                                  ColorFilterAddons.saturation(0.2),
+                                ],
+                              ),
+                              ColorFilterGenerator(
+                                name: "Film",
+                                filters: [
+                                  ColorFilterAddons.brightness(.05),
+                                  ColorFilterAddons.saturation(-0.03),
+                                ],
+                              ),
+                            ],
+                          ),
                           stickerEditorConfigs: StickerEditorConfigs(
                             enabled: true,
                             onSearchChanged: (value) {
@@ -743,6 +746,85 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ],
                               );
                             },
+                          ),
+                          customWidgets: ImageEditorCustomWidgets(
+                            whatsAppBottomWidget: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 7, 16, 12),
+                                    child: TextField(
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        isDense: true,
+                                        prefixIcon: const Padding(
+                                          padding: EdgeInsets.only(left: 7.0),
+                                          child: Icon(
+                                            Icons.add_photo_alternate_rounded,
+                                            size: 24,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        hintText: 'Add a caption...',
+                                        hintStyle: const TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 238, 238, 238),
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(40),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        fillColor: const Color(0xFF202D35),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 7, 16, 12),
+                                    color: Colors.black38,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 4,
+                                            horizontal: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            color: const Color(0xFF202D35),
+                                          ),
+                                          child: const Text(
+                                            'Alex Frei',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(Icons.send),
+                                          style: IconButton.styleFrom(
+                                            backgroundColor:
+                                                const Color(0xFF0DA886),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),
