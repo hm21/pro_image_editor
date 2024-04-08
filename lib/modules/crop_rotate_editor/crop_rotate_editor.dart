@@ -6,23 +6,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_aspect_ratio_options.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
+import 'package:pro_image_editor/models/aspect_ratio_item.dart';
+import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/models/theme/theme.dart';
 
 import '../../models/crop_rotate_editor_response.dart';
-import '../../models/custom_widgets.dart';
-import '../../models/editor_configs/crop_rotate_editor_configs.dart';
 import '../../models/editor_image.dart';
-import '../../models/theme/theme.dart';
-import '../../models/i18n/i18n.dart';
-import '../../models/icons/icons.dart';
-import '../../utils/debounce.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/platform_popup_menu.dart';
+import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'utils/crop_aspect_ratios.dart';
 import '../../utils/design_mode.dart';
 import '../../widgets/loading_dialog.dart';
 import 'utils/crop_corner_painter.dart';
+import 'widgets/crop_aspect_ratio_options.dart';
 
 /// The `CropRotateEditor` widget is used for cropping and rotating images.
 /// It provides various constructors for loading images from different sources and allows users to crop and rotate the image.
@@ -46,42 +44,20 @@ class CropRotateEditor extends StatefulWidget {
   /// The file representing the image.
   final File? file;
 
-  /// The internationalization (i18n) configuration for the editor.
-  final I18n i18n;
-
-  /// Custom widgets configuration for the editor.
-  final ImageEditorCustomWidgets customWidgets;
-
-  /// Icons used in the editor.
-  final ImageEditorIcons icons;
-
   /// The theme configuration for the editor.
   final ThemeData theme;
 
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
+  /// The image data with layers (if any) for editing.
+  final Uint8List? bytesWithLayers;
 
-  /// The theme configuration specific to the image editor.
-  final ImageEditorTheme imageEditorTheme;
-
-  /// Configuration settings for the CropRotateEditor.
-  ///
-  /// This parameter allows you to customize the behavior and appearance of the CropRotateEditor.
-  final CropRotateEditorConfigs configs;
+  /// The image editor configs
+  final ProImageEditorConfigs configs;
 
   /// The size of the image to be edited.
   final Size imageSize;
 
-  /// A unique hero tag for the image.
-  final String heroTag;
-
-// TODO: write doc
-  final Widget? layersWidget;
-
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
-
-  final Uint8List? bytesWithLayers;
 
   /// Private constructor for creating a `CropRotateEditor` widget.
   const CropRotateEditor._({
@@ -92,21 +68,11 @@ class CropRotateEditor extends StatefulWidget {
     this.file,
     this.onUpdateUI,
     required this.theme,
-    required this.i18n,
-    required this.customWidgets,
-    required this.icons,
-    required this.designMode,
-    required this.imageEditorTheme,
     required this.imageSize,
-    required this.heroTag,
     required this.configs,
-    this.layersWidget,
     this.bytesWithLayers,
   }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
+          byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -118,14 +84,9 @@ class CropRotateEditor extends StatefulWidget {
   /// - `byteArray`: A Uint8List representing the image data in memory.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
-  /// - `i18n`: An I18n object for localization and internationalization (required).
-  /// - `customWidgets`: A CustomWidgets object for customizing the widgets used in the editor (required).
-  /// - `icons`: An ImageEditorIcons object for customizing the icons used in the editor (required).
-  /// - `designMode`: An ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor (required).
-  /// - `imageEditorTheme`: An ImageEditorTheme object for customizing the overall theme of the editor (required).
+  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
   /// - `imageSize`: The size of the image to be edited (required).
-  /// - `heroTag`: A unique hero tag for the image (required).
-  /// - `configs`: Configuration settings for the CropRotateEditor (required).
+  /// - `configs`: The image editor configs.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
@@ -137,13 +98,7 @@ class CropRotateEditor extends StatefulWidget {
   /// final editor = CropRotateEditor.memory(
   ///   imageBytes,
   ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   customWidgets: CustomWidgets(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   imageEditorTheme: ImageEditorTheme(),
   ///   imageSize: Size(300, 300), // Set the image size.
-  ///   heroTag: 'image_hero_tag', // Set a unique hero tag.
   ///   configs: CropRotateEditorConfigs(), // Customize editor behavior.
   /// );
   /// ```
@@ -151,15 +106,8 @@ class CropRotateEditor extends StatefulWidget {
     Uint8List byteArray, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     required Size imageSize,
-    required String heroTag,
-    CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Widget? layersWidget,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Uint8List? bytesWithLayers,
     Function? onUpdateUI,
   }) {
@@ -167,14 +115,8 @@ class CropRotateEditor extends StatefulWidget {
       key: key,
       byteArray: byteArray,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
-      layersWidget: layersWidget,
+      bytesWithLayers: bytesWithLayers,
       imageSize: imageSize,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
     );
@@ -188,14 +130,8 @@ class CropRotateEditor extends StatefulWidget {
   /// - `file`: A File object representing the image file to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
-  /// - `i18n`: An I18n object for localization and internationalization (required).
-  /// - `customWidgets`: A CustomWidgets object for customizing the widgets used in the editor (required).
-  /// - `icons`: An ImageEditorIcons object for customizing the icons used in the editor (required).
-  /// - `designMode`: An ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor (required).
-  /// - `imageEditorTheme`: An ImageEditorTheme object for customizing the overall theme of the editor (required).
   /// - `imageSize`: The size of the image to be edited (required).
-  /// - `heroTag`: A unique hero tag for the image (required).
-  /// - `configs`: Configuration settings for the CropRotateEditor (required).
+  /// - `configs`: The image editor configs.
   /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
@@ -209,13 +145,7 @@ class CropRotateEditor extends StatefulWidget {
   /// final editor = CropRotateEditor.file(
   ///   imageFile,
   ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   customWidgets: CustomWidgets(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   imageEditorTheme: ImageEditorTheme(),
   ///   imageSize: Size(300, 300), // Set the image size.
-  ///   heroTag: 'image_hero_tag', // Set a unique hero tag.
   ///   configs: CropRotateEditorConfigs(), // Customize editor behavior.
   /// );
   /// ```
@@ -223,15 +153,8 @@ class CropRotateEditor extends StatefulWidget {
     File file, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     required Size imageSize,
-    required String heroTag,
-    CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Widget? layersWidget,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Uint8List? bytesWithLayers,
     Function? onUpdateUI,
   }) {
@@ -239,16 +162,9 @@ class CropRotateEditor extends StatefulWidget {
       key: key,
       file: file,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
-      layersWidget: layersWidget,
       bytesWithLayers: bytesWithLayers,
       onUpdateUI: onUpdateUI,
       imageSize: imageSize,
-      heroTag: heroTag,
       configs: configs,
     );
   }
@@ -261,14 +177,8 @@ class CropRotateEditor extends StatefulWidget {
   /// - `assetPath`: A String representing the asset path of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
-  /// - `i18n`: An I18n object for localization and internationalization (required).
-  /// - `customWidgets`: A CustomWidgets object for customizing the widgets used in the editor (required).
-  /// - `icons`: An ImageEditorIcons object for customizing the icons used in the editor (required).
-  /// - `designMode`: An ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor (required).
-  /// - `imageEditorTheme`: An ImageEditorTheme object for customizing the overall theme of the editor (required).
   /// - `imageSize`: The size of the image to be edited (required).
-  /// - `heroTag`: A unique hero tag for the image (required).
-  /// - `configs`: Configuration settings for the CropRotateEditor (required).
+  /// - `configs`: The image editor configs.
   /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
@@ -281,13 +191,7 @@ class CropRotateEditor extends StatefulWidget {
   /// final editor = CropRotateEditor.asset(
   ///   assetPath,
   ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   customWidgets: CustomWidgets(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   imageEditorTheme: ImageEditorTheme(),
   ///   imageSize: Size(300, 300), // Set the image size.
-  ///   heroTag: 'image_hero_tag', // Set a unique hero tag.
   ///   configs: CropRotateEditorConfigs(), // Customize editor behavior.
   /// );
   /// ```
@@ -295,15 +199,8 @@ class CropRotateEditor extends StatefulWidget {
     String assetPath, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     required Size imageSize,
-    required String heroTag,
-    CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Widget? layersWidget,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Uint8List? bytesWithLayers,
     Function? onUpdateUI,
   }) {
@@ -311,62 +208,41 @@ class CropRotateEditor extends StatefulWidget {
       key: key,
       assetPath: assetPath,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
-      layersWidget: layersWidget,
+      bytesWithLayers: bytesWithLayers,
       imageSize: imageSize,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
     );
   }
 
-  /// Create a FilterEditor widget with an image loaded from a network URL.
+  /// Create a CropRotateEditor widget with an image loaded from a network URL.
   ///
-  /// This factory method allows you to create a FilterEditor widget that can be used to apply various image filters and edit an image loaded from a network URL. The provided parameters allow you to customize the appearance and behavior of the FilterEditor widget.
+  /// This factory method allows you to create a CropRotateEditor widget that can be used to apply various image filters and edit an image loaded from a network URL. The provided parameters allow you to customize the appearance and behavior of the CropRotateEditor widget.
   ///
   /// Parameters:
   /// - `networkUrl`: A String representing the network URL of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
-  /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `theme`: An optional ThemeData object that defines the visual styling of the CropRotateEditor widget.
+  /// - `configs`: The image editor configs.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the image loaded from the network URL.
+  /// A CropRotateEditor widget configured with the provided parameters and the image loaded from the network URL.
   ///
   /// Example Usage:
   /// ```dart
   /// final String imageUrl = 'https://example.com/image.jpg'; // Provide the network URL.
-  /// final filterEditor = FilterEditor.network(
+  /// final CropRotateEditor = CropRotateEditor.network(
   ///   imageUrl,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory CropRotateEditor.network(
     String networkUrl, {
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     required Size imageSize,
-    required String heroTag,
-    CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Widget? layersWidget,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Uint8List? bytesWithLayers,
     Function? onUpdateUI,
   }) {
@@ -374,64 +250,43 @@ class CropRotateEditor extends StatefulWidget {
       key: key,
       networkUrl: networkUrl,
       theme: theme,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      designMode: designMode,
-      imageEditorTheme: imageEditorTheme,
-      layersWidget: layersWidget,
+      bytesWithLayers: bytesWithLayers,
       imageSize: imageSize,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
     );
   }
 
-  /// Create a FilterEditor widget with automatic image source detection.
+  /// Create a CropRotateEditor widget with automatic image source detection.
   ///
-  /// This factory method allows you to create a FilterEditor widget with automatic detection of the image source type (Uint8List, File, asset, or network URL). Based on the provided parameters, it selects the appropriate source type and creates the FilterEditor widget accordingly.
+  /// This factory method allows you to create a CropRotateEditor widget with automatic detection of the image source type (Uint8List, File, asset, or network URL). Based on the provided parameters, it selects the appropriate source type and creates the CropRotateEditor widget accordingly.
   ///
   /// Parameters:
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
+  /// - `theme`: An optional ThemeData object that defines the visual styling of the CropRotateEditor widget.
   /// - `byteArray`: An optional Uint8List representing the image data in memory.
   /// - `file`: An optional File object representing the image file to be loaded.
   /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
   /// - `networkUrl`: An optional String representing the network URL of the image to be loaded.
-  /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `configs`: The image editor configs.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the detected image source.
+  /// A CropRotateEditor widget configured with the provided parameters and the detected image source.
   ///
   /// Example Usage:
   /// ```dart
   /// // Provide one of the image sources: byteArray, file, assetPath, or networkUrl.
-  /// final filterEditor = FilterEditor.autoSource(
+  /// final CropRotateEditor = CropRotateEditor.autoSource(
   ///   byteArray: imageBytes,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory CropRotateEditor.autoSource({
     Key? key,
     required ThemeData theme,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     required Size imageSize,
-    required String heroTag,
-    CropRotateEditorConfigs configs = const CropRotateEditorConfigs(),
-    Widget? layersWidget,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Uint8List? bytesWithLayers,
     Function? onUpdateUI,
     Uint8List? byteArray,
@@ -444,14 +299,8 @@ class CropRotateEditor extends StatefulWidget {
         byteArray,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
-        layersWidget: layersWidget,
+        bytesWithLayers: bytesWithLayers,
         imageSize: imageSize,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
       );
@@ -460,14 +309,8 @@ class CropRotateEditor extends StatefulWidget {
         file,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
-        layersWidget: layersWidget,
+        bytesWithLayers: bytesWithLayers,
         imageSize: imageSize,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
       );
@@ -476,14 +319,8 @@ class CropRotateEditor extends StatefulWidget {
         networkUrl,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
-        layersWidget: layersWidget,
+        bytesWithLayers: bytesWithLayers,
         imageSize: imageSize,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
       );
@@ -492,20 +329,13 @@ class CropRotateEditor extends StatefulWidget {
         assetPath,
         key: key,
         theme: theme,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        designMode: designMode,
-        imageEditorTheme: imageEditorTheme,
-        layersWidget: layersWidget,
+        bytesWithLayers: bytesWithLayers,
         imageSize: imageSize,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -517,8 +347,7 @@ class CropRotateEditor extends StatefulWidget {
 ///
 /// This class handles the state and UI for an image editor
 /// that supports cropping, rotating, and aspect ratio adjustments.
-class CropRotateEditorState extends State<CropRotateEditor>
-    with TickerProviderStateMixin {
+class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderStateMixin {
   late AnimationController _rotateCtrl;
   late AnimationController _scaleCtrl;
 
@@ -555,12 +384,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Initializes the editor with default settings.
   void _initializeEditor() {
-    _rotateCtrl = AnimationController(
-        duration: const Duration(milliseconds: 150), vsync: this);
+    _rotateCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     _rotateAnimation = Tween<double>(begin: 0, end: 0).animate(_rotateCtrl);
 
-    _scaleCtrl = AnimationController(
-        duration: const Duration(milliseconds: 150), vsync: this);
+    _scaleCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     _scaleAnimation = Tween<double>(begin: 1, end: 1).animate(_scaleCtrl);
 
     _image = EditorImage(
@@ -569,7 +396,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       file: widget.file,
       networkUrl: widget.networkUrl,
     );
-    _aspectRatio = widget.configs.initAspectRatio ?? CropAspectRatios.custom;
+    _aspectRatio = widget.configs.cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _calcCropRect();
@@ -601,13 +428,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
   double get _imgWidth => widget.imageSize.width;
   double get _imgHeight => widget.imageSize.height;
 
-  double get _renderedImgWidth =>
-      min(_renderedImgConstraints.maxWidth, _imgWidth);
-  double get _renderedImgHeight =>
-      min(_renderedImgConstraints.maxHeight, _imgHeight);
+  double get _renderedImgWidth => min(_renderedImgConstraints.maxWidth, _imgWidth);
+  double get _renderedImgHeight => min(_renderedImgConstraints.maxHeight, _imgHeight);
 
-  bool get _imageSticksToScreenWidth =>
-      _imgWidth >= _contentConstraints.maxWidth;
+  bool get _imageSticksToScreenWidth => _imgWidth >= _contentConstraints.maxWidth;
   bool get _rotated90deg => _rotationCount % 2 != 0;
   Size get _imgSize => Size(
         _rotated90deg ? _imgHeight : _imgWidth,
@@ -617,6 +441,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
         _rotated90deg ? _renderedImgHeight : _renderedImgWidth,
         _rotated90deg ? _renderedImgWidth : _renderedImgHeight,
       );
+  List<AspectRatioItem> get _aspectRatios {
+    return widget.configs.cropRotateEditorConfigs.aspectRatios;
+  }
+
+  void reset() {
+    // TODO: write reset function
+  }
 
   /// Handles the crop image operation.
   Future<void> done() async {
@@ -626,11 +457,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
     LoadingDialog loading = LoadingDialog()
       ..show(
         context,
-        i18n: widget.i18n,
+        i18n: widget.configs.i18n,
         theme: widget.theme,
-        designMode: widget.designMode,
-        message: widget.i18n.cropRotateEditor.applyChangesDialogMsg,
-        imageEditorTheme: widget.imageEditorTheme,
+        designMode: widget.configs.designMode,
+        message: widget.configs.i18n.cropRotateEditor.applyChangesDialogMsg,
+        imageEditorTheme: widget.configs.imageEditorTheme,
       );
     Uint8List? fileData;
 
@@ -709,9 +540,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   void rotate() {
     _rotationCount++;
     _rotateCtrl.animateTo(pi, curve: Curves.ease);
-    _rotateAnimation = Tween<double>(
-            begin: _rotateAnimation.value, end: _rotationCount * pi / 2)
-        .animate(_rotateCtrl);
+    _rotateAnimation = Tween<double>(begin: _rotateAnimation.value, end: _rotationCount * pi / 2).animate(_rotateCtrl);
     _rotateCtrl
       ..reset()
       ..forward();
@@ -720,16 +549,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _contentConstraints.maxWidth - _screenPadding * 2,
       _contentConstraints.maxHeight - _screenPadding * 2,
     );
-    bool shouldTransformY =
-        contentSize.aspectRatio > _renderedImgSize.aspectRatio;
+    bool shouldTransformY = contentSize.aspectRatio > _renderedImgSize.aspectRatio;
 
     double scaleX = contentSize.width / _renderedImgSize.width;
     double scaleY = contentSize.height / _renderedImgSize.height;
 
     double scale = shouldTransformY ? scaleY : scaleX;
     _scaleCtrl.animateTo(scale, curve: Curves.ease);
-    _scaleAnimation =
-        Tween<double>(begin: _oldScaleFactor, end: scale).animate(_scaleCtrl);
+    _scaleAnimation = Tween<double>(begin: _oldScaleFactor, end: scale).animate(_scaleCtrl);
     _scaleCtrl
       ..reset()
       ..forward();
@@ -742,15 +569,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
     double imgSizeRatio = _imgHeight / _imgWidth;
 
     double padding = _screenPadding * 2;
-    double newImgW =
-        (_rotated90deg ? _imgSize.height : _imgSize.width) - padding;
-    double newImgH =
-        (_rotated90deg ? _imgSize.width : _imgSize.height) - padding;
+    double newImgW = (_rotated90deg ? _imgSize.height : _imgSize.width) - padding;
+    double newImgH = (_rotated90deg ? _imgSize.width : _imgSize.height) - padding;
 
-    double cropWidth =
-        _imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
-    double cropHeight =
-        _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
+    double cropWidth = _imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
+    double cropHeight = _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
 
     _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
     _viewRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
@@ -764,7 +587,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         builder: (BuildContext context) {
           return CropAspectRatioOptions(
             aspectRatio: _aspectRatio,
-            i18n: widget.i18n.cropRotateEditor,
+            i18n: widget.configs.i18n.cropRotateEditor,
           );
         }).then((value) {
       if (value != null) {
@@ -782,8 +605,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     bool nearLeftEdge = (localPosition.dx - _cropRect.left).abs() < edgeSize;
     bool nearRightEdge = (localPosition.dx - _cropRect.right).abs() < edgeSize;
     bool nearTopEdge = (localPosition.dy - _cropRect.top).abs() < edgeSize;
-    bool nearBottomEdge =
-        (localPosition.dy - _cropRect.bottom).abs() < edgeSize;
+    bool nearBottomEdge = (localPosition.dy - _cropRect.bottom).abs() < edgeSize;
 
     if (nearLeftEdge && nearTopEdge) {
       return CropAreaPart.topLeft;
@@ -843,12 +665,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     } else {
       double zoomFactor = _zoomFactor * _scaleAnimation.value;
 
-      double minX = (_renderedImgWidth * zoomFactor - _renderedImgWidth) /
-          2 /
-          _zoomFactor;
-      double minY = (_renderedImgHeight * _zoomFactor - _renderedImgHeight) /
-          2 /
-          _zoomFactor;
+      double minX = (_renderedImgWidth * zoomFactor - _renderedImgWidth) / 2 / _zoomFactor;
+      double minY = (_renderedImgHeight * _zoomFactor - _renderedImgHeight) / 2 / _zoomFactor;
 
       if (_rotated90deg) {}
 
@@ -925,16 +743,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: widget.imageEditorTheme.uiOverlayStyle,
+        value: widget.configs.imageEditorTheme.uiOverlayStyle,
         child: Theme(
-          data: widget.theme.copyWith(
-              tooltipTheme:
-                  widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+          data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
-            backgroundColor:
-                widget.imageEditorTheme.cropRotateEditor.background,
+            backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
+            bottomNavigationBar: _buildBottomNavigationBar(),
           ),
         ),
       );
@@ -942,24 +758,23 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   /// Builds the app bar for the editor, including buttons for actions such as back, rotate, aspect ratio, and done.
-  PreferredSizeWidget _buildAppBar(BoxConstraints constraints) {
-    return widget.customWidgets.appBarCropRotateEditor ??
-        AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.cropRotateEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
-          actions: [
-            IconButton(
-              tooltip: widget.i18n.cropRotateEditor.back,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.icons.backButton),
-              onPressed: close,
-            ),
-            const Spacer(),
-            if (constraints.maxWidth >= 300) ...[
-              /* IconButton(
+  PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
+    return widget.configs.customWidgets.appBarCropRotateEditor ??
+        (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+            ? AppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor.appBarBackgroundColor,
+                foregroundColor: widget.configs.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
+                actions: [
+                  IconButton(
+                    tooltip: widget.configs.i18n.cropRotateEditor.back,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    icon: Icon(widget.configs.icons.backButton),
+                    onPressed: close,
+                  ),
+                  const Spacer(),
+                  if (constraints.maxWidth >= 300) ...[
+                    /* IconButton(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 icon: const Icon(Icons.flip),
                 tooltip: I18n.of(context)!.translate('Flip'),
@@ -973,58 +788,72 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 iconSize: 28,
                 onPressed: () => _editor.reset(),
               ), */
-              if (widget.configs.canRotate)
-                IconButton(
-                  icon: Icon(widget.icons.cropRotateEditor.rotate),
-                  tooltip: widget.i18n.cropRotateEditor.rotate,
-                  onPressed: rotate,
-                ),
-              if (widget.configs.canFlip)
-                IconButton(
-                  icon: Icon(widget.icons.cropRotateEditor.flip),
-                  tooltip: widget.i18n.cropRotateEditor.flip,
-                  onPressed: flip,
-                ),
-              if (widget.configs.canChangeAspectRatio)
-                IconButton(
-                  key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
-                  icon: Icon(widget.icons.cropRotateEditor.aspectRatio),
-                  tooltip: widget.i18n.cropRotateEditor.ratio,
-                  onPressed: openAspectRatioOptions,
-                ),
-              const Spacer(),
-              _buildDoneBtn(),
-            ] else ...[
-              const Spacer(),
-              _buildDoneBtn(),
-              PlatformPopupBtn(
-                designMode: widget.designMode,
-                title: widget.i18n.cropRotateEditor.smallScreenMoreTooltip,
-                options: [
-                  if (widget.configs.canRotate)
-                    PopupMenuOption(
-                      label: widget.i18n.cropRotateEditor.rotate,
-                      icon: Icon(widget.icons.cropRotateEditor.rotate),
-                      onTap: () {
-                        rotate();
+                    if (widget.configs.cropRotateEditorConfigs.canRotate)
+                      IconButton(
+                        icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
+                        tooltip: widget.configs.i18n.cropRotateEditor.rotate,
+                        onPressed: rotate,
+                      ),
+                    if (widget.configs.cropRotateEditorConfigs.canFlip)
+                      IconButton(
+                        icon: Icon(widget.configs.icons.cropRotateEditor.flip),
+                        tooltip: widget.configs.i18n.cropRotateEditor.flip,
+                        onPressed: flip,
+                      ),
+                    if (widget.configs.cropRotateEditorConfigs.canChangeAspectRatio)
+                      IconButton(
+                        key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
+                        icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
+                        tooltip: widget.configs.i18n.cropRotateEditor.ratio,
+                        onPressed: openAspectRatioOptions,
+                      ),
+                    const Spacer(),
+                    _buildDoneBtn(),
+                  ] else ...[
+                    const Spacer(),
+                    _buildDoneBtn(),
+                    PlatformPopupBtn(
+                      designMode: widget.configs.designMode,
+                      title: widget.configs.i18n.cropRotateEditor.smallScreenMoreTooltip,
+                      options: [
+                        if (widget.configs.cropRotateEditorConfigs.canRotate)
+                          PopupMenuOption(
+                            label: widget.configs.i18n.cropRotateEditor.rotate,
+                            icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
+                            onTap: () {
+                              rotate();
 
-                        if (widget.designMode ==
-                            ImageEditorDesignModeE.cupertino) {
-                          Navigator.pop(context);
-                        }
-                      },
+                              if (widget.configs.designMode == ImageEditorDesignModeE.cupertino) {
+                                Navigator.pop(context);
+                              }
+                            },
+                          ),
+                        if (widget.configs.cropRotateEditorConfigs.canChangeAspectRatio)
+                          PopupMenuOption(
+                            label: widget.configs.i18n.cropRotateEditor.ratio,
+                            icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
+                            onTap: openAspectRatioOptions,
+                          ),
+                      ],
                     ),
-                  if (widget.configs.canChangeAspectRatio)
-                    PopupMenuOption(
-                      label: widget.i18n.cropRotateEditor.ratio,
-                      icon: Icon(widget.icons.cropRotateEditor.aspectRatio),
-                      onTap: openAspectRatioOptions,
-                    ),
+                  ],
                 ],
-              ),
-            ],
-          ],
-        );
+              )
+            : null);
+  }
+
+  Widget? _buildBottomNavigationBar() {
+    if (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+      return WhatsAppCropRotateToolbar(
+        configs: widget.configs,
+        onCancel: close,
+        onRotate: rotate,
+        onDone: done,
+        onReset: reset,
+        openAspectRatios: openAspectRatioOptions,
+      );
+    }
+    return null;
   }
 
   Widget _buildBody() {
@@ -1133,7 +962,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   _contentConstraints.maxWidth,
                   _contentConstraints.maxHeight,
                 ),
-                imageEditorTheme: widget.imageEditorTheme,
+                imageEditorTheme: widget.configs.imageEditorTheme,
               )
             : null,
         child: child,
@@ -1153,15 +982,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   Widget _buildImage() {
     return Hero(
-      tag: widget.heroTag,
+      tag: widget.configs.heroTag,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: (_contentConstraints.maxWidth - _screenPadding * 2) *
-              _imgHeight /
-              _imgWidth,
-          maxWidth: _imgWidth /
-              _imgHeight *
-              (_contentConstraints.maxHeight - _screenPadding * 2),
+          maxHeight: (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth,
+          maxWidth: _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -1169,7 +994,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             return AutoImage(
               _image,
               fit: BoxFit.contain,
-              designMode: widget.designMode,
+              designMode: widget.configs.designMode,
               width: _imgWidth,
               height: _imgHeight,
             );
@@ -1182,9 +1007,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Builds and returns an IconButton for applying changes.
   Widget _buildDoneBtn() {
     return IconButton(
-      tooltip: widget.i18n.cropRotateEditor.done,
+      tooltip: widget.configs.i18n.cropRotateEditor.done,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      icon: Icon(widget.icons.applyChanges),
+      icon: Icon(widget.configs.icons.applyChanges),
       iconSize: 28,
       onPressed: done,
     );

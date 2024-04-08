@@ -35,7 +35,9 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
   - [Own stickers or widgets](#own-stickers-or-widgets)
+  - [WhatsApp-Design](#whatsapp-design)
   - [Highly configurable](#highly-configurable)
+  - [Custom AppBar](#custom-appbar)
   - [Import-Export state history](#import-export-state-history)
 - **[📚 Documentation](#documentation)**
 - **[🤝 Contributing](#contributing)**
@@ -45,6 +47,24 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
 ## Preview
+<table>
+  <thead>
+    <tr>
+      <th align="center">WhatsApp-Design</th>
+      <th align="center">Blur-Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+      </td>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/blur-editor.gif?raw=true" alt="Blur-Editor" />
+      </td>
+    </tr>
+  </tbody>
+</table>
 <table>
   <thead>
     <tr>
@@ -344,6 +364,231 @@ ProImageEditor.network(
 ),
 ```
 
+#### WhatsApp design
+
+The image editor offers a WhatsApp-themed option that mirrors the popular messaging app's design.
+The editor also follows the small changes that exist in the Material (Android) and Cupertino (iOS) version.
+
+```dart
+Navigator.of(context).push(
+  MaterialPageRoute(
+    builder: (context) => ProImageEditor.network(
+      'https://picsum.photos/id/176/2000',
+      onImageEditingComplete: (bytes) async {
+         /*
+          Your code for handling the edited image. Upload it to your server as an example.
+
+          You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
+          or without async, so that the loading-dialog closes immediately.
+        */
+        Navigator.pop(context);
+      },
+      configs: ProImageEditorConfigs(
+        textEditorConfigs: TextEditorConfigs(
+          whatsAppCustomTextStyles: [
+            GoogleFonts.roboto(),
+            GoogleFonts.averiaLibre(),
+            GoogleFonts.lato(),
+            GoogleFonts.comicNeue(),
+            GoogleFonts.actor(),
+            GoogleFonts.odorMeanChey(),
+            GoogleFonts.nabla(),
+          ],
+        ),
+        imageEditorTheme: const ImageEditorTheme(
+          editorMode: ThemeEditorMode.whatsapp,
+          helperLine: HelperLineTheme(
+            horizontalColor: Color.fromARGB(255, 129, 218, 88),
+            verticalColor: Color.fromARGB(255, 129, 218, 88),
+          ),
+        ),
+        paintEditorConfigs: const PaintEditorConfigs(
+          initialStrokeWidth: 5,
+        ),
+        filterEditorConfigs: FilterEditorConfigs(
+          whatsAppFilterTextOffsetY: 90,
+          filterList: [
+            ColorFilterGenerator(
+              name: "None",
+              filters: [],
+            ),
+            ColorFilterGenerator(
+              name: "Pop",
+              filters: [
+                ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
+                ColorFilterAddons.saturation(0.1),
+                ColorFilterAddons.contrast(0.05),
+              ],
+            ),
+            ColorFilterGenerator(
+              name: "B&W",
+              filters: [
+                ColorFilterAddons.grayscale(),
+                ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
+                ColorFilterAddons.brightness(0.1),
+              ],
+            ),
+            ColorFilterGenerator(
+              name: "Cool",
+              filters: [
+                ColorFilterAddons.addictiveColor(0, 0, 20),
+              ],
+            ),
+            ColorFilterGenerator(
+              name: "Chrome",
+              filters: [
+                ColorFilterAddons.contrast(0.15),
+                ColorFilterAddons.saturation(0.2),
+              ],
+            ),
+            ColorFilterGenerator(
+              name: "Film",
+              filters: [
+                ColorFilterAddons.brightness(.05),
+                ColorFilterAddons.saturation(-0.03),
+              ],
+            ),
+          ],
+        ),
+        stickerEditorConfigs: StickerEditorConfigs(
+          enabled: true,
+          onSearchChanged: (value) {
+            /// Filter your stickers
+            debugPrint(value);
+          },
+          buildStickers: (setLayer) {
+            List<String> demoTitels = ['Recent', 'Favorites', 'Shapes', 'Funny', 'Boring', 'Frog', 'Snow', 'More'];
+            List<Widget> slivers = [];
+            int offset = 0;
+            for (var element in demoTitels) {
+              slivers.addAll([
+                _buildDemoStickersTitle(element),
+                _buildDemoStickers(offset, setLayer),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              ]);
+              offset += 20;
+            }
+
+            return Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                    child: CustomScrollView(
+                      slivers: slivers,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 50,
+                  color: Colors.grey.shade800,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.watch_later_outlined),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.mood),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.pets),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.coronavirus),
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        customWidgets: ImageEditorCustomWidgets(
+          whatsAppBottomWidget: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
+                  child: TextField(
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      filled: true,
+                      isDense: true,
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.only(left: 7.0),
+                        child: Icon(
+                          Icons.add_photo_alternate_rounded,
+                          size: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+                      hintText: 'Add a caption...',
+                      hintStyle: const TextStyle(
+                        color: Color.fromARGB(255, 238, 238, 238),
+                        fontWeight: FontWeight.w400,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(40),
+                        borderSide: BorderSide.none,
+                      ),
+                      fillColor: const Color(0xFF202D35),
+                    ),
+                  ),
+                ),
+              ),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
+                  color: Colors.black38,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: const Color(0xFF202D35),
+                        ),
+                        child: const Text(
+                          'Alex Frei',
+                          style: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.send),
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF0DA886),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+```
+
+
 #### Highly configurable
 
 Customize the image editor to suit your preferences. Of course, each class like `I18nTextEditor` includes more configuration options.
@@ -482,6 +727,364 @@ return Scaffold(
         ),
     )
 );
+```
+
+#### Custom AppBar
+
+Customize the AppBar with your own widgets. The same is also possible with the BottomBar.
+
+```dart
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+
+class Demo extends StatefulWidget {
+  const Demo({super.key});
+
+  @override
+  State<Demo> createState() => DemoState();
+}
+
+class DemoState extends State<Demo> {
+  final _editorKey = GlobalKey<ProImageEditorState>();
+  late StreamController _updateAppBarStream;
+
+  @override
+  void initState() {
+    _updateAppBarStream = StreamController.broadcast();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _updateAppBarStream.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProImageEditor.network(
+      'https://picsum.photos/id/237/2000',
+      key: _editorKey,
+      onImageEditingComplete: (byte) async {
+        Navigator.pop(context);
+      },
+      onUpdateUI: () {
+        _updateAppBarStream.add(null);
+      },
+      configs: ProImageEditorConfigs(
+        customWidgets: ImageEditorCustomWidgets(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Cancel',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.close),
+                      onPressed: _editorKey.currentState?.closeEditor,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                stream: _updateAppBarStream.stream,
+                builder: (_, __) {
+                  return IconButton(
+                    tooltip: 'Undo',
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    icon: Icon(
+                      Icons.undo,
+                      color: _editorKey.currentState?.canUndo == true ? Colors.white : Colors.white.withAlpha(80),
+                    ),
+                    onPressed: _editorKey.currentState?.undoAction,
+                  );
+                },
+              ),
+              StreamBuilder(
+                stream: _updateAppBarStream.stream,
+                builder: (_, __) {
+                  return IconButton(
+                    tooltip: 'Redo',
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    icon: Icon(
+                      Icons.redo,
+                      color: _editorKey.currentState?.canRedo == true ? Colors.white : Colors.white.withAlpha(80),
+                    ),
+                    onPressed: _editorKey.currentState?.redoAction,
+                  );
+                },
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Done',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.doneEditing,
+                    );
+                  }),
+            ],
+          ),
+          appBarPaintingEditor: AppBar(
+            automaticallyImplyLeading: false,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.close,
+                    );
+                  }),
+              const SizedBox(width: 80),
+              const Spacer(),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(
+                        Icons.line_weight_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.openLineWeightBottomSheet,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(
+                          _editorKey.currentState?.paintingEditor.currentState?.fillBackground == true
+                              ? Icons.format_color_reset
+                              : Icons.format_color_fill,
+                          color: Colors.white,
+                        ),
+                        onPressed: _editorKey.currentState?.paintingEditor.currentState?.toggleFill);
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Undo',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: Icon(
+                        Icons.undo,
+                        color: _editorKey.currentState?.paintingEditor.currentState?.canUndo == true ? Colors.white : Colors.white.withAlpha(80),
+                      ),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.undoAction,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Redo',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: Icon(
+                        Icons.redo,
+                        color: _editorKey.currentState?.paintingEditor.currentState?.canRedo == true ? Colors.white : Colors.white.withAlpha(80),
+                      ),
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.redoAction,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      tooltip: 'Done',
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.paintingEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+          appBarTextEditor: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.close,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.toggleTextAlign,
+                      icon: Icon(
+                        _editorKey.currentState?.textEditor.currentState?.align == TextAlign.left
+                            ? Icons.align_horizontal_left_rounded
+                            : _editorKey.currentState?.textEditor.currentState?.align == TextAlign.right
+                                ? Icons.align_horizontal_right_rounded
+                                : Icons.align_horizontal_center_rounded,
+                      ),
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.toggleBackgroundMode,
+                      icon: const Icon(Icons.layers_rounded),
+                    );
+                  }),
+              const Spacer(),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.textEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+          appBarCropRotateEditor: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.close,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      icon: const Icon(Icons.rotate_90_degrees_ccw_outlined),
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.rotate,
+                    );
+                  }),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
+                      icon: const Icon(Icons.crop),
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.openAspectRatioOptions,
+                    );
+                  }),
+              const Spacer(),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+          appBarFilterEditor: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: _editorKey.currentState?.filterEditor.currentState?.close,
+                    );
+                  }),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Custom Icon',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: const Icon(
+                  Icons.bug_report,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+              StreamBuilder(
+                  stream: _updateAppBarStream.stream,
+                  builder: (_, __) {
+                    return IconButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: const Icon(Icons.done),
+                      iconSize: 28,
+                      onPressed: _editorKey.currentState?.filterEditor.currentState?.done,
+                    );
+                  }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 ```
 
 #### Import-Export state history
@@ -958,6 +1561,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `canRotate`           | Indicates whether the image can be rotated.     | `true`                  |
 | `canChangeAspectRatio`| Indicates whether the aspect ratio can be changed. | `true`                  |
 | `initAspectRatio`     | The initial aspect ratio for cropping.           | `CropAspectRatios.custom` |
+| `allowedAspectRatios` | The allowed aspect ratios for cropping.          | `List with all options` |
 </details>
 
 <details>

@@ -1,6 +1,6 @@
 name: pro_image_editor
 description: "A Flutter image editor: Seamlessly enhance your images with user-friendly editing features."
-version: 2.5.3
+version: 2.6.2
 homepage: https://github.com/hm21/pro_image_editor/
 repository: https://github.com/hm21/pro_image_editor/
 issue_tracker: https://github.com/hm21/pro_image_editor/issues/
@@ -15,7 +15,9 @@ topics:
   - painting
 
 screenshots:
-  - description: "Showcase from the Image Editor"
+  - description: "Showcase from the image editor with the Whatsapp design"
+    path: assets/showcase-whatsapp.png
+  - description: "Showcase from the image editor with simple design"
     path: assets/showcase.png
 
 platforms:
@@ -36,17 +38,21 @@ dependencies:
 
   rounded_background_text: ^0.5.0
   colorfilter_generator: ^0.0.8
-  screenshot: ^2.1.0
+  screenshot: ^2.3.0
   vibration: ^1.8.4
-  http: ^1.2.0
-  emoji_picker_flutter: ^2.0.0
+  http: ^1.2.1
+  emoji_picker_flutter: ^2.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^3.0.2
   mockito: ^5.4.4
   network_image_mock: ^2.0.0
-  build_runner: ^2.4.8
+  build_runner: ^2.4.9
 
 flutter:
+  fonts:
+   - family: ProImageEditorIcons
+     fonts:
+      - asset: lib/fonts/ProImageEditorIcons.ttf

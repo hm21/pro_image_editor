@@ -19,6 +19,9 @@ class FilterEditorConfigs {
   /// Indicates whether the filter editor is enabled.
   final bool enabled;
 
+  /// Offset for the filter text, helpful if the user has an input field that overlays in a stack widget.
+  final double whatsAppFilterTextOffsetY;
+
   /// A list of color filter generators to apply to an image.
   final List<ColorFilterGenerator>? filterList;
 
@@ -27,6 +30,7 @@ class FilterEditorConfigs {
   /// By default, the editor is enabled, and the filter list contains all filters.
   const FilterEditorConfigs({
     this.enabled = true,
+    this.whatsAppFilterTextOffsetY = 0,
     this.filterList,
   });
 }

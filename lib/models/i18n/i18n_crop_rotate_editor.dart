@@ -15,20 +15,20 @@ class I18nCropRotateEditor {
   /// Text for the "Back" button.
   final String back;
 
+  /// Text for the "Cancel" button. Only available when the theme is set to `WhatsApp`.
+  final String cancel;
+
   /// Text for the "Done" button.
   final String done;
+
+  /// Text for the "Reset" button. Only available when the theme is set to `WhatsApp`.
+  final String reset;
 
   /// Text for the message displayed during the application of changes.
   final String applyChangesDialogMsg;
 
   /// Text for the message displayed when preparing the image.
   final String prepareImageDialogMsg;
-
-  /// Text for the "Free" aspect ratio option.
-  final String aspectRatioFree;
-
-  /// Text for the "Original" aspect ratio option.
-  final String aspectRatioOriginal;
 
   /// The tooltip text displayed for the "More" option on small screens.
   final String smallScreenMoreTooltip;
@@ -48,8 +48,6 @@ class I18nCropRotateEditor {
   ///   ratio: 'Aspect Ratio',
   ///   back: 'Go Back',
   ///   done: 'Apply',
-  ///   aspectRatioFree: 'Free',
-  ///   aspectRatioOriginal: 'Original',
   ///   applyChangesDialogMsg: 'Please wait while applying changes...',
   ///   prepareImageDialogMsg: 'Please wait while preparing the image...',
   /// )
@@ -61,10 +59,10 @@ class I18nCropRotateEditor {
     this.ratio = 'Ratio',
     this.back = 'Back',
     this.done = 'Done',
-    this.aspectRatioFree = 'Free',
-    this.aspectRatioOriginal = 'Original',
+    this.cancel = 'Cancel',
     this.prepareImageDialogMsg = 'Please wait',
     this.applyChangesDialogMsg = 'Please wait',
     this.smallScreenMoreTooltip = 'More',
+    this.reset = 'Reset',
   });
 }

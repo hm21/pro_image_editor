@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 import 'color_picker_configs.dart';
 
@@ -53,6 +54,9 @@ class BarColorPicker extends StatefulWidget {
   /// The initial position of the thumb in the bar. If not provided, it will be estimated based on the gradient and an initial color.
   final double? initPosition;
 
+  /// Image editor configurations.
+  final ProImageEditorConfigs configs;
+
   const BarColorPicker({
     super.key,
     this.pickMode = PickMode.color,
@@ -65,13 +69,18 @@ class BarColorPicker extends StatefulWidget {
     this.onPositionChange,
     this.initPosition,
     required this.colorListener,
+    required this.configs,
   });
 
   @override
   createState() => _BarColorPickerState();
 }
 
-class _BarColorPickerState extends State<BarColorPicker> {
+class _BarColorPickerState extends State<BarColorPicker>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
   /// The current percentage position in the gradient.
   double percent = 0.0;
 
@@ -110,6 +119,27 @@ class _BarColorPickerState extends State<BarColorPicker> {
     // Initialize 'percent' based on 'initPosition' or target 'initialColor'.
     percent = widget.initPosition ??
         _estimateColorPositionInGradient(colors, widget.initialColor);
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   /// Estimates the position of a color within the gradient.
@@ -204,25 +234,93 @@ class _BarColorPickerState extends State<BarColorPicker> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.horizontal) {
-      barWidth = widget.length;
-      barHeight = widget.thumbRadius * 2 - _kBarPadding;
-    } else {
-      barWidth = widget.thumbRadius * 2 - _kBarPadding;
-      barHeight = widget.length;
-    }
     final thumbRadius = widget.thumbRadius;
     final horizontal = widget.horizontal;
 
+    Gradient gradient;
+
+    bool isSimpleEditor =
+        widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple;
+
+    double borderWidth =
+        widget.configs.designMode == ImageEditorDesignModeE.cupertino &&
+                !isSimpleEditor
+            ? 2
+            : 0;
+    double left, top;
     double? thumbLeft, thumbTop;
+
     if (horizontal) {
+      barWidth = widget.length;
+      barHeight = widget.thumbRadius * 2 - _kBarPadding;
+
       thumbLeft = barWidth * percent;
+      gradient = LinearGradient(colors: colors);
+
+      left = thumbRadius;
+      top = (thumbRadius * 2 - barHeight) / 2;
     } else {
+      barWidth = widget.thumbRadius * 2 - _kBarPadding;
+      barHeight = widget.length;
+
       thumbTop = barHeight * percent;
+      gradient = LinearGradient(
+          colors: colors,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter);
+
+      left = (thumbRadius * 2 - barWidth) / 2;
+      top = thumbRadius;
     }
-    // build thumb
-    var thumb = Positioned(
-      left: thumbLeft,
+
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      alignment: Alignment.topCenter,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onPanDown: (details) =>
+            handleTouch(details.globalPosition, context, gradient),
+        onPanStart: (details) =>
+            handleTouch(details.globalPosition, context, gradient),
+        onPanUpdate: (details) =>
+            handleTouch(details.globalPosition, context, gradient),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 5),
+          child: Stack(
+            children: [
+              _buildFrame(
+                horizontal: horizontal,
+                thumbRadius: thumbRadius,
+                borderWidth: borderWidth,
+              ),
+              _buildContent(
+                top: top,
+                left: left,
+                borderWidth: borderWidth,
+                gradient: gradient,
+              ),
+              if (isSimpleEditor)
+                _buildThumb(
+                  borderWidth: borderWidth,
+                  thumbRadius: thumbRadius,
+                  thumbLeft: thumbLeft,
+                  thumbTop: thumbTop,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThumb({
+    double? thumbLeft,
+    double? thumbTop,
+    required double thumbRadius,
+    required double borderWidth,
+  }) {
+    return Positioned(
+      left: borderWidth / 2 + (thumbLeft ?? 0),
       top: thumbTop,
       child: Container(
         padding: EdgeInsets.zero,
@@ -241,63 +339,49 @@ class _BarColorPickerState extends State<BarColorPicker> {
         ),
       ),
     );
+  }
 
-    // build frame
-    double frameWidth, frameHeight;
-    if (horizontal) {
-      frameWidth = barWidth + thumbRadius * 2;
-      frameHeight = thumbRadius * 2;
-    } else {
-      frameWidth = thumbRadius * 2;
-      frameHeight = barHeight + thumbRadius * 2;
-    }
-    Widget frame = SizedBox(width: frameWidth, height: frameHeight);
-
-    // build content
-    Gradient gradient;
-    double left, top;
-    if (horizontal) {
-      gradient = LinearGradient(colors: colors);
-      left = thumbRadius;
-      top = (thumbRadius * 2 - barHeight) / 2;
-    } else {
-      gradient = LinearGradient(
-          colors: colors,
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter);
-      left = (thumbRadius * 2 - barWidth) / 2;
-      top = thumbRadius;
-    }
-    var content = Positioned(
-      left: left,
+  Widget _buildContent({
+    required double top,
+    required double left,
+    required double borderWidth,
+    Gradient? gradient,
+  }) {
+    return Positioned(
+      left: left - borderWidth / 2,
       top: top,
       child: Container(
         padding: EdgeInsets.zero,
-        width: barWidth,
+        width: barWidth + borderWidth * 2,
         height: barHeight,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.cornerRadius),
+          border: borderWidth != 0
+              ? Border.all(
+                  color: Colors.white,
+                  width: borderWidth,
+                )
+              : null,
           gradient: gradient,
         ),
-        child: const Text(''),
       ),
     );
+  }
 
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onPanDown: (details) =>
-          handleTouch(details.globalPosition, context, gradient),
-      onPanStart: (details) =>
-          handleTouch(details.globalPosition, context, gradient),
-      onPanUpdate: (details) =>
-          handleTouch(details.globalPosition, context, gradient),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 5),
-        child: Stack(
-          children: [frame, content, thumb],
-        ),
-      ),
-    );
+  Widget _buildFrame({
+    required bool horizontal,
+    required double thumbRadius,
+    required double borderWidth,
+  }) {
+    double frameWidth, frameHeight;
+    if (horizontal) {
+      frameWidth = barWidth + thumbRadius * 2 + borderWidth;
+      frameHeight = thumbRadius * 2;
+    } else {
+      frameWidth = thumbRadius * 2 + borderWidth;
+      frameHeight = barHeight + thumbRadius * 2;
+    }
+    return SizedBox(width: frameWidth, height: frameHeight);
   }
 
   /// calculate colors picked from palette and update our states.

@@ -1,23 +1,16 @@
 import 'dart:io';
 
-import 'package:colorfilter_generator/colorfilter_generator.dart';
-import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/blur_state_history.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../../models/custom_widgets.dart';
-import '../../models/editor_configs/filter_editor_configs.dart';
 import '../../models/editor_image.dart';
-import '../../models/theme/theme.dart';
-import '../../models/i18n/i18n.dart';
-import '../../models/icons/icons.dart';
-import '../../utils/design_mode.dart';
 import '../../widgets/loading_dialog.dart';
-import '../../widgets/pro_image_editor_desktop_mode.dart';
+import 'widgets/filter_editor_item_list.dart';
 import 'widgets/image_with_filter.dart';
 
 /// The `FilterEditor` widget allows users to apply filters to images.
@@ -44,26 +37,8 @@ class FilterEditor extends StatefulWidget {
   /// The theme configuration for the editor.
   final ThemeData theme;
 
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
-
-  /// The internationalization (i18n) configuration for the editor.
-  final I18n i18n;
-
-  /// Custom widgets configuration for the editor.
-  final ImageEditorCustomWidgets customWidgets;
-
-  /// Icons used in the editor.
-  final ImageEditorIcons icons;
-
-  /// The theme configuration specific to the image editor.
-  final ImageEditorTheme imageEditorTheme;
-
-  /// A hero tag to enable hero transitions between screens.
-  final String heroTag;
-
-  /// Configuration settings for the `FilterEditor`.
-  final FilterEditorConfigs configs;
+  /// The image editor configs.
+  final ProImageEditorConfigs configs;
 
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
@@ -91,12 +66,6 @@ class FilterEditor extends StatefulWidget {
     this.activeFilters,
     this.blur,
     required this.theme,
-    required this.designMode,
-    required this.i18n,
-    required this.customWidgets,
-    required this.icons,
-    required this.imageEditorTheme,
-    required this.heroTag,
     required this.configs,
   }) : assert(
           byteArray != null ||
@@ -114,13 +83,7 @@ class FilterEditor extends StatefulWidget {
   /// - `byteArray`: A Uint8List representing the image data in memory.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
-  /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `configs`: The image editor configs.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -132,21 +95,13 @@ class FilterEditor extends StatefulWidget {
   /// final filterEditor = FilterEditor.memory(
   ///   imageBytes,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory FilterEditor.memory(
     Uint8List byteArray, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    FilterEditorConfigs configs = const FilterEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
     List<FilterStateHistory>? activeFilters,
@@ -156,12 +111,6 @@ class FilterEditor extends StatefulWidget {
       key: key,
       byteArray: byteArray,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
       activeFilters: activeFilters,
@@ -178,13 +127,7 @@ class FilterEditor extends StatefulWidget {
   /// - `file`: A File object representing the image file to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
-  /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `configs`: The image editor configs.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -196,21 +139,13 @@ class FilterEditor extends StatefulWidget {
   /// final filterEditor = FilterEditor.file(
   ///   imageFile,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory FilterEditor.file(
     File file, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    FilterEditorConfigs configs = const FilterEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
     List<FilterStateHistory>? activeFilters,
@@ -220,12 +155,6 @@ class FilterEditor extends StatefulWidget {
       key: key,
       file: file,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
       activeFilters: activeFilters,
@@ -242,13 +171,7 @@ class FilterEditor extends StatefulWidget {
   /// - `assetPath`: A String representing the asset path of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
-  /// - `configs`: An optional FilterEditorConfigs object for customizing the behavior of the FilterEditor.
+  /// - `configs`: The image editor configs.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -260,21 +183,13 @@ class FilterEditor extends StatefulWidget {
   /// final filterEditor = FilterEditor.asset(
   ///   assetPath,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory FilterEditor.asset(
     String assetPath, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    FilterEditorConfigs configs = const FilterEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
     List<FilterStateHistory>? activeFilters,
@@ -284,12 +199,6 @@ class FilterEditor extends StatefulWidget {
       key: key,
       assetPath: assetPath,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
       activeFilters: activeFilters,
@@ -306,12 +215,6 @@ class FilterEditor extends StatefulWidget {
   /// - `networkUrl`: A String representing the network URL of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -323,20 +226,13 @@ class FilterEditor extends StatefulWidget {
   /// final filterEditor = FilterEditor.network(
   ///   imageUrl,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
   /// );
   /// ```
   factory FilterEditor.network(
     String networkUrl, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    FilterEditorConfigs configs = const FilterEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
     List<FilterStateHistory>? activeFilters,
@@ -346,12 +242,6 @@ class FilterEditor extends StatefulWidget {
       key: key,
       networkUrl: networkUrl,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       configs: configs,
       onUpdateUI: onUpdateUI,
       activeFilters: activeFilters,
@@ -367,12 +257,6 @@ class FilterEditor extends StatefulWidget {
   /// Parameters:
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two FilterEditor instances.
   /// - `byteArray`: An optional Uint8List representing the image data in memory.
   /// - `file`: An optional File object representing the image file to be loaded.
   /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
@@ -388,19 +272,12 @@ class FilterEditor extends StatefulWidget {
   /// final filterEditor = FilterEditor.autoSource(
   ///   byteArray: imageBytes,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
   /// );
   /// ```
   factory FilterEditor.autoSource({
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
-    FilterEditorConfigs configs = const FilterEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
     List<FilterStateHistory>? activeFilters,
@@ -415,12 +292,6 @@ class FilterEditor extends StatefulWidget {
         byteArray,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
         activeFilters: activeFilters,
@@ -432,12 +303,6 @@ class FilterEditor extends StatefulWidget {
         file,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
         activeFilters: activeFilters,
@@ -449,12 +314,6 @@ class FilterEditor extends StatefulWidget {
         networkUrl,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
         activeFilters: activeFilters,
@@ -466,12 +325,6 @@ class FilterEditor extends StatefulWidget {
         assetPath,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         configs: configs,
         onUpdateUI: onUpdateUI,
         activeFilters: activeFilters,
@@ -490,25 +343,12 @@ class FilterEditor extends StatefulWidget {
 
 /// The state class for the `FilterEditor` widget.
 class FilterEditorState extends State<FilterEditor> {
-  late ScrollController _scrollCtrl;
   late Image decodedImage;
   ColorFilterGenerator selectedFilter = PresetFilters.none;
   Uint8List resizedImage = Uint8List.fromList([]);
   double filterOpacity = 1;
   bool _createScreenshot = false;
   ScreenshotController screenshotController = ScreenshotController();
-
-  @override
-  void initState() {
-    _scrollCtrl = ScrollController();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
 
   /// Closes the editor without applying changes.
   void close() {
@@ -524,11 +364,11 @@ class FilterEditorState extends State<FilterEditor> {
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: widget.i18n,
+          i18n: widget.configs.i18n,
           theme: widget.theme,
-          designMode: widget.designMode,
-          message: widget.i18n.filterEditor.applyFilterDialogMsg,
-          imageEditorTheme: widget.imageEditorTheme,
+          designMode: widget.configs.designMode,
+          message: widget.configs.i18n.filterEditor.applyFilterDialogMsg,
+          imageEditorTheme: widget.configs.imageEditorTheme,
         );
       var data = await screenshotController.capture();
       _createScreenshot = false;
@@ -545,19 +385,16 @@ class FilterEditorState extends State<FilterEditor> {
     }
   }
 
-  /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters =>
-      widget.configs.filterList ?? presetFiltersList;
-
   @override
   Widget build(BuildContext context) {
     return Theme(
       data: widget.theme.copyWith(
           tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: widget.imageEditorTheme.uiOverlayStyle,
+        value: widget.configs.imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
-          backgroundColor: widget.imageEditorTheme.filterEditor.background,
+          backgroundColor:
+              widget.configs.imageEditorTheme.filterEditor.background,
           appBar: _buildAppBar(),
           body: _buildBody(),
           bottomNavigationBar: _buildBottomNavBar(),
@@ -568,25 +405,25 @@ class FilterEditorState extends State<FilterEditor> {
 
   /// Builds the app bar for the filter editor.
   PreferredSizeWidget _buildAppBar() {
-    return widget.customWidgets.appBarFilterEditor ??
+    return widget.configs.customWidgets.appBarFilterEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.filterEditor.appBarForegroundColor,
+          backgroundColor: widget
+              .configs.imageEditorTheme.filterEditor.appBarBackgroundColor,
+          foregroundColor: widget
+              .configs.imageEditorTheme.filterEditor.appBarForegroundColor,
           actions: [
             IconButton(
-              tooltip: widget.i18n.filterEditor.back,
+              tooltip: widget.configs.i18n.filterEditor.back,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.icons.backButton),
+              icon: Icon(widget.configs.icons.backButton),
               onPressed: close,
             ),
             const Spacer(),
             IconButton(
-              tooltip: widget.i18n.filterEditor.done,
+              tooltip: widget.configs.i18n.filterEditor.done,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.icons.applyChanges),
+              icon: Icon(widget.configs.icons.applyChanges),
               iconSize: 28,
               onPressed: done,
             ),
@@ -600,7 +437,7 @@ class FilterEditorState extends State<FilterEditor> {
       child: Screenshot(
         controller: screenshotController,
         child: Hero(
-          tag: widget.heroTag,
+          tag: widget.configs.heroTag,
           createRectTween: (begin, end) => RectTween(begin: begin, end: end),
           child: ImageWithFilter(
             image: EditorImage(
@@ -610,7 +447,7 @@ class FilterEditorState extends State<FilterEditor> {
               assetPath: widget.assetPath,
             ),
             activeFilters: widget.activeFilters,
-            designMode: widget.designMode,
+            designMode: widget.configs.designMode,
             filter: selectedFilter,
             blur: widget.blur,
             fit: BoxFit.contain,
@@ -644,91 +481,24 @@ class FilterEditorState extends State<FilterEditor> {
                       },
                     ),
             ),
-            _buildFilterList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Builds a horizontal list of filter preview buttons.
-  SizedBox _buildFilterList() {
-    return SizedBox(
-      height: 120,
-      child: Scrollbar(
-        controller: _scrollCtrl,
-        scrollbarOrientation: ScrollbarOrientation.bottom,
-        thumbVisibility: isDesktop,
-        trackVisibility: isDesktop,
-        child: ListView(
-          controller: _scrollCtrl,
-          scrollDirection: Axis.horizontal,
-          children: <Widget>[
-            for (int i = 0; i < _filters.length; i++)
-              filterPreviewButton(
-                filter: _filters[i],
-                name: _filters[i].name,
-                index: i,
-                activeFilters: widget.activeFilters,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Create a button for filter preview.
-  Widget filterPreviewButton({
-    required ColorFilterGenerator filter,
-    required String name,
-    required int index,
-    List<FilterStateHistory>? activeFilters,
-  }) {
-    var size = const Size(64, 64);
-    return GestureDetector(
-      key: ValueKey('Filter-$name-$index'),
-      onTap: () {
-        selectedFilter = filter;
-        setState(() {});
-        widget.onUpdateUI?.call();
-      },
-      child: Column(children: [
-        Container(
-          height: size.height,
-          width: size.width,
-          margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(7),
-            border: Border.all(
-              color: const Color(0xFF242424),
-              width: 1,
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(7),
-            child: ImageWithFilter(
-              image: EditorImage(
-                file: widget.file,
-                byteArray: widget.byteArray,
-                networkUrl: widget.networkUrl,
-                assetPath: widget.assetPath,
-              ),
+            FilterEditorItemList(
+              byteArray: widget.byteArray,
+              file: widget.file,
+              assetPath: widget.assetPath,
+              networkUrl: widget.networkUrl,
               activeFilters: widget.activeFilters,
-              size: size,
-              designMode: widget.designMode,
-              filter: filter,
               blur: widget.blur,
-              fit: BoxFit.cover,
+              configs: widget.configs,
+              selectedFilter: selectedFilter,
+              onSelectFilter: (filter) {
+                selectedFilter = filter;
+                setState(() {});
+                widget.onUpdateUI?.call();
+              },
             ),
-          ),
+          ],
         ),
-        Text(
-          widget.i18n.filterEditor.filters.getFilterI18n(name),
-          style: TextStyle(
-              fontSize: 12,
-              color: widget.imageEditorTheme.filterEditor.previewTextColor),
-        ),
-      ]),
+      ),
     );
   }
 }

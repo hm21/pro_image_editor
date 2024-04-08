@@ -60,6 +60,10 @@ class CropRotateEditorTheme {
   /// Color from the helper lines when moving the image.
   final Color helperLineColor;
 
+  /// Background color for the bottombar when the editor use WhatsApp as theme
+  /// and the designMode is set to Cupertino
+  final Color whatsappCupertinoBottomBarColor;
+
   /// Creates an instance of the `CropRotateEditorTheme` class with the specified theme properties.
   const CropRotateEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
@@ -67,5 +71,6 @@ class CropRotateEditorTheme {
     this.helperLineColor = const Color(0xFF000000),
     this.background = imageEditorBackgroundColor,
     this.cropCornerColor = imageEditorPrimaryColor,
+    this.whatsappCupertinoBottomBarColor = const Color(0xFF303030),
   });
 }

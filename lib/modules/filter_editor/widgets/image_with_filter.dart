@@ -66,6 +66,7 @@ class ImageWithFilter extends StatelessWidget {
       } else {
         return Stack(
           alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             img,
             BackdropFilter(
@@ -95,6 +96,7 @@ class ImageWithFilter extends StatelessWidget {
       if (blur == null) {
         return Stack(
           alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             img,
             filteredImg,
@@ -103,6 +105,7 @@ class ImageWithFilter extends StatelessWidget {
       } else {
         return Stack(
           alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             img,
             filteredImg,

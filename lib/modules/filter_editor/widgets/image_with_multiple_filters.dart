@@ -9,12 +9,26 @@ import '../../../models/blur_state_history.dart';
 import '../../../widgets/auto_image.dart';
 import '../utils/generate_filtered_image.dart';
 
+/// Represents an image with multiple filters applied.
+///
+/// This widget displays an image with multiple filters applied on top of it. It also supports blur effect.
 class ImageWithMultipleFilters extends StatelessWidget {
+  /// The width of the image.
   final double width;
+
+  /// The height of the image.
   final double height;
+
+  /// The design mode of the image editor.
   final ImageEditorDesignModeE designMode;
+
+  /// The list of filter state histories to be applied on the image.
   final List<FilterStateHistory> filters;
+
+  /// The editor image to display.
   final EditorImage image;
+
+  /// The blur state history to apply a blur effect on the image.
   final BlurStateHistory blur;
 
   const ImageWithMultipleFilters({

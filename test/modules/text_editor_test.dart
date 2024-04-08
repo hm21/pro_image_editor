@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/editor_configs/text_editor_configs.dart';
 import 'package:pro_image_editor/modules/text_editor.dart';
-import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/widgets/layer_widget.dart';
 
 void main() {
@@ -14,7 +14,6 @@ void main() {
           home: Scaffold(
             body: TextEditor(
               theme: ThemeData.dark(),
-              designMode: ImageEditorDesignModeE.material,
             ),
           ),
         ),
@@ -28,7 +27,6 @@ void main() {
           home: Scaffold(
             body: TextEditor(
               theme: ThemeData.dark(),
-              designMode: ImageEditorDesignModeE.material,
             ),
           ),
         ),
@@ -47,10 +45,11 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: TextEditor(
-              configs:
-                  const TextEditorConfigs(initialTextAlign: TextAlign.left),
+              configs: const ProImageEditorConfigs(
+                textEditorConfigs:
+                    TextEditorConfigs(initialTextAlign: TextAlign.left),
+              ),
               theme: ThemeData.dark(),
-              designMode: ImageEditorDesignModeE.material,
             ),
           ),
         ),
@@ -99,10 +98,11 @@ void main() {
           home: Scaffold(
             body: TextEditor(
               theme: ThemeData.dark(),
-              designMode: ImageEditorDesignModeE.material,
-              configs: const TextEditorConfigs(
-                  initialBackgroundColorMode:
-                      LayerBackgroundColorModeE.onlyColor),
+              configs: const ProImageEditorConfigs(
+                textEditorConfigs: TextEditorConfigs(
+                    initialBackgroundColorMode:
+                        LayerBackgroundColorModeE.onlyColor),
+              ),
             ),
           ),
         ),
