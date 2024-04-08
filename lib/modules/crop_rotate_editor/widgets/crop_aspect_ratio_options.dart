@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/aspect_ratio_item.dart';
+import 'package:pro_image_editor/models/editor_configs/crop_rotate_editor_configs.dart';
 import 'package:pro_image_editor/models/i18n/i18n.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_aspect_ratio_button.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 import '../../../widgets/flat_icon_text_button.dart';
-import '../utils/crop_aspect_ratios.dart';
 
 class CropAspectRatioOptions extends StatefulWidget {
   final I18nCropRotateEditor i18n;
+  final CropRotateEditorConfigs configs;
   final double aspectRatio;
 
   const CropAspectRatioOptions({
     super.key,
     required this.aspectRatio,
+    required this.configs,
     required this.i18n,
   });
 
@@ -36,19 +38,6 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
     super.dispose();
   }
 
-  /// Returns a list of predefined aspect ratios.
-  List<AspectRatioItem> get _aspectRatios {
-    return [
-      AspectRatioItem(text: widget.i18n.aspectRatioFree, value: CropAspectRatios.custom),
-      AspectRatioItem(text: widget.i18n.aspectRatioOriginal, value: CropAspectRatios.original),
-      AspectRatioItem(text: '1/1', value: CropAspectRatios.ratio1_1),
-      AspectRatioItem(text: '4/3', value: CropAspectRatios.ratio4_3),
-      AspectRatioItem(text: '3/4', value: CropAspectRatios.ratio3_4),
-      AspectRatioItem(text: '16/9', value: CropAspectRatios.ratio16_9),
-      AspectRatioItem(text: '9/16', value: CropAspectRatios.ratio9_16)
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -61,34 +50,40 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
           scrollbarOrientation: ScrollbarOrientation.bottom,
           thumbVisibility: isDesktop,
           trackVisibility: isDesktop,
-          child: ListView.builder(
+          child: SingleChildScrollView(
             controller: _scrollCtrl,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            itemBuilder: (_, int index) {
-              final AspectRatioItem item = _aspectRatios[index];
-              return GestureDetector(
-                child: FlatIconTextButton(
-                  label: Text(
-                    item.text,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  icon: SizedBox(
-                    height: 38,
-                    child: FittedBox(
-                      child: AspectRatioButton(
-                        aspectRatio: item.value,
-                        isSelected: item.value == widget.aspectRatio,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: widget.configs.aspectRatios.map((item) {
+                  return GestureDetector(
+                    child: FlatIconTextButton(
+                      label: Text(
+                        item.text,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      icon: SizedBox(
+                        height: 38,
+                        child: FittedBox(
+                          child: AspectRatioButton(
+                            aspectRatio: item.value,
+                            isSelected: item.value == widget.aspectRatio,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context, item.value);
-                },
-              );
-            },
-            itemCount: _aspectRatios.length,
+                    onTap: () {
+                      Navigator.pop(context, item.value);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         ),
       ),

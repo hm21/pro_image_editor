@@ -1,4 +1,7 @@
 import '../aspect_ratio_item.dart';
+import '../crop_rotate_editor/rotate_direction.dart';
+
+export '../crop_rotate_editor/rotate_direction.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -29,14 +32,20 @@ class CropRotateEditorConfigs {
   /// Indicating whether the aspect ratio of the image can be changed.
   final bool canChangeAspectRatio;
 
+  /// Layers will also be transformed like the crop-rotate image.
+  final bool transformLayers;
+
+  /// The direction in which the image will be rotated.
+  final RotateDirection rotateDirection;
+
   /// The initial aspect ratio for cropping.
   ///
-  /// For free aspect ratio use `null` and for original aspect ratio use `0.0`.
+  /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
   final double? initAspectRatio;
 
   /// The allowed aspect ratios for cropping.
   ///
-  /// For free aspect ratio use `null` and for original aspect ratio use `0.0`.
+  /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
   final List<AspectRatioItem> aspectRatios;
 
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
@@ -47,10 +56,12 @@ class CropRotateEditorConfigs {
     this.enabled = true,
     this.canRotate = true,
     this.canFlip = true,
+    this.transformLayers = true,
     this.canChangeAspectRatio = true,
     this.initAspectRatio,
+    this.rotateDirection = RotateDirection.left,
     this.aspectRatios = const [
-      AspectRatioItem(text: 'Free', value: null),
+      AspectRatioItem(text: 'Free', value: -1),
       AspectRatioItem(text: 'Original', value: 0.0),
       AspectRatioItem(text: '1*1', value: 1.0 / 1.0),
       AspectRatioItem(text: '4*3', value: 4.0 / 3.0),

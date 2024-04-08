@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
 import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
@@ -43,6 +44,7 @@ import 'widgets/flat_icon_text_button.dart';
 import 'widgets/layer_widget.dart';
 import 'widgets/loading_dialog.dart';
 import 'widgets/pro_image_editor_desktop_mode.dart';
+import 'widgets/transformed_content_generator.dart';
 
 typedef ImageEditingCompleteCallback = Future<void> Function(Uint8List bytes);
 
@@ -1298,8 +1300,8 @@ class ProImageEditorState extends State<ProImageEditor> {
         byteArray: img.byteArray,
         assetPath: img.assetPath,
         networkUrl: img.networkUrl,
-        bytesWithLayers: bytesWithLayers,
         theme: _theme,
+        layers: _layers,
         imageSize: Size(_imageWidth, _imageHeight),
         configs: widget.configs,
       ),
@@ -2003,58 +2005,68 @@ class ProImageEditorState extends State<ProImageEditor> {
               Transform.scale(
                 transformHitTests: false,
                 scale: 1 / constraints.maxHeight * (constraints.maxHeight - _whatsAppFilterShowHelper * 2),
-                child: Stack(
-                  alignment: Alignment.center,
-                  fit: StackFit.expand,
-                  clipBehavior: Clip.none,
-                  children: [
-                    Hero(
-                      tag: !_inited ? '--' : widget.configs.heroTag,
-                      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-                      child: Center(
-                        child: SizedBox(
-                          height: _imageHeight,
-                          width: _imageWidth,
-                          child: StreamBuilder<bool>(
-                              stream: _mouseMoveStream.stream,
-                              initialData: false,
-                              builder: (context, snapshot) {
-                                return MouseRegion(
-                                  hitTestBehavior: HitTestBehavior.translucent,
-                                  cursor: snapshot.data != true ? SystemMouseCursors.basic : widget.configs.imageEditorTheme.layerHoverCursor,
-                                  onHover: isDesktop
-                                      ? (event) {
-                                          var hasHit = _layers.indexWhere((element) => element is PaintingLayerData && element.item.hit) >= 0;
-                                          if (hasHit != snapshot.data) {
-                                            _mouseMoveStream.add(hasHit);
+                child: TransformedContentGenerator(
+                  /// TODO: get configs from current settings
+                  configs: const TransformConfigs(
+                    angle: 0,
+                    scale: 1,
+                    flipX: false,
+                    flipY: false,
+                    offset: Offset(0, 0),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    fit: StackFit.expand,
+                    clipBehavior: Clip.none,
+                    children: [
+                      Hero(
+                        tag: !_inited ? '--' : widget.configs.heroTag,
+                        createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                        child: Center(
+                          child: SizedBox(
+                            height: _imageHeight,
+                            width: _imageWidth,
+                            child: StreamBuilder<bool>(
+                                stream: _mouseMoveStream.stream,
+                                initialData: false,
+                                builder: (context, snapshot) {
+                                  return MouseRegion(
+                                    hitTestBehavior: HitTestBehavior.translucent,
+                                    cursor: snapshot.data != true ? SystemMouseCursors.basic : widget.configs.imageEditorTheme.layerHoverCursor,
+                                    onHover: isDesktop
+                                        ? (event) {
+                                            var hasHit = _layers.indexWhere((element) => element is PaintingLayerData && element.item.hit) >= 0;
+                                            if (hasHit != snapshot.data) {
+                                              _mouseMoveStream.add(hasHit);
+                                            }
                                           }
-                                        }
-                                      : null,
-                                  child: Screenshot(
-                                    controller: _screenshotCtrl,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Offstage(
-                                          offstage: !_inited,
-                                          child: editorImage,
-                                        ),
-                                        if (_selectedLayer < 0) _buildLayers(),
-                                      ],
+                                        : null,
+                                    child: Screenshot(
+                                      controller: _screenshotCtrl,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          Offstage(
+                                            offstage: !_inited,
+                                            child: editorImage,
+                                          ),
+                                          if (_selectedLayer < 0) _buildLayers(),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }),
+                                  );
+                                }),
+                          ),
                         ),
                       ),
-                    ),
-                    // show same image solong decoding that screenshot is ready
-                    if (!_inited) editorImage,
-                    if (_selectedLayer >= 0) _buildLayers(),
-                    _buildHelperLines(),
-                    if (_selectedLayer >= 0) _buildRemoveIcon(),
-                  ],
+                      // show same image solong decoding that screenshot is ready
+                      if (!_inited) editorImage,
+                      if (_selectedLayer >= 0) _buildLayers(),
+                      _buildHelperLines(),
+                      if (_selectedLayer >= 0) _buildRemoveIcon(),
+                    ],
+                  ),
                 ),
               ),
               if (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp && _selectedLayer < 0) ..._buildWhatsAppWidgets()
@@ -2277,7 +2289,7 @@ class ProImageEditorState extends State<ProImageEditor> {
           layerData: layerItem,
           textFontSize: widget.configs.textEditorConfigs.initFontSize,
           emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
-          enabledHitDetection: _enabledHitDetection,
+          enableHitDetection: _enabledHitDetection,
           freeStyleHighPerformanceScaling: _freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: _freeStyleHighPerformanceMoving,
           designMode: widget.configs.designMode,

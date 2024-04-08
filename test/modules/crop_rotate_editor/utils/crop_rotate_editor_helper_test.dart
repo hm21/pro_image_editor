@@ -1,7 +1,4 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import '../../../fake/fake_image.dart';
 
 void main() {
   group('Image Crop Tests', () {

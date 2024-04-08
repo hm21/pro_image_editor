@@ -6,18 +6,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/models/aspect_ratio_item.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/theme/theme.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 import '../../models/crop_rotate_editor_response.dart';
 import '../../models/editor_image.dart';
+import '../../models/layer.dart';
 import '../../widgets/auto_image.dart';
+import '../../widgets/layer_stack.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'utils/crop_aspect_ratios.dart';
-import '../../utils/design_mode.dart';
 import '../../widgets/loading_dialog.dart';
 import 'utils/crop_corner_painter.dart';
 import 'widgets/crop_aspect_ratio_options.dart';
@@ -47,8 +46,8 @@ class CropRotateEditor extends StatefulWidget {
   /// The theme configuration for the editor.
   final ThemeData theme;
 
-  /// The image data with layers (if any) for editing.
-  final Uint8List? bytesWithLayers;
+  /// A list of Layer objects representing image layers.
+  final List<Layer>? layers;
 
   /// The image editor configs
   final ProImageEditorConfigs configs;
@@ -67,10 +66,10 @@ class CropRotateEditor extends StatefulWidget {
     this.networkUrl,
     this.file,
     this.onUpdateUI,
+    this.layers,
     required this.theme,
     required this.imageSize,
     required this.configs,
-    this.bytesWithLayers,
   }) : assert(
           byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
@@ -84,7 +83,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `byteArray`: A Uint8List representing the image data in memory.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
-  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
+  /// - `layers`: A list of Layer objects representing image layers.
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `configs`: The image editor configs.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
@@ -108,14 +107,14 @@ class CropRotateEditor extends StatefulWidget {
     required ThemeData theme,
     required Size imageSize,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    List<Layer>? layers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
       byteArray: byteArray,
       theme: theme,
-      bytesWithLayers: bytesWithLayers,
+      layers: layers,
       imageSize: imageSize,
       configs: configs,
       onUpdateUI: onUpdateUI,
@@ -132,7 +131,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `configs`: The image editor configs.
-  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
+  /// - `layers`: A list of Layer objects representing image layers.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   ///
@@ -155,14 +154,14 @@ class CropRotateEditor extends StatefulWidget {
     required ThemeData theme,
     required Size imageSize,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    List<Layer>? layers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
       file: file,
       theme: theme,
-      bytesWithLayers: bytesWithLayers,
+      layers: layers,
       onUpdateUI: onUpdateUI,
       imageSize: imageSize,
       configs: configs,
@@ -179,7 +178,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `configs`: The image editor configs.
-  /// - `bytesWithLayers`: An optional Uint8List representing the image data with layers.
+  /// - `layers`: A list of Layer objects representing image layers.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
@@ -201,14 +200,14 @@ class CropRotateEditor extends StatefulWidget {
     required ThemeData theme,
     required Size imageSize,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    List<Layer>? layers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
       assetPath: assetPath,
       theme: theme,
-      bytesWithLayers: bytesWithLayers,
+      layers: layers,
       imageSize: imageSize,
       configs: configs,
       onUpdateUI: onUpdateUI,
@@ -243,14 +242,14 @@ class CropRotateEditor extends StatefulWidget {
     required ThemeData theme,
     required Size imageSize,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    List<Layer>? layers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
       key: key,
       networkUrl: networkUrl,
       theme: theme,
-      bytesWithLayers: bytesWithLayers,
+      layers: layers,
       imageSize: imageSize,
       configs: configs,
       onUpdateUI: onUpdateUI,
@@ -287,7 +286,7 @@ class CropRotateEditor extends StatefulWidget {
     required ThemeData theme,
     required Size imageSize,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Uint8List? bytesWithLayers,
+    List<Layer>? layers,
     Function? onUpdateUI,
     Uint8List? byteArray,
     File? file,
@@ -299,7 +298,7 @@ class CropRotateEditor extends StatefulWidget {
         byteArray,
         key: key,
         theme: theme,
-        bytesWithLayers: bytesWithLayers,
+        layers: layers,
         imageSize: imageSize,
         configs: configs,
         onUpdateUI: onUpdateUI,
@@ -309,7 +308,7 @@ class CropRotateEditor extends StatefulWidget {
         file,
         key: key,
         theme: theme,
-        bytesWithLayers: bytesWithLayers,
+        layers: layers,
         imageSize: imageSize,
         configs: configs,
         onUpdateUI: onUpdateUI,
@@ -319,7 +318,7 @@ class CropRotateEditor extends StatefulWidget {
         networkUrl,
         key: key,
         theme: theme,
-        bytesWithLayers: bytesWithLayers,
+        layers: layers,
         imageSize: imageSize,
         configs: configs,
         onUpdateUI: onUpdateUI,
@@ -329,7 +328,7 @@ class CropRotateEditor extends StatefulWidget {
         assetPath,
         key: key,
         theme: theme,
-        bytesWithLayers: bytesWithLayers,
+        layers: layers,
         imageSize: imageSize,
         configs: configs,
         onUpdateUI: onUpdateUI,
@@ -538,9 +537,11 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   /// Rotates the image clockwise.
   void rotate() {
+    var piHelper = widget.configs.cropRotateEditorConfigs.rotateDirection == RotateDirection.left ? -pi : pi;
+
     _rotationCount++;
     _rotateCtrl.animateTo(pi, curve: Curves.ease);
-    _rotateAnimation = Tween<double>(begin: _rotateAnimation.value, end: _rotationCount * pi / 2).animate(_rotateCtrl);
+    _rotateAnimation = Tween<double>(begin: _rotateAnimation.value, end: _rotationCount * piHelper / 2).animate(_rotateCtrl);
     _rotateCtrl
       ..reset()
       ..forward();
@@ -587,6 +588,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         builder: (BuildContext context) {
           return CropAspectRatioOptions(
             aspectRatio: _aspectRatio,
+            configs: widget.configs.cropRotateEditorConfigs,
             i18n: widget.configs.i18n.cropRotateEditor,
           );
         }).then((value) {
@@ -991,12 +993,23 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         child: LayoutBuilder(
           builder: (context, constraints) {
             _renderedImgConstraints = constraints;
-            return AutoImage(
-              _image,
-              fit: BoxFit.contain,
-              designMode: widget.configs.designMode,
-              width: _imgWidth,
-              height: _imgHeight,
+            return Stack(
+              fit: StackFit.expand,
+              alignment: Alignment.center,
+              children: [
+                AutoImage(
+                  _image,
+                  fit: BoxFit.contain,
+                  designMode: widget.configs.designMode,
+                  width: _imgWidth,
+                  height: _imgHeight,
+                ),
+                if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
+                  LayerStack(
+                    configs: widget.configs,
+                    layers: widget.layers!,
+                  ),
+              ],
             );
           },
         ),

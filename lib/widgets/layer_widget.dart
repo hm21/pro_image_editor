@@ -66,7 +66,7 @@ class LayerWidget extends StatefulWidget {
 
   /// Enables or disables hit detection.
   /// When set to `true`, it allows detecting user interactions with the interface.
-  final bool enabledHitDetection;
+  final bool enableHitDetection;
 
   /// Creates a [LayerWidget] with the specified properties.
   const LayerWidget(
@@ -82,7 +82,7 @@ class LayerWidget extends StatefulWidget {
       required this.textFontSize,
       required this.stickerInitWidth,
       required this.emojiTextStyle,
-      required this.enabledHitDetection,
+      required this.enableHitDetection,
       required this.freeStyleHighPerformanceScaling,
       required this.freeStyleHighPerformanceMoving,
       required this.designMode});
@@ -175,8 +175,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _checkHitIsOutsideInCanvas() {
-    return _layerType == _LayerType.canvas &&
-        !(_layer as PaintingLayerData).item.hit;
+    return _layerType == _LayerType.canvas && !(_layer as PaintingLayerData).item.hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and rotation.
@@ -359,9 +358,8 @@ class _LayerWidgetState extends State<LayerWidget> {
         painter: DrawCanvas(
           item: layer.item,
           scale: widget.layerData.scale,
-          enabledHitDetection: widget.enabledHitDetection,
-          freeStyleHighPerformanceScaling:
-              widget.freeStyleHighPerformanceScaling,
+          enabledHitDetection: widget.enableHitDetection,
+          freeStyleHighPerformanceScaling: widget.freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,
         ),
       ),

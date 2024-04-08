@@ -1,0 +1,4 @@
+enum RotateDirection {
+  left,
+  right,
+}

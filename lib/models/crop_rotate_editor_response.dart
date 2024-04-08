@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 
+// TODO: delete me
 /// The `CropRotateEditorResponse` class represents the response data from a crop and rotate editor operation.
 class CropRotateEditorResponse {
   /// The edited image data as a `Uint8List`.
