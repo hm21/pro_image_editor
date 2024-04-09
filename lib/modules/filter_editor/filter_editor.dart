@@ -420,14 +420,20 @@ class FilterEditor extends StatefulWidget {
 
 /// The state class for the `FilterEditor` widget.
 class FilterEditorState extends State<FilterEditor> {
-  late Image decodedImage;
-  ColorFilterGenerator selectedFilter = PresetFilters.none;
-  Uint8List resizedImage = Uint8List.fromList([]);
-  double filterOpacity = 1;
-  bool _createScreenshot = false;
+  /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
-  Size _imageSize = Size.zero;
+
+  /// The selected filter.
+  ColorFilterGenerator selectedFilter = PresetFilters.none;
+
+  /// Represents the dimensions of the body.
   Size _bodySize = Size.zero;
+
+  /// The opacity of the selected filter.
+  double filterOpacity = 1;
+
+  /// Indicates it create a screenshot or not.
+  bool _createScreenshot = false;
 
   /// Closes the editor without applying changes.
   void close() {
@@ -520,26 +526,23 @@ class FilterEditorState extends State<FilterEditor> {
                 createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    _imageSize = constraints.biggest;
-                    return ImageWithFilter(
-                      image: EditorImage(
-                        file: widget.file,
-                        byteArray: widget.byteArray,
-                        networkUrl: widget.networkUrl,
-                        assetPath: widget.assetPath,
-                      ),
-                      activeFilters: widget.activeFilters,
-                      designMode: widget.configs.designMode,
-                      filter: selectedFilter,
-                      blur: widget.blur,
-                      fit: BoxFit.contain,
-                      opacity: filterOpacity,
-                    );
-                  }),
+                  child: ImageWithFilter(
+                    image: EditorImage(
+                      file: widget.file,
+                      byteArray: widget.byteArray,
+                      networkUrl: widget.networkUrl,
+                      assetPath: widget.assetPath,
+                    ),
+                    activeFilters: widget.activeFilters,
+                    designMode: widget.configs.designMode,
+                    filter: selectedFilter,
+                    blur: widget.blur,
+                    fit: BoxFit.contain,
+                    opacity: filterOpacity,
+                  ),
                 ),
               ),
-              if (widget.layers != null)
+              if (widget.configs.filterEditorConfigs.showLayers && widget.layers != null)
                 LayerStack(
                   transformHelper: TransformHelper(
                     mainBodySize: widget.bodySizeWithLayers ?? Size.zero,

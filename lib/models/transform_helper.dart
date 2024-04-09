@@ -43,14 +43,11 @@ class TransformHelper {
 
       /// Image size changed
       else {
-        /* TODO: double imageHeight = editorBodySize.width / mainImageSize.aspectRatio;
-        double mainScreenSpaceHeight = (mainBodySize.height - mainImageSize.height) / 2;
-
-        double editorScreenSpaceHeight = mainScreenSpaceHeight - (editorBodySize.height - imageHeight) / 2;
+        double mainSpace = (mainBodySize.height - mainImageSize.height) / 2;
         return Offset(
           0,
-          ((mainBodySize.height - imageHeight) / 2 + editorScreenSpaceHeight) * scale,
-        ); */
+          ((editorBodySize.height - mainBodySize.height) / 2 + mainSpace) * scale,
+        );
       }
     }
 

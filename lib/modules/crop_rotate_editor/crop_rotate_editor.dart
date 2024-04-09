@@ -12,6 +12,7 @@ import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 
 import '../../models/editor_image.dart';
 import '../../models/layer.dart';
+import '../../models/transform_helper.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/platform_popup_menu.dart';
@@ -57,6 +58,14 @@ class CropRotateEditor extends StatefulWidget {
   /// The size of the image to be edited.
   final Size imageSize;
 
+  /// The rendered image size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? imageSizeWithLayers;
+
+  /// The rendered body size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? bodySizeWithLayers;
+
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
 
@@ -71,6 +80,8 @@ class CropRotateEditor extends StatefulWidget {
     this.layers,
     required this.theme,
     this.transformConfigs,
+    this.imageSizeWithLayers,
+    this.bodySizeWithLayers,
     required this.imageSize,
     required this.configs,
   }) : assert(
@@ -113,6 +124,8 @@ class CropRotateEditor extends StatefulWidget {
     TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
@@ -124,6 +137,8 @@ class CropRotateEditor extends StatefulWidget {
       configs: configs,
       transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
     );
   }
 
@@ -163,6 +178,8 @@ class CropRotateEditor extends StatefulWidget {
     TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
@@ -171,6 +188,8 @@ class CropRotateEditor extends StatefulWidget {
       theme: theme,
       layers: layers,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
       imageSize: imageSize,
       configs: configs,
       transformConfigs: transformConfigs,
@@ -212,6 +231,8 @@ class CropRotateEditor extends StatefulWidget {
     TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
@@ -223,6 +244,8 @@ class CropRotateEditor extends StatefulWidget {
       configs: configs,
       transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
     );
   }
 
@@ -257,6 +280,8 @@ class CropRotateEditor extends StatefulWidget {
     TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     Function? onUpdateUI,
   }) {
     return CropRotateEditor._(
@@ -268,6 +293,8 @@ class CropRotateEditor extends StatefulWidget {
       configs: configs,
       transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
     );
   }
 
@@ -304,6 +331,8 @@ class CropRotateEditor extends StatefulWidget {
     TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     Function? onUpdateUI,
     Uint8List? byteArray,
     File? file,
@@ -320,6 +349,8 @@ class CropRotateEditor extends StatefulWidget {
         configs: configs,
         transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
       );
     } else if (file != null) {
       return CropRotateEditor.file(
@@ -331,6 +362,8 @@ class CropRotateEditor extends StatefulWidget {
         configs: configs,
         transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
       );
     } else if (networkUrl != null) {
       return CropRotateEditor.network(
@@ -342,6 +375,8 @@ class CropRotateEditor extends StatefulWidget {
         configs: configs,
         transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
       );
     } else if (assetPath != null) {
       return CropRotateEditor.asset(
@@ -353,6 +388,8 @@ class CropRotateEditor extends StatefulWidget {
         configs: configs,
         transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
       );
     } else {
       throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
@@ -389,6 +426,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   Rect _cropRect = Rect.zero;
   Rect _viewRect = Rect.zero;
+  Size _bodySize = Size.zero;
   late BoxConstraints _contentConstraints;
   late BoxConstraints _renderedImgConstraints;
 
@@ -985,19 +1023,18 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                 ),
               ),
               if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
-                Transform.translate(
-                  offset: Offset(
-                    -_screenPadding,
-                    -_screenPadding,
-                  ),
-                  child: Transform.scale(
-                    scale: 1 / _screenWidth * (_screenWidth - _screenPadding * 2),
-                    child: LayerStack(
-                      configs: widget.configs,
-                      layers: widget.layers!,
-                      clipBehavior: Clip.none,
+                LayerStack(
+                  transformHelper: TransformHelper(
+                    mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
+                    mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                    editorBodySize: Size(
+                      _contentConstraints.maxWidth - _screenPadding * 2,
+                      _contentConstraints.maxHeight - _screenPadding * 2,
                     ),
                   ),
+                  configs: widget.configs,
+                  layers: widget.layers!,
+                  clipBehavior: Clip.none,
                 ),
             ],
           );

@@ -13,6 +13,11 @@
 class BlurEditorConfigs {
   /// Indicates whether the blur editor is enabled.
   final bool enabled;
+
+  /// Show also layers in the editor.
+  final bool showLayers;
+
+  /// Maximum blur value.
   final double maxBlur;
 
   /// Creates an instance of BlurEditorConfigs with optional settings.
@@ -20,6 +25,7 @@ class BlurEditorConfigs {
   /// By default, the editor is enabled, and max blur is 2.0.
   const BlurEditorConfigs({
     this.enabled = true,
+    this.showLayers = true,
     this.maxBlur = 2.0,
   });
 }

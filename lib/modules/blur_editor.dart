@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/blur_state_history.dart';
 import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
@@ -16,7 +17,9 @@ import '../models/layer.dart';
 import '../models/theme/theme.dart';
 import '../models/i18n/i18n.dart';
 import '../models/icons/icons.dart';
+import '../models/transform_helper.dart';
 import '../utils/design_mode.dart';
+import '../widgets/layer_stack.dart';
 import '../widgets/loading_dialog.dart';
 import 'filter_editor/widgets/image_with_multiple_filters.dart';
 
@@ -44,29 +47,11 @@ class BlurEditor extends StatefulWidget {
   /// The theme configuration for the editor.
   final ThemeData theme;
 
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
-
-  /// The internationalization (i18n) configuration for the editor.
-  final I18n i18n;
-
-  /// Custom widgets configuration for the editor.
-  final ImageEditorCustomWidgets customWidgets;
-
-  /// Icons used in the editor.
-  final ImageEditorIcons icons;
-
   /// The size of the image to be edited.
   final Size imageSize;
 
-  /// The theme configuration specific to the image editor.
-  final ImageEditorTheme imageEditorTheme;
-
-  /// A hero tag to enable hero transitions between screens.
-  final String heroTag;
-
-  /// Configuration settings for the `BlurEditor`.
-  final BlurEditorConfigs configs;
+  /// The image editor configs.
+  final ProImageEditorConfigs configs;
 
   /// The transform configurations how the image should be initialized.
   final TransformConfigs? transformConfigs;
@@ -84,6 +69,14 @@ class BlurEditor extends StatefulWidget {
   /// A list of Layer objects representing image layers.
   final List<Layer>? layers;
 
+  /// The rendered image size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? imageSizeWithLayers;
+
+  /// The rendered body size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? bodySizeWithLayers;
+
   final List<FilterStateHistory> filters;
 
   final BlurStateHistory currentBlur;
@@ -99,16 +92,12 @@ class BlurEditor extends StatefulWidget {
     this.convertToUint8List = false,
     this.transformConfigs,
     this.layers,
+    this.imageSizeWithLayers,
+    this.bodySizeWithLayers,
     required this.filters,
     required this.currentBlur,
     required this.theme,
-    required this.designMode,
-    required this.i18n,
-    required this.customWidgets,
-    required this.icons,
     required this.imageSize,
-    required this.imageEditorTheme,
-    required this.heroTag,
     required this.configs,
   }) : assert(
           byteArray != null || file != null || networkUrl != null || assetPath != null,
@@ -123,13 +112,7 @@ class BlurEditor extends StatefulWidget {
   /// - `byteArray`: A Uint8List representing the image data in memory.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the BlurEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
-  /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `configs`: The image editor configs.
   /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
@@ -142,26 +125,20 @@ class BlurEditor extends StatefulWidget {
   /// final blurEditor = BlurEditor.memory(
   ///   imageBytes,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory BlurEditor.memory(
     Uint8List byteArray, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
     List<Layer>? layers,
-    BlurEditorConfigs configs = const BlurEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     List<FilterStateHistory>? filters,
     BlurStateHistory? currentBlur,
   }) {
@@ -169,18 +146,14 @@ class BlurEditor extends StatefulWidget {
       key: key,
       byteArray: byteArray,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
       imageSize: imageSize,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
       layers: layers,
+      filters: filters ?? [],
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -194,13 +167,7 @@ class BlurEditor extends StatefulWidget {
   /// - `file`: A File object representing the image file to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the BlurEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
-  /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `configs`: The image editor configs.
   /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
@@ -213,26 +180,20 @@ class BlurEditor extends StatefulWidget {
   /// final blurEditor = BlurEditor.file(
   ///   imageFile,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory BlurEditor.file(
     File file, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
     List<Layer>? layers,
-    BlurEditorConfigs configs = const BlurEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     List<FilterStateHistory>? filters,
     BlurStateHistory? currentBlur,
   }) {
@@ -240,18 +201,14 @@ class BlurEditor extends StatefulWidget {
       key: key,
       file: file,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
       imageSize: imageSize,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
       layers: layers,
+      filters: filters ?? [],
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -265,13 +222,7 @@ class BlurEditor extends StatefulWidget {
   /// - `assetPath`: A String representing the asset path of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the BlurEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
-  /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `configs`: The image editor configs.
   /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
@@ -284,26 +235,20 @@ class BlurEditor extends StatefulWidget {
   /// final blurEditor = BlurEditor.asset(
   ///   assetPath,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   heroTag: 'unique_hero_tag',
   /// );
   /// ```
   factory BlurEditor.asset(
     String assetPath, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
     List<Layer>? layers,
-    BlurEditorConfigs configs = const BlurEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     List<FilterStateHistory>? filters,
     BlurStateHistory? currentBlur,
   }) {
@@ -311,18 +256,14 @@ class BlurEditor extends StatefulWidget {
       key: key,
       assetPath: assetPath,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
       imageSize: imageSize,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
       layers: layers,
+      filters: filters ?? [],
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -336,13 +277,7 @@ class BlurEditor extends StatefulWidget {
   /// - `networkUrl`: A String representing the network URL of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the BlurEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
-  /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `configs`: The image editor configs.
   /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
@@ -355,25 +290,20 @@ class BlurEditor extends StatefulWidget {
   /// final blurEditor = BlurEditor.network(
   ///   imageUrl,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
   /// );
   /// ```
   factory BlurEditor.network(
     String networkUrl, {
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
     List<Layer>? layers,
-    BlurEditorConfigs configs = const BlurEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     List<FilterStateHistory>? filters,
     BlurStateHistory? currentBlur,
   }) {
@@ -381,18 +311,14 @@ class BlurEditor extends StatefulWidget {
       key: key,
       networkUrl: networkUrl,
       theme: theme,
-      designMode: designMode,
-      i18n: i18n,
-      customWidgets: customWidgets,
-      icons: icons,
       imageSize: imageSize,
-      imageEditorTheme: imageEditorTheme,
-      heroTag: heroTag,
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
       layers: layers,
+      filters: filters ?? [],
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -405,12 +331,6 @@ class BlurEditor extends StatefulWidget {
   /// Parameters:
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the BlurEditor widget.
-  /// - `designMode`: An optional ImageEditorDesignMode enum to specify the design mode (material or custom) of the ImageEditor.
-  /// - `i18n`: An optional I18n object for localization and internationalization.
-  /// - `customWidgets`: An optional CustomWidgets object for customizing the widgets used in the editor.
-  /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
-  /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
-  /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
   /// - `byteArray`: An optional Uint8List representing the image data in memory.
   /// - `file`: An optional File object representing the image file to be loaded.
   /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
@@ -426,24 +346,19 @@ class BlurEditor extends StatefulWidget {
   /// final blurEditor = BlurEditor.autoSource(
   ///   byteArray: imageBytes,
   ///   theme: ThemeData.light(),
-  ///   designMode: ImageEditorDesignMode.material,
   /// );
   /// ```
   factory BlurEditor.autoSource({
     Key? key,
     required ThemeData theme,
-    ImageEditorDesignModeE designMode = ImageEditorDesignModeE.material,
-    I18n i18n = const I18n(),
-    ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
-    ImageEditorIcons icons = const ImageEditorIcons(),
-    ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
     List<Layer>? layers,
-    BlurEditorConfigs configs = const BlurEditorConfigs(),
-    required String heroTag,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required Size imageSize,
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
     required List<FilterStateHistory> filters,
     Uint8List? byteArray,
     File? file,
@@ -456,16 +371,13 @@ class BlurEditor extends StatefulWidget {
         byteArray,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
         imageSize: imageSize,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         filters: filters,
         convertToUint8List: convertToUint8List,
         currentBlur: currentBlur,
@@ -475,16 +387,13 @@ class BlurEditor extends StatefulWidget {
         file,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
         imageSize: imageSize,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         filters: filters,
         convertToUint8List: convertToUint8List,
         currentBlur: currentBlur,
@@ -494,16 +403,13 @@ class BlurEditor extends StatefulWidget {
         networkUrl,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
         imageSize: imageSize,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         filters: filters,
         convertToUint8List: convertToUint8List,
         currentBlur: currentBlur,
@@ -513,16 +419,13 @@ class BlurEditor extends StatefulWidget {
         assetPath,
         key: key,
         theme: theme,
-        designMode: designMode,
-        i18n: i18n,
-        customWidgets: customWidgets,
-        icons: icons,
         imageSize: imageSize,
-        imageEditorTheme: imageEditorTheme,
-        heroTag: heroTag,
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         filters: filters,
         convertToUint8List: convertToUint8List,
         currentBlur: currentBlur,
@@ -538,24 +441,22 @@ class BlurEditor extends StatefulWidget {
 
 /// The state class for the `BlurEditor` widget.
 class BlurEditorState extends State<BlurEditor> {
-  late ScrollController _scrollCtrl;
-  late Image decodedImage;
-  late BlurStateHistory selectedBlur;
-  Uint8List resizedImage = Uint8List.fromList([]);
-  bool _createScreenshot = false;
+  /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
+
+  /// Represents the selected blur state.
+  late BlurStateHistory selectedBlur;
+
+  /// Represents the dimensions of the body.
+  Size _bodySize = Size.zero;
+
+  /// Indicates it create a screenshot or not.
+  bool _createScreenshot = false;
 
   @override
   void initState() {
-    _scrollCtrl = ScrollController();
     selectedBlur = widget.currentBlur;
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _scrollCtrl.dispose();
-    super.dispose();
   }
 
   /// Closes the editor without applying changes.
@@ -572,11 +473,11 @@ class BlurEditorState extends State<BlurEditor> {
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: widget.i18n,
+          i18n: widget.configs.i18n,
           theme: widget.theme,
-          designMode: widget.designMode,
-          message: widget.i18n.blurEditor.applyBlurDialogMsg,
-          imageEditorTheme: widget.imageEditorTheme,
+          designMode: widget.configs.designMode,
+          message: widget.configs.i18n.blurEditor.applyBlurDialogMsg,
+          imageEditorTheme: widget.configs.imageEditorTheme,
         );
       var data = await screenshotController.capture();
       _createScreenshot = false;
@@ -595,9 +496,9 @@ class BlurEditorState extends State<BlurEditor> {
     return Theme(
       data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: widget.imageEditorTheme.uiOverlayStyle,
+        value: widget.configs.imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
-          backgroundColor: widget.imageEditorTheme.blurEditor.background,
+          backgroundColor: widget.configs.imageEditorTheme.blurEditor.background,
           appBar: _buildAppBar(),
           body: _buildBody(),
           bottomNavigationBar: _buildBottomNavBar(),
@@ -608,23 +509,23 @@ class BlurEditorState extends State<BlurEditor> {
 
   /// Builds the app bar for the blur editor.
   PreferredSizeWidget _buildAppBar() {
-    return widget.customWidgets.appBarBlurEditor ??
+    return widget.configs.customWidgets.appBarBlurEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: widget.imageEditorTheme.blurEditor.appBarBackgroundColor,
-          foregroundColor: widget.imageEditorTheme.blurEditor.appBarForegroundColor,
+          backgroundColor: widget.configs.imageEditorTheme.blurEditor.appBarBackgroundColor,
+          foregroundColor: widget.configs.imageEditorTheme.blurEditor.appBarForegroundColor,
           actions: [
             IconButton(
-              tooltip: widget.i18n.blurEditor.back,
+              tooltip: widget.configs.i18n.blurEditor.back,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.icons.backButton),
+              icon: Icon(widget.configs.icons.backButton),
               onPressed: close,
             ),
             const Spacer(),
             IconButton(
-              tooltip: widget.i18n.blurEditor.done,
+              tooltip: widget.configs.i18n.blurEditor.done,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.icons.applyChanges),
+              icon: Icon(widget.configs.icons.applyChanges),
               iconSize: 28,
               onPressed: done,
             ),
@@ -634,31 +535,50 @@ class BlurEditorState extends State<BlurEditor> {
 
   /// Builds the main content area of the editor.
   Widget _buildBody() {
-    return Center(
-      child: Screenshot(
-        controller: screenshotController,
-        child: Hero(
-          tag: widget.heroTag,
-          createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-          child: TransformedContentGenerator(
-            configs: widget.transformConfigs ?? TransformConfigs.empty(),
-            child: ImageWithMultipleFilters(
-              width: widget.imageSize.width,
-              height: widget.imageSize.height,
-              designMode: widget.designMode,
-              image: EditorImage(
-                assetPath: widget.assetPath,
-                byteArray: widget.byteArray,
-                file: widget.file,
-                networkUrl: widget.networkUrl,
+    return LayoutBuilder(builder: (context, constraints) {
+      _bodySize = constraints.biggest;
+      return Center(
+        child: Screenshot(
+          controller: screenshotController,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Hero(
+                tag: widget.configs.heroTag,
+                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                child: TransformedContentGenerator(
+                  configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                  child: ImageWithMultipleFilters(
+                    width: widget.imageSize.width,
+                    height: widget.imageSize.height,
+                    designMode: widget.configs.designMode,
+                    image: EditorImage(
+                      assetPath: widget.assetPath,
+                      byteArray: widget.byteArray,
+                      file: widget.file,
+                      networkUrl: widget.networkUrl,
+                    ),
+                    filters: widget.filters,
+                    blur: selectedBlur,
+                  ),
+                ),
               ),
-              filters: widget.filters,
-              blur: selectedBlur,
-            ),
+              if (widget.configs.blurEditorConfigs.showLayers && widget.layers != null)
+                LayerStack(
+                  transformHelper: TransformHelper(
+                    mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
+                    mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                    editorBodySize: _bodySize,
+                  ),
+                  configs: widget.configs,
+                  layers: widget.layers!,
+                  clipBehavior: Clip.none,
+                ),
+            ],
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Builds the bottom navigation bar with blur slider.
@@ -668,7 +588,7 @@ class BlurEditorState extends State<BlurEditor> {
         height: 100,
         child: Slider(
           min: 0,
-          max: widget.configs.maxBlur,
+          max: widget.configs.blurEditorConfigs.maxBlur,
           divisions: 100,
           value: selectedBlur.blur,
           onChanged: (value) {
