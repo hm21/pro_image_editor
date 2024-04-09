@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history_configs.dart';
 import 'package:pro_image_editor/models/layer.dart';
 
-import '../editor_image.dart';
+import '../crop_rotate_editor/transform_factors.dart';
 import '../filter_state_history.dart';
 import '../blur_state_history.dart';
 import '../history/state_history.dart';
@@ -18,9 +18,6 @@ class ImportStateHistory {
   /// The size of the imported image.
   final Size imgSize;
 
-  /// The state history of the imported editor images.
-  final List<EditorImage> imgStateHistory;
-
   /// The state history of each editor state in the session.
   final List<EditorStateHistory> stateHistory;
 
@@ -31,7 +28,6 @@ class ImportStateHistory {
   ImportStateHistory._({
     required this.editorPosition,
     required this.imgSize,
-    required this.imgStateHistory,
     required this.stateHistory,
     required this.configs,
   });
@@ -42,15 +38,9 @@ class ImportStateHistory {
     ImportEditorConfigs configs = const ImportEditorConfigs(),
   }) {
     List<EditorStateHistory> stateHistory = [];
-    List<EditorImage> imgStateHistory = [];
     List<Uint8List> stickers = [];
     for (var sticker in List.from(map['stickers'] ?? [])) {
       stickers.add(Uint8List.fromList(List.from(sticker)));
-    }
-
-    for (var image in List.from(map['cropRotateImages'] ?? [])) {
-      imgStateHistory
-          .add(EditorImage(byteArray: Uint8List.fromList(List.from(image))));
     }
 
     for (var el in List.from(map['history'] ?? [])) {
@@ -70,19 +60,17 @@ class ImportStateHistory {
 
       stateHistory.add(
         EditorStateHistory(
-          bytesRefIndex: el['listPosition'] ?? 0,
           blur: blur,
           layers: layers,
           filters: filters,
+          transformConfigs: el['transformConfigs'] ?? TransformConfigs.empty(),
         ),
       );
     }
 
     return ImportStateHistory._(
       editorPosition: map['position'],
-      imgSize:
-          Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
-      imgStateHistory: imgStateHistory,
+      imgSize: Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
       stateHistory: stateHistory,
       configs: configs,
     );

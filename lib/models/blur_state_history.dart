@@ -11,8 +11,7 @@ class BlurStateHistory {
   /// Constructs a [BlurStateHistory] instance from a map representation.
   ///
   /// The [map] should contain 'blur' keys.
-  BlurStateHistory.fromMap(Map map)
-      : blur = num.tryParse(map['blur']?.toString() ?? '0')?.toDouble() ?? 0;
+  BlurStateHistory.fromMap(Map map) : blur = num.tryParse(map['factor']?.toString() ?? '0')?.toDouble() ?? 0;
 
   /// Converts this blur state history object to a Map.
   ///
@@ -20,7 +19,7 @@ class BlurStateHistory {
   /// including the blur.
   Map toMap() {
     return {
-      'blur': blur,
+      'factor': blur,
     };
   }
 }

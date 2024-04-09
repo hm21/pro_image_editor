@@ -171,8 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ratio: 'Ratio',
                                 back: 'Back',
                                 done: 'Done',
-                                prepareImageDialogMsg: 'Please wait',
-                                applyChangesDialogMsg: 'Please wait',
                                 smallScreenMoreTooltip: 'More',
                               ),
                               filterEditor: I18nFilterEditor(

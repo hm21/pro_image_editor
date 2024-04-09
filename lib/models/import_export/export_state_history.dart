@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../editor_image.dart';
 import '../history/state_history.dart';
 import '../layer.dart';
 import 'export_state_history_configs.dart';
@@ -20,7 +19,6 @@ import 'utils/export_import_version.dart';
 class ExportStateHistory {
   final int _editorPosition;
   final Size _imgSize;
-  final List<EditorImage> _imgStateHistory;
   final List<EditorStateHistory> stateHistory;
   late ScreenshotController _screenshotController;
   final ExportEditorConfigs _configs;
@@ -32,7 +30,6 @@ class ExportStateHistory {
   /// defaults to [ExportEditorConfigs()].
   ExportStateHistory(
     this.stateHistory,
-    this._imgStateHistory,
     this._imgSize,
     this._editorPosition, {
     ExportEditorConfigs configs = const ExportEditorConfigs(),
@@ -46,7 +43,6 @@ class ExportStateHistory {
     _screenshotController = ScreenshotController();
 
     List history = [];
-    List cropRotateImages = [];
     List<Uint8List> stickers = [];
     List<EditorStateHistory> changes = List.from(stateHistory);
 
@@ -68,10 +64,9 @@ class ExportStateHistory {
     }
 
     /// Build Layers and filters
-    for (var element in changes) {
+    for (EditorStateHistory element in changes) {
       List layers = [];
       List filters = [];
-      Map<int, int> cropImagePostionHelper = {};
 
       await _convertLayers(
         element: element,
@@ -85,35 +80,20 @@ class ExportStateHistory {
         }
       }
 
-      /// Add Crop-Rotate images
-      /// TODO: Replace only with state after replace the crop-rotate-editor with
-      /// own solution
-      if (_configs.exportCropRotate &&
-          !cropImagePostionHelper.containsKey(element.bytesRefIndex)) {
-        cropImagePostionHelper[element.bytesRefIndex] = cropRotateImages.length;
-        cropRotateImages
-            .add(await _imgStateHistory[element.bytesRefIndex].safeByteArray);
-      }
-
-      var layerMap = {
-        if (_configs.exportCropRotate)
-          'listPosition': cropImagePostionHelper[element.bytesRefIndex] ?? 0,
+      history.add({
         if (layers.isNotEmpty) 'layers': layers,
         if (filters.isNotEmpty) 'filters': filters,
-      };
-
-      if (layerMap.isNotEmpty) history.add(layerMap);
+        'blur': element.blur.toMap(),
+        'transform': element.transformConfigs.toMap(),
+      });
     }
 
     return {
       'version': ExportImportVersion.version_1_0_0,
-      'position': _configs.historySpan == ExportHistorySpan.current ||
-              _configs.historySpan == ExportHistorySpan.currentAndForward
-          ? 0
-          : _editorPosition - 1,
+      'position':
+          _configs.historySpan == ExportHistorySpan.current || _configs.historySpan == ExportHistorySpan.currentAndForward ? 0 : _editorPosition - 1,
       if (history.isNotEmpty) 'history': history,
       if (stickers.isNotEmpty) 'stickers': stickers,
-      if (cropRotateImages.isNotEmpty) 'cropRotateImages': cropRotateImages,
       'imgSize': {
         'width': _imgSize.width,
         'height': _imgSize.height,
@@ -163,11 +143,9 @@ class ExportStateHistory {
           (_configs.exportText && layer.runtimeType == TextLayerData) ||
           (_configs.exportEmoji && layer.runtimeType == EmojiLayerData)) {
         layers.add(layer.toMap());
-      } else if (_configs.exportSticker &&
-          layer.runtimeType == StickerLayerData) {
+      } else if (_configs.exportSticker && layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
-        stickers
-            .add(await _screenshotController.captureFromWidget(layer.sticker));
+        stickers.add(await _screenshotController.captureFromWidget(layer.sticker));
       }
     }
   }

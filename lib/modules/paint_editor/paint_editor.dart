@@ -10,6 +10,7 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
 
+import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/filter_state_history.dart';
@@ -23,6 +24,7 @@ import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
+import '../../widgets/transformed_content_generator.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'painting_canvas.dart';
 import 'utils/paint_editor_enum.dart';
@@ -53,6 +55,9 @@ class PaintingEditor extends StatefulWidget {
   /// Configuration options for the editor.
   final ProImageEditorConfigs configs;
 
+  /// The transform configurations how the image should be initialized.
+  final TransformConfigs? transformConfigs;
+
   /// Additional padding for the editor.
   final EdgeInsets? paddingHelper;
 
@@ -76,6 +81,7 @@ class PaintingEditor extends StatefulWidget {
     this.file,
     required this.theme,
     this.configs = const ProImageEditorConfigs(),
+    this.transformConfigs,
     required this.imageSize,
     this.layers,
     this.onUpdateUI,
@@ -93,6 +99,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    TransformConfigs? transformConfigs,
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
@@ -109,6 +116,7 @@ class PaintingEditor extends StatefulWidget {
       layers: layers,
       paddingHelper: paddingHelper,
       configs: configs,
+      transformConfigs: transformConfigs,
       filters: filters ?? [],
       blur: blur ?? BlurStateHistory(),
     );
@@ -120,6 +128,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    TransformConfigs? transformConfigs,
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
@@ -135,6 +144,7 @@ class PaintingEditor extends StatefulWidget {
       layers: layers,
       paddingHelper: paddingHelper,
       configs: configs,
+      transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
       blur: blur ?? BlurStateHistory(),
@@ -147,6 +157,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    TransformConfigs? transformConfigs,
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
@@ -162,6 +173,7 @@ class PaintingEditor extends StatefulWidget {
       layers: layers,
       paddingHelper: paddingHelper,
       configs: configs,
+      transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
       blur: blur ?? BlurStateHistory(),
@@ -174,6 +186,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    TransformConfigs? transformConfigs,
     required Size imageSize,
     List<Layer>? layers,
     EdgeInsets? paddingHelper,
@@ -189,6 +202,7 @@ class PaintingEditor extends StatefulWidget {
       layers: layers,
       paddingHelper: paddingHelper,
       configs: configs,
+      transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
       blur: blur ?? BlurStateHistory(),
@@ -200,6 +214,7 @@ class PaintingEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+    TransformConfigs? transformConfigs,
     required Size imageSize,
     Uint8List? byteArray,
     File? file,
@@ -220,6 +235,7 @@ class PaintingEditor extends StatefulWidget {
         layers: layers,
         paddingHelper: paddingHelper,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
         filters: filters,
         blur: blur,
@@ -233,6 +249,7 @@ class PaintingEditor extends StatefulWidget {
         layers: layers,
         paddingHelper: paddingHelper,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
         filters: filters,
         blur: blur,
@@ -246,6 +263,7 @@ class PaintingEditor extends StatefulWidget {
         layers: layers,
         paddingHelper: paddingHelper,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
         filters: filters,
         blur: blur,
@@ -259,6 +277,7 @@ class PaintingEditor extends StatefulWidget {
         layers: layers,
         paddingHelper: paddingHelper,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
         filters: filters,
         blur: blur,
@@ -288,31 +307,23 @@ class PaintingEditorState extends State<PaintingEditor> {
   /// A boolean flag representing whether the fill mode is enabled or disabled.
   bool _fill = false;
 
-  @override
-  void initState() {
-    _fill = widget.configs.paintEditorConfigs.initialFill;
-    _bottomBarScrollCtrl = ScrollController();
+  /// Get the fillBackground status.
+  bool get fillBackground => _fill;
 
-    _editorImage = EditorImage(
-      assetPath: widget.assetPath,
-      byteArray: widget.byteArray,
-      file: widget.file,
-      networkUrl: widget.networkUrl,
-    );
+  /// Determines whether undo actions can be performed on the current state.
+  bool get canUndo => _imageKey.currentState?.canUndo == true;
 
-    /// Important to set state after view init to set action icons
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      setState(() {});
-      widget.onUpdateUI?.call();
-    });
-    super.initState();
-  }
+  /// Determines whether redo actions can be performed on the current state.
+  bool get canRedo => _imageKey.currentState?.canRedo == true;
 
-  @override
-  void dispose() {
-    _bottomBarScrollCtrl.dispose();
-    super.dispose();
-  }
+  /// Get the current PaintMode from the ImageKey's currentState.
+  PaintModeE? get paintMode => _imageKey.currentState?.mode;
+
+  /// Get the current PaintMode.
+  PaintModeE? get mode => _imageKey.currentState?.mode;
+
+  /// Get the active selected color.
+  Color get activeColor => _imageKey.currentState?.activeColor ?? Colors.black38;
 
   /// A list of [PaintModeBottomBarItem] representing the available drawing modes in the painting editor.
   /// The list is dynamically generated based on the configuration settings in the [PaintEditorConfigs] object.
@@ -354,6 +365,32 @@ class PaintingEditorState extends State<PaintingEditor> {
             label: widget.configs.i18n.paintEditor.dashLine,
           ),
       ];
+
+  @override
+  void initState() {
+    _fill = widget.configs.paintEditorConfigs.initialFill;
+    _bottomBarScrollCtrl = ScrollController();
+
+    _editorImage = EditorImage(
+      assetPath: widget.assetPath,
+      byteArray: widget.byteArray,
+      file: widget.file,
+      networkUrl: widget.networkUrl,
+    );
+
+    /// Important to set state after view init to set action icons
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {});
+      widget.onUpdateUI?.call();
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _bottomBarScrollCtrl.dispose();
+    super.dispose();
+  }
 
   /// Opens a bottom sheet to adjust the line weight when drawing.
   void openLineWeightBottomSheet() {
@@ -407,24 +444,6 @@ class PaintingEditorState extends State<PaintingEditor> {
     if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
     Navigator.of(context).pop(_imageKey.currentState?.exportPaintedItems());
   }
-
-  /// Determines whether undo actions can be performed on the current state.
-  bool get canUndo => _imageKey.currentState?.canUndo == true;
-
-  /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => _imageKey.currentState?.canRedo == true;
-
-  /// Get the current PaintMode from the ImageKey's currentState.
-  PaintModeE? get paintMode => _imageKey.currentState?.mode;
-
-  /// Get the current PaintMode.
-  PaintModeE? get mode => _imageKey.currentState?.mode;
-
-  /// Get the active selected color.
-  Color get activeColor => _imageKey.currentState?.activeColor ?? Colors.black38;
-
-  /// Get the fillBackground status.
-  bool get fillBackground => _fill;
 
   @override
   Widget build(BuildContext context) {
@@ -585,18 +604,21 @@ class PaintingEditorState extends State<PaintingEditor> {
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              ImageWithMultipleFilters(
-                width: widget.imageSize.width,
-                height: widget.imageSize.height,
-                designMode: widget.configs.designMode,
-                image: EditorImage(
-                  assetPath: widget.assetPath,
-                  byteArray: widget.byteArray,
-                  file: widget.file,
-                  networkUrl: widget.networkUrl,
+              TransformedContentGenerator(
+                configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                child: ImageWithMultipleFilters(
+                  width: widget.imageSize.width,
+                  height: widget.imageSize.height,
+                  designMode: widget.configs.designMode,
+                  image: EditorImage(
+                    assetPath: widget.assetPath,
+                    byteArray: widget.byteArray,
+                    file: widget.file,
+                    networkUrl: widget.networkUrl,
+                  ),
+                  filters: widget.filters,
+                  blur: widget.blur,
                 ),
-                filters: widget.filters,
-                blur: widget.blur,
               ),
               if (widget.layers != null)
                 LayerStack(

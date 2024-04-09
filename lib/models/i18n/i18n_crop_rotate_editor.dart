@@ -24,12 +24,6 @@ class I18nCropRotateEditor {
   /// Text for the "Reset" button. Only available when the theme is set to `WhatsApp`.
   final String reset;
 
-  /// Text for the message displayed during the application of changes.
-  final String applyChangesDialogMsg;
-
-  /// Text for the message displayed when preparing the image.
-  final String prepareImageDialogMsg;
-
   /// The tooltip text displayed for the "More" option on small screens.
   final String smallScreenMoreTooltip;
 
@@ -45,11 +39,9 @@ class I18nCropRotateEditor {
   /// I18nCropRotateEditor(
   ///   bottomNavigationBarText: 'Crop & Rotate',
   ///   rotate: 'Rotate',
-  ///   ratio: 'Aspect Ratio',
-  ///   back: 'Go Back',
-  ///   done: 'Apply',
-  ///   applyChangesDialogMsg: 'Please wait while applying changes...',
-  ///   prepareImageDialogMsg: 'Please wait while preparing the image...',
+  ///   ratio: 'Ratio',
+  ///   back: 'Back',
+  ///   done: 'Done',
   /// )
   /// ```
   const I18nCropRotateEditor({
@@ -60,8 +52,6 @@ class I18nCropRotateEditor {
     this.back = 'Back',
     this.done = 'Done',
     this.cancel = 'Cancel',
-    this.prepareImageDialogMsg = 'Please wait',
-    this.applyChangesDialogMsg = 'Please wait',
     this.smallScreenMoreTooltip = 'More',
     this.reset = 'Reset',
   });

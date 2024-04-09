@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/aspect_ratio_item.dart';
 import 'package:pro_image_editor/models/editor_configs/crop_rotate_editor_configs.dart';
 import 'package:pro_image_editor/models/i18n/i18n.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_aspect_ratio_button.dart';

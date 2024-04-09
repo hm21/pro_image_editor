@@ -1,3 +1,4 @@
+import '../crop_rotate_editor/transform_factors.dart';
 import '../filter_state_history.dart';
 import '../blur_state_history.dart';
 import '../layer.dart';
@@ -54,16 +55,25 @@ import '../layer.dart';
 /// Please refer to the documentation of individual properties and methods for more details.
 
 class EditorStateHistory {
-  // Save memory to ref to a sepperated array which contain only image changes and not also layer-changes
-  int bytesRefIndex = 0;
-  BlurStateHistory blur = BlurStateHistory(blur: 0);
-  List<Layer> layers = [];
-  List<FilterStateHistory> filters = [];
+  /// The history of blur states.
+  final BlurStateHistory blur;
 
+  /// The list of layers.
+  final List<Layer> layers;
+
+  /// The list of filter state histories.
+  final List<FilterStateHistory> filters;
+
+  /// The transformation from the crop/ rotate editor.
+  TransformConfigs transformConfigs;
+
+  /// Constructs a new [EditorStateHistory] instance with the specified parameters.
+  ///
+  /// All parameters are required.
   EditorStateHistory({
-    required this.bytesRefIndex,
     required this.blur,
     required this.layers,
     required this.filters,
+    required this.transformConfigs,
   });
 }

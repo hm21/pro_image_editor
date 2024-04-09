@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/blur_state_history.dart';
+import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/custom_widgets.dart';
 import '../models/editor_configs/blur_editor_configs.dart';
 import '../models/editor_image.dart';
@@ -65,6 +67,9 @@ class BlurEditor extends StatefulWidget {
   /// Configuration settings for the `BlurEditor`.
   final BlurEditorConfigs configs;
 
+  /// The transform configurations how the image should be initialized.
+  final TransformConfigs? transformConfigs;
+
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
 
@@ -88,6 +93,7 @@ class BlurEditor extends StatefulWidget {
     this.networkUrl,
     this.onUpdateUI,
     this.convertToUint8List = false,
+    this.transformConfigs,
     required this.filters,
     required this.currentBlur,
     required this.theme,
@@ -100,10 +106,7 @@ class BlurEditor extends StatefulWidget {
     required this.heroTag,
     required this.configs,
   }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
+          byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -122,6 +125,7 @@ class BlurEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
   /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -147,6 +151,7 @@ class BlurEditor extends StatefulWidget {
     ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
+    TransformConfigs? transformConfigs,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -165,6 +170,7 @@ class BlurEditor extends StatefulWidget {
       imageSize: imageSize,
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
@@ -188,6 +194,7 @@ class BlurEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
   /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -213,6 +220,7 @@ class BlurEditor extends StatefulWidget {
     ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
+    TransformConfigs? transformConfigs,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -231,6 +239,7 @@ class BlurEditor extends StatefulWidget {
       imageSize: imageSize,
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
@@ -254,6 +263,7 @@ class BlurEditor extends StatefulWidget {
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
   /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -279,6 +289,7 @@ class BlurEditor extends StatefulWidget {
     ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
+    TransformConfigs? transformConfigs,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -297,6 +308,7 @@ class BlurEditor extends StatefulWidget {
       imageSize: imageSize,
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
@@ -319,6 +331,8 @@ class BlurEditor extends StatefulWidget {
   /// - `icons`: An optional ImageEditorIcons object for customizing the icons used in the editor.
   /// - `imageEditorTheme`: An optional ImageEditorTheme object for customizing the overall theme of the editor.
   /// - `heroTag`: An optional String used to create a hero animation between two BlurEditor instances.
+  /// - `configs`: An optional BlurEditorConfigs object for customizing the behavior of the BlurEditor.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -343,6 +357,7 @@ class BlurEditor extends StatefulWidget {
     ImageEditorIcons icons = const ImageEditorIcons(),
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
+    TransformConfigs? transformConfigs,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -361,6 +376,7 @@ class BlurEditor extends StatefulWidget {
       imageSize: imageSize,
       imageEditorTheme: imageEditorTheme,
       heroTag: heroTag,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
@@ -408,6 +424,7 @@ class BlurEditor extends StatefulWidget {
     ImageEditorCustomWidgets customWidgets = const ImageEditorCustomWidgets(),
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
+    TransformConfigs? transformConfigs,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     required Size imageSize,
@@ -432,6 +449,7 @@ class BlurEditor extends StatefulWidget {
         imageSize: imageSize,
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
@@ -450,6 +468,7 @@ class BlurEditor extends StatefulWidget {
         imageSize: imageSize,
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
@@ -468,6 +487,7 @@ class BlurEditor extends StatefulWidget {
         imageSize: imageSize,
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
@@ -486,6 +506,7 @@ class BlurEditor extends StatefulWidget {
         imageSize: imageSize,
         imageEditorTheme: imageEditorTheme,
         heroTag: heroTag,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
         filters: filters,
@@ -493,8 +514,7 @@ class BlurEditor extends StatefulWidget {
         currentBlur: currentBlur,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -559,8 +579,7 @@ class BlurEditorState extends State<BlurEditor> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(
-          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: widget.imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -578,10 +597,8 @@ class BlurEditorState extends State<BlurEditor> {
     return widget.customWidgets.appBarBlurEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor:
-              widget.imageEditorTheme.blurEditor.appBarBackgroundColor,
-          foregroundColor:
-              widget.imageEditorTheme.blurEditor.appBarForegroundColor,
+          backgroundColor: widget.imageEditorTheme.blurEditor.appBarBackgroundColor,
+          foregroundColor: widget.imageEditorTheme.blurEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.i18n.blurEditor.back,
@@ -609,18 +626,21 @@ class BlurEditorState extends State<BlurEditor> {
         child: Hero(
           tag: widget.heroTag,
           createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-          child: ImageWithMultipleFilters(
-            width: widget.imageSize.width,
-            height: widget.imageSize.height,
-            designMode: widget.designMode,
-            image: EditorImage(
-              assetPath: widget.assetPath,
-              byteArray: widget.byteArray,
-              file: widget.file,
-              networkUrl: widget.networkUrl,
+          child: TransformedContentGenerator(
+            configs: widget.transformConfigs ?? TransformConfigs.empty(),
+            child: ImageWithMultipleFilters(
+              width: widget.imageSize.width,
+              height: widget.imageSize.height,
+              designMode: widget.designMode,
+              image: EditorImage(
+                assetPath: widget.assetPath,
+                byteArray: widget.byteArray,
+                file: widget.file,
+                networkUrl: widget.networkUrl,
+              ),
+              filters: widget.filters,
+              blur: selectedBlur,
             ),
-            filters: widget.filters,
-            blur: selectedBlur,
           ),
         ),
       ),

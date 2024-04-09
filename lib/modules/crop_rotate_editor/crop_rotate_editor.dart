@@ -1,15 +1,14 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui' show Image;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-import '../../models/crop_rotate_editor_response.dart';
 import '../../models/editor_image.dart';
 import '../../models/layer.dart';
 import '../../widgets/auto_image.dart';
@@ -17,7 +16,6 @@ import '../../widgets/layer_stack.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'utils/crop_aspect_ratios.dart';
-import '../../widgets/loading_dialog.dart';
 import 'utils/crop_corner_painter.dart';
 import 'widgets/crop_aspect_ratio_options.dart';
 
@@ -52,6 +50,9 @@ class CropRotateEditor extends StatefulWidget {
   /// The image editor configs
   final ProImageEditorConfigs configs;
 
+  /// The transform configurations how the image should be initialized.
+  final TransformConfigs? transformConfigs;
+
   /// The size of the image to be edited.
   final Size imageSize;
 
@@ -68,6 +69,7 @@ class CropRotateEditor extends StatefulWidget {
     this.onUpdateUI,
     this.layers,
     required this.theme,
+    this.transformConfigs,
     required this.imageSize,
     required this.configs,
   }) : assert(
@@ -86,6 +88,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `layers`: A list of Layer objects representing image layers.
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
@@ -106,6 +109,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     required Size imageSize,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
     Function? onUpdateUI,
@@ -117,6 +121,7 @@ class CropRotateEditor extends StatefulWidget {
       layers: layers,
       imageSize: imageSize,
       configs: configs,
+      transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -131,6 +136,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `layers`: A list of Layer objects representing image layers.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
@@ -153,6 +159,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     required Size imageSize,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
     Function? onUpdateUI,
@@ -165,6 +172,7 @@ class CropRotateEditor extends StatefulWidget {
       onUpdateUI: onUpdateUI,
       imageSize: imageSize,
       configs: configs,
+      transformConfigs: transformConfigs,
     );
   }
 
@@ -178,6 +186,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `theme`: A ThemeData object that defines the visual styling of the CropRotateEditor widget (required).
   /// - `imageSize`: The size of the image to be edited (required).
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `layers`: A list of Layer objects representing image layers.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
@@ -199,6 +208,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     required Size imageSize,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
     Function? onUpdateUI,
@@ -210,6 +220,7 @@ class CropRotateEditor extends StatefulWidget {
       layers: layers,
       imageSize: imageSize,
       configs: configs,
+      transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -223,6 +234,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the CropRotateEditor widget.
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
@@ -241,6 +253,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     required Size imageSize,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
     Function? onUpdateUI,
@@ -252,6 +265,7 @@ class CropRotateEditor extends StatefulWidget {
       layers: layers,
       imageSize: imageSize,
       configs: configs,
+      transformConfigs: transformConfigs,
       onUpdateUI: onUpdateUI,
     );
   }
@@ -268,6 +282,7 @@ class CropRotateEditor extends StatefulWidget {
   /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
   /// - `networkUrl`: An optional String representing the network URL of the image to be loaded.
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `onUpdateUI`:  A callback function that can be used to update the UI from custom widgets.
   ///
   /// Returns:
@@ -285,6 +300,7 @@ class CropRotateEditor extends StatefulWidget {
     Key? key,
     required ThemeData theme,
     required Size imageSize,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     List<Layer>? layers,
     Function? onUpdateUI,
@@ -301,6 +317,7 @@ class CropRotateEditor extends StatefulWidget {
         layers: layers,
         imageSize: imageSize,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
       );
     } else if (file != null) {
@@ -311,6 +328,7 @@ class CropRotateEditor extends StatefulWidget {
         layers: layers,
         imageSize: imageSize,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
       );
     } else if (networkUrl != null) {
@@ -321,6 +339,7 @@ class CropRotateEditor extends StatefulWidget {
         layers: layers,
         imageSize: imageSize,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
       );
     } else if (assetPath != null) {
@@ -331,6 +350,7 @@ class CropRotateEditor extends StatefulWidget {
         layers: layers,
         imageSize: imageSize,
         configs: configs,
+        transformConfigs: transformConfigs,
         onUpdateUI: onUpdateUI,
       );
     } else {
@@ -359,7 +379,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   late double _aspectRatio;
   bool _flipX = false;
   bool _flipY = false;
-  bool _cropping = false;
   bool _showWidgets = false;
 
   double _zoomFactor = 1;
@@ -384,10 +403,19 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   /// Initializes the editor with default settings.
   void _initializeEditor() {
     _rotateCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
-    _rotateAnimation = Tween<double>(begin: 0, end: 0).animate(_rotateCtrl);
+    double initAngle = widget.transformConfigs?.angle ?? 0.0;
+    _rotateAnimation = Tween<double>(begin: initAngle, end: initAngle).animate(_rotateCtrl);
 
     _scaleCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     _scaleAnimation = Tween<double>(begin: 1, end: 1).animate(_scaleCtrl);
+
+    if (widget.transformConfigs != null) {
+      _rotationCount = (widget.transformConfigs!.angle * 2 / pi).abs().toInt();
+      _flipX = widget.transformConfigs!.flipX;
+      _flipY = widget.transformConfigs!.flipY;
+      _translate = widget.transformConfigs!.offset;
+      _zoomFactor = widget.transformConfigs!.scale;
+    }
 
     _image = EditorImage(
       byteArray: widget.byteArray,
@@ -440,83 +468,34 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         _rotated90deg ? _renderedImgHeight : _renderedImgWidth,
         _rotated90deg ? _renderedImgWidth : _renderedImgHeight,
       );
-  List<AspectRatioItem> get _aspectRatios {
-    return widget.configs.cropRotateEditorConfigs.aspectRatios;
-  }
+
+  CropAreaPart _currentCropAreaPart = CropAreaPart.none;
 
   void reset() {
-    // TODO: write reset function
+    _rotateCtrl.animateTo(0, curve: Curves.ease);
+    _rotateAnimation = Tween<double>(begin: _rotateAnimation.value, end: 0).animate(_rotateCtrl);
+    _rotateCtrl
+      ..reset()
+      ..forward();
+    _rotationCount = 0;
+    _flipX = false;
+    _flipY = false;
+    _translate = Offset.zero;
+    _zoomFactor = 1;
   }
 
   /// Handles the crop image operation.
   Future<void> done() async {
-    if (_cropping) return;
-
-    _cropping = true;
-    LoadingDialog loading = LoadingDialog()
-      ..show(
-        context,
-        i18n: widget.configs.i18n,
-        theme: widget.theme,
-        designMode: widget.configs.designMode,
-        message: widget.configs.i18n.cropRotateEditor.applyChangesDialogMsg,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-      );
-    Uint8List? fileData;
-
-/*     var cropPadding = _editor.editAction?.cropRectPadding;
-    var finalDestination = _editor.editAction!.getFinalDestinationRect();
-    var scale = _editor.editAction!.preTotalScale; */
-
-    try {
-      // Important cuz screen will be frozen in web
-      if (kIsWeb) await Future.delayed(const Duration(seconds: 1));
-
-      // Bugfix web
-      /*    fileData = await cropImage(
-        rawImage: await _image.safeByteArray,
-        editAction: _editor.editAction!,
-        cropRect: _editor.getCropRect()!,
-        imageWidth: _editor.image!.width,
-        imageHeight: _editor.image!.height,
-        extendedImage: _editor.widget.extendedImageState.imageWidget,
-        imageProvider: _editor.widget.extendedImageState.imageProvider,
-        isExtendedResizeImage: _editor.widget.extendedImageState.imageProvider is ExtendedResizeImage,
-      ); */
-    } finally {
-      if (mounted) {
-        if (fileData != null) {
-          /*    var res = CropRotateEditorResponse(
-            bytes: fileData,
-            cropRect: _editor.getCropRect()!,
-            scale: scale,
-            isHalfPi: _editor.editAction?.isHalfPi ?? false,
-            posX: finalDestination.left - (cropPadding?.left ?? 0),
-            posY: finalDestination.top - (cropPadding?.top ?? 0),
-            flipX: _editor.editAction?.flipX ?? false,
-            flipY: _editor.editAction?.flipY ?? false,
-            rotationRadian: _editor.editAction?.rotateRadian ?? 0,
-            rotationAngle: _editor.editAction?.rotateAngle ?? 0,
-          );
-          var decodedImage = await decodeImageFromList(res.bytes!);
-          if (mounted) {
-            await loading.hide(context);
-            _cropping = false;
-            if (mounted) {
-              Navigator.pop(
-                context,
-                CropRotateEditorRes(
-                  result: res,
-                  image: decodedImage,
-                ),
-              );
-            }
-          } */
-        } else {
-          close();
-        }
-      }
-    }
+    Navigator.pop(
+      context,
+      TransformConfigs(
+        angle: _rotateAnimation.value,
+        scale: _zoomFactor,
+        flipX: _flipX,
+        flipY: _flipY,
+        offset: _translate,
+      ),
+    );
   }
 
   /// Closes the editor without applying changes.
@@ -599,8 +578,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       }
     });
   }
-
-  CropAreaPart _currentCropAreaPart = CropAreaPart.none;
 
   CropAreaPart _determineCropAreaPart(Offset localPosition) {
     const double edgeSize = 20;
@@ -862,16 +839,19 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     return LayoutBuilder(builder: (context, constraints) {
       _contentConstraints = constraints;
       _calcCropRect();
-      return _buildMouseListener(
-        child: _buildGestureDetector(
-          child: _buildRotationTransform(
-            child: _buildPaintContainer(
-              child: _buildFlipTransform(
-                child: _buildRotationScaleTransform(
-                  child: _buildCropPainter(
-                    child: _buildUserScaleTransform(
-                      child: _buildTranslate(
-                        child: _buildImage(),
+      return Hero(
+        tag: widget.configs.heroTag,
+        child: _buildMouseListener(
+          child: _buildGestureDetector(
+            child: _buildRotationTransform(
+              child: _buildPaintContainer(
+                child: _buildFlipTransform(
+                  child: _buildRotationScaleTransform(
+                    child: _buildCropPainter(
+                      child: _buildUserScaleTransform(
+                        child: _buildTranslate(
+                          child: _buildImage(),
+                        ),
                       ),
                     ),
                   ),
@@ -983,36 +963,33 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   Widget _buildImage() {
-    return Hero(
-      tag: widget.configs.heroTag,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth,
-          maxWidth: _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            _renderedImgConstraints = constraints;
-            return Stack(
-              fit: StackFit.expand,
-              alignment: Alignment.center,
-              children: [
-                AutoImage(
-                  _image,
-                  fit: BoxFit.contain,
-                  designMode: widget.configs.designMode,
-                  width: _imgWidth,
-                  height: _imgHeight,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth,
+        maxWidth: _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          _renderedImgConstraints = constraints;
+          return Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
+            children: [
+              AutoImage(
+                _image,
+                fit: BoxFit.contain,
+                designMode: widget.configs.designMode,
+                width: _imgWidth,
+                height: _imgHeight,
+              ),
+              if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
+                LayerStack(
+                  configs: widget.configs,
+                  layers: widget.layers!,
                 ),
-                if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
-                  LayerStack(
-                    configs: widget.configs,
-                    layers: widget.layers!,
-                  ),
-              ],
-            );
-          },
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1027,16 +1004,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       onPressed: done,
     );
   }
-}
-
-class CropRotateEditorRes {
-  final CropRotateEditorResponse result;
-  final Image image;
-
-  CropRotateEditorRes({
-    required this.result,
-    required this.image,
-  });
 }
 
 enum CropAreaPart {
