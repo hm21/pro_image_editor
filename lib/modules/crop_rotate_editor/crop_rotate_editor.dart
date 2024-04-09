@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 
 import '../../models/editor_image.dart';
 import '../../models/layer.dart';
@@ -452,6 +453,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     }
   }
 
+  double get _screenWidth => MediaQuery.of(context).size.width;
   double get _imgWidth => widget.imageSize.width;
   double get _imgHeight => widget.imageSize.height;
 
@@ -484,23 +486,23 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     _zoomFactor = 1;
   }
 
+  /// Closes the editor without applying changes.
+  void close() {
+    Navigator.pop(context);
+  }
+
   /// Handles the crop image operation.
   Future<void> done() async {
     Navigator.pop(
       context,
       TransformConfigs(
         angle: _rotateAnimation.value,
-        scale: _zoomFactor,
+        scale: _zoomFactor * _scaleAnimation.value,
         flipX: _flipX,
         flipY: _flipY,
         offset: _translate,
       ),
     );
-  }
-
-  /// Closes the editor without applying changes.
-  void close() {
-    Navigator.pop(context);
   }
 
   /// Flip the image horizontally
@@ -839,19 +841,16 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     return LayoutBuilder(builder: (context, constraints) {
       _contentConstraints = constraints;
       _calcCropRect();
-      return Hero(
-        tag: widget.configs.heroTag,
-        child: _buildMouseListener(
-          child: _buildGestureDetector(
-            child: _buildRotationTransform(
-              child: _buildPaintContainer(
-                child: _buildFlipTransform(
-                  child: _buildRotationScaleTransform(
-                    child: _buildCropPainter(
-                      child: _buildUserScaleTransform(
-                        child: _buildTranslate(
-                          child: _buildImage(),
-                        ),
+      return _buildMouseListener(
+        child: _buildGestureDetector(
+          child: _buildRotationTransform(
+            child: _buildPaintContainer(
+              child: _buildFlipTransform(
+                child: _buildRotationScaleTransform(
+                  child: _buildCropPainter(
+                    child: _buildUserScaleTransform(
+                      child: _buildTranslate(
+                        child: _buildImage(),
                       ),
                     ),
                   ),
@@ -975,17 +974,30 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
             fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
-              AutoImage(
-                _image,
-                fit: BoxFit.contain,
-                designMode: widget.configs.designMode,
-                width: _imgWidth,
-                height: _imgHeight,
+              Hero(
+                tag: widget.configs.heroTag,
+                child: AutoImage(
+                  _image,
+                  fit: BoxFit.contain,
+                  designMode: widget.configs.designMode,
+                  width: _imgWidth,
+                  height: _imgHeight,
+                ),
               ),
               if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
-                LayerStack(
-                  configs: widget.configs,
-                  layers: widget.layers!,
+                Transform.translate(
+                  offset: Offset(
+                    -_screenPadding,
+                    -_screenPadding,
+                  ),
+                  child: Transform.scale(
+                    scale: 1 / _screenWidth * (_screenWidth - _screenPadding * 2),
+                    child: LayerStack(
+                      configs: widget.configs,
+                      layers: widget.layers!,
+                      clipBehavior: Clip.none,
+                    ),
+                  ),
                 ),
             ],
           );

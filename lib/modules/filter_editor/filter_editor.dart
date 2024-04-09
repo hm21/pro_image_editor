@@ -1,16 +1,20 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/blur_state_history.dart';
+import 'package:pro_image_editor/models/transform_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
+import '../../models/layer.dart';
+import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
 import 'widgets/filter_editor_item_list.dart';
 import 'widgets/image_with_filter.dart';
@@ -55,6 +59,17 @@ class FilterEditor extends StatefulWidget {
   /// the filter states will be returned.
   final bool convertToUint8List;
 
+  /// A list of Layer objects representing image layers.
+  final List<Layer>? layers;
+
+  /// The rendered image size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? imageSizeWithLayers;
+
+  /// The rendered body size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? bodySizeWithLayers;
+
   final List<FilterStateHistory>? activeFilters;
 
   final BlurStateHistory? blur;
@@ -71,6 +86,9 @@ class FilterEditor extends StatefulWidget {
     this.activeFilters,
     this.blur,
     this.transformConfigs,
+    this.imageSizeWithLayers,
+    this.bodySizeWithLayers,
+    this.layers,
     required this.theme,
     required this.configs,
   }) : assert(
@@ -109,6 +127,9 @@ class FilterEditor extends StatefulWidget {
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -119,6 +140,9 @@ class FilterEditor extends StatefulWidget {
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       convertToUint8List: convertToUint8List,
       blur: blur,
@@ -156,6 +180,9 @@ class FilterEditor extends StatefulWidget {
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -166,6 +193,9 @@ class FilterEditor extends StatefulWidget {
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       convertToUint8List: convertToUint8List,
       blur: blur,
@@ -203,6 +233,9 @@ class FilterEditor extends StatefulWidget {
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -213,6 +246,9 @@ class FilterEditor extends StatefulWidget {
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       convertToUint8List: convertToUint8List,
       blur: blur,
@@ -250,6 +286,9 @@ class FilterEditor extends StatefulWidget {
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -260,6 +299,9 @@ class FilterEditor extends StatefulWidget {
       transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       blur: blur,
       convertToUint8List: convertToUint8List,
@@ -297,6 +339,9 @@ class FilterEditor extends StatefulWidget {
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
     Uint8List? byteArray,
@@ -312,6 +357,9 @@ class FilterEditor extends StatefulWidget {
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -324,6 +372,9 @@ class FilterEditor extends StatefulWidget {
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -336,6 +387,9 @@ class FilterEditor extends StatefulWidget {
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -348,6 +402,9 @@ class FilterEditor extends StatefulWidget {
         transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -369,6 +426,8 @@ class FilterEditorState extends State<FilterEditor> {
   double filterOpacity = 1;
   bool _createScreenshot = false;
   ScreenshotController screenshotController = ScreenshotController();
+  Size _imageSize = Size.zero;
+  Size _bodySize = Size.zero;
 
   /// Closes the editor without applying changes.
   void close() {
@@ -449,32 +508,53 @@ class FilterEditorState extends State<FilterEditor> {
 
   /// Builds the main content area of the editor.
   Widget _buildBody() {
-    return Center(
-      child: Screenshot(
-        controller: screenshotController,
-        child: Hero(
-          tag: widget.configs.heroTag,
-          createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-          child: TransformedContentGenerator(
-            configs: widget.transformConfigs ?? TransformConfigs.empty(),
-            child: ImageWithFilter(
-              image: EditorImage(
-                file: widget.file,
-                byteArray: widget.byteArray,
-                networkUrl: widget.networkUrl,
-                assetPath: widget.assetPath,
+    return LayoutBuilder(builder: (context, constraints) {
+      _bodySize = constraints.biggest;
+      return Center(
+        child: Screenshot(
+          controller: screenshotController,
+          child: Stack(
+            children: [
+              Hero(
+                tag: widget.configs.heroTag,
+                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                child: TransformedContentGenerator(
+                  configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    _imageSize = constraints.biggest;
+                    return ImageWithFilter(
+                      image: EditorImage(
+                        file: widget.file,
+                        byteArray: widget.byteArray,
+                        networkUrl: widget.networkUrl,
+                        assetPath: widget.assetPath,
+                      ),
+                      activeFilters: widget.activeFilters,
+                      designMode: widget.configs.designMode,
+                      filter: selectedFilter,
+                      blur: widget.blur,
+                      fit: BoxFit.contain,
+                      opacity: filterOpacity,
+                    );
+                  }),
+                ),
               ),
-              activeFilters: widget.activeFilters,
-              designMode: widget.configs.designMode,
-              filter: selectedFilter,
-              blur: widget.blur,
-              fit: BoxFit.contain,
-              opacity: filterOpacity,
-            ),
+              if (widget.layers != null)
+                LayerStack(
+                  transformHelper: TransformHelper(
+                    mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
+                    mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                    editorBodySize: _bodySize,
+                  ),
+                  configs: widget.configs,
+                  layers: widget.layers!,
+                  clipBehavior: Clip.none,
+                ),
+            ],
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Builds the bottom navigation bar with filter options.

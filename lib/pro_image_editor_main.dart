@@ -346,6 +346,12 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Stores the last recorded screen size.
   Size _lastScreenSize = const Size(0, 0);
 
+  /// Stores the last recorded body size.
+  Size _bodySize = const Size(0, 0);
+
+  /// Stores the last recorded image size.
+  Size _renderedImageSize = Size(0, 0);
+
   /// Getter for the screen size of the device.
   Size get _screen => MediaQuery.of(context).size;
 
@@ -1062,31 +1068,34 @@ class ProImageEditorState extends State<ProImageEditor> {
     required double newImgW,
     required double newImgH,
     required double rotationScale,
-    required double rotationRadian,
     required double rotationAngle,
   }) {
     if (beforeIsFlipX) {
-      layer.rotation -= rotationRadian;
+      layer.rotation -= rotationAngle;
     } else {
-      layer.rotation += rotationRadian;
+      layer.rotation += rotationAngle;
     }
 
-    if (rotationAngle == 90) {
-      layer.scale /= rotationScale;
-      layer.offset = Offset(
-        newImgW - layer.offset.dy / rotationScale,
-        layer.offset.dx / rotationScale,
-      );
-    } else if (rotationAngle == 180) {
+    double pi2 = pi * 2;
+    double angleFactor = rotationAngle % pi2;
+    print(angleFactor);
+
+    if (angleFactor == pi) {
       layer.offset = Offset(
         newImgW - layer.offset.dx,
         newImgH - layer.offset.dy,
       );
-    } else if (rotationAngle == 270) {
-      layer.scale /= rotationScale;
+    } else if (angleFactor == pi / 2) {
+      layer.scale *= rotationScale;
       layer.offset = Offset(
-        layer.offset.dy / rotationScale,
-        newImgH - layer.offset.dx / rotationScale,
+        layer.offset.dy * rotationScale,
+        newImgH - layer.offset.dx * rotationScale,
+      );
+    } else if (angleFactor == pi * 1.5) {
+      layer.scale *= rotationScale;
+      layer.offset = Offset(
+        layer.offset.dy * rotationScale,
+        newImgH - layer.offset.dx * rotationScale,
       );
     }
   }
@@ -1098,24 +1107,19 @@ class ProImageEditorState extends State<ProImageEditor> {
     required Layer layer,
     required bool flipX,
     required bool flipY,
-    required bool isHalfPi,
   }) {
     if (flipY) {
-      if (isHalfPi) {
-        layer.flipY = !layer.flipY;
-      } else {
-        layer.flipX = !layer.flipX;
-      }
+      layer.flipY = !layer.flipY;
       layer.offset = Offset(
-        _imageWidth - layer.offset.dx,
-        layer.offset.dy,
+        layer.offset.dx,
+        _imageHeight - layer.offset.dy,
       );
     }
     if (flipX) {
       layer.flipX = !layer.flipX;
       layer.offset = Offset(
-        layer.offset.dx,
-        _imageHeight - layer.offset.dy,
+        _imageWidth - layer.offset.dx,
+        layer.offset.dy,
       );
     }
   }
@@ -1312,11 +1316,85 @@ class ProImageEditorState extends State<ProImageEditor> {
         /// Note: it's not possible to transform also the layers in a stack with the image
         /// cuz that will make problem with the paint editor controller and all layers when we move them around.
         _cleanForwardChanges();
+        List<Layer> updatedLayers = [];
+
+        /* var rotationScale = _imageWidth / newImgH;
+*/
+        double fitFactor = 1;
+
+        /*     bool oldFitWidth = _imageWidth >= _screen.width - 0.1 && _imageWidth <= _screen.width + 0.1;
+        bool newFitWidth = newImgW >= _screen.width - 0.1 && newImgW <= _screen.width + 0.1;
+        var scaleX = newFitWidth ? oldFullW / w : oldFullH / h;
+
+        if (oldFitWidth != newFitWidth) {
+          if (newFitWidth) {
+            fitFactor = _imageWidth / newImgW;
+          } else {
+            fitFactor = _imageHeight / newImgH;
+          }
+        } */
+
+        for (var el in _layers) {
+          var layer = _copyLayer(el);
+          var beforeIsFlipX = layer.flipX;
+          print(transformConfigs.toMap());
+
+          if (transformConfigs.angle % pi == 0) {
+            layer.offset = Offset(
+              layer.offset.dx / fitFactor,
+              layer.offset.dy / fitFactor,
+            );
+          }
+
+          /*       switch (transformConfigs.angle) {
+            case  pi:
+              layer.offset = Offset(
+                layer.offset.dx / fitFactor,
+                layer.offset.dy / fitFactor,
+              );
+              break;
+            case 180:
+              layer.offset = Offset(
+                layer.offset.dx / fitFactor,
+                layer.offset.dy / fitFactor,
+              );
+              break;
+            de fault:
+          }*/
+
+          /*    bool zoomed = _zoomedLayer(
+            layer: layer,
+            scale: scale,
+            scaleX: scaleX,
+            oldFullH: oldFullH,
+            oldFullW: oldFullW,
+            cropRect: res.cropRect,
+            isHalfPi: res.isHalfPi,
+          ); */
+          _flipLayer(
+            layer: layer,
+            flipX: transformConfigs.flipX,
+            flipY: transformConfigs.flipY,
+          );
+          double angleFactor = transformConfigs.angle % pi;
+          var newImgW = angleFactor == 0 || angleFactor == pi / 2 ? _imageWidth : _imageHeight;
+          var newImgH = angleFactor == 0 || angleFactor == pi / 2 ? _imageHeight : _imageWidth;
+          _rotateLayer(
+            layer: layer,
+            beforeIsFlipX: beforeIsFlipX,
+            rotationAngle: transformConfigs.angle,
+            rotationScale: transformConfigs.scale,
+            newImgW: newImgW,
+            newImgH: newImgH,
+          );
+
+          updatedLayers.add(layer);
+        }
 
         _stateHistory.add(
           EditorStateHistory(
             blur: _blur,
-            layers: _layers,
+            layers: updatedLayers,
             filters: _filters,
             transformConfigs: transformConfigs,
           ),
@@ -1437,7 +1515,10 @@ class ProImageEditorState extends State<ProImageEditor> {
         transformConfigs: _transformConfigs,
         onUpdateUI: widget.onUpdateUI,
         activeFilters: _filters,
+        layers: _layers,
         blur: _blur,
+        imageSizeWithLayers: _renderedImageSize,
+        bodySizeWithLayers: _bodySize,
         convertToUint8List: false,
       ),
     );
@@ -2002,6 +2083,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     var editorImage = _buildImageWithFilter();
 
     return LayoutBuilder(builder: (context, constraints) {
+      _bodySize = constraints.biggest;
       return Listener(
         onPointerSignal: isDesktop ? _mouseScroll : null,
         child: GestureDetector(
@@ -2022,45 +2104,45 @@ class ProImageEditorState extends State<ProImageEditor> {
                   fit: StackFit.expand,
                   clipBehavior: Clip.none,
                   children: [
-                    Hero(
-                      tag: !_inited ? '--' : widget.configs.heroTag,
-                      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-                      child: Center(
-                        child: SizedBox(
-                          height: _imageHeight,
-                          width: _imageWidth,
-                          child: StreamBuilder<bool>(
-                              stream: _mouseMoveStream.stream,
-                              initialData: false,
-                              builder: (context, snapshot) {
-                                return MouseRegion(
-                                  hitTestBehavior: HitTestBehavior.translucent,
-                                  cursor: snapshot.data != true ? SystemMouseCursors.basic : widget.configs.imageEditorTheme.layerHoverCursor,
-                                  onHover: isDesktop
-                                      ? (event) {
-                                          var hasHit = _layers.indexWhere((element) => element is PaintingLayerData && element.item.hit) >= 0;
-                                          if (hasHit != snapshot.data) {
-                                            _mouseMoveStream.add(hasHit);
-                                          }
+                    Center(
+                      child: SizedBox(
+                        height: _imageHeight,
+                        width: _imageWidth,
+                        child: StreamBuilder<bool>(
+                            stream: _mouseMoveStream.stream,
+                            initialData: false,
+                            builder: (context, snapshot) {
+                              return MouseRegion(
+                                hitTestBehavior: HitTestBehavior.translucent,
+                                cursor: snapshot.data != true ? SystemMouseCursors.basic : widget.configs.imageEditorTheme.layerHoverCursor,
+                                onHover: isDesktop
+                                    ? (event) {
+                                        var hasHit = _layers.indexWhere((element) => element is PaintingLayerData && element.item.hit) >= 0;
+                                        if (hasHit != snapshot.data) {
+                                          _mouseMoveStream.add(hasHit);
                                         }
-                                      : null,
-                                  child: Screenshot(
-                                    controller: _screenshotCtrl,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Offstage(
+                                      }
+                                    : null,
+                                child: Screenshot(
+                                  controller: _screenshotCtrl,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Hero(
+                                        tag: !_inited ? '--' : widget.configs.heroTag,
+                                        createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                                        child: Offstage(
                                           offstage: !_inited,
                                           child: editorImage,
                                         ),
-                                        if (_selectedLayer < 0) _buildLayers(),
-                                      ],
-                                    ),
+                                      ),
+                                      if (_selectedLayer < 0) _buildLayers(),
+                                    ],
                                   ),
-                                );
-                              }),
-                        ),
+                                ),
+                              );
+                            }),
                       ),
                     ),
                     // show same image solong decoding that screenshot is ready
@@ -2404,14 +2486,17 @@ class ProImageEditorState extends State<ProImageEditor> {
   Widget _buildImageWithFilter() {
     return TransformedContentGenerator(
       configs: _transformConfigs,
-      child: ImageWithMultipleFilters(
-        width: _imageWidth,
-        height: _imageHeight,
-        designMode: widget.configs.designMode,
-        image: _image,
-        filters: _filters,
-        blur: _blur,
-      ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        _renderedImageSize = constraints.biggest;
+        return ImageWithMultipleFilters(
+          width: _imageWidth,
+          height: _imageHeight,
+          designMode: widget.configs.designMode,
+          image: _image,
+          filters: _filters,
+          blur: _blur,
+        );
+      }),
     );
   }
 }

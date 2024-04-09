@@ -182,8 +182,8 @@ class _LayerWidgetState extends State<LayerWidget> {
   Matrix4 _calcTransformMatrix() {
     return Matrix4.identity()
       ..setEntry(3, 2, 0.001) // Add a small z-offset to avoid rendering issues
-      ..rotateX(_layer.flipX ? pi : 0)
-      ..rotateY(_layer.flipY ? pi : 0)
+      ..rotateX(_layer.flipY ? pi : 0)
+      ..rotateY(_layer.flipX ? pi : 0)
       ..rotateZ(_layer.rotation);
   }
 
@@ -245,7 +245,14 @@ class _LayerWidgetState extends State<LayerWidget> {
               behavior: HitTestBehavior.translucent,
               onPointerDown: _onPointerDown,
               onPointerUp: _onPointerUp,
-              child: _buildContent(),
+              child: Hero(
+                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                tag: widget.layerData.hashCode,
+                // FittedBox is required for smooth hero animations.
+                child: FittedBox(
+                  child: _buildContent(),
+                ),
+              ),
             ),
           ),
         ),
@@ -289,6 +296,7 @@ class _LayerWidgetState extends State<LayerWidget> {
       fontSize: fontSize * layer.fontScale,
       fontWeight: FontWeight.w400,
       color: layer.color,
+      overflow: TextOverflow.ellipsis,
     );
 
     double height = getLineHeight(style);

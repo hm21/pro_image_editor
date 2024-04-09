@@ -37,6 +37,17 @@ class TransformConfigs {
     );
   }
 
+  TransformConfigs reverse() {
+    // TODO: function?
+    return TransformConfigs(
+      angle: angle,
+      scale: scale,
+      flipX: flipX,
+      flipY: flipY,
+      offset: offset,
+    );
+  }
+
   Map toMap() {
     return {
       'angle': angle,

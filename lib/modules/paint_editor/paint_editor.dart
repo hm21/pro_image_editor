@@ -67,7 +67,7 @@ class PaintingEditor extends StatefulWidget {
   /// A list of applied filters to the editor.
   final List<FilterStateHistory> filters;
 
-  /// A blur state to the editor.
+  /// The blur state to the editor.
   final BlurStateHistory blur;
 
   /// Constructs a PaintingEditor instance.

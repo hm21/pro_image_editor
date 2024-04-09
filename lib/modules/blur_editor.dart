@@ -12,6 +12,7 @@ import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/custom_widgets.dart';
 import '../models/editor_configs/blur_editor_configs.dart';
 import '../models/editor_image.dart';
+import '../models/layer.dart';
 import '../models/theme/theme.dart';
 import '../models/i18n/i18n.dart';
 import '../models/icons/icons.dart';
@@ -80,6 +81,9 @@ class BlurEditor extends StatefulWidget {
   /// the blur states will be returned.
   final bool convertToUint8List;
 
+  /// A list of Layer objects representing image layers.
+  final List<Layer>? layers;
+
   final List<FilterStateHistory> filters;
 
   final BlurStateHistory currentBlur;
@@ -94,6 +98,7 @@ class BlurEditor extends StatefulWidget {
     this.onUpdateUI,
     this.convertToUint8List = false,
     this.transformConfigs,
+    this.layers,
     required this.filters,
     required this.currentBlur,
     required this.theme,
@@ -152,6 +157,7 @@ class BlurEditor extends StatefulWidget {
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
+    List<Layer>? layers,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -174,6 +180,7 @@ class BlurEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      layers: layers,
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -221,6 +228,7 @@ class BlurEditor extends StatefulWidget {
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
+    List<Layer>? layers,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -243,6 +251,7 @@ class BlurEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      layers: layers,
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -290,6 +299,7 @@ class BlurEditor extends StatefulWidget {
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
+    List<Layer>? layers,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -312,6 +322,7 @@ class BlurEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      layers: layers,
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -358,6 +369,7 @@ class BlurEditor extends StatefulWidget {
     required Size imageSize,
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
+    List<Layer>? layers,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     Function? onUpdateUI,
@@ -380,6 +392,7 @@ class BlurEditor extends StatefulWidget {
       configs: configs,
       onUpdateUI: onUpdateUI,
       filters: filters ?? [],
+      layers: layers,
       convertToUint8List: convertToUint8List,
       currentBlur: currentBlur ?? BlurStateHistory(),
     );
@@ -425,6 +438,7 @@ class BlurEditor extends StatefulWidget {
     ImageEditorIcons icons = const ImageEditorIcons(),
     ImageEditorTheme imageEditorTheme = const ImageEditorTheme(),
     TransformConfigs? transformConfigs,
+    List<Layer>? layers,
     BlurEditorConfigs configs = const BlurEditorConfigs(),
     required String heroTag,
     required Size imageSize,
