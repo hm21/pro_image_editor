@@ -10,12 +10,17 @@ class CropCornerPainter extends CustomPainter {
   final bool interactionActive;
   final Offset offset;
 
-  double cornerLength = 36;
+  final double cornerLength;
   double cornerWidth = 6;
 
   double helperLineWidth = 0.5;
 
   final double scaleFactor;
+
+  double get _cropOffsetLeft => cropRect.left;
+  double get _cropOffsetRight => cropRect.right;
+  double get _cropOffsetTop => cropRect.top;
+  double get _cropOffsetBottom => cropRect.bottom;
 
   CropCornerPainter({
     required this.offset,
@@ -25,6 +30,7 @@ class CropCornerPainter extends CustomPainter {
     required this.scaleFactor,
     required this.imageEditorTheme,
     required this.interactionActive,
+    required this.cornerLength,
   });
 
   @override
@@ -40,6 +46,10 @@ class CropCornerPainter extends CustomPainter {
     required Size size,
   }) {
     /// Draw outline darken layers
+    ///
+    double cropWidth = _cropOffsetRight - _cropOffsetLeft;
+    double cropHeight = _cropOffsetBottom - _cropOffsetTop;
+
     Path path = Path();
     path.addRect(Rect.fromCenter(
       center: Offset(
@@ -54,9 +64,12 @@ class CropCornerPainter extends CustomPainter {
     Path rectPath = Path()
       ..addRect(
         Rect.fromCenter(
-          center: Offset(size.width / 2, size.height / 2),
-          width: size.width,
-          height: size.height,
+          center: Offset(
+            cropWidth / 2 + _cropOffsetLeft,
+            cropHeight / 2 + _cropOffsetTop,
+          ),
+          width: cropWidth,
+          height: cropHeight,
         ),
       );
 
@@ -67,9 +80,7 @@ class CropCornerPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = interactionActive
-            ? Colors.black.withOpacity(0.5)
-            : Colors.black.withOpacity(0.7)
+        ..color = interactionActive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.7)
         ..style = PaintingStyle.fill,
     );
   }
@@ -81,26 +92,20 @@ class CropCornerPainter extends CustomPainter {
     Path path = Path();
 
     /// Top-Left
-    path.addRect(Rect.fromLTWH(0, 0, cornerLength, cornerWidth));
-    path.addRect(Rect.fromLTWH(0, 0, cornerWidth, cornerLength));
+    path.addRect(Rect.fromLTWH(_cropOffsetLeft, _cropOffsetTop, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(_cropOffsetLeft, _cropOffsetTop, cornerWidth, cornerLength));
 
     /// Top-Right
-    path.addRect(
-        Rect.fromLTWH(size.width - cornerLength, 0, cornerLength, cornerWidth));
-    path.addRect(
-        Rect.fromLTWH(size.width - cornerWidth, 0, cornerWidth, cornerLength));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - cornerLength, _cropOffsetTop, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - cornerWidth, _cropOffsetTop, cornerWidth, cornerLength));
 
     /// Bottom-Left
-    path.addRect(
-        Rect.fromLTWH(0, size.height - cornerWidth, cornerLength, cornerWidth));
-    path.addRect(Rect.fromLTWH(
-        0, size.height - cornerLength, cornerWidth, cornerLength));
+    path.addRect(Rect.fromLTWH(0 + _cropOffsetLeft, _cropOffsetBottom - cornerWidth, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(0 + _cropOffsetLeft, _cropOffsetBottom - cornerLength, cornerWidth, cornerLength));
 
     /// Bottom-Right
-    path.addRect(Rect.fromLTWH(size.width - cornerLength,
-        size.height - cornerWidth, cornerLength, cornerWidth));
-    path.addRect(Rect.fromLTWH(size.width - cornerWidth,
-        size.height - cornerLength, cornerWidth, cornerLength));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - cornerLength, _cropOffsetBottom - cornerWidth, cornerLength, cornerWidth));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - cornerWidth, _cropOffsetBottom - cornerLength, cornerWidth, cornerLength));
 
     canvas.drawPath(
       path,
@@ -116,20 +121,24 @@ class CropCornerPainter extends CustomPainter {
   }) {
     Path path = Path();
 
+    double cropWidth = _cropOffsetRight - _cropOffsetLeft;
+    double cropHeight = _cropOffsetBottom - _cropOffsetTop;
+
     for (var i = 1; i < 3; i++) {
       path.addRect(
         Rect.fromLTWH(
-          size.width / 3 * i,
-          0,
+          cropWidth / 3 * i + _cropOffsetLeft,
+          _cropOffsetTop,
           helperLineWidth,
-          size.height,
+          _cropOffsetBottom - _cropOffsetTop,
         ),
       );
+
       path.addRect(
         Rect.fromLTWH(
-          0,
-          size.height / 3 * i,
-          size.width,
+          _cropOffsetLeft,
+          cropHeight / 3 * i + _cropOffsetTop,
+          cropWidth,
           helperLineWidth,
         ),
       );
@@ -143,8 +152,6 @@ class CropCornerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return oldDelegate is! CropCornerPainter ||
-        oldDelegate.cropRect != cropRect ||
-        oldDelegate.viewRect != viewRect;
+    return oldDelegate is! CropCornerPainter || oldDelegate.cropRect != cropRect || oldDelegate.viewRect != viewRect;
   }
 }

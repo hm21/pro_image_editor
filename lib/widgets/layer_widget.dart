@@ -212,43 +212,42 @@ class _LayerWidgetState extends State<LayerWidget> {
   /// Build the content with possible transformations
   Widget _buildPosition() {
     Matrix4 transformMatrix = _calcTransformMatrix();
-    return Container(
-      transform: transformMatrix,
-      transformAlignment: Alignment.center,
-      child: LayerDashedBorderHelper(
-        layerData: widget.layerData,
-        color: const Color(0xFF000000),
-        child: MouseRegion(
-          hitTestBehavior: HitTestBehavior.translucent,
-          cursor: _showMoveCursor ? widget.layerHoverCursor : MouseCursor.defer,
-          onEnter: (event) {
-            if (_layerType != _LayerType.canvas) {
-              setState(() {
-                _showMoveCursor = true;
-              });
-            }
-          },
-          onExit: (event) {
-            if (_layerType == _LayerType.canvas) {
-              (widget.layerData as PaintingLayerData).item.hit = false;
-            } else {
-              setState(() {
-                _showMoveCursor = false;
-              });
-            }
-          },
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-            onTap: _onTap,
-            child: Listener(
+    return Hero(
+      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+      tag: widget.layerData.hashCode,
+      child: Container(
+        transform: transformMatrix,
+        transformAlignment: Alignment.center,
+        child: LayerDashedBorderHelper(
+          layerData: widget.layerData,
+          color: const Color(0xFF000000),
+          child: MouseRegion(
+            hitTestBehavior: HitTestBehavior.translucent,
+            cursor: _showMoveCursor ? widget.layerHoverCursor : MouseCursor.defer,
+            onEnter: (event) {
+              if (_layerType != _LayerType.canvas) {
+                setState(() {
+                  _showMoveCursor = true;
+                });
+              }
+            },
+            onExit: (event) {
+              if (_layerType == _LayerType.canvas) {
+                (widget.layerData as PaintingLayerData).item.hit = false;
+              } else {
+                setState(() {
+                  _showMoveCursor = false;
+                });
+              }
+            },
+            child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onPointerDown: _onPointerDown,
-              onPointerUp: _onPointerUp,
-              child: Hero(
-                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-                tag: widget.layerData.hashCode,
-                // FittedBox is required for smooth hero animations.
+              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+              onTap: _onTap,
+              child: Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerDown: _onPointerDown,
+                onPointerUp: _onPointerUp,
                 child: FittedBox(
                   child: _buildContent(),
                 ),

@@ -19,6 +19,7 @@ import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/crop_corner_painter.dart';
+import 'utils/rotate_angle.dart';
 import 'widgets/crop_aspect_ratio_options.dart';
 
 /// The `CropRotateEditor` widget is used for cropping and rotating images.
@@ -419,6 +420,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   bool _flipY = false;
   bool _showWidgets = false;
 
+  double _cropCornerLength = 36;
   double _zoomFactor = 1;
   double _oldScaleFactor = 1;
   final double _screenPadding = 20;
@@ -426,7 +428,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   Rect _cropRect = Rect.zero;
   Rect _viewRect = Rect.zero;
-  Size _bodySize = Size.zero;
   late BoxConstraints _contentConstraints;
   late BoxConstraints _renderedImgConstraints;
 
@@ -465,7 +466,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     _aspectRatio = widget.configs.cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _calcCropRect();
+      _calcCropRect(calcCropRect: true);
 
       Future.delayed(const Duration(milliseconds: 200)).whenComplete(() {
         setState(() {
@@ -582,20 +583,22 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       ..forward();
 
     _oldScaleFactor = scale;
-    _calcCropRect();
+    _calcCropRect(calcCropRect: true);
   }
 
-  void _calcCropRect() {
+  void _calcCropRect({
+    bool calcCropRect = false,
+  }) {
+    if (!_showWidgets) return;
     double imgSizeRatio = _imgHeight / _imgWidth;
 
-    double padding = _screenPadding * 2;
-    double newImgW = (_rotated90deg ? _imgSize.height : _imgSize.width) - padding;
-    double newImgH = (_rotated90deg ? _imgSize.width : _imgSize.height) - padding;
+    double newImgW = _renderedImgConstraints.maxWidth;
+    double newImgH = _renderedImgConstraints.maxHeight;
 
     double cropWidth = _imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
     double cropHeight = _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
 
-    _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
+    if (calcCropRect || _cropRect.isEmpty) _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
     _viewRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
     //TODO:   setState(() {});
   }
@@ -619,25 +622,97 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     });
   }
 
-  CropAreaPart _determineCropAreaPart(Offset localPosition) {
-    const double edgeSize = 20;
-    bool nearLeftEdge = (localPosition.dx - _cropRect.left).abs() < edgeSize;
-    bool nearRightEdge = (localPosition.dx - _cropRect.right).abs() < edgeSize;
-    bool nearTopEdge = (localPosition.dy - _cropRect.top).abs() < edgeSize;
-    bool nearBottomEdge = (localPosition.dy - _cropRect.bottom).abs() < edgeSize;
+  Offset _getTransformedPointerPosition(Offset localPosition) {
+    double imgW = _renderedImgConstraints.maxWidth;
+    double imgH = _renderedImgConstraints.maxHeight;
 
-    if (nearLeftEdge && nearTopEdge) {
-      return CropAreaPart.topLeft;
-    } else if (nearRightEdge && nearTopEdge) {
-      return CropAreaPart.topRight;
-    } else if (nearLeftEdge && nearBottomEdge) {
-      return CropAreaPart.bottomLeft;
-    } else if (nearRightEdge && nearBottomEdge) {
-      return CropAreaPart.bottomRight;
-    } else if (_cropRect.contains(localPosition)) {
-      return CropAreaPart.inside;
+    double gapX = max(
+      _screenPadding,
+      (_contentConstraints.maxWidth - imgW) / 2,
+    );
+    double gapY = max(
+      _screenPadding,
+      (_contentConstraints.maxHeight - imgH) / 2,
+    );
+
+    double dx = localPosition.dx - gapX;
+    double dy = localPosition.dy - gapY;
+
+    var angleSide = getRotateAngleSide(_rotateAnimation.value);
+
+    /// Important round to 3 decimal that no calculation errors will happen
+    if (angleSide == RotateAngleSide.left) {
+      if (!_flipX) dy = imgH - dy;
+      if (_flipY) dx = imgW - dx;
+
+      return Offset(dy, dx);
+    } else if (angleSide == RotateAngleSide.bottom) {
+      if (!_flipX) dx = imgW - dx;
+      if (!_flipY) dy = imgH - dy;
+
+      return Offset(dx, dy);
+    } else if (angleSide == RotateAngleSide.right) {
+      if (!_flipY) dx = imgW - dx;
+      if (_flipX) dy = imgH - dy;
+
+      return Offset(dy, dx);
+    } else {
+      if (_flipX) dx = imgW - dx;
+      if (_flipY) dy = imgH - dy;
+
+      return Offset(dx, dy);
     }
-    return CropAreaPart.none;
+  }
+
+  CropAreaPart _determineCropAreaPart(Offset localPosition) {
+    double imgW = _renderedImgConstraints.maxWidth;
+    double imgH = _renderedImgConstraints.maxHeight;
+    double gapX = max(
+      _screenPadding,
+      (_contentConstraints.maxWidth - imgW) / 2,
+    );
+    double gapTop = (_contentConstraints.maxHeight - imgH) / 2;
+    double gapY = max(
+      _screenPadding,
+      gapTop,
+    );
+    Offset offset = _getTransformedPointerPosition(localPosition);
+    double dx = offset.dx;
+    double dy = offset.dy;
+
+    double left = dx - _cropRect.left;
+    double right = dx - _cropRect.right;
+    double top = dy - _cropRect.top;
+    double bottom = dy - _cropRect.bottom;
+
+    bool nearLeftEdge = left <= _cropCornerLength && left >= 0;
+    bool nearRightEdge = right >= -_cropCornerLength && right <= 0;
+    bool nearTopEdge = top <= _cropCornerLength && top > 0;
+    bool nearBottomEdge = bottom >= -_cropCornerLength && bottom <= 0;
+
+    if (_cropRect.contains(localPosition - Offset(gapX, gapY))) {
+      if (nearLeftEdge && nearTopEdge) {
+        return CropAreaPart.topLeft;
+      } else if (nearRightEdge && nearTopEdge) {
+        return CropAreaPart.topRight;
+      } else if (nearLeftEdge && nearBottomEdge) {
+        return CropAreaPart.bottomLeft;
+      } else if (nearRightEdge && nearBottomEdge) {
+        return CropAreaPart.bottomRight;
+      } else if (nearLeftEdge) {
+        return CropAreaPart.left;
+      } else if (nearRightEdge) {
+        return CropAreaPart.right;
+      } else if (nearTopEdge) {
+        return CropAreaPart.top;
+      } else if (nearBottomEdge) {
+        return CropAreaPart.bottom;
+      } else {
+        return CropAreaPart.inside;
+      }
+    } else {
+      return CropAreaPart.none;
+    }
   }
 
   void _onDragStart(DragStartDetails details) {
@@ -654,28 +729,121 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   void _onDragUpdate(DragUpdateDetails details) {
     var offset = _convertOffsetByTransformations(details.delta);
 
-    _translate += Offset(offset.dx, offset.dy);
-    _setOffsetLimits();
-    setState(() {});
-    /*   if (_currentCropAreaPart != CropAreaPart.none) {
-      // Update the _cropRect based on the dragged corner
-      setState(() {
-        // Example for one corner; implement similar logic for other corners
-        if (_currentCropAreaPart == CropAreaPart.topLeft) {
+    if (_currentCropAreaPart != CropAreaPart.none && _currentCropAreaPart != CropAreaPart.inside) {
+      double imgW = _renderedImgConstraints.maxWidth;
+      double imgH = _renderedImgConstraints.maxHeight;
+
+      double gapX = max(
+        _screenPadding,
+        (_contentConstraints.maxWidth - imgW) / 2,
+      );
+      double gapY = max(
+        _screenPadding,
+        (_contentConstraints.maxHeight - imgH) / 2,
+      );
+
+      double outsidePadding = _screenPadding * 2;
+      double cornerGap = _cropCornerLength * 2.25;
+      double minCornerDistance = outsidePadding + cornerGap;
+
+      Offset offset = details.localPosition;
+      double dx = offset.dx - gapX;
+      double dy = offset.dy - gapY;
+
+      var angleSide = getRotateAngleSide(_rotateAnimation.value);
+      if (angleSide == RotateAngleSide.left) {
+        dx = _flipX ? offset.dy - gapY : imgH - offset.dy + gapY;
+        dy = _flipY ? imgW - offset.dx + gapX : offset.dx - gapX;
+      } else if (angleSide == RotateAngleSide.bottom) {
+        dx = _flipX ? offset.dx - gapX : imgW - offset.dx + gapX;
+        dy = _flipY ? offset.dy - gapY : imgH - offset.dy + gapY;
+      } else if (angleSide == RotateAngleSide.right) {
+        dx = _flipX ? imgW - offset.dy + gapY : offset.dy - gapY;
+        dy = _flipY ? offset.dx - gapX : imgW - offset.dx + gapX;
+      } else {
+        if (_flipX) dx = imgW - dx;
+        if (_flipY) dy = imgH - dy;
+      }
+
+      double maxRight = _cropRect.right + outsidePadding - minCornerDistance;
+      double maxBottom = _cropRect.bottom + outsidePadding - minCornerDistance;
+
+      switch (_currentCropAreaPart) {
+        case CropAreaPart.topLeft:
           _cropRect = Rect.fromLTRB(
-            max(0, localPosition.dx),
-            max(0, localPosition.dy),
+            min(maxRight, max(0, dx)),
+            min(maxBottom, max(0, dy)),
             _cropRect.right,
             _cropRect.bottom,
           );
-        }
-        // Add similar logic for other corners...
-      });
-    } else {
-      _translate += details.delta;
-      _setOffsetLimits();
+          break;
+        case CropAreaPart.topRight:
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            max(0, min(dy, maxBottom)),
+            max(cornerGap + _cropRect.left, min(imgW, dx)),
+            _cropRect.bottom,
+          );
+          break;
+        case CropAreaPart.bottomLeft:
+          _cropRect = Rect.fromLTRB(
+            max(0, min(maxRight, dx)),
+            _cropRect.top,
+            _cropRect.right,
+            max(cornerGap + _cropRect.top, min(imgH, dy)),
+          );
+          break;
+        case CropAreaPart.bottomRight:
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            _cropRect.top,
+            max(cornerGap + _cropRect.left, min(imgW, dx)),
+            max(cornerGap + _cropRect.top, min(imgH, dy)),
+          );
+          break;
+        case CropAreaPart.left:
+          _cropRect = Rect.fromLTRB(
+            min(maxRight, max(0, dx)),
+            _cropRect.top,
+            _cropRect.right,
+            _cropRect.bottom,
+          );
+          break;
+        case CropAreaPart.right:
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            _cropRect.top,
+            max(cornerGap + _cropRect.left, min(imgW, dx)),
+            _cropRect.bottom,
+          );
+          break;
+        case CropAreaPart.top:
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            min(maxBottom, max(0, dy)),
+            _cropRect.right,
+            _cropRect.bottom,
+          );
+          break;
+        case CropAreaPart.bottom:
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            _cropRect.top,
+            _cropRect.right,
+            max(cornerGap + _cropRect.top, min(imgH, dy)),
+          );
+          break;
+        default:
+          break;
+      }
       setState(() {});
-    } */
+    } else {
+      double zoomFactor = _zoomFactor * _scaleAnimation.value;
+      _translate += Offset(offset.dx, offset.dy) / zoomFactor;
+      _setOffsetLimits();
+
+      setState(() {});
+    }
   }
 
   void _setOffsetLimits() {
@@ -910,6 +1078,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   GestureDetector _buildGestureDetector({required Widget child}) {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onPanStart: _onDragStart,
       onPanUpdate: _onDragUpdate,
       onPanEnd: _onDragEnd,
@@ -964,28 +1133,26 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     );
   }
 
-  Container _buildCropPainter({required Widget child}) {
-    return Container(
-      color: Colors.amber.withOpacity(0.3), // TODO: deleteme
-      child: CustomPaint(
-        isComplex: _showWidgets,
-        willChange: _showWidgets,
-        foregroundPainter: _showWidgets
-            ? CropCornerPainter(
-                offset: _translate,
-                cropRect: _cropRect,
-                viewRect: _viewRect,
-                scaleFactor: _zoomFactor,
-                interactionActive: _interactionActive,
-                screenSize: Size(
-                  _contentConstraints.maxWidth,
-                  _contentConstraints.maxHeight,
-                ),
-                imageEditorTheme: widget.configs.imageEditorTheme,
-              )
-            : null,
-        child: child,
-      ),
+  CustomPaint _buildCropPainter({required Widget child}) {
+    return CustomPaint(
+      isComplex: _showWidgets,
+      willChange: _showWidgets,
+      foregroundPainter: _showWidgets
+          ? CropCornerPainter(
+              offset: _translate,
+              cropRect: _cropRect,
+              viewRect: _viewRect,
+              scaleFactor: _zoomFactor,
+              interactionActive: _interactionActive,
+              screenSize: Size(
+                _contentConstraints.maxWidth,
+                _contentConstraints.maxHeight,
+              ),
+              imageEditorTheme: widget.configs.imageEditorTheme,
+              cornerLength: _cropCornerLength,
+            )
+          : null,
+      child: child,
     );
   }
 
@@ -1000,10 +1167,12 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   Widget _buildImage() {
+    double maxWidth = _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2);
+    double maxHeight = (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth;
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth,
-        maxWidth: _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2),
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1013,7 +1182,19 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
             alignment: Alignment.center,
             children: [
               Hero(
-                tag: widget.configs.heroTag,
+                tag: 'disabled: ${widget.configs.heroTag}',
+
+                /// Important that the image fly correctly
+                flightShuttleBuilder: (
+                  BuildContext flightContext,
+                  Animation<double> animation,
+                  HeroFlightDirection flightDirection,
+                  BuildContext fromHeroContext,
+                  BuildContext toHeroContext,
+                ) {
+                  final hero = flightDirection == HeroFlightDirection.push ? toHeroContext.widget : toHeroContext.widget;
+                  return (hero as Hero).child;
+                },
                 child: AutoImage(
                   _image,
                   fit: BoxFit.contain,
@@ -1022,20 +1203,41 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                   height: _imgHeight,
                 ),
               ),
+
+              /// TODO: Add layers with hero animation.
+              /// Note: When the image is rotated or flipped it affect the hero animation.
+
               if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
-                LayerStack(
-                  transformHelper: TransformHelper(
-                    mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
-                    mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
-                    editorBodySize: Size(
-                      _contentConstraints.maxWidth - _screenPadding * 2,
-                      _contentConstraints.maxHeight - _screenPadding * 2,
+                Builder(builder: (context) {
+                  double w = _imgWidth;
+                  double h = _imgHeight;
+                  double screenGap = _screenPadding * 2;
+                  double editorW = _contentConstraints.maxWidth - screenGap;
+                  double editorH = _contentConstraints.maxHeight - screenGap;
+
+                  return TransformedContentGenerator(
+                    configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                    child: Transform.translate(
+                      offset: Offset(
+                        -_screenPadding,
+                        0, // -_screenPadding,
+                      ),
+                      child: LayerStack(
+                        transformHelper: TransformHelper(
+                          mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
+                          mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                          editorBodySize: Size(
+                            w / h * editorH,
+                            editorW * h / w,
+                          ),
+                        ),
+                        configs: widget.configs,
+                        layers: widget.layers!,
+                        clipBehavior: Clip.none,
+                      ),
                     ),
-                  ),
-                  configs: widget.configs,
-                  layers: widget.layers!,
-                  clipBehavior: Clip.none,
-                ),
+                  );
+                }),
             ],
           );
         },
@@ -1061,5 +1263,9 @@ enum CropAreaPart {
   topRight,
   bottomLeft,
   bottomRight,
+  left,
+  right,
+  top,
+  bottom,
   inside,
 }

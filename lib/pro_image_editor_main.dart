@@ -29,6 +29,7 @@ import 'models/import_export/export_state_history_configs.dart';
 import 'models/import_export/import_state_history.dart';
 import 'models/layer.dart';
 import 'modules/crop_rotate_editor/crop_rotate_editor.dart';
+import 'modules/crop_rotate_editor/utils/rotate_angle.dart';
 import 'modules/emoji_editor/emoji_editor.dart';
 import 'modules/filter_editor/filter_editor.dart';
 import 'modules/filter_editor/widgets/filter_editor_item_list.dart';
@@ -1076,22 +1077,20 @@ class ProImageEditorState extends State<ProImageEditor> {
       layer.rotation += rotationAngle;
     }
 
-    double pi2 = pi * 2;
-    double angleFactor = rotationAngle % pi2;
-    print(angleFactor);
+    var angleSide = getRotateAngleSide(rotationAngle);
 
-    if (angleFactor == pi) {
+    if (angleSide == RotateAngleSide.bottom) {
       layer.offset = Offset(
         newImgW - layer.offset.dx,
         newImgH - layer.offset.dy,
       );
-    } else if (angleFactor == pi / 2) {
+    } else if (angleSide == RotateAngleSide.right) {
       layer.scale *= rotationScale;
       layer.offset = Offset(
         layer.offset.dy * rotationScale,
         newImgH - layer.offset.dx * rotationScale,
       );
-    } else if (angleFactor == pi * 1.5) {
+    } else if (angleSide == RotateAngleSide.left) {
       layer.scale *= rotationScale;
       layer.offset = Offset(
         layer.offset.dy * rotationScale,
