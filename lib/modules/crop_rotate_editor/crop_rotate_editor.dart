@@ -420,7 +420,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   bool _flipY = false;
   bool _showWidgets = false;
 
-  double _cropCornerLength = 36;
   double _zoomFactor = 1;
   double _oldScaleFactor = 1;
   final double _screenPadding = 20;
@@ -491,6 +490,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       }
     }
   }
+
+  double get _cropCornerLength => 36;
 
   double get _screenWidth => MediaQuery.of(context).size.width;
   double get _imgWidth => widget.imageSize.width;
@@ -624,61 +625,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     });
   }
 
-  Offset _getTransformedPointerPosition(Offset localPosition) {
-    double imgW = _renderedImgConstraints.maxWidth;
-    double imgH = _renderedImgConstraints.maxHeight;
-
-    double gapX = max(
-      _screenPadding,
-      (_contentConstraints.maxWidth - imgW) / 2,
-    );
-    double gapY = max(
-      _screenPadding,
-      (_contentConstraints.maxHeight - imgH) / 2,
-    );
-
-    double dx = localPosition.dx - gapX;
-    double dy = localPosition.dy - gapY;
-
-    var angleSide = getRotateAngleSide(_rotateAnimation.value);
-
-    /// Important round to 3 decimal that no calculation errors will happen
-    if (angleSide == RotateAngleSide.left) {
-      if (!_flipX) dy = imgH - dy;
-      if (_flipY) dx = imgW - dx;
-
-      return Offset(dy, dx);
-    } else if (angleSide == RotateAngleSide.bottom) {
-      if (!_flipX) dx = imgW - dx;
-      if (!_flipY) dy = imgH - dy;
-
-      return Offset(dx, dy);
-    } else if (angleSide == RotateAngleSide.right) {
-      if (!_flipY) dx = imgW - dx;
-      if (_flipX) dy = imgH - dy;
-
-      return Offset(dy, dx);
-    } else {
-      if (_flipX) dx = imgW - dx;
-      if (_flipY) dy = imgH - dy;
-
-      return Offset(dx, dy);
-    }
-  }
-
   CropAreaPart _determineCropAreaPart(Offset localPosition) {
-    double imgW = _renderedImgConstraints.maxWidth;
-    double imgH = _renderedImgConstraints.maxHeight;
-    double gapX = max(
-      _screenPadding,
-      (_contentConstraints.maxWidth - imgW) / 2,
-    );
-    double gapTop = (_contentConstraints.maxHeight - imgH) / 2;
-    double gapY = max(
-      _screenPadding,
-      gapTop,
-    );
-    Offset offset = _getTransformedPointerPosition(localPosition);
+    Offset offset = localPosition;
     double dx = offset.dx;
     double dy = offset.dy;
 
@@ -687,12 +635,11 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     double top = dy - _cropRect.top;
     double bottom = dy - _cropRect.bottom;
 
-    bool nearLeftEdge = left <= _cropCornerLength && left >= 0;
-    bool nearRightEdge = right >= -_cropCornerLength && right <= 0;
-    bool nearTopEdge = top <= _cropCornerLength && top > 0;
-    bool nearBottomEdge = bottom >= -_cropCornerLength && bottom <= 0;
-
-    if (_cropRect.contains(localPosition - Offset(gapX, gapY))) {
+    bool nearLeftEdge = left.abs() <= _cropCornerLength;
+    bool nearRightEdge = right.abs() <= _cropCornerLength;
+    bool nearTopEdge = top.abs() <= _cropCornerLength;
+    bool nearBottomEdge = bottom.abs() <= _cropCornerLength;
+    if (_cropRect.contains(localPosition)) {
       if (nearLeftEdge && nearTopEdge) {
         return CropAreaPart.topLeft;
       } else if (nearRightEdge && nearTopEdge) {
@@ -719,6 +666,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   void _onDragStart(DragStartDetails details) {
     _currentCropAreaPart = _determineCropAreaPart(details.localPosition);
+    print(_currentCropAreaPart);
     _interactionActive = true;
     setState(() {});
   }
@@ -729,43 +677,19 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
-    var offset = _convertOffsetByTransformations(details.delta);
+    var offset = details.delta;
 
     if (_currentCropAreaPart != CropAreaPart.none && _currentCropAreaPart != CropAreaPart.inside) {
       double imgW = _renderedImgConstraints.maxWidth;
       double imgH = _renderedImgConstraints.maxHeight;
-
-      double gapX = max(
-        _screenPadding,
-        (_contentConstraints.maxWidth - imgW) / 2,
-      );
-      double gapY = max(
-        _screenPadding,
-        (_contentConstraints.maxHeight - imgH) / 2,
-      );
 
       double outsidePadding = _screenPadding * 2;
       double cornerGap = _cropCornerLength * 2.25;
       double minCornerDistance = outsidePadding + cornerGap;
 
       Offset offset = details.localPosition;
-      double dx = offset.dx - gapX;
-      double dy = offset.dy - gapY;
-
-      var angleSide = getRotateAngleSide(_rotateAnimation.value);
-      if (angleSide == RotateAngleSide.left) {
-        dx = _flipX ? offset.dy - gapY : imgH - offset.dy + gapY;
-        dy = _flipY ? imgW - offset.dx + gapX : offset.dx - gapX;
-      } else if (angleSide == RotateAngleSide.bottom) {
-        dx = _flipX ? offset.dx - gapX : imgW - offset.dx + gapX;
-        dy = _flipY ? offset.dy - gapY : imgH - offset.dy + gapY;
-      } else if (angleSide == RotateAngleSide.right) {
-        dx = _flipX ? imgW - offset.dy + gapY : offset.dy - gapY;
-        dy = _flipY ? offset.dx - gapX : imgW - offset.dx + gapX;
-      } else {
-        if (_flipX) dx = imgW - dx;
-        if (_flipY) dy = imgH - dy;
-      }
+      double dx = offset.dx;
+      double dy = offset.dy;
 
       double maxRight = _cropRect.right + outsidePadding - minCornerDistance;
       double maxBottom = _cropRect.bottom + outsidePadding - minCornerDistance;
@@ -1050,11 +974,11 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       _contentConstraints = constraints;
       _calcCropRect();
       return _buildMouseListener(
-        child: _buildGestureDetector(
-          child: _buildRotationTransform(
-            child: _buildPaintContainer(
-              child: _buildFlipTransform(
-                child: _buildRotationScaleTransform(
+        child: _buildRotationTransform(
+          child: _buildPaintContainer(
+            child: _buildFlipTransform(
+              child: _buildRotationScaleTransform(
+                child: _buildGestureDetector(
                   child: _buildCropPainter(
                     child: _buildUserScaleTransform(
                       child: _buildTranslate(
@@ -1082,8 +1006,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onPanStart: _onDragStart,
-      onPanUpdate: _onDragUpdate,
       onPanEnd: _onDragEnd,
+      onPanUpdate: _onDragUpdate,
       child: child,
     );
   }
