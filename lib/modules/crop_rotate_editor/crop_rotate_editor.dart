@@ -625,48 +625,47 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     });
   }
 
-  CropAreaPart _determineCropAreaPart(Offset localPosition) {
-    Offset offset = localPosition;
-    double dx = offset.dx;
-    double dy = offset.dy;
-
-    double left = dx - _cropRect.left;
-    double right = dx - _cropRect.right;
-    double top = dy - _cropRect.top;
-    double bottom = dy - _cropRect.bottom;
-
-    bool nearLeftEdge = left.abs() <= _cropCornerLength;
-    bool nearRightEdge = right.abs() <= _cropCornerLength;
-    bool nearTopEdge = top.abs() <= _cropCornerLength;
-    bool nearBottomEdge = bottom.abs() <= _cropCornerLength;
-    if (_cropRect.contains(localPosition)) {
-      if (nearLeftEdge && nearTopEdge) {
-        return CropAreaPart.topLeft;
-      } else if (nearRightEdge && nearTopEdge) {
-        return CropAreaPart.topRight;
-      } else if (nearLeftEdge && nearBottomEdge) {
-        return CropAreaPart.bottomLeft;
-      } else if (nearRightEdge && nearBottomEdge) {
-        return CropAreaPart.bottomRight;
-      } else if (nearLeftEdge) {
-        return CropAreaPart.left;
-      } else if (nearRightEdge) {
-        return CropAreaPart.right;
-      } else if (nearTopEdge) {
-        return CropAreaPart.top;
-      } else if (nearBottomEdge) {
-        return CropAreaPart.bottom;
-      } else {
-        return CropAreaPart.inside;
-      }
-    } else {
-      return CropAreaPart.none;
-    }
-  }
-
   void _onDragStart(DragStartDetails details) {
-    _currentCropAreaPart = _determineCropAreaPart(details.localPosition);
-    print(_currentCropAreaPart);
+    CropAreaPart determineCropAreaPart(Offset localPosition) {
+      Offset offset = localPosition;
+      double dx = offset.dx;
+      double dy = offset.dy;
+
+      double left = dx - _cropRect.left;
+      double right = dx - _cropRect.right;
+      double top = dy - _cropRect.top;
+      double bottom = dy - _cropRect.bottom;
+
+      bool nearLeftEdge = left.abs() <= _cropCornerLength;
+      bool nearRightEdge = right.abs() <= _cropCornerLength;
+      bool nearTopEdge = top.abs() <= _cropCornerLength;
+      bool nearBottomEdge = bottom.abs() <= _cropCornerLength;
+      if (_cropRect.contains(localPosition)) {
+        if (nearLeftEdge && nearTopEdge) {
+          return CropAreaPart.topLeft;
+        } else if (nearRightEdge && nearTopEdge) {
+          return CropAreaPart.topRight;
+        } else if (nearLeftEdge && nearBottomEdge) {
+          return CropAreaPart.bottomLeft;
+        } else if (nearRightEdge && nearBottomEdge) {
+          return CropAreaPart.bottomRight;
+        } else if (nearLeftEdge) {
+          return CropAreaPart.left;
+        } else if (nearRightEdge) {
+          return CropAreaPart.right;
+        } else if (nearTopEdge) {
+          return CropAreaPart.top;
+        } else if (nearBottomEdge) {
+          return CropAreaPart.bottom;
+        } else {
+          return CropAreaPart.inside;
+        }
+      } else {
+        return CropAreaPart.none;
+      }
+    }
+
+    _currentCropAreaPart = determineCropAreaPart(details.localPosition);
     _interactionActive = true;
     setState(() {});
   }
@@ -764,7 +763,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       }
       setState(() {});
     } else {
-      double zoomFactor = _zoomFactor * _scaleAnimation.value;
+      double zoomFactor = _zoomFactor;
       _translate += Offset(offset.dx, offset.dy) / zoomFactor;
       _setOffsetLimits();
 
@@ -776,10 +775,11 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     if (_zoomFactor == 1) {
       _translate = const Offset(0, 0);
     } else {
-      double zoomFactor = _zoomFactor * _scaleAnimation.value;
+      double cropWidth = (_cropRect.right - _cropRect.left);
+      double cropHeight = (_cropRect.bottom - _cropRect.top);
 
-      double minX = (_renderedImgWidth * zoomFactor - _renderedImgWidth) / 2 / _zoomFactor;
-      double minY = (_renderedImgHeight * _zoomFactor - _renderedImgHeight) / 2 / _zoomFactor;
+      double minX = (_renderedImgConstraints.maxWidth * _zoomFactor - cropWidth) / 2 / _zoomFactor;
+      double minY = (_renderedImgConstraints.maxHeight * _zoomFactor - cropHeight) / 2 / _zoomFactor;
 
       if (_rotated90deg) {}
 
@@ -801,6 +801,28 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   void _mouseScroll(PointerSignalEvent event) {
+    Offset convertOffsetByTransformations(Offset offset) {
+      double dx = offset.dx;
+      double dy = offset.dy;
+      var angleSide = getRotateAngleSide(_rotateAnimation.value);
+
+      if (angleSide == RotateAngleSide.right) {
+        dx = offset.dy;
+        dy = -offset.dx;
+      } else if (angleSide == RotateAngleSide.bottom) {
+        dx = -offset.dx;
+        dy = -offset.dy;
+      } else if (angleSide == RotateAngleSide.left) {
+        dx = -offset.dy;
+        dy = offset.dx;
+      }
+
+      if (_flipX) dx *= -1;
+      if (_flipY) dy *= -1;
+
+      return Offset(dx, dy);
+    }
+
     if (event is PointerScrollEvent) {
       double factor = 0.1;
       double delta = event.scrollDelta.dy;
@@ -820,7 +842,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         double moveX = mouseX / (_zoomFactor * 10);
         double moveY = mouseY / (_zoomFactor * 10);
 
-        var offset = _convertOffsetByTransformations(Offset(moveX, moveY));
+        var offset = convertOffsetByTransformations(Offset(moveX, moveY));
 
         double offsetX = _translate.dx + offset.dx;
         double offsetY = _translate.dy + offset.dy;
@@ -829,27 +851,6 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       _setOffsetLimits();
       setState(() {});
     }
-  }
-
-  Offset _convertOffsetByTransformations(Offset offset) {
-    int rotation = _rotationCount % 4;
-    double dx = offset.dx;
-    double dy = offset.dy;
-    if (rotation == 1) {
-      dx = offset.dy;
-      dy = -offset.dx;
-    } else if (rotation == 2) {
-      dx = -offset.dx;
-      dy = -offset.dy;
-    } else if (rotation == 3) {
-      dx = -offset.dy;
-      dy = offset.dx;
-    }
-
-    if (_flipX) dx *= -1;
-    if (_flipY) dy *= -1;
-
-    return Offset(dx, dy);
   }
 
   @override
@@ -978,11 +979,13 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
           child: _buildPaintContainer(
             child: _buildFlipTransform(
               child: _buildRotationScaleTransform(
-                child: _buildGestureDetector(
-                  child: _buildCropPainter(
-                    child: _buildUserScaleTransform(
-                      child: _buildTranslate(
-                        child: _buildImage(),
+                child: _buildMouseListener(
+                  child: _buildGestureDetector(
+                    child: _buildCropPainter(
+                      child: _buildUserScaleTransform(
+                        child: _buildTranslate(
+                          child: _buildImage(),
+                        ),
                       ),
                     ),
                   ),
