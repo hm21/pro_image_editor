@@ -605,13 +605,15 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   /// Opens a dialog to select from predefined aspect ratios.
   void openAspectRatioOptions() {
-    showDialog<double>(
+    showModalBottomSheet<double>(
         context: context,
+        backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor.aspectRatioSheetBackgroundColor,
+        isScrollControlled: true,
         builder: (BuildContext context) {
           return CropAspectRatioOptions(
             aspectRatio: _aspectRatio,
-            configs: widget.configs.cropRotateEditorConfigs,
-            i18n: widget.configs.i18n.cropRotateEditor,
+            configs: widget.configs,
+            originalAspectRatio: widget.imageSize.aspectRatio,
           );
         }).then((value) {
       if (value != null) {

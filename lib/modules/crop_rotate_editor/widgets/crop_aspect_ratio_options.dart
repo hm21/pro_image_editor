@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_configs/crop_rotate_editor_configs.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/i18n/i18n.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_aspect_ratio_button.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
-
-import '../../../widgets/flat_icon_text_button.dart';
 
 class CropAspectRatioOptions extends StatefulWidget {
-  final I18nCropRotateEditor i18n;
-  final CropRotateEditorConfigs configs;
+  final ProImageEditorConfigs configs;
+  final double originalAspectRatio;
   final double aspectRatio;
 
   const CropAspectRatioOptions({
     super.key,
     required this.aspectRatio,
+    required this.originalAspectRatio,
     required this.configs,
-    required this.i18n,
   });
 
   @override
@@ -39,52 +36,59 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        color: Colors.black87,
-        height: 100,
-        child: Scrollbar(
-          controller: _scrollCtrl,
-          scrollbarOrientation: ScrollbarOrientation.bottom,
-          thumbVisibility: isDesktop,
-          trackVisibility: isDesktop,
-          child: SingleChildScrollView(
-            controller: _scrollCtrl,
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: widget.configs.aspectRatios.map((item) {
-                  return GestureDetector(
-                    child: FlatIconTextButton(
-                      label: Text(
-                        item.text,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      icon: SizedBox(
-                        height: 38,
-                        child: FittedBox(
-                          child: AspectRatioButton(
-                            aspectRatio: item.value,
-                            isSelected: item.value == widget.aspectRatio,
-                          ),
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Text(
+              widget.configs.i18n.cropRotateEditor.ratio,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                color: widget.configs.imageEditorTheme.cropRotateEditor.aspectRatioSheetForegroundColor,
+              ),
+            ),
+          ),
+          Flexible(
+            child: Scrollbar(
+              controller: _scrollCtrl,
+              child: ListView.builder(
+                primary: false,
+                shrinkWrap: true,
+                controller: _scrollCtrl,
+                itemCount: widget.configs.cropRotateEditorConfigs.aspectRatios.length,
+                itemBuilder: (context, index) {
+                  var item = widget.configs.cropRotateEditorConfigs.aspectRatios[index];
+                  return ListTile(
+                    leading: SizedBox(
+                      height: 38,
+                      child: FittedBox(
+                        child: AspectRatioButton(
+                          aspectRatio: item.value == 0 ? widget.originalAspectRatio : item.value,
+                          isSelected: item.value == widget.aspectRatio,
                         ),
+                      ),
+                    ),
+                    title: Text(
+                      item.text,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        color: widget.configs.imageEditorTheme.cropRotateEditor.aspectRatioSheetForegroundColor,
                       ),
                     ),
                     onTap: () {
                       Navigator.pop(context, item.value);
                     },
                   );
-                }).toList(),
+                },
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
