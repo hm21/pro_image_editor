@@ -82,7 +82,8 @@ class _MyHomePageState extends State<MyHomePage> {
               if (!kIsWeb) ...[
                 OutlinedButton.icon(
                   onPressed: () async {
-                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
                       type: FileType.image,
                     );
 
@@ -136,7 +137,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               various: I18nVarious(
                                 loadingDialogMsg: 'Please wait...',
                                 closeEditorWarningTitle: 'Close Image Editor?',
-                                closeEditorWarningMessage: 'Are you sure you want to close the Image Editor? Your changes will not be saved.',
+                                closeEditorWarningMessage:
+                                    'Are you sure you want to close the Image Editor? Your changes will not be saved.',
                                 closeEditorWarningConfirmBtn: 'OK',
                                 closeEditorWarningCancelBtn: 'Cancel',
                               ),
@@ -174,7 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 smallScreenMoreTooltip: 'More',
                               ),
                               filterEditor: I18nFilterEditor(
-                                applyFilterDialogMsg: 'Filter is being applied.',
+                                applyFilterDialogMsg:
+                                    'Filter is being applied.',
                                 bottomNavigationBarText: 'Filter',
                                 back: 'Back',
                                 done: 'Done',
@@ -299,7 +302,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               uiOverlayStyle: SystemUiOverlayStyle(
                                 statusBarColor: Color(0x42000000),
                                 statusBarIconBrightness: Brightness.light,
-                                systemNavigationBarIconBrightness: Brightness.light,
+                                systemNavigationBarIconBrightness:
+                                    Brightness.light,
                                 statusBarBrightness: Brightness.dark,
                                 systemNavigationBarColor: Color(0xFF000000),
                               ),
@@ -320,8 +324,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               textEditor: IconsTextEditor(
                                 bottomNavBar: Icons.text_fields,
                                 alignLeft: Icons.align_horizontal_left_rounded,
-                                alignCenter: Icons.align_horizontal_center_rounded,
-                                alignRight: Icons.align_horizontal_right_rounded,
+                                alignCenter:
+                                    Icons.align_horizontal_center_rounded,
+                                alignRight:
+                                    Icons.align_horizontal_right_rounded,
                                 backgroundMode: Icons.layers_rounded,
                               ),
                               cropRotateEditor: IconsCropRotateEditor(
@@ -333,7 +339,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 bottomNavBar: Icons.filter,
                               ),
                               emojiEditor: IconsEmojiEditor(
-                                bottomNavBar: Icons.sentiment_satisfied_alt_rounded,
+                                bottomNavBar:
+                                    Icons.sentiment_satisfied_alt_rounded,
                               ),
                               stickerEditor: IconsStickerEditor(
                                 bottomNavBar: Icons.layers_outlined,
@@ -369,9 +376,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               canToggleBackgroundMode: true,
                               initFontSize: 24.0,
                               initialTextAlign: TextAlign.center,
-                              initialBackgroundColorMode: LayerBackgroundColorModeE.backgroundAndColor,
+                              initialBackgroundColorMode:
+                                  LayerBackgroundColorModeE.backgroundAndColor,
                             ),
-                            cropRotateEditorConfigs: const CropRotateEditorConfigs(
+                            cropRotateEditorConfigs:
+                                const CropRotateEditorConfigs(
                               enabled: true,
                               canRotate: true,
                               canChangeAspectRatio: true,
@@ -384,8 +393,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 AspectRatioItem(text: '2*3', value: 2.0 / 3.0),
                                 AspectRatioItem(text: '4*3', value: 4.0 / 3.0),
                                 AspectRatioItem(text: '3*4', value: 3.0 / 4.0),
-                                AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
-                                AspectRatioItem(text: '9*16', value: 9.0 / 16.0),
+                                AspectRatioItem(
+                                    text: '16*9', value: 16.0 / 9.0),
+                                AspectRatioItem(
+                                    text: '9*16', value: 9.0 / 16.0),
                               ],
                             ),
                             filterEditorConfigs: FilterEditorConfigs(
@@ -399,7 +410,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             emojiEditorConfigs: const EmojiEditorConfigs(
                               enabled: true,
                               initScale: 5.0,
-                              textStyle: TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
+                              textStyle: TextStyle(
+                                  fontFamilyFallback: ['Apple Color Emoji']),
                               checkPlatformCompatibility: true,
                               /*  emojiSet: [
                                 CategoryEmoji(
@@ -439,7 +451,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ProImageEditor.network(
-                        'https://picsum.photos/id/237/2000',
+                        'https://picsum.photos/id/13/2000/1000',
+                        //    'https://picsum.photos/id/237/2000',
                         onImageEditingComplete: (byte) async {
                           Navigator.pop(context);
                         },
@@ -470,12 +483,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             enabled: true,
                             buildStickers: (setLayer) {
                               return ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(20)),
                                 child: Container(
-                                  color: const Color.fromARGB(255, 224, 239, 251),
+                                  color:
+                                      const Color.fromARGB(255, 224, 239, 251),
                                   child: GridView.builder(
                                     padding: const EdgeInsets.all(16),
-                                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                    gridDelegate:
+                                        const SliverGridDelegateWithMaxCrossAxisExtent(
                                       maxCrossAxisExtent: 150,
                                       mainAxisSpacing: 10,
                                       crossAxisSpacing: 10,
@@ -490,9 +506,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                           width: 120,
                                           height: 120,
                                           fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, loadingProgress) {
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
                                             return AnimatedSwitcher(
-                                              layoutBuilder: (currentChild, previousChildren) {
+                                              layoutBuilder: (currentChild,
+                                                  previousChildren) {
                                                 return SizedBox(
                                                   width: 120,
                                                   height: 120,
@@ -501,18 +519,26 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     alignment: Alignment.center,
                                                     children: <Widget>[
                                                       ...previousChildren,
-                                                      if (currentChild != null) currentChild,
+                                                      if (currentChild != null)
+                                                        currentChild,
                                                     ],
                                                   ),
                                                 );
                                               },
-                                              duration: const Duration(milliseconds: 200),
+                                              duration: const Duration(
+                                                  milliseconds: 200),
                                               child: loadingProgress == null
                                                   ? child
                                                   : Center(
-                                                      child: CircularProgressIndicator(
-                                                        value: loadingProgress.expectedTotalBytes != null
-                                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        value: loadingProgress
+                                                                    .expectedTotalBytes !=
+                                                                null
+                                                            ? loadingProgress
+                                                                    .cumulativeBytesLoaded /
+                                                                loadingProgress
+                                                                    .expectedTotalBytes!
                                                             : null,
                                                       ),
                                                     ),
@@ -555,7 +581,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           emojiEditorConfigs: EmojiEditorConfigs(
                             checkPlatformCompatibility: false,
                             textStyle: DefaultEmojiTextStyle.copyWith(
-                              fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
+                              fontFamily:
+                                  GoogleFonts.notoColorEmoji().fontFamily,
                             ),
                           ),
                         ),
@@ -591,7 +618,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           imageEditorTheme: const ImageEditorTheme(
                             editorMode: ThemeEditorMode.whatsapp,
                             helperLine: HelperLineTheme(
-                              horizontalColor: Color.fromARGB(255, 129, 218, 88),
+                              horizontalColor:
+                                  Color.fromARGB(255, 129, 218, 88),
                               verticalColor: Color.fromARGB(255, 129, 218, 88),
                             ),
                           ),
@@ -608,7 +636,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               ColorFilterGenerator(
                                 name: "Pop",
                                 filters: [
-                                  ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
+                                  ColorFilterAddons.colorOverlay(
+                                      255, 225, 80, 0.08),
                                   ColorFilterAddons.saturation(0.1),
                                   ColorFilterAddons.contrast(0.05),
                                 ],
@@ -617,7 +646,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 name: "B&W",
                                 filters: [
                                   ColorFilterAddons.grayscale(),
-                                  ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
+                                  ColorFilterAddons.colorOverlay(
+                                      100, 28, 210, 0.03),
                                   ColorFilterAddons.brightness(0.1),
                                 ],
                               ),
@@ -650,14 +680,24 @@ class _MyHomePageState extends State<MyHomePage> {
                               debugPrint(value);
                             },
                             buildStickers: (setLayer) {
-                              List<String> demoTitels = ['Recent', 'Favorites', 'Shapes', 'Funny', 'Boring', 'Frog', 'Snow', 'More'];
+                              List<String> demoTitels = [
+                                'Recent',
+                                'Favorites',
+                                'Shapes',
+                                'Funny',
+                                'Boring',
+                                'Frog',
+                                'Snow',
+                                'More'
+                              ];
                               List<Widget> slivers = [];
                               int offset = 0;
                               for (var element in demoTitels) {
                                 slivers.addAll([
                                   _buildDemoStickersTitle(element),
                                   _buildDemoStickers(offset, setLayer),
-                                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                                  const SliverToBoxAdapter(
+                                      child: SizedBox(height: 20)),
                                 ]);
                                 offset += 20;
                               }
@@ -666,7 +706,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 children: [
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                                      padding: const EdgeInsets.fromLTRB(
+                                          8.0, 8.0, 8.0, 0),
                                       child: CustomScrollView(
                                         slivers: slivers,
                                       ),
@@ -679,7 +720,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       children: [
                                         IconButton(
                                           onPressed: () {},
-                                          icon: const Icon(Icons.watch_later_outlined),
+                                          icon: const Icon(
+                                              Icons.watch_later_outlined),
                                           color: Colors.white,
                                         ),
                                         IconButton(
@@ -710,9 +752,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: [
                                 Flexible(
                                   child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 7, 16, 12),
                                     child: TextField(
-                                      textAlignVertical: TextAlignVertical.center,
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
                                       decoration: InputDecoration(
                                         filled: true,
                                         isDense: true,
@@ -726,11 +770,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                         ),
                                         hintText: 'Add a caption...',
                                         hintStyle: const TextStyle(
-                                          color: Color.fromARGB(255, 238, 238, 238),
+                                          color: Color.fromARGB(
+                                              255, 238, 238, 238),
                                           fontWeight: FontWeight.w400,
                                         ),
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(40),
+                                          borderRadius:
+                                              BorderRadius.circular(40),
                                           borderSide: BorderSide.none,
                                         ),
                                         fillColor: const Color(0xFF202D35),
@@ -740,10 +786,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 Flexible(
                                   child: Container(
-                                    padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 7, 16, 12),
                                     color: Colors.black38,
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.symmetric(
@@ -751,7 +799,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                             horizontal: 10,
                                           ),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                             color: const Color(0xFF202D35),
                                           ),
                                           child: const Text(
@@ -765,7 +814,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                           onPressed: () {},
                                           icon: const Icon(Icons.send),
                                           style: IconButton.styleFrom(
-                                            backgroundColor: const Color(0xFF0DA886),
+                                            backgroundColor:
+                                                const Color(0xFF0DA886),
                                           ),
                                         )
                                       ],
@@ -840,7 +890,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       : Center(
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
                                 : null,
                           ),
                         ),

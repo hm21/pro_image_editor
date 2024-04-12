@@ -89,7 +89,10 @@ class PaintingEditor extends StatefulWidget {
     required this.filters,
     required this.blur,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -283,7 +286,8 @@ class PaintingEditor extends StatefulWidget {
         blur: blur,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -323,7 +327,8 @@ class PaintingEditorState extends State<PaintingEditor> {
   PaintModeE? get mode => _imageKey.currentState?.mode;
 
   /// Get the active selected color.
-  Color get activeColor => _imageKey.currentState?.activeColor ?? Colors.black38;
+  Color get activeColor =>
+      _imageKey.currentState?.activeColor ?? Colors.black38;
 
   /// A list of [PaintModeBottomBarItem] representing the available drawing modes in the painting editor.
   /// The list is dynamically generated based on the configuration settings in the [PaintEditorConfigs] object.
@@ -450,12 +455,15 @@ class PaintingEditorState extends State<PaintingEditor> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: widget.configs.imageEditorTheme.uiOverlayStyle,
       child: Theme(
-        data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+        data: widget.theme.copyWith(
+            tooltipTheme:
+                widget.theme.tooltipTheme.copyWith(preferBelow: true)),
         child: LayoutBuilder(builder: (context, constraints) {
           return Scaffold(
             resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
-            backgroundColor: widget.configs.imageEditorTheme.paintingEditor.background,
+            backgroundColor:
+                widget.configs.imageEditorTheme.paintingEditor.background,
             key: _key,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
@@ -473,8 +481,10 @@ class PaintingEditorState extends State<PaintingEditor> {
         (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
             ? AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: widget.configs.imageEditorTheme.paintingEditor.appBarBackgroundColor,
-                foregroundColor: widget.configs.imageEditorTheme.paintingEditor.appBarForegroundColor,
+                backgroundColor: widget.configs.imageEditorTheme.paintingEditor
+                    .appBarBackgroundColor,
+                foregroundColor: widget.configs.imageEditorTheme.paintingEditor
+                    .appBarForegroundColor,
                 actions: [
                   IconButton(
                     tooltip: widget.configs.i18n.paintEditor.back,
@@ -484,7 +494,8 @@ class PaintingEditorState extends State<PaintingEditor> {
                   ),
                   if (_imageKey.currentState != null) ...[
                     if (constraints.maxWidth >= 300) ...[
-                      if (constraints.maxWidth >= 380) const SizedBox(width: 80),
+                      if (constraints.maxWidth >= 380)
+                        const SizedBox(width: 80),
                       const Spacer(),
                       if (widget.configs.paintEditorConfigs.canChangeLineWidth)
                         IconButton(
@@ -501,7 +512,9 @@ class PaintingEditorState extends State<PaintingEditor> {
                           tooltip: widget.configs.i18n.paintEditor.toggleFill,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           icon: Icon(
-                            !_fill ? widget.configs.icons.paintingEditor.noFill : widget.configs.icons.paintingEditor.fill,
+                            !_fill
+                                ? widget.configs.icons.paintingEditor.noFill
+                                : widget.configs.icons.paintingEditor.fill,
                             color: Colors.white,
                           ),
                           onPressed: toggleFill,
@@ -512,7 +525,9 @@ class PaintingEditorState extends State<PaintingEditor> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           widget.configs.icons.undoAction,
-                          color: canUndo ? Colors.white : Colors.white.withAlpha(80),
+                          color: canUndo
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
                         ),
                         onPressed: undoAction,
                       ),
@@ -521,7 +536,9 @@ class PaintingEditorState extends State<PaintingEditor> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           widget.configs.icons.redoAction,
-                          color: canRedo ? Colors.white : Colors.white.withAlpha(80),
+                          color: canRedo
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
                         ),
                         onPressed: redoAction,
                       ),
@@ -531,9 +548,11 @@ class PaintingEditorState extends State<PaintingEditor> {
                       _buildDoneBtn(),
                       PlatformPopupBtn(
                         designMode: widget.configs.designMode,
-                        title: widget.configs.i18n.paintEditor.smallScreenMoreTooltip,
+                        title: widget
+                            .configs.i18n.paintEditor.smallScreenMoreTooltip,
                         options: [
-                          if (widget.configs.paintEditorConfigs.canChangeLineWidth)
+                          if (widget
+                              .configs.paintEditorConfigs.canChangeLineWidth)
                             PopupMenuOption(
                               label: widget.configs.i18n.paintEditor.lineWidth,
                               icon: Icon(
@@ -545,12 +564,15 @@ class PaintingEditorState extends State<PaintingEditor> {
                             PopupMenuOption(
                               label: widget.configs.i18n.paintEditor.toggleFill,
                               icon: Icon(
-                                !_fill ? widget.configs.icons.paintingEditor.noFill : widget.configs.icons.paintingEditor.fill,
+                                !_fill
+                                    ? widget.configs.icons.paintingEditor.noFill
+                                    : widget.configs.icons.paintingEditor.fill,
                               ),
                               onTap: () {
                                 _fill = !_fill;
                                 setFill(_fill);
-                                if (widget.configs.designMode == ImageEditorDesignModeE.cupertino) {
+                                if (widget.configs.designMode ==
+                                    ImageEditorDesignModeE.cupertino) {
                                   Navigator.pop(context);
                                 }
                               },
@@ -627,8 +649,10 @@ class PaintingEditorState extends State<PaintingEditor> {
                   paddingHelper: widget.paddingHelper,
                 ),
               _buildPainter(),
-              if (widget.configs.paintEditorConfigs.showColorPicker) _buildColorPicker(),
-              if (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) ...[
+              if (widget.configs.paintEditorConfigs.showColorPicker)
+                _buildColorPicker(),
+              if (widget.configs.imageEditorTheme.editorMode ==
+                  ThemeEditorMode.whatsapp) ...[
                 WhatsAppPaintBottomBar(
                   configs: widget.configs,
                   strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
@@ -668,7 +692,8 @@ class PaintingEditorState extends State<PaintingEditor> {
                   thickness: isDesktop ? null : 0,
                   child: BottomAppBar(
                     height: kToolbarHeight,
-                    color: widget.configs.imageEditorTheme.paintingEditor.bottomBarColor,
+                    color: widget
+                        .configs.imageEditorTheme.paintingEditor.bottomBarColor,
                     padding: EdgeInsets.zero,
                     child: Center(
                       child: SingleChildScrollView(
@@ -676,7 +701,8 @@ class PaintingEditorState extends State<PaintingEditor> {
                         scrollDirection: Axis.horizontal,
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            minWidth: min(MediaQuery.of(context).size.width, 500),
+                            minWidth:
+                                min(MediaQuery.of(context).size.width, 500),
                             maxWidth: 500,
                           ),
                           child: Wrap(
@@ -688,14 +714,24 @@ class PaintingEditorState extends State<PaintingEditor> {
                                 (index) => Builder(
                                   builder: (_) {
                                     var item = paintModes[index];
-                                    var color = _imageKey.currentState?.mode == item.mode
-                                        ? widget.configs.imageEditorTheme.paintingEditor.bottomBarActiveItemColor
-                                        : widget.configs.imageEditorTheme.paintingEditor.bottomBarInactiveItemColor;
+                                    var color = _imageKey.currentState?.mode ==
+                                            item.mode
+                                        ? widget
+                                            .configs
+                                            .imageEditorTheme
+                                            .paintingEditor
+                                            .bottomBarActiveItemColor
+                                        : widget
+                                            .configs
+                                            .imageEditorTheme
+                                            .paintingEditor
+                                            .bottomBarInactiveItemColor;
 
                                     return FlatIconTextButton(
                                       label: Text(
                                         item.label,
-                                        style: TextStyle(fontSize: 10.0, color: color),
+                                        style: TextStyle(
+                                            fontSize: 10.0, color: color),
                                       ),
                                       icon: Icon(item.icon, color: color),
                                       onPressed: () {
@@ -745,12 +781,16 @@ class PaintingEditorState extends State<PaintingEditor> {
   /// Returns a [Widget] representing the color picker.
   Widget _buildColorPicker() {
     return Positioned(
-      top: widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple ? 10 : 60,
+      top: widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+          ? 10
+          : 60,
       right: 0,
       child: BarColorPicker(
         configs: widget.configs,
         length: min(
-          widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple ? 350 : 200,
+          widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+              ? 350
+              : 200,
           MediaQuery.of(context).size.height -
               MediaQuery.of(context).viewInsets.bottom -
               kToolbarHeight -

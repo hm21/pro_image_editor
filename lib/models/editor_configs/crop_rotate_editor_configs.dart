@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import '../aspect_ratio_item.dart';
 import '../crop_rotate_editor/rotate_direction.dart';
 
@@ -48,6 +50,15 @@ class CropRotateEditorConfigs {
   /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
   final List<AspectRatioItem> aspectRatios;
 
+  /// The duration for the animation controller that handles rotation and scale animations.
+  final Duration animationDuration;
+
+  /// The curve used for the rotation animation.
+  final Curve rotateAnimationCurve;
+
+  /// The curve used for the scale animation, which is triggered when the image needs to resize due to rotation.
+  final Curve scaleAnimationCurve;
+
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
   ///
   /// By default, all options are enabled, and the initial aspect ratio is set
@@ -59,7 +70,10 @@ class CropRotateEditorConfigs {
     this.transformLayers = true,
     this.canChangeAspectRatio = true,
     this.initAspectRatio,
+    this.rotateAnimationCurve = Curves.decelerate,
+    this.scaleAnimationCurve = Curves.decelerate,
     this.rotateDirection = RotateDirection.left,
+    this.animationDuration = const Duration(milliseconds: 250),
     this.aspectRatios = const [
       AspectRatioItem(text: 'Free', value: -1),
       AspectRatioItem(text: 'Original', value: 0.0),

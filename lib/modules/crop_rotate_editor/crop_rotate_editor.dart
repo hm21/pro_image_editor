@@ -86,7 +86,10 @@ class CropRotateEditor extends StatefulWidget {
     required this.imageSize,
     required this.configs,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -393,7 +396,8 @@ class CropRotateEditor extends StatefulWidget {
         bodySizeWithLayers: bodySizeWithLayers,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -405,7 +409,8 @@ class CropRotateEditor extends StatefulWidget {
 ///
 /// This class handles the state and UI for an image editor
 /// that supports cropping, rotating, and aspect ratio adjustments.
-class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderStateMixin {
+class CropRotateEditorState extends State<CropRotateEditor>
+    with TickerProviderStateMixin {
   late AnimationController _rotateCtrl;
   late AnimationController _scaleCtrl;
 
@@ -441,11 +446,16 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   /// Initializes the editor with default settings.
   void _initializeEditor() {
-    _rotateCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
     double initAngle = widget.transformConfigs?.angle ?? 0.0;
-    _rotateAnimation = Tween<double>(begin: initAngle, end: initAngle).animate(_rotateCtrl);
+    _rotateCtrl = AnimationController(
+        duration: widget.configs.cropRotateEditorConfigs.animationDuration,
+        vsync: this);
+    _rotateAnimation =
+        Tween<double>(begin: initAngle, end: initAngle).animate(_rotateCtrl);
 
-    _scaleCtrl = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
+    _scaleCtrl = AnimationController(
+        duration: widget.configs.cropRotateEditorConfigs.animationDuration,
+        vsync: this);
     _scaleAnimation = Tween<double>(begin: 1, end: 1).animate(_scaleCtrl);
 
     if (widget.transformConfigs != null) {
@@ -462,7 +472,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       file: widget.file,
       networkUrl: widget.networkUrl,
     );
-    _aspectRatio = widget.configs.cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
+    _aspectRatio = widget.configs.cropRotateEditorConfigs.initAspectRatio ??
+        CropAspectRatios.custom;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _calcCropRect(calcCropRect: true);
@@ -493,37 +504,52 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   double get _cropCornerLength => 36;
 
-  double get _screenWidth => MediaQuery.of(context).size.width;
   double get _imgWidth => widget.imageSize.width;
   double get _imgHeight => widget.imageSize.height;
 
-  double get _renderedImgWidth => min(_renderedImgConstraints.maxWidth, _imgWidth);
-  double get _renderedImgHeight => min(_renderedImgConstraints.maxHeight, _imgHeight);
+  double get _ratio =>
+      1 / (_aspectRatio == 0 ? widget.imageSize.aspectRatio : _aspectRatio);
 
-  bool get _imageSticksToScreenWidth => _imgWidth >= _contentConstraints.maxWidth;
+  bool get _imageSticksToScreenWidth =>
+      _imgWidth >= _contentConstraints.maxWidth;
   bool get _rotated90deg => _rotationCount % 2 != 0;
-  Size get _imgSize => Size(
-        _rotated90deg ? _imgHeight : _imgWidth,
-        _rotated90deg ? _imgWidth : _imgHeight,
-      );
   Size get _renderedImgSize => Size(
-        _rotated90deg ? _renderedImgHeight : _renderedImgWidth,
-        _rotated90deg ? _renderedImgWidth : _renderedImgHeight,
+        _rotated90deg
+            ? _renderedImgConstraints.maxHeight
+            : _renderedImgConstraints.maxWidth,
+        _rotated90deg
+            ? _renderedImgConstraints.maxWidth
+            : _renderedImgConstraints.maxHeight,
       );
 
   CropAreaPart _currentCropAreaPart = CropAreaPart.none;
 
   void reset() {
-    _rotateCtrl.animateTo(0, curve: Curves.ease);
-    _rotateAnimation = Tween<double>(begin: _rotateAnimation.value, end: 0).animate(_rotateCtrl);
+    _flipX = false;
+    _flipY = false;
+    _translate = Offset.zero;
+
+    _rotateAnimation =
+        Tween<double>(begin: -(_rotationCount % 4) * pi / 2, end: 0)
+            .animate(_rotateCtrl);
     _rotateCtrl
       ..reset()
       ..forward();
     _rotationCount = 0;
-    _flipX = false;
-    _flipY = false;
-    _translate = Offset.zero;
+
+    _scaleAnimation =
+        Tween<double>(begin: _oldScaleFactor * _zoomFactor, end: 1)
+            .animate(_scaleCtrl);
+    _scaleCtrl
+      ..reset()
+      ..forward();
+    _oldScaleFactor = 1;
+
     _zoomFactor = 1;
+    _aspectRatio = widget.configs.cropRotateEditorConfigs.initAspectRatio ??
+        CropAspectRatios.custom;
+    _calcCropRect(calcCropRect: true);
+    setState(() {});
   }
 
   /// Closes the editor without applying changes.
@@ -558,11 +584,20 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   /// Rotates the image clockwise.
   void rotate() {
-    var piHelper = widget.configs.cropRotateEditorConfigs.rotateDirection == RotateDirection.left ? -pi : pi;
+    var piHelper = widget.configs.cropRotateEditorConfigs.rotateDirection ==
+            RotateDirection.left
+        ? -pi
+        : pi;
 
     _rotationCount++;
-    _rotateCtrl.animateTo(pi, curve: Curves.ease);
-    _rotateAnimation = Tween<double>(begin: _rotateAnimation.value, end: _rotationCount * piHelper / 2).animate(_rotateCtrl);
+    _rotateAnimation = Tween<double>(
+            begin: _rotateAnimation.value, end: _rotationCount * piHelper / 2)
+        .animate(
+      CurvedAnimation(
+        parent: _rotateCtrl,
+        curve: widget.configs.cropRotateEditorConfigs.rotateAnimationCurve,
+      ),
+    );
     _rotateCtrl
       ..reset()
       ..forward();
@@ -571,20 +606,27 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       _contentConstraints.maxWidth - _screenPadding * 2,
       _contentConstraints.maxHeight - _screenPadding * 2,
     );
-    bool shouldTransformY = contentSize.aspectRatio > _renderedImgSize.aspectRatio;
+    bool shouldTransformY =
+        contentSize.aspectRatio > _renderedImgSize.aspectRatio;
 
     double scaleX = contentSize.width / _renderedImgSize.width;
     double scaleY = contentSize.height / _renderedImgSize.height;
 
     double scale = shouldTransformY ? scaleY : scaleX;
-    _scaleCtrl.animateTo(scale, curve: Curves.ease);
-    _scaleAnimation = Tween<double>(begin: _oldScaleFactor, end: scale).animate(_scaleCtrl);
+
+    _scaleAnimation = Tween<double>(begin: _oldScaleFactor, end: scale).animate(
+      CurvedAnimation(
+        parent: _scaleCtrl,
+        curve: widget.configs.cropRotateEditorConfigs.scaleAnimationCurve,
+      ),
+    );
     _scaleCtrl
       ..reset()
       ..forward();
 
     _oldScaleFactor = scale;
     _calcCropRect(calcCropRect: true);
+    setState(() {});
   }
 
   void _calcCropRect({
@@ -596,19 +638,22 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     double newImgW = _renderedImgConstraints.maxWidth;
     double newImgH = _renderedImgConstraints.maxHeight;
 
-    double cropWidth = _imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
-    double cropHeight = _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
+    double cropWidth =
+        _imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
+    double cropHeight =
+        _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
 
-    if (calcCropRect || _cropRect.isEmpty) _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
+    if (calcCropRect || _cropRect.isEmpty)
+      _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
     _viewRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
-    //TODO:   setState(() {});
   }
 
   /// Opens a dialog to select from predefined aspect ratios.
   void openAspectRatioOptions() {
     showModalBottomSheet<double>(
         context: context,
-        backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor.aspectRatioSheetBackgroundColor,
+        backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor
+            .aspectRatioSheetBackgroundColor,
         isScrollControlled: true,
         builder: (BuildContext context) {
           return CropAspectRatioOptions(
@@ -619,13 +664,40 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         }).then((value) {
       if (value != null) {
         setState(() {
+          reset();
           _aspectRatio = value;
+
+          if (_ratio >= 0) {
+            Size bodySize = Size(
+              _contentConstraints.maxWidth - _screenPadding * 2,
+              _contentConstraints.maxHeight - _screenPadding * 2,
+            );
+            _cropRect = Rect.fromCenter(
+              center: _cropRect.center,
+              width: bodySize.width,
+              height: bodySize.width * _ratio,
+            );
+            if (_cropRect.height > bodySize.height) {
+              _cropRect = Rect.fromCenter(
+                center: _cropRect.center,
+                width: bodySize.height / _ratio,
+                height: bodySize.height,
+              );
+            }
+
+            if (_cropRect.width > _renderedImgConstraints.maxWidth) {
+              _zoomFactor = _cropRect.width / _renderedImgConstraints.maxWidth;
+            } else if (_cropRect.height > _renderedImgConstraints.maxHeight) {
+              _zoomFactor =
+                  _cropRect.height / _renderedImgConstraints.maxHeight;
+            }
+          }
         });
       }
     });
   }
 
-  void _onDragStart(DragStartDetails details) {
+  void _onPanStart(DragStartDetails details) {
     CropAreaPart determineCropAreaPart(Offset localPosition) {
       Offset offset = localPosition;
       double dx = offset.dx;
@@ -666,19 +738,122 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     }
 
     _currentCropAreaPart = determineCropAreaPart(details.localPosition);
+    print(_currentCropAreaPart);
     _interactionActive = true;
     setState(() {});
   }
 
-  void _onDragEnd(DragEndDetails details) {
+  void _onPanEnd(DragEndDetails details) async {
     _interactionActive = false;
     setState(() {});
+
+    if (_cropRect != _viewRect) {
+      int frameRate = 1000 ~/ 60;
+      double duration = 200;
+
+      // TODO: Transform image to new crop area
+
+/*       _zoomFactor *= 1 / _cropRect.longestSide * _viewRect.longestSide;
+      _translate += Offset(
+        _cropRect.left / 2,
+        _cropRect.top / 2,
+      );
+ */
+
+      // TODO: set aspect ratio to custom value if not is set to "free"
+      double aspecRatio = _cropRect.size.aspectRatio;
+
+      var body = Size(
+        _contentConstraints.maxWidth - _screenPadding * 2,
+        _contentConstraints.maxHeight - _screenPadding * 2,
+      );
+
+      bool _scaleToWidth = false;
+
+      if (body.width > _cropRect.width && body.height > _cropRect.height) {
+        _scaleToWidth =
+            body.width - _cropRect.width < body.height - _cropRect.height;
+      }
+
+      double gapTop = _cropRect.top;
+      double gapBottom = (_viewRect.bottom - _cropRect.bottom);
+
+      double factorLeft = _cropRect.left / duration * frameRate;
+      double factorTop = gapTop / duration * frameRate;
+      double factorRight =
+          (_viewRect.right - _cropRect.right) / duration * frameRate;
+      double factorBottom = gapBottom / duration * frameRate;
+
+      double factorZoom = body.width / _cropRect.width / duration * frameRate;
+
+      bool activeLoop = true;
+      double deleteme = 0; //TODO:
+
+      while (
+          activeLoop /*_cropRect.top > 0 ||
+              _cropRect.left > 0 ||
+              _cropRect.right < _viewRect.right ||
+              _cropRect.bottom < _viewRect.bottom   ||
+        body.width > _cropRect.width ||
+          body.height > _cropRect.height */
+          ) {
+        /*    _zoomFactor += factorZoom / 2;
+
+         _translate = Offset(
+          _translate.dx - factorLeft / 2,
+          _translate.dy - factorTop / 2,
+        ); 
+        _cropRect = Rect.fromLTRB(
+          _cropRect.left > 0 ? max(0, _cropRect.left - factorLeft) : 0,
+          _cropRect.top > 0 ? max(0, _cropRect.top - factorTop) : 0,
+          _cropRect.right < _viewRect.right ? min(_viewRect.right, _cropRect.right + factorRight) : _viewRect.right,
+          _cropRect.bottom < _viewRect.bottom ? min(_viewRect.bottom, _cropRect.bottom + factorBottom) : _viewRect.bottom,
+        );
+
+       */
+        if (_cropRect.width >= _viewRect.width &&
+            _cropRect.height < _viewRect.height) {
+          if (gapTop > 0 && _cropRect.top > gapTop / 2) {
+            _translate = Offset(0, _translate.dy - factorTop / 2);
+
+            _cropRect = Rect.fromLTRB(
+              _cropRect.left,
+              max(gapTop / 2, _cropRect.top - factorTop / 2),
+              _cropRect.right,
+              max(gapTop / 2, _cropRect.bottom - factorTop / 2),
+            );
+          } else if (gapBottom > 0 && _cropRect.top < gapBottom / 2) {
+            _translate = Offset(0, _translate.dy + factorBottom / 2);
+
+            _cropRect = Rect.fromLTRB(
+              _cropRect.left,
+              _cropRect.top + factorBottom / 2,
+              _cropRect.right,
+              _cropRect.bottom + factorBottom / 2,
+            );
+          } else {
+            activeLoop = false;
+          }
+        } else {
+          activeLoop = false;
+        }
+
+        await Future.delayed(Duration(milliseconds: frameRate));
+        setState(() {});
+
+        if (deleteme > 100) activeLoop = false;
+        deleteme++;
+      }
+
+      _calcCropRect();
+    }
   }
 
-  void _onDragUpdate(DragUpdateDetails details) {
+  void _onPanUpdate(DragUpdateDetails details) {
     var offset = details.delta;
 
-    if (_currentCropAreaPart != CropAreaPart.none && _currentCropAreaPart != CropAreaPart.inside) {
+    if (_currentCropAreaPart != CropAreaPart.none &&
+        _currentCropAreaPart != CropAreaPart.inside) {
       double imgW = _renderedImgConstraints.maxWidth;
       double imgH = _renderedImgConstraints.maxHeight;
 
@@ -695,8 +870,9 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
       switch (_currentCropAreaPart) {
         case CropAreaPart.topLeft:
+          double left = min(maxRight, max(0, dx));
           _cropRect = Rect.fromLTRB(
-            min(maxRight, max(0, dx)),
+            left,
             min(maxBottom, max(0, dy)),
             _cropRect.right,
             _cropRect.bottom,
@@ -709,6 +885,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
             max(cornerGap + _cropRect.left, min(imgW, dx)),
             _cropRect.bottom,
           );
+
           break;
         case CropAreaPart.bottomLeft:
           _cropRect = Rect.fromLTRB(
@@ -761,6 +938,42 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         default:
           break;
       }
+
+      if (_ratio >= 0 && _cropRect.size.aspectRatio != _ratio) {
+        if (_currentCropAreaPart == CropAreaPart.left ||
+            _currentCropAreaPart == CropAreaPart.right) {
+          _cropRect = Rect.fromCenter(
+            center: _cropRect.center,
+            width: _cropRect.width,
+            height: _cropRect.width * _ratio,
+          );
+        } else if (_currentCropAreaPart == CropAreaPart.top ||
+            _currentCropAreaPart == CropAreaPart.bottom) {
+          _cropRect = Rect.fromCenter(
+            center: _cropRect.center,
+            width: _cropRect.height / _ratio,
+            height: _cropRect.height,
+          );
+        } else if (_currentCropAreaPart == CropAreaPart.topLeft ||
+            _currentCropAreaPart == CropAreaPart.topRight) {
+          double gapBottom = _viewRect.height - _cropRect.bottom;
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            _viewRect.height - gapBottom - _cropRect.width * _ratio,
+            _cropRect.right,
+            _cropRect.bottom,
+          );
+        } else if (_currentCropAreaPart == CropAreaPart.bottomLeft ||
+            _currentCropAreaPart == CropAreaPart.bottomRight) {
+          _cropRect = Rect.fromLTRB(
+            _cropRect.left,
+            _cropRect.top,
+            _cropRect.right,
+            _cropRect.width * _ratio + _cropRect.top,
+          );
+        }
+      }
+
       setState(() {});
     } else {
       double zoomFactor = _zoomFactor;
@@ -778,8 +991,14 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       double cropWidth = (_cropRect.right - _cropRect.left);
       double cropHeight = (_cropRect.bottom - _cropRect.top);
 
-      double minX = (_renderedImgConstraints.maxWidth * _zoomFactor - cropWidth) / 2 / _zoomFactor;
-      double minY = (_renderedImgConstraints.maxHeight * _zoomFactor - cropHeight) / 2 / _zoomFactor;
+      double minX =
+          (_renderedImgConstraints.maxWidth * _zoomFactor - cropWidth) /
+              2 /
+              _zoomFactor;
+      double minY =
+          (_renderedImgConstraints.maxHeight * _zoomFactor - cropHeight) /
+              2 /
+              _zoomFactor;
 
       if (_rotated90deg) {}
 
@@ -859,9 +1078,13 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: widget.configs.imageEditorTheme.uiOverlayStyle,
         child: Theme(
-          data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+          data: widget.theme.copyWith(
+              tooltipTheme:
+                  widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
-            backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor.background,
+            resizeToAvoidBottomInset: false,
+            backgroundColor:
+                widget.configs.imageEditorTheme.cropRotateEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
             bottomNavigationBar: _buildBottomNavigationBar(),
@@ -877,8 +1100,10 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
         (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
             ? AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: widget.configs.imageEditorTheme.cropRotateEditor.appBarBackgroundColor,
-                foregroundColor: widget.configs.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
+                backgroundColor: widget.configs.imageEditorTheme
+                    .cropRotateEditor.appBarBackgroundColor,
+                foregroundColor: widget.configs.imageEditorTheme
+                    .cropRotateEditor.appBarForegroundColor,
                 actions: [
                   IconButton(
                     tooltip: widget.configs.i18n.cropRotateEditor.back,
@@ -904,7 +1129,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
               ), */
                     if (widget.configs.cropRotateEditorConfigs.canRotate)
                       IconButton(
-                        icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
+                        icon:
+                            Icon(widget.configs.icons.cropRotateEditor.rotate),
                         tooltip: widget.configs.i18n.cropRotateEditor.rotate,
                         onPressed: rotate,
                       ),
@@ -914,13 +1140,21 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                         tooltip: widget.configs.i18n.cropRotateEditor.flip,
                         onPressed: flip,
                       ),
-                    if (widget.configs.cropRotateEditorConfigs.canChangeAspectRatio)
+                    if (widget
+                        .configs.cropRotateEditorConfigs.canChangeAspectRatio)
                       IconButton(
-                        key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
-                        icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
+                        key:
+                            const ValueKey('pro-image-editor-aspect-ratio-btn'),
+                        icon: Icon(
+                            widget.configs.icons.cropRotateEditor.aspectRatio),
                         tooltip: widget.configs.i18n.cropRotateEditor.ratio,
                         onPressed: openAspectRatioOptions,
                       ),
+                    IconButton(
+                      // TODO: DELETEME
+                      icon: Icon(Icons.bug_report),
+                      onPressed: reset,
+                    ),
                     const Spacer(),
                     _buildDoneBtn(),
                   ] else ...[
@@ -928,24 +1162,36 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                     _buildDoneBtn(),
                     PlatformPopupBtn(
                       designMode: widget.configs.designMode,
-                      title: widget.configs.i18n.cropRotateEditor.smallScreenMoreTooltip,
+                      title: widget
+                          .configs.i18n.cropRotateEditor.smallScreenMoreTooltip,
                       options: [
                         if (widget.configs.cropRotateEditorConfigs.canRotate)
                           PopupMenuOption(
                             label: widget.configs.i18n.cropRotateEditor.rotate,
-                            icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
+                            icon: Icon(
+                                widget.configs.icons.cropRotateEditor.rotate),
                             onTap: () {
                               rotate();
 
-                              if (widget.configs.designMode == ImageEditorDesignModeE.cupertino) {
+                              if (widget.configs.designMode ==
+                                  ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
                             },
                           ),
-                        if (widget.configs.cropRotateEditorConfigs.canChangeAspectRatio)
+                        if (widget.configs.cropRotateEditorConfigs.canFlip)
+                          PopupMenuOption(
+                            label: widget.configs.i18n.cropRotateEditor.flip,
+                            icon: Icon(
+                                widget.configs.icons.cropRotateEditor.flip),
+                            onTap: flip,
+                          ),
+                        if (widget.configs.cropRotateEditorConfigs
+                            .canChangeAspectRatio)
                           PopupMenuOption(
                             label: widget.configs.i18n.cropRotateEditor.ratio,
-                            icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
+                            icon: Icon(widget
+                                .configs.icons.cropRotateEditor.aspectRatio),
                             onTap: openAspectRatioOptions,
                           ),
                       ],
@@ -957,7 +1203,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   Widget? _buildBottomNavigationBar() {
-    if (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+    if (widget.configs.imageEditorTheme.editorMode ==
+        ThemeEditorMode.whatsapp) {
       return WhatsAppCropRotateToolbar(
         configs: widget.configs,
         onCancel: close,
@@ -974,18 +1221,17 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     return LayoutBuilder(builder: (context, constraints) {
       _contentConstraints = constraints;
       _calcCropRect();
-      return _buildMouseListener(
-        child: _buildRotationTransform(
-          child: _buildPaintContainer(
-            child: _buildFlipTransform(
-              child: _buildRotationScaleTransform(
-                child: _buildMouseListener(
-                  child: _buildGestureDetector(
-                    child: _buildCropPainter(
-                      child: _buildUserScaleTransform(
-                        child: _buildTranslate(
-                          child: _buildImage(),
-                        ),
+
+      return _buildRotationTransform(
+        child: _buildFlipTransform(
+          child: _buildRotationScaleTransform(
+            child: _buildPaintContainer(
+              child: _buildCropPainter(
+                child: _buildUserScaleTransform(
+                  child: _buildTranslate(
+                    child: _buildMouseListener(
+                      child: _buildGestureDetector(
+                        child: _buildImage(),
                       ),
                     ),
                   ),
@@ -1000,17 +1246,18 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
 
   Listener _buildMouseListener({required Widget child}) {
     return Listener(
+      behavior: HitTestBehavior.translucent,
       onPointerSignal: isDesktop ? _mouseScroll : null,
       child: child,
     );
   }
 
-  GestureDetector _buildGestureDetector({required Widget child}) {
+  Widget _buildGestureDetector({required Widget child}) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onPanStart: _onDragStart,
-      onPanEnd: _onDragEnd,
-      onPanUpdate: _onDragUpdate,
+      onPanStart: _onPanStart,
+      onPanEnd: _onPanEnd,
+      onPanUpdate: _onPanUpdate,
       child: child,
     );
   }
@@ -1050,7 +1297,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
     );
   }
 
-  AnimatedBuilder _buildRotationScaleTransform({required Widget child}) {
+  Widget _buildRotationScaleTransform({required Widget child}) {
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) => Transform.scale(
@@ -1072,6 +1319,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
               cropRect: _cropRect,
               viewRect: _viewRect,
               scaleFactor: _zoomFactor,
+              rotationScaleFactor: _oldScaleFactor,
               interactionActive: _interactionActive,
               screenSize: Size(
                 _contentConstraints.maxWidth,
@@ -1096,8 +1344,12 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
   }
 
   Widget _buildImage() {
-    double maxWidth = _imgWidth / _imgHeight * (_contentConstraints.maxHeight - _screenPadding * 2);
-    double maxHeight = (_contentConstraints.maxWidth - _screenPadding * 2) * _imgHeight / _imgWidth;
+    double maxWidth = _imgWidth /
+        _imgHeight *
+        (_contentConstraints.maxHeight - _screenPadding * 2);
+    double maxHeight = (_contentConstraints.maxWidth - _screenPadding * 2) *
+        _imgHeight /
+        _imgWidth;
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: maxWidth,
@@ -1121,7 +1373,9 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                   BuildContext fromHeroContext,
                   BuildContext toHeroContext,
                 ) {
-                  final hero = flightDirection == HeroFlightDirection.push ? toHeroContext.widget : toHeroContext.widget;
+                  final hero = flightDirection == HeroFlightDirection.push
+                      ? toHeroContext.widget
+                      : toHeroContext.widget;
                   return (hero as Hero).child;
                 },
                 child: AutoImage(
@@ -1136,7 +1390,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
               /// TODO: Add layers with hero animation.
               /// Note: When the image is rotated or flipped it affect the hero animation.
 
-              if (widget.configs.cropRotateEditorConfigs.transformLayers && widget.layers != null)
+              if (widget.configs.cropRotateEditorConfigs.transformLayers &&
+                  widget.layers != null)
                 Builder(builder: (context) {
                   double w = _imgWidth;
                   double h = _imgHeight;
@@ -1145,7 +1400,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                   double editorH = _contentConstraints.maxHeight - screenGap;
 
                   return TransformedContentGenerator(
-                    configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                    configs:
+                        widget.transformConfigs ?? TransformConfigs.empty(),
                     child: Transform.translate(
                       offset: Offset(
                         -_screenPadding,
@@ -1154,7 +1410,8 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
                       child: LayerStack(
                         transformHelper: TransformHelper(
                           mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
-                          mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                          mainImageSize:
+                              widget.imageSizeWithLayers ?? Size.zero,
                           editorBodySize: Size(
                             w / h * editorH,
                             editorW * h / w,

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// A custom widget representing a button with a specific aspect ratio.
 class AspectRatioButton extends StatelessWidget {
   /// Creates an [AspectRatioButton] with the specified aspect ratio.
-  const AspectRatioButton({super.key, this.aspectRatio, this.isSelected = false});
+  const AspectRatioButton(
+      {super.key, this.aspectRatio, this.isSelected = false});
 
   /// The numeric value of the aspect ratio (width / height).
   final double? aspectRatio;
@@ -44,7 +45,8 @@ class AspectRatioPainter extends CustomPainter {
     final Paint paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    final double aspectRatioResult = (aspectRatio != null && aspectRatio! > 0.0) ? aspectRatio! : 1.0;
+    final double aspectRatioResult =
+        (aspectRatio != null && aspectRatio! > 0.0) ? aspectRatio! : 1.0;
 
     canvas.drawRect(
       _getPaintRect(
@@ -58,19 +60,25 @@ class AspectRatioPainter extends CustomPainter {
         text: TextSpan(
             text: '',
             style: TextStyle(
-              color: color.computeLuminance() < 0.5 ? Colors.white : Colors.black,
+              color:
+                  color.computeLuminance() < 0.5 ? Colors.white : Colors.black,
               fontSize: 16.0,
             )),
         textDirection: TextDirection.ltr,
         maxLines: 1);
     textPainter.layout(maxWidth: rect.width);
 
-    textPainter.paint(canvas, rect.center - Offset(textPainter.width / 2.0, textPainter.height / 2.0));
+    textPainter.paint(
+        canvas,
+        rect.center -
+            Offset(textPainter.width / 2.0, textPainter.height / 2.0));
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    return oldDelegate is AspectRatioPainter && (oldDelegate.isSelected != isSelected || oldDelegate.aspectRatio != aspectRatio);
+    return oldDelegate is AspectRatioPainter &&
+        (oldDelegate.isSelected != isSelected ||
+            oldDelegate.aspectRatio != aspectRatio);
   }
 
   /// Calculate the painting rectangle within the given [rect] based on the

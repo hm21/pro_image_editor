@@ -90,8 +90,10 @@ class ExportStateHistory {
 
     return {
       'version': ExportImportVersion.version_1_0_0,
-      'position':
-          _configs.historySpan == ExportHistorySpan.current || _configs.historySpan == ExportHistorySpan.currentAndForward ? 0 : _editorPosition - 1,
+      'position': _configs.historySpan == ExportHistorySpan.current ||
+              _configs.historySpan == ExportHistorySpan.currentAndForward
+          ? 0
+          : _editorPosition - 1,
       if (history.isNotEmpty) 'history': history,
       if (stickers.isNotEmpty) 'stickers': stickers,
       'imgSize': {
@@ -143,9 +145,11 @@ class ExportStateHistory {
           (_configs.exportText && layer.runtimeType == TextLayerData) ||
           (_configs.exportEmoji && layer.runtimeType == EmojiLayerData)) {
         layers.add(layer.toMap());
-      } else if (_configs.exportSticker && layer.runtimeType == StickerLayerData) {
+      } else if (_configs.exportSticker &&
+          layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
-        stickers.add(await _screenshotController.captureFromWidget(layer.sticker));
+        stickers
+            .add(await _screenshotController.captureFromWidget(layer.sticker));
       }
     }
   }

@@ -15,7 +15,8 @@ class TransformHelper {
     if (mainBodySize.isEmpty) return 1;
 
     /// Image width == Screen width
-    if (mainBodySize.width == mainImageSize.width && mainImageSize.aspectRatio < editorBodySize.aspectRatio) {
+    if (mainBodySize.width == mainImageSize.width &&
+        mainImageSize.aspectRatio < editorBodySize.aspectRatio) {
       return editorBodySize.height / mainImageSize.height;
     }
 
@@ -34,7 +35,8 @@ class TransformHelper {
     if (mainBodySize.width == mainImageSize.width) {
       /// Image size still same
       if (mainImageSize.aspectRatio > editorBodySize.aspectRatio) {
-        double editorSpaceHeight = (editorBodySize.height - mainImageSize.height) / 2;
+        double editorSpaceHeight =
+            (editorBodySize.height - mainImageSize.height) / 2;
         return Offset(
           0,
           editorSpaceHeight,
@@ -46,7 +48,8 @@ class TransformHelper {
         double mainSpace = (mainBodySize.height - mainImageSize.height) / 2;
         return Offset(
           0,
-          ((editorBodySize.height - mainBodySize.height) / 2 + mainSpace) * scale,
+          ((editorBodySize.height - mainBodySize.height) / 2 + mainSpace) *
+              scale,
         );
       }
     }
@@ -54,12 +57,15 @@ class TransformHelper {
     /// Image height == Screen height
     else if (mainBodySize.height == mainImageSize.height) {
       double imageWidth = editorBodySize.height * mainImageSize.aspectRatio;
-      double mainScreenSpaceWidth = (mainBodySize.width - mainImageSize.width) / 2;
+      double mainScreenSpaceWidth =
+          (mainBodySize.width - mainImageSize.width) / 2;
 
-      double editorScreenSpaceWidth = mainScreenSpaceWidth - (editorBodySize.width - imageWidth) / 2;
+      double editorScreenSpaceWidth =
+          mainScreenSpaceWidth - (editorBodySize.width - imageWidth) / 2;
 
       return Offset(
-        ((mainBodySize.width - imageWidth) / 2 + editorScreenSpaceWidth) * scale,
+        ((mainBodySize.width - imageWidth) / 2 + editorScreenSpaceWidth) *
+            scale,
         (editorBodySize.height - mainBodySize.height) / 2 * scale,
       );
     }

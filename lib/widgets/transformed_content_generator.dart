@@ -13,10 +13,12 @@ class TransformedContentGenerator extends StatefulWidget {
   });
 
   @override
-  State<TransformedContentGenerator> createState() => _TransformedContentGeneratorState();
+  State<TransformedContentGenerator> createState() =>
+      _TransformedContentGeneratorState();
 }
 
-class _TransformedContentGeneratorState extends State<TransformedContentGenerator> {
+class _TransformedContentGeneratorState
+    extends State<TransformedContentGenerator> {
   @override
   Widget build(BuildContext context) {
     return Transform.rotate(

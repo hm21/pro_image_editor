@@ -10,15 +10,9 @@ import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../models/crop_rotate_editor/transform_factors.dart';
-import '../models/custom_widgets.dart';
-import '../models/editor_configs/blur_editor_configs.dart';
 import '../models/editor_image.dart';
 import '../models/layer.dart';
-import '../models/theme/theme.dart';
-import '../models/i18n/i18n.dart';
-import '../models/icons/icons.dart';
 import '../models/transform_helper.dart';
-import '../utils/design_mode.dart';
 import '../widgets/layer_stack.dart';
 import '../widgets/loading_dialog.dart';
 import 'filter_editor/widgets/image_with_multiple_filters.dart';
@@ -100,7 +94,10 @@ class BlurEditor extends StatefulWidget {
     required this.imageSize,
     required this.configs,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -431,7 +428,8 @@ class BlurEditor extends StatefulWidget {
         currentBlur: currentBlur,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -494,11 +492,13 @@ class BlurEditorState extends State<BlurEditor> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(
+          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: widget.configs.imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
-          backgroundColor: widget.configs.imageEditorTheme.blurEditor.background,
+          backgroundColor:
+              widget.configs.imageEditorTheme.blurEditor.background,
           appBar: _buildAppBar(),
           body: _buildBody(),
           bottomNavigationBar: _buildBottomNavBar(),
@@ -512,8 +512,10 @@ class BlurEditorState extends State<BlurEditor> {
     return widget.configs.customWidgets.appBarBlurEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: widget.configs.imageEditorTheme.blurEditor.appBarBackgroundColor,
-          foregroundColor: widget.configs.imageEditorTheme.blurEditor.appBarForegroundColor,
+          backgroundColor:
+              widget.configs.imageEditorTheme.blurEditor.appBarBackgroundColor,
+          foregroundColor:
+              widget.configs.imageEditorTheme.blurEditor.appBarForegroundColor,
           actions: [
             IconButton(
               tooltip: widget.configs.i18n.blurEditor.back,
@@ -545,7 +547,8 @@ class BlurEditorState extends State<BlurEditor> {
             children: [
               Hero(
                 tag: widget.configs.heroTag,
-                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                createRectTween: (begin, end) =>
+                    RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),
                   child: ImageWithMultipleFilters(
@@ -563,7 +566,8 @@ class BlurEditorState extends State<BlurEditor> {
                   ),
                 ),
               ),
-              if (widget.configs.blurEditorConfigs.showLayers && widget.layers != null)
+              if (widget.configs.blurEditorConfigs.showLayers &&
+                  widget.layers != null)
                 LayerStack(
                   transformHelper: TransformHelper(
                     mainBodySize: widget.bodySizeWithLayers ?? Size.zero,

@@ -70,7 +70,8 @@ class ImportStateHistory {
 
     return ImportStateHistory._(
       editorPosition: map['position'],
-      imgSize: Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
+      imgSize:
+          Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
       stateHistory: stateHistory,
       configs: configs,
     );
