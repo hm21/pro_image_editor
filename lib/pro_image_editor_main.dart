@@ -1171,14 +1171,14 @@ class ProImageEditorState extends State<ProImageEditor> {
     required bool flipX,
     required bool flipY,
   }) {
-    if (flipY) {
+    if (flipY != layer.flipY) {
       layer.flipY = !layer.flipY;
       layer.offset = Offset(
         layer.offset.dx,
         _imageHeight - layer.offset.dy,
       );
     }
-    if (flipX) {
+    if (flipX != layer.flipX) {
       layer.flipX = !layer.flipX;
       layer.offset = Offset(
         _imageWidth - layer.offset.dx,

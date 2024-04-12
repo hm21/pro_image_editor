@@ -37,6 +37,9 @@ class CropRotateEditorConfigs {
   /// Layers will also be transformed like the crop-rotate image.
   final bool transformLayers;
 
+  /// Enables double-tap zoom functionality when set to true.
+  final bool enableDoubleTap;
+
   /// The direction in which the image will be rotated.
   final RotateDirection rotateDirection;
 
@@ -66,6 +69,7 @@ class CropRotateEditorConfigs {
   const CropRotateEditorConfigs({
     this.enabled = true,
     this.canRotate = true,
+    this.enableDoubleTap = true,
     this.canFlip = true,
     this.transformLayers = true,
     this.canChangeAspectRatio = true,

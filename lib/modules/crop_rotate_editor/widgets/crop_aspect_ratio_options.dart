@@ -47,7 +47,8 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 24,
-                color: widget.configs.imageEditorTheme.cropRotateEditor.aspectRatioSheetForegroundColor,
+                color: widget.configs.imageEditorTheme.cropRotateEditor
+                    .aspectRatioSheetForegroundColor,
               ),
             ),
           ),
@@ -58,15 +59,19 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
                 primary: false,
                 shrinkWrap: true,
                 controller: _scrollCtrl,
-                itemCount: widget.configs.cropRotateEditorConfigs.aspectRatios.length,
+                itemCount:
+                    widget.configs.cropRotateEditorConfigs.aspectRatios.length,
                 itemBuilder: (context, index) {
-                  var item = widget.configs.cropRotateEditorConfigs.aspectRatios[index];
+                  var item = widget
+                      .configs.cropRotateEditorConfigs.aspectRatios[index];
                   return ListTile(
                     leading: SizedBox(
                       height: 38,
                       child: FittedBox(
                         child: AspectRatioButton(
-                          aspectRatio: item.value == 0 ? widget.originalAspectRatio : item.value,
+                          aspectRatio: item.value == 0
+                              ? widget.originalAspectRatio
+                              : item.value,
                           isSelected: item.value == widget.aspectRatio,
                         ),
                       ),
@@ -76,7 +81,8 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
-                        color: widget.configs.imageEditorTheme.cropRotateEditor.aspectRatioSheetForegroundColor,
+                        color: widget.configs.imageEditorTheme.cropRotateEditor
+                            .aspectRatioSheetForegroundColor,
                       ),
                     ),
                     onTap: () {

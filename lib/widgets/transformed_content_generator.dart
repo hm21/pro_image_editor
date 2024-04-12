@@ -21,22 +21,24 @@ class _TransformedContentGeneratorState
     extends State<TransformedContentGenerator> {
   @override
   Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: widget.configs.angle,
-      alignment: Alignment.center,
-      child: Transform.flip(
-        flipX: widget.configs.flipX,
-        flipY: widget.configs.flipY,
-        child: Transform.scale(
-          // TODO: Add widget which cut outside from zoomed content
-          scale: widget.configs.scale,
-          alignment: Alignment.center,
-          child: Transform.translate(
-            offset: widget.configs.offset,
-            child: widget.child,
+    return LayoutBuilder(builder: (context, constraints) {
+      return Transform.rotate(
+        angle: widget.configs.angle,
+        alignment: Alignment.center,
+        child: Transform.flip(
+          flipX: widget.configs.flipX,
+          flipY: widget.configs.flipY,
+          child: Transform.scale(
+            // TODO: Add widget (maybe custom painter) which cut outside from zoomed content
+            scale: widget.configs.scale,
+            alignment: Alignment.center,
+            child: Transform.translate(
+              offset: widget.configs.offset,
+              child: widget.child,
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

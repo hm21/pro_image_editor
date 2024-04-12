@@ -3,37 +3,55 @@ import 'package:flutter/widgets.dart';
 class TransformConfigs {
   final Offset offset;
   final double angle;
-  final double scale;
+  final double scaleAspectRatio;
+  final double scaleUser;
+  final double scaleRotation;
+  final double aspectRatio;
   final bool flipX;
   final bool flipY;
+  final ImageMaxSide maxSide;
 
   const TransformConfigs({
     required this.angle,
-    required this.scale,
+    required this.scaleAspectRatio,
+    required this.scaleUser,
+    required this.scaleRotation,
+    required this.aspectRatio,
     required this.flipX,
     required this.flipY,
     required this.offset,
+    required this.maxSide,
   });
 
   factory TransformConfigs.fromMap(Map map) {
     return TransformConfigs(
       angle: map['angle'] ?? 0,
-      scale: map['scale'] ?? 1,
+      scaleAspectRatio: map['scaleAspectRatio'] ?? 1,
+      scaleUser: map['scaleUser'] ?? 1,
+      scaleRotation: map['scaleRotation'] ?? 1,
+      aspectRatio: map['aspectRatio'] ?? -1,
       flipX: map['flipX'] ?? false,
       flipY: map['flipY'] ?? false,
       offset: Offset(
         map['offset']?['dx'] ?? 0,
         map['offset']?['dy'] ?? 0,
       ),
+      maxSide: ImageMaxSide.values.firstWhere(
+        (element) => element.name == map['maxSide'],
+      ),
     );
   }
   factory TransformConfigs.empty() {
     return const TransformConfigs(
       angle: 0,
-      scale: 1,
+      scaleAspectRatio: 1,
+      scaleUser: 1,
+      scaleRotation: 1,
+      aspectRatio: -1,
       flipX: false,
       flipY: false,
       offset: Offset(0, 0),
+      maxSide: ImageMaxSide.unset,
     );
   }
 
@@ -41,23 +59,35 @@ class TransformConfigs {
     // TODO: function?
     return TransformConfigs(
       angle: angle,
-      scale: scale,
+      scaleAspectRatio: scaleAspectRatio,
+      scaleUser: scaleUser,
+      scaleRotation: scaleRotation,
+      aspectRatio: aspectRatio,
       flipX: flipX,
       flipY: flipY,
       offset: offset,
+      maxSide: ImageMaxSide.unset,
     );
   }
+
+  double get scale => scaleUser * scaleRotation * scaleAspectRatio;
 
   Map toMap() {
     return {
       'angle': angle,
-      'scale': scale,
+      'scaleAspectRatio': scaleAspectRatio,
+      'scaleUser': scaleUser,
+      'scaleRotation': scaleRotation,
       'flipX': flipX,
       'flipY': flipY,
+      'aspectRatio': aspectRatio,
       'offset': {
         'dx': offset.dx,
         'dy': offset.dy,
       },
+      'maxSide': maxSide.name,
     };
   }
 }
+
+enum ImageMaxSide { horizontal, vertical, unset }
