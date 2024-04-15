@@ -13,6 +13,7 @@ import 'package:screenshot/screenshot.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
 import '../../models/layer.dart';
+import '../../utils/helper/editor_mixin.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
 import 'widgets/filter_editor_item_list.dart';
@@ -26,7 +27,12 @@ import 'widgets/image_with_filter.dart';
 /// - `FilterEditor.network`: Loads an image from a network URL.
 /// - `FilterEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `FilterEditor.autoSource`: Automatically selects the source based on provided parameters.
-class FilterEditor extends StatefulWidget {
+class FilterEditor extends StatefulWidget with ImageEditorMixin {
+  @override
+  final ThemeData theme;
+  @override
+  final ProImageEditorConfigs configs;
+
   /// A byte array representing the image data.
   final Uint8List? byteArray;
 
@@ -38,12 +44,6 @@ class FilterEditor extends StatefulWidget {
 
   /// The network URL of the image.
   final String? networkUrl;
-
-  /// The theme configuration for the editor.
-  final ThemeData theme;
-
-  /// The image editor configs.
-  final ProImageEditorConfigs configs;
 
   /// The transform configurations how the image should be initialized.
   final TransformConfigs? transformConfigs;
@@ -91,10 +91,7 @@ class FilterEditor extends StatefulWidget {
     required this.theme,
     required this.configs,
   }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
+          byteArray != null || file != null || networkUrl != null || assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -412,8 +409,7 @@ class FilterEditor extends StatefulWidget {
         convertToUint8List: convertToUint8List,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -422,7 +418,7 @@ class FilterEditor extends StatefulWidget {
 }
 
 /// The state class for the `FilterEditor` widget.
-class FilterEditorState extends State<FilterEditor> {
+class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
   /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -452,11 +448,11 @@ class FilterEditorState extends State<FilterEditor> {
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: widget.configs.i18n,
+          i18n: i18n,
           theme: widget.theme,
-          designMode: widget.configs.designMode,
-          message: widget.configs.i18n.filterEditor.applyFilterDialogMsg,
-          imageEditorTheme: widget.configs.imageEditorTheme,
+          designMode: designMode,
+          message: i18n.filterEditor.applyFilterDialogMsg,
+          imageEditorTheme: imageEditorTheme,
         );
       var data = await screenshotController.capture();
       _createScreenshot = false;
@@ -476,13 +472,11 @@ class FilterEditorState extends State<FilterEditor> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(
-          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: widget.configs.imageEditorTheme.uiOverlayStyle,
+        value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
-          backgroundColor:
-              widget.configs.imageEditorTheme.filterEditor.background,
+          backgroundColor: imageEditorTheme.filterEditor.background,
           appBar: _buildAppBar(),
           body: _buildBody(),
           bottomNavigationBar: _buildBottomNavBar(),
@@ -493,25 +487,23 @@ class FilterEditorState extends State<FilterEditor> {
 
   /// Builds the app bar for the filter editor.
   PreferredSizeWidget _buildAppBar() {
-    return widget.configs.customWidgets.appBarFilterEditor ??
+    return customWidgets.appBarFilterEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: widget
-              .configs.imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor: widget
-              .configs.imageEditorTheme.filterEditor.appBarForegroundColor,
+          backgroundColor: imageEditorTheme.filterEditor.appBarBackgroundColor,
+          foregroundColor: imageEditorTheme.filterEditor.appBarForegroundColor,
           actions: [
             IconButton(
-              tooltip: widget.configs.i18n.filterEditor.back,
+              tooltip: i18n.filterEditor.back,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.configs.icons.backButton),
+              icon: Icon(icons.backButton),
               onPressed: close,
             ),
             const Spacer(),
             IconButton(
-              tooltip: widget.configs.i18n.filterEditor.done,
+              tooltip: i18n.filterEditor.done,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.configs.icons.applyChanges),
+              icon: Icon(icons.applyChanges),
               iconSize: 28,
               onPressed: done,
             ),
@@ -530,8 +522,7 @@ class FilterEditorState extends State<FilterEditor> {
             children: [
               Hero(
                 tag: widget.configs.heroTag,
-                createRectTween: (begin, end) =>
-                    RectTween(begin: begin, end: end),
+                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),
                   child: ImageWithFilter(
@@ -542,7 +533,7 @@ class FilterEditorState extends State<FilterEditor> {
                       assetPath: widget.assetPath,
                     ),
                     activeFilters: widget.activeFilters,
-                    designMode: widget.configs.designMode,
+                    designMode: designMode,
                     filter: selectedFilter,
                     blur: widget.blur,
                     fit: BoxFit.contain,
@@ -550,8 +541,7 @@ class FilterEditorState extends State<FilterEditor> {
                   ),
                 ),
               ),
-              if (widget.configs.filterEditorConfigs.showLayers &&
-                  widget.layers != null)
+              if (filterEditorConfigs.showLayers && widget.layers != null)
                 LayerStack(
                   transformHelper: TransformHelper(
                     mainBodySize: widget.bodySizeWithLayers ?? Size.zero,

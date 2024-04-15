@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../models/theme/theme.dart';
@@ -37,10 +38,19 @@ class CropCornerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: Create rounded cropper and other aspect ratios
+    // TODO: Create rounded cropper
     _drawDarkenOutside(canvas: canvas, size: size);
     if (interactionActive) _drawHelperAreas(canvas: canvas, size: size);
     _drawCorners(canvas: canvas, size: size);
+
+    /// TODO: Delete me
+    if (kDebugMode) {
+      canvas.drawCircle(
+        Offset(size.width / 2, size.height / 2),
+        2,
+        Paint()..color = Colors.red.shade900,
+      );
+    }
   }
 
   void _drawDarkenOutside({
@@ -82,9 +92,7 @@ class CropCornerPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = interactionActive
-            ? Colors.black.withOpacity(0.5)
-            : Colors.black.withOpacity(0.7)
+        ..color = interactionActive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.7)
         ..style = PaintingStyle.fill,
     );
   }
@@ -103,22 +111,16 @@ class CropCornerPainter extends CustomPainter {
     path.addRect(Rect.fromLTWH(_cropOffsetLeft, _cropOffsetTop, width, length));
 
     /// Top-Right
-    path.addRect(Rect.fromLTWH(
-        _cropOffsetRight - length, _cropOffsetTop, length, width));
-    path.addRect(
-        Rect.fromLTWH(_cropOffsetRight - width, _cropOffsetTop, width, length));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - length, _cropOffsetTop, length, width));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - width, _cropOffsetTop, width, length));
 
     /// Bottom-Left
-    path.addRect(Rect.fromLTWH(
-        0 + _cropOffsetLeft, _cropOffsetBottom - width, length, width));
-    path.addRect(Rect.fromLTWH(
-        0 + _cropOffsetLeft, _cropOffsetBottom - length, width, length));
+    path.addRect(Rect.fromLTWH(0 + _cropOffsetLeft, _cropOffsetBottom - width, length, width));
+    path.addRect(Rect.fromLTWH(0 + _cropOffsetLeft, _cropOffsetBottom - length, width, length));
 
     /// Bottom-Right
-    path.addRect(Rect.fromLTWH(
-        _cropOffsetRight - length, _cropOffsetBottom - width, length, width));
-    path.addRect(Rect.fromLTWH(
-        _cropOffsetRight - width, _cropOffsetBottom - length, width, length));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - length, _cropOffsetBottom - width, length, width));
+    path.addRect(Rect.fromLTWH(_cropOffsetRight - width, _cropOffsetBottom - length, width, length));
 
     canvas.drawPath(
       path,

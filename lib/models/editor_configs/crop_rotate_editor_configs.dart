@@ -40,13 +40,25 @@ class CropRotateEditorConfigs {
   /// Enables double-tap zoom functionality when set to true.
   final bool enableDoubleTap;
 
-  /// The direction in which the image will be rotated.
-  final RotateDirection rotateDirection;
+  /// Determines if the mouse scroll direction should be reversed.
+  final bool reverseMouseScroll;
+
+  /// Determines if the drag direction should be reversed.
+  final bool reverseDragDirection;
 
   /// The initial aspect ratio for cropping.
   ///
   /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
   final double? initAspectRatio;
+
+  /// The maximum scale allowed for the view.
+  final double maxScale;
+
+  /// The scaling factor applied to mouse scrolling.
+  final double mouseScaleFactor;
+
+  /// The scaling factor applied when double-tapping.
+  final double doubleTapScaleFactor;
 
   /// The allowed aspect ratios for cropping.
   ///
@@ -62,6 +74,9 @@ class CropRotateEditorConfigs {
   /// The curve used for the scale animation, which is triggered when the image needs to resize due to rotation.
   final Curve scaleAnimationCurve;
 
+  /// The direction in which the image will be rotated.
+  final RotateDirection rotateDirection;
+
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
   ///
   /// By default, all options are enabled, and the initial aspect ratio is set
@@ -69,15 +84,20 @@ class CropRotateEditorConfigs {
   const CropRotateEditorConfigs({
     this.enabled = true,
     this.canRotate = true,
-    this.enableDoubleTap = true,
     this.canFlip = true,
+    this.enableDoubleTap = true,
     this.transformLayers = true,
     this.canChangeAspectRatio = true,
+    this.reverseMouseScroll = false,
+    this.reverseDragDirection = false,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
     this.rotateDirection = RotateDirection.left,
     this.animationDuration = const Duration(milliseconds: 250),
+    this.maxScale = 7,
+    this.mouseScaleFactor = 0.1,
+    this.doubleTapScaleFactor = 2,
     this.aspectRatios = const [
       AspectRatioItem(text: 'Free', value: -1),
       AspectRatioItem(text: 'Original', value: 0.0),
