@@ -59,13 +59,17 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
         body: SafeArea(
           child: Column(
             children: [
-              if (widget.configs.designMode == ImageEditorDesignModeE.material) ..._buildMaterialHeader() else ..._buildCupertinoHeader(),
+              if (widget.configs.designMode == ImageEditorDesignModeE.material)
+                ..._buildMaterialHeader()
+              else
+                ..._buildCupertinoHeader(),
               Expanded(
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     Offstage(
-                      offstage: whatsAppTemporaryStickerMode != WhatsAppStickerMode.emoji,
+                      offstage: whatsAppTemporaryStickerMode !=
+                          WhatsAppStickerMode.emoji,
                       child: EmojiEditor(
                         key: _emojiEditorKey,
                         configs: widget.configs,
@@ -73,7 +77,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                     ),
                     if (widget.configs.stickerEditorConfigs != null)
                       Offstage(
-                        offstage: whatsAppTemporaryStickerMode != WhatsAppStickerMode.sticker,
+                        offstage: whatsAppTemporaryStickerMode !=
+                            WhatsAppStickerMode.sticker,
                         child: StickerEditor(
                           configs: widget.configs,
                         ),
@@ -107,7 +112,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                   setState(() {
                     _searchCtrl.clear();
                     _activeSearch = false;
-                    widget.configs.stickerEditorConfigs?.onSearchChanged?.call('');
+                    widget.configs.stickerEditorConfigs?.onSearchChanged
+                        ?.call('');
                   });
                 } else {
                   Navigator.pop(context);
@@ -171,7 +177,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                             ButtonSegment(
                               value: WhatsAppStickerMode.sticker,
                               label: Text(
-                                widget.configs.i18n.stickerEditor.bottomNavigationBarText,
+                                widget.configs.i18n.stickerEditor
+                                    .bottomNavigationBarText,
                                 style: const TextStyle(
                                   fontSize: 13,
                                 ),
@@ -180,7 +187,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                             ButtonSegment(
                               value: WhatsAppStickerMode.emoji,
                               label: Text(
-                                widget.configs.i18n.emojiEditor.bottomNavigationBarText,
+                                widget.configs.i18n.emojiEditor
+                                    .bottomNavigationBarText,
                                 style: const TextStyle(
                                   fontSize: 13,
                                 ),
@@ -215,7 +223,9 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
       ),
       AnimatedSwitcher(
         duration: const Duration(milliseconds: 180),
-        reverseDuration: widget.configs.stickerEditorConfigs != null ? null : const Duration(),
+        reverseDuration: widget.configs.stickerEditorConfigs != null
+            ? null
+            : const Duration(),
         switchInCurve: Curves.easeInOut,
         transitionBuilder: (child, animation) => FadeTransition(
           opacity: animation,
@@ -236,7 +246,9 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: AnimatedSwitcher(
-          duration: Duration(milliseconds: widget.configs.stickerEditorConfigs != null ? 160 : 0),
+          duration: Duration(
+              milliseconds:
+                  widget.configs.stickerEditorConfigs != null ? 160 : 0),
           switchInCurve: Curves.easeInOut,
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
@@ -266,7 +278,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                         icon: const Icon(Icons.search),
                         color: Colors.white,
                       ),
-                      if (widget.configs.stickerEditorConfigs != null) _buildCupertinoSegments(),
+                      if (widget.configs.stickerEditorConfigs != null)
+                        _buildCupertinoSegments(),
                       IconButton(
                         onPressed: null,
                         icon: Icon(
@@ -326,9 +339,11 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                 focusNode: _searchFocus,
                 onChanged: (value) {
                   _emojiEditorKey.currentState?.externSearch(value);
-                  widget.configs.stickerEditorConfigs?.onSearchChanged?.call(value);
+                  widget.configs.stickerEditorConfigs?.onSearchChanged
+                      ?.call(value);
                   _searchFocus.requestFocus();
-                  Future.delayed(const Duration(milliseconds: 1)).whenComplete(() {
+                  Future.delayed(const Duration(milliseconds: 1))
+                      .whenComplete(() {
                     _searchFocus.requestFocus();
                   });
                 },
@@ -351,7 +366,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
       );
     } else {
       return Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(100)),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(100)),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -366,7 +382,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                   focusNode: _searchFocus,
                   onChanged: (value) {
                     _emojiEditorKey.currentState?.externSearch(value);
-                    widget.configs.stickerEditorConfigs?.onSearchChanged?.call(value);
+                    widget.configs.stickerEditorConfigs?.onSearchChanged
+                        ?.call(value);
                     _searchFocus.requestFocus();
                   },
                   decoration: InputDecoration(
@@ -383,7 +400,8 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                 setState(() {
                   if (_searchCtrl.text.isNotEmpty) {
                     _searchCtrl.clear();
-                    widget.configs.stickerEditorConfigs?.onSearchChanged?.call('');
+                    widget.configs.stickerEditorConfigs?.onSearchChanged
+                        ?.call('');
                   } else {
                     _activeSearch = false;
                   }

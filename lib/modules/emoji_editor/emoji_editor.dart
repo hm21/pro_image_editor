@@ -40,7 +40,8 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
   late final EmojiTextEditingController _controller;
 
   late final TextStyle _textStyle;
-  final bool isApple = [TargetPlatform.iOS, TargetPlatform.macOS].contains(defaultTargetPlatform);
+  final bool isApple = [TargetPlatform.iOS, TargetPlatform.macOS]
+      .contains(defaultTargetPlatform);
   bool _showExternalSearchPage = false;
 
   @override
@@ -68,13 +69,16 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
     setState(() {
       _showExternalSearchPage = text.isNotEmpty;
     });
-    Future.delayed(Duration(milliseconds: _emojiSearchPageKey.currentState == null ? 30 : 0)).whenComplete(() {
+    Future.delayed(Duration(
+            milliseconds: _emojiSearchPageKey.currentState == null ? 30 : 0))
+        .whenComplete(() {
       _emojiSearchPageKey.currentState?.search(text);
     });
   }
 
   /// Is `true` if the editor use the `WhatsApp` design.
-  bool get _isWhatsApp => imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
+  bool get _isWhatsApp =>
+      imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +100,8 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
   }
 
   /// Builds a SizedBox containing the EmojiPicker with dynamic sizing.
-  Widget _buildEmojiPickerSizedBox(BoxConstraints constraints, BuildContext context) {
+  Widget _buildEmojiPickerSizedBox(
+      BoxConstraints constraints, BuildContext context) {
     if (_showExternalSearchPage) {
       return EmojiEditorFullScreenSearchView(
         key: _emojiSearchPageKey,
@@ -122,7 +127,8 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
               topRight: Radius.circular(10),
             ),
       child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: EmojiPicker(
           key: _emojiPickerKey,
           onEmojiSelected: (category, emoji) => {
@@ -144,27 +150,38 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
           ? double.infinity
           : max(
               50,
-              min(320, constraints.maxHeight) - MediaQuery.of(context).padding.bottom,
+              min(320, constraints.maxHeight) -
+                  MediaQuery.of(context).padding.bottom,
             ),
       emojiSet: emojiEditorConfigs.emojiSet,
       checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
-      emojiTextStyle: _textStyle.copyWith(fontSize: _isWhatsApp && designMode != ImageEditorDesignModeE.cupertino ? 48 : null),
+      emojiTextStyle: _textStyle.copyWith(
+          fontSize:
+              _isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
+                  ? 48
+                  : null),
       emojiViewConfig: emojiEditorConfigs.emojiViewConfig ??
           EmojiViewConfig(
             gridPadding: EdgeInsets.zero,
             horizontalSpacing: 0,
             verticalSpacing: 0,
             recentsLimit: _isWhatsApp ? 100 : 28,
-            backgroundColor: _isWhatsApp ? Colors.transparent : imageEditorBackgroundColor,
+            backgroundColor:
+                _isWhatsApp ? Colors.transparent : imageEditorBackgroundColor,
             noRecents: Text(
               i18n.emojiEditor.noRecents,
               style: const TextStyle(fontSize: 20, color: Colors.white),
               textAlign: TextAlign.center,
             ),
-            buttonMode: designMode == ImageEditorDesignModeE.cupertino ? ButtonMode.CUPERTINO : ButtonMode.MATERIAL,
+            buttonMode: designMode == ImageEditorDesignModeE.cupertino
+                ? ButtonMode.CUPERTINO
+                : ButtonMode.MATERIAL,
             loadingIndicator: const Center(child: CircularProgressIndicator()),
             columns: _calculateColumns(constraints),
-            emojiSizeMax: !_isWhatsApp || designMode == ImageEditorDesignModeE.cupertino ? 32 : 64,
+            emojiSizeMax:
+                !_isWhatsApp || designMode == ImageEditorDesignModeE.cupertino
+                    ? 32
+                    : 64,
             replaceEmojiOnLimitExceed: false,
           ),
       swapCategoryAndBottomBar: emojiEditorConfigs.swapCategoryAndBottomBar,
@@ -203,7 +220,9 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
               flagIcon: Icons.flag_outlined,
             ),
           ),
-      bottomActionBarConfig: _isWhatsApp ? const BottomActionBarConfig(enabled: false) : emojiEditorConfigs.bottomActionBarConfig,
+      bottomActionBarConfig: _isWhatsApp
+          ? const BottomActionBarConfig(enabled: false)
+          : emojiEditorConfigs.bottomActionBarConfig,
       searchViewConfig: emojiEditorConfigs.searchViewConfig ??
           SearchViewConfig(
             backgroundColor: imageEditorBackgroundColor,
@@ -225,6 +244,13 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
   }
 
   /// Calculates the number of columns for the EmojiPicker.
-  int _calculateColumns(BoxConstraints constraints) =>
-      max(1, (_isWhatsApp && designMode != ImageEditorDesignModeE.cupertino ? 6 : 10) / 400 * constraints.maxWidth - 1).floor();
+  int _calculateColumns(BoxConstraints constraints) => max(
+          1,
+          (_isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
+                      ? 6
+                      : 10) /
+                  400 *
+                  constraints.maxWidth -
+              1)
+      .floor();
 }

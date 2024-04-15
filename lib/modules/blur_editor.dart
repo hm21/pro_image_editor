@@ -95,7 +95,10 @@ class BlurEditor extends StatefulWidget with ImageEditorMixin {
     required this.imageSize,
     required this.configs,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -426,7 +429,8 @@ class BlurEditor extends StatefulWidget with ImageEditorMixin {
         currentBlur: currentBlur,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -489,7 +493,8 @@ class BlurEditorState extends State<BlurEditor> with ImageEditorStateMixin {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(
+          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -540,7 +545,8 @@ class BlurEditorState extends State<BlurEditor> with ImageEditorStateMixin {
             children: [
               Hero(
                 tag: heroTag,
-                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                createRectTween: (begin, end) =>
+                    RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),
                   child: ImageWithMultipleFilters(

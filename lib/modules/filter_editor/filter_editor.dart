@@ -92,7 +92,10 @@ class FilterEditor extends StatefulWidget with ImageEditorMixin {
     required this.theme,
     required this.configs,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -410,7 +413,8 @@ class FilterEditor extends StatefulWidget with ImageEditorMixin {
         convertToUint8List: convertToUint8List,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -473,7 +477,8 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: widget.theme.copyWith(
+          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -523,7 +528,8 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
             children: [
               Hero(
                 tag: heroTag,
-                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                createRectTween: (begin, end) =>
+                    RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),
                   child: ImageWithFilter(

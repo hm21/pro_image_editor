@@ -90,7 +90,10 @@ class PaintingEditor extends StatefulWidget with ImageEditorMixin {
     required this.filters,
     required this.blur,
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -284,7 +287,8 @@ class PaintingEditor extends StatefulWidget with ImageEditorMixin {
         blur: blur,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -292,7 +296,8 @@ class PaintingEditor extends StatefulWidget with ImageEditorMixin {
   State<PaintingEditor> createState() => PaintingEditorState();
 }
 
-class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMixin {
+class PaintingEditorState extends State<PaintingEditor>
+    with ImageEditorStateMixin {
   /// A global key for accessing the state of the PaintingCanvas widget.
   final _imageKey = GlobalKey<PaintingCanvasState>();
 
@@ -324,7 +329,8 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
   PaintModeE? get mode => _imageKey.currentState?.mode;
 
   /// Get the active selected color.
-  Color get activeColor => _imageKey.currentState?.activeColor ?? Colors.black38;
+  Color get activeColor =>
+      _imageKey.currentState?.activeColor ?? Colors.black38;
 
   /// A list of [PaintModeBottomBarItem] representing the available drawing modes in the painting editor.
   /// The list is dynamically generated based on the configuration settings in the [PaintEditorConfigs] object.
@@ -451,7 +457,9 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: imageEditorTheme.uiOverlayStyle,
       child: Theme(
-        data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+        data: widget.theme.copyWith(
+            tooltipTheme:
+                widget.theme.tooltipTheme.copyWith(preferBelow: true)),
         child: LayoutBuilder(builder: (context, constraints) {
           return Scaffold(
             resizeToAvoidBottomInset: false,
@@ -474,8 +482,10 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
         (imageEditorTheme.editorMode == ThemeEditorMode.simple
             ? AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: imageEditorTheme.paintingEditor.appBarBackgroundColor,
-                foregroundColor: imageEditorTheme.paintingEditor.appBarForegroundColor,
+                backgroundColor:
+                    imageEditorTheme.paintingEditor.appBarBackgroundColor,
+                foregroundColor:
+                    imageEditorTheme.paintingEditor.appBarForegroundColor,
                 actions: [
                   IconButton(
                     tooltip: i18n.paintEditor.back,
@@ -485,7 +495,8 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                   ),
                   if (_imageKey.currentState != null) ...[
                     if (constraints.maxWidth >= 300) ...[
-                      if (constraints.maxWidth >= 380) const SizedBox(width: 80),
+                      if (constraints.maxWidth >= 380)
+                        const SizedBox(width: 80),
                       const Spacer(),
                       if (paintEditorConfigs.canChangeLineWidth)
                         IconButton(
@@ -502,7 +513,9 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                           tooltip: i18n.paintEditor.toggleFill,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           icon: Icon(
-                            !_fill ? icons.paintingEditor.noFill : icons.paintingEditor.fill,
+                            !_fill
+                                ? icons.paintingEditor.noFill
+                                : icons.paintingEditor.fill,
                             color: Colors.white,
                           ),
                           onPressed: toggleFill,
@@ -513,7 +526,9 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           icons.undoAction,
-                          color: canUndo ? Colors.white : Colors.white.withAlpha(80),
+                          color: canUndo
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
                         ),
                         onPressed: undoAction,
                       ),
@@ -522,7 +537,9 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           icons.redoAction,
-                          color: canRedo ? Colors.white : Colors.white.withAlpha(80),
+                          color: canRedo
+                              ? Colors.white
+                              : Colors.white.withAlpha(80),
                         ),
                         onPressed: redoAction,
                       ),
@@ -546,12 +563,15 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                             PopupMenuOption(
                               label: i18n.paintEditor.toggleFill,
                               icon: Icon(
-                                !_fill ? icons.paintingEditor.noFill : icons.paintingEditor.fill,
+                                !_fill
+                                    ? icons.paintingEditor.noFill
+                                    : icons.paintingEditor.fill,
                               ),
                               onTap: () {
                                 _fill = !_fill;
                                 setFill(_fill);
-                                if (designMode == ImageEditorDesignModeE.cupertino) {
+                                if (designMode ==
+                                    ImageEditorDesignModeE.cupertino) {
                                   Navigator.pop(context);
                                 }
                               },
@@ -677,7 +697,8 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                         scrollDirection: Axis.horizontal,
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            minWidth: min(MediaQuery.of(context).size.width, 500),
+                            minWidth:
+                                min(MediaQuery.of(context).size.width, 500),
                             maxWidth: 500,
                           ),
                           child: Wrap(
@@ -689,14 +710,18 @@ class PaintingEditorState extends State<PaintingEditor> with ImageEditorStateMix
                                 (index) => Builder(
                                   builder: (_) {
                                     var item = paintModes[index];
-                                    var color = _imageKey.currentState?.mode == item.mode
-                                        ? imageEditorTheme.paintingEditor.bottomBarActiveItemColor
-                                        : imageEditorTheme.paintingEditor.bottomBarInactiveItemColor;
+                                    var color = _imageKey.currentState?.mode ==
+                                            item.mode
+                                        ? imageEditorTheme.paintingEditor
+                                            .bottomBarActiveItemColor
+                                        : imageEditorTheme.paintingEditor
+                                            .bottomBarInactiveItemColor;
 
                                     return FlatIconTextButton(
                                       label: Text(
                                         item.label,
-                                        style: TextStyle(fontSize: 10.0, color: color),
+                                        style: TextStyle(
+                                            fontSize: 10.0, color: color),
                                       ),
                                       icon: Icon(item.icon, color: color),
                                       onPressed: () {

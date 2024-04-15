@@ -13,11 +13,13 @@ mixin ImageEditorStateMixin<T extends StatefulWidget> on State<T> {
 
   PaintEditorConfigs get paintEditorConfigs => configs.paintEditorConfigs;
   TextEditorConfigs get textEditorConfigs => configs.textEditorConfigs;
-  CropRotateEditorConfigs get cropRotateEditorConfigs => configs.cropRotateEditorConfigs;
+  CropRotateEditorConfigs get cropRotateEditorConfigs =>
+      configs.cropRotateEditorConfigs;
   FilterEditorConfigs get filterEditorConfigs => configs.filterEditorConfigs;
   BlurEditorConfigs get blurEditorConfigs => configs.blurEditorConfigs;
   EmojiEditorConfigs get emojiEditorConfigs => configs.emojiEditorConfigs;
-  StickerEditorConfigs? get stickerEditorConfigs => configs.stickerEditorConfigs;
+  StickerEditorConfigs? get stickerEditorConfigs =>
+      configs.stickerEditorConfigs;
 
   ImageEditorDesignModeE get designMode => configs.designMode;
   ImageEditorTheme get imageEditorTheme => configs.imageEditorTheme;

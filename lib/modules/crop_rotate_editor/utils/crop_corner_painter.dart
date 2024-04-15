@@ -92,7 +92,9 @@ class CropCornerPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = interactionActive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.7)
+        ..color = interactionActive
+            ? Colors.black.withOpacity(0.5)
+            : Colors.black.withOpacity(0.7)
         ..style = PaintingStyle.fill,
     );
   }
@@ -111,16 +113,22 @@ class CropCornerPainter extends CustomPainter {
     path.addRect(Rect.fromLTWH(_cropOffsetLeft, _cropOffsetTop, width, length));
 
     /// Top-Right
-    path.addRect(Rect.fromLTWH(_cropOffsetRight - length, _cropOffsetTop, length, width));
-    path.addRect(Rect.fromLTWH(_cropOffsetRight - width, _cropOffsetTop, width, length));
+    path.addRect(Rect.fromLTWH(
+        _cropOffsetRight - length, _cropOffsetTop, length, width));
+    path.addRect(
+        Rect.fromLTWH(_cropOffsetRight - width, _cropOffsetTop, width, length));
 
     /// Bottom-Left
-    path.addRect(Rect.fromLTWH(0 + _cropOffsetLeft, _cropOffsetBottom - width, length, width));
-    path.addRect(Rect.fromLTWH(0 + _cropOffsetLeft, _cropOffsetBottom - length, width, length));
+    path.addRect(Rect.fromLTWH(
+        0 + _cropOffsetLeft, _cropOffsetBottom - width, length, width));
+    path.addRect(Rect.fromLTWH(
+        0 + _cropOffsetLeft, _cropOffsetBottom - length, width, length));
 
     /// Bottom-Right
-    path.addRect(Rect.fromLTWH(_cropOffsetRight - length, _cropOffsetBottom - width, length, width));
-    path.addRect(Rect.fromLTWH(_cropOffsetRight - width, _cropOffsetBottom - length, width, length));
+    path.addRect(Rect.fromLTWH(
+        _cropOffsetRight - length, _cropOffsetBottom - width, length, width));
+    path.addRect(Rect.fromLTWH(
+        _cropOffsetRight - width, _cropOffsetBottom - length, width, length));
 
     canvas.drawPath(
       path,

@@ -154,7 +154,6 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 #### Future Features
 - ✨ Improved layer movement and scaling functionality for desktop devices
 - ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
-- ✨ Enhanced crop editor with improved performance (No dependencies on `image_editor` and `extended_image`)
 
 
 ## Getting started
@@ -1655,7 +1654,6 @@ This package uses several Flutter packages to provide a seamless editing experie
 - [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
 - [screenshot](https://pub.dev/packages/screenshot)
 - [vibration](https://pub.dev/packages/vibration)
-- [image](https://pub.dev/packages/image)
 - [http](https://pub.dev/packages/http)
 
 These packages play a crucial role in enabling various features and functionalities in this package.
