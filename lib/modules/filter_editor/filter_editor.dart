@@ -29,8 +29,6 @@ import 'widgets/image_with_filter.dart';
 /// - `FilterEditor.autoSource`: Automatically selects the source based on provided parameters.
 class FilterEditor extends StatefulWidget with ImageEditorMixin {
   @override
-  final ThemeData theme;
-  @override
   final ProImageEditorConfigs configs;
 
   /// A byte array representing the image data.
@@ -50,6 +48,9 @@ class FilterEditor extends StatefulWidget with ImageEditorMixin {
 
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
+
+  /// The theme configuration for the editor.
+  final ThemeData theme;
 
   /// Determines whether to return the image as a Uint8List when closing the editor.
   ///
@@ -521,7 +522,7 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
           child: Stack(
             children: [
               Hero(
-                tag: widget.configs.heroTag,
+                tag: heroTag,
                 createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),

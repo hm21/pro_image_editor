@@ -35,9 +35,10 @@ import 'widgets/crop_aspect_ratio_options.dart';
 /// - `CropRotateEditor.autoSource`: Automatically selects the source based on provided parameters.
 class CropRotateEditor extends StatefulWidget with ImageEditorMixin {
   @override
-  final ThemeData theme;
-  @override
   final ProImageEditorConfigs configs;
+
+  /// The theme configuration for the editor.
+  final ThemeData theme;
 
   /// A Uint8List representing the image data in memory.
   final Uint8List? byteArray;
@@ -1174,7 +1175,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Theme(
-          data: theme.copyWith(tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+          data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: imageEditorTheme.cropRotateEditor.background,
@@ -1443,7 +1444,7 @@ class CropRotateEditorState extends State<CropRotateEditor> with TickerProviderS
             alignment: Alignment.center,
             children: [
               Hero(
-                tag: 'disabled: ${widget.configs.heroTag}',
+                tag: 'disabled: $heroTag',
 
                 /// Important that the image fly correctly
                 flightShuttleBuilder: (

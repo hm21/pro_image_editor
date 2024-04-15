@@ -21,12 +21,13 @@ import '../widgets/pro_image_editor_desktop_mode.dart';
 /// A StatefulWidget that provides a text editing interface for adding and editing text layers.
 class TextEditor extends StatefulWidget with ImageEditorMixin {
   @override
-  final ThemeData theme;
-  @override
   final ProImageEditorConfigs configs;
 
   /// A unique hero tag for the image.
   final String? heroTag;
+
+  /// The theme configuration for the editor.
+  final ThemeData theme;
 
   /// The text layer data to be edited, if any.
   final TextLayerData? layer;

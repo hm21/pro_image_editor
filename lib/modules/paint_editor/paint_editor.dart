@@ -33,9 +33,10 @@ import 'utils/paint_editor_enum.dart';
 /// A StatefulWidget that represents an image editor with painting capabilities.
 class PaintingEditor extends StatefulWidget with ImageEditorMixin {
   @override
-  final ThemeData theme;
-  @override
   final ProImageEditorConfigs configs;
+
+  /// The theme configuration for the editor.
+  final ThemeData theme;
 
   /// A Uint8List representing the image data in memory.
   final Uint8List? byteArray;

@@ -68,7 +68,6 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                       offstage: whatsAppTemporaryStickerMode != WhatsAppStickerMode.emoji,
                       child: EmojiEditor(
                         key: _emojiEditorKey,
-                        theme: Theme.of(context),
                         configs: widget.configs,
                       ),
                     ),

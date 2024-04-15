@@ -28,9 +28,10 @@ import 'filter_editor/widgets/image_with_multiple_filters.dart';
 /// - `BlurEditor.autoSource`: Automatically selects the source based on provided parameters.
 class BlurEditor extends StatefulWidget with ImageEditorMixin {
   @override
-  final ThemeData theme;
-  @override
   final ProImageEditorConfigs configs;
+
+  /// The theme configuration for the editor.
+  final ThemeData theme;
 
   /// A byte array representing the image data.
   final Uint8List? byteArray;
@@ -538,7 +539,7 @@ class BlurEditorState extends State<BlurEditor> with ImageEditorStateMixin {
             alignment: Alignment.center,
             children: [
               Hero(
-                tag: widget.configs.heroTag,
+                tag: heroTag,
                 createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
                   configs: widget.transformConfigs ?? TransformConfigs.empty(),
