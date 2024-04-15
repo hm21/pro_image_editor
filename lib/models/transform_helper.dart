@@ -5,31 +5,47 @@ class TransformHelper {
   final Size mainImageSize;
   final Size editorBodySize;
 
+  /// Determines whether the editor aligns content to the top-left or center.
+  final bool alignTopLeft;
+
   const TransformHelper({
     required this.mainBodySize,
     required this.mainImageSize,
     required this.editorBodySize,
+    this.alignTopLeft = true,
   });
 
   double get scale {
     if (mainBodySize.isEmpty) return 1;
 
-    /// Image width == Screen width
-    if (mainBodySize.width == mainImageSize.width &&
-        mainImageSize.aspectRatio < editorBodySize.aspectRatio) {
-      return editorBodySize.height / mainImageSize.height;
-    }
+    double scaleW = editorBodySize.width / mainBodySize.width;
+    double scaleH = editorBodySize.height / mainBodySize.height;
 
-    /// Image height == Screen height
-    else if (mainBodySize.height == mainImageSize.height) {
-      return editorBodySize.height / mainImageSize.height;
-    }
+    double scaleOldDifferenceW = mainBodySize.width / mainImageSize.width;
+    double scaleOldDifferenceH = mainBodySize.height / mainImageSize.height;
 
-    return 1;
+    bool stickOnHeightOld =
+        mainBodySize.aspectRatio > mainImageSize.aspectRatio;
+    bool stickOnHeightNew =
+        editorBodySize.aspectRatio > mainImageSize.aspectRatio;
+
+    double scaleStickSize = stickOnHeightNew != stickOnHeightOld
+        ? (stickOnHeightOld ? scaleOldDifferenceW : scaleOldDifferenceH)
+        : 1;
+    double scaleImgSize = stickOnHeightNew ? scaleH : scaleW;
+
+    return scaleImgSize * scaleStickSize;
   }
 
   Offset get offset {
     if (mainBodySize.isEmpty) return Offset.zero;
+
+    if (!alignTopLeft) {
+      return Offset(
+        (editorBodySize.width * scale - editorBodySize.width) / 2,
+        (editorBodySize.height * scale - editorBodySize.height) / 2,
+      );
+    }
 
     /// Image width == Screen width
     if (mainBodySize.width == mainImageSize.width) {

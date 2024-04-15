@@ -1280,20 +1280,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   ),
                   const Spacer(),
                   if (constraints.maxWidth >= 300) ...[
-                    /* IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.flip),
-                tooltip: I18n.of(context)!.translate('Flip'),
-                iconSize: 28,
-                onPressed: () => _editor.flip(),
-              ), 
-              IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.restore_page_outlined),
-                tooltip: I18n.of(context)!.translate('Reset'),
-                iconSize: 28,
-                onPressed: () => _editor.reset(),
-              ), */
                     if (cropRotateEditorConfigs.canRotate)
                       IconButton(
                         icon: Icon(icons.cropRotateEditor.rotate),
@@ -1308,17 +1294,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
                       ),
                     if (cropRotateEditorConfigs.canChangeAspectRatio)
                       IconButton(
-                        key:
-                            const ValueKey('pro-image-editor-aspect-ratio-btn'),
                         icon: Icon(icons.cropRotateEditor.aspectRatio),
                         tooltip: i18n.cropRotateEditor.ratio,
                         onPressed: openAspectRatioOptions,
                       ),
-                    IconButton(
-                      // TODO: DELETEME
-                      icon: Icon(Icons.bug_report),
-                      onPressed: reset,
-                    ),
+                    if (cropRotateEditorConfigs.canReset)
+                      IconButton(
+                        icon: Icon(icons.cropRotateEditor.reset),
+                        tooltip: i18n.cropRotateEditor.reset,
+                        onPressed: reset,
+                      ),
                     const Spacer(),
                     _buildDoneBtn(),
                   ] else ...[
@@ -1352,6 +1337,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
                             label: i18n.cropRotateEditor.ratio,
                             icon: Icon(icons.cropRotateEditor.aspectRatio),
                             onTap: openAspectRatioOptions,
+                          ),
+                        if (cropRotateEditorConfigs.canReset)
+                          PopupMenuOption(
+                            label: i18n.cropRotateEditor.reset,
+                            icon: Icon(icons.cropRotateEditor.reset),
+                            onTap: reset,
                           ),
                       ],
                     ),
@@ -1554,38 +1545,27 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
               if (cropRotateEditorConfigs.transformLayers &&
                   widget.layers != null)
-                Builder(builder: (context) {
-                  double w = _imgWidth;
-                  double h = _imgHeight;
-                  double screenGap = _screenPadding * 2;
-                  double editorW = _contentConstraints.maxWidth - screenGap;
-                  double editorH = _contentConstraints.maxHeight - screenGap;
-
-                  return TransformedContentGenerator(
+                ClipRRect(
+                  clipBehavior: Clip.hardEdge,
+                  child: TransformedContentGenerator(
                     configs:
                         widget.transformConfigs ?? TransformConfigs.empty(),
-                    child: Transform.translate(
-                      offset: Offset(
-                        -_screenPadding,
-                        0, // -_screenPadding,
-                      ),
-                      child: LayerStack(
-                        transformHelper: TransformHelper(
-                          mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
-                          mainImageSize:
-                              widget.imageSizeWithLayers ?? Size.zero,
-                          editorBodySize: Size(
-                            w / h * editorH,
-                            editorW * h / w,
-                          ),
+                    child: LayerStack(
+                      transformHelper: TransformHelper(
+                        alignTopLeft: false,
+                        mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
+                        mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                        editorBodySize: Size(
+                          _renderedImgConstraints.maxWidth,
+                          _renderedImgConstraints.maxHeight,
                         ),
-                        configs: widget.configs,
-                        layers: widget.layers!,
-                        clipBehavior: Clip.none,
                       ),
+                      configs: widget.configs,
+                      layers: widget.layers!,
+                      clipBehavior: Clip.none,
                     ),
-                  );
-                }),
+                  ),
+                ),
             ],
           );
         },

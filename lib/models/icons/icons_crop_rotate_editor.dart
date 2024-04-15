@@ -14,6 +14,9 @@ class IconsCropRotateEditor {
   /// The icon for the flip action.
   final IconData flip;
 
+  /// The icon for the reset action.
+  final IconData reset;
+
   /// Creates an instance of [IconsCropRotateEditor] with customizable icon settings.
   ///
   /// You can provide custom icons for various actions in the Crop/Rotate Editor component.
@@ -37,5 +40,6 @@ class IconsCropRotateEditor {
     this.rotate = Icons.rotate_90_degrees_ccw_outlined,
     this.aspectRatio = Icons.crop,
     this.flip = Icons.flip,
+    this.reset = Icons.restore,
   });
 }

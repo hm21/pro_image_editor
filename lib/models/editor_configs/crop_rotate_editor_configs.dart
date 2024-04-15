@@ -34,6 +34,9 @@ class CropRotateEditorConfigs {
   /// Indicating whether the aspect ratio of the image can be changed.
   final bool canChangeAspectRatio;
 
+  /// Indicating whether the editor can be reset.
+  final bool canReset;
+
   /// Layers will also be transformed like the crop-rotate image.
   final bool transformLayers;
 
@@ -88,6 +91,7 @@ class CropRotateEditorConfigs {
     this.enableDoubleTap = true,
     this.transformLayers = true,
     this.canChangeAspectRatio = true,
+    this.canReset = true,
     this.reverseMouseScroll = false,
     this.reverseDragDirection = false,
     this.initAspectRatio,

@@ -21,7 +21,7 @@ class I18nCropRotateEditor {
   /// Text for the "Done" button.
   final String done;
 
-  /// Text for the "Reset" button. Only available when the theme is set to `WhatsApp`.
+  /// Text for the "Reset" button.
   final String reset;
 
   /// The tooltip text displayed for the "More" option on small screens.
