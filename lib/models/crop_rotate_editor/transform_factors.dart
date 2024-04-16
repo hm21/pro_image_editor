@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:pro_image_editor/modules/crop_rotate_editor/utils/rotate_angle.dart';
 
 class TransformConfigs {
   final Offset offset;
@@ -71,6 +72,10 @@ class TransformConfigs {
   }
 
   double get scale => scaleUser * scaleRotation * scaleAspectRatio;
+  bool get is90DegRotated {
+    RotateAngleSide factor = getRotateAngleSide(angle);
+    return factor == RotateAngleSide.left || factor == RotateAngleSide.right;
+  }
 
   Map toMap() {
     return {
