@@ -45,6 +45,7 @@ import 'widgets/loading_dialog.dart';
 import 'widgets/pro_image_editor_desktop_mode.dart';
 
 typedef ImageEditingCompleteCallback = Future<void> Function(Uint8List bytes);
+typedef ImageEditingEmptyCallback = void Function();
 
 /// A widget for image editing using ProImageEditor.
 ///
@@ -92,13 +93,13 @@ class ProImageEditor extends StatefulWidget {
   /// Whether [onImageEditingComplete] call with empty editing.
   ///
   /// The default value is false.
-  final bool? allowCompleteWithEmptyEditing;
+  final bool allowCompleteWithEmptyEditing;
 
   /// A callback function that will be called before the image editor will close.
-  final Function? onCloseEditor;
+  final ImageEditingEmptyCallback? onCloseEditor;
 
   /// A callback function that can be used to update the UI from custom widgets.
-  final Function? onUpdateUI;
+  final ImageEditingEmptyCallback? onUpdateUI;
 
   /// Configuration options for the image editor.
   final ProImageEditorConfigs configs;
@@ -129,7 +130,7 @@ class ProImageEditor extends StatefulWidget {
   const ProImageEditor._({
     super.key,
     required this.onImageEditingComplete,
-    this.allowCompleteWithEmptyEditing,
+    required this.allowCompleteWithEmptyEditing,
     this.onCloseEditor,
     this.onUpdateUI,
     this.byteArray,
@@ -168,9 +169,9 @@ class ProImageEditor extends StatefulWidget {
     Uint8List byteArray, {
     Key? key,
     required ImageEditingCompleteCallback onImageEditingComplete,
-    bool? allowCompleteWithEmptyEditing,
-    Function? onUpdateUI,
-    Function? onCloseEditor,
+    bool allowCompleteWithEmptyEditing = false,
+    ImageEditingEmptyCallback? onUpdateUI,
+    ImageEditingEmptyCallback? onCloseEditor,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
   }) {
     return ProImageEditor._(
@@ -208,9 +209,9 @@ class ProImageEditor extends StatefulWidget {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
-    bool? allowCompleteWithEmptyEditing,
-    Function? onUpdateUI,
-    Function? onCloseEditor,
+    bool allowCompleteWithEmptyEditing = false,
+    ImageEditingEmptyCallback? onUpdateUI,
+    ImageEditingEmptyCallback? onCloseEditor,
   }) {
     return ProImageEditor._(
       key: key,
@@ -247,9 +248,9 @@ class ProImageEditor extends StatefulWidget {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
-    bool? allowCompleteWithEmptyEditing,
-    Function? onUpdateUI,
-    Function? onCloseEditor,
+    bool allowCompleteWithEmptyEditing = false,
+    ImageEditingEmptyCallback? onUpdateUI,
+    ImageEditingEmptyCallback? onCloseEditor,
   }) {
     return ProImageEditor._(
       key: key,
@@ -286,9 +287,9 @@ class ProImageEditor extends StatefulWidget {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ImageEditingCompleteCallback onImageEditingComplete,
-    bool? allowCompleteWithEmptyEditing,
-    Function? onUpdateUI,
-    Function? onCloseEditor,
+    bool allowCompleteWithEmptyEditing = false,
+    ImageEditingEmptyCallback? onUpdateUI,
+    ImageEditingEmptyCallback? onCloseEditor,
   }) {
     return ProImageEditor._(
       key: key,
@@ -1747,7 +1748,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   void doneEditing() async {
     if (_editPosition <= 0 && _layers.isEmpty) {
       final allowCompleteWithEmptyEditing =
-          widget.allowCompleteWithEmptyEditing ?? false;
+          widget.allowCompleteWithEmptyEditing;
       if (!allowCompleteWithEmptyEditing) {
         return closeEditor();
       }

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:example/pages/preview_img.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
@@ -45,9 +46,27 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _editor = GlobalKey<ProImageEditorState>();
 
+  Uint8List? _editedBytes;
+
   Future<Uint8List> loadImageBytes() async {
     final ByteData data = await rootBundle.load('assets/demo.png');
     return data.buffer.asUint8List();
+  }
+
+  void _openPreviewPage() async {
+    if (_editedBytes == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return PreviewImgPage(imgBytes: _editedBytes!);
+        },
+      ),
+    );
+    _editedBytes = null;
   }
 
   @override
@@ -69,8 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (context) => ProImageEditor.asset(
                         'assets/demo.png',
                         onImageEditingComplete: (bytes) async {
+                          _editedBytes = bytes;
                           Navigator.pop(context);
                         },
+                        onCloseEditor: _openPreviewPage,
                       ),
                     ),
                   );
@@ -93,9 +114,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         MaterialPageRoute(
                           builder: (context) => ProImageEditor.file(
                             file,
-                            onImageEditingComplete: (Uint8List bytes) async {
+                            onImageEditingComplete: (bytes) async {
+                              _editedBytes = bytes;
                               Navigator.pop(context);
                             },
+                            onCloseEditor: _openPreviewPage,
                           ),
                         ),
                       );
@@ -130,8 +153,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           bytes,
                           key: _editor,
                           onImageEditingComplete: (bytes) async {
+                            _editedBytes = bytes;
                             Navigator.pop(context);
                           },
+                          onCloseEditor: _openPreviewPage,
                           configs: ProImageEditorConfigs(
                             i18n: const I18n(
                               various: I18nVarious(
@@ -454,9 +479,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                       builder: (context) => ProImageEditor.network(
                         'https://picsum.photos/id/237/2000',
-                        onImageEditingComplete: (byte) async {
+                        onImageEditingComplete: (bytes) async {
+                          _editedBytes = bytes;
                           Navigator.pop(context);
                         },
+                        onCloseEditor: _openPreviewPage,
                         configs: const ProImageEditorConfigs(
                           blurEditorConfigs: BlurEditorConfigs(
                             maxBlur: 5,
@@ -477,8 +504,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (context) => ProImageEditor.network(
                         'https://picsum.photos/id/176/2000',
                         onImageEditingComplete: (bytes) async {
+                          _editedBytes = bytes;
                           Navigator.pop(context);
                         },
+                        onCloseEditor: _openPreviewPage,
                         configs: ProImageEditorConfigs(
                           stickerEditorConfigs: StickerEditorConfigs(
                             enabled: true,
@@ -576,8 +605,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (context) => ProImageEditor.asset(
                         'assets/demo.png',
                         onImageEditingComplete: (bytes) async {
+                          _editedBytes = bytes;
                           Navigator.pop(context);
                         },
+                        onCloseEditor: _openPreviewPage,
                         configs: ProImageEditorConfigs(
                           emojiEditorConfigs: EmojiEditorConfigs(
                             checkPlatformCompatibility: false,
@@ -601,9 +632,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                       builder: (context) => ProImageEditor.network(
                         'https://picsum.photos/id/350/1500/3000',
+                        key: _editor,
                         onImageEditingComplete: (bytes) async {
+                          _editedBytes = bytes;
                           Navigator.pop(context);
                         },
+                        onCloseEditor: _openPreviewPage,
+                        allowCompleteWithEmptyEditing: true,
                         configs: ProImageEditorConfigs(
                           textEditorConfigs: TextEditorConfigs(
                             whatsAppCustomTextStyles: [
@@ -812,7 +847,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                           ),
                                         ),
                                         IconButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            _editor.currentState?.doneEditing();
+                                          },
                                           icon: const Icon(Icons.send),
                                           style: IconButton.styleFrom(
                                             backgroundColor:

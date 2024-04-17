@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.6.3
+- **feat:** Add preview screen to sample application for displaying edited images
+- **chore:** Update emoji_picker_flutter dependency to version 2.2.0
+
 ## Version 2.6.2
 - **feat:** Add a custom widget option to the Whatsapp design. This allows user to create same as in whatsapp, a text field with a send button or any other widget they want.
 
