@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.6.4
+- **fix(iOS):** resolve editor error on iOS devices with cupertino design when editing completion
+
 ## Version 2.6.3
 - **feat:** Add preview screen to sample application for displaying edited images
 - **chore:** Update emoji_picker_flutter dependency to version 2.2.0
