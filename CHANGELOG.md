@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.6.5
+- **feat:** Make `stateHistory` and `activeLayers` public and add `moveLayerListPosition` method to improve layer management functionality.
+
 ## Version 2.6.4
 - **fix(iOS):** resolve editor error on iOS devices with cupertino design when editing completion
 

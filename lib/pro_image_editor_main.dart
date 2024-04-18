@@ -338,7 +338,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   List<EditorImage> _imgStateHistory = [];
 
   /// List to store the history of image editor changes.
-  List<EditorStateHistory> _stateHistory = [];
+  List<EditorStateHistory> stateHistory = [];
 
   /// The current theme used by the image editor.
   late ThemeData _theme;
@@ -356,7 +356,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   Size get _screen => MediaQuery.of(context).size;
 
   /// Getter for the active layer currently being edited.
-  Layer get _activeLayer => _layers[_selectedLayer];
+  Layer get _activeLayer => activeLayers[_selectedLayer];
 
   /// Temporary layer used during editing.
   Layer? _tempLayer;
@@ -519,7 +519,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       networkUrl: widget.networkUrl,
     ));
 
-    _stateHistory.add(EditorStateHistory(
+    stateHistory.add(EditorStateHistory(
         bytesRefIndex: 0, blur: BlurStateHistory(), layers: [], filters: []));
 
     Vibration.hasVibrator().then((value) => _deviceCanVibrate = value ?? false);
@@ -594,17 +594,17 @@ class ProImageEditorState extends State<ProImageEditor> {
   }
 
   /// Get the list of layers from the current image editor changes.
-  List<Layer> get _layers => _stateHistory[_editPosition].layers;
+  List<Layer> get activeLayers => stateHistory[_editPosition].layers;
 
   /// Get the list of filters from the current image editor changes.
-  List<FilterStateHistory> get _filters => _stateHistory[_editPosition].filters;
+  List<FilterStateHistory> get _filters => stateHistory[_editPosition].filters;
 
   /// Get the blur state from the current image editor changes.
-  BlurStateHistory get _blur => _stateHistory[_editPosition].blur;
+  BlurStateHistory get _blur => stateHistory[_editPosition].blur;
 
   /// Get the current image being edited from the change list.
   EditorImage get _image =>
-      _imgStateHistory[_stateHistory[_editPosition].bytesRefIndex];
+      _imgStateHistory[stateHistory[_editPosition].bytesRefIndex];
 
   /// Returns the total height of all toolbars.
   double get _allToolbarHeight => _appBarHeight + _bottomBarHeight;
@@ -625,15 +625,15 @@ class ProImageEditorState extends State<ProImageEditor> {
   ///
   /// This method removes any changes made after the current edit position in the history.
   void _cleanForwardChanges() {
-    if (_stateHistory.length > 1) {
-      while (_editPosition < _stateHistory.length - 1) {
-        _stateHistory.removeLast();
-        if (_imgStateHistory.length - 1 > _stateHistory.last.bytesRefIndex) {
+    if (stateHistory.length > 1) {
+      while (_editPosition < stateHistory.length - 1) {
+        stateHistory.removeLast();
+        if (_imgStateHistory.length - 1 > stateHistory.last.bytesRefIndex) {
           _imgStateHistory.removeLast();
         }
       }
     }
-    _editPosition = _stateHistory.length - 1;
+    _editPosition = stateHistory.length - 1;
   }
 
   /// Add a cropped image to the editor.
@@ -642,7 +642,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   void _addCroppedImg(List<Layer> layers, EditorImage image) {
     _cleanForwardChanges();
     _imgStateHistory.add(image);
-    _stateHistory.add(
+    stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
@@ -650,7 +650,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         filters: _filters,
       ),
     );
-    _editPosition = _stateHistory.length - 1;
+    _editPosition = stateHistory.length - 1;
   }
 
   /// Add a new layer to the image editor.
@@ -660,19 +660,19 @@ class ProImageEditorState extends State<ProImageEditor> {
     _cleanForwardChanges();
     if (image != null) _imgStateHistory.add(image);
 
-    _stateHistory.add(
+    stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
-        layers: List<Layer>.from(
-            _stateHistory.last.layers.map((e) => _copyLayer(e)))
-          ..add(layer),
+        layers:
+            List<Layer>.from(stateHistory.last.layers.map((e) => _copyLayer(e)))
+              ..add(layer),
         filters: _filters,
       ),
     );
     _editPosition++;
     if (removeLayerIndex >= 0) {
-      _layers.removeAt(removeLayerIndex);
+      activeLayers.removeAt(removeLayerIndex);
     }
   }
 
@@ -681,18 +681,18 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// This method updates the temporary layer in the editor and updates the editing state.
   void _updateTempLayer() {
     _cleanForwardChanges();
-    _stateHistory.add(
+    stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
-        layers: List.from(_stateHistory.last.layers.map((e) => _copyLayer(e))),
+        layers: List.from(stateHistory.last.layers.map((e) => _copyLayer(e))),
         filters: _filters,
       ),
     );
     var oldIndex =
-        _layers.indexWhere((element) => element.id == _tempLayer!.id);
+        activeLayers.indexWhere((element) => element.id == _tempLayer!.id);
     if (oldIndex >= 0) {
-      _stateHistory[_editPosition].layers[oldIndex] = _copyLayer(_tempLayer!);
+      stateHistory[_editPosition].layers[oldIndex] = _copyLayer(_tempLayer!);
     }
     _editPosition++;
     _tempLayer = null;
@@ -703,9 +703,9 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// This method removes a layer from the editor and updates the editing state.
   void _removeLayer(int layerPos, {Layer? layer}) {
     _cleanForwardChanges();
-    var layers = List<Layer>.from(_layers.map((e) => _copyLayer(e)));
+    var layers = List<Layer>.from(activeLayers.map((e) => _copyLayer(e)));
     layers.removeAt(layerPos);
-    _stateHistory.add(
+    stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
@@ -713,10 +713,10 @@ class ProImageEditorState extends State<ProImageEditor> {
         filters: _filters,
       ),
     );
-    var oldIndex = _layers
+    var oldIndex = activeLayers
         .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
     if (oldIndex >= 0) {
-      _stateHistory[_editPosition].layers[oldIndex] =
+      stateHistory[_editPosition].layers[oldIndex] =
           _copyLayer(layer ?? _tempLayer!);
     }
     _editPosition++;
@@ -899,7 +899,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     if (_selectedLayer < 0) return;
 
-    var layer = _layers[_selectedLayer];
+    var layer = activeLayers[_selectedLayer];
     _setTempLayer(layer);
     _baseScaleFactor = layer.scale;
     _baseAngleFactor = layer.rotation;
@@ -1248,10 +1248,10 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     if (layer == null || !mounted) return;
 
-    int i = _layers.indexWhere((element) => element.id == layerData.id);
+    int i = activeLayers.indexWhere((element) => element.id == layerData.id);
     if (i >= 0) {
       _setTempLayer(layerData);
-      TextLayerData textLayer = _layers[i] as TextLayerData;
+      TextLayerData textLayer = activeLayers[i] as TextLayerData;
       textLayer
         ..text = layer.text
         ..background = layer.background
@@ -1288,7 +1288,7 @@ class ProImageEditorState extends State<ProImageEditor> {
         byteArray: _image.byteArray,
         assetPath: _image.assetPath,
         networkUrl: _image.networkUrl,
-        layers: _layers,
+        layers: activeLayers,
         theme: _theme,
         imageSize: Size(_imageWidth, _imageHeight),
         configs: widget.configs,
@@ -1363,7 +1363,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       networkUrl: _image.networkUrl,
     );
     Uint8List? bytesWithLayers;
-    if (_layers.isNotEmpty || _filters.isNotEmpty || _blur.blur != 0) {
+    if (activeLayers.isNotEmpty || _filters.isNotEmpty || _blur.blur != 0) {
       _activeCrop = true;
       LoadingDialog loading = LoadingDialog()
         ..show(
@@ -1436,7 +1436,7 @@ class ProImageEditorState extends State<ProImageEditor> {
           }
 
           List<Layer> updatedLayers = [];
-          for (var el in _layers) {
+          for (var el in activeLayers) {
             var layer = _copyLayer(el);
             var beforeIsFlipX = layer.flipX;
             switch (res.rotationAngle) {
@@ -1525,11 +1525,11 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     _cleanForwardChanges();
 
-    _stateHistory.add(
+    stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
-        layers: _layers,
+        layers: activeLayers,
         filters: [
           filterAppliedImage,
           ..._filters,
@@ -1693,11 +1693,11 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     _cleanForwardChanges();
 
-    _stateHistory.add(
+    stateHistory.add(
       EditorStateHistory(
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: blur,
-        layers: _layers,
+        layers: activeLayers,
         filters: _filters,
       ),
     );
@@ -1727,7 +1727,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// `undoAction` function. It increases the edit position, and the image is decoded to reflect
   /// the next state.
   void redoAction() {
-    if (_editPosition < _stateHistory.length - 1) {
+    if (_editPosition < stateHistory.length - 1) {
       setState(() {
         _editPosition++;
         _decodeImage();
@@ -1746,7 +1746,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Before returning the edited image, a loading dialog is displayed to indicate that the operation
   /// is in progress.
   void doneEditing() async {
-    if (_editPosition <= 0 && _layers.isEmpty) {
+    if (_editPosition <= 0 && activeLayers.isEmpty) {
       final allowCompleteWithEmptyEditing =
           widget.allowCompleteWithEmptyEditing;
       if (!allowCompleteWithEmptyEditing) {
@@ -1911,8 +1911,17 @@ class ProImageEditorState extends State<ProImageEditor> {
   bool get canUndo => _editPosition > 0;
 
   /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => _editPosition < _stateHistory.length - 1;
+  bool get canRedo => _editPosition < stateHistory.length - 1;
 
+  /// Imports state history and performs necessary recalculations.
+  ///
+  /// If [ImportStateHistory.configs.recalculateSizeAndPosition] is `true`, it recalculates the position and size of layers.
+  /// It adjusts the scale and offset of each layer based on the image size and the editor's dimensions.
+  ///
+  /// If [ImportStateHistory.configs.mergeMode] is [ImportEditorMergeMode.replace], it replaces the current state history with the imported one.
+  /// Otherwise, it merges the imported state history with the current one based on the merge mode.
+  ///
+  /// After importing, it updates the UI by calling [setState()] and the optional [onUpdateUI] callback.
   void importStateHistory(ImportStateHistory import) {
     /// Recalculate position and size
     if (import.configs.recalculateSizeAndPosition) {
@@ -1946,7 +1955,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       if (import.imgStateHistory.isNotEmpty) {
         _imgStateHistory = import.imgStateHistory;
       }
-      _stateHistory = [
+      stateHistory = [
         EditorStateHistory(
             bytesRefIndex: 0,
             blur: BlurStateHistory(),
@@ -1957,24 +1966,29 @@ class ProImageEditorState extends State<ProImageEditor> {
     } else {
       for (var el in import.stateHistory) {
         if (import.configs.mergeMode == ImportEditorMergeMode.merge) {
-          el.layers.insertAll(0, _stateHistory.last.layers);
-          el.filters.insertAll(0, _stateHistory.last.filters);
+          el.layers.insertAll(0, stateHistory.last.layers);
+          el.filters.insertAll(0, stateHistory.last.filters);
         }
       }
 
-      _stateHistory.addAll(import.stateHistory);
+      stateHistory.addAll(import.stateHistory);
       _imgStateHistory.addAll(import.imgStateHistory);
-      _editPosition = _stateHistory.length - 1;
+      _editPosition = stateHistory.length - 1;
     }
 
     setState(() {});
     widget.onUpdateUI?.call();
   }
 
+  /// Exports the current state history.
+  ///
+  /// [configs] specifies the export configurations, such as whether to include filters or layers.
+  ///
+  /// Returns an [ExportStateHistory] object containing the exported state history, image state history, image size, edit position, and export configurations.
   ExportStateHistory exportStateHistory(
       {ExportEditorConfigs configs = const ExportEditorConfigs()}) {
     return ExportStateHistory(
-      _stateHistory,
+      stateHistory,
       _imgStateHistory,
       Size(_imageWidth, _imageHeight),
       _editPosition,
@@ -1982,6 +1996,10 @@ class ProImageEditorState extends State<ProImageEditor> {
     );
   }
 
+  /// Animates the WhatsApp filter sheet.
+  ///
+  /// If [up] is `true`, it animates the sheet upwards.
+  /// Otherwise, it animates the sheet downwards.
   void _whatsAppFilterSheetAutoAnimation(bool up) async {
     if (up) {
       while (_whatsAppFilterShowHelper < 120) {
@@ -1996,6 +2014,24 @@ class ProImageEditorState extends State<ProImageEditor> {
         await Future.delayed(const Duration(milliseconds: 1));
       }
     }
+  }
+
+  /// Moves a layer in the list to a new position.
+  ///
+  /// [oldIndex] is the current index of the layer.
+  /// [newIndex] is the desired index to move the layer to.
+  void moveLayerListPosition({
+    required int oldIndex,
+    required int newIndex,
+  }) {
+    if (newIndex > oldIndex) {
+      var item = activeLayers.removeAt(oldIndex);
+      activeLayers.insert(newIndex - 1, item);
+    } else {
+      var item = activeLayers.removeAt(oldIndex);
+      activeLayers.insert(newIndex, item);
+    }
+    setState(() {});
   }
 
   @override
@@ -2088,7 +2124,7 @@ class ProImageEditorState extends State<ProImageEditor> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           widget.configs.icons.redoAction,
-                          color: _editPosition < _stateHistory.length - 1
+                          color: _editPosition < stateHistory.length - 1
                               ? Colors.white
                               : Colors.white.withAlpha(80),
                         ),
@@ -2153,7 +2189,7 @@ class ProImageEditorState extends State<ProImageEditor> {
                                           .layerHoverCursor,
                                   onHover: isDesktop
                                       ? (event) {
-                                          var hasHit = _layers.indexWhere(
+                                          var hasHit = activeLayers.indexWhere(
                                                   (element) =>
                                                       element
                                                           is PaintingLayerData &&
@@ -2257,11 +2293,11 @@ class ProImageEditorState extends State<ProImageEditor> {
               onSelectFilter: (filter) {
                 _cleanForwardChanges();
 
-                _stateHistory.add(
+                stateHistory.add(
                   EditorStateHistory(
                     bytesRefIndex: _imgStateHistory.length - 1,
                     blur: _blur,
-                    layers: _layers,
+                    layers: activeLayers,
                     filters: [
                       FilterStateHistory(
                         filter: filter,
@@ -2453,7 +2489,7 @@ class ProImageEditorState extends State<ProImageEditor> {
   Widget _buildLayers() {
     int loopHelper = 0;
     return Stack(
-      children: _layers.map((layerItem) {
+      children: activeLayers.map((layerItem) {
         var i = loopHelper;
         loopHelper++;
 
@@ -2488,7 +2524,8 @@ class ProImageEditorState extends State<ProImageEditor> {
           onRemoveTap: () {
             setState(() {
               _removeLayer(
-                  _layers.indexWhere((element) => element.id == layerItem.id),
+                  activeLayers
+                      .indexWhere((element) => element.id == layerItem.id),
                   layer: layerItem);
             });
             widget.onUpdateUI?.call();
