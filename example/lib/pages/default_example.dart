@@ -39,7 +39,7 @@ class _DefaultExampleState extends State<DefaultExample>
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   child: Text(
-                      'The editor support to directly open your type of data without converting it first. Remember flutter'),
+                      'The editor support to directly open your type of data without converting it first.'),
                 ),
                 const Divider(),
                 ListTile(
