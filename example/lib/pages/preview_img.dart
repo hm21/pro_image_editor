@@ -18,13 +18,17 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
       data: ThemeData.dark(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Preview'),
+          title: const Text('Result'),
         ),
-        body: Center(
-          child: Image.memory(
-            widget.imgBytes,
-            fit: BoxFit.contain,
-          ),
+        body: Stack(
+          fit: StackFit.expand,
+          alignment: Alignment.center,
+          children: [
+            Image.memory(
+              widget.imgBytes,
+              fit: BoxFit.contain,
+            ),
+          ],
         ),
       ),
     );

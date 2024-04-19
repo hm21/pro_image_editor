@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/modules/blur_editor.dart';
-import 'package:pro_image_editor/utils/design_mode.dart';
 
 import '../fake/fake_image.dart';
 
@@ -15,9 +14,7 @@ void main() {
             body: BlurEditor.memory(
               fakeMemoryImage,
               theme: ThemeData.light(),
-              designMode: ImageEditorDesignModeE.material,
               imageSize: const Size(200, 200),
-              heroTag: 'unique_hero_tag',
             ),
           ),
         ),

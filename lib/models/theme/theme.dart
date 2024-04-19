@@ -112,8 +112,17 @@ class ImageEditorTheme {
   /// Theme for the sticker editor.
   final StickerEditorTheme stickerEditor;
 
-  /// Background color for the image editor.
+  /// Background color for the image editor in the overview.
   final Color background;
+
+  /// Background color for the BottomBar in the overview.
+  final Color bottomBarBackgroundColor;
+
+  /// Background color for the AppBar in the overview.
+  final Color appBarBackgroundColor;
+
+  /// Background color for the AppBar in the overview.
+  final Color appBarForegroundColor;
 
   /// Theme for the loading dialog.
   final LoadingDialogTheme loadingDialogTheme;
@@ -145,6 +154,9 @@ class ImageEditorTheme {
     this.loadingDialogTheme = const LoadingDialogTheme(),
     this.adaptiveDialogTheme = const AdaptiveDialogTheme(),
     this.background = imageEditorBackgroundColor,
+    this.bottomBarBackgroundColor = const Color(0xFF000000),
+    this.appBarForegroundColor = const Color(0xFFFFFFFF),
+    this.appBarBackgroundColor = const Color(0xFF000000),
     this.uiOverlayStyle = const SystemUiOverlayStyle(
       statusBarColor: Color(0x42000000),
       statusBarIconBrightness: Brightness.light,

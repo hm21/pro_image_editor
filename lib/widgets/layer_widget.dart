@@ -66,7 +66,7 @@ class LayerWidget extends StatefulWidget {
 
   /// Enables or disables hit detection.
   /// When set to `true`, it allows detecting user interactions with the interface.
-  final bool enabledHitDetection;
+  final bool enableHitDetection;
 
   /// Creates a [LayerWidget] with the specified properties.
   const LayerWidget(
@@ -82,7 +82,7 @@ class LayerWidget extends StatefulWidget {
       required this.textFontSize,
       required this.stickerInitWidth,
       required this.emojiTextStyle,
-      required this.enabledHitDetection,
+      required this.enableHitDetection,
       required this.freeStyleHighPerformanceScaling,
       required this.freeStyleHighPerformanceMoving,
       required this.designMode});
@@ -183,8 +183,8 @@ class _LayerWidgetState extends State<LayerWidget> {
   Matrix4 _calcTransformMatrix() {
     return Matrix4.identity()
       ..setEntry(3, 2, 0.001) // Add a small z-offset to avoid rendering issues
-      ..rotateX(_layer.flipX ? pi : 0)
-      ..rotateY(_layer.flipY ? pi : 0)
+      ..rotateX(_layer.flipY ? pi : 0)
+      ..rotateY(_layer.flipX ? pi : 0)
       ..rotateZ(_layer.rotation);
   }
 
@@ -213,40 +213,47 @@ class _LayerWidgetState extends State<LayerWidget> {
   /// Build the content with possible transformations
   Widget _buildPosition() {
     Matrix4 transformMatrix = _calcTransformMatrix();
-    return Container(
-      transform: transformMatrix,
-      transformAlignment: Alignment.center,
-      child: LayerDashedBorderHelper(
-        layerData: widget.layerData,
-        color: const Color(0xFF000000),
-        child: MouseRegion(
-          hitTestBehavior: HitTestBehavior.translucent,
-          cursor: _showMoveCursor ? widget.layerHoverCursor : MouseCursor.defer,
-          onEnter: (event) {
-            if (_layerType != _LayerType.canvas) {
-              setState(() {
-                _showMoveCursor = true;
-              });
-            }
-          },
-          onExit: (event) {
-            if (_layerType == _LayerType.canvas) {
-              (widget.layerData as PaintingLayerData).item.hit = false;
-            } else {
-              setState(() {
-                _showMoveCursor = false;
-              });
-            }
-          },
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-            onTap: _onTap,
-            child: Listener(
+    return Hero(
+      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+      tag: widget.layerData.hashCode,
+      child: Container(
+        transform: transformMatrix,
+        transformAlignment: Alignment.center,
+        child: LayerDashedBorderHelper(
+          layerData: widget.layerData,
+          color: const Color(0xFF000000),
+          child: MouseRegion(
+            hitTestBehavior: HitTestBehavior.translucent,
+            cursor:
+                _showMoveCursor ? widget.layerHoverCursor : MouseCursor.defer,
+            onEnter: (event) {
+              if (_layerType != _LayerType.canvas) {
+                setState(() {
+                  _showMoveCursor = true;
+                });
+              }
+            },
+            onExit: (event) {
+              if (_layerType == _LayerType.canvas) {
+                (widget.layerData as PaintingLayerData).item.hit = false;
+              } else {
+                setState(() {
+                  _showMoveCursor = false;
+                });
+              }
+            },
+            child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onPointerDown: _onPointerDown,
-              onPointerUp: _onPointerUp,
-              child: _buildContent(),
+              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+              onTap: _onTap,
+              child: Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerDown: _onPointerDown,
+                onPointerUp: _onPointerUp,
+                child: FittedBox(
+                  child: _buildContent(),
+                ),
+              ),
             ),
           ),
         ),
@@ -290,6 +297,7 @@ class _LayerWidgetState extends State<LayerWidget> {
       fontSize: fontSize * layer.fontScale,
       fontWeight: FontWeight.w400,
       color: layer.color,
+      overflow: TextOverflow.ellipsis,
     );
 
     double height = getLineHeight(style);
@@ -359,7 +367,7 @@ class _LayerWidgetState extends State<LayerWidget> {
         painter: DrawCanvas(
           item: layer.item,
           scale: widget.layerData.scale,
-          enabledHitDetection: widget.enabledHitDetection,
+          enabledHitDetection: widget.enableHitDetection,
           freeStyleHighPerformanceScaling:
               widget.freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,

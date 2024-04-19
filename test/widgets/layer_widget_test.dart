@@ -40,7 +40,7 @@ void main() {
                 textFontSize: 16.0,
                 stickerInitWidth: 100,
                 emojiTextStyle: const TextStyle(fontSize: 16.0),
-                enabledHitDetection: true,
+                enableHitDetection: true,
                 freeStyleHighPerformanceScaling: true,
                 freeStyleHighPerformanceMoving: true,
               ),

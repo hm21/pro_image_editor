@@ -19,6 +19,9 @@ class FilterEditorConfigs {
   /// Indicates whether the filter editor is enabled.
   final bool enabled;
 
+  /// Show also layers in the editor.
+  final bool showLayers;
+
   /// Offset for the filter text, helpful if the user has an input field that overlays in a stack widget.
   final double whatsAppFilterTextOffsetY;
 
@@ -30,6 +33,7 @@ class FilterEditorConfigs {
   /// By default, the editor is enabled, and the filter list contains all filters.
   const FilterEditorConfigs({
     this.enabled = true,
+    this.showLayers = true,
     this.whatsAppFilterTextOffsetY = 0,
     this.filterList,
   });

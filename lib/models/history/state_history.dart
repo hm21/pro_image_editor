@@ -1,3 +1,4 @@
+import '../crop_rotate_editor/transform_factors.dart';
 import '../filter_state_history.dart';
 import '../blur_state_history.dart';
 import '../layer.dart';
@@ -60,10 +61,16 @@ class EditorStateHistory {
   List<Layer> layers = [];
   List<FilterStateHistory> filters = [];
 
+  /// This method is being prepared for a future release.
+  ///
+  /// The transformation from the crop/ rotate editor.
+  TransformConfigs transformConfigs;
+
   EditorStateHistory({
     required this.bytesRefIndex,
     required this.blur,
     required this.layers,
     required this.filters,
+    required this.transformConfigs,
   });
 }

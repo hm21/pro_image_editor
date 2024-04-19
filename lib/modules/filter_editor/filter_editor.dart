@@ -5,10 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/blur_state_history.dart';
+import 'package:pro_image_editor/models/transform_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
+import '../../models/layer.dart';
+import '../../utils/helper/editor_mixin.dart';
+import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
 import 'widgets/filter_editor_item_list.dart';
 import 'widgets/image_with_filter.dart';
@@ -21,7 +27,10 @@ import 'widgets/image_with_filter.dart';
 /// - `FilterEditor.network`: Loads an image from a network URL.
 /// - `FilterEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `FilterEditor.autoSource`: Automatically selects the source based on provided parameters.
-class FilterEditor extends StatefulWidget {
+class FilterEditor extends StatefulWidget with ImageEditorMixin {
+  @override
+  final ProImageEditorConfigs configs;
+
   /// A byte array representing the image data.
   final Uint8List? byteArray;
 
@@ -34,14 +43,14 @@ class FilterEditor extends StatefulWidget {
   /// The network URL of the image.
   final String? networkUrl;
 
-  /// The theme configuration for the editor.
-  final ThemeData theme;
-
-  /// The image editor configs.
-  final ProImageEditorConfigs configs;
+  /// The transform configurations how the image should be initialized.
+  final TransformConfigs? transformConfigs;
 
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
+
+  /// The theme configuration for the editor.
+  final ThemeData theme;
 
   /// Determines whether to return the image as a Uint8List when closing the editor.
   ///
@@ -49,6 +58,17 @@ class FilterEditor extends StatefulWidget {
   /// as a Uint8List, including all applied filter states. If set to `false`, only
   /// the filter states will be returned.
   final bool convertToUint8List;
+
+  /// A list of Layer objects representing image layers.
+  final List<Layer>? layers;
+
+  /// The rendered image size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? imageSizeWithLayers;
+
+  /// The rendered body size with layers.
+  /// Required to calculate the correct layer position.
+  final Size? bodySizeWithLayers;
 
   final List<FilterStateHistory>? activeFilters;
 
@@ -65,6 +85,10 @@ class FilterEditor extends StatefulWidget {
     this.convertToUint8List = false,
     this.activeFilters,
     this.blur,
+    this.transformConfigs,
+    this.imageSizeWithLayers,
+    this.bodySizeWithLayers,
+    this.layers,
     required this.theme,
     required this.configs,
   }) : assert(
@@ -84,6 +108,7 @@ class FilterEditor extends StatefulWidget {
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -101,9 +126,13 @@ class FilterEditor extends StatefulWidget {
     Uint8List byteArray, {
     Key? key,
     required ThemeData theme,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -111,8 +140,12 @@ class FilterEditor extends StatefulWidget {
       key: key,
       byteArray: byteArray,
       theme: theme,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       convertToUint8List: convertToUint8List,
       blur: blur,
@@ -128,6 +161,7 @@ class FilterEditor extends StatefulWidget {
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -145,9 +179,13 @@ class FilterEditor extends StatefulWidget {
     File file, {
     Key? key,
     required ThemeData theme,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -155,8 +193,12 @@ class FilterEditor extends StatefulWidget {
       key: key,
       file: file,
       theme: theme,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       convertToUint8List: convertToUint8List,
       blur: blur,
@@ -172,6 +214,7 @@ class FilterEditor extends StatefulWidget {
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
   /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -189,9 +232,13 @@ class FilterEditor extends StatefulWidget {
     String assetPath, {
     Key? key,
     required ThemeData theme,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -199,8 +246,12 @@ class FilterEditor extends StatefulWidget {
       key: key,
       assetPath: assetPath,
       theme: theme,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       convertToUint8List: convertToUint8List,
       blur: blur,
@@ -215,6 +266,8 @@ class FilterEditor extends StatefulWidget {
   /// - `networkUrl`: A String representing the network URL of the image to be loaded.
   /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
   /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
+  /// - `configs`: The image editor configs.
+  /// - `transformConfigs` The transform configurations how the image should be initialized.
   /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
   ///
   /// Returns:
@@ -232,9 +285,13 @@ class FilterEditor extends StatefulWidget {
     String networkUrl, {
     Key? key,
     required ThemeData theme,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
   }) {
@@ -242,8 +299,12 @@ class FilterEditor extends StatefulWidget {
       key: key,
       networkUrl: networkUrl,
       theme: theme,
+      transformConfigs: transformConfigs,
       configs: configs,
       onUpdateUI: onUpdateUI,
+      imageSizeWithLayers: imageSizeWithLayers,
+      bodySizeWithLayers: bodySizeWithLayers,
+      layers: layers,
       activeFilters: activeFilters,
       blur: blur,
       convertToUint8List: convertToUint8List,
@@ -277,9 +338,13 @@ class FilterEditor extends StatefulWidget {
   factory FilterEditor.autoSource({
     Key? key,
     required ThemeData theme,
+    TransformConfigs? transformConfigs,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     Function? onUpdateUI,
     bool convertToUint8List = false,
+    Size? imageSizeWithLayers,
+    Size? bodySizeWithLayers,
+    List<Layer>? layers,
     List<FilterStateHistory>? activeFilters,
     BlurStateHistory? blur,
     Uint8List? byteArray,
@@ -292,8 +357,12 @@ class FilterEditor extends StatefulWidget {
         byteArray,
         key: key,
         theme: theme,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -303,8 +372,12 @@ class FilterEditor extends StatefulWidget {
         file,
         key: key,
         theme: theme,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -314,8 +387,12 @@ class FilterEditor extends StatefulWidget {
         networkUrl,
         key: key,
         theme: theme,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -325,8 +402,12 @@ class FilterEditor extends StatefulWidget {
         assetPath,
         key: key,
         theme: theme,
+        transformConfigs: transformConfigs,
         configs: configs,
         onUpdateUI: onUpdateUI,
+        imageSizeWithLayers: imageSizeWithLayers,
+        bodySizeWithLayers: bodySizeWithLayers,
+        layers: layers,
         activeFilters: activeFilters,
         blur: blur,
         convertToUint8List: convertToUint8List,
@@ -342,13 +423,21 @@ class FilterEditor extends StatefulWidget {
 }
 
 /// The state class for the `FilterEditor` widget.
-class FilterEditorState extends State<FilterEditor> {
-  late Image decodedImage;
-  ColorFilterGenerator selectedFilter = PresetFilters.none;
-  Uint8List resizedImage = Uint8List.fromList([]);
-  double filterOpacity = 1;
-  bool _createScreenshot = false;
+class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
+  /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
+
+  /// The selected filter.
+  ColorFilterGenerator selectedFilter = PresetFilters.none;
+
+  /// Represents the dimensions of the body.
+  Size _bodySize = Size.zero;
+
+  /// The opacity of the selected filter.
+  double filterOpacity = 1;
+
+  /// Indicates it create a screenshot or not.
+  bool _createScreenshot = false;
 
   /// Closes the editor without applying changes.
   void close() {
@@ -364,11 +453,11 @@ class FilterEditorState extends State<FilterEditor> {
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: widget.configs.i18n,
+          i18n: i18n,
           theme: widget.theme,
-          designMode: widget.configs.designMode,
-          message: widget.configs.i18n.filterEditor.applyFilterDialogMsg,
-          imageEditorTheme: widget.configs.imageEditorTheme,
+          designMode: designMode,
+          message: i18n.filterEditor.applyFilterDialogMsg,
+          imageEditorTheme: imageEditorTheme,
         );
       var data = await screenshotController.capture();
       _createScreenshot = false;
@@ -391,10 +480,9 @@ class FilterEditorState extends State<FilterEditor> {
       data: widget.theme.copyWith(
           tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: widget.configs.imageEditorTheme.uiOverlayStyle,
+        value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
-          backgroundColor:
-              widget.configs.imageEditorTheme.filterEditor.background,
+          backgroundColor: imageEditorTheme.filterEditor.background,
           appBar: _buildAppBar(),
           body: _buildBody(),
           bottomNavigationBar: _buildBottomNavBar(),
@@ -405,25 +493,23 @@ class FilterEditorState extends State<FilterEditor> {
 
   /// Builds the app bar for the filter editor.
   PreferredSizeWidget _buildAppBar() {
-    return widget.configs.customWidgets.appBarFilterEditor ??
+    return customWidgets.appBarFilterEditor ??
         AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: widget
-              .configs.imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor: widget
-              .configs.imageEditorTheme.filterEditor.appBarForegroundColor,
+          backgroundColor: imageEditorTheme.filterEditor.appBarBackgroundColor,
+          foregroundColor: imageEditorTheme.filterEditor.appBarForegroundColor,
           actions: [
             IconButton(
-              tooltip: widget.configs.i18n.filterEditor.back,
+              tooltip: i18n.filterEditor.back,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.configs.icons.backButton),
+              icon: Icon(icons.backButton),
               onPressed: close,
             ),
             const Spacer(),
             IconButton(
-              tooltip: widget.configs.i18n.filterEditor.done,
+              tooltip: i18n.filterEditor.done,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(widget.configs.icons.applyChanges),
+              icon: Icon(icons.applyChanges),
               iconSize: 28,
               onPressed: done,
             ),
@@ -433,29 +519,51 @@ class FilterEditorState extends State<FilterEditor> {
 
   /// Builds the main content area of the editor.
   Widget _buildBody() {
-    return Center(
-      child: Screenshot(
-        controller: screenshotController,
-        child: Hero(
-          tag: widget.configs.heroTag,
-          createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-          child: ImageWithFilter(
-            image: EditorImage(
-              file: widget.file,
-              byteArray: widget.byteArray,
-              networkUrl: widget.networkUrl,
-              assetPath: widget.assetPath,
-            ),
-            activeFilters: widget.activeFilters,
-            designMode: widget.configs.designMode,
-            filter: selectedFilter,
-            blur: widget.blur,
-            fit: BoxFit.contain,
-            opacity: filterOpacity,
+    return LayoutBuilder(builder: (context, constraints) {
+      _bodySize = constraints.biggest;
+      return Center(
+        child: Screenshot(
+          controller: screenshotController,
+          child: Stack(
+            children: [
+              Hero(
+                tag: heroTag,
+                createRectTween: (begin, end) =>
+                    RectTween(begin: begin, end: end),
+                child: TransformedContentGenerator(
+                  configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                  child: ImageWithFilter(
+                    image: EditorImage(
+                      file: widget.file,
+                      byteArray: widget.byteArray,
+                      networkUrl: widget.networkUrl,
+                      assetPath: widget.assetPath,
+                    ),
+                    activeFilters: widget.activeFilters,
+                    designMode: designMode,
+                    filter: selectedFilter,
+                    blur: widget.blur,
+                    fit: BoxFit.contain,
+                    opacity: filterOpacity,
+                  ),
+                ),
+              ),
+              if (filterEditorConfigs.showLayers && widget.layers != null)
+                LayerStack(
+                  transformHelper: TransformHelper(
+                    mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
+                    mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                    editorBodySize: _bodySize,
+                  ),
+                  configs: widget.configs,
+                  layers: widget.layers!,
+                  clipBehavior: Clip.none,
+                ),
+            ],
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Builds the bottom navigation bar with filter options.
@@ -489,6 +597,7 @@ class FilterEditorState extends State<FilterEditor> {
               activeFilters: widget.activeFilters,
               blur: widget.blur,
               configs: widget.configs,
+              transformConfigs: widget.transformConfigs,
               selectedFilter: selectedFilter,
               onSelectFilter: (filter) {
                 selectedFilter = filter;

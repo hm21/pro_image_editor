@@ -20,6 +20,9 @@ class ProImageEditorConfigs {
   /// The theme to be used for the Image Editor.
   final ThemeData? theme;
 
+  /// Remove the transparent area of the final image.
+  final bool removeTransparentAreas;
+
   /// A unique hero tag for the Image Editor widget.
   final String heroTag;
 
@@ -86,6 +89,7 @@ class ProImageEditorConfigs {
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
     this.i18n = const I18n(),
+    this.removeTransparentAreas = false,
     this.helperLines = const HelperLines(),
     this.customWidgets = const ImageEditorCustomWidgets(),
     this.imageEditorTheme = const ImageEditorTheme(),

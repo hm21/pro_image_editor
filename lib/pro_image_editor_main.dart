@@ -12,12 +12,15 @@ import 'package:pro_image_editor/models/import_export/utils/export_import_enum.d
 import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
+import 'package:pro_image_editor/utils/helper/editor_mixin.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:vibration/vibration.dart';
+import 'package:image/image.dart' as img;
 
 import 'designs/whatsapp/whatsapp_filter_button.dart';
 import 'designs/whatsapp/whatsapp_sticker_editor.dart';
+import 'models/crop_rotate_editor/transform_factors.dart';
 import 'models/history/state_history.dart';
 import 'models/history/last_position.dart';
 import 'models/crop_rotate_editor_response.dart';
@@ -43,6 +46,7 @@ import 'widgets/flat_icon_text_button.dart';
 import 'widgets/layer_widget.dart';
 import 'widgets/loading_dialog.dart';
 import 'widgets/pro_image_editor_desktop_mode.dart';
+import 'widgets/transformed_content_generator.dart';
 
 typedef ImageEditingCompleteCallback = Future<void> Function(Uint8List bytes);
 typedef ImageEditingEmptyCallback = void Function();
@@ -70,7 +74,10 @@ typedef ImageEditingEmptyCallback = void Function();
 ///
 /// See also:
 /// - [ProImageEditorConfigs] for configuring image editing options.
-class ProImageEditor extends StatefulWidget {
+class ProImageEditor extends StatefulWidget with ImageEditorMixin {
+  @override
+  final ProImageEditorConfigs configs;
+
   /// Image data as a `Uint8List` from memory.
   final Uint8List? byteArray;
 
@@ -100,9 +107,6 @@ class ProImageEditor extends StatefulWidget {
 
   /// A callback function that can be used to update the UI from custom widgets.
   final ImageEditingEmptyCallback? onUpdateUI;
-
-  /// Configuration options for the image editor.
-  final ProImageEditorConfigs configs;
 
   /// Creates a `ProImageEditor` widget for image editing.
   ///
@@ -306,7 +310,8 @@ class ProImageEditor extends StatefulWidget {
   State<ProImageEditor> createState() => ProImageEditorState();
 }
 
-class ProImageEditorState extends State<ProImageEditor> {
+class ProImageEditorState extends State<ProImageEditor>
+    with ImageEditorStateMixin {
   /// A GlobalKey for the Painting Editor, used to access and control the state of the painting editor.
   final paintingEditor = GlobalKey<PaintingEditorState>();
 
@@ -351,6 +356,12 @@ class ProImageEditorState extends State<ProImageEditor> {
 
   /// Stores the last recorded screen size.
   Size _lastScreenSize = const Size(0, 0);
+
+  /// Stores the last recorded body size.
+  Size _bodySize = Size.zero;
+
+  /// Stores the last recorded image size.
+  Size _renderedImageSize = Size.zero;
 
   /// Getter for the screen size of the device.
   Size get _screen => MediaQuery.of(context).size;
@@ -520,7 +531,11 @@ class ProImageEditorState extends State<ProImageEditor> {
     ));
 
     stateHistory.add(EditorStateHistory(
-        bytesRefIndex: 0, blur: BlurStateHistory(), layers: [], filters: []));
+        transformConfigs: TransformConfigs.empty(),
+        bytesRefIndex: 0,
+        blur: BlurStateHistory(),
+        layers: [],
+        filters: []));
 
     Vibration.hasVibrator().then((value) => _deviceCanVibrate = value ?? false);
     Vibration.hasCustomVibrationsSupport()
@@ -599,6 +614,10 @@ class ProImageEditorState extends State<ProImageEditor> {
   /// Get the list of filters from the current image editor changes.
   List<FilterStateHistory> get _filters => stateHistory[_editPosition].filters;
 
+  /// Get the transformconfigurations from the crop/ rotate editor.
+  TransformConfigs get _transformConfigs =>
+      stateHistory[_editPosition].transformConfigs;
+
   /// Get the blur state from the current image editor changes.
   BlurStateHistory get _blur => stateHistory[_editPosition].blur;
 
@@ -644,6 +663,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _imgStateHistory.add(image);
     stateHistory.add(
       EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
         layers: layers,
@@ -662,6 +682,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     stateHistory.add(
       EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
         layers:
@@ -683,6 +704,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     _cleanForwardChanges();
     stateHistory.add(
       EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
         layers: List.from(stateHistory.last.layers.map((e) => _copyLayer(e))),
@@ -707,6 +729,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     layers.removeAt(layerPos);
     stateHistory.add(
       EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
         layers: layers,
@@ -1513,9 +1536,13 @@ class ProImageEditorState extends State<ProImageEditor> {
         networkUrl: _image.networkUrl,
         theme: _theme,
         configs: widget.configs,
+        transformConfigs: _transformConfigs,
         onUpdateUI: widget.onUpdateUI,
         activeFilters: _filters,
+        layers: activeLayers,
         blur: _blur,
+        imageSizeWithLayers: _renderedImageSize,
+        bodySizeWithLayers: _bodySize,
         convertToUint8List: false,
       ),
     );
@@ -1527,6 +1554,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     stateHistory.add(
       EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: _blur,
         layers: activeLayers,
@@ -1674,13 +1702,11 @@ class ProImageEditorState extends State<ProImageEditor> {
         networkUrl: _image.networkUrl,
         theme: _theme,
         imageSize: Size(_imageWidth, _imageHeight),
-        i18n: widget.configs.i18n,
-        icons: widget.configs.icons,
-        heroTag: widget.configs.heroTag,
-        designMode: widget.configs.designMode,
-        imageEditorTheme: widget.configs.imageEditorTheme,
-        customWidgets: widget.configs.customWidgets,
-        configs: widget.configs.blurEditorConfigs,
+        imageSizeWithLayers: _renderedImageSize,
+        bodySizeWithLayers: _bodySize,
+        layers: activeLayers,
+        configs: widget.configs,
+        transformConfigs: _transformConfigs,
         onUpdateUI: widget.onUpdateUI,
         filters: _filters,
         convertToUint8List: false,
@@ -1695,6 +1721,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     stateHistory.add(
       EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
         bytesRefIndex: _imgStateHistory.length - 1,
         blur: blur,
         layers: activeLayers,
@@ -1736,6 +1763,41 @@ class ProImageEditorState extends State<ProImageEditor> {
     }
   }
 
+  /// Function to remove transparent areas from the image
+  Uint8List? _removeTransparentAreas(Uint8List bytes) {
+    // Decode the image
+    img.Image? image = img.decodeImage(bytes);
+    if (image == null) return null;
+
+    // Determine the bounding box of non-transparent pixels
+    int minX = image.width, minY = image.height, maxX = 0, maxY = 0;
+    for (int y = 0; y < image.height; y++) {
+      for (int x = 0; x < image.width; x++) {
+        // Extract the alpha component to check for transparency
+        if (image.getPixel(x, y).a != 0) {
+          // Check if pixel is not fully transparent
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    // Check if there are any non-transparent pixels
+    if (maxX < minX || maxY < minY) {
+      return Uint8List.fromList(img.encodePng(image));
+    }
+
+    // Crop the image to the bounding box
+    img.Image croppedImage = img.copyCrop(image,
+        x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1);
+
+    // Encode the cropped image to bytes
+    Uint8List croppedBytes = Uint8List.fromList(img.encodePng(croppedImage));
+    return croppedBytes;
+  }
+
   /// Complete the editing process and return the edited image.
   ///
   /// This function is called when the user is done editing the image. If no changes have been made
@@ -1766,8 +1828,16 @@ class ProImageEditorState extends State<ProImageEditor> {
 
     Uint8List bytes = Uint8List.fromList([]);
     try {
-      bytes = await _screenshotCtrl.capture(pixelRatio: _pixelRatio) ?? bytes;
+      bytes = await _screenshotCtrl.capture(
+            pixelRatio:
+                widget.configs.removeTransparentAreas ? null : _pixelRatio,
+          ) ??
+          bytes;
     } catch (_) {}
+
+    if (widget.configs.removeTransparentAreas) {
+      bytes = _removeTransparentAreas(bytes) ?? bytes;
+    }
 
     await widget.onImageEditingComplete(bytes);
 
@@ -1957,6 +2027,7 @@ class ProImageEditorState extends State<ProImageEditor> {
       }
       stateHistory = [
         EditorStateHistory(
+            transformConfigs: TransformConfigs.empty(),
             bytesRefIndex: 0,
             blur: BlurStateHistory(),
             filters: [],
@@ -2096,8 +2167,10 @@ class ProImageEditorState extends State<ProImageEditor> {
                     ThemeEditorMode.simple
                 ? AppBar(
                     automaticallyImplyLeading: false,
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.black,
+                    foregroundColor:
+                        widget.configs.imageEditorTheme.appBarForegroundColor,
+                    backgroundColor:
+                        widget.configs.imageEditorTheme.appBarBackgroundColor,
                     actions: [
                       IconButton(
                         tooltip: widget.configs.i18n.cancel,
@@ -2113,8 +2186,11 @@ class ProImageEditorState extends State<ProImageEditor> {
                         icon: Icon(
                           widget.configs.icons.undoAction,
                           color: _editPosition > 0
-                              ? Colors.white
-                              : Colors.white.withAlpha(80),
+                              ? widget.configs.imageEditorTheme
+                                  .appBarForegroundColor
+                              : widget.configs.imageEditorTheme
+                                  .appBarForegroundColor
+                                  .withAlpha(80),
                         ),
                         onPressed: undoAction,
                       ),
@@ -2125,8 +2201,11 @@ class ProImageEditorState extends State<ProImageEditor> {
                         icon: Icon(
                           widget.configs.icons.redoAction,
                           color: _editPosition < stateHistory.length - 1
-                              ? Colors.white
-                              : Colors.white.withAlpha(80),
+                              ? widget.configs.imageEditorTheme
+                                  .appBarForegroundColor
+                              : widget.configs.imageEditorTheme
+                                  .appBarForegroundColor
+                                  .withAlpha(80),
                         ),
                         onPressed: redoAction,
                       ),
@@ -2147,6 +2226,7 @@ class ProImageEditorState extends State<ProImageEditor> {
     var editorImage = _buildImageWithFilter();
 
     return LayoutBuilder(builder: (context, constraints) {
+      _bodySize = constraints.biggest;
       return Listener(
         onPointerSignal: isDesktop ? _mouseScroll : null,
         child: GestureDetector(
@@ -2169,54 +2249,56 @@ class ProImageEditorState extends State<ProImageEditor> {
                   fit: StackFit.expand,
                   clipBehavior: Clip.none,
                   children: [
-                    Hero(
-                      tag: !_inited ? '--' : widget.configs.heroTag,
-                      createRectTween: (begin, end) =>
-                          RectTween(begin: begin, end: end),
-                      child: Center(
-                        child: SizedBox(
-                          height: _imageHeight,
-                          width: _imageWidth,
-                          child: StreamBuilder<bool>(
-                              stream: _mouseMoveStream.stream,
-                              initialData: false,
-                              builder: (context, snapshot) {
-                                return MouseRegion(
-                                  hitTestBehavior: HitTestBehavior.translucent,
-                                  cursor: snapshot.data != true
-                                      ? SystemMouseCursors.basic
-                                      : widget.configs.imageEditorTheme
-                                          .layerHoverCursor,
-                                  onHover: isDesktop
-                                      ? (event) {
-                                          var hasHit = activeLayers.indexWhere(
-                                                  (element) =>
-                                                      element
-                                                          is PaintingLayerData &&
-                                                      element.item.hit) >=
-                                              0;
-                                          if (hasHit != snapshot.data) {
-                                            _mouseMoveStream.add(hasHit);
-                                          }
+                    Center(
+                      child: SizedBox(
+                        height: _imageHeight,
+                        width: _imageWidth,
+                        child: StreamBuilder<bool>(
+                            stream: _mouseMoveStream.stream,
+                            initialData: false,
+                            builder: (context, snapshot) {
+                              return MouseRegion(
+                                hitTestBehavior: HitTestBehavior.translucent,
+                                cursor: snapshot.data != true
+                                    ? SystemMouseCursors.basic
+                                    : widget.configs.imageEditorTheme
+                                        .layerHoverCursor,
+                                onHover: isDesktop
+                                    ? (event) {
+                                        var hasHit = activeLayers.indexWhere(
+                                                (element) =>
+                                                    element
+                                                        is PaintingLayerData &&
+                                                    element.item.hit) >=
+                                            0;
+                                        if (hasHit != snapshot.data) {
+                                          _mouseMoveStream.add(hasHit);
                                         }
-                                      : null,
-                                  child: Screenshot(
-                                    controller: _screenshotCtrl,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Offstage(
+                                      }
+                                    : null,
+                                child: Screenshot(
+                                  controller: _screenshotCtrl,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Hero(
+                                        tag: !_inited
+                                            ? '--'
+                                            : widget.configs.heroTag,
+                                        createRectTween: (begin, end) =>
+                                            RectTween(begin: begin, end: end),
+                                        child: Offstage(
                                           offstage: !_inited,
                                           child: editorImage,
                                         ),
-                                        if (_selectedLayer < 0) _buildLayers(),
-                                      ],
-                                    ),
+                                      ),
+                                      if (_selectedLayer < 0) _buildLayers(),
+                                    ],
                                   ),
-                                );
-                              }),
-                        ),
+                                ),
+                              );
+                            }),
                       ),
                     ),
                     // show same image solong decoding that screenshot is ready
@@ -2295,6 +2377,7 @@ class ProImageEditorState extends State<ProImageEditor> {
 
                 stateHistory.add(
                   EditorStateHistory(
+                    transformConfigs: TransformConfigs.empty(),
                     bytesRefIndex: _imgStateHistory.length - 1,
                     blur: _blur,
                     layers: activeLayers,
@@ -2335,7 +2418,8 @@ class ProImageEditorState extends State<ProImageEditor> {
                       thickness: isDesktop ? null : 0,
                       child: BottomAppBar(
                         height: _bottomBarHeight,
-                        color: Colors.black,
+                        color: widget
+                            .configs.imageEditorTheme.bottomBarBackgroundColor,
                         padding: EdgeInsets.zero,
                         child: Center(
                           child: SingleChildScrollView(
@@ -2500,7 +2584,7 @@ class ProImageEditorState extends State<ProImageEditor> {
           layerData: layerItem,
           textFontSize: widget.configs.textEditorConfigs.initFontSize,
           emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
-          enabledHitDetection: _enabledHitDetection,
+          enableHitDetection: _enabledHitDetection,
           freeStyleHighPerformanceScaling: _freeStyleHighPerformanceScaling,
           freeStyleHighPerformanceMoving: _freeStyleHighPerformanceMoving,
           designMode: widget.configs.designMode,
@@ -2618,13 +2702,19 @@ class ProImageEditorState extends State<ProImageEditor> {
   }
 
   Widget _buildImageWithFilter() {
-    return ImageWithMultipleFilters(
-      width: _imageWidth,
-      height: _imageHeight,
-      designMode: widget.configs.designMode,
-      image: _image,
-      filters: _filters,
-      blur: _blur,
+    return TransformedContentGenerator(
+      configs: _transformConfigs,
+      child: LayoutBuilder(builder: (context, constraints) {
+        _renderedImageSize = constraints.biggest;
+        return ImageWithMultipleFilters(
+          width: _imageWidth,
+          height: _imageHeight,
+          designMode: designMode,
+          image: _image,
+          filters: _filters,
+          blur: _blur,
+        );
+      }),
     );
   }
 }

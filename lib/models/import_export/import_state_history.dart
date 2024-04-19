@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history_configs.dart';
 import 'package:pro_image_editor/models/layer.dart';
 
@@ -74,6 +75,7 @@ class ImportStateHistory {
           blur: blur,
           layers: layers,
           filters: filters,
+          transformConfigs: TransformConfigs.empty(),
         ),
       );
     }

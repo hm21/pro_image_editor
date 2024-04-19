@@ -9,6 +9,7 @@ import 'package:rounded_background_text/rounded_background_text.dart';
 
 import '../designs/whatsapp/whatsapp_text_bottombar.dart';
 import '../models/layer.dart';
+import '../utils/helper/editor_mixin.dart';
 import '../utils/theme_functions.dart';
 import '../widgets/bottom_sheets_header_row.dart';
 import '../widgets/color_picker/bar_color_picker.dart';
@@ -18,20 +19,18 @@ import '../widgets/platform_popup_menu.dart';
 import '../widgets/pro_image_editor_desktop_mode.dart';
 
 /// A StatefulWidget that provides a text editing interface for adding and editing text layers.
-class TextEditor extends StatefulWidget {
-  /// Configuration settings for the text editor.
-  ///
-  /// The image editor configs
+class TextEditor extends StatefulWidget with ImageEditorMixin {
+  @override
   final ProImageEditorConfigs configs;
 
   /// A unique hero tag for the image.
   final String? heroTag;
 
-  /// The text layer data to be edited, if any.
-  final TextLayerData? layer;
-
   /// The theme configuration for the editor.
   final ThemeData theme;
+
+  /// The text layer data to be edited, if any.
+  final TextLayerData? layer;
 
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
@@ -53,7 +52,7 @@ class TextEditor extends StatefulWidget {
 }
 
 /// The state class for the `TextEditor` widget.
-class TextEditorState extends State<TextEditor> {
+class TextEditorState extends State<TextEditor> with ImageEditorStateMixin {
   final TextEditingController _textCtrl = TextEditingController();
   final FocusNode _focus = FocusNode();
   Color _primaryColor = Colors.black;
@@ -67,13 +66,12 @@ class TextEditorState extends State<TextEditor> {
   @override
   void initState() {
     super.initState();
-    align = widget.configs.textEditorConfigs.initialTextAlign;
-    fontScale = widget.configs.textEditorConfigs.initFontScale;
-    backgroundColorMode =
-        widget.configs.textEditorConfigs.initialBackgroundColorMode;
+    align = textEditorConfigs.initialTextAlign;
+    fontScale = textEditorConfigs.initFontScale;
+    backgroundColorMode = textEditorConfigs.initialBackgroundColorMode;
 
     _customTextStyle = widget.layer?.textStyle ??
-        widget.configs.textEditorConfigs.whatsAppCustomTextStyles?.first ??
+        textEditorConfigs.whatsAppCustomTextStyles?.first ??
         const TextStyle();
     _initializeFromLayer();
     _setupTextControllerListener();
@@ -143,7 +141,7 @@ class TextEditorState extends State<TextEditor> {
 
   /// Gets the text font size based on the selected font scale.
   double get _getTextFontSize {
-    return widget.configs.textEditorConfigs.initFontSize * fontScale;
+    return textEditorConfigs.initFontSize * fontScale;
   }
 
   /// Toggles the text alignment between left, center, and right.
@@ -180,12 +178,12 @@ class TextEditorState extends State<TextEditor> {
     final presetFontScale = fontScale;
     showModalBottomSheet(
       context: context,
-      backgroundColor: widget
-          .configs.imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
+      backgroundColor:
+          imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
       builder: (BuildContext context) {
         return Material(
           color: Colors.transparent,
-          textStyle: platformTextStyle(context, widget.configs.designMode),
+          textStyle: platformTextStyle(context, designMode),
           child: SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
             child: Padding(
@@ -202,21 +200,18 @@ class TextEditorState extends State<TextEditor> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     BottomSheetHeaderRow(
-                      title:
-                          '${widget.configs.i18n.textEditor.fontScale} ${fontScale}x',
+                      title: '${i18n.textEditor.fontScale} ${fontScale}x',
                       theme: widget.theme,
                     ),
                     Row(
                       children: [
                         Expanded(
                           child: Slider.adaptive(
-                            max: widget.configs.textEditorConfigs.maxFontScale,
-                            min: widget.configs.textEditorConfigs.minFontScale,
-                            divisions:
-                                (widget.configs.textEditorConfigs.maxFontScale -
-                                        widget.configs.textEditorConfigs
-                                            .minFontScale) ~/
-                                    0.1,
+                            max: textEditorConfigs.maxFontScale,
+                            min: textEditorConfigs.minFontScale,
+                            divisions: (textEditorConfigs.maxFontScale -
+                                    textEditorConfigs.minFontScale) ~/
+                                0.1,
                             value: fontScale,
                             onChanged: updateFontScaleScale,
                           ),
@@ -231,7 +226,7 @@ class TextEditorState extends State<TextEditor> {
                                   }
                                 : null,
                             icon: Icon(
-                              widget.configs.icons.textEditor.resetFontScale,
+                              icons.textEditor.resetFontScale,
                             ),
                           ),
                         ),
@@ -283,14 +278,12 @@ class TextEditorState extends State<TextEditor> {
               tooltipTheme:
                   widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
-            backgroundColor:
-                widget.configs.imageEditorTheme.textEditor.background,
+            backgroundColor: imageEditorTheme.textEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
             // For desktop devices where there is no physical keyboard, we can center it as we do in the editor.
             bottomNavigationBar: isDesktop &&
-                    widget.configs.imageEditorTheme.editorMode ==
-                        ThemeEditorMode.simple
+                    imageEditorTheme.editorMode == ThemeEditorMode.simple
                 ? const SizedBox(height: kBottomNavigationBarHeight)
                 : null,
           ),
@@ -301,49 +294,47 @@ class TextEditorState extends State<TextEditor> {
 
   /// Builds the app bar for the text editor.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
-    return widget.configs.customWidgets.appBarTextEditor ??
-        (widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+    return customWidgets.appBarTextEditor ??
+        (imageEditorTheme.editorMode == ThemeEditorMode.simple
             ? AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: widget
-                    .configs.imageEditorTheme.textEditor.appBarBackgroundColor,
-                foregroundColor: widget
-                    .configs.imageEditorTheme.textEditor.appBarForegroundColor,
+                backgroundColor:
+                    imageEditorTheme.textEditor.appBarBackgroundColor,
+                foregroundColor:
+                    imageEditorTheme.textEditor.appBarForegroundColor,
                 actions: [
                   IconButton(
-                    tooltip: widget.configs.i18n.textEditor.back,
+                    tooltip: i18n.textEditor.back,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(widget.configs.icons.backButton),
+                    icon: Icon(icons.backButton),
                     onPressed: close,
                   ),
                   const Spacer(),
                   if (constraints.maxWidth >= 300) ...[
-                    if (widget.configs.textEditorConfigs.canToggleTextAlign)
+                    if (textEditorConfigs.canToggleTextAlign)
                       IconButton(
                         key: const ValueKey('TextAlignIconButton'),
-                        tooltip: widget.configs.i18n.textEditor.textAlign,
+                        tooltip: i18n.textEditor.textAlign,
                         onPressed: toggleTextAlign,
                         icon: Icon(align == TextAlign.left
-                            ? widget.configs.icons.textEditor.alignLeft
+                            ? icons.textEditor.alignLeft
                             : align == TextAlign.right
-                                ? widget.configs.icons.textEditor.alignRight
-                                : widget.configs.icons.textEditor.alignCenter),
+                                ? icons.textEditor.alignRight
+                                : icons.textEditor.alignCenter),
                       ),
-                    if (widget.configs.textEditorConfigs.canChangeFontScale)
+                    if (textEditorConfigs.canChangeFontScale)
                       IconButton(
                         key: const ValueKey('BackgroundModeFontScaleButton'),
-                        tooltip: widget.configs.i18n.textEditor.fontScale,
+                        tooltip: i18n.textEditor.fontScale,
                         onPressed: openFontScaleBottomSheet,
-                        icon: Icon(widget.configs.icons.textEditor.fontScale),
+                        icon: Icon(icons.textEditor.fontScale),
                       ),
-                    if (widget
-                        .configs.textEditorConfigs.canToggleBackgroundMode)
+                    if (textEditorConfigs.canToggleBackgroundMode)
                       IconButton(
                         key: const ValueKey('BackgroundModeColorIconButton'),
-                        tooltip: widget.configs.i18n.textEditor.backgroundMode,
+                        tooltip: i18n.textEditor.backgroundMode,
                         onPressed: toggleBackgroundMode,
-                        icon: Icon(
-                            widget.configs.icons.textEditor.backgroundMode),
+                        icon: Icon(icons.textEditor.backgroundMode),
                       ),
                     const Spacer(),
                     _buildDoneBtn(),
@@ -351,50 +342,44 @@ class TextEditorState extends State<TextEditor> {
                     const Spacer(),
                     _buildDoneBtn(),
                     PlatformPopupBtn(
-                      designMode: widget.configs.designMode,
-                      title:
-                          widget.configs.i18n.textEditor.smallScreenMoreTooltip,
+                      designMode: designMode,
+                      title: i18n.textEditor.smallScreenMoreTooltip,
                       options: [
-                        if (widget.configs.textEditorConfigs.canToggleTextAlign)
+                        if (textEditorConfigs.canToggleTextAlign)
                           PopupMenuOption(
-                            label: widget.configs.i18n.textEditor.textAlign,
+                            label: i18n.textEditor.textAlign,
                             icon: Icon(align == TextAlign.left
-                                ? widget.configs.icons.textEditor.alignLeft
+                                ? icons.textEditor.alignLeft
                                 : align == TextAlign.right
-                                    ? widget.configs.icons.textEditor.alignRight
-                                    : widget
-                                        .configs.icons.textEditor.alignCenter),
+                                    ? icons.textEditor.alignRight
+                                    : icons.textEditor.alignCenter),
                             onTap: () {
                               toggleTextAlign();
-                              if (widget.configs.designMode ==
+                              if (designMode ==
                                   ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
                             },
                           ),
-                        if (widget.configs.textEditorConfigs.canChangeFontScale)
+                        if (textEditorConfigs.canChangeFontScale)
                           PopupMenuOption(
-                            label: widget.configs.i18n.textEditor.fontScale,
-                            icon:
-                                Icon(widget.configs.icons.textEditor.fontScale),
+                            label: i18n.textEditor.fontScale,
+                            icon: Icon(icons.textEditor.fontScale),
                             onTap: () {
                               openFontScaleBottomSheet();
-                              if (widget.configs.designMode ==
+                              if (designMode ==
                                   ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
                             },
                           ),
-                        if (widget
-                            .configs.textEditorConfigs.canToggleBackgroundMode)
+                        if (textEditorConfigs.canToggleBackgroundMode)
                           PopupMenuOption(
-                            label:
-                                widget.configs.i18n.textEditor.backgroundMode,
-                            icon: Icon(
-                                widget.configs.icons.textEditor.backgroundMode),
+                            label: i18n.textEditor.backgroundMode,
+                            icon: Icon(icons.textEditor.backgroundMode),
                             onTap: () {
                               toggleBackgroundMode();
-                              if (widget.configs.designMode ==
+                              if (designMode ==
                                   ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
@@ -412,9 +397,9 @@ class TextEditorState extends State<TextEditor> {
   Widget _buildDoneBtn() {
     return IconButton(
       key: const ValueKey('TextEditorDoneButton'),
-      tooltip: widget.configs.i18n.textEditor.done,
+      tooltip: i18n.textEditor.done,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      icon: Icon(widget.configs.icons.applyChanges),
+      icon: Icon(icons.applyChanges),
       iconSize: 28,
       onPressed: done,
     );
@@ -432,16 +417,14 @@ class TextEditorState extends State<TextEditor> {
             alignment: Alignment.topRight,
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: widget.configs.imageEditorTheme.editorMode ==
-                        ThemeEditorMode.simple
+                vertical: imageEditorTheme.editorMode == ThemeEditorMode.simple
                     ? 10
                     : 60,
               ),
               child: BarColorPicker(
                 configs: widget.configs,
                 length: min(
-                  widget.configs.imageEditorTheme.editorMode ==
-                          ThemeEditorMode.simple
+                  imageEditorTheme.editorMode == ThemeEditorMode.simple
                       ? 350
                       : 200,
                   MediaQuery.of(context).size.height -
@@ -468,8 +451,7 @@ class TextEditorState extends State<TextEditor> {
               ),
             ),
           ),
-          if (widget.configs.imageEditorTheme.editorMode ==
-              ThemeEditorMode.whatsapp) ...[
+          if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) ...[
             WhatsAppTextAppBar(
               configs: widget.configs,
               align: align,
@@ -533,8 +515,7 @@ class TextEditorState extends State<TextEditor> {
                       textAlign:
                           _textCtrl.text.isEmpty ? TextAlign.center : align,
                       maxLines: null,
-                      cursorColor: widget
-                          .configs.imageEditorTheme.textEditor.inputCursorColor,
+                      cursorColor: imageEditorTheme.textEditor.inputCursorColor,
                       cursorHeight: _getTextFontSize * 1.2,
                       scrollPhysics: const NeverScrollableScrollPhysics(),
                       decoration: InputDecoration(
@@ -542,11 +523,10 @@ class TextEditorState extends State<TextEditor> {
                           contentPadding: EdgeInsets.fromLTRB(
                               12, _numLines <= 1 ? 4 : 0, 12, 0),
                           hintText: _textCtrl.text.isEmpty
-                              ? widget.configs.i18n.textEditor.inputHintText
+                              ? i18n.textEditor.inputHintText
                               : '',
                           hintStyle: _customTextStyle.copyWith(
-                            color: widget.configs.imageEditorTheme.textEditor
-                                .inputHintColor,
+                            color: imageEditorTheme.textEditor.inputHintColor,
                             fontSize: _getTextFontSize,
                             fontWeight: FontWeight.w400,
                             height: 1.35,

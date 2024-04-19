@@ -8,8 +8,10 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
+import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 
 import '../../../models/blur_state_history.dart';
+import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
 import 'image_with_filter.dart';
 
@@ -49,6 +51,9 @@ class FilterEditorItemList extends StatefulWidget {
   /// This property represents the currently selected filter for the image editor.
   final ColorFilterGenerator selectedFilter;
 
+  /// The transform configurations how the image should be initialized.
+  final TransformConfigs? transformConfigs;
+
   /// Callback function for selecting a filter.
   ///
   /// This function is called when a filter is selected in the editor. It takes a [ColorFilterGenerator] as a parameter, representing the selected filter.
@@ -63,6 +68,7 @@ class FilterEditorItemList extends StatefulWidget {
     this.activeFilters,
     this.blur,
     this.itemScaleFactor,
+    this.transformConfigs,
     required this.selectedFilter,
     required this.onSelectFilter,
     required this.configs,
@@ -174,19 +180,22 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: ImageWithFilter(
-                image: EditorImage(
-                  file: widget.file,
-                  byteArray: widget.byteArray,
-                  networkUrl: widget.networkUrl,
-                  assetPath: widget.assetPath,
+              child: TransformedContentGenerator(
+                configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                child: ImageWithFilter(
+                  image: EditorImage(
+                    file: widget.file,
+                    byteArray: widget.byteArray,
+                    networkUrl: widget.networkUrl,
+                    assetPath: widget.assetPath,
+                  ),
+                  activeFilters: widget.activeFilters,
+                  size: size,
+                  designMode: widget.configs.designMode,
+                  filter: filter,
+                  blur: widget.blur,
+                  fit: BoxFit.cover,
                 ),
-                activeFilters: widget.activeFilters,
-                size: size,
-                designMode: widget.configs.designMode,
-                filter: filter,
-                blur: widget.blur,
-                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -224,26 +233,32 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
           scale: isSelected ? 1.05 : 1,
           alignment: Alignment.bottomCenter,
           duration: const Duration(milliseconds: 200),
-          child: SizedBox(
+          child: Container(
+            clipBehavior: Clip.hardEdge,
             height: size.height,
             width: size.width,
+            decoration: const BoxDecoration(),
             child: Center(
               child: Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
-                  ImageWithFilter(
-                    image: EditorImage(
-                      file: widget.file,
-                      byteArray: widget.byteArray,
-                      networkUrl: widget.networkUrl,
-                      assetPath: widget.assetPath,
+                  TransformedContentGenerator(
+                    configs:
+                        widget.transformConfigs ?? TransformConfigs.empty(),
+                    child: ImageWithFilter(
+                      image: EditorImage(
+                        file: widget.file,
+                        byteArray: widget.byteArray,
+                        networkUrl: widget.networkUrl,
+                        assetPath: widget.assetPath,
+                      ),
+                      activeFilters: widget.activeFilters,
+                      size: size,
+                      designMode: widget.configs.designMode,
+                      filter: filter,
+                      blur: widget.blur,
+                      fit: BoxFit.cover,
                     ),
-                    activeFilters: widget.activeFilters,
-                    size: size,
-                    designMode: widget.configs.designMode,
-                    filter: filter,
-                    blur: widget.blur,
-                    fit: BoxFit.cover,
                   ),
                   Align(
                     alignment: Alignment.bottomLeft,

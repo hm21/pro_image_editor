@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.6.6
+- **refactor:** Update editor code examples
+
 ## Version 2.6.5
 - **feat:** Make `stateHistory` and `activeLayers` public and add `moveLayerListPosition` method to improve layer management functionality.
 
