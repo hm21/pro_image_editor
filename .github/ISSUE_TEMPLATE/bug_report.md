@@ -1,11 +1,22 @@
 ---
 name: Bug report
 about: Report a bug to help us improve
-title: "[bug] "
+title: ""
 labels: bug
 assignees: ''
-
 ---
+
+**Version Information:**
+- pro_image_editor version: [insert version here]
+- Flutter version: [insert version here]
+
+**Platforms Affected:**
+- [ ] Android
+- [ ] iOS
+- [ ] macOS
+- [ ] Windows
+- [ ] Linux
+- [ ] Web
 
 **Describe the bug**
 A clear and concise description of what the bug is.

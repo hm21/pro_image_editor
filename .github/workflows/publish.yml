@@ -9,10 +9,14 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
         with:
-            flutter-version: '3.19.3'
-      - run: flutter pub get
-      - run: flutter pub publish --dry-run
-      - run: flutter pub publish -f
+          channel: master
+          flutter-version: '3.19.5'
+      - name: Install Package Dependencies
+        run: flutter pub get
+      - name: Check publish with dry run
+        run: flutter pub publish --dry-run
+      - name: Publish package
+        run: flutter pub publish -f
