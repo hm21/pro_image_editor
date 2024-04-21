@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a bug to help us improve
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: editor-version
+    attributes:
+      label: Package Version
+      description: Version of the package
+      placeholder: ex. 2.5.2
+    validations:
+      required: true
+  - type: input
+    id: flutter-version
+    attributes:
+      label: Flutter Version
+      description: Version from flutter
+      placeholder: "ex. 3.19.5 | Terminal: flutter --version"
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Platforms
+      description: Check all that apply
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Web
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: "How to reproduce?"
+      description: "How to reproduce the issue?"
+      placeholder: "ex. I found a bug when I press the button X."
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Logs (optional)
+      description: "Error log"
+      placeholder: ex. flutter run --verbose
+      render: sh
+    validations:
+      required: false
+  - type: textarea
+    id: example-code
+    attributes:
+      label: "Example code (optional)"
+      description: "If you can, please provide a example code to reproduce the problem."
+      placeholder: "ex. screenshot.capture(pixelRatio: _pixelRatio)"
+      render: Dart
+    validations:
+      required: false
+  - type: input
+    id: device-model
+    attributes:
+      label: Device Model (optional)
+      description: "Device Model (ex. iPhone 12(iOS 14), Galaxy S21(Android 11))"
+      placeholder: ex. iPhone 12 (iOS 14)
+    validations:
+      required: false
