@@ -27,7 +27,6 @@ body:
     attributes:
       label: Your question
       description: "Describe your question"
-      placeholder: ""
     validations:
       required: false
  
