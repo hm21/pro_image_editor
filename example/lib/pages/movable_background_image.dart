@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -57,9 +58,13 @@ class _MoveableBackgroundImageExampleState
         var width = MediaQuery.of(context).size.width;
         var height = MediaQuery.of(context).size.height;
 
+        double imgRatio = 1; // set the aspect ratio from your image.
         Size editorSize = Size(
-          width,
-          height - kToolbarHeight - kBottomNavigationBarHeight,
+          width - MediaQuery.of(context).padding.horizontal,
+          height -
+              kToolbarHeight -
+              kBottomNavigationBarHeight -
+              MediaQuery.of(context).padding.vertical,
         );
 
         await _createTransparentImage(editorSize.aspectRatio);
@@ -149,6 +154,9 @@ class _MoveableBackgroundImageExampleState
                           blurEditorConfigs:
                               const BlurEditorConfigs(enabled: false),
                           imageEditorTheme: const ImageEditorTheme(
+                            uiOverlayStyle: SystemUiOverlayStyle(
+                              statusBarColor: Colors.black,
+                            ),
                             background: Colors.transparent,
 
                             /// Optionally remove background
@@ -159,7 +167,10 @@ class _MoveableBackgroundImageExampleState
                           ),
                           stickerEditorConfigs: StickerEditorConfigs(
                             enabled: false,
-                            initWidth: editorSize.width / _initScale,
+                            initWidth: (editorSize.aspectRatio > imgRatio
+                                    ? editorSize.height
+                                    : editorSize.width) /
+                                _initScale,
                             buildStickers: (setLayer) {
                               // Optionally your code to pick layers
                               return const SizedBox();

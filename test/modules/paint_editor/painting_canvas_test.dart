@@ -4,6 +4,7 @@ import 'package:network_image_mock/network_image_mock.dart';
 import 'package:pro_image_editor/models/editor_configs/paint_editor_configs.dart';
 import 'package:pro_image_editor/models/i18n/i18n.dart';
 import 'package:pro_image_editor/models/icons/icons.dart';
+import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/paint_editor/painting_canvas.dart';
@@ -14,19 +15,22 @@ import '../../fake/fake_image.dart';
 
 void main() {
   group('PaintingCanvas Tests', () {
+    PaintCanvasInitConfigs initConfigs = PaintCanvasInitConfigs(
+      theme: ThemeData(),
+      imageSize: const Size(200, 200),
+      i18n: const I18n(),
+      imageEditorTheme: const ImageEditorTheme(),
+      icons: const ImageEditorIcons(),
+      designMode: ImageEditorDesignModeE.material,
+      configs: const PaintEditorConfigs(),
+    );
     testWidgets('Initializes with memory constructor',
         (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: PaintingCanvas.memory(
           fakeMemoryImage,
           key: GlobalKey(),
-          theme: ThemeData(),
-          imageSize: const Size(200, 200),
-          i18n: const I18n(),
-          imageEditorTheme: const ImageEditorTheme(),
-          icons: const ImageEditorIcons(),
-          designMode: ImageEditorDesignModeE.material,
-          configs: const PaintEditorConfigs(),
+          initConfigs: initConfigs,
         ),
       ));
 
@@ -39,13 +43,7 @@ void main() {
           home: PaintingCanvas.network(
             fakeNetworkImage,
             key: GlobalKey(),
-            theme: ThemeData(),
-            imageSize: const Size(200, 200),
-            i18n: const I18n(),
-            imageEditorTheme: const ImageEditorTheme(),
-            icons: const ImageEditorIcons(),
-            designMode: ImageEditorDesignModeE.material,
-            configs: const PaintEditorConfigs(),
+            initConfigs: initConfigs,
           ),
         ));
 
@@ -58,13 +56,7 @@ void main() {
         home: PaintingCanvas.file(
           fakeFileImage,
           key: GlobalKey(),
-          theme: ThemeData(),
-          imageSize: const Size(200, 200),
-          i18n: const I18n(),
-          imageEditorTheme: const ImageEditorTheme(),
-          icons: const ImageEditorIcons(),
-          designMode: ImageEditorDesignModeE.material,
-          configs: const PaintEditorConfigs(),
+          initConfigs: initConfigs,
         ),
       ));
 
@@ -77,13 +69,7 @@ void main() {
         home: PaintingCanvas.memory(
           fakeMemoryImage,
           key: GlobalKey(),
-          imageSize: const Size(200, 200),
-          theme: ThemeData.light(),
-          i18n: const I18n(),
-          imageEditorTheme: const ImageEditorTheme(),
-          icons: const ImageEditorIcons(),
-          designMode: ImageEditorDesignModeE.material,
-          configs: const PaintEditorConfigs(),
+          initConfigs: initConfigs,
         ),
       ));
 
@@ -114,13 +100,7 @@ void main() {
         home: PaintingCanvas.memory(
           fakeMemoryImage,
           key: GlobalKey(),
-          imageSize: const Size(200, 200),
-          theme: ThemeData.light(),
-          i18n: const I18n(),
-          imageEditorTheme: const ImageEditorTheme(),
-          icons: const ImageEditorIcons(),
-          designMode: ImageEditorDesignModeE.material,
-          configs: const PaintEditorConfigs(),
+          initConfigs: initConfigs,
         ),
       ));
 
@@ -163,13 +143,7 @@ void main() {
         home: PaintingCanvas.memory(
           fakeMemoryImage,
           key: GlobalKey(),
-          imageSize: const Size(200, 200),
-          theme: ThemeData.light(),
-          i18n: const I18n(),
-          imageEditorTheme: const ImageEditorTheme(),
-          icons: const ImageEditorIcons(),
-          designMode: ImageEditorDesignModeE.material,
-          configs: const PaintEditorConfigs(),
+          initConfigs: initConfigs,
         ),
       ));
 

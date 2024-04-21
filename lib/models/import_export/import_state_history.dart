@@ -7,8 +7,8 @@ import 'package:pro_image_editor/models/import_export/import_state_history_confi
 import 'package:pro_image_editor/models/layer.dart';
 
 import '../editor_image.dart';
-import '../filter_state_history.dart';
-import '../blur_state_history.dart';
+import '../history/blur_state_history.dart';
+import '../history/filter_state_history.dart';
 import '../history/state_history.dart';
 
 /// This class represents the state history of an imported editor session.

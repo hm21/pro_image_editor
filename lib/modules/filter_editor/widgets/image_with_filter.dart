@@ -3,11 +3,10 @@ import 'dart:ui';
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_image.dart';
-import 'package:pro_image_editor/models/filter_state_history.dart';
-import 'package:pro_image_editor/models/blur_state_history.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/widgets/auto_image.dart';
 
+import '../../../models/history/filter_state_history.dart';
 import '../utils/generate_filtered_image.dart';
 
 /// A widget that displays an image with a customizable color filter applied to it.
@@ -31,7 +30,7 @@ class ImageWithFilter extends StatelessWidget {
 
   final List<FilterStateHistory>? activeFilters;
 
-  final BlurStateHistory? blur;
+  final double? blurFactor;
 
   /// Creates an `ImageWithFilter` widget.
   ///
@@ -44,7 +43,7 @@ class ImageWithFilter extends StatelessWidget {
     required this.filter,
     required this.designMode,
     required this.activeFilters,
-    required this.blur,
+    required this.blurFactor,
     this.size,
     this.fit,
     this.opacity = 1,
@@ -61,7 +60,7 @@ class ImageWithFilter extends StatelessWidget {
     );
 
     if (filter.filters.isEmpty && activeFilters == null) {
-      if (blur == null) {
+      if (blurFactor == null) {
         return img;
       } else {
         return Stack(
@@ -70,7 +69,8 @@ class ImageWithFilter extends StatelessWidget {
           children: [
             img,
             BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: blur!.blur, sigmaY: blur!.blur),
+              filter:
+                  ImageFilter.blur(sigmaX: blurFactor!, sigmaY: blurFactor!),
               child: Container(
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
               ),
@@ -93,7 +93,7 @@ class ImageWithFilter extends StatelessWidget {
         );
       }
 
-      if (blur == null) {
+      if (blurFactor == null) {
         return Stack(
           alignment: Alignment.center,
           fit: StackFit.expand,
@@ -110,7 +110,8 @@ class ImageWithFilter extends StatelessWidget {
             img,
             filteredImg,
             BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: blur!.blur, sigmaY: blur!.blur),
+              filter:
+                  ImageFilter.blur(sigmaX: blurFactor!, sigmaY: blurFactor!),
               child: Container(
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
               ),

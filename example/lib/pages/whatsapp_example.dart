@@ -176,77 +176,80 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
           },
         ),
         customWidgets: ImageEditorCustomWidgets(
-          whatsAppBottomWidget: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.center,
-                    decoration: InputDecoration(
-                      filled: true,
-                      isDense: true,
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 7.0),
-                        child: Icon(
-                          Icons.add_photo_alternate_rounded,
-                          size: 24,
-                          color: Colors.white,
+          whatsAppBottomWidget: LayoutBuilder(builder: (context, constraints) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
+                    child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        filled: true,
+                        isDense: true,
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.only(left: 7.0),
+                          child: Icon(
+                            Icons.add_photo_alternate_rounded,
+                            size: 24,
+                            color: Colors.white,
+                          ),
                         ),
+                        hintText: 'Add a caption...',
+                        hintStyle: const TextStyle(
+                          color: Color.fromARGB(255, 238, 238, 238),
+                          fontWeight: FontWeight.w400,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(40),
+                          borderSide: BorderSide.none,
+                        ),
+                        fillColor: const Color(0xFF202D35),
                       ),
-                      hintText: 'Add a caption...',
-                      hintStyle: const TextStyle(
-                        color: Color.fromARGB(255, 238, 238, 238),
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(40),
-                        borderSide: BorderSide.none,
-                      ),
-                      fillColor: const Color(0xFF202D35),
                     ),
                   ),
                 ),
-              ),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
-                  color: Colors.black38,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: const Color(0xFF202D35),
-                        ),
-                        child: const Text(
-                          'Alex Frei',
-                          style: TextStyle(
-                            fontSize: 13,
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(16, 7, 16,
+                        12 + MediaQuery.of(context).viewInsets.bottom),
+                    color: Colors.black38,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: const Color(0xFF202D35),
+                          ),
+                          child: const Text(
+                            'Alex Frei',
+                            style: TextStyle(
+                              fontSize: 13,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          editorKey.currentState?.doneEditing();
-                        },
-                        icon: const Icon(Icons.send),
-                        style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF0DA886),
-                        ),
-                      )
-                    ],
+                        IconButton(
+                          onPressed: () {
+                            editorKey.currentState?.doneEditing();
+                          },
+                          icon: const Icon(Icons.send),
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFF0DA886),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              )
-            ],
-          ),
+                )
+              ],
+            );
+          }),
         ),
       ),
     );

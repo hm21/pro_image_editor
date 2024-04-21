@@ -5,14 +5,13 @@ import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/filter_state_history.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 
-import '../../../models/blur_state_history.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
+import '../../../models/history/filter_state_history.dart';
 import 'image_with_filter.dart';
 
 class FilterEditorItemList extends StatefulWidget {
@@ -41,10 +40,8 @@ class FilterEditorItemList extends StatefulWidget {
   /// If provided, this list contains the history of active filters applied to the image.
   final List<FilterStateHistory>? activeFilters;
 
-  /// Specifies the blur state history.
-  ///
-  /// If provided, this object contains the history of blur states applied to the image.
-  final BlurStateHistory? blur;
+  /// Specifies the blur factor.
+  final double? blurFactor;
 
   /// Specifies the selected filter.
   ///
@@ -66,7 +63,7 @@ class FilterEditorItemList extends StatefulWidget {
     this.assetPath,
     this.networkUrl,
     this.activeFilters,
-    this.blur,
+    this.blurFactor,
     this.itemScaleFactor,
     this.transformConfigs,
     required this.selectedFilter,
@@ -193,7 +190,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                   size: size,
                   designMode: widget.configs.designMode,
                   filter: filter,
-                  blur: widget.blur,
+                  blurFactor: widget.blurFactor,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -256,7 +253,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                       size: size,
                       designMode: widget.configs.designMode,
                       filter: filter,
-                      blur: widget.blur,
+                      blurFactor: widget.blurFactor,
                       fit: BoxFit.cover,
                     ),
                   ),

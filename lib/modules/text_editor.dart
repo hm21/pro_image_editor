@@ -5,11 +5,12 @@ import 'package:pro_image_editor/designs/whatsapp/whatsapp_text_appbar.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
+import 'package:pro_image_editor/mixins/converted_configs.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
 import '../designs/whatsapp/whatsapp_text_bottombar.dart';
 import '../models/layer.dart';
-import '../utils/helper/editor_mixin.dart';
+import '../mixins/editor_configs_mixin.dart';
 import '../utils/theme_functions.dart';
 import '../widgets/bottom_sheets_header_row.dart';
 import '../widgets/color_picker/bar_color_picker.dart';
@@ -19,7 +20,7 @@ import '../widgets/platform_popup_menu.dart';
 import '../widgets/pro_image_editor_desktop_mode.dart';
 
 /// A StatefulWidget that provides a text editing interface for adding and editing text layers.
-class TextEditor extends StatefulWidget with ImageEditorMixin {
+class TextEditor extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
 
@@ -52,7 +53,8 @@ class TextEditor extends StatefulWidget with ImageEditorMixin {
 }
 
 /// The state class for the `TextEditor` widget.
-class TextEditorState extends State<TextEditor> with ImageEditorStateMixin {
+class TextEditorState extends State<TextEditor>
+    with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
   final TextEditingController _textCtrl = TextEditingController();
   final FocusNode _focus = FocusNode();
   Color _primaryColor = Colors.black;

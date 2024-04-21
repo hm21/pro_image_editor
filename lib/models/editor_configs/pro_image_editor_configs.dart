@@ -9,7 +9,7 @@ import 'filter_editor_configs.dart';
 import 'blur_editor_configs.dart';
 import 'paint_editor_configs.dart';
 import 'text_editor_configs.dart';
-import '../helper_lines.dart';
+import 'helper_lines_configs.dart';
 import '../i18n/i18n.dart';
 import '../icons/icons.dart';
 import '../theme/theme.dart';

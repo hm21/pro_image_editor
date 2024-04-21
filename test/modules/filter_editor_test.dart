@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/models/init_configs/filter_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
 import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_filter.dart';
 
@@ -14,7 +15,9 @@ void main() {
           home: Scaffold(
             body: FilterEditor.memory(
               fakeMemoryImage,
-              theme: ThemeData.light(),
+              initConfigs: FilterEditorInitConfigs(
+                theme: ThemeData.light(),
+              ),
             ),
           ),
         ),
@@ -30,7 +33,9 @@ void main() {
           home: Scaffold(
             body: FilterEditor.memory(
               fakeMemoryImage,
-              theme: ThemeData.light(),
+              initConfigs: FilterEditorInitConfigs(
+                theme: ThemeData.light(),
+              ),
             ),
           ),
         ),

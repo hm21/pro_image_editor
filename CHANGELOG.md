@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.6.7
+- **fix**: correct layer interaction to handle multiple layers
+- **refactor**: improve code readability for better maintainability
+
 ## Version 2.6.6
 - **refactor:** Update editor code examples
 

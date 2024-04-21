@@ -6,19 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_appbar.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
 
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
-import '../../models/filter_state_history.dart';
-import '../../models/blur_state_history.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
-import '../../models/layer.dart';
+import '../../models/init_configs/paint_editor_init_configs.dart';
 import '../../utils/design_mode.dart';
-import '../../utils/helper/editor_mixin.dart';
+import '../../mixins/converted_configs.dart';
+import '../../mixins/standalone_editor.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
@@ -30,261 +29,118 @@ import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'painting_canvas.dart';
 import 'utils/paint_editor_enum.dart';
 
-/// A StatefulWidget that represents an image editor with painting capabilities.
-class PaintingEditor extends StatefulWidget with ImageEditorMixin {
+/// The `PaintingEditor` widget allows users to editing images with painting tools.
+///
+/// You can create a `PaintingEditor` using one of the factory methods provided:
+/// - `PaintingEditor.file`: Loads an image from a file.
+/// - `PaintingEditor.asset`: Loads an image from an asset.
+/// - `PaintingEditor.network`: Loads an image from a network URL.
+/// - `PaintingEditor.memory`: Loads an image from memory as a `Uint8List`.
+/// - `PaintingEditor.autoSource`: Automatically selects the source based on provided parameters.
+class PaintingEditor extends StatefulWidget
+    with StandaloneEditor<PaintEditorInitConfigs> {
   @override
-  final ProImageEditorConfigs configs;
+  final PaintEditorInitConfigs initConfigs;
+  @override
+  final EditorImage editorImage;
 
-  /// The theme configuration for the editor.
-  final ThemeData theme;
-
-  /// A Uint8List representing the image data in memory.
-  final Uint8List? byteArray;
-
-  /// The asset path of the image.
-  final String? assetPath;
-
-  /// The network URL of the image.
-  final String? networkUrl;
-
-  /// A File representing the image file.
-  final File? file;
-
-  /// The transform configurations how the image should be initialized.
-  final TransformConfigs? transformConfigs;
-
-  /// A list of Layer objects representing image layers.
-  final List<Layer>? layers;
-
-  /// The size of the image.
-  final Size imageSize;
-
-  /// Additional padding for the editor.
-  final EdgeInsets? paddingHelper;
-
-  /// A callback function that can be used to update the UI from custom widgets.
-  final Function? onUpdateUI;
-
-  /// A list of applied filters to the editor.
-  final List<FilterStateHistory> filters;
-
-  /// The blur state to the editor.
-  final BlurStateHistory blur;
-
-  /// Constructs a PaintingEditor instance.
+  /// Constructs a `PaintingEditor` widget.
   ///
-  /// The `PaintingEditor._` constructor should not be directly used. Instead, use one of the factory constructors.
+  /// The [key] parameter is used to provide a key for the widget.
+  /// The [editorImage] parameter specifies the image to be edited.
+  /// The [initConfigs] parameter specifies the initialization configurations for the editor.
   const PaintingEditor._({
     super.key,
-    this.byteArray,
-    this.assetPath,
-    this.networkUrl,
-    this.file,
-    required this.theme,
-    this.configs = const ProImageEditorConfigs(),
-    this.transformConfigs,
-    required this.imageSize,
-    this.layers,
-    this.onUpdateUI,
-    this.paddingHelper,
-    required this.filters,
-    required this.blur,
-  }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
-          'At least one of bytes, file, networkUrl, or assetPath must not be null.',
-        );
+    required this.editorImage,
+    required this.initConfigs,
+  });
 
-  ///Constructor for loading image from memory.
+  /// Constructs a `PaintingEditor` widget with image data loaded from memory.
   factory PaintingEditor.memory(
     Uint8List byteArray, {
     Key? key,
-    required ThemeData theme,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    TransformConfigs? transformConfigs,
-    required Size imageSize,
-    List<Layer>? layers,
-    EdgeInsets? paddingHelper,
-    Function? onUpdateUI,
-    List<FilterStateHistory>? filters,
-    BlurStateHistory? blur,
+    required PaintEditorInitConfigs initConfigs,
   }) {
     return PaintingEditor._(
       key: key,
-      byteArray: byteArray,
-      onUpdateUI: onUpdateUI,
-      theme: theme,
-      imageSize: imageSize,
-      layers: layers,
-      paddingHelper: paddingHelper,
-      configs: configs,
-      transformConfigs: transformConfigs,
-      filters: filters ?? [],
-      blur: blur ?? BlurStateHistory(),
+      editorImage: EditorImage(byteArray: byteArray),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Constructor for loading image from [File].
+  /// Constructs a `PaintingEditor` widget with an image loaded from a file.
   factory PaintingEditor.file(
     File file, {
     Key? key,
-    required ThemeData theme,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    TransformConfigs? transformConfigs,
-    required Size imageSize,
-    List<Layer>? layers,
-    EdgeInsets? paddingHelper,
-    Function? onUpdateUI,
-    List<FilterStateHistory>? filters,
-    BlurStateHistory? blur,
+    required PaintEditorInitConfigs initConfigs,
   }) {
     return PaintingEditor._(
       key: key,
-      file: file,
-      theme: theme,
-      imageSize: imageSize,
-      layers: layers,
-      paddingHelper: paddingHelper,
-      configs: configs,
-      transformConfigs: transformConfigs,
-      onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
-      blur: blur ?? BlurStateHistory(),
+      editorImage: EditorImage(file: file),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Constructor for loading image from assetPath.
+  /// Constructs a `PaintingEditor` widget with an image loaded from an asset.
   factory PaintingEditor.asset(
     String assetPath, {
     Key? key,
-    required ThemeData theme,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    TransformConfigs? transformConfigs,
-    required Size imageSize,
-    List<Layer>? layers,
-    EdgeInsets? paddingHelper,
-    Function? onUpdateUI,
-    List<FilterStateHistory>? filters,
-    BlurStateHistory? blur,
+    required PaintEditorInitConfigs initConfigs,
   }) {
     return PaintingEditor._(
       key: key,
-      assetPath: assetPath,
-      theme: theme,
-      imageSize: imageSize,
-      layers: layers,
-      paddingHelper: paddingHelper,
-      configs: configs,
-      transformConfigs: transformConfigs,
-      onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
-      blur: blur ?? BlurStateHistory(),
+      editorImage: EditorImage(assetPath: assetPath),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Constructor for loading image from network url.
+  /// Constructs a `PaintingEditor` widget with an image loaded from a network URL.
   factory PaintingEditor.network(
     String networkUrl, {
     Key? key,
-    required ThemeData theme,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    TransformConfigs? transformConfigs,
-    required Size imageSize,
-    List<Layer>? layers,
-    EdgeInsets? paddingHelper,
-    Function? onUpdateUI,
-    List<FilterStateHistory>? filters,
-    BlurStateHistory? blur,
+    required PaintEditorInitConfigs initConfigs,
   }) {
     return PaintingEditor._(
       key: key,
-      networkUrl: networkUrl,
-      theme: theme,
-      imageSize: imageSize,
-      layers: layers,
-      paddingHelper: paddingHelper,
-      configs: configs,
-      transformConfigs: transformConfigs,
-      onUpdateUI: onUpdateUI,
-      filters: filters ?? [],
-      blur: blur ?? BlurStateHistory(),
+      editorImage: EditorImage(networkUrl: networkUrl),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Constructor for automatic source selection based on properties
+  /// Constructs a `PaintingEditor` widget with an image loaded automatically based on the provided source.
+  ///
+  /// Either [byteArray], [file], [networkUrl], or [assetPath] must be provided.
   factory PaintingEditor.autoSource({
     Key? key,
-    required ThemeData theme,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    TransformConfigs? transformConfigs,
-    required Size imageSize,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
     String? networkUrl,
-    List<Layer>? layers,
-    EdgeInsets? paddingHelper,
-    Function? onUpdateUI,
-    List<FilterStateHistory>? filters,
-    BlurStateHistory? blur,
+    required PaintEditorInitConfigs initConfigs,
   }) {
     if (byteArray != null) {
       return PaintingEditor.memory(
         byteArray,
         key: key,
-        theme: theme,
-        imageSize: imageSize,
-        layers: layers,
-        paddingHelper: paddingHelper,
-        configs: configs,
-        transformConfigs: transformConfigs,
-        onUpdateUI: onUpdateUI,
-        filters: filters,
-        blur: blur,
+        initConfigs: initConfigs,
       );
     } else if (file != null) {
       return PaintingEditor.file(
         file,
         key: key,
-        theme: theme,
-        imageSize: imageSize,
-        layers: layers,
-        paddingHelper: paddingHelper,
-        configs: configs,
-        transformConfigs: transformConfigs,
-        onUpdateUI: onUpdateUI,
-        filters: filters,
-        blur: blur,
+        initConfigs: initConfigs,
       );
     } else if (networkUrl != null) {
       return PaintingEditor.network(
         networkUrl,
         key: key,
-        theme: theme,
-        imageSize: imageSize,
-        layers: layers,
-        paddingHelper: paddingHelper,
-        configs: configs,
-        transformConfigs: transformConfigs,
-        onUpdateUI: onUpdateUI,
-        filters: filters,
-        blur: blur,
+        initConfigs: initConfigs,
       );
     } else if (assetPath != null) {
       return PaintingEditor.asset(
         assetPath,
         key: key,
-        theme: theme,
-        imageSize: imageSize,
-        layers: layers,
-        paddingHelper: paddingHelper,
-        configs: configs,
-        transformConfigs: transformConfigs,
-        onUpdateUI: onUpdateUI,
-        filters: filters,
-        blur: blur,
+        initConfigs: initConfigs,
       );
     } else {
       throw ArgumentError(
@@ -297,15 +153,14 @@ class PaintingEditor extends StatefulWidget with ImageEditorMixin {
 }
 
 class PaintingEditorState extends State<PaintingEditor>
-    with ImageEditorStateMixin {
+    with
+        ImageEditorConvertedConfigs,
+        StandaloneEditorState<PaintingEditor, PaintEditorInitConfigs> {
   /// A global key for accessing the state of the PaintingCanvas widget.
   final _imageKey = GlobalKey<PaintingCanvasState>();
 
   /// A global key for accessing the state of the Scaffold widget.
   final _key = GlobalKey<ScaffoldState>();
-
-  /// An instance of the EditorImage class representing the image to be edited.
-  late EditorImage _editorImage;
 
   /// A ScrollController for controlling the scrolling behavior of the bottom navigation bar.
   late ScrollController _bottomBarScrollCtrl;
@@ -378,17 +233,10 @@ class PaintingEditorState extends State<PaintingEditor>
     _fill = paintEditorConfigs.initialFill;
     _bottomBarScrollCtrl = ScrollController();
 
-    _editorImage = EditorImage(
-      assetPath: widget.assetPath,
-      byteArray: widget.byteArray,
-      file: widget.file,
-      networkUrl: widget.networkUrl,
-    );
-
     /// Important to set state after view init to set action icons
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {});
-      widget.onUpdateUI?.call();
+      onUpdateUI?.call();
     });
     super.initState();
   }
@@ -409,7 +257,7 @@ class PaintingEditorState extends State<PaintingEditor>
   void setFill(bool fill) {
     _imageKey.currentState?.setFill(fill);
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Toggles the fill mode.
@@ -423,21 +271,21 @@ class PaintingEditorState extends State<PaintingEditor>
     if (_imageKey.currentState != null) {
       _imageKey.currentState!.mode = mode;
     }
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
     _imageKey.currentState!.undo();
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Redoes the previously undone action in the painting editor.
   void redoAction() {
     _imageKey.currentState!.redo();
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Closes the editor without applying changes.
@@ -457,9 +305,8 @@ class PaintingEditorState extends State<PaintingEditor>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: imageEditorTheme.uiOverlayStyle,
       child: Theme(
-        data: widget.theme.copyWith(
-            tooltipTheme:
-                widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+        data: theme.copyWith(
+            tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
         child: LayoutBuilder(builder: (context, constraints) {
           return Scaffold(
             resizeToAvoidBottomInset: false,
@@ -617,7 +464,7 @@ class PaintingEditorState extends State<PaintingEditor>
   Widget _buildBody() {
     return SafeArea(
       child: Theme(
-        data: widget.theme,
+        data: theme,
         child: Material(
           color: Colors.transparent,
           textStyle: platformTextStyle(context, designMode),
@@ -626,32 +473,27 @@ class PaintingEditorState extends State<PaintingEditor>
             clipBehavior: Clip.none,
             children: [
               TransformedContentGenerator(
-                configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
-                  width: widget.imageSize.width,
-                  height: widget.imageSize.height,
+                  width: initConfigs.imageSize.width,
+                  height: initConfigs.imageSize.height,
                   designMode: designMode,
-                  image: EditorImage(
-                    assetPath: widget.assetPath,
-                    byteArray: widget.byteArray,
-                    file: widget.file,
-                    networkUrl: widget.networkUrl,
-                  ),
-                  filters: widget.filters,
-                  blur: widget.blur,
+                  image: editorImage,
+                  filters: appliedFilters,
+                  blurFactor: appliedBlurFactor,
                 ),
               ),
-              if (widget.layers != null)
+              if (layers != null)
                 LayerStack(
-                  configs: widget.configs,
-                  layers: widget.layers!,
-                  paddingHelper: widget.paddingHelper,
+                  configs: configs,
+                  layers: layers!,
+                  paddingHelper: initConfigs.paddingHelper,
                 ),
               _buildPainter(),
               if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
               if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) ...[
                 WhatsAppPaintBottomBar(
-                  configs: widget.configs,
+                  configs: configs,
                   strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
                   onSetLineWidth: (val) {
                     setState(() {
@@ -660,7 +502,7 @@ class PaintingEditorState extends State<PaintingEditor>
                   },
                 ),
                 WhatsAppPaintAppBar(
-                  configs: widget.configs,
+                  configs: configs,
                   canUndo: canUndo,
                   onDone: done,
                   onTapUndo: undoAction,
@@ -682,7 +524,7 @@ class PaintingEditorState extends State<PaintingEditor>
     return customWidgets.bottomBarPaintingEditor ??
         (imageEditorTheme.editorMode == ThemeEditorMode.simple
             ? Theme(
-                data: widget.theme,
+                data: theme,
                 child: Scrollbar(
                   controller: _bottomBarScrollCtrl,
                   scrollbarOrientation: ScrollbarOrientation.top,
@@ -727,7 +569,7 @@ class PaintingEditorState extends State<PaintingEditor>
                                       onPressed: () {
                                         setMode(item.mode);
                                         setState(() {});
-                                        widget.onUpdateUI?.call();
+                                        onUpdateUI?.call();
                                       },
                                     );
                                   },
@@ -749,21 +591,23 @@ class PaintingEditorState extends State<PaintingEditor>
   Widget _buildPainter() {
     return PaintingCanvas.autoSource(
       key: _imageKey,
-      file: _editorImage.file,
-      networkUrl: _editorImage.networkUrl,
-      byteArray: _editorImage.byteArray,
-      assetPath: _editorImage.assetPath,
-      i18n: i18n,
-      icons: icons,
-      theme: widget.theme,
-      designMode: designMode,
-      imageSize: widget.imageSize,
-      imageEditorTheme: imageEditorTheme,
-      configs: paintEditorConfigs,
-      onUpdate: () {
-        setState(() {});
-        widget.onUpdateUI?.call();
-      },
+      file: widget.editorImage.file,
+      networkUrl: widget.editorImage.networkUrl,
+      byteArray: widget.editorImage.byteArray,
+      assetPath: widget.editorImage.assetPath,
+      initConfigs: PaintCanvasInitConfigs(
+        i18n: i18n,
+        icons: icons,
+        theme: theme,
+        designMode: designMode,
+        imageSize: initConfigs.imageSize,
+        imageEditorTheme: imageEditorTheme,
+        configs: paintEditorConfigs,
+        onUpdate: () {
+          setState(() {});
+          onUpdateUI?.call();
+        },
+      ),
     );
   }
 
@@ -774,7 +618,7 @@ class PaintingEditorState extends State<PaintingEditor>
       top: imageEditorTheme.editorMode == ThemeEditorMode.simple ? 10 : 60,
       right: 0,
       child: BarColorPicker(
-        configs: widget.configs,
+        configs: configs,
         length: min(
           imageEditorTheme.editorMode == ThemeEditorMode.simple ? 350 : 200,
           MediaQuery.of(context).size.height -

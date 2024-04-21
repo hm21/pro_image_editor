@@ -1,7 +1,7 @@
 import '../crop_rotate_editor/transform_factors.dart';
-import '../filter_state_history.dart';
-import '../blur_state_history.dart';
+import 'blur_state_history.dart';
 import '../layer.dart';
+import 'filter_state_history.dart';
 
 /// The `EditorStateHistory` class represents changes made to an image in the image
 /// editor. It contains information about the changes applied to the image, including

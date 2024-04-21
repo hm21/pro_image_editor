@@ -16,6 +16,10 @@ jobs:
           flutter-version: '3.19.5'
       - name: Install Package Dependencies
         run: flutter pub get
+      - name: Format dart code
+        run: dart format .
+      - name: Analyze dart code
+        run: dart analyze .
       - name: Check publish with dry run
         run: flutter pub publish --dry-run
       - name: Publish package
