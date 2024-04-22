@@ -47,14 +47,12 @@ class _LayerStackState extends State<LayerStack> {
               children: widget.layers.map((layerItem) {
                 return LayerWidget(
                   designMode: widget.configs.designMode,
-                  layerHoverCursor:
-                      widget.configs.imageEditorTheme.layerHoverCursor,
+                  layerHoverCursor: widget.configs.imageEditorTheme.layerHoverCursor,
                   padding: widget.paddingHelper ?? EdgeInsets.zero,
                   layerData: layerItem,
                   textFontSize: widget.configs.textEditorConfigs.initFontSize,
                   emojiTextStyle: widget.configs.emojiEditorConfigs.textStyle,
-                  stickerInitWidth:
-                      widget.configs.stickerEditorConfigs?.initWidth ?? 100,
+                  stickerInitWidth: widget.configs.stickerEditorConfigs?.initWidth ?? 100,
                   onTap: (layerData) async {},
                   onTapUp: () {},
                   onTapDown: () {},

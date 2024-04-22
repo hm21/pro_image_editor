@@ -1,13 +1,13 @@
 library pro_image_editor;
 
-export 'pro_image_editor_main.dart' hide ImageEditingCompleteCallback;
+export 'modules/main_editor/main_editor.dart';
 
 export 'package:pro_image_editor/utils/converters.dart';
 
 export 'package:pro_image_editor/models/i18n/i18n.dart';
 export 'package:pro_image_editor/models/icons/icons.dart';
 export 'package:pro_image_editor/models/theme/theme.dart';
-export 'package:pro_image_editor/models/helper_lines.dart';
+export 'package:pro_image_editor/models/editor_configs/helper_lines_configs.dart';
 export 'package:pro_image_editor/models/custom_widgets.dart';
 export 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/paint_editor_configs.dart';
@@ -17,6 +17,10 @@ export 'package:pro_image_editor/models/editor_configs/filter_editor_configs.dar
 export 'package:pro_image_editor/models/editor_configs/emoji_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/sticker_editor_configs.dart';
 export 'package:pro_image_editor/models/editor_configs/blur_editor_configs.dart';
+
+export 'package:pro_image_editor/models/init_configs/paint_editor_init_configs.dart';
+export 'package:pro_image_editor/models/init_configs/filter_editor_init_configs.dart';
+export 'package:pro_image_editor/models/init_configs/blur_editor_init_configs.dart';
 
 export 'package:pro_image_editor/models/import_export/export_state_history_configs.dart';
 export 'package:pro_image_editor/models/import_export/import_state_history.dart';

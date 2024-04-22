@@ -91,12 +91,15 @@ class LoadingDialog {
         }),
       ),
     );
-
     return showAdaptiveDialog(
       context: context,
       barrierDismissible: isDismissible,
       builder: (context) {
-        if (_isDisposed) Navigator.of(context).pop();
+        if (_isDisposed && context.mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) Navigator.of(context).pop();
+          });
+        }
         return designMode == ImageEditorDesignModeE.cupertino
             ? CupertinoTheme(
                 data: CupertinoTheme.of(context).copyWith(
@@ -137,6 +140,8 @@ class LoadingDialog {
     if (_isVisible) {
       Navigator.pop(context);
     }
-    _isDisposed = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isDisposed = true;
+    });
   }
 }

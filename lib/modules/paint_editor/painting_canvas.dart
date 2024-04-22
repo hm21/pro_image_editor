@@ -3,386 +3,97 @@ import 'dart:math';
 
 import 'package:flutter/material.dart' hide Image, decodeImageFromList;
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
-import '../../models/editor_configs/paint_editor_configs.dart';
+import '../../models/editor_image.dart';
+import '../../models/init_configs/paint_canvas_init_configs.dart';
 import '../../models/layer.dart';
 import '../../models/paint_editor/painted_model.dart';
-import '../../models/theme/theme.dart';
-import '../../models/i18n/i18n.dart';
-import '../../models/icons/icons.dart';
-import '../../utils/design_mode.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/bottom_sheets_header_row.dart';
 import 'utils/draw/draw_multiple_canvas.dart';
 import 'utils/paint_controller.dart';
-import 'utils/paint_editor_enum.dart';
 
 /// A widget for creating a canvas for painting on images.
 ///
-/// This widget allows you to create a canvas for painting on images loaded from various sources, including network URLs, asset paths, files, or memory (Uint8List). It provides customization options for appearance and behavior.
+/// This widget allows you to create a canvas for painting on images loaded from various sources, including network URLs, asset paths, files, or memory (Uint8List).
+/// It provides customization options for appearance and behavior.
 class PaintingCanvas extends StatefulWidget {
-  /// The network URL of the image (if loading from a network).
-  final String? networkUrl;
+  /// The initialization configurations for the canvas.
+  final PaintCanvasInitConfigs initConfigs;
 
-  /// A byte array representing the image data (if loading from memory).
-  final Uint8List? byteArray;
+  /// The image being edited on the canvas.
+  final EditorImage editorImage;
 
-  /// The file representing the image (if loading from a file).
-  final File? file;
-
-  /// The asset path of the image (if loading from assets).
-  final String? assetPath;
-
-  /// The theme configuration for the editor.
-  final ThemeData theme;
-
-  /// The design mode of the editor (material or custom).
-  final ImageEditorDesignModeE designMode;
-
-  /// The internationalization (i18n) configuration for the editor.
-  final I18n i18n;
-
-  /// Icons used in the editor.
-  final ImageEditorIcons icons;
-
-  /// The theme configuration specific to the image editor.
-  final ImageEditorTheme imageEditorTheme;
-
-  /// A callback function called when the painting is updated.
-  final VoidCallback? onUpdate;
-
-  /// The configuration options for the paint editor.
-  final PaintEditorConfigs configs;
-
-  /// The size of the image.
-  final Size imageSize;
-
-  /// Creates a [PaintingCanvas] widget.
+  /// Constructs a `PaintingCanvas` widget.
   ///
-  /// This constructor is not intended to be used directly. Instead, use one of the factory methods to create an instance of [PaintingCanvas] based on the image source (network, asset, file, or memory).
-  ///
-  /// See factory methods like [PaintingCanvas.network], [PaintingCanvas.asset], [PaintingCanvas.file], and [PaintingCanvas.memory] for creating instances of this widget with specific image sources.
+  /// The [key] parameter is used to provide a key for the widget.
+  /// The [editorImage] parameter specifies the image to be edited on the canvas.
+  /// The [initConfigs] parameter specifies the initialization configurations for the canvas.
   const PaintingCanvas._({
     super.key,
-    this.assetPath,
-    this.networkUrl,
-    this.byteArray,
-    this.file,
-    required this.imageSize,
-    required this.theme,
-    required this.designMode,
-    required this.i18n,
-    required this.imageEditorTheme,
-    required this.icons,
-    required this.configs,
-    this.onUpdate,
+    required this.editorImage,
+    required this.initConfigs,
   });
 
-  /// Create a [PaintingCanvas] widget with an image loaded from a network URL.
-  ///
-  /// Use this factory method to create a [PaintingCanvas] widget for painting on an image loaded from a network URL. Customize the appearance and behavior of the widget using the provided parameters.
-  ///
-  /// Parameters:
-  /// - `networkUrl`: The network URL of the image (required).
-  /// - `key`: A required Key to uniquely identify this widget in the widget tree.
-  /// - `imageSize`: The size of the image (required).
-  /// - `theme`: The theme configuration for the editor (required).
-  /// - `designMode`: The design mode of the editor (material or custom, required).
-  /// - `i18n`: The internationalization (i18n) configuration for the editor (required).
-  /// - `imageEditorTheme`: The theme configuration specific to the image editor (required).
-  /// - `icons`: Icons used in the editor (required).
-  /// - `configs`: The configuration options for the paint editor (required).
-  /// - `onUpdate`: A callback function called when the painting is updated.
-  ///
-  /// Returns:
-  /// A [PaintingCanvas] widget configured with the provided parameters and the image loaded from the network URL.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final String imageUrl = 'https://example.com/image.jpg'; // Provide the network URL.
-  /// final painter = PaintingCanvas.network(
-  ///   imageUrl,
-  ///   key: GlobalKey(),
-  ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   imageEditorTheme: ImageEditorTheme(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  /// );
-  /// ```
+  /// Constructs a `PaintingCanvas` widget with an image loaded from a network URL.
   factory PaintingCanvas.network(
     String networkUrl, {
     required Key key,
-    Widget? placeholderWidget,
-    bool? scalable,
-    bool? showColorPicker,
-    List<Color>? colors,
-    Function? save,
-    VoidCallback? onUpdate,
-    Widget? undoIcon,
-    Widget? colorIcon,
-    required Size imageSize,
-    required ThemeData theme,
-    required I18n i18n,
-    required ImageEditorTheme imageEditorTheme,
-    required ImageEditorIcons icons,
-    required ImageEditorDesignModeE designMode,
-    required PaintEditorConfigs configs,
+    required PaintCanvasInitConfigs initConfigs,
   }) {
     return PaintingCanvas._(
       key: key,
-      networkUrl: networkUrl,
-      onUpdate: onUpdate,
-      configs: configs,
-      theme: theme,
-      imageSize: imageSize,
-      i18n: i18n,
-      imageEditorTheme: imageEditorTheme,
-      icons: icons,
-      designMode: designMode,
+      editorImage: EditorImage(networkUrl: networkUrl),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a [PaintingCanvas] widget with an image loaded from an asset.
-  ///
-  /// Use this factory method to create a [PaintingCanvas] widget for painting on an image loaded from an asset. Customize the appearance and behavior of the widget using the provided parameters.
-  ///
-  /// Parameters:
-  /// - `path`: The asset path of the image (required).
-  /// - `key`: A required Key to uniquely identify this widget in the widget tree.
-  /// - `imageSize`: The size of the image (required).
-  /// - `theme`: The theme configuration for the editor (required).
-  /// - `designMode`: The design mode of the editor (material or custom, required).
-  /// - `i18n`: The internationalization (i18n) configuration for the editor (required).
-  /// - `imageEditorTheme`: The theme configuration specific to the image editor (required).
-  /// - `icons`: Icons used in the editor (required).
-  /// - `configs`: The configuration options for the paint editor (required).
-  /// - `onUpdate`: A callback function called when the painting is updated.
-  ///
-  /// Returns:
-  /// A [PaintingCanvas] widget configured with the provided parameters and the image loaded from the asset.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final String assetPath = 'assets/image.png'; // Provide the asset path.
-  /// final painter = PaintingCanvas.asset(
-  ///   assetPath,
-  ///   key: GlobalKey(),
-  ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   imageEditorTheme: ImageEditorTheme(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  /// );
-  /// ```
+  /// Constructs a `PaintingCanvas` widget with an image loaded from an asset path.
   factory PaintingCanvas.asset(
     String path, {
     required Key key,
-    bool? scalable,
-    bool? showColorPicker,
-    Widget? placeholderWidget,
-    Function? save,
-    List<Color>? colors,
-    VoidCallback? onUpdate,
-    Widget? undoIcon,
-    Widget? colorIcon,
-    required Size imageSize,
-    required ThemeData theme,
-    required I18n i18n,
-    required ImageEditorTheme imageEditorTheme,
-    required ImageEditorIcons icons,
-    required ImageEditorDesignModeE designMode,
-    required PaintEditorConfigs configs,
+    required PaintCanvasInitConfigs initConfigs,
   }) {
     return PaintingCanvas._(
       key: key,
-      assetPath: path,
-      onUpdate: onUpdate,
-      configs: configs,
-      theme: theme,
-      imageSize: imageSize,
-      i18n: i18n,
-      imageEditorTheme: imageEditorTheme,
-      icons: icons,
-      designMode: designMode,
+      editorImage: EditorImage(assetPath: path),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a [PaintingCanvas] widget with an image loaded from a File.
-  ///
-  /// Use this factory method to create a [PaintingCanvas] widget for painting on an image loaded from a File. Customize the appearance and behavior of the widget using the provided parameters.
-  ///
-  /// Parameters:
-  /// - `file`: The File object representing the image file (required).
-  /// - `key`: A required Key to uniquely identify this widget in the widget tree.
-  /// - `imageSize`: The size of the image (required).
-  /// - `theme`: The theme configuration for the editor (required).
-  /// - `designMode`: The design mode of the editor (material or custom, required).
-  /// - `i18n`: The internationalization (i18n) configuration for the editor (required).
-  /// - `imageEditorTheme`: The theme configuration specific to the image editor (required).
-  /// - `icons`: Icons used in the editor (required).
-  /// - `configs`: The configuration options for the paint editor (required).
-  /// - `onUpdate`: A callback function called when the painting is updated.
-  ///
-  /// Returns:
-  /// A [PaintingCanvas] widget configured with the provided parameters and the image loaded from the File.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final File imageFile = File('path/to/image.jpg'); // Provide the image File.
-  /// final painter = PaintingCanvas.file(
-  ///   imageFile,
-  ///   key: GlobalKey(),
-  ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   imageEditorTheme: ImageEditorTheme(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  /// );
-  /// ```
+  /// Constructs a `PaintingCanvas` widget with an image loaded from a file.
   factory PaintingCanvas.file(
     File file, {
     required Key key,
-    Function? save,
-    bool? scalable,
-    bool? showColorPicker,
-    Widget? placeholderWidget,
-    List<Color>? colors,
-    VoidCallback? onUpdate,
-    Widget? undoIcon,
-    Widget? colorIcon,
-    required Size imageSize,
-    required ThemeData theme,
-    required I18n i18n,
-    required ImageEditorTheme imageEditorTheme,
-    required ImageEditorIcons icons,
-    required ImageEditorDesignModeE designMode,
-    required PaintEditorConfigs configs,
+    required PaintCanvasInitConfigs initConfigs,
   }) {
     return PaintingCanvas._(
       key: key,
-      file: file,
-      onUpdate: onUpdate,
-      configs: configs,
-      theme: theme,
-      imageSize: imageSize,
-      i18n: i18n,
-      imageEditorTheme: imageEditorTheme,
-      icons: icons,
-      designMode: designMode,
+      editorImage: EditorImage(file: file),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a [PaintingCanvas] widget with an image loaded from a Uint8List (memory).
-  ///
-  /// Use this factory method to create a [PaintingCanvas] widget for painting on an image loaded from a Uint8List (memory). Customize the appearance and behavior of the widget using the provided parameters.
-  ///
-  /// Parameters:
-  /// - `byteArray`: The Uint8List representing the image data loaded in memory (required).
-  /// - `key`: A required Key to uniquely identify this widget in the widget tree.
-  /// - `imageSize`: The size of the image (required).
-  /// - `theme`: The theme configuration for the editor (required).
-  /// - `designMode`: The design mode of the editor (material or custom, required).
-  /// - `i18n`: The internationalization (i18n) configuration for the editor (required).
-  /// - `imageEditorTheme`: The theme configuration specific to the image editor (required).
-  /// - `icons`: Icons used in the editor (required).
-  /// - `configs`: The configuration options for the paint editor (required).
-  /// - `onUpdate`: A callback function called when the painting is updated.
-  ///
-  /// Returns:
-  /// A [PaintingCanvas] widget configured with the provided parameters and the image loaded from the Uint8List (memory).
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final Uint8List imageBytes = Uint8List( /* Image byte data */ ); // Provide the image byte data.
-  /// final painter = PaintingCanvas.memory(
-  ///   imageBytes,
-  ///   key: GlobalKey(),
-  ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   imageEditorTheme: ImageEditorTheme(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  /// );
-  /// ```
+  /// Constructs a `PaintingCanvas` widget with an image loaded into memory.
   factory PaintingCanvas.memory(
     Uint8List byteArray, {
     required Key key,
-    bool? scalable,
-    bool? showColorPicker,
-    Function? save,
-    Widget? placeholderWidget,
-    List<Color>? colors,
-    VoidCallback? onUpdate,
-    Widget? undoIcon,
-    Widget? colorIcon,
-    required Size imageSize,
-    required ThemeData theme,
-    required I18n i18n,
-    required ImageEditorTheme imageEditorTheme,
-    required ImageEditorIcons icons,
-    required ImageEditorDesignModeE designMode,
-    required PaintEditorConfigs configs,
+    required PaintCanvasInitConfigs initConfigs,
   }) {
     return PaintingCanvas._(
       key: key,
-      byteArray: byteArray,
-      onUpdate: onUpdate,
-      configs: configs,
-      theme: theme,
-      imageSize: imageSize,
-      i18n: i18n,
-      imageEditorTheme: imageEditorTheme,
-      icons: icons,
-      designMode: designMode,
+      editorImage: EditorImage(byteArray: byteArray),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a `PaintingCanvas` widget with automatic image source detection.
+  /// Constructs a `PaintingCanvas` widget with an image loaded automatically based on the provided source.
   ///
-  /// This factory method allows you to create a `PaintingCanvas` widget with automatic detection of the image source, including options for loading from a Uint8List (memory), File, asset path, or network URL. The provided parameters allow you to customize the appearance and behavior of the `PaintingCanvas` widget.
-  ///
-  /// Parameters:
-  /// - `key`: A required Key to uniquely identify this widget in the widget tree.
-  /// - `onUpdate`: An optional callback function triggered when the painting is updated.
-  /// - `imageSize`: The size of the image to be loaded (required).
-  /// - `theme`: A `ThemeData` object that defines the visual styling of the `PaintingCanvas` widget (required).
-  /// - `i18n`: An `I18n` object for localization and internationalization (required).
-  /// - `imageEditorTheme`: An `ImageEditorTheme` object for customizing the overall theme of the editor (required).
-  /// - `icons`: An `ImageEditorIcons` object for customizing the icons used in the editor (required).
-  /// - `designMode`: An `ImageEditorDesignMode` enum to specify the design mode (material or custom) of the ImageEditor (required).
-  /// - `byteArray`: A Uint8List representing the image data loaded in memory (optional).
-  /// - `file`: A File object representing the image file to be loaded (optional).
-  /// - `assetPath`: A String specifying the asset path for the image (optional).
-  /// - `networkUrl`: A String specifying the network URL for the image (optional).
-  ///
-  /// Returns:
-  /// A `PaintingCanvas` widget configured with the provided parameters and the image loaded from the detected source (Uint8List, File, asset, or network URL).
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final Uint8List imageBytes = Uint8List( /* Image byte data */ ); // Provide the image byte data.
-  /// final painter = PaintingCanvas.autoSource(
-  ///   key: GlobalKey(),
-  ///   theme: ThemeData.light(),
-  ///   i18n: I18n(),
-  ///   imageEditorTheme: ImageEditorTheme(),
-  ///   icons: ImageEditorIcons(),
-  ///   designMode: ImageEditorDesignMode.material,
-  ///   byteArray: imageBytes,
-  /// );
-  /// // Alternatively, provide a 'file', 'assetPath', or 'networkUrl' instead of 'byteArray' for automatic source detection.
-  /// ```
+  /// Either [byteArray], [file], [networkUrl], or [assetPath] must be provided.
   factory PaintingCanvas.autoSource({
     required Key key,
-    VoidCallback? onUpdate,
-    required Size imageSize,
-    required ThemeData theme,
-    required I18n i18n,
-    required ImageEditorTheme imageEditorTheme,
-    required ImageEditorIcons icons,
-    required ImageEditorDesignModeE designMode,
-    required PaintEditorConfigs configs,
+    required PaintCanvasInitConfigs initConfigs,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
@@ -392,53 +103,25 @@ class PaintingCanvas extends StatefulWidget {
       return PaintingCanvas.memory(
         byteArray,
         key: key,
-        onUpdate: onUpdate,
-        configs: configs,
-        theme: theme,
-        imageSize: imageSize,
-        i18n: i18n,
-        imageEditorTheme: imageEditorTheme,
-        icons: icons,
-        designMode: designMode,
+        initConfigs: initConfigs,
       );
     } else if (file != null) {
       return PaintingCanvas.file(
         file,
         key: key,
-        onUpdate: onUpdate,
-        configs: configs,
-        theme: theme,
-        imageSize: imageSize,
-        i18n: i18n,
-        imageEditorTheme: imageEditorTheme,
-        icons: icons,
-        designMode: designMode,
+        initConfigs: initConfigs,
       );
     } else if (networkUrl != null) {
       return PaintingCanvas.network(
         networkUrl,
         key: key,
-        onUpdate: onUpdate,
-        configs: configs,
-        theme: theme,
-        imageSize: imageSize,
-        i18n: i18n,
-        imageEditorTheme: imageEditorTheme,
-        icons: icons,
-        designMode: designMode,
+        initConfigs: initConfigs,
       );
     } else if (assetPath != null) {
       return PaintingCanvas.asset(
         assetPath,
         key: key,
-        onUpdate: onUpdate,
-        configs: configs,
-        theme: theme,
-        imageSize: imageSize,
-        i18n: i18n,
-        imageEditorTheme: imageEditorTheme,
-        icons: icons,
-        designMode: designMode,
+        initConfigs: initConfigs,
       );
     } else {
       throw ArgumentError(
@@ -453,16 +136,18 @@ class PaintingCanvas extends StatefulWidget {
 class PaintingCanvasState extends State<PaintingCanvas> {
   late final PaintingController _paintCtrl;
 
+  PaintEditorConfigs get configs => widget.initConfigs.configs;
+
   @override
   void initState() {
-    var w = widget.imageSize.width;
-    var h = widget.imageSize.height;
+    var w = widget.initConfigs.imageSize.width;
+    var h = widget.initConfigs.imageSize.height;
 
     _paintCtrl = PaintingController(
-      fill: widget.configs.initialFill,
-      mode: widget.configs.initialPaintMode,
-      strokeWidth: widget.configs.initialStrokeWidth,
-      color: widget.configs.initialColor,
+      fill: configs.initialFill,
+      mode: configs.initialPaintMode,
+      strokeWidth: configs.initialStrokeWidth,
+      color: configs.initialColor,
       strokeMultiplier: (w + h) > 1440 ? (w + h) ~/ 1440 : 1,
     );
 
@@ -580,15 +265,15 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   /// This method adds a [PaintedModel] object to the paint history and calls the [onUpdate] callback if provided.
   void _addPaintHistory(PaintedModel info) {
     _paintCtrl.addPaintInfo(info);
-    widget.onUpdate?.call();
+    widget.initConfigs.onUpdate?.call();
   }
 
   /// Set the stroke width.
   void setStrokeWidth(double value) {
     _paintCtrl.setStrokeWidth(value);
     setState(() {});
-    if (widget.configs.strokeWidthOnChanged != null) {
-      widget.configs.strokeWidthOnChanged!(value);
+    if (configs.strokeWidthOnChanged != null) {
+      configs.strokeWidthOnChanged!(value);
     }
   }
 
@@ -598,40 +283,44 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   void showRangeSlider() {
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          widget.imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
+      backgroundColor: widget.initConfigs.imageEditorTheme.paintingEditor
+          .lineWidthBottomSheetColor,
       builder: (BuildContext context) {
-        return Material(
-          color: Colors.transparent,
-          textStyle: platformTextStyle(context, widget.designMode),
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  BottomSheetHeaderRow(
-                    title: widget.i18n.paintEditor.lineWidth,
-                    theme: widget.theme,
-                  ),
-                  StatefulBuilder(builder: (context, setState) {
-                    return Slider.adaptive(
-                      max: 40,
-                      min: 2,
-                      divisions: 19,
-                      value: _paintCtrl.strokeWidth,
-                      onChanged: (value) {
-                        setStrokeWidth(value);
-                      },
-                    );
-                  }),
-                ],
+        return StatefulBuilder(builder: (context, setState) {
+          return Material(
+            color: Colors.transparent,
+            textStyle:
+                platformTextStyle(context, widget.initConfigs.designMode),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    BottomSheetHeaderRow(
+                      title: widget.initConfigs.i18n.paintEditor.lineWidth,
+                      theme: widget.initConfigs.theme,
+                    ),
+                    StatefulBuilder(builder: (context, setState) {
+                      return Slider.adaptive(
+                        max: 40,
+                        min: 2,
+                        divisions: 19,
+                        value: _paintCtrl.strokeWidth,
+                        onChanged: (value) {
+                          setStrokeWidth(value);
+                          setState(() {});
+                        },
+                      );
+                    }),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
+          );
+        });
       },
     );
   }
@@ -773,7 +462,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
       onScaleUpdate: _onScaleUpdate,
       onScaleEnd: _onScaleEnd,
       child: CustomPaint(
-        size: widget.imageSize,
+        size: widget.initConfigs.imageSize,
         willChange: true,
         isComplex: true,
         painter: DrawImage(paintCtrl: _paintCtrl),

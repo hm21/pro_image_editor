@@ -1,5 +1,22 @@
 # Changelog
 
+## Version 2.6.7
+- **fix**: correct layer interaction to handle multiple layers
+- **refactor**: improve code readability for better maintainability
+
+## Version 2.6.6
+- **refactor:** Update editor code examples
+
+## Version 2.6.5
+- **feat:** Make `stateHistory` and `activeLayers` public and add `moveLayerListPosition` method to improve layer management functionality.
+
+## Version 2.6.4
+- **fix(iOS):** resolve editor error on iOS devices with cupertino design when editing completion
+
+## Version 2.6.3
+- **feat:** Add preview screen to sample application for displaying edited images
+- **chore:** Update emoji_picker_flutter dependency to version 2.2.0
+
 ## Version 2.6.2
 - **feat:** Add a custom widget option to the Whatsapp design. This allows user to create same as in whatsapp, a text field with a send button or any other widget they want.
 

@@ -1,0 +1,44 @@
+name: "Feature request"
+description: "Suggest an idea or enhancement for this project"
+title: "[Feature request] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Platforms
+      description: Check all that apply
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Web
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Describe the feature you want to be added"
+      placeholder: "ex. I want to add a new method to get the thumbnail of the asset."
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: "Why do you want this feature to be added? What's the use case?"
+      placeholder: "Thumbnails are very important for picture display and must be available. [some design images]"
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        Add as many reasons as possible to prioritize the request.

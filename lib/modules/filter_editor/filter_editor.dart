@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/models/filter_state_history.dart';
-import 'package:pro_image_editor/models/blur_state_history.dart';
 import 'package:pro_image_editor/models/transform_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
@@ -12,14 +10,15 @@ import 'package:screenshot/screenshot.dart';
 
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
-import '../../models/layer.dart';
-import '../../utils/helper/editor_mixin.dart';
+import '../../models/history/filter_state_history.dart';
+import '../../mixins/converted_configs.dart';
+import '../../mixins/standalone_editor.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
 import 'widgets/filter_editor_item_list.dart';
 import 'widgets/image_with_filter.dart';
 
-/// The `FilterEditor` widget allows users to apply filters to images.
+/// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
 /// You can create a `FilterEditor` using one of the factory methods provided:
 /// - `FilterEditor.file`: Loads an image from a file.
@@ -27,326 +26,81 @@ import 'widgets/image_with_filter.dart';
 /// - `FilterEditor.network`: Loads an image from a network URL.
 /// - `FilterEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `FilterEditor.autoSource`: Automatically selects the source based on provided parameters.
-class FilterEditor extends StatefulWidget with ImageEditorMixin {
+class FilterEditor extends StatefulWidget with StandaloneEditor<FilterEditorInitConfigs> {
   @override
-  final ProImageEditorConfigs configs;
+  final FilterEditorInitConfigs initConfigs;
+  @override
+  final EditorImage editorImage;
 
-  /// A byte array representing the image data.
-  final Uint8List? byteArray;
-
-  /// The file representing the image.
-  final File? file;
-
-  /// The asset path of the image.
-  final String? assetPath;
-
-  /// The network URL of the image.
-  final String? networkUrl;
-
-  /// The transform configurations how the image should be initialized.
-  final TransformConfigs? transformConfigs;
-
-  /// A callback function that can be used to update the UI from custom widgets.
-  final Function? onUpdateUI;
-
-  /// The theme configuration for the editor.
-  final ThemeData theme;
-
-  /// Determines whether to return the image as a Uint8List when closing the editor.
+  /// Constructs a `FilterEditor` widget.
   ///
-  /// If set to `true`, when closing the editor, the editor will return the final image
-  /// as a Uint8List, including all applied filter states. If set to `false`, only
-  /// the filter states will be returned.
-  final bool convertToUint8List;
-
-  /// A list of Layer objects representing image layers.
-  final List<Layer>? layers;
-
-  /// The rendered image size with layers.
-  /// Required to calculate the correct layer position.
-  final Size? imageSizeWithLayers;
-
-  /// The rendered body size with layers.
-  /// Required to calculate the correct layer position.
-  final Size? bodySizeWithLayers;
-
-  final List<FilterStateHistory>? activeFilters;
-
-  final BlurStateHistory? blur;
-
-  /// Private constructor for creating a `FilterEditor` widget.
+  /// The [key] parameter is used to provide a key for the widget.
+  /// The [editorImage] parameter specifies the image to be edited.
+  /// The [initConfigs] parameter specifies the initialization configurations for the editor.
   const FilterEditor._({
     super.key,
-    this.byteArray,
-    this.file,
-    this.assetPath,
-    this.networkUrl,
-    this.onUpdateUI,
-    this.convertToUint8List = false,
-    this.activeFilters,
-    this.blur,
-    this.transformConfigs,
-    this.imageSizeWithLayers,
-    this.bodySizeWithLayers,
-    this.layers,
-    required this.theme,
-    required this.configs,
-  }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
-          'At least one of bytes, file, networkUrl, or assetPath must not be null.',
-        );
+    required this.editorImage,
+    required this.initConfigs,
+  });
 
-  /// Create a FilterEditor widget with an in-memory image represented as a Uint8List.
-  ///
-  /// This factory method allows you to create a FilterEditor widget that can be used to apply various image filters and edit an image represented as a Uint8List in memory. The provided parameters allow you to customize the appearance and behavior of the FilterEditor widget.
-  ///
-  /// Parameters:
-  /// - `byteArray`: A Uint8List representing the image data in memory.
-  /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `configs`: The image editor configs.
-  /// - `transformConfigs` The transform configurations how the image should be initialized.
-  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
-  ///
-  /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the in-memory image data.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final Uint8List imageBytes = ... // Load your image data here.
-  /// final filterEditor = FilterEditor.memory(
-  ///   imageBytes,
-  ///   theme: ThemeData.light(),
-  /// );
-  /// ```
+  /// Constructs a `FilterEditor` widget with image data loaded from memory.
   factory FilterEditor.memory(
     Uint8List byteArray, {
     Key? key,
-    required ThemeData theme,
-    TransformConfigs? transformConfigs,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Function? onUpdateUI,
-    bool convertToUint8List = false,
-    Size? imageSizeWithLayers,
-    Size? bodySizeWithLayers,
-    List<Layer>? layers,
-    List<FilterStateHistory>? activeFilters,
-    BlurStateHistory? blur,
+    required FilterEditorInitConfigs initConfigs,
   }) {
     return FilterEditor._(
       key: key,
-      byteArray: byteArray,
-      theme: theme,
-      transformConfigs: transformConfigs,
-      configs: configs,
-      onUpdateUI: onUpdateUI,
-      imageSizeWithLayers: imageSizeWithLayers,
-      bodySizeWithLayers: bodySizeWithLayers,
-      layers: layers,
-      activeFilters: activeFilters,
-      convertToUint8List: convertToUint8List,
-      blur: blur,
+      editorImage: EditorImage(byteArray: byteArray),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a FilterEditor widget with an image loaded from a File.
-  ///
-  /// This factory method allows you to create a FilterEditor widget that can be used to apply various image filters and edit an image loaded from a File. The provided parameters allow you to customize the appearance and behavior of the FilterEditor widget.
-  ///
-  /// Parameters:
-  /// - `file`: A File object representing the image file to be loaded.
-  /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `configs`: The image editor configs.
-  /// - `transformConfigs` The transform configurations how the image should be initialized.
-  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
-  ///
-  /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the image loaded from the File.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final File imageFile = ... // Provide the image file.
-  /// final filterEditor = FilterEditor.file(
-  ///   imageFile,
-  ///   theme: ThemeData.light(),
-  /// );
-  /// ```
+  /// Constructs a `FilterEditor` widget with an image loaded from a file.
   factory FilterEditor.file(
     File file, {
     Key? key,
-    required ThemeData theme,
-    TransformConfigs? transformConfigs,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Function? onUpdateUI,
-    bool convertToUint8List = false,
-    Size? imageSizeWithLayers,
-    Size? bodySizeWithLayers,
-    List<Layer>? layers,
-    List<FilterStateHistory>? activeFilters,
-    BlurStateHistory? blur,
+    required FilterEditorInitConfigs initConfigs,
   }) {
     return FilterEditor._(
       key: key,
-      file: file,
-      theme: theme,
-      transformConfigs: transformConfigs,
-      configs: configs,
-      onUpdateUI: onUpdateUI,
-      imageSizeWithLayers: imageSizeWithLayers,
-      bodySizeWithLayers: bodySizeWithLayers,
-      layers: layers,
-      activeFilters: activeFilters,
-      convertToUint8List: convertToUint8List,
-      blur: blur,
+      editorImage: EditorImage(file: file),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a FilterEditor widget with an image loaded from an asset.
-  ///
-  /// This factory method allows you to create a FilterEditor widget that can be used to apply various image filters and edit an image loaded from an asset. The provided parameters allow you to customize the appearance and behavior of the FilterEditor widget.
-  ///
-  /// Parameters:
-  /// - `assetPath`: A String representing the asset path of the image to be loaded.
-  /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `configs`: The image editor configs.
-  /// - `transformConfigs` The transform configurations how the image should be initialized.
-  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
-  ///
-  /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the image loaded from the asset.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final String assetPath = 'assets/image.png'; // Provide the asset path.
-  /// final filterEditor = FilterEditor.asset(
-  ///   assetPath,
-  ///   theme: ThemeData.light(),
-  /// );
-  /// ```
+  /// Constructs a `FilterEditor` widget with an image loaded from an asset.
   factory FilterEditor.asset(
     String assetPath, {
     Key? key,
-    required ThemeData theme,
-    TransformConfigs? transformConfigs,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Function? onUpdateUI,
-    bool convertToUint8List = false,
-    Size? imageSizeWithLayers,
-    Size? bodySizeWithLayers,
-    List<Layer>? layers,
-    List<FilterStateHistory>? activeFilters,
-    BlurStateHistory? blur,
+    required FilterEditorInitConfigs initConfigs,
   }) {
     return FilterEditor._(
       key: key,
-      assetPath: assetPath,
-      theme: theme,
-      transformConfigs: transformConfigs,
-      configs: configs,
-      onUpdateUI: onUpdateUI,
-      imageSizeWithLayers: imageSizeWithLayers,
-      bodySizeWithLayers: bodySizeWithLayers,
-      layers: layers,
-      activeFilters: activeFilters,
-      convertToUint8List: convertToUint8List,
-      blur: blur,
+      editorImage: EditorImage(assetPath: assetPath),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a FilterEditor widget with an image loaded from a network URL.
-  ///
-  /// This factory method allows you to create a FilterEditor widget that can be used to apply various image filters and edit an image loaded from a network URL. The provided parameters allow you to customize the appearance and behavior of the FilterEditor widget.
-  ///
-  /// Parameters:
-  /// - `networkUrl`: A String representing the network URL of the image to be loaded.
-  /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `configs`: The image editor configs.
-  /// - `transformConfigs` The transform configurations how the image should be initialized.
-  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
-  ///
-  /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the image loaded from the network URL.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// final String imageUrl = 'https://example.com/image.jpg'; // Provide the network URL.
-  /// final filterEditor = FilterEditor.network(
-  ///   imageUrl,
-  ///   theme: ThemeData.light(),
-  /// );
-  /// ```
+  /// Constructs a `FilterEditor` widget with an image loaded from a network URL.
   factory FilterEditor.network(
     String networkUrl, {
     Key? key,
-    required ThemeData theme,
-    TransformConfigs? transformConfigs,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Function? onUpdateUI,
-    bool convertToUint8List = false,
-    Size? imageSizeWithLayers,
-    Size? bodySizeWithLayers,
-    List<Layer>? layers,
-    List<FilterStateHistory>? activeFilters,
-    BlurStateHistory? blur,
+    required FilterEditorInitConfigs initConfigs,
   }) {
     return FilterEditor._(
       key: key,
-      networkUrl: networkUrl,
-      theme: theme,
-      transformConfigs: transformConfigs,
-      configs: configs,
-      onUpdateUI: onUpdateUI,
-      imageSizeWithLayers: imageSizeWithLayers,
-      bodySizeWithLayers: bodySizeWithLayers,
-      layers: layers,
-      activeFilters: activeFilters,
-      blur: blur,
-      convertToUint8List: convertToUint8List,
+      editorImage: EditorImage(networkUrl: networkUrl),
+      initConfigs: initConfigs,
     );
   }
 
-  /// Create a FilterEditor widget with automatic image source detection.
+  /// Constructs a `FilterEditor` widget with an image loaded automatically based on the provided source.
   ///
-  /// This factory method allows you to create a FilterEditor widget with automatic detection of the image source type (Uint8List, File, asset, or network URL). Based on the provided parameters, it selects the appropriate source type and creates the FilterEditor widget accordingly.
-  ///
-  /// Parameters:
-  /// - `key`: An optional Key to uniquely identify this widget in the widget tree.
-  /// - `theme`: An optional ThemeData object that defines the visual styling of the FilterEditor widget.
-  /// - `byteArray`: An optional Uint8List representing the image data in memory.
-  /// - `file`: An optional File object representing the image file to be loaded.
-  /// - `assetPath`: An optional String representing the asset path of the image to be loaded.
-  /// - `networkUrl`: An optional String representing the network URL of the image to be loaded.
-  /// - `convertToUint8List`: Determines whether to return the image as a Uint8List when closing the editor.
-  ///
-  /// Returns:
-  /// A FilterEditor widget configured with the provided parameters and the detected image source.
-  ///
-  /// Example Usage:
-  /// ```dart
-  /// // Provide one of the image sources: byteArray, file, assetPath, or networkUrl.
-  /// final filterEditor = FilterEditor.autoSource(
-  ///   byteArray: imageBytes,
-  ///   theme: ThemeData.light(),
-  /// );
-  /// ```
+  /// Either [byteArray], [file], [networkUrl], or [assetPath] must be provided.
   factory FilterEditor.autoSource({
     Key? key,
-    required ThemeData theme,
-    TransformConfigs? transformConfigs,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    Function? onUpdateUI,
-    bool convertToUint8List = false,
-    Size? imageSizeWithLayers,
-    Size? bodySizeWithLayers,
-    List<Layer>? layers,
-    List<FilterStateHistory>? activeFilters,
-    BlurStateHistory? blur,
+    required FilterEditorInitConfigs initConfigs,
     Uint8List? byteArray,
     File? file,
     String? assetPath,
@@ -356,65 +110,28 @@ class FilterEditor extends StatefulWidget with ImageEditorMixin {
       return FilterEditor.memory(
         byteArray,
         key: key,
-        theme: theme,
-        transformConfigs: transformConfigs,
-        configs: configs,
-        onUpdateUI: onUpdateUI,
-        imageSizeWithLayers: imageSizeWithLayers,
-        bodySizeWithLayers: bodySizeWithLayers,
-        layers: layers,
-        activeFilters: activeFilters,
-        blur: blur,
-        convertToUint8List: convertToUint8List,
+        initConfigs: initConfigs,
       );
     } else if (file != null) {
       return FilterEditor.file(
         file,
         key: key,
-        theme: theme,
-        transformConfigs: transformConfigs,
-        configs: configs,
-        onUpdateUI: onUpdateUI,
-        imageSizeWithLayers: imageSizeWithLayers,
-        bodySizeWithLayers: bodySizeWithLayers,
-        layers: layers,
-        activeFilters: activeFilters,
-        blur: blur,
-        convertToUint8List: convertToUint8List,
+        initConfigs: initConfigs,
       );
     } else if (networkUrl != null) {
       return FilterEditor.network(
         networkUrl,
         key: key,
-        theme: theme,
-        transformConfigs: transformConfigs,
-        configs: configs,
-        onUpdateUI: onUpdateUI,
-        imageSizeWithLayers: imageSizeWithLayers,
-        bodySizeWithLayers: bodySizeWithLayers,
-        layers: layers,
-        activeFilters: activeFilters,
-        blur: blur,
-        convertToUint8List: convertToUint8List,
+        initConfigs: initConfigs,
       );
     } else if (assetPath != null) {
       return FilterEditor.asset(
         assetPath,
         key: key,
-        theme: theme,
-        transformConfigs: transformConfigs,
-        configs: configs,
-        onUpdateUI: onUpdateUI,
-        imageSizeWithLayers: imageSizeWithLayers,
-        bodySizeWithLayers: bodySizeWithLayers,
-        layers: layers,
-        activeFilters: activeFilters,
-        blur: blur,
-        convertToUint8List: convertToUint8List,
+        initConfigs: initConfigs,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -423,7 +140,7 @@ class FilterEditor extends StatefulWidget with ImageEditorMixin {
 }
 
 /// The state class for the `FilterEditor` widget.
-class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
+class FilterEditorState extends State<FilterEditor> with ImageEditorConvertedConfigs, StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -448,13 +165,13 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
   void done() async {
     if (_createScreenshot) return;
 
-    if (widget.convertToUint8List) {
+    if (widget.initConfigs.convertToUint8List) {
       _createScreenshot = true;
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
           i18n: i18n,
-          theme: widget.theme,
+          theme: theme,
           designMode: designMode,
           message: i18n.filterEditor.applyFilterDialogMsg,
           imageEditorTheme: imageEditorTheme,
@@ -477,8 +194,7 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: widget.theme.copyWith(
-          tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: theme.copyWith(tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -528,35 +244,29 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
             children: [
               Hero(
                 tag: heroTag,
-                createRectTween: (begin, end) =>
-                    RectTween(begin: begin, end: end),
+                createRectTween: (begin, end) => RectTween(begin: begin, end: end),
                 child: TransformedContentGenerator(
-                  configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                  configs: transformConfigs ?? TransformConfigs.empty(),
                   child: ImageWithFilter(
-                    image: EditorImage(
-                      file: widget.file,
-                      byteArray: widget.byteArray,
-                      networkUrl: widget.networkUrl,
-                      assetPath: widget.assetPath,
-                    ),
-                    activeFilters: widget.activeFilters,
+                    image: editorImage,
+                    activeFilters: appliedFilters,
                     designMode: designMode,
                     filter: selectedFilter,
-                    blur: widget.blur,
+                    blurFactor: appliedBlurFactor,
                     fit: BoxFit.contain,
                     opacity: filterOpacity,
                   ),
                 ),
               ),
-              if (filterEditorConfigs.showLayers && widget.layers != null)
+              if (filterEditorConfigs.showLayers && layers != null)
                 LayerStack(
                   transformHelper: TransformHelper(
-                    mainBodySize: widget.bodySizeWithLayers ?? Size.zero,
-                    mainImageSize: widget.imageSizeWithLayers ?? Size.zero,
+                    mainBodySize: bodySizeWithLayers,
+                    mainImageSize: imageSizeWithLayers,
                     editorBodySize: _bodySize,
                   ),
-                  configs: widget.configs,
-                  layers: widget.layers!,
+                  configs: configs,
+                  layers: layers!,
                   clipBehavior: Clip.none,
                 ),
             ],
@@ -585,24 +295,24 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorStateMixin {
                       onChanged: (value) {
                         filterOpacity = value;
                         setState(() {});
-                        widget.onUpdateUI?.call();
+                        onUpdateUI?.call();
                       },
                     ),
             ),
             FilterEditorItemList(
-              byteArray: widget.byteArray,
-              file: widget.file,
-              assetPath: widget.assetPath,
-              networkUrl: widget.networkUrl,
-              activeFilters: widget.activeFilters,
-              blur: widget.blur,
-              configs: widget.configs,
-              transformConfigs: widget.transformConfigs,
+              byteArray: widget.editorImage.byteArray,
+              file: widget.editorImage.file,
+              assetPath: widget.editorImage.assetPath,
+              networkUrl: widget.editorImage.networkUrl,
+              activeFilters: appliedFilters,
+              blurFactor: appliedBlurFactor,
+              configs: configs,
+              transformConfigs: transformConfigs,
               selectedFilter: selectedFilter,
               onSelectFilter: (filter) {
                 selectedFilter = filter;
                 setState(() {});
-                widget.onUpdateUI?.call();
+                onUpdateUI?.call();
               },
             ),
           ],

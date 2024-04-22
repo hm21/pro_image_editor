@@ -9,7 +9,7 @@ import 'filter_editor_configs.dart';
 import 'blur_editor_configs.dart';
 import 'paint_editor_configs.dart';
 import 'text_editor_configs.dart';
-import '../helper_lines.dart';
+import 'helper_lines_configs.dart';
 import '../i18n/i18n.dart';
 import '../icons/icons.dart';
 import '../theme/theme.dart';
@@ -19,6 +19,9 @@ import '../../utils/design_mode.dart';
 class ProImageEditorConfigs {
   /// The theme to be used for the Image Editor.
   final ThemeData? theme;
+
+  /// Remove the transparent area of the final image.
+  final bool removeTransparentAreas;
 
   /// A unique hero tag for the Image Editor widget.
   final String heroTag;
@@ -86,6 +89,7 @@ class ProImageEditorConfigs {
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
     this.i18n = const I18n(),
+    this.removeTransparentAreas = false,
     this.helperLines = const HelperLines(),
     this.customWidgets = const ImageEditorCustomWidgets(),
     this.imageEditorTheme = const ImageEditorTheme(),
