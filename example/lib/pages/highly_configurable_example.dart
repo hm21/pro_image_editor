@@ -76,8 +76,6 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             ratio: 'Ratio',
             back: 'Back',
             done: 'Done',
-            prepareImageDialogMsg: 'Please wait',
-            applyChangesDialogMsg: 'Please wait',
             smallScreenMoreTooltip: 'More',
           ),
           filterEditor: I18nFilterEditor(

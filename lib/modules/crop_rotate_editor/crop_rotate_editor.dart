@@ -728,8 +728,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
     double cropHeight =
         _imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
 
-    if (calcCropRect || _cropRect.isEmpty)
+    if (calcCropRect || _cropRect.isEmpty) {
       _cropRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
+    }
     _viewRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
   }
 

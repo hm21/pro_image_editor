@@ -53,7 +53,8 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
 }
 
 /// The state class for the `TextEditor` widget.
-class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
+class TextEditorState extends State<TextEditor>
+    with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
   final TextEditingController _textCtrl = TextEditingController();
   final FocusNode _focus = FocusNode();
   Color _primaryColor = Colors.black;
@@ -71,7 +72,9 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
     fontScale = textEditorConfigs.initFontScale;
     backgroundColorMode = textEditorConfigs.initialBackgroundColorMode;
 
-    _customTextStyle = widget.layer?.textStyle ?? textEditorConfigs.whatsAppCustomTextStyles?.first ?? const TextStyle();
+    _customTextStyle = widget.layer?.textStyle ??
+        textEditorConfigs.whatsAppCustomTextStyles?.first ??
+        const TextStyle();
     _initializeFromLayer();
     _setupTextControllerListener();
   }
@@ -90,7 +93,10 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
       align = widget.layer!.align;
       fontScale = widget.layer!.fontScale;
       backgroundColorMode = widget.layer!.colorMode!;
-      _primaryColor = backgroundColorMode == LayerBackgroundColorModeE.background ? widget.layer!.background : widget.layer!.color;
+      _primaryColor =
+          backgroundColorMode == LayerBackgroundColorModeE.background
+              ? widget.layer!.background
+              : widget.layer!.color;
       _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       _colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
@@ -155,7 +161,8 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
   /// Toggles the background mode between various color modes.
   void toggleBackgroundMode() {
     setState(() {
-      backgroundColorMode = backgroundColorMode == LayerBackgroundColorModeE.onlyColor
+      backgroundColorMode = backgroundColorMode ==
+              LayerBackgroundColorModeE.onlyColor
           ? LayerBackgroundColorModeE.backgroundAndColor
           : backgroundColorMode == LayerBackgroundColorModeE.backgroundAndColor
               ? LayerBackgroundColorModeE.background
@@ -173,7 +180,8 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
     final presetFontScale = fontScale;
     showModalBottomSheet(
       context: context,
-      backgroundColor: imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
+      backgroundColor:
+          imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
       builder: (BuildContext context) {
         return Material(
           color: Colors.transparent,
@@ -203,7 +211,9 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
                           child: Slider.adaptive(
                             max: textEditorConfigs.maxFontScale,
                             min: textEditorConfigs.minFontScale,
-                            divisions: (textEditorConfigs.maxFontScale - textEditorConfigs.minFontScale) ~/ 0.1,
+                            divisions: (textEditorConfigs.maxFontScale -
+                                    textEditorConfigs.minFontScale) ~/
+                                0.1,
                             value: fontScale,
                             onChanged: updateFontScaleScale,
                           ),
@@ -266,14 +276,18 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
     return LayoutBuilder(
       builder: (context, constraints) {
         return Theme(
-          data: widget.theme.copyWith(tooltipTheme: widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+          data: widget.theme.copyWith(
+              tooltipTheme:
+                  widget.theme.tooltipTheme.copyWith(preferBelow: true)),
           child: Scaffold(
             backgroundColor: imageEditorTheme.textEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
             // For desktop devices where there is no physical keyboard, we can center it as we do in the editor.
-            bottomNavigationBar:
-                isDesktop && imageEditorTheme.editorMode == ThemeEditorMode.simple ? const SizedBox(height: kBottomNavigationBarHeight) : null,
+            bottomNavigationBar: isDesktop &&
+                    imageEditorTheme.editorMode == ThemeEditorMode.simple
+                ? const SizedBox(height: kBottomNavigationBarHeight)
+                : null,
           ),
         );
       },
@@ -286,8 +300,10 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
         (imageEditorTheme.editorMode == ThemeEditorMode.simple
             ? AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: imageEditorTheme.textEditor.appBarBackgroundColor,
-                foregroundColor: imageEditorTheme.textEditor.appBarForegroundColor,
+                backgroundColor:
+                    imageEditorTheme.textEditor.appBarBackgroundColor,
+                foregroundColor:
+                    imageEditorTheme.textEditor.appBarForegroundColor,
                 actions: [
                   IconButton(
                     tooltip: i18n.textEditor.back,
@@ -341,7 +357,8 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
                                     : icons.textEditor.alignCenter),
                             onTap: () {
                               toggleTextAlign();
-                              if (designMode == ImageEditorDesignModeE.cupertino) {
+                              if (designMode ==
+                                  ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
                             },
@@ -352,7 +369,8 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
                             icon: Icon(icons.textEditor.fontScale),
                             onTap: () {
                               openFontScaleBottomSheet();
-                              if (designMode == ImageEditorDesignModeE.cupertino) {
+                              if (designMode ==
+                                  ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
                             },
@@ -363,7 +381,8 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
                             icon: Icon(icons.textEditor.backgroundMode),
                             onTap: () {
                               toggleBackgroundMode();
-                              if (designMode == ImageEditorDesignModeE.cupertino) {
+                              if (designMode ==
+                                  ImageEditorDesignModeE.cupertino) {
                                 Navigator.pop(context);
                               }
                             },
@@ -400,12 +419,16 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
             alignment: Alignment.topRight,
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: imageEditorTheme.editorMode == ThemeEditorMode.simple ? 10 : 60,
+                vertical: imageEditorTheme.editorMode == ThemeEditorMode.simple
+                    ? 10
+                    : 60,
               ),
               child: BarColorPicker(
                 configs: widget.configs,
                 length: min(
-                  imageEditorTheme.editorMode == ThemeEditorMode.simple ? 350 : 200,
+                  imageEditorTheme.editorMode == ThemeEditorMode.simple
+                      ? 350
+                      : 200,
                   MediaQuery.of(context).size.height -
                       MediaQuery.of(context).viewInsets.bottom -
                       kToolbarHeight -
@@ -469,7 +492,8 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
                 children: [
                   Hero(
                     tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
-                    createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+                    createRectTween: (begin, end) =>
+                        RectTween(begin: begin, end: end),
                     child: RoundedBackgroundText(
                       _textCtrl.text,
                       backgroundColor: _getBackgroundColor,
@@ -490,15 +514,19 @@ class TextEditorState extends State<TextEditor> with ImageEditorConvertedConfigs
                       keyboardType: TextInputType.multiline,
                       textInputAction: TextInputAction.newline,
                       textCapitalization: TextCapitalization.sentences,
-                      textAlign: _textCtrl.text.isEmpty ? TextAlign.center : align,
+                      textAlign:
+                          _textCtrl.text.isEmpty ? TextAlign.center : align,
                       maxLines: null,
                       cursorColor: imageEditorTheme.textEditor.inputCursorColor,
                       cursorHeight: _getTextFontSize * 1.2,
                       scrollPhysics: const NeverScrollableScrollPhysics(),
                       decoration: InputDecoration(
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.fromLTRB(12, _numLines <= 1 ? 4 : 0, 12, 0),
-                          hintText: _textCtrl.text.isEmpty ? i18n.textEditor.inputHintText : '',
+                          contentPadding: EdgeInsets.fromLTRB(
+                              12, _numLines <= 1 ? 4 : 0, 12, 0),
+                          hintText: _textCtrl.text.isEmpty
+                              ? i18n.textEditor.inputHintText
+                              : '',
                           hintStyle: _customTextStyle.copyWith(
                             color: imageEditorTheme.textEditor.inputHintColor,
                             fontSize: _getTextFontSize,

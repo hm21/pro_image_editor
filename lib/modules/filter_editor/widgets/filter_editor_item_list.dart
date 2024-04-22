@@ -79,7 +79,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   late ScrollController _scrollCtrl;
 
   /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters => widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
+  List<ColorFilterGenerator> get _filters =>
+      widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
 
   @override
   void initState() {
@@ -93,7 +94,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     super.dispose();
   }
 
-  bool get _isWhatsAppDesign => widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
+  bool get _isWhatsAppDesign =>
+      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 
   @override
   Widget build(BuildContext context) {
@@ -113,9 +115,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
           controller: _scrollCtrl,
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+            constraints:
+                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
+              padding:
+                  EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.end,
                 alignment: WrapAlignment.spaceAround,
@@ -196,7 +200,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
             style: TextStyle(
               fontSize: 11,
-              color: widget.configs.imageEditorTheme.filterEditor.previewTextColor,
+              color:
+                  widget.configs.imageEditorTheme.filterEditor.previewTextColor,
             ),
           ),
         ]),
@@ -210,7 +215,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     required int index,
     List<FilterStateHistory>? activeFilters,
   }) {
-    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode || (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
+    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode ||
+        (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
     var size = const Size(58, 88);
 
     return Transform.scale(
@@ -234,7 +240,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                 clipBehavior: Clip.hardEdge,
                 children: [
                   TransformedContentGenerator(
-                    configs: widget.transformConfigs ?? TransformConfigs.empty(),
+                    configs:
+                        widget.transformConfigs ?? TransformConfigs.empty(),
                     child: ImageWithFilter(
                       image: EditorImage(
                         file: widget.file,
@@ -257,11 +264,13 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(2, 3, 2, 3),
                       child: Text(
-                        widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
+                        widget.configs.i18n.filterEditor.filters
+                            .getFilterI18n(name),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: widget.configs.imageEditorTheme.filterEditor.previewTextColor,
+                          color: widget.configs.imageEditorTheme.filterEditor
+                              .previewTextColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

@@ -350,9 +350,6 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   /// Flag indicating if the editor has been initialized.
   bool _inited = false;
 
-  /// Flag indicating if the crop tool is active.
-  bool _activeCrop = false;
-
   /// Flag indicating if the image needs decoding.
   bool _imageNeedDecode = true;
 
@@ -418,10 +415,11 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     );
 
     _stateManager.stateHistory.add(EditorStateHistory(
-        transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: BlurStateHistory(),
-        layers: [],
-        filters: []));
+      transformConfigs: TransformConfigs.empty(),
+      blur: BlurStateHistory(),
+      layers: [],
+      filters: [],
+    ));
 
     Vibration.hasVibrator().then((value) => _layerInteraction.deviceCanVibrate = value ?? false);
     Vibration.hasCustomVibrationsSupport().then((value) => _layerInteraction.deviceCanCustomVibrate = value ?? false);
@@ -451,7 +449,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     return _desktopInteractionManager.onKey(
       event,
       activeLayer: _activeLayer,
-      canPressEscape: !_activeCrop && !_openDialog,
+      canPressEscape: !_openDialog,
       isEditorOpen: _isEditorOpen,
       onCloseEditor: closeEditor,
     );
