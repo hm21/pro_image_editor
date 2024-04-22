@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_editor_category_view.dart';
-import 'package:pro_image_editor/utils/helper/editor_mixin.dart';
 
 import '../../models/layer.dart';
 import '../../models/theme/theme_shared_values.dart';
@@ -18,8 +17,8 @@ import 'utils/emoji_editor_header_search.dart';
 ///
 /// This widget provides an EmojiPicker that allows users to choose emojis, which are then returned
 /// as `EmojiLayerData` containing the selected emoji text.
-class EmojiEditor extends StatefulWidget with ImageEditorMixin {
-  @override
+class EmojiEditor extends StatefulWidget {
+  /// The image editor configs
   final ProImageEditorConfigs configs;
 
   /// Creates an `EmojiEditor` widget.
@@ -33,7 +32,7 @@ class EmojiEditor extends StatefulWidget with ImageEditorMixin {
 }
 
 /// The state class for the `EmojiEditor` widget.
-class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
+class EmojiEditorState extends State<EmojiEditor> {
   final _emojiPickerKey = GlobalKey<EmojiPickerState>();
   final _emojiSearchPageKey = GlobalKey<EmojiEditorFullScreenSearchViewState>();
 
@@ -47,7 +46,8 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
   @override
   void initState() {
     final fontSize = 24 * (isApple ? 1.2 : 1.0);
-    _textStyle = emojiEditorConfigs.textStyle.copyWith(fontSize: fontSize);
+    _textStyle = widget.configs.emojiEditorConfigs.textStyle
+        .copyWith(fontSize: fontSize);
 
     _controller = EmojiTextEditingController(emojiTextStyle: _textStyle);
     super.initState();
@@ -78,7 +78,7 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
 
   /// Is `true` if the editor use the `WhatsApp` design.
   bool get _isWhatsApp =>
-      imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
+      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +107,7 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
         key: _emojiSearchPageKey,
         config: _getEditorConfig(constraints),
         state: EmojiViewState(
-          emojiEditorConfigs.emojiSet,
+          widget.configs.emojiEditorConfigs.emojiSet,
           (category, emoji) {
             Navigator.pop(
               context,
@@ -153,14 +153,15 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
               min(320, constraints.maxHeight) -
                   MediaQuery.of(context).padding.bottom,
             ),
-      emojiSet: emojiEditorConfigs.emojiSet,
-      checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
+      emojiSet: widget.configs.emojiEditorConfigs.emojiSet,
+      checkPlatformCompatibility:
+          widget.configs.emojiEditorConfigs.checkPlatformCompatibility,
       emojiTextStyle: _textStyle.copyWith(
-          fontSize:
-              _isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
-                  ? 48
-                  : null),
-      emojiViewConfig: emojiEditorConfigs.emojiViewConfig ??
+          fontSize: _isWhatsApp &&
+                  widget.configs.designMode != ImageEditorDesignModeE.cupertino
+              ? 48
+              : null),
+      emojiViewConfig: widget.configs.emojiEditorConfigs.emojiViewConfig ??
           EmojiViewConfig(
             gridPadding: EdgeInsets.zero,
             horizontalSpacing: 0,
@@ -169,61 +170,65 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
             backgroundColor:
                 _isWhatsApp ? Colors.transparent : imageEditorBackgroundColor,
             noRecents: Text(
-              i18n.emojiEditor.noRecents,
+              widget.configs.i18n.emojiEditor.noRecents,
               style: const TextStyle(fontSize: 20, color: Colors.white),
               textAlign: TextAlign.center,
             ),
-            buttonMode: designMode == ImageEditorDesignModeE.cupertino
-                ? ButtonMode.CUPERTINO
-                : ButtonMode.MATERIAL,
+            buttonMode:
+                widget.configs.designMode == ImageEditorDesignModeE.cupertino
+                    ? ButtonMode.CUPERTINO
+                    : ButtonMode.MATERIAL,
             loadingIndicator: const Center(child: CircularProgressIndicator()),
             columns: _calculateColumns(constraints),
-            emojiSizeMax:
-                !_isWhatsApp || designMode == ImageEditorDesignModeE.cupertino
-                    ? 32
-                    : 64,
+            emojiSizeMax: !_isWhatsApp ||
+                    widget.configs.designMode ==
+                        ImageEditorDesignModeE.cupertino
+                ? 32
+                : 64,
             replaceEmojiOnLimitExceed: false,
           ),
-      swapCategoryAndBottomBar: emojiEditorConfigs.swapCategoryAndBottomBar,
-      skinToneConfig: emojiEditorConfigs.skinToneConfig,
-      categoryViewConfig: emojiEditorConfigs.categoryViewConfig ??
-          CategoryViewConfig(
-            initCategory: Category.RECENT,
-            backgroundColor: imageEditorBackgroundColor,
-            indicatorColor: imageEditorPrimaryColor,
-            iconColorSelected: imageEditorPrimaryColor,
-            iconColor: const Color(0xFF9E9E9E),
-            tabIndicatorAnimDuration: kTabScrollDuration,
-            dividerColor: Colors.black,
-            customCategoryView: (
-              config,
-              state,
-              tabController,
-              pageController,
-            ) {
-              return EmojiEditorCategoryView(
-                config,
-                state,
-                tabController,
-                pageController,
-              );
-            },
-            categoryIcons: const CategoryIcons(
-              recentIcon: Icons.access_time_outlined,
-              smileyIcon: Icons.emoji_emotions_outlined,
-              animalIcon: Icons.cruelty_free_outlined,
-              foodIcon: Icons.coffee_outlined,
-              activityIcon: Icons.sports_soccer_outlined,
-              travelIcon: Icons.directions_car_filled_outlined,
-              objectIcon: Icons.lightbulb_outline,
-              symbolIcon: Icons.emoji_symbols_outlined,
-              flagIcon: Icons.flag_outlined,
-            ),
-          ),
+      swapCategoryAndBottomBar:
+          widget.configs.emojiEditorConfigs.swapCategoryAndBottomBar,
+      skinToneConfig: widget.configs.emojiEditorConfigs.skinToneConfig,
+      categoryViewConfig:
+          widget.configs.emojiEditorConfigs.categoryViewConfig ??
+              CategoryViewConfig(
+                initCategory: Category.RECENT,
+                backgroundColor: imageEditorBackgroundColor,
+                indicatorColor: imageEditorPrimaryColor,
+                iconColorSelected: imageEditorPrimaryColor,
+                iconColor: const Color(0xFF9E9E9E),
+                tabIndicatorAnimDuration: kTabScrollDuration,
+                dividerColor: Colors.black,
+                customCategoryView: (
+                  config,
+                  state,
+                  tabController,
+                  pageController,
+                ) {
+                  return EmojiEditorCategoryView(
+                    config,
+                    state,
+                    tabController,
+                    pageController,
+                  );
+                },
+                categoryIcons: const CategoryIcons(
+                  recentIcon: Icons.access_time_outlined,
+                  smileyIcon: Icons.emoji_emotions_outlined,
+                  animalIcon: Icons.cruelty_free_outlined,
+                  foodIcon: Icons.coffee_outlined,
+                  activityIcon: Icons.sports_soccer_outlined,
+                  travelIcon: Icons.directions_car_filled_outlined,
+                  objectIcon: Icons.lightbulb_outline,
+                  symbolIcon: Icons.emoji_symbols_outlined,
+                  flagIcon: Icons.flag_outlined,
+                ),
+              ),
       bottomActionBarConfig: _isWhatsApp
           ? const BottomActionBarConfig(enabled: false)
-          : emojiEditorConfigs.bottomActionBarConfig,
-      searchViewConfig: emojiEditorConfigs.searchViewConfig ??
+          : widget.configs.emojiEditorConfigs.bottomActionBarConfig,
+      searchViewConfig: widget.configs.emojiEditorConfigs.searchViewConfig ??
           SearchViewConfig(
             backgroundColor: imageEditorBackgroundColor,
             buttonIconColor: imageEditorTextColor,
@@ -236,7 +241,7 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
                 config,
                 state,
                 showEmojiView,
-                i18n: i18n,
+                i18n: widget.configs.i18n,
               );
             },
           ),
@@ -246,7 +251,9 @@ class EmojiEditorState extends State<EmojiEditor> with ImageEditorStateMixin {
   /// Calculates the number of columns for the EmojiPicker.
   int _calculateColumns(BoxConstraints constraints) => max(
           1,
-          (_isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
+          (_isWhatsApp &&
+                          widget.configs.designMode !=
+                              ImageEditorDesignModeE.cupertino
                       ? 6
                       : 10) /
                   400 *

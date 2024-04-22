@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
 
 import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_aspect_ratio_options.dart';
@@ -7,17 +8,14 @@ import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_aspect_
 import '../../fake/fake_image.dart';
 
 void main() {
+  var initConfigs = CropRotateEditorInitConfigs(
+    theme: ThemeData.light(),
+    imageSize: const Size(300, 300),
+  );
   group('CropRotateEditor Tests', () {
-    testWidgets(
-        'CropRotateEditor should build without error and create ExtendedImage',
-        (WidgetTester tester) async {
+    testWidgets('CropRotateEditor should build without error and create ExtendedImage', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: CropRotateEditor.memory(
-          fakeMemoryImage,
-          key: GlobalKey(),
-          theme: ThemeData.light(),
-          imageSize: const Size(300, 300),
-        ),
+        home: CropRotateEditor.memory(fakeMemoryImage, key: GlobalKey(), initConfigs: initConfigs),
       ));
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
 
@@ -26,21 +24,15 @@ void main() {
   });
 
   group('CropRotateEditor Aspect Ratio Dialog Tests', () {
-    testWidgets('Opens and selects an aspect ratio',
-        (WidgetTester tester) async {
+    testWidgets('Opens and selects an aspect ratio', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: CropRotateEditor.memory(
-          fakeMemoryImage,
-          theme: ThemeData.light(),
-          imageSize: const Size(300, 300),
-        ),
+        home: CropRotateEditor.memory(fakeMemoryImage, initConfigs: initConfigs),
       ));
 
       // Wait for the widget to be built
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
 
-      var openDialogButtonFinder =
-          find.byKey(const ValueKey('pro-image-editor-aspect-ratio-btn'));
+      var openDialogButtonFinder = find.byKey(const ValueKey('pro-image-editor-aspect-ratio-btn'));
       await tester.tap(openDialogButtonFinder);
 
       // Rebuild the widget and open the dialog
