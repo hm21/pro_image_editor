@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
+import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_aspect_ratio_options.dart';
 
 import '../../fake/fake_image.dart';
 
@@ -30,7 +31,6 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         home: CropRotateEditor.memory(
           fakeMemoryImage,
-          key: GlobalKey(),
           theme: ThemeData.light(),
           imageSize: const Size(300, 300),
         ),
@@ -46,10 +46,7 @@ void main() {
       // Rebuild the widget and open the dialog
       await tester.pumpAndSettle();
 
-      expect(
-          find.byKey(
-              const ValueKey('pro-image-editor-aspect-ratio-bottom-list')),
-          findsOneWidget);
+      expect(find.byType(CropAspectRatioOptions), findsOneWidget);
 
       // Ensure to draw ratios
       expect(find.text('16*9'), findsOneWidget);

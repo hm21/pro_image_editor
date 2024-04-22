@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
+import 'package:pro_image_editor/modules/blur_editor.dart';
 import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
 import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
 import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
@@ -14,7 +14,8 @@ import 'package:pro_image_editor/widgets/layer_widget.dart';
 import 'fake/fake_image.dart';
 
 void main() {
-  testWidgets('ProImageEditor initializes correctly', (WidgetTester tester) async {
+  testWidgets('ProImageEditor initializes correctly',
+      (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
       home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -26,7 +27,8 @@ void main() {
   });
 
   group('ProImageEditor open subeditors', () {
-    testWidgets('ProImageEditor opens PaintingEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens PaintingEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -56,22 +58,23 @@ void main() {
       expect(find.byType(TextEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens CropRotateEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens BlurEditor', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
         onImageEditingComplete: (Uint8List bytes) async {},
       )));
 
-      final openBtn = find.byKey(const ValueKey('open-crop-rotate-editor-btn'));
+      final openBtn = find.byKey(const ValueKey('open-blur-editor-btn'));
       expect(openBtn, findsOneWidget);
       await tester.tap(openBtn);
 
       await tester.pumpAndSettle();
-      expect(find.byType(CropRotateEditor), findsOneWidget);
+      expect(find.byType(BlurEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens FilterEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens FilterEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -86,7 +89,8 @@ void main() {
       expect(find.byType(FilterEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens EmojiEditor', (WidgetTester tester) async {
+    testWidgets('ProImageEditor opens EmojiEditor',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
@@ -105,7 +109,8 @@ void main() {
     });
   });
 
-  testWidgets('ProImageEditor performs undo and redo action', (WidgetTester tester) async {
+  testWidgets('ProImageEditor performs undo and redo action',
+      (WidgetTester tester) async {
     final key = GlobalKey<ProImageEditorState>();
     await tester.pumpWidget(MaterialApp(
         home: ProImageEditor.memory(
@@ -156,7 +161,9 @@ void main() {
     expect(layers3, findsOneWidget);
   });
 
-  testWidgets('ProImageEditor performs done action with allowCompleteWithEmptyEditing', (WidgetTester tester) async {
+  testWidgets(
+      'ProImageEditor performs done action with allowCompleteWithEmptyEditing',
+      (WidgetTester tester) async {
     Future test({
       required bool givingAllowCompleteWithEmptyEditing,
       required bool expectedHasCompleteEdit,
@@ -182,7 +189,11 @@ void main() {
       expect(hasCompleteEdit, expectedHasCompleteEdit);
     }
 
-    await test(givingAllowCompleteWithEmptyEditing: true, expectedHasCompleteEdit: true);
-    await test(givingAllowCompleteWithEmptyEditing: false, expectedHasCompleteEdit: false);
+    await test(
+        givingAllowCompleteWithEmptyEditing: true,
+        expectedHasCompleteEdit: true);
+    await test(
+        givingAllowCompleteWithEmptyEditing: false,
+        expectedHasCompleteEdit: false);
   });
 }

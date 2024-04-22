@@ -1390,6 +1390,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                       ),
                     if (cropRotateEditorConfigs.canChangeAspectRatio)
                       IconButton(
+                        key:
+                            const ValueKey('pro-image-editor-aspect-ratio-btn'),
                         icon: Icon(icons.cropRotateEditor.aspectRatio),
                         tooltip: i18n.cropRotateEditor.ratio,
                         onPressed: openAspectRatioOptions,
