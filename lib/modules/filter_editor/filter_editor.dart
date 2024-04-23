@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/transform_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../../models/crop_rotate_editor/transform_factors.dart';
@@ -15,8 +14,9 @@ import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
+import '../../widgets/transform/transformed_content_generator.dart';
 import 'widgets/filter_editor_item_list.dart';
-import 'widgets/image_with_filter.dart';
+import 'widgets/image_with_multiple_filters.dart';
 
 /// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
@@ -26,8 +26,7 @@ import 'widgets/image_with_filter.dart';
 /// - `FilterEditor.network`: Loads an image from a network URL.
 /// - `FilterEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `FilterEditor.autoSource`: Automatically selects the source based on provided parameters.
-class FilterEditor extends StatefulWidget
-    with StandaloneEditor<FilterEditorInitConfigs> {
+class FilterEditor extends StatefulWidget with StandaloneEditor<FilterEditorInitConfigs> {
   @override
   final FilterEditorInitConfigs initConfigs;
   @override
@@ -132,8 +131,7 @@ class FilterEditor extends StatefulWidget
         initConfigs: initConfigs,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -142,10 +140,7 @@ class FilterEditor extends StatefulWidget
 }
 
 /// The state class for the `FilterEditor` widget.
-class FilterEditorState extends State<FilterEditor>
-    with
-        ImageEditorConvertedConfigs,
-        StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
+class FilterEditorState extends State<FilterEditor> with ImageEditorConvertedConfigs, StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -199,8 +194,7 @@ class FilterEditorState extends State<FilterEditor>
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: theme.copyWith(
-          tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: theme.copyWith(tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -243,41 +237,45 @@ class FilterEditorState extends State<FilterEditor>
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
       _bodySize = constraints.biggest;
-      return Center(
-        child: Screenshot(
-          controller: screenshotController,
-          child: Stack(
-            children: [
-              Hero(
-                tag: heroTag,
-                createRectTween: (begin, end) =>
-                    RectTween(begin: begin, end: end),
-                child: TransformedContentGenerator(
-                  configs: transformConfigs ?? TransformConfigs.empty(),
-                  child: ImageWithFilter(
-                    image: editorImage,
-                    activeFilters: appliedFilters,
-                    designMode: designMode,
-                    filter: selectedFilter,
-                    blurFactor: appliedBlurFactor,
-                    fit: BoxFit.contain,
-                    opacity: filterOpacity,
-                  ),
+
+      return Screenshot(
+        controller: screenshotController,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Hero(
+              tag: heroTag,
+              createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+              child: TransformedContentGenerator(
+                configs: transformConfigs ?? TransformConfigs.empty(),
+                child: ImageWithMultipleFilters(
+                  width: initConfigs.imageSizeWithLayers.width,
+                  height: initConfigs.imageSizeWithLayers.height,
+                  designMode: designMode,
+                  image: editorImage,
+                  filters: [
+                    ...appliedFilters,
+                    FilterStateHistory(
+                      filter: selectedFilter,
+                      opacity: filterOpacity,
+                    ),
+                  ],
+                  blurFactor: appliedBlurFactor,
                 ),
               ),
-              if (filterEditorConfigs.showLayers && layers != null)
-                LayerStack(
-                  transformHelper: TransformHelper(
-                    mainBodySize: bodySizeWithLayers,
-                    mainImageSize: imageSizeWithLayers,
-                    editorBodySize: _bodySize,
-                  ),
-                  configs: configs,
-                  layers: layers!,
-                  clipBehavior: Clip.none,
+            ),
+            if (filterEditorConfigs.showLayers && layers != null)
+              LayerStack(
+                transformHelper: TransformHelper(
+                  mainBodySize: bodySizeWithLayers,
+                  mainImageSize: imageSizeWithLayers,
+                  editorBodySize: _bodySize,
                 ),
-            ],
-          ),
+                configs: configs,
+                layers: layers!,
+                clipBehavior: Clip.none,
+              ),
+          ],
         ),
       );
     });
@@ -307,10 +305,12 @@ class FilterEditorState extends State<FilterEditor>
                     ),
             ),
             FilterEditorItemList(
-              byteArray: widget.editorImage.byteArray,
-              file: widget.editorImage.file,
-              assetPath: widget.editorImage.assetPath,
-              networkUrl: widget.editorImage.networkUrl,
+              bodySizeWithLayers: bodySizeWithLayers,
+              imageSizeWithLayers: imageSizeWithLayers,
+              byteArray: editorImage.byteArray,
+              file: editorImage.file,
+              assetPath: editorImage.assetPath,
+              networkUrl: editorImage.networkUrl,
               activeFilters: appliedFilters,
               blurFactor: appliedBlurFactor,
               configs: configs,

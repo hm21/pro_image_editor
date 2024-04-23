@@ -6,13 +6,15 @@ import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
+import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_multiple_filters.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
-import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
+import 'package:pro_image_editor/widgets/transform/transform_editor_size.dart';
 
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
 import '../../../models/history/filter_state_history.dart';
-import 'image_with_filter.dart';
+import '../../../models/transform_helper.dart';
+import '../../../widgets/transform/transformed_content_generator.dart';
 
 class FilterEditorItemList extends StatefulWidget {
   /// A byte array representing the image data.
@@ -56,6 +58,12 @@ class FilterEditorItemList extends StatefulWidget {
   /// This function is called when a filter is selected in the editor. It takes a [ColorFilterGenerator] as a parameter, representing the selected filter.
   final Function(ColorFilterGenerator filter) onSelectFilter;
 
+  /// The size of the image with layers applied.
+  final Size imageSizeWithLayers;
+
+  /// The size of the body with layers applied.
+  final Size bodySizeWithLayers;
+
   const FilterEditorItemList({
     super.key,
     this.byteArray,
@@ -66,6 +74,8 @@ class FilterEditorItemList extends StatefulWidget {
     this.blurFactor,
     this.itemScaleFactor,
     this.transformConfigs,
+    this.imageSizeWithLayers = Size.zero,
+    this.bodySizeWithLayers = Size.zero,
     required this.selectedFilter,
     required this.onSelectFilter,
     required this.configs,
@@ -79,8 +89,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   late ScrollController _scrollCtrl;
 
   /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters =>
-      widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
+  List<ColorFilterGenerator> get _filters => widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
 
   @override
   void initState() {
@@ -94,8 +103,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     super.dispose();
   }
 
-  bool get _isWhatsAppDesign =>
-      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
+  bool get _isWhatsAppDesign => widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 
   @override
   Widget build(BuildContext context) {
@@ -115,18 +123,16 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
           controller: _scrollCtrl,
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
-            constraints:
-                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+            constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
             child: Padding(
-              padding:
-                  EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
+              padding: EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.end,
                 alignment: WrapAlignment.spaceAround,
                 spacing: _isWhatsAppDesign ? 7 : 15,
                 children: <Widget>[
                   for (int i = 0; i < _filters.length; i++)
-                    filterPreviewButton(
+                    buildFilterButton(
                       filter: _filters[i],
                       name: _filters[i].name,
                       index: i,
@@ -142,7 +148,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   }
 
   /// Create a button for filter preview.
-  Widget filterPreviewButton({
+  Widget buildFilterButton({
     required ColorFilterGenerator filter,
     required String name,
     required int index,
@@ -157,13 +163,19 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
       );
     }
     var size = const Size(64, 64);
+    TransformConfigs transformConfigs = widget.transformConfigs ?? TransformConfigs.empty();
+    double offsetFactor = widget.imageSizeWithLayers.longestSide / size.longestSide;
+
+    double oldAspectRatio =
+        transformConfigs.cropRect != Rect.largest ? transformConfigs.cropRect.size.aspectRatio : widget.imageSizeWithLayers.aspectRatio;
+
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),
       onTap: () {
         widget.onSelectFilter(filter);
       },
-      child: Center(
-        child: Column(children: [
+      child: Column(
+        children: [
           Container(
             height: size.height,
             width: size.width,
@@ -177,21 +189,34 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: TransformedContentGenerator(
-                configs: widget.transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithFilter(
-                  image: EditorImage(
-                    file: widget.file,
-                    byteArray: widget.byteArray,
-                    networkUrl: widget.networkUrl,
-                    assetPath: widget.assetPath,
+              child: Transform.rotate(
+                angle: transformConfigs.angle,
+                alignment: Alignment.center,
+                child: Transform.flip(
+                  flipX: transformConfigs.flipX,
+                  flipY: transformConfigs.flipY,
+                  child: Transform.scale(
+                    scale: transformConfigs.scale / oldAspectRatio * size.aspectRatio,
+                    child: Transform.translate(
+                      offset: transformConfigs.offset / offsetFactor,
+                      child: ImageWithMultipleFilters(
+                        image: EditorImage(
+                          file: widget.file,
+                          byteArray: widget.byteArray,
+                          networkUrl: widget.networkUrl,
+                          assetPath: widget.assetPath,
+                        ),
+                        width: size.width,
+                        height: size.height,
+                        filters: [
+                          ...(widget.activeFilters ?? []),
+                          FilterStateHistory(filter: filter, opacity: 1),
+                        ],
+                        designMode: widget.configs.designMode,
+                        blurFactor: widget.blurFactor ?? 0,
+                      ),
+                    ),
                   ),
-                  activeFilters: widget.activeFilters,
-                  size: size,
-                  designMode: widget.configs.designMode,
-                  filter: filter,
-                  blurFactor: widget.blurFactor,
-                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -200,11 +225,10 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
             style: TextStyle(
               fontSize: 11,
-              color:
-                  widget.configs.imageEditorTheme.filterEditor.previewTextColor,
+              color: widget.configs.imageEditorTheme.filterEditor.previewTextColor,
             ),
           ),
-        ]),
+        ],
       ),
     );
   }
@@ -215,8 +239,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     required int index,
     List<FilterStateHistory>? activeFilters,
   }) {
-    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode ||
-        (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
+    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode || (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
     var size = const Size(58, 88);
 
     return Transform.scale(
@@ -239,23 +262,21 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
               child: Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
-                  TransformedContentGenerator(
-                    configs:
-                        widget.transformConfigs ?? TransformConfigs.empty(),
-                    child: ImageWithFilter(
-                      image: EditorImage(
-                        file: widget.file,
-                        byteArray: widget.byteArray,
-                        networkUrl: widget.networkUrl,
-                        assetPath: widget.assetPath,
-                      ),
-                      activeFilters: widget.activeFilters,
-                      size: size,
-                      designMode: widget.configs.designMode,
-                      filter: filter,
-                      blurFactor: widget.blurFactor,
-                      fit: BoxFit.cover,
+                  ImageWithMultipleFilters(
+                    image: EditorImage(
+                      file: widget.file,
+                      byteArray: widget.byteArray,
+                      networkUrl: widget.networkUrl,
+                      assetPath: widget.assetPath,
                     ),
+                    designMode: widget.configs.designMode,
+                    blurFactor: widget.blurFactor ?? 0,
+                    width: size.width,
+                    height: size.height,
+                    filters: [
+                      ...(widget.activeFilters ?? []),
+                      FilterStateHistory(filter: filter, opacity: 1),
+                    ],
                   ),
                   Align(
                     alignment: Alignment.bottomLeft,
@@ -264,13 +285,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(2, 3, 2, 3),
                       child: Text(
-                        widget.configs.i18n.filterEditor.filters
-                            .getFilterI18n(name),
+                        widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: widget.configs.imageEditorTheme.filterEditor
-                              .previewTextColor,
+                          color: widget.configs.imageEditorTheme.filterEditor.previewTextColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

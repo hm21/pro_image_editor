@@ -1,3 +1,5 @@
+/* TODO: delete me
+
 import 'dart:ui';
 
 import 'package:colorfilter_generator/colorfilter_generator.dart';
@@ -19,6 +21,9 @@ class ImageWithFilter extends StatelessWidget {
 
   /// The BoxFit option to control how the image is fitted into the available space.
   final BoxFit? fit;
+
+  /// How to size the non-positioned children in the stack.
+  final StackFit stackFit;
 
   /// The opacity of the image.
   final double opacity;
@@ -46,6 +51,7 @@ class ImageWithFilter extends StatelessWidget {
     required this.blurFactor,
     this.size,
     this.fit,
+    this.stackFit = StackFit.expand,
     this.opacity = 1,
   });
 
@@ -65,12 +71,11 @@ class ImageWithFilter extends StatelessWidget {
       } else {
         return Stack(
           alignment: Alignment.center,
-          fit: StackFit.expand,
+          fit: stackFit,
           children: [
             img,
             BackdropFilter(
-              filter:
-                  ImageFilter.blur(sigmaX: blurFactor!, sigmaY: blurFactor!),
+              filter: ImageFilter.blur(sigmaX: blurFactor!, sigmaY: blurFactor!),
               child: Container(
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
               ),
@@ -93,10 +98,10 @@ class ImageWithFilter extends StatelessWidget {
         );
       }
 
-      if (blurFactor == null) {
+      if (blurFactor == null || blurFactor == 0) {
         return Stack(
           alignment: Alignment.center,
-          fit: StackFit.expand,
+          fit: stackFit,
           children: [
             img,
             filteredImg,
@@ -105,13 +110,12 @@ class ImageWithFilter extends StatelessWidget {
       } else {
         return Stack(
           alignment: Alignment.center,
-          fit: StackFit.expand,
+          fit: stackFit,
           children: [
             img,
             filteredImg,
             BackdropFilter(
-              filter:
-                  ImageFilter.blur(sigmaX: blurFactor!, sigmaY: blurFactor!),
+              filter: ImageFilter.blur(sigmaX: blurFactor!, sigmaY: blurFactor!),
               child: Container(
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
               ),
@@ -122,3 +126,4 @@ class ImageWithFilter extends StatelessWidget {
     }
   }
 }
+ */

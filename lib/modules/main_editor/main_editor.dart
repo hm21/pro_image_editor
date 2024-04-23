@@ -27,6 +27,7 @@ import '../../designs/whatsapp/whatsapp_filter_button.dart';
 import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../utils/image_helpers.dart';
+import '../../widgets/transform/transformed_content_generator.dart';
 import '../crop_rotate_editor/utils/rotate_angle.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'utils/desktop_interaction_manager.dart';
@@ -59,7 +60,6 @@ import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/loading_dialog.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
-import '../../widgets/transformed_content_generator.dart';
 
 /// A widget for image editing using ProImageEditor.
 ///
@@ -379,7 +379,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   int _deviceOrientation = 0;
 
   /// Getter for the active layer currently being edited.
-  Layer get _activeLayer => activeLayers[_selectedLayerIndex];
+  Layer? get _activeLayer => _selectedLayerIndex >= 0 ? activeLayers[_selectedLayerIndex] : null;
 
   /// Get the list of layers from the current image editor changes.
   List<Layer> get activeLayers => _stateManager.stateHistory[_stateManager.editPosition].layers;
@@ -449,7 +449,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   bool _onKeyEvent(KeyEvent event) {
     return _desktopInteractionManager.onKey(
       event,
-      activeLayer: _selectedLayerIndex >= 0 ? _activeLayer : null,
+      activeLayer: _activeLayer,
       canPressEscape: !_openDialog,
       isEditorOpen: _isEditorOpen,
       onCloseEditor: closeEditor,
@@ -615,7 +615,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     if (detail.pointerCount == 1) {
       _layerInteraction.freeStyleHighPerformanceMoving = configs.paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
       _layerInteraction.calculateMovement(
-        activeLayer: _activeLayer,
+        activeLayer: _activeLayer!,
         context: context,
         detail: detail,
         screenMiddleX: _screenSize.screenMiddleX,
@@ -626,7 +626,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     } else if (detail.pointerCount == 2) {
       _layerInteraction.freeStyleHighPerformanceScaling = configs.paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       _layerInteraction.calculateScale(
-        activeLayer: _activeLayer,
+        activeLayer: _activeLayer!,
         detail: detail,
         screenPaddingHelper: _screenSize.screenPaddingHelper,
         configEnabledHitVibration: configs.helperLines.hitVibration,
@@ -871,6 +871,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
             top: _screenSize.screenPaddingHelper.top - _screenSize.appBarHeight,
             left: _screenSize.screenPaddingHelper.left,
           ),
+          transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: widget.onUpdateUI,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
           appliedFilters: _stateManager.filters,
@@ -1678,11 +1679,11 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     return LayoutBuilder(builder: (context, constraints) {
       _screenSize.bodySize = constraints.biggest;
       return Listener(
-        onPointerSignal: isDesktop
+        onPointerSignal: isDesktop && _activeLayer != null
             ? (event) {
                 _desktopInteractionManager.mouseScroll(
                   event,
-                  activeLayer: _activeLayer,
+                  activeLayer: _activeLayer!,
                   selectedLayerIndex: _selectedLayerIndex,
                 );
               }
@@ -2089,19 +2090,19 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   }
 
   Widget _buildImageWithFilter() {
-    return TransformedContentGenerator(
-      configs: _stateManager.transformConfigs,
-      child: LayoutBuilder(builder: (context, constraints) {
-        _screenSize.renderedImageSize = constraints.biggest;
-        return ImageWithMultipleFilters(
+    return LayoutBuilder(builder: (context, constraints) {
+      _screenSize.renderedImageSize = constraints.biggest;
+      return TransformedContentGenerator(
+        configs: _stateManager.transformConfigs,
+        child: ImageWithMultipleFilters(
           width: _screenSize.imageWidth,
           height: _screenSize.imageHeight,
           designMode: designMode,
           image: _image,
           filters: _stateManager.filters,
           blurFactor: _stateManager.blurStateHistory.blur,
-        );
-      }),
-    );
+        ),
+      );
+    });
   }
 }

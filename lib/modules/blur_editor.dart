@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/widgets/transformed_content_generator.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../models/crop_rotate_editor/transform_factors.dart';
@@ -14,6 +13,7 @@ import '../mixins/converted_configs.dart';
 import '../mixins/standalone_editor.dart';
 import '../widgets/layer_stack.dart';
 import '../widgets/loading_dialog.dart';
+import '../widgets/transform/transformed_content_generator.dart';
 import 'filter_editor/widgets/image_with_multiple_filters.dart';
 
 /// The `BlurEditor` widget allows users to apply blur to images.
@@ -24,8 +24,7 @@ import 'filter_editor/widgets/image_with_multiple_filters.dart';
 /// - `BlurEditor.network`: Loads an image from a network URL.
 /// - `BlurEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `BlurEditor.autoSource`: Automatically selects the source based on provided parameters.
-class BlurEditor extends StatefulWidget
-    with StandaloneEditor<BlurEditorInitConfigs> {
+class BlurEditor extends StatefulWidget with StandaloneEditor<BlurEditorInitConfigs> {
   @override
   final BlurEditorInitConfigs initConfigs;
   @override
@@ -130,8 +129,7 @@ class BlurEditor extends StatefulWidget
         initConfigs: initConfigs,
       );
     } else {
-      throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -140,10 +138,7 @@ class BlurEditor extends StatefulWidget
 }
 
 /// The state class for the `BlurEditor` widget.
-class BlurEditorState extends State<BlurEditor>
-    with
-        ImageEditorConvertedConfigs,
-        StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
+class BlurEditorState extends State<BlurEditor> with ImageEditorConvertedConfigs, StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -196,8 +191,7 @@ class BlurEditorState extends State<BlurEditor>
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: theme.copyWith(
-          tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: theme.copyWith(tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -240,41 +234,38 @@ class BlurEditorState extends State<BlurEditor>
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
       _bodySize = constraints.biggest;
-      return Center(
-        child: Screenshot(
-          controller: screenshotController,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Hero(
-                tag: heroTag,
-                createRectTween: (begin, end) =>
-                    RectTween(begin: begin, end: end),
-                child: TransformedContentGenerator(
-                  configs: transformConfigs ?? TransformConfigs.empty(),
-                  child: ImageWithMultipleFilters(
-                    width: initConfigs.imageSize.width,
-                    height: initConfigs.imageSize.height,
-                    designMode: designMode,
-                    image: editorImage,
-                    filters: appliedFilters,
-                    blurFactor: selectedBlur,
-                  ),
+      return Screenshot(
+        controller: screenshotController,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Hero(
+              tag: heroTag,
+              createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+              child: TransformedContentGenerator(
+                configs: transformConfigs ?? TransformConfigs.empty(),
+                child: ImageWithMultipleFilters(
+                  width: initConfigs.imageSize.width,
+                  height: initConfigs.imageSize.height,
+                  designMode: designMode,
+                  image: editorImage,
+                  filters: appliedFilters,
+                  blurFactor: selectedBlur,
                 ),
               ),
-              if (blurEditorConfigs.showLayers && layers != null)
-                LayerStack(
-                  transformHelper: TransformHelper(
-                    mainBodySize: bodySizeWithLayers,
-                    mainImageSize: imageSizeWithLayers,
-                    editorBodySize: _bodySize,
-                  ),
-                  configs: configs,
-                  layers: layers!,
-                  clipBehavior: Clip.none,
+            ),
+            if (blurEditorConfigs.showLayers && layers != null)
+              LayerStack(
+                transformHelper: TransformHelper(
+                  mainBodySize: bodySizeWithLayers,
+                  mainImageSize: imageSizeWithLayers,
+                  editorBodySize: _bodySize,
                 ),
-            ],
-          ),
+                configs: configs,
+                layers: layers!,
+                clipBehavior: Clip.none,
+              ),
+          ],
         ),
       );
     });

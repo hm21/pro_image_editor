@@ -3,6 +3,7 @@ import 'package:pro_image_editor/modules/crop_rotate_editor/utils/rotate_angle.d
 
 class TransformConfigs {
   final Offset offset;
+  final Rect cropRect;
   final double angle;
   final double scaleAspectRatio;
   final double scaleUser;
@@ -14,6 +15,7 @@ class TransformConfigs {
 
   const TransformConfigs({
     required this.angle,
+    required this.cropRect,
     required this.scaleAspectRatio,
     required this.scaleUser,
     required this.scaleRotation,
@@ -27,6 +29,12 @@ class TransformConfigs {
   factory TransformConfigs.fromMap(Map map) {
     return TransformConfigs(
       angle: map['angle'] ?? 0,
+      cropRect: Rect.fromLTRB(
+        map['cropRect']?['left'] ?? 0,
+        map['cropRect']?['top'] ?? 0,
+        map['cropRect']?['right'] ?? 0,
+        map['cropRect']?['bottom'] ?? 0,
+      ),
       scaleAspectRatio: map['scaleAspectRatio'] ?? 1,
       scaleUser: map['scaleUser'] ?? 1,
       scaleRotation: map['scaleRotation'] ?? 1,
@@ -45,6 +53,7 @@ class TransformConfigs {
   factory TransformConfigs.empty() {
     return const TransformConfigs(
       angle: 0,
+      cropRect: Rect.largest,
       scaleAspectRatio: 1,
       scaleUser: 1,
       scaleRotation: 1,
@@ -60,6 +69,7 @@ class TransformConfigs {
     // TODO: function?
     return TransformConfigs(
       angle: angle,
+      cropRect: cropRect,
       scaleAspectRatio: scaleAspectRatio,
       scaleUser: scaleUser,
       scaleRotation: scaleRotation,
@@ -80,6 +90,12 @@ class TransformConfigs {
   Map toMap() {
     return {
       'angle': angle,
+      'cropRect': {
+        'left': cropRect.left,
+        'top': cropRect.top,
+        'right': cropRect.right,
+        'bottom': cropRect.bottom,
+      },
       'scaleAspectRatio': scaleAspectRatio,
       'scaleUser': scaleUser,
       'scaleRotation': scaleRotation,
