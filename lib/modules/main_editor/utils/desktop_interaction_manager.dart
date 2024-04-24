@@ -117,8 +117,10 @@ class DesktopInteractionManager {
     required Layer activeLayer,
     required int selectedLayerIndex,
   }) {
-    bool shiftDown = HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
-        HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.shiftRight);
+    bool shiftDown = HardwareKeyboard.instance.logicalKeysPressed
+            .contains(LogicalKeyboardKey.shiftLeft) ||
+        HardwareKeyboard.instance.logicalKeysPressed
+            .contains(LogicalKeyboardKey.shiftRight);
 
     if (event is PointerScrollEvent && selectedLayerIndex >= 0) {
       if (shiftDown) {

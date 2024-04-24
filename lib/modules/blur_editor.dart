@@ -24,7 +24,8 @@ import 'filter_editor/widgets/image_with_multiple_filters.dart';
 /// - `BlurEditor.network`: Loads an image from a network URL.
 /// - `BlurEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `BlurEditor.autoSource`: Automatically selects the source based on provided parameters.
-class BlurEditor extends StatefulWidget with StandaloneEditor<BlurEditorInitConfigs> {
+class BlurEditor extends StatefulWidget
+    with StandaloneEditor<BlurEditorInitConfigs> {
   @override
   final BlurEditorInitConfigs initConfigs;
   @override
@@ -129,7 +130,8 @@ class BlurEditor extends StatefulWidget with StandaloneEditor<BlurEditorInitConf
         initConfigs: initConfigs,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -138,7 +140,10 @@ class BlurEditor extends StatefulWidget with StandaloneEditor<BlurEditorInitConf
 }
 
 /// The state class for the `BlurEditor` widget.
-class BlurEditorState extends State<BlurEditor> with ImageEditorConvertedConfigs, StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
+class BlurEditorState extends State<BlurEditor>
+    with
+        ImageEditorConvertedConfigs,
+        StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -191,7 +196,8 @@ class BlurEditorState extends State<BlurEditor> with ImageEditorConvertedConfigs
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: theme.copyWith(tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: theme.copyWith(
+          tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -241,7 +247,8 @@ class BlurEditorState extends State<BlurEditor> with ImageEditorConvertedConfigs
           children: [
             Hero(
               tag: heroTag,
-              createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+              createRectTween: (begin, end) =>
+                  RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(

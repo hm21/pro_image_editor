@@ -13,9 +13,12 @@ void main() {
     imageSize: const Size(300, 300),
   );
   group('CropRotateEditor Tests', () {
-    testWidgets('CropRotateEditor should build without error and create ExtendedImage', (WidgetTester tester) async {
+    testWidgets(
+        'CropRotateEditor should build without error and create ExtendedImage',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: CropRotateEditor.memory(fakeMemoryImage, key: GlobalKey(), initConfigs: initConfigs),
+        home: CropRotateEditor.memory(fakeMemoryImage,
+            key: GlobalKey(), initConfigs: initConfigs),
       ));
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
 
@@ -24,15 +27,18 @@ void main() {
   });
 
   group('CropRotateEditor Aspect Ratio Dialog Tests', () {
-    testWidgets('Opens and selects an aspect ratio', (WidgetTester tester) async {
+    testWidgets('Opens and selects an aspect ratio',
+        (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: CropRotateEditor.memory(fakeMemoryImage, initConfigs: initConfigs),
+        home:
+            CropRotateEditor.memory(fakeMemoryImage, initConfigs: initConfigs),
       ));
 
       // Wait for the widget to be built
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
 
-      var openDialogButtonFinder = find.byKey(const ValueKey('pro-image-editor-aspect-ratio-btn'));
+      var openDialogButtonFinder =
+          find.byKey(const ValueKey('pro-image-editor-aspect-ratio-btn'));
       await tester.tap(openDialogButtonFinder);
 
       // Rebuild the widget and open the dialog

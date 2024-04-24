@@ -26,7 +26,8 @@ import 'widgets/image_with_multiple_filters.dart';
 /// - `FilterEditor.network`: Loads an image from a network URL.
 /// - `FilterEditor.memory`: Loads an image from memory as a `Uint8List`.
 /// - `FilterEditor.autoSource`: Automatically selects the source based on provided parameters.
-class FilterEditor extends StatefulWidget with StandaloneEditor<FilterEditorInitConfigs> {
+class FilterEditor extends StatefulWidget
+    with StandaloneEditor<FilterEditorInitConfigs> {
   @override
   final FilterEditorInitConfigs initConfigs;
   @override
@@ -131,7 +132,8 @@ class FilterEditor extends StatefulWidget with StandaloneEditor<FilterEditorInit
         initConfigs: initConfigs,
       );
     } else {
-      throw ArgumentError("Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+      throw ArgumentError(
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
     }
   }
 
@@ -140,7 +142,10 @@ class FilterEditor extends StatefulWidget with StandaloneEditor<FilterEditorInit
 }
 
 /// The state class for the `FilterEditor` widget.
-class FilterEditorState extends State<FilterEditor> with ImageEditorConvertedConfigs, StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
+class FilterEditorState extends State<FilterEditor>
+    with
+        ImageEditorConvertedConfigs,
+        StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -194,7 +199,8 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorConvertedCon
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: theme.copyWith(tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+      data: theme.copyWith(
+          tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
         child: Scaffold(
@@ -245,7 +251,8 @@ class FilterEditorState extends State<FilterEditor> with ImageEditorConvertedCon
           children: [
             Hero(
               tag: heroTag,
-              createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+              createRectTween: (begin, end) =>
+                  RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(

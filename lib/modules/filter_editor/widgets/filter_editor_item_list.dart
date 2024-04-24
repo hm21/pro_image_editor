@@ -8,13 +8,10 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_multiple_filters.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
-import 'package:pro_image_editor/widgets/transform/transform_editor_size.dart';
 
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
 import '../../../models/history/filter_state_history.dart';
-import '../../../models/transform_helper.dart';
-import '../../../widgets/transform/transformed_content_generator.dart';
 
 class FilterEditorItemList extends StatefulWidget {
   /// A byte array representing the image data.
@@ -89,7 +86,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   late ScrollController _scrollCtrl;
 
   /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters => widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
+  List<ColorFilterGenerator> get _filters =>
+      widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
 
   @override
   void initState() {
@@ -103,7 +101,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     super.dispose();
   }
 
-  bool get _isWhatsAppDesign => widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
+  bool get _isWhatsAppDesign =>
+      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 
   @override
   Widget build(BuildContext context) {
@@ -123,9 +122,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
           controller: _scrollCtrl,
           scrollDirection: Axis.horizontal,
           child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+            constraints:
+                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
+              padding:
+                  EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.end,
                 alignment: WrapAlignment.spaceAround,
@@ -163,11 +164,14 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
       );
     }
     var size = const Size(64, 64);
-    TransformConfigs transformConfigs = widget.transformConfigs ?? TransformConfigs.empty();
-    double offsetFactor = widget.imageSizeWithLayers.longestSide / size.longestSide;
+    TransformConfigs transformConfigs =
+        widget.transformConfigs ?? TransformConfigs.empty();
+    double offsetFactor =
+        widget.imageSizeWithLayers.longestSide / size.longestSide;
 
-    double oldAspectRatio =
-        transformConfigs.cropRect != Rect.largest ? transformConfigs.cropRect.size.aspectRatio : widget.imageSizeWithLayers.aspectRatio;
+    double oldAspectRatio = transformConfigs.cropRect != Rect.largest
+        ? transformConfigs.cropRect.size.aspectRatio
+        : widget.imageSizeWithLayers.aspectRatio;
 
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),
@@ -196,7 +200,9 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                   flipX: transformConfigs.flipX,
                   flipY: transformConfigs.flipY,
                   child: Transform.scale(
-                    scale: transformConfigs.scale / oldAspectRatio * size.aspectRatio,
+                    scale: transformConfigs.scale /
+                        oldAspectRatio *
+                        size.aspectRatio,
                     child: Transform.translate(
                       offset: transformConfigs.offset / offsetFactor,
                       child: ImageWithMultipleFilters(
@@ -225,7 +231,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
             style: TextStyle(
               fontSize: 11,
-              color: widget.configs.imageEditorTheme.filterEditor.previewTextColor,
+              color:
+                  widget.configs.imageEditorTheme.filterEditor.previewTextColor,
             ),
           ),
         ],
@@ -239,7 +246,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     required int index,
     List<FilterStateHistory>? activeFilters,
   }) {
-    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode || (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
+    bool isSelected = widget.selectedFilter.hashCode == filter.hashCode ||
+        (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
     var size = const Size(58, 88);
 
     return Transform.scale(
@@ -285,11 +293,13 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(2, 3, 2, 3),
                       child: Text(
-                        widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
+                        widget.configs.i18n.filterEditor.filters
+                            .getFilterI18n(name),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: widget.configs.imageEditorTheme.filterEditor.previewTextColor,
+                          color: widget.configs.imageEditorTheme.filterEditor
+                              .previewTextColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
