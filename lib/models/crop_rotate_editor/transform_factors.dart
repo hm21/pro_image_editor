@@ -56,21 +56,6 @@ class TransformConfigs {
     );
   }
 
-  TransformConfigs reverse() {
-    // TODO: function?
-    return TransformConfigs(
-      angle: angle,
-      scaleAspectRatio: scaleAspectRatio,
-      scaleUser: scaleUser,
-      scaleRotation: scaleRotation,
-      aspectRatio: aspectRatio,
-      flipX: flipX,
-      flipY: flipY,
-      offset: offset,
-      maxSide: ImageMaxSide.unset,
-    );
-  }
-
   double get scale => scaleUser * scaleRotation * scaleAspectRatio;
   bool get is90DegRotated {
     RotateAngleSide factor = getRotateAngleSide(angle);

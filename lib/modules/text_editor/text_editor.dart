@@ -8,16 +8,15 @@ import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/mixins/converted_configs.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
-import '../designs/whatsapp/whatsapp_text_bottombar.dart';
-import '../models/layer.dart';
-import '../mixins/editor_configs_mixin.dart';
-import '../utils/theme_functions.dart';
-import '../widgets/bottom_sheets_header_row.dart';
-import '../widgets/color_picker/bar_color_picker.dart';
-import '../widgets/color_picker/color_picker_configs.dart';
-import '../widgets/layer_widget.dart';
-import '../widgets/platform_popup_menu.dart';
-import '../widgets/pro_image_editor_desktop_mode.dart';
+import '../../models/layer.dart';
+import '../../mixins/editor_configs_mixin.dart';
+import '../../utils/theme_functions.dart';
+import '../../widgets/bottom_sheets_header_row.dart';
+import '../../widgets/color_picker/bar_color_picker.dart';
+import '../../widgets/color_picker/color_picker_configs.dart';
+import '../../widgets/layer_widget.dart';
+import '../../widgets/platform_popup_menu.dart';
+import 'widgets/text_editor_bottom_bar.dart';
 
 /// A StatefulWidget that provides a text editing interface for adding and editing text layers.
 class TextEditor extends StatefulWidget with SimpleConfigsAccess {
@@ -73,7 +72,7 @@ class TextEditorState extends State<TextEditor>
     backgroundColorMode = textEditorConfigs.initialBackgroundColorMode;
 
     _customTextStyle = widget.layer?.textStyle ??
-        textEditorConfigs.whatsAppCustomTextStyles?.first ??
+        textEditorConfigs.customTextStyles?.first ??
         const TextStyle();
     _initializeFromLayer();
     _setupTextControllerListener();
@@ -283,11 +282,6 @@ class TextEditorState extends State<TextEditor>
             backgroundColor: imageEditorTheme.textEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
-            // For desktop devices where there is no physical keyboard, we can center it as we do in the editor.
-            bottomNavigationBar: isDesktop &&
-                    imageEditorTheme.editorMode == ThemeEditorMode.simple
-                ? const SizedBox(height: kBottomNavigationBarHeight)
-                : null,
           ),
         );
       },
@@ -432,8 +426,8 @@ class TextEditorState extends State<TextEditor>
                   MediaQuery.of(context).size.height -
                       MediaQuery.of(context).viewInsets.bottom -
                       kToolbarHeight -
-                      MediaQuery.of(context).padding.top -
-                      30,
+                      kBottomNavigationBarHeight -
+                      MediaQuery.of(context).padding.top,
                 ),
                 onPositionChange: (value) {
                   _colorPosition = value;
@@ -453,7 +447,16 @@ class TextEditorState extends State<TextEditor>
               ),
             ),
           ),
-          if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) ...[
+          TextEditorBottomBar(
+            configs: widget.configs,
+            selectedStyle: _customTextStyle,
+            onFontChange: (style) {
+              setState(() {
+                _customTextStyle = style;
+              });
+            },
+          ),
+          if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp)
             WhatsAppTextAppBar(
               configs: widget.configs,
               align: align,
@@ -461,16 +464,6 @@ class TextEditorState extends State<TextEditor>
               onAlignChange: toggleTextAlign,
               onBackgroundModeChange: toggleBackgroundMode,
             ),
-            WhatsAppTextBottomBar(
-              configs: widget.configs,
-              selectedStyle: _customTextStyle,
-              onFontChange: (style) {
-                setState(() {
-                  _customTextStyle = style;
-                });
-              },
-            ),
-          ]
         ],
       ),
     );
@@ -480,9 +473,13 @@ class TextEditorState extends State<TextEditor>
   Widget _buildTextField() {
     return Align(
       alignment: Alignment.center,
-      child: SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+            bottom: imageEditorTheme.editorMode == ThemeEditorMode.simple &&
+                    textEditorConfigs.customTextStyles != null
+                ? kBottomNavigationBarHeight
+                : 0),
         child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: SizedBox(

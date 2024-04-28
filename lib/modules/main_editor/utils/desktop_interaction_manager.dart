@@ -32,7 +32,7 @@ class DesktopInteractionManager {
   /// If the 'Escape' key is pressed and the widget is still mounted, it triggers the navigator to pop the current context.
   bool onKey(
     KeyEvent event, {
-    required Layer activeLayer,
+    required Layer? activeLayer,
     required bool canPressEscape,
     required bool isEditorOpen,
     required Function onCloseEditor,
@@ -78,8 +78,10 @@ class DesktopInteractionManager {
   /// Handles Keyboard zoom event
   void _keyboardRotate({
     required bool left,
-    required Layer activeLayer,
+    required Layer? activeLayer,
   }) {
+    if (activeLayer == null) return;
+
     if (left) {
       activeLayer.rotation -= 0.087266;
     } else {
@@ -92,8 +94,9 @@ class DesktopInteractionManager {
   /// Handles Keyboard zoom event
   void _keyboardZoom({
     required bool zoomIn,
-    required Layer activeLayer,
+    required Layer? activeLayer,
   }) {
+    if (activeLayer == null) return;
     double factor = activeLayer is PaintingLayerData
         ? 0.1
         : activeLayer is TextLayerData

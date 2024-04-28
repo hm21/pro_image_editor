@@ -2,20 +2,23 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/theme_functions.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
-import '../models/i18n/i18n.dart';
+import '../mixins/converted_configs.dart';
+import '../mixins/editor_configs_mixin.dart';
 import '../models/layer.dart';
 import '../modules/paint_editor/utils/draw/draw_canvas.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
-import '../utils/design_mode.dart';
 import 'dashed_border.dart';
 import 'pro_image_editor_desktop_mode.dart';
 
 /// A widget representing a layer within a design canvas.
-class LayerWidget extends StatefulWidget {
+class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
+  @override
+  final ProImageEditorConfigs configs;
+
   /// Data for the layer.
   final Layer layerData;
 
@@ -34,24 +37,6 @@ class LayerWidget extends StatefulWidget {
   /// Padding for positioning the layer within the canvas.
   final EdgeInsets padding;
 
-  /// The cursor to be displayed when hovering over the layer.
-  final SystemMouseCursor layerHoverCursor;
-
-  /// Internationalization support.
-  final I18n i18n;
-
-  /// Font size for text layers.
-  final TextStyle emojiTextStyle;
-
-  /// Font size for text layers.
-  final double textFontSize;
-
-  /// The initial width of the stickers in the editor.
-  final double stickerInitWidth;
-
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
-
   /// Enables high-performance scaling for free-style drawing when set to `true`.
   ///
   /// When this option is enabled, it optimizes scaling for improved performance.
@@ -69,29 +54,28 @@ class LayerWidget extends StatefulWidget {
   final bool enableHitDetection;
 
   /// Creates a [LayerWidget] with the specified properties.
-  const LayerWidget(
-      {super.key,
-      required this.padding,
-      required this.layerData,
-      required this.onTapDown,
-      required this.onTapUp,
-      required this.onTap,
-      required this.layerHoverCursor,
-      required this.onRemoveTap,
-      required this.i18n,
-      required this.textFontSize,
-      required this.stickerInitWidth,
-      required this.emojiTextStyle,
-      required this.enableHitDetection,
-      required this.freeStyleHighPerformanceScaling,
-      required this.freeStyleHighPerformanceMoving,
-      required this.designMode});
+  const LayerWidget({
+    super.key,
+    required this.configs,
+    required this.padding,
+    required this.layerData,
+    required this.onTapDown,
+    required this.onTapUp,
+    required this.onTap,
+    required this.onRemoveTap,
+    required this.enableHitDetection,
+    required this.freeStyleHighPerformanceScaling,
+    required this.freeStyleHighPerformanceMoving,
+  });
 
   @override
   createState() => _LayerWidgetState();
 }
 
-class _LayerWidgetState extends State<LayerWidget> {
+class _LayerWidgetState extends State<LayerWidget>
+    with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
+  final _layerKey = GlobalKey();
+
   /// The type of layer being represented.
   late _LayerType _layerType;
 
@@ -216,16 +200,36 @@ class _LayerWidgetState extends State<LayerWidget> {
     return Hero(
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
       tag: widget.layerData.hashCode,
-      child: Container(
+      child: Transform(
         transform: transformMatrix,
-        transformAlignment: Alignment.center,
+        alignment: Alignment.center,
         child: LayerDashedBorderHelper(
+          key: _layerKey,
           layerData: widget.layerData,
-          color: const Color(0xFF000000),
+          configs: configs,
+          onScaleRotate: (details) {
+            double w = (_layerKey.currentContext?.size?.width ?? 0) / 2;
+            double h = (_layerKey.currentContext?.size?.height ?? 0) / 2;
+            double d = sqrt(w * w + h * h);
+
+            double w1 = details.focalPointDelta.dx;
+            double h1 = details.focalPointDelta.dy;
+            double x = w1 * w1 + h1 * h1;
+            double d1 = sqrt(x);
+            if (w1 + h1 < 0) d1 *= -1;
+
+            widget.layerData.scale *= (d + d1) / d;
+
+            /*       widget.layerData.rotation -= (d + d1) / d / pi / 10;
+            print((d + d1) / d); */
+            setState(() {});
+          },
+          onRemoveLayer: widget.onRemoveTap,
           child: MouseRegion(
             hitTestBehavior: HitTestBehavior.translucent,
-            cursor:
-                _showMoveCursor ? widget.layerHoverCursor : MouseCursor.defer,
+            cursor: _showMoveCursor
+                ? imageEditorTheme.layerInteraction.hoverCursor
+                : MouseCursor.defer,
             onEnter: (event) {
               if (_layerType != _LayerType.canvas) {
                 setState(() {
@@ -255,6 +259,24 @@ class _LayerWidgetState extends State<LayerWidget> {
                 ),
               ),
             ),
+            /* TODO: Fix: Detect also gesture outside from rotated box
+            OutsideGestureDetector(
+              behavior: OutsideHitTestBehavior.all,
+              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+              onTapDown: (details) => print(details),
+              onTap: _onTap,
+              child: OutsideListener(
+                behavior: OutsideHitTestBehavior.all,
+                onPointerDown: _onPointerDown,
+                onPointerUp: _onPointerUp,
+                onPointerHover: (event) {
+                  print(event);
+                },
+                child: FittedBox(
+                  child: _buildContent(),
+                ),
+              ),
+            ), */
           ),
         ),
       ),
@@ -291,7 +313,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   /// Build the text widget
   Widget _buildText() {
-    var fontSize = widget.textFontSize * _layer.scale;
+    var fontSize = textEditorConfigs.initFontSize * _layer.scale;
     var layer = _layer as TextLayerData;
     var style = TextStyle(
       fontSize: fontSize * layer.fontScale,
@@ -331,12 +353,12 @@ class _LayerWidgetState extends State<LayerWidget> {
     return Material(
       // Prevent hero animation bug
       type: MaterialType.transparency,
-      textStyle: platformTextStyle(context, widget.designMode),
+      textStyle: platformTextStyle(context, designMode),
       child: Text(
         layer.emoji.toString(),
         textAlign: TextAlign.center,
-        style: widget.emojiTextStyle.copyWith(
-          fontSize: widget.textFontSize * _layer.scale,
+        style: emojiEditorConfigs.textStyle.copyWith(
+          fontSize: textEditorConfigs.initFontSize * _layer.scale,
         ),
       ),
     );
@@ -346,7 +368,7 @@ class _LayerWidgetState extends State<LayerWidget> {
   Widget _buildSticker() {
     var layer = _layer as StickerLayerData;
     return SizedBox(
-      width: widget.stickerInitWidth * layer.scale,
+      width: (stickerEditorConfigs?.initWidth ?? 100) * layer.scale,
       child: FittedBox(
         fit: BoxFit.contain,
         child: layer.sticker,

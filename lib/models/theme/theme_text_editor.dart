@@ -48,6 +48,9 @@ class TextEditorTheme {
   /// Background color of the app bar in the text editor.
   final Color appBarBackgroundColor;
 
+  /// Background color of the bottom bar in the text editor.
+  final Color bottomBarBackgroundColor;
+
   /// Foreground color (text and icons) of the app bar.
   final Color appBarForegroundColor;
 
@@ -65,6 +68,7 @@ class TextEditorTheme {
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.background = const Color(0x9B000000),
+    this.bottomBarBackgroundColor = const Color(0xFF000000),
     this.inputHintColor = const Color(0xFFBDBDBD),
     this.inputCursorColor = imageEditorPrimaryColor,
   });

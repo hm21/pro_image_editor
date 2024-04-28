@@ -29,7 +29,6 @@ class _TransformedContentGeneratorState
           flipX: widget.configs.flipX,
           flipY: widget.configs.flipY,
           child: Transform.scale(
-            // TODO: Add widget (maybe custom painter) which cut outside from zoomed content
             scale: widget.configs.scale,
             alignment: Alignment.center,
             child: Transform.translate(

@@ -40,7 +40,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
       allowCompleteWithEmptyEditing: true,
       configs: ProImageEditorConfigs(
         textEditorConfigs: TextEditorConfigs(
-          whatsAppCustomTextStyles: [
+          customTextStyles: [
             GoogleFonts.roboto(),
             GoogleFonts.averiaLibre(),
             GoogleFonts.lato(),

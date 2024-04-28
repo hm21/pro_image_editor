@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
-/// Represents the bottom bar for the text-editor in the WhatsApp theme.
-class WhatsAppTextBottomBar extends StatefulWidget {
+/// Represents the bottom bar for the text-editor.
+class TextEditorBottomBar extends StatefulWidget {
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -12,7 +12,7 @@ class WhatsAppTextBottomBar extends StatefulWidget {
   /// Callback function for changing the text font style.
   final Function(TextStyle style) onFontChange;
 
-  const WhatsAppTextBottomBar({
+  const TextEditorBottomBar({
     super.key,
     required this.configs,
     required this.selectedStyle,
@@ -20,30 +20,40 @@ class WhatsAppTextBottomBar extends StatefulWidget {
   });
 
   @override
-  State<WhatsAppTextBottomBar> createState() => _WhatsAppTextBottomBarState();
+  State<TextEditorBottomBar> createState() => _TextEditorBottomBarState();
 }
 
-class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
+class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
   final double _space = 10;
+
+  bool get _isSimpleEditor =>
+      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple;
 
   @override
   Widget build(BuildContext context) {
-    if (widget.configs.textEditorConfigs.whatsAppCustomTextStyles == null) {
+    if (widget.configs.textEditorConfigs.customTextStyles == null) {
       return const SizedBox.shrink();
     }
 
     return Positioned(
-      bottom: _space,
+      bottom: _isSimpleEditor ? 0 : _space,
       left: 0,
       right: 0,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints:
-              BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: _buildIconBtns(),
+      height: _isSimpleEditor ? kBottomNavigationBarHeight : null,
+      child: Container(
+        color: _isSimpleEditor
+            ? widget
+                .configs.imageEditorTheme.textEditor.bottomBarBackgroundColor
+            : null,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints:
+                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: _buildIconBtns(),
+            ),
           ),
         ),
       ),
@@ -51,7 +61,7 @@ class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
   }
 
   List<Widget> _buildIconBtns() {
-    var items = widget.configs.textEditorConfigs.whatsAppCustomTextStyles!;
+    var items = widget.configs.textEditorConfigs.customTextStyles!;
     return List.generate(
       items.length,
       (index) {

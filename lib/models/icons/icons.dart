@@ -4,6 +4,7 @@ import 'icons_crop_rotate_editor.dart';
 import 'icons_emoji_editor.dart';
 import 'icons_filter_editor.dart';
 import 'icons_blur_editor.dart';
+import 'icons_layer_interaction.dart';
 import 'icons_painting_editor.dart';
 import 'icons_sticker_editor.dart';
 import 'icons_text_editor.dart';
@@ -15,6 +16,7 @@ export 'icons_filter_editor.dart';
 export 'icons_blur_editor.dart';
 export 'icons_painting_editor.dart';
 export 'icons_text_editor.dart';
+export 'icons_layer_interaction.dart';
 
 /// Customizable icons for the Image Editor component.
 class ImageEditorIcons {
@@ -59,6 +61,15 @@ class ImageEditorIcons {
 
   /// Icons for the Sticker Editor component.
   final IconsStickerEditor stickerEditor;
+
+  /// Icons for the layer interaction settings.
+  ///
+  /// Note: This icons are currently in development and does not function
+  /// as intended. It is prepared for future releases and will be implemented
+  /// in a later version.
+  ///
+  /// TODO: Document the [layerInteraction] field.
+  final IconsLayerInteraction layerInteraction;
 
   /// Creates an instance of [ImageEditorIcons] with customizable icon settings.
   ///
@@ -132,6 +143,7 @@ class ImageEditorIcons {
     this.blurEditor = const IconsBlurEditor(),
     this.emojiEditor = const IconsEmojiEditor(),
     this.stickerEditor = const IconsStickerEditor(),
+    this.layerInteraction = const IconsLayerInteraction(),
     this.closeEditor = Icons.clear,
     this.doneIcon = Icons.done,
     this.applyChanges = Icons.done,

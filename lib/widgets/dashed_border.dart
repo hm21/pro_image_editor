@@ -1,12 +1,20 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
+import '../mixins/converted_configs.dart';
+import '../mixins/editor_configs_mixin.dart';
 import '../models/layer.dart';
+import '../models/theme/theme_layer_interaction.dart';
 
-class LayerDashedBorderHelper extends StatefulWidget {
+class LayerDashedBorderHelper extends StatefulWidget with SimpleConfigsAccess {
+  @override
+  final ProImageEditorConfigs configs;
   final Widget child;
-  final Color color;
+
+  final Function() onRemoveLayer;
+  final Function(ScaleUpdateDetails) onScaleRotate;
 
   /// Data for the layer.
   final Layer layerData;
@@ -15,7 +23,9 @@ class LayerDashedBorderHelper extends StatefulWidget {
     super.key,
     required this.layerData,
     required this.child,
-    required this.color,
+    required this.configs,
+    required this.onRemoveLayer,
+    required this.onScaleRotate,
   });
 
   @override
@@ -23,29 +33,66 @@ class LayerDashedBorderHelper extends StatefulWidget {
       _LayerDashedBorderHelperState();
 }
 
-class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper> {
+class _LayerDashedBorderHelperState extends State<LayerDashedBorderHelper>
+    with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
   @override
   Widget build(BuildContext context) {
     return widget.child;
+    /* TODO: Add dashed border widget 
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          margin: EdgeInsets.all(imageEditorTheme.layerInteraction.buttonRadius),
+          child: CustomPaint(
+            foregroundPainter: DashedBorderPainter(
+              theme: imageEditorTheme.layerInteraction,
+            ),
+            child: widget.child,
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          child: InteractivePoint(
+            onTap: widget.onRemoveLayer,
+            buttonRadius: imageEditorTheme.layerInteraction.buttonRadius,
+            cursor: imageEditorTheme.layerInteraction.removeCursor,
+            icon: icons.layerInteraction.remove,
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: InteractivePoint(
+            onScaleUpdate: widget.onScaleRotate,
+            buttonRadius: imageEditorTheme.layerInteraction.buttonRadius,
+            cursor: imageEditorTheme.layerInteraction.rotateScaleCursor,
+            icon: icons.layerInteraction.rotateScale,
+          ),
+        ),
+      ],
+    );
+   */
   }
 }
 
 class DashedBorderPainter extends CustomPainter {
-  final Color color;
+  final ThemeLayerInteraction theme;
+
   DashedBorderPainter({
-    required this.color,
+    required this.theme,
   });
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color
+      ..color = theme.dashColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
+      ..strokeWidth = theme.strokeWidth;
 
-    const dashWidth = 6;
-    const dashSpace = 5;
     const startVal = 3.0;
-
+    final dashWidth = theme.dashWidth;
+    final dashSpace = theme.dashSpace;
     // Draw top border
     var currentX = startVal;
     while (currentX < size.width) {
@@ -97,33 +144,40 @@ class DashedBorderPainter extends CustomPainter {
   }
 }
 
-class DraggablePoint extends StatelessWidget {
-  final Function(Offset) onDrag;
+class InteractivePoint extends StatelessWidget {
+  final Function(ScaleUpdateDetails)? onScaleUpdate;
+  final Function()? onTap;
   final IconData icon;
   final MouseCursor cursor;
+  final double buttonRadius;
 
-  const DraggablePoint({
+  const InteractivePoint({
     super.key,
-    required this.onDrag,
+    this.onScaleUpdate,
+    this.onTap,
     required this.icon,
     required this.cursor,
+    required this.buttonRadius,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: cursor,
-      child: Container(
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          border: Border.all(width: 0.2),
-          borderRadius: BorderRadius.circular(100),
-          color: Colors.white,
-        ),
-        child: Icon(
-          icon,
-          color: const Color(0xFF000000),
-          size: 20,
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(100),
+        color: Colors.white,
+      ),
+      child: MouseRegion(
+        cursor: cursor,
+        child: GestureDetector(
+          onTap: onTap,
+          onScaleUpdate: onScaleUpdate,
+          child: Icon(
+            icon,
+            color: const Color(0xFF000000),
+            size: buttonRadius * 2,
+          ),
         ),
       ),
     );

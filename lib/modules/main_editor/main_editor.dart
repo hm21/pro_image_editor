@@ -26,6 +26,7 @@ import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../utils/image_helpers.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
+import '../text_editor/text_editor.dart';
 import 'utils/desktop_interaction_manager.dart';
 import 'utils/main_editor_callbacks.dart';
 import 'utils/screen_size_helper.dart';
@@ -49,7 +50,6 @@ import '../filter_editor/filter_editor.dart';
 import '../filter_editor/widgets/filter_editor_item_list.dart';
 import '../blur_editor.dart';
 import '../paint_editor/paint_editor.dart';
-import '../text_editor.dart';
 import '../../utils/debounce.dart';
 import '../../models/editor_configs/pro_image_editor_configs.dart';
 import '../../mixins/converted_configs.dart';
@@ -388,7 +388,10 @@ class ProImageEditorState extends State<ProImageEditor>
   int _deviceOrientation = 0;
 
   /// Getter for the active layer currently being edited.
-  Layer get _activeLayer => activeLayers[_selectedLayerIndex];
+  Layer? get _activeLayer =>
+      activeLayers.length > _selectedLayerIndex && _selectedLayerIndex >= 0
+          ? activeLayers[_selectedLayerIndex]
+          : null;
 
   /// Get the list of layers from the current image editor changes.
   List<Layer> get activeLayers =>
@@ -658,7 +661,7 @@ class ProImageEditorState extends State<ProImageEditor>
       return;
     }
 
-    if (_whatsAppHelper.filterShowHelper > 0) return;
+    if (_whatsAppHelper.filterShowHelper > 0 || _activeLayer == null) return;
 
     _layerInteraction.enabledHitDetection = false;
     if (detail.pointerCount == 1) {
@@ -666,7 +669,7 @@ class ProImageEditorState extends State<ProImageEditor>
           configs.paintEditorConfigs.freeStyleHighPerformanceMoving ??
               isWebMobile;
       _layerInteraction.calculateMovement(
-        activeLayer: _activeLayer,
+        activeLayer: _activeLayer!,
         context: context,
         detail: detail,
         screenMiddleX: _screenSize.screenMiddleX,
@@ -679,7 +682,7 @@ class ProImageEditorState extends State<ProImageEditor>
           configs.paintEditorConfigs.freeStyleHighPerformanceScaling ??
               !isDesktop;
       _layerInteraction.calculateScale(
-        activeLayer: _activeLayer,
+        activeLayer: _activeLayer!,
         detail: detail,
         screenPaddingHelper: _screenSize.screenPaddingHelper,
         configEnabledHitVibration: configs.helperLines.hitVibration,
@@ -1581,9 +1584,10 @@ class ProImageEditorState extends State<ProImageEditor>
       return Listener(
         onPointerSignal: isDesktop
             ? (event) {
+                if (_activeLayer == null) return;
                 _desktopInteractionManager.mouseScroll(
                   event,
-                  activeLayer: _activeLayer,
+                  activeLayer: _activeLayer!,
                   selectedLayerIndex: _selectedLayerIndex,
                 );
               }
@@ -1621,7 +1625,8 @@ class ProImageEditorState extends State<ProImageEditor>
                                 hitTestBehavior: HitTestBehavior.translucent,
                                 cursor: snapshot.data != true
                                     ? SystemMouseCursors.basic
-                                    : configs.imageEditorTheme.layerHoverCursor,
+                                    : configs.imageEditorTheme.layerInteraction
+                                        .hoverCursor,
                                 onHover: isDesktop
                                     ? (event) {
                                         var hasHit = activeLayers.indexWhere(
@@ -1930,20 +1935,16 @@ class ProImageEditorState extends State<ProImageEditor>
 
           return LayerWidget(
             key: ValueKey('${layerItem.id}-$i'),
-            layerHoverCursor: configs.imageEditorTheme.layerHoverCursor,
+            configs: configs,
             padding: _selectedLayerIndex < 0
                 ? EdgeInsets.zero
                 : _screenSize.screenPaddingHelper,
             layerData: layerItem,
-            textFontSize: configs.textEditorConfigs.initFontSize,
-            emojiTextStyle: configs.emojiEditorConfigs.textStyle,
             enableHitDetection: _layerInteraction.enabledHitDetection,
             freeStyleHighPerformanceScaling:
                 _layerInteraction.freeStyleHighPerformanceScaling,
             freeStyleHighPerformanceMoving:
                 _layerInteraction.freeStyleHighPerformanceMoving,
-            designMode: configs.designMode,
-            stickerInitWidth: configs.stickerEditorConfigs?.initWidth ?? 100,
             onTap: (layer) async {
               if (layer is TextLayerData) {
                 _onTextLayerTap(layer);
@@ -1970,7 +1971,6 @@ class ProImageEditorState extends State<ProImageEditor>
               });
               widget.onUpdateUI?.call();
             },
-            i18n: configs.i18n,
           );
         }).toList(),
       ),
