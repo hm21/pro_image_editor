@@ -152,10 +152,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Reorder layer level
 - ✅ WhatsApp Theme
 - ✅ Movable background image
+- ✅ Improved layer movement and scaling functionality for desktop devices
 
 
 #### Future Features
-- ✨ Improved layer movement and scaling functionality for desktop devices
 - ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 
 
@@ -172,6 +172,9 @@ To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE
 ### Web
 
 If you're displaying emoji on the web and want them to be colored by default (especially if you're not using a custom font like Noto Emoji), you can achieve this by adding the `useColorEmoji: true` parameter to your `index.html`, as shown in the code snippet below:
+
+<details>
+  <summary>Show code example</summary>
 
 ```html
 <body>
@@ -193,11 +196,16 @@ If you're displaying emoji on the web and want them to be colored by default (es
   </script>
 </body>
 ```
+</details>
+
 <br/>
 
 To ensure compatibility with older Android phones and ensure that all filters you use work correctly, it's advisable to consider using the Canvaskit renderer. The default HTML renderer may encounter issues with certain filters on some devices.
 
 To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `index.html`:
+
+<details>
+  <summary>Show code example</summary>
 
 ```html
 <body>
@@ -220,6 +228,8 @@ To enable the Canvaskit renderer by default for better compatibility with mobile
   </script>
 </body>
 ```
+</details>
+<br/>
 
 By making this change, you can enhance filter compatibility and ensure a smoother experience on older Android phones and various mobile web devices.
 
@@ -287,6 +297,9 @@ Widget build(BuildContext context) {
 #### Own stickers or widgets
 
 To display stickers or widgets in the ProImageEditor, you have the flexibility to customize and load your own content. The `buildStickers` method allows you to define your own logic for loading stickers, whether from a backend, assets, or local storage, and then push them into the editor. The example below demonstrates how to load images that can serve as stickers and then add them to the editor:
+
+<details>
+  <summary>Show code example</summary>
 
 ```dart
 ProImageEditor.network(
@@ -365,12 +378,16 @@ ProImageEditor.network(
   ),
 ),
 ```
+</details>
 
 #### WhatsApp design
 
 The image editor offers a WhatsApp-themed option that mirrors the popular messaging app's design.
 The editor also follows the small changes that exist in the Material (Android) and Cupertino (iOS) version.
 
+<details>
+  <summary>Show code example</summary>
+  
 ```dart
 Navigator.of(context).push(
   MaterialPageRoute(
@@ -589,11 +606,14 @@ Navigator.of(context).push(
   ),
 );
 ```
-
+</details>
 
 #### Highly configurable
 
 Customize the image editor to suit your preferences. Of course, each class like `I18nTextEditor` includes more configuration options.
+
+<details>
+  <summary>Show code example</summary>
 
 ```dart
 return Scaffold(
@@ -730,10 +750,14 @@ return Scaffold(
     )
 );
 ```
+</details>
 
 #### Custom AppBar
 
 Customize the AppBar with your own widgets. The same is also possible with the BottomBar.
+
+<details>
+  <summary>Show code example</summary>
 
 ```dart
 import 'dart:async';
@@ -1088,12 +1112,17 @@ class DemoState extends State<Demo> {
   }
 }
 ```
+</details>
 
 #### Import-Export state history
 
 The state history from the image editor can be exported and imported. However, it's important to note that the crop and rotate feature currently only allows exporting the final cropped image and not individual states. Additionally, all sticker widgets are converted into images and saved in that format during the export process.
 
 ##### Export example
+
+
+<details>
+  <summary>Show code example</summary>
 
 ```dart
  await _editor.currentState?.exportStateHistory(
@@ -1109,7 +1138,13 @@ The state history from the image editor can be exported and imported. However, i
     ),
   ).toJson(); // or => toMap(), toFile()
 ```
+</details>
+
 ##### Import example
+
+<details>
+  <summary>Show code example</summary>
+
 ```dart
  _editor.currentState?.importStateHistory(
     // or => fromMap(), fromJsonFile()
@@ -1122,10 +1157,14 @@ The state history from the image editor can be exported and imported. However, i
     ),
   );
 ```
+</details>
 
 ##### Initial import example
 
 If you wish to open the editor directly with your exported state history, you can do so by utilizing the import feature. Simply load the exported state history into the editor, and it will recreate the previous editing session, allowing you to continue where you left off.
+
+<details>
+  <summary>Show code example</summary>
 
 ```dart
 ProImageEditor.memory(
@@ -1145,7 +1184,7 @@ ProImageEditor.memory(
   ),
 );
 ```
-
+</details>
 
 ## Documentation
 
@@ -1658,5 +1697,6 @@ This package uses several Flutter packages to provide a seamless editing experie
 - [screenshot](https://pub.dev/packages/screenshot)
 - [vibration](https://pub.dev/packages/vibration)
 - [http](https://pub.dev/packages/http)
+- [defer_pointer](https://pub.dev/packages/defer_pointer)
 
 These packages play a crucial role in enabling various features and functionalities in this package.

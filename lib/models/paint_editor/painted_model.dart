@@ -41,12 +41,12 @@ class PaintedModel {
 
   /// Creates a new PaintedModel instance.
   ///
-  /// [mode]: The mode indicating the type of shape or drawing.
-  /// [offsets]: The list of offsets representing the points of the shape.
-  /// [color]: The color used for drawing or filling.
-  /// [strokeWidth]: The width of the stroke used for drawing.
-  /// [fill]: A boolean indicating whether the shape should be filled.
-  /// [hit]: A boolean flag indicating whether this unit of drawing has been hit.
+  /// - [mode]: The mode indicating the type of shape or drawing.
+  /// - [offsets]: The list of offsets representing the points of the shape.
+  /// - [color]: The color used for drawing or filling.
+  /// - [strokeWidth]: The width of the stroke used for drawing.
+  /// - [fill]: A boolean indicating whether the shape should be filled.
+  /// - [hit]: A boolean flag indicating whether this unit of drawing has been hit.
   PaintedModel({
     required this.mode,
     required this.offsets,

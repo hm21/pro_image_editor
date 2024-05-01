@@ -2,6 +2,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/models/theme/theme_layer_interaction.dart';
+import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../../utils/debounce.dart';
@@ -87,12 +90,68 @@ class LayerInteractionHelper {
   /// Span for detecting hits on layers.
   final double hitSpan = 10;
 
+  /// The ID of the currently selected layer.
+  String selectedLayerId = '';
+
+  /// Helper variable for scaling during rotation of a layer.
+  double? rotateScaleLayerScaleHelper;
+
+  /// Helper variable for storing the size of a layer during rotation and scaling operations.
+  Size? rotateScaleLayerSizeHelper;
+
   /// Last recorded X-axis position for layers.
   LayerLastPosition lastPositionX = LayerLastPosition.center;
 
   /// Last recorded Y-axis position for layers.
   LayerLastPosition lastPositionY = LayerLastPosition.center;
 
+  /// Determines if layers are selectable based on the configuration and device type.
+  bool layersAreSelectable(ProImageEditorConfigs configs) {
+    if (configs.layerInteraction.selectable ==
+        LayerInteractionSelectable.auto) {
+      return isDesktop;
+    }
+    return configs.layerInteraction.selectable ==
+        LayerInteractionSelectable.enabled;
+  }
+
+  /// Calculates scaling and rotation based on user interactions.
+  calculateInteractiveButtonScaleRotate({
+    required ScaleUpdateDetails details,
+    required Layer activeLayer,
+    required EdgeInsets screenPaddingHelper,
+    required bool configEnabledHitVibration,
+    required ThemeLayerInteraction layerTheme,
+  }) {
+    Offset layerOffset = Offset(
+      activeLayer.offset.dx + screenPaddingHelper.left,
+      activeLayer.offset.dy + screenPaddingHelper.top,
+    );
+    Size activeSize = rotateScaleLayerSizeHelper!;
+
+    final touchPositionFromCenter = details.focalPoint - layerOffset;
+
+    double newDistance = touchPositionFromCenter.distance;
+
+    double margin = layerTheme.buttonRadius + layerTheme.strokeWidth * 2;
+    var realSize = Offset(
+          activeSize.width / 2 - margin,
+          activeSize.height / 2 - margin,
+        ) /
+        rotateScaleLayerScaleHelper!;
+
+    activeLayer.scale = newDistance / realSize.distance;
+    activeLayer.rotation = touchPositionFromCenter.direction -
+        (45 / activeSize.aspectRatio * pi / 180);
+
+    checkRotationLine(
+      activeLayer: activeLayer,
+      screenPaddingHelper: screenPaddingHelper,
+      configEnabledHitVibration: configEnabledHitVibration,
+    );
+  }
+
+  /// Calculates movement of a layer based on user interactions, considering various conditions such as hit areas and screen boundaries.
   calculateMovement({
     required BuildContext context,
     required ScaleUpdateDetails detail,
@@ -174,7 +233,8 @@ class LayerInteractionHelper {
     }
   }
 
-  calculateScale({
+  /// Calculates scaling and rotation of a layer based on user interactions.
+  calculateScaleRotate({
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
     required EdgeInsets screenPaddingHelper,
@@ -185,13 +245,30 @@ class LayerInteractionHelper {
     activeLayer.scale = baseScaleFactor * detail.scale;
     activeLayer.rotation = baseAngleFactor + detail.rotation;
 
-    var hitSpanX = hitSpan / 2;
-    var deg = activeLayer.rotation * 180 / pi;
-    var degChange = detail.rotation * 180 / pi;
-    var degHit = (snapStartRotation + degChange) % 45;
-    var hitAreaBelow = degHit <= hitSpanX;
-    var hitAreaAfter = degHit >= 45 - hitSpanX;
-    var hitArea = hitAreaBelow || hitAreaAfter;
+    checkRotationLine(
+      activeLayer: activeLayer,
+      screenPaddingHelper: screenPaddingHelper,
+      configEnabledHitVibration: configEnabledHitVibration,
+    );
+
+    scaleDebounce(() => _activeScale = false);
+  }
+
+  /// Checks the rotation line based on user interactions, adjusting rotation accordingly.
+  checkRotationLine({
+    required Layer activeLayer,
+    required EdgeInsets screenPaddingHelper,
+    required bool configEnabledHitVibration,
+  }) {
+    double rotation = activeLayer.rotation - baseAngleFactor;
+    double hitSpanX = hitSpan / 2;
+    double deg = activeLayer.rotation * 180 / pi;
+    double degChange = rotation * 180 / pi;
+    double degHit = (snapStartRotation + degChange) % 45;
+
+    bool hitAreaBelow = degHit <= hitSpanX;
+    bool hitAreaAfter = degHit >= 45 - hitSpanX;
+    bool hitArea = hitAreaBelow || hitAreaAfter;
 
     if ((!showRotationHelperLine &&
             ((degHit > 0 && degHit <= hitSpanX && snapLastRotation < deg) ||
@@ -219,10 +296,9 @@ class LayerInteractionHelper {
       showRotationHelperLine = false;
       rotationStartedHelper = true;
     }
-
-    scaleDebounce(() => _activeScale = false);
   }
 
+  /// Handles cleanup and resets various flags and states after scaling interaction ends.
   onScaleEnd() {
     enabledHitDetection = true;
     freeStyleHighPerformanceScaling = false;

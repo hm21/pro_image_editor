@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 import '../utils/example_helper.dart';
@@ -156,7 +157,6 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
         ),
         customWidgets: const ImageEditorCustomWidgets(),
         imageEditorTheme: const ImageEditorTheme(
-          layerHoverCursor: SystemMouseCursors.move,
           helperLine: HelperLineTheme(
             horizontalColor: Color.fromARGB(255, 15, 196, 60),
             verticalColor: Color.fromARGB(255, 15, 196, 60),
@@ -275,13 +275,22 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
           initialColor: Color.fromARGB(255, 8, 170, 49),
           initialPaintMode: PaintModeE.freeStyle,
         ),
-        textEditorConfigs: const TextEditorConfigs(
+        textEditorConfigs: TextEditorConfigs(
           enabled: true,
           canToggleTextAlign: true,
           canToggleBackgroundMode: true,
           initFontSize: 24.0,
           initialTextAlign: TextAlign.center,
           initialBackgroundColorMode: LayerBackgroundColorModeE.background,
+          customTextStyles: [
+            GoogleFonts.roboto(),
+            GoogleFonts.averiaLibre(),
+            GoogleFonts.lato(),
+            GoogleFonts.comicNeue(),
+            GoogleFonts.actor(),
+            GoogleFonts.odorMeanChey(),
+            GoogleFonts.nabla(),
+          ],
         ),
         cropRotateEditorConfigs: const CropRotateEditorConfigs(
           enabled: true,

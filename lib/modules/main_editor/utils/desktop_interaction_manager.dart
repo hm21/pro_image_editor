@@ -19,6 +19,9 @@ class DesktopInteractionManager {
   final Function setState;
   final ProImageEditorConfigs configs;
 
+  bool _ctrlDown = false;
+  bool _shiftDown = false;
+
   DesktopInteractionManager({
     required this.context,
     required this.onUpdateUI,
@@ -36,39 +39,63 @@ class DesktopInteractionManager {
     required bool canPressEscape,
     required bool isEditorOpen,
     required Function onCloseEditor,
+    required Function(bool) onUndoRedo,
   }) {
     final key = event.logicalKey.keyLabel;
-
-    if (context.mounted && event is KeyDownEvent) {
-      switch (key) {
-        case 'Escape':
-          if (canPressEscape) {
-            if (isEditorOpen) {
-              Navigator.pop(context);
-            } else {
-              onCloseEditor();
+    if (context.mounted) {
+      if (event is KeyDownEvent) {
+        switch (key) {
+          case 'Escape':
+            if (canPressEscape) {
+              if (isEditorOpen) {
+                Navigator.pop(context);
+              } else {
+                onCloseEditor();
+              }
             }
-          }
-          break;
+            break;
 
-        case 'Subtract':
-        case 'Numpad Subtract':
-        case 'Page Down':
-        case 'Arrow Down':
-          _keyboardZoom(zoomIn: true, activeLayer: activeLayer);
-          break;
-        case 'Add':
-        case 'Numpad Add':
-        case 'Page Up':
-        case 'Arrow Up':
-          _keyboardZoom(zoomIn: false, activeLayer: activeLayer);
-          break;
-        case 'Arrow Left':
-          _keyboardRotate(left: true, activeLayer: activeLayer);
-          break;
-        case 'Arrow Right':
-          _keyboardRotate(left: false, activeLayer: activeLayer);
-          break;
+          case 'Subtract':
+          case 'Numpad Subtract':
+          case 'Page Down':
+          case 'Arrow Down':
+            _keyboardZoom(zoomIn: true, activeLayer: activeLayer);
+            break;
+          case 'Add':
+          case 'Numpad Add':
+          case 'Page Up':
+          case 'Arrow Up':
+            _keyboardZoom(zoomIn: false, activeLayer: activeLayer);
+            break;
+          case 'Arrow Left':
+            _keyboardRotate(left: true, activeLayer: activeLayer);
+            break;
+          case 'Arrow Right':
+            _keyboardRotate(left: false, activeLayer: activeLayer);
+            break;
+          case 'Control Left':
+          case 'Control Right':
+            _ctrlDown = true;
+            break;
+          case 'Shift Left':
+          case 'Shift Right':
+            _shiftDown = true;
+            break;
+          case 'Z':
+            if (_ctrlDown) onUndoRedo(!_shiftDown);
+            break;
+        }
+      } else if (event is KeyUpEvent) {
+        switch (key) {
+          case 'Control Left':
+          case 'Control Right':
+            _ctrlDown = false;
+            break;
+          case 'Shift Left':
+          case 'Shift Right':
+            _shiftDown = false;
+            break;
+        }
       }
     }
 

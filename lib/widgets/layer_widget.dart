@@ -2,20 +2,23 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/theme_functions.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
-import '../models/i18n/i18n.dart';
+import '../mixins/converted_configs.dart';
+import '../mixins/editor_configs_mixin.dart';
 import '../models/layer.dart';
 import '../modules/paint_editor/utils/draw/draw_canvas.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
-import '../utils/design_mode.dart';
-import 'dashed_border.dart';
+import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
 import 'pro_image_editor_desktop_mode.dart';
 
 /// A widget representing a layer within a design canvas.
-class LayerWidget extends StatefulWidget {
+class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
+  @override
+  final ProImageEditorConfigs configs;
+
   /// Data for the layer.
   final Layer layerData;
 
@@ -31,26 +34,14 @@ class LayerWidget extends StatefulWidget {
   /// Callback for removing the layer.
   final Function() onRemoveTap;
 
+  /// Callback for editing the layer.
+  final Function() onEditTap;
+
+  final Function(PointerDownEvent, Size)? onScaleRotateDown;
+  final Function(PointerUpEvent)? onScaleRotateUp;
+
   /// Padding for positioning the layer within the canvas.
   final EdgeInsets padding;
-
-  /// The cursor to be displayed when hovering over the layer.
-  final SystemMouseCursor layerHoverCursor;
-
-  /// Internationalization support.
-  final I18n i18n;
-
-  /// Font size for text layers.
-  final TextStyle emojiTextStyle;
-
-  /// Font size for text layers.
-  final double textFontSize;
-
-  /// The initial width of the stickers in the editor.
-  final double stickerInitWidth;
-
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
 
   /// Enables high-performance scaling for free-style drawing when set to `true`.
   ///
@@ -68,30 +59,40 @@ class LayerWidget extends StatefulWidget {
   /// When set to `true`, it allows detecting user interactions with the interface.
   final bool enableHitDetection;
 
+  /// Indicates whether the layer is selected.
+  final bool selected;
+
+  /// Indicates whether the layer is interactive.
+  final bool isInteractive;
+
   /// Creates a [LayerWidget] with the specified properties.
-  const LayerWidget(
-      {super.key,
-      required this.padding,
-      required this.layerData,
-      required this.onTapDown,
-      required this.onTapUp,
-      required this.onTap,
-      required this.layerHoverCursor,
-      required this.onRemoveTap,
-      required this.i18n,
-      required this.textFontSize,
-      required this.stickerInitWidth,
-      required this.emojiTextStyle,
-      required this.enableHitDetection,
-      required this.freeStyleHighPerformanceScaling,
-      required this.freeStyleHighPerformanceMoving,
-      required this.designMode});
+  const LayerWidget({
+    super.key,
+    this.onScaleRotateDown,
+    this.onScaleRotateUp,
+    required this.configs,
+    required this.padding,
+    required this.layerData,
+    required this.onTapDown,
+    required this.onTapUp,
+    required this.onTap,
+    required this.onEditTap,
+    required this.onRemoveTap,
+    required this.enableHitDetection,
+    required this.freeStyleHighPerformanceScaling,
+    required this.freeStyleHighPerformanceMoving,
+    this.selected = false,
+    this.isInteractive = false,
+  });
 
   @override
   createState() => _LayerWidgetState();
 }
 
-class _LayerWidgetState extends State<LayerWidget> {
+class _LayerWidgetState extends State<LayerWidget>
+    with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
+  final _layerKey = GlobalKey();
+
   /// The type of layer being represented.
   late _LayerType _layerType;
 
@@ -214,48 +215,84 @@ class _LayerWidgetState extends State<LayerWidget> {
   Widget _buildPosition() {
     Matrix4 transformMatrix = _calcTransformMatrix();
     return Hero(
+      key: _layerKey,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
       tag: widget.layerData.hashCode,
-      child: Container(
+      child: Transform(
         transform: transformMatrix,
-        transformAlignment: Alignment.center,
-        child: LayerDashedBorderHelper(
-          layerData: widget.layerData,
-          color: const Color(0xFF000000),
-          child: MouseRegion(
-            hitTestBehavior: HitTestBehavior.translucent,
-            cursor:
-                _showMoveCursor ? widget.layerHoverCursor : MouseCursor.defer,
-            onEnter: (event) {
-              if (_layerType != _LayerType.canvas) {
-                setState(() {
-                  _showMoveCursor = true;
-                });
-              }
-            },
-            onExit: (event) {
-              if (_layerType == _LayerType.canvas) {
-                (widget.layerData as PaintingLayerData).item.hit = false;
-              } else {
-                setState(() {
-                  _showMoveCursor = false;
-                });
-              }
-            },
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-              onTap: _onTap,
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerDown: _onPointerDown,
-                onPointerUp: _onPointerUp,
-                child: FittedBox(
-                  child: _buildContent(),
+        alignment: Alignment.center,
+        child: Stack(
+          children: [
+            LayerInteractionHelperWidget(
+              layerData: widget.layerData,
+              configs: configs,
+              selected: widget.selected,
+              onEditLayer: widget.onEditTap,
+              isInteractive: widget.isInteractive,
+              onScaleRotateDown: (details) {
+                widget.onScaleRotateDown
+                    ?.call(details, context.size ?? Size.zero);
+              },
+              onScaleRotateUp: widget.onScaleRotateUp,
+              onRemoveLayer: widget.onRemoveTap,
+              child: MouseRegion(
+                hitTestBehavior: HitTestBehavior.translucent,
+                cursor: _showMoveCursor
+                    ? imageEditorTheme.layerInteraction.hoverCursor
+                    : MouseCursor.defer,
+                onEnter: (event) {
+                  if (_layerType != _LayerType.canvas) {
+                    setState(() {
+                      _showMoveCursor = true;
+                    });
+                  }
+                },
+                onExit: (event) {
+                  if (_layerType == _LayerType.canvas) {
+                    (widget.layerData as PaintingLayerData).item.hit = false;
+                  } else {
+                    setState(() {
+                      _showMoveCursor = false;
+                    });
+                  }
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+                  onTap: _onTap,
+                  child: Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: _onPointerDown,
+                    onPointerUp: _onPointerUp,
+                    child: Padding(
+                      padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
+                      child: FittedBox(
+                        child: _buildContent(),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            /*     Positioned(
+              bottom: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              right: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              child: Container(
+                width: 105.7,
+                height: 115,
+                color: Colors.amber,
+              ),
+            ),
+            Positioned(
+              top: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              left: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              child: Container(
+                width: 105.7,
+                height: 115,
+                color: Colors.deepOrange,
+              ),
+            ), */
+          ],
         ),
       ),
     );
@@ -291,7 +328,7 @@ class _LayerWidgetState extends State<LayerWidget> {
 
   /// Build the text widget
   Widget _buildText() {
-    var fontSize = widget.textFontSize * _layer.scale;
+    var fontSize = textEditorConfigs.initFontSize * _layer.scale;
     var layer = _layer as TextLayerData;
     var style = TextStyle(
       fontSize: fontSize * layer.fontScale,
@@ -331,12 +368,12 @@ class _LayerWidgetState extends State<LayerWidget> {
     return Material(
       // Prevent hero animation bug
       type: MaterialType.transparency,
-      textStyle: platformTextStyle(context, widget.designMode),
+      textStyle: platformTextStyle(context, designMode),
       child: Text(
         layer.emoji.toString(),
         textAlign: TextAlign.center,
-        style: widget.emojiTextStyle.copyWith(
-          fontSize: widget.textFontSize * _layer.scale,
+        style: emojiEditorConfigs.textStyle.copyWith(
+          fontSize: textEditorConfigs.initFontSize * _layer.scale,
         ),
       ),
     );
@@ -346,7 +383,7 @@ class _LayerWidgetState extends State<LayerWidget> {
   Widget _buildSticker() {
     var layer = _layer as StickerLayerData;
     return SizedBox(
-      width: widget.stickerInitWidth * layer.scale,
+      width: (stickerEditorConfigs?.initWidth ?? 100) * layer.scale,
       child: FittedBox(
         fit: BoxFit.contain,
         child: layer.sticker,

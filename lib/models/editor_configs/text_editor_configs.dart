@@ -48,12 +48,8 @@ class TextEditorConfigs {
   /// The initial background color mode for the layer.
   final LayerBackgroundColorModeE initialBackgroundColorMode;
 
-  /// When the theme mode is set to WhatsApp, users should be able to select
-  /// their own fonts in the text editor, similar to the font selection list at
-  /// the bottom of WhatsApp.
-  ///
-  /// Available in the WhatsApp theme only.
-  final List<TextStyle>? whatsAppCustomTextStyles;
+  /// Allow users to select a different font style
+  final List<TextStyle>? customTextStyles;
 
   /// Creates an instance of TextEditorConfigs with optional settings.
   ///
@@ -69,7 +65,7 @@ class TextEditorConfigs {
     this.initFontScale = 1.0,
     this.maxFontScale = 3.0,
     this.minFontScale = 0.3,
-    this.whatsAppCustomTextStyles,
+    this.customTextStyles,
     this.initialBackgroundColorMode =
         LayerBackgroundColorModeE.backgroundAndColor,
   });

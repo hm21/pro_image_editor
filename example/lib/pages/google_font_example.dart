@@ -38,6 +38,17 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
       onImageEditingComplete: onImageEditingComplete,
       onCloseEditor: onCloseEditor,
       configs: ProImageEditorConfigs(
+        textEditorConfigs: TextEditorConfigs(
+          customTextStyles: [
+            GoogleFonts.roboto(),
+            GoogleFonts.averiaLibre(),
+            GoogleFonts.lato(),
+            GoogleFonts.comicNeue(),
+            GoogleFonts.actor(),
+            GoogleFonts.odorMeanChey(),
+            GoogleFonts.nabla(),
+          ],
+        ),
         emojiEditorConfigs: EmojiEditorConfigs(
           checkPlatformCompatibility: false,
           textStyle: DefaultEmojiTextStyle.copyWith(
