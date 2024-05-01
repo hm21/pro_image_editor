@@ -33,6 +33,7 @@ void main() {
                   expect(layer, equals(layer));
                 },
                 configs: const ProImageEditorConfigs(),
+                onEditTap: () {},
                 onRemoveTap: () {},
                 enableHitDetection: true,
                 freeStyleHighPerformanceScaling: true,

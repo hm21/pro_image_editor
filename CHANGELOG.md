@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 2.7.0
+- **feat**: Layers can now be selected for rotation, scaling, and deletion, enhancing user control and editing capabilities.
+- **feat**: Improved functionality particularly on desktop devices, where users can now manipulate layers more efficiently.
+- **feat**: Introduced keyboard shortcuts: **Ctrl+Z** for undo and **Ctrl+Shift+Z** for redo actions, streamlining workflow and enhancing user experience.
+- **fix**: Fixed an issue where rotated layers with unequal width and height couldn't be tapped in the corners, ensuring consistent interaction regardless of rotation.
+
 ## Version 2.6.8
 - **feat**: Renamed the property `whatsAppCustomTextStyles` to `customTextStyles` in the `TextEditorConfigs`. This change allows users to set multiple fonts also in the simple editor.
 - **feat**: Prepare some code for a new layer interaction feature that allows users to select a layer and then rotate or scale them.
@@ -94,7 +100,7 @@
 - **feat:** Enhance state history management
 
 ## Version 2.2.3
-- **Enhancement:** Improved the fly animation within the Hero widget to provide a smoother and more visually appealing experience.
+- **feat:** Improved the fly animation within the Hero widget to provide a smoother and more visually appealing experience.
 
 ## Version 2.2.2
 - **fix:** example bug for `emojiSet`, details in [GitHub issue #2](https://github.com/hm21/pro_image_editor/issues/2)
@@ -103,32 +109,32 @@
 - **fix:** close warning bug, details in [GitHub issue #1](https://github.com/hm21/pro_image_editor/issues/1)
 
 ## Version 2.2.0
-- Added functionality to extend the bottomAppBar with custom widgets, providing users with more flexibility in customizing the bottom bar.
+- **feat:** Added functionality to extend the bottomAppBar with custom widgets, providing users with more flexibility in customizing the bottom bar.
 
 ## Version 2.1.1
-- Improved Dart code formatting
+- **style** Improved Dart code formatting
 
 ## Version 2.1.0
-- Added functionality to extend the appbar with custom widgets, providing users with more flexibility in customizing the app's header.
+- **feat:** Added functionality to extend the appbar with custom widgets, providing users with more flexibility in customizing the app's header.
 
 ## Version 2.0.0
-- Introducing the "Sticker" editor for seamless loading of stickers and widgets directly into the editor.
+- **feat:** Introducing the "Sticker" editor for seamless loading of stickers and widgets directly into the editor.
 
 ## Version 1.0.3
-- Update README.md with improved preview image
+- **docs** Update README.md with improved preview image
 
 ## Version 1.0.2
-- Improved accessibility: `ProImageEditorConfigs` is now directly exported for easier integration and usage.
+- **feat:** Improved accessibility: `ProImageEditorConfigs` is now directly exported for easier integration and usage.
 
 
 ## Version 1.0.1
-- Updated images in README.md for enhanced clarity
-- Formatted Dart code across various modules for improved consistency
-- Added documentation to adaptive_dialog.dart for better code understanding
+- **docs** Updated images in README.md for enhanced clarity
+- **docs** Added documentation to adaptive_dialog.dart for better code understanding
+- **style** Formatted Dart code across various modules for improved consistency
 
 ## Version 1.0.0
-- Implement PaintingEditor
-- Implement TextEditor
-- Implement CropRotateEditor
-- Implement FilterEditor
-- Implement EmojiEditor
+- **feat:** PaintingEditor
+- **feat:** TextEditor
+- **feat:** CropRotateEditor
+- **feat:** FilterEditor
+- **feat:** EmojiEditor

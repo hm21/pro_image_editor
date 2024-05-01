@@ -139,12 +139,6 @@ class ImageEditorTheme {
   final ThemeEditorMode editorMode;
 
   /// Theme for the layer interaction settings.
-  ///
-  /// Note: This theme is currently in development and does not function
-  /// as intended. It is prepared for future releases and will be implemented
-  /// in a later version.
-  ///
-  /// TODO: Document the [layerInteraction] field.
   final ThemeLayerInteraction layerInteraction;
 
   /// Creates an instance of the `ImageEditorTheme` class with the specified theme properties.

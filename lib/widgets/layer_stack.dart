@@ -51,6 +51,7 @@ class _LayerStackState extends State<LayerStack> {
                   onTap: (layerData) async {},
                   onTapUp: () {},
                   onTapDown: () {},
+                  onEditTap: () {},
                   onRemoveTap: () {},
                   enableHitDetection: false,
                   freeStyleHighPerformanceScaling: false,

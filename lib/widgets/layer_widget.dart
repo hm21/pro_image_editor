@@ -11,7 +11,7 @@ import '../mixins/editor_configs_mixin.dart';
 import '../models/layer.dart';
 import '../modules/paint_editor/utils/draw/draw_canvas.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
-import 'dashed_border.dart';
+import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
 import 'pro_image_editor_desktop_mode.dart';
 
 /// A widget representing a layer within a design canvas.
@@ -34,6 +34,12 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   /// Callback for removing the layer.
   final Function() onRemoveTap;
 
+  /// Callback for editing the layer.
+  final Function() onEditTap;
+
+  final Function(PointerDownEvent, Size)? onScaleRotateDown;
+  final Function(PointerUpEvent)? onScaleRotateUp;
+
   /// Padding for positioning the layer within the canvas.
   final EdgeInsets padding;
 
@@ -53,19 +59,30 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   /// When set to `true`, it allows detecting user interactions with the interface.
   final bool enableHitDetection;
 
+  /// Indicates whether the layer is selected.
+  final bool selected;
+
+  /// Indicates whether the layer is interactive.
+  final bool isInteractive;
+
   /// Creates a [LayerWidget] with the specified properties.
   const LayerWidget({
     super.key,
+    this.onScaleRotateDown,
+    this.onScaleRotateUp,
     required this.configs,
     required this.padding,
     required this.layerData,
     required this.onTapDown,
     required this.onTapUp,
     required this.onTap,
+    required this.onEditTap,
     required this.onRemoveTap,
     required this.enableHitDetection,
     required this.freeStyleHighPerformanceScaling,
     required this.freeStyleHighPerformanceMoving,
+    this.selected = false,
+    this.isInteractive = false,
   });
 
   @override
@@ -198,86 +215,84 @@ class _LayerWidgetState extends State<LayerWidget>
   Widget _buildPosition() {
     Matrix4 transformMatrix = _calcTransformMatrix();
     return Hero(
+      key: _layerKey,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
       tag: widget.layerData.hashCode,
       child: Transform(
         transform: transformMatrix,
         alignment: Alignment.center,
-        child: LayerDashedBorderHelper(
-          key: _layerKey,
-          layerData: widget.layerData,
-          configs: configs,
-          onScaleRotate: (details) {
-            double w = (_layerKey.currentContext?.size?.width ?? 0) / 2;
-            double h = (_layerKey.currentContext?.size?.height ?? 0) / 2;
-            double d = sqrt(w * w + h * h);
-
-            double w1 = details.focalPointDelta.dx;
-            double h1 = details.focalPointDelta.dy;
-            double x = w1 * w1 + h1 * h1;
-            double d1 = sqrt(x);
-            if (w1 + h1 < 0) d1 *= -1;
-
-            widget.layerData.scale *= (d + d1) / d;
-
-            /*       widget.layerData.rotation -= (d + d1) / d / pi / 10;
-            print((d + d1) / d); */
-            setState(() {});
-          },
-          onRemoveLayer: widget.onRemoveTap,
-          child: MouseRegion(
-            hitTestBehavior: HitTestBehavior.translucent,
-            cursor: _showMoveCursor
-                ? imageEditorTheme.layerInteraction.hoverCursor
-                : MouseCursor.defer,
-            onEnter: (event) {
-              if (_layerType != _LayerType.canvas) {
-                setState(() {
-                  _showMoveCursor = true;
-                });
-              }
-            },
-            onExit: (event) {
-              if (_layerType == _LayerType.canvas) {
-                (widget.layerData as PaintingLayerData).item.hit = false;
-              } else {
-                setState(() {
-                  _showMoveCursor = false;
-                });
-              }
-            },
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-              onTap: _onTap,
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerDown: _onPointerDown,
-                onPointerUp: _onPointerUp,
-                child: FittedBox(
-                  child: _buildContent(),
+        child: Stack(
+          children: [
+            LayerInteractionHelperWidget(
+              layerData: widget.layerData,
+              configs: configs,
+              selected: widget.selected,
+              onEditLayer: widget.onEditTap,
+              isInteractive: widget.isInteractive,
+              onScaleRotateDown: (details) {
+                widget.onScaleRotateDown
+                    ?.call(details, context.size ?? Size.zero);
+              },
+              onScaleRotateUp: widget.onScaleRotateUp,
+              onRemoveLayer: widget.onRemoveTap,
+              child: MouseRegion(
+                hitTestBehavior: HitTestBehavior.translucent,
+                cursor: _showMoveCursor
+                    ? imageEditorTheme.layerInteraction.hoverCursor
+                    : MouseCursor.defer,
+                onEnter: (event) {
+                  if (_layerType != _LayerType.canvas) {
+                    setState(() {
+                      _showMoveCursor = true;
+                    });
+                  }
+                },
+                onExit: (event) {
+                  if (_layerType == _LayerType.canvas) {
+                    (widget.layerData as PaintingLayerData).item.hit = false;
+                  } else {
+                    setState(() {
+                      _showMoveCursor = false;
+                    });
+                  }
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+                  onTap: _onTap,
+                  child: Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: _onPointerDown,
+                    onPointerUp: _onPointerUp,
+                    child: Padding(
+                      padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
+                      child: FittedBox(
+                        child: _buildContent(),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            /* TODO: Fix: Detect also gesture outside from rotated box
-            OutsideGestureDetector(
-              behavior: OutsideHitTestBehavior.all,
-              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-              onTapDown: (details) => print(details),
-              onTap: _onTap,
-              child: OutsideListener(
-                behavior: OutsideHitTestBehavior.all,
-                onPointerDown: _onPointerDown,
-                onPointerUp: _onPointerUp,
-                onPointerHover: (event) {
-                  print(event);
-                },
-                child: FittedBox(
-                  child: _buildContent(),
-                ),
+            /*     Positioned(
+              bottom: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              right: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              child: Container(
+                width: 105.7,
+                height: 115,
+                color: Colors.amber,
+              ),
+            ),
+            Positioned(
+              top: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              left: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
+              child: Container(
+                width: 105.7,
+                height: 115,
+                color: Colors.deepOrange,
               ),
             ), */
-          ),
+          ],
         ),
       ),
     );

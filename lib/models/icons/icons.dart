@@ -63,12 +63,6 @@ class ImageEditorIcons {
   final IconsStickerEditor stickerEditor;
 
   /// Icons for the layer interaction settings.
-  ///
-  /// Note: This icons are currently in development and does not function
-  /// as intended. It is prepared for future releases and will be implemented
-  /// in a later version.
-  ///
-  /// TODO: Document the [layerInteraction] field.
   final IconsLayerInteraction layerInteraction;
 
   /// Creates an instance of [ImageEditorIcons] with customizable icon settings.
@@ -89,6 +83,7 @@ class ImageEditorIcons {
   /// - [blurEditor]: Customizable icons for the Blur Editor component.
   /// - [emojiEditor]: Customizable icons for the Emoji Editor component.
   /// - [stickerEditor]: Customizable icons for the Sticker Editor component.
+  /// - [layerInteraction]: Icons for the layer interaction settings.
   ///
   /// If no custom icons are provided, default icons are used for each action.
   ///

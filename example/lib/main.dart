@@ -1,3 +1,4 @@
+import 'package:example/pages/selectable_layer_example.dart';
 import 'package:flutter/material.dart';
 
 import 'pages/custom_appbar_bottombar_example.dart';
@@ -91,6 +92,8 @@ class _MyHomePageState extends State<MyHomePage> {
           HighlyConfigurableExample(),
           Divider(height: 1),
           ReorderLayerExample(),
+          Divider(height: 1),
+          SelectableLayerExample(),
         ],
       ),
     );

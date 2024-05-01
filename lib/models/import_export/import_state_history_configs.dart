@@ -11,8 +11,8 @@ class ImportEditorConfigs {
 
   /// Constructs an [ImportEditorConfigs] instance.
   ///
-  /// By default, [recalculateSizeAndPosition] is set to `true` and
-  /// [mergeMode] is set to [ImportEditorMergeMode.replace].
+  /// - [recalculateSizeAndPosition] is set to `true`
+  /// - [mergeMode] is set to [ImportEditorMergeMode.replace]
   const ImportEditorConfigs({
     this.recalculateSizeAndPosition = true,
     this.mergeMode = ImportEditorMergeMode.replace,

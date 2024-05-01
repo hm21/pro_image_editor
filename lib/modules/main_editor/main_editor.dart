@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:io';
 
 import 'package:colorfilter_generator/presets.dart';
+import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +25,7 @@ import 'package:vibration/vibration.dart';
 import '../../designs/whatsapp/whatsapp_filter_button.dart';
 import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
+import '../../utils/constants.dart';
 import '../../utils/image_helpers.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import '../text_editor/text_editor.dart';
@@ -469,6 +471,13 @@ class ProImageEditorState extends State<ProImageEditor>
       canPressEscape: !_activeCrop && !_openDialog,
       isEditorOpen: _isEditorOpen,
       onCloseEditor: closeEditor,
+      onUndoRedo: (undo) {
+        if (undo) {
+          undoAction();
+        } else {
+          redoAction();
+        }
+      },
     );
   }
 
@@ -612,6 +621,11 @@ class ProImageEditorState extends State<ProImageEditor>
     if (_selectedLayerIndex < 0) return;
 
     var layer = activeLayers[_selectedLayerIndex];
+
+    if (_layerInteraction.selectedLayerId != layer.id) {
+      _layerInteraction.selectedLayerId = '';
+    }
+
     _setTempLayer(layer);
     _layerInteraction.baseScaleFactor = layer.scale;
     _layerInteraction.baseAngleFactor = layer.rotation;
@@ -641,15 +655,15 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Handle updates during scaling.
   ///
   /// This method is called during a scaling operation and updates the selected layer's position and properties.
-  void _onScaleUpdate(ScaleUpdateDetails detail) {
+  void _onScaleUpdate(ScaleUpdateDetails details) {
     if (_selectedLayerIndex < 0) {
       if (configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
-        _whatsAppHelper.filterShowHelper -= detail.focalPointDelta.dy;
+        _whatsAppHelper.filterShowHelper -= details.focalPointDelta.dy;
         _whatsAppHelper.filterShowHelper =
             max(0, min(120, _whatsAppHelper.filterShowHelper));
 
         double pointerOffset =
-            _layerInteraction.snapStartPosY - detail.focalPoint.dy;
+            _layerInteraction.snapStartPosY - details.focalPoint.dy;
         if (pointerOffset > 20) {
           _swipeDirection = SwipeMode.up;
         } else if (pointerOffset < -20) {
@@ -663,29 +677,45 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (_whatsAppHelper.filterShowHelper > 0 || _activeLayer == null) return;
 
+    if (_layerInteraction.rotateScaleLayerSizeHelper != null) {
+      _layerInteraction.freeStyleHighPerformanceScaling =
+          configs.paintEditorConfigs.freeStyleHighPerformanceScaling ??
+              !isDesktop;
+      _layerInteraction.calculateInteractiveButtonScaleRotate(
+        activeLayer: _activeLayer!,
+        screenPaddingHelper: _screenSize.screenPaddingHelper,
+        configEnabledHitVibration: helperLines.hitVibration,
+        details: details,
+        layerTheme: imageEditorTheme.layerInteraction,
+      );
+      setState(() {});
+      widget.onUpdateUI?.call();
+      return;
+    }
+
     _layerInteraction.enabledHitDetection = false;
-    if (detail.pointerCount == 1) {
+    if (details.pointerCount == 1) {
       _layerInteraction.freeStyleHighPerformanceMoving =
           configs.paintEditorConfigs.freeStyleHighPerformanceMoving ??
               isWebMobile;
       _layerInteraction.calculateMovement(
         activeLayer: _activeLayer!,
         context: context,
-        detail: detail,
+        detail: details,
         screenMiddleX: _screenSize.screenMiddleX,
         screenMiddleY: _screenSize.screenMiddleY,
         screenPaddingHelper: _screenSize.screenPaddingHelper,
-        configEnabledHitVibration: configs.helperLines.hitVibration,
+        configEnabledHitVibration: helperLines.hitVibration,
       );
-    } else if (detail.pointerCount == 2) {
+    } else if (details.pointerCount == 2) {
       _layerInteraction.freeStyleHighPerformanceScaling =
           configs.paintEditorConfigs.freeStyleHighPerformanceScaling ??
               !isDesktop;
-      _layerInteraction.calculateScale(
+      _layerInteraction.calculateScaleRotate(
         activeLayer: _activeLayer!,
-        detail: detail,
+        detail: details,
         screenPaddingHelper: _screenSize.screenPaddingHelper,
-        configEnabledHitVibration: configs.helperLines.hitVibration,
+        configEnabledHitVibration: helperLines.hitVibration,
       );
     }
     setState(() {});
@@ -784,6 +814,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Widget page, {
     Duration duration = const Duration(milliseconds: 300),
   }) {
+    _layerInteraction.selectedLayerId = '';
     setState(() => _isEditorOpen = true);
     return Navigator.push<T?>(
       context,
@@ -797,11 +828,19 @@ class ProImageEditorState extends State<ProImageEditor>
             child: child,
           );
         },
-        pageBuilder: (context, animation, secondaryAnimation) => page,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          void animationStatusListener(AnimationStatus status) {
+            if (status == AnimationStatus.dismissed) {
+              setState(() => _isEditorOpen = false);
+              animation.removeStatusListener(animationStatusListener);
+            }
+          }
+
+          animation.addStatusListener(animationStatusListener);
+          return page;
+        },
       ),
-    ).whenComplete(() {
-      setState(() => _isEditorOpen = false);
-    });
+    );
   }
 
   /// Opens the painting editor.
@@ -894,6 +933,9 @@ class ProImageEditorState extends State<ProImageEditor>
           i18n: configs.i18n,
           message: configs.i18n.cropRotateEditor.prepareImageDialogMsg,
         );
+      setState(() {
+        _layerInteraction.selectedLayerId = '';
+      });
       bytesWithLayers = await _controllers.screenshot.capture(
         pixelRatio: _pixelRatio,
       );
@@ -1122,6 +1164,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Keyboard event handlers are temporarily removed while the emoji editor is active and restored
   /// after its closure.
   void openEmojiEditor() async {
+    setState(() => _layerInteraction.selectedLayerId = '');
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     EmojiLayerData? layer = await showModalBottomSheet(
       context: context,
@@ -1144,6 +1187,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the sticker editor as a modal bottom sheet.
   void openStickerEditor() async {
+    setState(() => _layerInteraction.selectedLayerId = '');
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     StickerLayerData? layer = await showModalBottomSheet(
       context: context,
@@ -1232,8 +1276,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Moves a layer in the list to a new position.
   ///
-  /// [oldIndex] is the current index of the layer.
-  /// [newIndex] is the desired index to move the layer to.
+  /// - `oldIndex` is the current index of the layer.
+  /// - `newIndex` is the desired index to move the layer to.
   void moveLayerListPosition({
     required int oldIndex,
     required int newIndex,
@@ -1449,7 +1493,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Exports the current state history.
   ///
-  /// [configs] specifies the export configurations, such as whether to include filters or layers.
+  /// `configs` specifies the export configurations, such as whether to include filters or layers.
   ///
   /// Returns an [ExportStateHistory] object containing the exported state history, image state history, image size, edit position, and export configurations.
   ExportStateHistory exportStateHistory(
@@ -1474,47 +1518,49 @@ class ProImageEditorState extends State<ProImageEditor>
           ),
         );
     if (_imageNeedDecode) _decodeImage();
-    return OrientationBuilder(builder: (context, orientation) {
-      if (_deviceOrientation != orientation.index) {
-        _deviceOrientation = orientation.index;
-      }
-      return PopScope(
-        canPop: _stateManager.editPosition <= 0 || _doneEditing,
-        onPopInvoked: (didPop) {
-          if (_stateManager.editPosition > 0 && !_doneEditing) {
-            closeWarning();
-          }
-        },
-        child: LayoutBuilder(builder: (context, constraints) {
-          // Check if screensize changed to recalculate image size
-          if (_screenSize.lastScreenSize.width != constraints.maxWidth ||
-              _screenSize.lastScreenSize.height != constraints.maxHeight) {
-            _screenSize.screenSizeDebouncer(() {
-              _decodeImage();
-            });
-            _screenSize.lastScreenSize = Size(
-              constraints.maxWidth,
-              constraints.maxHeight,
-            );
-          }
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: configs.imageEditorTheme.uiOverlayStyle,
-            child: Theme(
-              data: _theme,
-              child: SafeArea(
-                child: Scaffold(
-                  backgroundColor: configs.imageEditorTheme.background,
-                  resizeToAvoidBottomInset: false,
-                  appBar: _buildAppBar(),
-                  body: _buildBody(),
-                  bottomNavigationBar: _buildBottomNavBar(),
+    return Constants(
+      child: OrientationBuilder(builder: (context, orientation) {
+        if (_deviceOrientation != orientation.index) {
+          _deviceOrientation = orientation.index;
+        }
+        return PopScope(
+          canPop: _stateManager.editPosition <= 0 || _doneEditing,
+          onPopInvoked: (didPop) {
+            if (_stateManager.editPosition > 0 && !_doneEditing) {
+              closeWarning();
+            }
+          },
+          child: LayoutBuilder(builder: (context, constraints) {
+            // Check if screensize changed to recalculate image size
+            if (_screenSize.lastScreenSize.width != constraints.maxWidth ||
+                _screenSize.lastScreenSize.height != constraints.maxHeight) {
+              _screenSize.screenSizeDebouncer(() {
+                _decodeImage();
+              });
+              _screenSize.lastScreenSize = Size(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              );
+            }
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: configs.imageEditorTheme.uiOverlayStyle,
+              child: Theme(
+                data: _theme,
+                child: SafeArea(
+                  child: Scaffold(
+                    backgroundColor: configs.imageEditorTheme.background,
+                    resizeToAvoidBottomInset: false,
+                    appBar: _buildAppBar(),
+                    body: _buildBody(),
+                    bottomNavigationBar: _buildBottomNavBar(),
+                  ),
                 ),
               ),
-            ),
-          );
-        }),
-      );
-    });
+            );
+          }),
+        );
+      }),
+    );
   }
 
   PreferredSizeWidget? _buildAppBar() {
@@ -1594,6 +1640,12 @@ class ProImageEditorState extends State<ProImageEditor>
             : null,
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
+          onTap: () {
+            if (_layerInteraction.selectedLayerId.isNotEmpty) {
+              _layerInteraction.selectedLayerId = '';
+              setState(() {});
+            }
+          },
           onScaleStart: _onScaleStart,
           onScaleUpdate: _onScaleUpdate,
           onScaleEnd: _onScaleEnd,
@@ -1928,51 +1980,79 @@ class ProImageEditorState extends State<ProImageEditor>
     int loopHelper = 0;
     return IgnorePointer(
       ignoring: _selectedLayerIndex >= 0,
-      child: Stack(
-        children: activeLayers.map((layerItem) {
-          var i = loopHelper;
-          loopHelper++;
+      child: DeferredPointerHandler(
+        child: Stack(
+          children: activeLayers.map((layerItem) {
+            var i = loopHelper;
+            loopHelper++;
 
-          return LayerWidget(
-            key: ValueKey('${layerItem.id}-$i'),
-            configs: configs,
-            padding: _selectedLayerIndex < 0
-                ? EdgeInsets.zero
-                : _screenSize.screenPaddingHelper,
-            layerData: layerItem,
-            enableHitDetection: _layerInteraction.enabledHitDetection,
-            freeStyleHighPerformanceScaling:
-                _layerInteraction.freeStyleHighPerformanceScaling,
-            freeStyleHighPerformanceMoving:
-                _layerInteraction.freeStyleHighPerformanceMoving,
-            onTap: (layer) async {
-              if (layer is TextLayerData) {
-                _onTextLayerTap(layer);
-              }
-            },
-            onTapUp: () {
-              setState(() {
-                if (_layerInteraction.hoverRemoveBtn) {
-                  removeLayer(_selectedLayerIndex);
+            return LayerWidget(
+              key: ValueKey('${layerItem.id}-$i'),
+              configs: configs,
+              padding: _selectedLayerIndex < 0
+                  ? EdgeInsets.zero
+                  : _screenSize.screenPaddingHelper,
+              layerData: layerItem,
+              enableHitDetection: _layerInteraction.enabledHitDetection,
+              freeStyleHighPerformanceScaling:
+                  _layerInteraction.freeStyleHighPerformanceScaling,
+              freeStyleHighPerformanceMoving:
+                  _layerInteraction.freeStyleHighPerformanceMoving,
+              selected: _layerInteraction.selectedLayerId == layerItem.id,
+              isInteractive: !_isEditorOpen,
+              onEditTap: () {
+                if (layerItem is TextLayerData) {
+                  _onTextLayerTap(layerItem);
                 }
-                _selectedLayerIndex = -1;
-              });
-              widget.onUpdateUI?.call();
-            },
-            onTapDown: () {
-              _selectedLayerIndex = i;
-            },
-            onRemoveTap: () {
-              setState(() {
-                removeLayer(
-                    activeLayers
-                        .indexWhere((element) => element.id == layerItem.id),
-                    layer: layerItem);
-              });
-              widget.onUpdateUI?.call();
-            },
-          );
-        }).toList(),
+              },
+              onTap: (layer) async {
+                if (_layerInteraction.layersAreSelectable(configs)) {
+                  _layerInteraction.selectedLayerId =
+                      layer.id == _layerInteraction.selectedLayerId
+                          ? ''
+                          : layer.id;
+                } else if (layer is TextLayerData) {
+                  _onTextLayerTap(layer);
+                }
+              },
+              onTapUp: () {
+                setState(() {
+                  if (_layerInteraction.hoverRemoveBtn) {
+                    removeLayer(_selectedLayerIndex);
+                  }
+                  _selectedLayerIndex = -1;
+                });
+                widget.onUpdateUI?.call();
+              },
+              onTapDown: () {
+                _selectedLayerIndex = i;
+              },
+              onScaleRotateDown: (details, layerOriginalSize) {
+                _selectedLayerIndex = i;
+                _layerInteraction.rotateScaleLayerSizeHelper =
+                    layerOriginalSize;
+                _layerInteraction.rotateScaleLayerScaleHelper = layerItem.scale;
+              },
+              onScaleRotateUp: (details) {
+                _layerInteraction.rotateScaleLayerSizeHelper = null;
+                _layerInteraction.rotateScaleLayerScaleHelper = null;
+                setState(() {
+                  _selectedLayerIndex = -1;
+                });
+                widget.onUpdateUI?.call();
+              },
+              onRemoveTap: () {
+                setState(() {
+                  removeLayer(
+                      activeLayers
+                          .indexWhere((element) => element.id == layerItem.id),
+                      layer: layerItem);
+                });
+                widget.onUpdateUI?.call();
+              },
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -1985,7 +2065,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!_layerInteraction.showHelperLines) return const SizedBox.shrink();
     return Stack(
       children: [
-        if (configs.helperLines.showVerticalLine)
+        if (helperLines.showVerticalLine)
           Align(
             alignment: Alignment.center,
             child: AnimatedContainer(
@@ -1995,7 +2075,7 @@ class ProImageEditorState extends State<ProImageEditor>
               color: configs.imageEditorTheme.helperLine.verticalColor,
             ),
           ),
-        if (configs.helperLines.showHorizontalLine)
+        if (helperLines.showHorizontalLine)
           Align(
             alignment: Alignment.center,
             child: AnimatedContainer(
@@ -2005,7 +2085,7 @@ class ProImageEditorState extends State<ProImageEditor>
               color: configs.imageEditorTheme.helperLine.horizontalColor,
             ),
           ),
-        if (configs.helperLines.showRotateLine)
+        if (helperLines.showRotateLine)
           Positioned(
             left: _layerInteraction.rotationHelperLineX,
             top: _layerInteraction.rotationHelperLineY,

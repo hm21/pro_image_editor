@@ -6,10 +6,10 @@ import 'dart:ui';
 /// [end] point using the provided [painter], and it also adds an arrowhead at
 /// the [end] point.
 ///
-/// - [canvas]: The canvas on which to draw the arrow.
-/// - [start]: The starting point of the line.
-/// - [end]: The ending point of the line and the location of the arrowhead.
-/// - [painter]: The paint object specifying the line's color, width, and style.
+/// - `canvas`: The canvas on which to draw the arrow.
+/// - `start`: The starting point of the line.
+/// - `end`: The ending point of the line and the location of the arrowhead.
+/// - `painter`: The paint object specifying the line's color, width, and style.
 void drawArrow(Canvas canvas, Offset start, Offset end, Paint painter) {
   final arrowPainter = Paint()
     ..color = painter.color
