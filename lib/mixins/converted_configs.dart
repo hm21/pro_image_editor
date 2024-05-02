@@ -46,8 +46,11 @@ mixin ImageEditorConvertedConfigs {
   /// Returns the initial state history for the image editor.
   ImportStateHistory? get initStateHistory => configs.initStateHistory;
 
-  /// Returns helper lines configuration for the image editor.
+  /// Returns helper lines configurations for the image editor.
   HelperLines get helperLines => configs.helperLines;
+
+  /// Returns layerInteraction configurations for the image editor.
+  LayerInteraction get layerInteraction => configs.layerInteraction;
 
   /// Returns the hero tag used in the image editor.
   String get heroTag => configs.heroTag;
