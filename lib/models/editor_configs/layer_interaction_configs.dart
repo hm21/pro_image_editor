@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 /// Represents the interaction behavior for a layer.
 class LayerInteraction {
   /// Specifies the selectability behavior for the layer.
@@ -5,8 +7,12 @@ class LayerInteraction {
   /// Defaults to [LayerInteractionSelectable.auto].
   final LayerInteractionSelectable selectable;
 
+  /// The offset position where the new layer will be inserted. If null, it will be inserted in the center of the screen.
+  final Offset? newLayerOffsetPosition;
+
   const LayerInteraction({
     this.selectable = LayerInteractionSelectable.auto,
+    this.newLayerOffsetPosition,
   });
 }
 

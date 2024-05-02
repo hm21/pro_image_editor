@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.7.1
+- **feat**: Introduces the ability for users to specify the initial offset position for new layers.
+
 ## Version 2.7.0
 - **feat**: Layers can now be selected for rotation, scaling, and deletion, enhancing user control and editing capabilities.
 - **feat**: Improved functionality particularly on desktop devices, where users can now manipulate layers more efficiently.
