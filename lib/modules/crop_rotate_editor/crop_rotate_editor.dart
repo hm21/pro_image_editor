@@ -32,6 +32,7 @@ import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'utils/crop_area_part.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/crop_corner_painter.dart';
+import 'utils/crop_desktop_interaction_manager.dart';
 import 'utils/rotate_angle.dart';
 import 'widgets/crop_aspect_ratio_options.dart';
 
@@ -222,10 +223,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   bool _activeScaleOut = false;
 
+  late final CropDesktopInteractionManager _desktopInteractionManager;
+
   @override
   void initState() {
     super.initState();
     _bottomBarScrollCtrl = ScrollController();
+    _desktopInteractionManager = CropDesktopInteractionManager(
+        context: context,
+        onUpdateUI: onUpdateUI,
+        setState: setState,
+        configs: configs);
 
     _interactiveCornerArea = isDesktop
         ? cropRotateEditorConfigs.desktopCornerDragArea
@@ -272,6 +280,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       history.clear();
       history.add(transformConfigs!);
     }
+    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
@@ -293,7 +302,64 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _bottomBarScrollCtrl.dispose();
     rotateCtrl.dispose();
     scaleCtrl.dispose();
+    ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
+  }
+
+  bool _onKeyEvent(KeyEvent event) {
+    return _desktopInteractionManager.onKey(
+      event,
+      onTranslate: (offset) async {
+        Offset startOffset = translate;
+        Offset targetOffset = translate += offset;
+
+        await loopWithTransitionTiming(
+          (double curveT) {
+            translate = Offset(
+              startOffset.dx + (targetOffset.dx - startOffset.dx) * curveT,
+              startOffset.dy + (targetOffset.dy - startOffset.dy) * curveT,
+            );
+            _setOffsetLimits();
+            setState(() {});
+          },
+          duration: cropRotateEditorConfigs.animationDuration,
+          transitionFunction:
+              cropRotateEditorConfigs.scaleAnimationCurve.transform,
+        );
+        startOffset = targetOffset;
+        _setOffsetLimits();
+        setState(() {});
+        addHistory();
+      },
+      onScale: (scale) async {
+        double startZoom = userZoom;
+        double targetZoom =
+            max(1, min(cropRotateEditorConfigs.maxScale, userZoom + scale));
+
+        await loopWithTransitionTiming(
+          (double curveT) {
+            userZoom = startZoom + (targetZoom - startZoom) * curveT;
+
+            _setOffsetLimits();
+            setState(() {});
+          },
+          duration: cropRotateEditorConfigs.animationDuration,
+          transitionFunction:
+              cropRotateEditorConfigs.scaleAnimationCurve.transform,
+        );
+        startZoom = targetZoom;
+        _setOffsetLimits();
+        setState(() {});
+        addHistory();
+      },
+      onUndoRedo: (undo) {
+        if (undo) {
+          undoAction();
+        } else {
+          redoAction();
+        }
+      },
+    );
   }
 
   /// Closes the editor without applying changes.
@@ -721,7 +787,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
           setState(() {});
         },
-        duration: cropRotateEditorConfigs.animationDuration,
+        duration: cropRotateEditorConfigs.cropDragAnimationDuration,
         transitionFunction:
             cropRotateEditorConfigs.cropDragAnimationCurve.transform,
       );

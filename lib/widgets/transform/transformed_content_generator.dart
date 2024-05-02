@@ -76,6 +76,7 @@ class CutOutsideArea extends CustomClipper<Rect> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Rect> oldClipper) {
+    //TODO:
     return true;
     return oldClipper is! CutOutsideArea || oldClipper.cropRect != cropRect;
   }

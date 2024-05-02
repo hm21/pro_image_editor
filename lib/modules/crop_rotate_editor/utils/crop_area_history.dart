@@ -76,6 +76,7 @@ mixin CropAreaHistory
       ),
     );
     _historyIndex++;
+    onUpdateUI?.call();
   }
 
   /// Clears forward changes from the history.
@@ -133,6 +134,7 @@ mixin CropAreaHistory
     calcCropRect();
     calcAspectRatioZoomHelper();
     calcFitToScreen();
+    onUpdateUI?.call();
   }
 
   void reset({
