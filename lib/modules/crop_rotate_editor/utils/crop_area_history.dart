@@ -40,8 +40,6 @@ mixin CropAreaHistory
   @protected
   bool flipY = false;
   @protected
-  bool imageSticksToScreenWidth = false;
-  @protected
   bool initialized = false;
 
   @protected
@@ -49,22 +47,22 @@ mixin CropAreaHistory
   @protected
   Rect cropRect = Rect.zero;
 
-  final List<TransformConfigs> _history = [TransformConfigs.empty()];
+  final List<TransformConfigs> history = [TransformConfigs.empty()];
 
   /// Retrieves the active transformation history.
-  TransformConfigs get activeHistory => _history[_historyIndex];
+  TransformConfigs get activeHistory => history[_historyIndex];
 
   /// Determines whether undo actions can be performed on the current state.
   bool get canUndo => _historyIndex > 0;
 
   /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => _historyIndex < _history.length - 1;
+  bool get canRedo => _historyIndex < history.length - 1;
 
   /// Adds the current transformation to the history.
   void addHistory() {
     if (!initialized) return;
     cleanForwardChanges();
-    _history.add(
+    history.add(
       TransformConfigs(
         angle: rotateAnimation.value,
         cropRect: cropRect,
@@ -75,9 +73,6 @@ mixin CropAreaHistory
         flipX: flipX,
         flipY: flipY,
         offset: translate,
-        maxSide: imageSticksToScreenWidth
-            ? ImageMaxSide.horizontal
-            : ImageMaxSide.vertical,
       ),
     );
     _historyIndex++;
@@ -85,12 +80,12 @@ mixin CropAreaHistory
 
   /// Clears forward changes from the history.
   void cleanForwardChanges() {
-    if (_history.length > 1) {
-      while (_historyIndex < _history.length - 1) {
-        _history.removeLast();
+    if (history.length > 1) {
+      while (_historyIndex < history.length - 1) {
+        history.removeLast();
       }
     }
-    _historyIndex = _history.length - 1;
+    _historyIndex = history.length - 1;
   }
 
   /// Undoes the last action performed in the painting editor.
@@ -175,11 +170,7 @@ mixin CropAreaHistory
 
     initialized = true;
     if (!skipAddHistory) {
-      if (_historyIndex > 0) {
-        addHistory();
-      } else if (_history.isNotEmpty) {
-        cleanForwardChanges();
-      }
+      addHistory();
     }
 
     setState(() {});

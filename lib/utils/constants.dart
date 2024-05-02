@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 class Constants extends InheritedWidget {
-  final double minLayerSize = 64.0;
-
   const Constants({
     super.key,
     required super.child,
@@ -14,6 +12,7 @@ class Constants extends InheritedWidget {
 
   @override
   bool updateShouldNotify(Constants oldWidget) {
-    return oldWidget.minLayerSize != minLayerSize;
+    return false;
+    /* return oldWidget.minLayerSize != minLayerSize; */
   }
 }

@@ -32,8 +32,6 @@ class _TransformedContentGeneratorState
           flipY: widget.configs.flipY,
           child: ClipRect(
             clipper: CutOutsideArea(
-              offset: widget.configs.offset,
-              scaleFactor: widget.configs.scale,
               cropRect: widget.configs.cropRect,
             ),
             child: Transform.scale(
@@ -53,22 +51,24 @@ class _TransformedContentGeneratorState
 
 class CutOutsideArea extends CustomClipper<Rect> {
   final Rect cropRect;
-  final Offset offset;
-  final double scaleFactor;
 
   CutOutsideArea({
     required this.cropRect,
-    required this.offset,
-    required this.scaleFactor,
   });
   @override
   Rect getClip(Size size) {
-    /// Draw outline darken layers
-    double cropWidth = cropRect.width;
-    double cropHeight = cropRect.height;
+    // Draw outline darken layers
+    double space = 20;
+
+    print((size.width + space * 2) / size.width);
+
+    Offset center = cropRect.center + Offset(space, space);
+
+    double cropWidth = cropRect.width + space * 2;
+    double cropHeight = cropRect.height + space * 2;
 
     return Rect.fromCenter(
-      center: cropRect.center,
+      center: center,
       width: cropWidth,
       height: cropHeight,
     );
@@ -76,6 +76,7 @@ class CutOutsideArea extends CustomClipper<Rect> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Rect> oldClipper) {
+    return true;
     return oldClipper is! CutOutsideArea || oldClipper.cropRect != cropRect;
   }
 }

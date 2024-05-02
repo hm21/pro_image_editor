@@ -11,7 +11,6 @@ class TransformConfigs {
   final double aspectRatio;
   final bool flipX;
   final bool flipY;
-  final ImageMaxSide maxSide;
 
   const TransformConfigs({
     required this.angle,
@@ -23,7 +22,6 @@ class TransformConfigs {
     required this.flipX,
     required this.flipY,
     required this.offset,
-    required this.maxSide,
   });
 
   factory TransformConfigs.fromMap(Map map) {
@@ -45,9 +43,6 @@ class TransformConfigs {
         map['offset']?['dx'] ?? 0,
         map['offset']?['dy'] ?? 0,
       ),
-      maxSide: ImageMaxSide.values.firstWhere(
-        (element) => element.name == map['maxSide'],
-      ),
     );
   }
   factory TransformConfigs.empty() {
@@ -61,7 +56,6 @@ class TransformConfigs {
       flipX: false,
       flipY: false,
       offset: Offset(0, 0),
-      maxSide: ImageMaxSide.unset,
     );
   }
 
@@ -90,7 +84,6 @@ class TransformConfigs {
         'dx': offset.dx,
         'dy': offset.dy,
       },
-      'maxSide': maxSide.name,
     };
   }
 }

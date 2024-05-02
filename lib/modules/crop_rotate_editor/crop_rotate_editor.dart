@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_area_history.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/debounce.dart';
@@ -199,7 +201,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
   double get _ratio =>
       1 / (aspectRatio == 0 ? initConfigs.imageSize.aspectRatio : aspectRatio);
 
-  @override
   bool get imageSticksToScreenWidth =>
       _imgWidth >= _contentConstraints.maxWidth;
 
@@ -268,6 +269,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       aspectRatioZoomHelper = transformConfigs!.scaleAspectRatio;
       userZoom = transformConfigs!.scaleUser;
       aspectRatio = transformConfigs!.aspectRatio;
+      history.clear();
+      history.add(transformConfigs!);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -300,8 +303,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Handles the crop image operation.
   Future<void> done() async {
+    TransformConfigs transformC =
+        !canRedo && !canUndo && transformConfigs != null
+            ? transformConfigs!
+            : activeHistory;
+
     if (!initConfigs.convertToUint8List) {
-      Navigator.pop(context, activeHistory);
+      Navigator.pop(context, transformC);
     } else {
       // TODO: ensure image is correctly cropped
       Widget editorWidget = Stack(
@@ -311,7 +319,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             tag: heroTag,
             createRectTween: (begin, end) => RectTween(begin: begin, end: end),
             child: TransformedContentGenerator(
-              configs: activeHistory,
+              configs: transformC,
               child: ImageWithMultipleFilters(
                 width: initConfigs.imageSize.width,
                 height: initConfigs.imageSize.height,
@@ -634,14 +642,27 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   void _onScaleEnd(ScaleEndDetails details) async {
+    Rect interpolatedRect(Rect initRect, Rect targetRect, double curveT) {
+      return Rect.fromLTRB(
+        lerpDouble(initRect.left, targetRect.left, curveT)!,
+        lerpDouble(initRect.top, targetRect.top, curveT)!,
+        lerpDouble(initRect.right, targetRect.right, curveT)!,
+        lerpDouble(initRect.bottom, targetRect.bottom, curveT)!,
+      );
+    }
+
     if (_blockInteraction) return;
     _blockInteraction = true;
     _interactionActive = false;
     setState(() {});
 
     if (cropRect != _viewRect) {
+      Rect initRect = Rect.fromCenter(
+          center: _viewRect.center,
+          width: _viewRect.width,
+          height: _viewRect.height);
+
       if (_ratio < 0) {
-        // TODO: fix offsets-limit bug when aspectRatio is `free`
         calcCropRect(
           onlyViewRect: true,
           newRatio: 1 / cropRect.size.aspectRatio,
@@ -690,17 +711,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
                     curveT,
           );
 
-          cropRect = Rect.fromLTRB(
-            startCropRect.left +
-                (targetCropRect.left - startCropRect.left) * curveT,
-            startCropRect.top +
-                (targetCropRect.top - startCropRect.top) * curveT,
-            startCropRect.right +
-                (targetCropRect.right - startCropRect.right) * curveT,
-            startCropRect.bottom +
-                (targetCropRect.bottom - startCropRect.bottom) * curveT,
+          cropRect = interpolatedRect(startCropRect, targetCropRect, curveT);
+
+          _setOffsetLimits(
+            rect: _ratio < 0
+                ? interpolatedRect(initRect, targetCropRect, curveT)
+                : null,
           );
-          _setOffsetLimits();
+
           setState(() {});
         },
         duration: cropRotateEditorConfigs.animationDuration,
@@ -966,11 +984,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _blockInteraction = false;
   }
 
-  void _setOffsetLimits() {
-    Rect rect = _ratio < 0 ? cropRect : _viewRect;
+  void _setOffsetLimits({Rect? rect}) {
+    Rect r = rect ?? _viewRect;
 
-    double cropWidth = (rect.right - rect.left);
-    double cropHeight = (rect.bottom - rect.top);
+    double cropWidth = r.right - r.left;
+    double cropHeight = r.bottom - r.top;
 
     double minX = (_renderedImgConstraints.maxWidth * zoomFactor - cropWidth) /
         2 /
@@ -1361,25 +1379,19 @@ class CropRotateEditorState extends State<CropRotateEditor>
       builder: (context, constraints) {
         _contentConstraints = constraints;
 
-        return Stack(
-          // TODO: remove stack
-          alignment: Alignment.center,
-          children: [
-            _buildMouseCursor(
-              child: DeferredPointerHandler(
-                child: _buildRotationTransform(
-                  child: _buildFlipTransform(
-                    child: _buildRotationScaleTransform(
-                      child: _buildPaintContainer(
-                        child: _buildCropPainter(
-                          child: _buildUserScaleTransform(
-                            child: _buildTranslate(
-                              child: DeferPointer(
-                                child: _buildMouseListener(
-                                  child: _buildGestureDetector(
-                                    child: _buildImage(),
-                                  ),
-                                ),
+        return _buildMouseCursor(
+          child: DeferredPointerHandler(
+            child: _buildRotationTransform(
+              child: _buildFlipTransform(
+                child: _buildRotationScaleTransform(
+                  child: _buildPaintContainer(
+                    child: _buildCropPainter(
+                      child: _buildUserScaleTransform(
+                        child: _buildTranslate(
+                          child: DeferPointer(
+                            child: _buildMouseListener(
+                              child: _buildGestureDetector(
+                                child: _buildImage(),
                               ),
                             ),
                           ),
@@ -1390,15 +1402,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ),
               ),
             ),
-            /*  IgnorePointer(
-              ignoring: true,
-              child: Container(
-                width: _viewRect.width,
-                height: _viewRect.height,
-                color: Colors.amber.withOpacity(0.2),
-              ),
-            ), */
-          ],
+          ),
         );
       },
     );
