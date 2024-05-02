@@ -86,10 +86,17 @@ class OutsideGestureDetector extends StatelessWidget {
     this.trackpadScrollToScaleFactor = kDefaultTrackpadScrollToScaleFactor,
     this.supportedDevices,
   }) : assert(() {
-          final bool haveVerticalDrag = onVerticalDragStart != null || onVerticalDragUpdate != null || onVerticalDragEnd != null;
-          final bool haveHorizontalDrag = onHorizontalDragStart != null || onHorizontalDragUpdate != null || onHorizontalDragEnd != null;
-          final bool havePan = onPanStart != null || onPanUpdate != null || onPanEnd != null;
-          final bool haveScale = onScaleStart != null || onScaleUpdate != null || onScaleEnd != null;
+          final bool haveVerticalDrag = onVerticalDragStart != null ||
+              onVerticalDragUpdate != null ||
+              onVerticalDragEnd != null;
+          final bool haveHorizontalDrag = onHorizontalDragStart != null ||
+              onHorizontalDragUpdate != null ||
+              onHorizontalDragEnd != null;
+          final bool havePan =
+              onPanStart != null || onPanUpdate != null || onPanEnd != null;
+          final bool haveScale = onScaleStart != null ||
+              onScaleUpdate != null ||
+              onScaleEnd != null;
           if (havePan || haveScale) {
             if (havePan && haveScale) {
               throw FlutterError.fromParts(<DiagnosticsNode>[
@@ -816,8 +823,10 @@ class OutsideGestureDetector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<Type, GestureRecognizerFactory> gestures = <Type, GestureRecognizerFactory>{};
-    final DeviceGestureSettings? gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
+    final Map<Type, GestureRecognizerFactory> gestures =
+        <Type, GestureRecognizerFactory>{};
+    final DeviceGestureSettings? gestureSettings =
+        MediaQuery.maybeGestureSettingsOf(context);
 
     if (onTapDown != null ||
         onTapUp != null ||
@@ -830,8 +839,10 @@ class OutsideGestureDetector extends StatelessWidget {
         onTertiaryTapDown != null ||
         onTertiaryTapUp != null ||
         onTertiaryTapCancel != null) {
-      gestures[TapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-        () => TapGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+      gestures[TapGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+        () => TapGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (TapGestureRecognizer instance) {
           instance
             ..onTapDown = onTapDown
@@ -851,9 +862,13 @@ class OutsideGestureDetector extends StatelessWidget {
       );
     }
 
-    if (onDoubleTap != null || onDoubleTapDown != null || onDoubleTapCancel != null) {
-      gestures[DoubleTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
-        () => DoubleTapGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+    if (onDoubleTap != null ||
+        onDoubleTapDown != null ||
+        onDoubleTapCancel != null) {
+      gestures[DoubleTapGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+        () => DoubleTapGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (DoubleTapGestureRecognizer instance) {
           instance
             ..onDoubleTapDown = onDoubleTapDown
@@ -886,8 +901,10 @@ class OutsideGestureDetector extends StatelessWidget {
         onTertiaryLongPressMoveUpdate != null ||
         onTertiaryLongPressUp != null ||
         onTertiaryLongPressEnd != null) {
-      gestures[LongPressGestureRecognizer] = GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-        () => LongPressGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+      gestures[LongPressGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+        () => LongPressGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (LongPressGestureRecognizer instance) {
           instance
             ..onLongPressDown = onLongPressDown
@@ -922,8 +939,10 @@ class OutsideGestureDetector extends StatelessWidget {
         onVerticalDragUpdate != null ||
         onVerticalDragEnd != null ||
         onVerticalDragCancel != null) {
-      gestures[VerticalDragGestureRecognizer] = GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
-        () => VerticalDragGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+      gestures[VerticalDragGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
+        () => VerticalDragGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (VerticalDragGestureRecognizer instance) {
           instance
             ..onDown = onVerticalDragDown
@@ -943,8 +962,10 @@ class OutsideGestureDetector extends StatelessWidget {
         onHorizontalDragUpdate != null ||
         onHorizontalDragEnd != null ||
         onHorizontalDragCancel != null) {
-      gestures[HorizontalDragGestureRecognizer] = GestureRecognizerFactoryWithHandlers<HorizontalDragGestureRecognizer>(
-        () => HorizontalDragGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+      gestures[HorizontalDragGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<HorizontalDragGestureRecognizer>(
+        () => HorizontalDragGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (HorizontalDragGestureRecognizer instance) {
           instance
             ..onDown = onHorizontalDragDown
@@ -959,9 +980,15 @@ class OutsideGestureDetector extends StatelessWidget {
       );
     }
 
-    if (onPanDown != null || onPanStart != null || onPanUpdate != null || onPanEnd != null || onPanCancel != null) {
-      gestures[PanGestureRecognizer] = GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-        () => PanGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+    if (onPanDown != null ||
+        onPanStart != null ||
+        onPanUpdate != null ||
+        onPanEnd != null ||
+        onPanCancel != null) {
+      gestures[PanGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+        () => PanGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (PanGestureRecognizer instance) {
           instance
             ..onDown = onPanDown
@@ -977,8 +1004,10 @@ class OutsideGestureDetector extends StatelessWidget {
     }
 
     if (onScaleStart != null || onScaleUpdate != null || onScaleEnd != null) {
-      gestures[ScaleGestureRecognizer] = GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
-        () => ScaleGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+      gestures[ScaleGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+        () => ScaleGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (ScaleGestureRecognizer instance) {
           instance
             ..onStart = onScaleStart
@@ -993,9 +1022,14 @@ class OutsideGestureDetector extends StatelessWidget {
       );
     }
 
-    if (onForcePressStart != null || onForcePressPeak != null || onForcePressUpdate != null || onForcePressEnd != null) {
-      gestures[ForcePressGestureRecognizer] = GestureRecognizerFactoryWithHandlers<ForcePressGestureRecognizer>(
-        () => ForcePressGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+    if (onForcePressStart != null ||
+        onForcePressPeak != null ||
+        onForcePressUpdate != null ||
+        onForcePressEnd != null) {
+      gestures[ForcePressGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<ForcePressGestureRecognizer>(
+        () => ForcePressGestureRecognizer(
+            debugOwner: this, supportedDevices: supportedDevices),
         (ForcePressGestureRecognizer instance) {
           instance
             ..onStart = onForcePressStart
@@ -1019,6 +1053,7 @@ class OutsideGestureDetector extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(EnumProperty<DragStartBehavior>('startBehavior', dragStartBehavior));
+    properties.add(
+        EnumProperty<DragStartBehavior>('startBehavior', dragStartBehavior));
   }
 }

@@ -86,7 +86,8 @@ class OutsideListener extends SingleChildRenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(BuildContext context, OutsideRenderPointerListener renderObject) {
+  void updateRenderObject(
+      BuildContext context, OutsideRenderPointerListener renderObject) {
     renderObject
       ..onPointerDown = onPointerDown
       ..onPointerMove = onPointerMove
@@ -114,12 +115,14 @@ class OutsideListener extends SingleChildRenderObjectWidget {
       if (onPointerPanZoomEnd != null) 'panZoomEnd',
       if (onPointerSignal != null) 'signal',
     ];
-    properties.add(IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'));
+    properties.add(
+        IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'));
     properties.add(EnumProperty<OutsideHitTestBehavior>('behavior', behavior));
   }
 }
 
-class OutsideRenderPointerListener extends OutsideRenderProxyBoxWithHitTestBehavior {
+class OutsideRenderPointerListener
+    extends OutsideRenderProxyBoxWithHitTestBehavior {
   /// Creates a render object that forwards pointer events to callbacks.
   ///
   /// The [behavior] argument defaults to [OutsideHitTestBehavior.deferToChild].

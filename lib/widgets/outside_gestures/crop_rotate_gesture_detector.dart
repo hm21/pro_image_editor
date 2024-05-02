@@ -63,7 +63,8 @@ class CropRotateGestureDetector extends StatefulWidget {
   final GestureScaleEndCallback? onScaleEnd;
 
   @override
-  State<CropRotateGestureDetector> createState() => CropRotateGestureDetectorState();
+  State<CropRotateGestureDetector> createState() =>
+      CropRotateGestureDetectorState();
 }
 
 class CropRotateGestureDetectorState extends State<CropRotateGestureDetector> {
@@ -71,11 +72,16 @@ class CropRotateGestureDetectorState extends State<CropRotateGestureDetector> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<Type, GestureRecognizerFactory> gestures = <Type, GestureRecognizerFactory>{};
-    final DeviceGestureSettings? gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
+    final Map<Type, GestureRecognizerFactory> gestures =
+        <Type, GestureRecognizerFactory>{};
+    final DeviceGestureSettings? gestureSettings =
+        MediaQuery.maybeGestureSettingsOf(context);
 
-    if (widget.onDoubleTap != null || widget.onDoubleTapDown != null || widget.onDoubleTapCancel != null) {
-      gestures[DoubleTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+    if (widget.onDoubleTap != null ||
+        widget.onDoubleTapDown != null ||
+        widget.onDoubleTapCancel != null) {
+      gestures[DoubleTapGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
         () => DoubleTapGestureRecognizer(debugOwner: this),
         (DoubleTapGestureRecognizer instance) {
           instance
@@ -87,8 +93,11 @@ class CropRotateGestureDetectorState extends State<CropRotateGestureDetector> {
       );
     }
 
-    if (widget.onScaleStart != null || widget.onScaleUpdate != null || widget.onScaleEnd != null) {
-      gestures[ScaleGestureRecognizer] = GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+    if (widget.onScaleStart != null ||
+        widget.onScaleUpdate != null ||
+        widget.onScaleEnd != null) {
+      gestures[ScaleGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
         () => ScaleGestureRecognizer(debugOwner: this),
         (ScaleGestureRecognizer instance) {
           instance

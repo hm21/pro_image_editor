@@ -71,20 +71,34 @@ class CropRotateEditorConfigs {
   /// The duration for the animation controller that handles rotation and scale animations.
   final Duration animationDuration;
 
+  /// The duration of drag-crop animations.
+  final Duration cropDragAnimationDuration;
+
   /// The curve used for the rotation animation.
   final Curve rotateAnimationCurve;
 
   /// The curve used for the scale animation, which is triggered when the image needs to resize due to rotation.
   final Curve scaleAnimationCurve;
 
+  /// The animation curve used for crop animations.
+  final Curve cropDragAnimationCurve;
+
   /// The direction in which the image will be rotated.
   final RotateDirection rotateDirection;
+
+  /// Defines the size of the draggable area on corners of the crop rectangle for desktop devices.
+  final double desktopCornerDragArea;
+
+  /// Defines the size of the draggable area on corners of the crop rectangle for mobile devices.
+  final double mobileCornerDragArea;
 
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
   ///
   /// By default, all options are enabled, and the initial aspect ratio is set
   /// to `CropAspectRatios.custom`.
   const CropRotateEditorConfigs({
+    this.desktopCornerDragArea = 7,
+    this.mobileCornerDragArea = 36,
     this.enabled = true,
     this.canRotate = true,
     this.canFlip = true,
@@ -97,8 +111,10 @@ class CropRotateEditorConfigs {
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
+    this.cropDragAnimationCurve = Curves.decelerate,
     this.rotateDirection = RotateDirection.left,
     this.animationDuration = const Duration(milliseconds: 250),
+    this.cropDragAnimationDuration = const Duration(milliseconds: 400),
     this.maxScale = 7,
     this.mouseScaleFactor = 0.1,
     this.doubleTapScaleFactor = 2,

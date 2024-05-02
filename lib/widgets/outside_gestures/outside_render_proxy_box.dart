@@ -28,7 +28,8 @@ abstract class OutsideRenderProxyBoxWithHitTestBehavior extends RenderProxyBox {
     }
 
     if (size.contains(position)) {
-      hitTarget = hitTestChildren(result, position: position) || hitTestSelf(position);
+      hitTarget =
+          hitTestChildren(result, position: position) || hitTestSelf(position);
       if (behavior != OutsideHitTestBehavior.all) {
         if (hitTarget || behavior == OutsideHitTestBehavior.translucent) {
           result.add(BoxHitTestEntry(this, position));
@@ -39,11 +40,13 @@ abstract class OutsideRenderProxyBoxWithHitTestBehavior extends RenderProxyBox {
   }
 
   @override
-  bool hitTestSelf(Offset position) => behavior == OutsideHitTestBehavior.opaque;
+  bool hitTestSelf(Offset position) =>
+      behavior == OutsideHitTestBehavior.opaque;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(EnumProperty<OutsideHitTestBehavior>('behavior', behavior, defaultValue: null));
+    properties.add(EnumProperty<OutsideHitTestBehavior>('behavior', behavior,
+        defaultValue: null));
   }
 }

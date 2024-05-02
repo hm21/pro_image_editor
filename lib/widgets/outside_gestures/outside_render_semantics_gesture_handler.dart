@@ -4,7 +4,8 @@ import 'package:flutter/widgets.dart';
 
 import 'outside_render_proxy_box.dart';
 
-class OutsideRenderSemanticsGestureHandler extends OutsideRenderProxyBoxWithHitTestBehavior {
+class OutsideRenderSemanticsGestureHandler
+    extends OutsideRenderProxyBoxWithHitTestBehavior {
   /// Creates a render object that listens for specific semantic gestures.
   OutsideRenderSemanticsGestureHandler({
     super.child,
@@ -71,7 +72,8 @@ class OutsideRenderSemanticsGestureHandler extends OutsideRenderProxyBoxWithHitT
   }
 
   /// Called when the user scrolls to the left or to the right.
-  GestureDragUpdateCallback? get onHorizontalDragUpdate => _onHorizontalDragUpdate;
+  GestureDragUpdateCallback? get onHorizontalDragUpdate =>
+      _onHorizontalDragUpdate;
   GestureDragUpdateCallback? _onHorizontalDragUpdate;
   set onHorizontalDragUpdate(GestureDragUpdateCallback? value) {
     if (_onHorizontalDragUpdate == value) {

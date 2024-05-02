@@ -24,6 +24,12 @@ class I18nCropRotateEditor {
   /// Text for the "Reset" button.
   final String reset;
 
+  /// Text for the "Undo" button.
+  final String undo;
+
+  /// Text for the "Redo" button.
+  final String redo;
+
   /// The tooltip text displayed for the "More" option on small screens.
   final String smallScreenMoreTooltip;
 
@@ -52,6 +58,8 @@ class I18nCropRotateEditor {
     this.back = 'Back',
     this.done = 'Done',
     this.cancel = 'Cancel',
+    this.undo = 'Undo',
+    this.redo = 'Redo',
     this.smallScreenMoreTooltip = 'More',
     this.reset = 'Reset',
   });

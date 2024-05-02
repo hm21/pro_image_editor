@@ -81,6 +81,9 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the painting editor component.
   final Widget? bottomBarPaintingEditor;
 
+  /// A custom bottom bar widget for the crop-rotate editor component.
+  final Widget? bottomBarCropRotateEditor;
+
   /// The widget that is below the `Filter` button in the material design.
   /// You can create a text field and send button just like in whatsapp.
   ///
@@ -98,6 +101,7 @@ class ImageEditorCustomWidgets {
     this.appBarBlurEditor,
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
+    this.bottomBarCropRotateEditor,
     this.whatsAppBottomWidget,
   });
 }

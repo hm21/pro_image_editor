@@ -485,7 +485,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Add a new layer to the image editor.
   ///
   /// This method adds a new layer to the image editor and updates the editing state.
-  void addLayer(Layer layer, {int removeLayerIndex = -1, EditorImage? image}) {
+  void addLayer(
+    Layer layer, {
+    int removeLayerIndex = -1,
+  }) {
     _stateManager.cleanForwardChanges();
 
     stateHistory.add(

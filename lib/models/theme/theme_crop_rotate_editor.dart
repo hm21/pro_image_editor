@@ -51,6 +51,12 @@ class CropRotateEditorTheme {
   /// Foreground color (text and icons) of the app bar.
   final Color appBarForegroundColor;
 
+  /// Background color of the bottom app bar.
+  final Color bottomBarBackgroundColor;
+
+  /// Foreground color (text and icons) of the bottom app bar.
+  final Color bottomBarForegroundColor;
+
   /// Background color of the bottomSheet for aspect ratios.
   final Color aspectRatioSheetBackgroundColor;
 
@@ -77,6 +83,8 @@ class CropRotateEditorTheme {
     this.helperLineColor = const Color(0xFF000000),
     this.background = imageEditorBackgroundColor,
     this.cropCornerColor = imageEditorPrimaryColor,
+    this.bottomBarBackgroundColor = imageEditorAppBarColor,
+    this.bottomBarForegroundColor = const Color(0xFFE1E1E1),
     this.whatsappCupertinoBottomBarColor = const Color(0xFF303030),
     this.aspectRatioSheetBackgroundColor = const Color(0xFF303030),
     this.aspectRatioSheetForegroundColor = const Color(0xFFFAFAFA),
