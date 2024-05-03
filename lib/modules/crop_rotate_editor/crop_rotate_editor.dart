@@ -750,7 +750,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
         double minTop = halfSpaceVertical;
         double minBottom = imgH - halfSpaceVertical;
 
-        if (_ratio < 0) {
+        bool isFreeAspectRatio = _ratio < 0;
+
+        if (isFreeAspectRatio) {
           minLeft = -(imgW * zoomFactor / 2 -
               _viewRect.width / 2 -
               halfSpaceHorizontal -
@@ -772,14 +774,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
         }
 
         // Scale outside when the user move outside the scale area
-        /*  if (offset.dx.abs() > _viewRect.width / 2 + _interactiveCornerArea || offset.dy.abs() > _viewRect.height / 2 + _interactiveCornerArea) {
-
+        if (!isFreeAspectRatio &&
+            (offset.dx.abs() > _viewRect.width / 2 + _interactiveCornerArea ||
+                offset.dy.abs() >
+                    _viewRect.height / 2 + _interactiveCornerArea)) {
           if (!_activeScaleOut) {
             _activeScaleOut = true;
             _zoomOutside();
           }
-        } else */
-        if (!_activeScaleOut ||
+        } else if (!_activeScaleOut ||
             (offset.dx.abs() < _viewRect.width / 2 - _interactiveCornerArea)) {
           _activeScaleOut = false;
           switch (_currentCropAreaPart) {

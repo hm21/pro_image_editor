@@ -22,6 +22,7 @@ class FilterEditorInitConfigs extends EditorInitConfigs {
     super.appliedFilters,
     super.appliedBlurFactor,
     required super.theme,
+    required super.imageSize,
     this.convertToUint8List = false,
   });
 }

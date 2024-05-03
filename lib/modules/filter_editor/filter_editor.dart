@@ -243,7 +243,6 @@ class FilterEditorState extends State<FilterEditor>
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
       _bodySize = constraints.biggest;
-
       return Screenshot(
         controller: screenshotController,
         child: Stack(
@@ -256,8 +255,8 @@ class FilterEditorState extends State<FilterEditor>
               child: TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
-                  width: initConfigs.imageSizeWithLayers.width,
-                  height: initConfigs.imageSizeWithLayers.height,
+                  width: initConfigs.imageSize.width,
+                  height: initConfigs.imageSize.height,
                   designMode: designMode,
                   image: editorImage,
                   filters: [

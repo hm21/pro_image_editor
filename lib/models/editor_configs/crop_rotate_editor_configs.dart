@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import '../aspect_ratio_item.dart';
@@ -98,7 +99,7 @@ class CropRotateEditorConfigs {
   /// to `CropAspectRatios.custom`.
   const CropRotateEditorConfigs({
     this.desktopCornerDragArea = 7,
-    this.mobileCornerDragArea = 36,
+    this.mobileCornerDragArea = kMinInteractiveDimension,
     this.enabled = true,
     this.canRotate = true,
     this.canFlip = true,

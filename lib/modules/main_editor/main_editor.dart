@@ -7,6 +7,7 @@ import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
@@ -29,6 +30,7 @@ import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../utils/constants.dart';
 import '../../utils/image_helpers.dart';
+import '../../widgets/auto_image.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import '../crop_rotate_editor/utils/rotate_angle.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
@@ -407,14 +409,17 @@ class ProImageEditorState extends State<ProImageEditor>
   bool get canRedo =>
       _stateManager.editPosition < _stateManager.stateHistory.length - 1;
 
+  /// TODO: doc
+  bool _screenshotHideOutsideImgContent = false;
+
   /// Get the current image being edited from the change list.
   late EditorImage _image;
 
   Offset get newLayerOffsetPosition =>
       layerInteraction.newLayerOffsetPosition ??
       Offset(
-        _screenSize.imageWidth / 2,
-        _screenSize.imageHeight / 2,
+        _screenSize.screen.width / 2,
+        _screenSize.screenInnerHeight / 2,
       );
 
   @override
@@ -694,7 +699,7 @@ class ProImageEditorState extends State<ProImageEditor>
         detail: details,
         screenMiddleX: _screenSize.screenMiddleX,
         screenMiddleY: _screenSize.screenMiddleY,
-        screenPaddingHelper: _screenSize.screenPaddingHelper,
+        screenPaddingHelper: EdgeInsets.only(top: _screenSize.appBarHeight),
         configEnabledHitVibration: helperLines.hitVibration,
       );
     } else if (details.pointerCount == 2) {
@@ -952,12 +957,8 @@ class ProImageEditorState extends State<ProImageEditor>
         initConfigs: PaintEditorInitConfigs(
           layers: activeLayers,
           theme: _theme,
-          imageSize: Size(_screenSize.imageWidth, _screenSize.imageHeight),
+          imageSize: _screenSize.bodySize,
           configs: widget.configs,
-          paddingHelper: EdgeInsets.only(
-            top: _screenSize.screenPaddingHelper.top - _screenSize.appBarHeight,
-            left: _screenSize.screenPaddingHelper.left,
-          ),
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: widget.onUpdateUI,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
@@ -1237,6 +1238,7 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: widget.onUpdateUI,
           layers: activeLayers,
+          imageSize: Size(_screenSize.imageWidth, _screenSize.imageHeight),
           imageSizeWithLayers: _screenSize.renderedImageSize,
           bodySizeWithLayers: _screenSize.bodySize,
           convertToUint8List: false,
@@ -1489,7 +1491,12 @@ class ProImageEditorState extends State<ProImageEditor>
         return closeEditor();
       }
     }
-    _doneEditing = true;
+
+    /// Hide every unnessacary element that Screenshot Controller will capture a correct image.
+    setState(() {
+      _doneEditing = true;
+      _screenshotHideOutsideImgContent = configs.captureOnlyImageArea;
+    });
     LoadingDialog loading = LoadingDialog()
       ..show(
         context,
@@ -1767,11 +1774,10 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildBody() {
-    var editorImage = _buildImageWithFilter();
-
     return LayoutBuilder(builder: (context, constraints) {
       _screenSize.bodySize = constraints.biggest;
       return Listener(
+        behavior: HitTestBehavior.translucent,
         onPointerSignal: isDesktop && _activeLayer != null
             ? (event) {
                 if (_activeLayer == null) return;
@@ -1793,90 +1799,74 @@ class ProImageEditorState extends State<ProImageEditor>
           onScaleStart: _onScaleStart,
           onScaleUpdate: _onScaleUpdate,
           onScaleEnd: _onScaleEnd,
-          child: Stack(
-            alignment: Alignment.center,
-            fit: StackFit.expand,
-            clipBehavior: Clip.none,
-            children: [
-              Transform.scale(
-                transformHitTests: false,
-                scale: 1 /
-                    constraints.maxHeight *
-                    (constraints.maxHeight -
-                        _whatsAppHelper.filterShowHelper * 2),
-                child: Stack(
+          child: imageEditorTheme.editorMode == ThemeEditorMode.simple
+              ? _buildInteractiveContent()
+              : Stack(
                   alignment: Alignment.center,
                   fit: StackFit.expand,
                   clipBehavior: Clip.none,
                   children: [
-                    Center(
-                      child: SizedBox(
-                        height: _screenSize.imageHeight,
-                        width: _screenSize.imageWidth,
-                        child: StreamBuilder<bool>(
-                            stream: _controllers.mouseMoveStream.stream,
-                            initialData: false,
-                            builder: (context, snapshot) {
-                              return MouseRegion(
-                                hitTestBehavior: HitTestBehavior.translucent,
-                                cursor: snapshot.data != true
-                                    ? SystemMouseCursors.basic
-                                    : imageEditorTheme
-                                        .layerInteraction.hoverCursor,
-                                onHover: isDesktop
-                                    ? (event) {
-                                        var hasHit = activeLayers.indexWhere(
-                                                (element) =>
-                                                    element
-                                                        is PaintingLayerData &&
-                                                    element.item.hit) >=
-                                            0;
-                                        if (hasHit != snapshot.data) {
-                                          _controllers.mouseMoveStream
-                                              .add(hasHit);
-                                        }
-                                      }
-                                    : null,
-                                child: Screenshot(
-                                  controller: _controllers.screenshot,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      Hero(
-                                        tag: !_inited ? '--' : heroTag,
-                                        createRectTween: (begin, end) =>
-                                            RectTween(begin: begin, end: end),
-                                        child: Offstage(
-                                          offstage: !_inited,
-                                          child: editorImage,
-                                        ),
-                                      ),
-                                      if (_selectedLayerIndex < 0)
-                                        _buildLayers(),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }),
-                      ),
+                    Transform.scale(
+                      transformHitTests: false,
+                      scale: 1 /
+                          constraints.maxHeight *
+                          (constraints.maxHeight -
+                              _whatsAppHelper.filterShowHelper * 2),
+                      child: _buildInteractiveContent(),
                     ),
-                    // show same image solong decoding that screenshot is ready
-                    if (!_inited) editorImage,
-                    if (_selectedLayerIndex >= 0) _buildLayers(),
-                    _buildHelperLines(),
-                    if (_selectedLayerIndex >= 0) _buildRemoveIcon(),
+                    if (_selectedLayerIndex < 0) ..._buildWhatsAppWidgets()
                   ],
                 ),
-              ),
-              if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp &&
-                  _selectedLayerIndex < 0)
-                ..._buildWhatsAppWidgets()
-            ],
-          ),
         ),
       );
     });
+  }
+
+  Widget _buildInteractiveContent() {
+    return Center(
+      child: ClipRect(
+        child: SizedBox(
+          width:
+              _screenshotHideOutsideImgContent ? _screenSize.imageWidth : null,
+          height:
+              _screenshotHideOutsideImgContent ? _screenSize.imageHeight : null,
+          child: Screenshot(
+            controller: _controllers.screenshot,
+            child: Stack(
+              alignment: Alignment.center,
+              fit: StackFit.expand,
+              children: [
+                Center(
+                  child: Padding(
+                    padding: _selectedLayerIndex >= 0
+                        ? EdgeInsets.only(
+                            top: _screenSize.appBarHeight,
+                            bottom: _screenSize.bottomBarHeight,
+                          )
+                        : EdgeInsets.zero,
+                    child: Hero(
+                      tag: !_inited ? '--' : heroTag,
+                      createRectTween: (begin, end) =>
+                          RectTween(begin: begin, end: end),
+                      child: _buildImageWithFilter(),
+                    ),
+                  ),
+                ),
+
+                /// Build layer stack
+                _buildLayers(),
+
+                /// Build all helper stuff
+                if (!_doneEditing) ...[
+                  _buildHelperLines(),
+                  if (_selectedLayerIndex >= 0) _buildRemoveIcon(),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   List<Widget> _buildWhatsAppWidgets() {
@@ -2114,83 +2104,110 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildLayers() {
-    int loopHelper = 0;
     return IgnorePointer(
       ignoring: _selectedLayerIndex >= 0,
-      child: DeferredPointerHandler(
-        child: Stack(
-          children: activeLayers.map((layerItem) {
-            var i = loopHelper;
-            loopHelper++;
+      child: StreamBuilder<Object>(
+          stream: _controllers.mouseMoveStream.stream,
+          initialData: false,
+          builder: (context, snapshot) {
+            return MouseRegion(
+              cursor: snapshot.data != true
+                  ? SystemMouseCursors.basic
+                  : imageEditorTheme.layerInteraction.hoverCursor,
+              onHover: isDesktop
+                  ? (event) {
+                      var hasHit = activeLayers.indexWhere((element) =>
+                              element is PaintingLayerData &&
+                              element.item.hit) >=
+                          0;
+                      if (hasHit != snapshot.data) {
+                        _controllers.mouseMoveStream.add(hasHit);
+                      }
+                    }
+                  : null,
+              child: DeferredPointerHandler(
+                child: Stack(
+                  children: activeLayers.asMap().entries.map((entry) {
+                    final int i = entry.key;
+                    final Layer layerItem = entry.value;
 
-            return LayerWidget(
-              key: ValueKey('${layerItem.id}-$i'),
-              configs: configs,
-              padding: _selectedLayerIndex < 0
-                  ? EdgeInsets.zero
-                  : _screenSize.screenPaddingHelper,
-              layerData: layerItem,
-              enableHitDetection: _layerInteraction.enabledHitDetection,
-              freeStyleHighPerformanceScaling:
-                  _layerInteraction.freeStyleHighPerformanceScaling,
-              freeStyleHighPerformanceMoving:
-                  _layerInteraction.freeStyleHighPerformanceMoving,
-              selected: _layerInteraction.selectedLayerId == layerItem.id,
-              isInteractive: !_isEditorOpen,
-              onEditTap: () {
-                if (layerItem is TextLayerData) {
-                  _onTextLayerTap(layerItem);
-                }
-              },
-              onTap: (layer) async {
-                if (_layerInteraction.layersAreSelectable(configs)) {
-                  _layerInteraction.selectedLayerId =
-                      layer.id == _layerInteraction.selectedLayerId
-                          ? ''
-                          : layer.id;
-                } else if (layer is TextLayerData) {
-                  _onTextLayerTap(layer);
-                }
-              },
-              onTapUp: () {
-                setState(() {
-                  if (_layerInteraction.hoverRemoveBtn) {
-                    removeLayer(_selectedLayerIndex);
-                  }
-                  _selectedLayerIndex = -1;
-                });
-                widget.onUpdateUI?.call();
-              },
-              onTapDown: () {
-                _selectedLayerIndex = i;
-              },
-              onScaleRotateDown: (details, layerOriginalSize) {
-                _selectedLayerIndex = i;
-                _layerInteraction.rotateScaleLayerSizeHelper =
-                    layerOriginalSize;
-                _layerInteraction.rotateScaleLayerScaleHelper = layerItem.scale;
-              },
-              onScaleRotateUp: (details) {
-                _layerInteraction.rotateScaleLayerSizeHelper = null;
-                _layerInteraction.rotateScaleLayerScaleHelper = null;
-                setState(() {
-                  _selectedLayerIndex = -1;
-                });
-                widget.onUpdateUI?.call();
-              },
-              onRemoveTap: () {
-                setState(() {
-                  removeLayer(
-                      activeLayers
-                          .indexWhere((element) => element.id == layerItem.id),
-                      layer: layerItem);
-                });
-                widget.onUpdateUI?.call();
-              },
+                    return LayerWidget(
+                      key: ValueKey('${layerItem.id}-$i'),
+                      configs: configs,
+                      padding: _screenshotHideOutsideImgContent
+                          ? EdgeInsets.only(
+                              top: -_screenSize.imageScreenGaps.top,
+                              left: -_screenSize.imageScreenGaps.left,
+                            )
+                          : _selectedLayerIndex < 0
+                              ? EdgeInsets.zero
+                              : EdgeInsets.only(top: _screenSize.appBarHeight),
+                      layerData: layerItem,
+                      enableHitDetection: _layerInteraction.enabledHitDetection,
+                      freeStyleHighPerformanceScaling:
+                          _layerInteraction.freeStyleHighPerformanceScaling,
+                      freeStyleHighPerformanceMoving:
+                          _layerInteraction.freeStyleHighPerformanceMoving,
+                      selected:
+                          _layerInteraction.selectedLayerId == layerItem.id,
+                      isInteractive: !_isEditorOpen,
+                      onEditTap: () {
+                        if (layerItem is TextLayerData) {
+                          _onTextLayerTap(layerItem);
+                        }
+                      },
+                      onTap: (layer) async {
+                        if (_layerInteraction.layersAreSelectable(configs)) {
+                          _layerInteraction.selectedLayerId =
+                              layer.id == _layerInteraction.selectedLayerId
+                                  ? ''
+                                  : layer.id;
+                        } else if (layer is TextLayerData) {
+                          _onTextLayerTap(layer);
+                        }
+                      },
+                      onTapUp: () {
+                        setState(() {
+                          if (_layerInteraction.hoverRemoveBtn) {
+                            removeLayer(_selectedLayerIndex);
+                          }
+                          _selectedLayerIndex = -1;
+                        });
+                        widget.onUpdateUI?.call();
+                      },
+                      onTapDown: () {
+                        _selectedLayerIndex = i;
+                      },
+                      onScaleRotateDown: (details, layerOriginalSize) {
+                        _selectedLayerIndex = i;
+                        _layerInteraction.rotateScaleLayerSizeHelper =
+                            layerOriginalSize;
+                        _layerInteraction.rotateScaleLayerScaleHelper =
+                            layerItem.scale;
+                      },
+                      onScaleRotateUp: (details) {
+                        _layerInteraction.rotateScaleLayerSizeHelper = null;
+                        _layerInteraction.rotateScaleLayerScaleHelper = null;
+                        setState(() {
+                          _selectedLayerIndex = -1;
+                        });
+                        widget.onUpdateUI?.call();
+                      },
+                      onRemoveTap: () {
+                        setState(() {
+                          removeLayer(
+                              activeLayers.indexWhere(
+                                  (element) => element.id == layerItem.id),
+                              layer: layerItem);
+                        });
+                        widget.onUpdateUI?.call();
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
             );
-          }).toList(),
-        ),
-      ),
+          }),
     );
   }
 
@@ -2275,19 +2292,30 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildImageWithFilter() {
-    return LayoutBuilder(builder: (context, constraints) {
-      _screenSize.renderedImageSize = constraints.biggest;
-      return TransformedContentGenerator(
-        configs: _stateManager.transformConfigs,
-        child: ImageWithMultipleFilters(
-          width: _screenSize.imageWidth,
-          height: _screenSize.imageHeight,
-          designMode: designMode,
-          image: _image,
-          filters: _stateManager.filters,
-          blurFactor: _stateManager.blurStateHistory.blur,
-        ),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _screenSize.renderedImageSize = constraints.biggest;
+
+        return !_inited
+            ? AutoImage(
+                _image,
+                fit: BoxFit.contain,
+                width: _screenSize.imageWidth,
+                height: _screenSize.imageHeight,
+                designMode: designMode,
+              )
+            : TransformedContentGenerator(
+                configs: _stateManager.transformConfigs,
+                child: ImageWithMultipleFilters(
+                  width: _screenSize.imageWidth,
+                  height: _screenSize.imageHeight,
+                  designMode: designMode,
+                  image: _image,
+                  filters: _stateManager.filters,
+                  blurFactor: _stateManager.blurStateHistory.blur,
+                ),
+              );
+      },
+    );
   }
 }

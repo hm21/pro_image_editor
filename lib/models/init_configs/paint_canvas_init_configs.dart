@@ -28,7 +28,7 @@ class PaintCanvasInitConfigs {
   final Widget? colorIcon;
 
   /// Size of the image.
-  final Size imageSize;
+  final Size drawAreaSize;
 
   /// Theme data for the canvas.
   final ThemeData theme;
@@ -50,7 +50,7 @@ class PaintCanvasInitConfigs {
 
   /// Creates a new instance of [PaintCanvasInitConfigs].
   ///
-  /// The [imageSize] parameter specifies the size of the image.
+  /// The [drawAreaSize] parameter specifies the size of the image.
   /// The [theme] parameter specifies the theme data for the canvas.
   /// The [i18n] parameter specifies internationalization settings.
   /// The [imageEditorTheme] parameter specifies theme settings for the image editor.
@@ -66,7 +66,7 @@ class PaintCanvasInitConfigs {
     this.onUpdate,
     this.undoIcon,
     this.colorIcon,
-    required this.imageSize,
+    required this.drawAreaSize,
     required this.theme,
     required this.i18n,
     required this.imageEditorTheme,

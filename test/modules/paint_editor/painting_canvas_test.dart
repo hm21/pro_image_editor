@@ -17,7 +17,7 @@ void main() {
   group('PaintingCanvas Tests', () {
     PaintCanvasInitConfigs initConfigs = PaintCanvasInitConfigs(
       theme: ThemeData(),
-      imageSize: const Size(200, 200),
+      drawAreaSize: const Size(200, 200),
       i18n: const I18n(),
       imageEditorTheme: const ImageEditorTheme(),
       icons: const ImageEditorIcons(),

@@ -140,8 +140,8 @@ class PaintingCanvasState extends State<PaintingCanvas> {
 
   @override
   void initState() {
-    var w = widget.initConfigs.imageSize.width;
-    var h = widget.initConfigs.imageSize.height;
+    var w = widget.initConfigs.drawAreaSize.width;
+    var h = widget.initConfigs.drawAreaSize.height;
 
     _paintCtrl = PaintingController(
       fill: configs.initialFill,
@@ -462,7 +462,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
       onScaleUpdate: _onScaleUpdate,
       onScaleEnd: _onScaleEnd,
       child: CustomPaint(
-        size: widget.initConfigs.imageSize,
+        size: widget.initConfigs.drawAreaSize,
         willChange: true,
         isComplex: true,
         painter: DrawImage(paintCtrl: _paintCtrl),

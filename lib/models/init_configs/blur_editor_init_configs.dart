@@ -1,14 +1,9 @@
-import 'package:flutter/material.dart';
-
 import 'editor_init_configs.dart';
 
 /// Configuration class for initializing the blur editor.
 ///
 /// This class extends [EditorInitConfigs] and adds parameters for the image size and whether to return the image as a Uint8List when closing the editor.
 class BlurEditorInitConfigs extends EditorInitConfigs {
-  /// The size of the image.
-  final Size imageSize;
-
   /// Determines whether to return the image as a Uint8List when closing the editor.
   final bool convertToUint8List;
 
@@ -27,8 +22,8 @@ class BlurEditorInitConfigs extends EditorInitConfigs {
     super.bodySizeWithLayers,
     super.appliedFilters,
     super.appliedBlurFactor,
+    required super.imageSize,
     required super.theme,
-    required this.imageSize,
     this.convertToUint8List = false,
   });
 }

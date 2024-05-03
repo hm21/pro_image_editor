@@ -35,6 +35,9 @@ abstract class EditorInitConfigs {
   /// The layers in the editor.
   final List<Layer>? layers;
 
+  /// The size of the image.
+  final Size imageSize;
+
   /// Creates a new instance of [EditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
@@ -48,6 +51,7 @@ abstract class EditorInitConfigs {
   /// The [layers] parameter specifies the layers in the editor.
   const EditorInitConfigs({
     required this.theme,
+    required this.imageSize,
     this.configs = const ProImageEditorConfigs(),
     this.onUpdateUI,
     this.imageSizeWithLayers = Size.zero,

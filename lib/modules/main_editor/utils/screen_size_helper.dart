@@ -74,6 +74,19 @@ class ScreenSizeHelper {
                 imageWidth) /
             2,
       );
+  EdgeInsets get imageScreenGaps => EdgeInsets.only(
+        top: (screen.height -
+                screenPadding.top -
+                screenPadding.bottom -
+                imageHeight -
+                allToolbarHeight) /
+            2,
+        left: (screen.width -
+                screenPadding.left -
+                screenPadding.right -
+                imageWidth) /
+            2,
+      );
 
   /// Debounce for handling changes in screen size.
   late Debounce screenSizeDebouncer;

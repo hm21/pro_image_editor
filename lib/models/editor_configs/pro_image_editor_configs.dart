@@ -34,6 +34,16 @@ class ProImageEditorConfigs {
   /// Remove the transparent area of the final image.
   final bool removeTransparentAreas;
 
+  /// Determines whether to capture only the content within the boundaries of the image when editing is complete.
+  ///
+  /// If set to `true`, editing completion will result in cropping all content outside the image boundaries, returning only the content overlaid on the image.
+  ///
+  /// Setting this property to `true` is useful when you want to focus on the image content and exclude any surrounding elements.
+  /// Setting this property to `false` is useful when you want to capture all content also layers which placed outside the image.
+  ///
+  /// By default, this property is set to `true`.
+  final bool captureOnlyImageArea;
+
   /// A unique hero tag for the Image Editor widget.
   final String heroTag;
 
@@ -105,6 +115,7 @@ class ProImageEditorConfigs {
     this.heroTag = 'Pro-Image-Editor-Hero',
     this.i18n = const I18n(),
     this.removeTransparentAreas = false,
+    this.captureOnlyImageArea = true,
     this.helperLines = const HelperLines(),
     this.layerInteraction = const LayerInteraction(),
     this.customWidgets = const ImageEditorCustomWidgets(),

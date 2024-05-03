@@ -1,17 +1,9 @@
-import 'package:flutter/material.dart';
-
 import 'editor_init_configs.dart';
 
 /// Configuration class for initializing the paint editor.
 ///
 /// This class extends [EditorInitConfigs] and adds specific parameters related to painting functionality.
 class PaintEditorInitConfigs extends EditorInitConfigs {
-  /// The size of the image.
-  final Size imageSize;
-
-  /// Additional padding for the editor.
-  final EdgeInsets? paddingHelper;
-
   /// Creates a new instance of [PaintEditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
@@ -27,8 +19,7 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
     super.bodySizeWithLayers,
     super.appliedFilters,
     super.appliedBlurFactor,
+    required super.imageSize,
     required super.theme,
-    required this.imageSize,
-    this.paddingHelper,
   });
 }

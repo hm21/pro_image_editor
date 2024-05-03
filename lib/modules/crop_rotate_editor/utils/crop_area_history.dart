@@ -115,8 +115,10 @@ mixin CropAreaHistory
     flipY = activeHistory.flipY;
     translate = activeHistory.offset;
     userZoom = activeHistory.scaleUser;
-    aspectRatio = activeHistory.aspectRatio;
     cropRect = activeHistory.cropRect;
+    aspectRatio = activeHistory.aspectRatio < 0
+        ? cropRect.size.aspectRatio
+        : activeHistory.aspectRatio;
 
     rotationCount = (activeHistory.angle * 2 / pi).abs().toInt();
     rotateAnimation =
@@ -134,6 +136,11 @@ mixin CropAreaHistory
     calcCropRect();
     calcAspectRatioZoomHelper();
     calcFitToScreen();
+    // Important to set aspectRatio to -1 after calcCropRect that the viewRect
+    // will have the correct size
+    if (activeHistory.aspectRatio < 0) {
+      aspectRatio = -1;
+    }
     onUpdateUI?.call();
   }
 

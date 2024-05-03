@@ -509,7 +509,6 @@ class PaintingEditorState extends State<PaintingEditor>
                 LayerStack(
                   configs: configs,
                   layers: layers!,
-                  paddingHelper: initConfigs.paddingHelper,
                 ),
               _buildPainter(),
               if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
@@ -622,7 +621,7 @@ class PaintingEditorState extends State<PaintingEditor>
         icons: icons,
         theme: theme,
         designMode: designMode,
-        imageSize: initConfigs.imageSize,
+        drawAreaSize: initConfigs.imageSize,
         imageEditorTheme: imageEditorTheme,
         configs: paintEditorConfigs,
         onUpdate: () {
