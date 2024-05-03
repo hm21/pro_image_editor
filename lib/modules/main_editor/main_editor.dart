@@ -472,6 +472,7 @@ class ProImageEditorState extends State<ProImageEditor>
     super.dispose();
   }
 
+  /// Handle keyboard events
   bool _onKeyEvent(KeyEvent event) {
     return _desktopInteractionManager.onKey(
       event,

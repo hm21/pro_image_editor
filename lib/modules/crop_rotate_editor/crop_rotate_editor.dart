@@ -223,21 +223,19 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   bool _activeScaleOut = false;
 
+  /// Manager class for handling desktop interactions.
   late final CropDesktopInteractionManager _desktopInteractionManager;
 
   @override
   void initState() {
     super.initState();
     _bottomBarScrollCtrl = ScrollController();
-    _desktopInteractionManager = CropDesktopInteractionManager(
-        context: context,
-        onUpdateUI: onUpdateUI,
-        setState: setState,
-        configs: configs);
-
     _interactiveCornerArea = isDesktop
         ? cropRotateEditorConfigs.desktopCornerDragArea
         : cropRotateEditorConfigs.mobileCornerDragArea;
+    _desktopInteractionManager =
+        CropDesktopInteractionManager(context: context);
+    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     double initAngle = transformConfigs?.angle ?? 0.0;
     rotateCtrl = AnimationController(
@@ -280,7 +278,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
       history.clear();
       history.add(transformConfigs!);
     }
-    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
@@ -334,7 +331,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       onScale: (scale) async {
         double startZoom = userZoom;
         double targetZoom =
-            max(1, min(cropRotateEditorConfigs.maxScale, userZoom + scale));
+            (userZoom + scale).clamp(1, cropRotateEditorConfigs.maxScale);
 
         await loopWithTransitionTiming(
           (double curveT) {
@@ -455,7 +452,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   @override
-  void calcFitToScreen() {
+  calcFitToScreen() {
     Size contentSize = Size(
       _contentConstraints.maxWidth - _screenPadding * 2,
       _contentConstraints.maxHeight - _screenPadding * 2,
@@ -542,13 +539,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
   void calcCropRect({bool onlyViewRect = false, double? newRatio}) {
     double imgSizeRatio = _imgHeight / _imgWidth;
 
-    double newImgW = _renderedImgConstraints.maxWidth;
-    double newImgH = _renderedImgConstraints.maxHeight;
+    double imgW = _renderedImgConstraints.maxWidth;
+    double imgH = _renderedImgConstraints.maxHeight;
 
-    double cropWidth =
-        imageSticksToScreenWidth ? newImgW : newImgH / imgSizeRatio;
-    double cropHeight =
-        imageSticksToScreenWidth ? newImgW * imgSizeRatio : newImgH;
+    double realImgW = imageSticksToScreenWidth ? imgW : imgH / imgSizeRatio;
+    double realImgH = imageSticksToScreenWidth ? imgW * imgSizeRatio : imgH;
 
     // Rect stick horizontal
     double ratio = newRatio ?? (_ratio > 0 ? _ratio : imgSizeRatio);
@@ -556,24 +551,24 @@ class CropRotateEditorState extends State<CropRotateEditor>
     double top = 0;
 
     if (imgSizeRatio >= ratio) {
-      double newH = cropWidth * ratio;
-      top = (cropHeight - newH) / 2;
-      cropHeight = newH;
+      double newH = realImgW * ratio;
+      top = (realImgH - newH) / 2;
+      realImgH = newH;
     }
     // Rect stick vertical
     else {
-      double newW = cropHeight / ratio;
-      left = (cropWidth - newW) / 2;
-      cropWidth = newW;
+      double newW = realImgH / ratio;
+      left = (realImgW - newW) / 2;
+      realImgW = newW;
     }
 
     _cropSpaceVertical = top * 2;
     _cropSpaceHorizontal = left * 2;
 
     if (!onlyViewRect) {
-      cropRect = Rect.fromLTWH(left, top, cropWidth, cropHeight);
+      cropRect = Rect.fromLTWH(left, top, realImgW, realImgH);
     }
-    _viewRect = Rect.fromLTWH(left, top, cropWidth, cropHeight);
+    _viewRect = Rect.fromLTWH(left, top, realImgW, realImgH);
   }
 
   CropAreaPart _determineCropAreaPart(Offset localPosition) {
@@ -707,115 +702,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
     setState(() {});
   }
 
-  void _onScaleEnd(ScaleEndDetails details) async {
-    Rect interpolatedRect(Rect initRect, Rect targetRect, double curveT) {
-      return Rect.fromLTRB(
-        lerpDouble(initRect.left, targetRect.left, curveT)!,
-        lerpDouble(initRect.top, targetRect.top, curveT)!,
-        lerpDouble(initRect.right, targetRect.right, curveT)!,
-        lerpDouble(initRect.bottom, targetRect.bottom, curveT)!,
-      );
-    }
-
-    if (_blockInteraction) return;
-    _blockInteraction = true;
-    _interactionActive = false;
-    setState(() {});
-
-    if (cropRect != _viewRect) {
-      Rect initRect = Rect.fromCenter(
-          center: _viewRect.center,
-          width: _viewRect.width,
-          height: _viewRect.height);
-
-      if (_ratio < 0) {
-        calcCropRect(
-          onlyViewRect: true,
-          newRatio: 1 / cropRect.size.aspectRatio,
-        );
-
-        calcAspectRatioZoomHelper();
-        calcFitToScreen();
-      }
-
-      Rect startCropRect = cropRect;
-      Rect targetCropRect = _viewRect;
-
-      double startZoom = userZoom;
-      double targetZoom = min(
-        userZoom *
-            targetCropRect.size.longestSide /
-            startCropRect.size.longestSide,
-        cropRotateEditorConfigs.maxScale,
-      );
-
-      Offset startOffset = translate;
-      Offset targetOffset = startOffset -
-          Offset(
-                (startCropRect.left -
-                    (targetCropRect.right - startCropRect.right) -
-                    _cropSpaceHorizontal / 2),
-                (startCropRect.top -
-                    (targetCropRect.bottom - startCropRect.bottom) -
-                    _cropSpaceVertical / 2),
-              ) /
-              startZoom /
-              2;
-
-      await loopWithTransitionTiming(
-        (double curveT) {
-          userZoom = startZoom + (targetZoom - startZoom) * curveT;
-
-          translate = Offset(
-            startOffset.dx +
-                (targetOffset.dx - startOffset.dx) *
-                    (targetCropRect.width / cropRect.width) *
-                    curveT,
-            startOffset.dy +
-                (targetOffset.dy - startOffset.dy) *
-                    (targetCropRect.height / cropRect.height) *
-                    curveT,
-          );
-
-          cropRect = interpolatedRect(startCropRect, targetCropRect, curveT);
-
-          _setOffsetLimits(
-            rect: _ratio < 0
-                ? interpolatedRect(initRect, targetCropRect, curveT)
-                : null,
-          );
-
-          setState(() {});
-        },
-        duration: cropRotateEditorConfigs.cropDragAnimationDuration,
-        transitionFunction:
-            cropRotateEditorConfigs.cropDragAnimationCurve.transform,
-      );
-
-      cropRect = targetCropRect;
-      translate = targetOffset;
-      userZoom = targetZoom;
-
-      _setOffsetLimits();
-    }
-    _activeScaleOut = false;
-    _blockInteraction = false;
-
-    addHistory();
-    setState(() {});
-  }
-
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (_blockInteraction) return;
     _blockInteraction = true;
     if (details.pointerCount == 2) {
-      double newZoom = max(
-        1,
-        min(
-          cropRotateEditorConfigs.maxScale,
-          _startingPinchScale * details.scale,
-        ),
-      );
+      double newZoom = (_startingPinchScale * details.scale)
+          .clamp(1.0, cropRotateEditorConfigs.maxScale);
 
       // Calculate the center offset point from the new zoomed view
       Offset centerZoomOffset =
@@ -840,31 +732,61 @@ class CropRotateEditorState extends State<CropRotateEditor>
         double imgW = _renderedImgConstraints.maxWidth;
         double imgH = _renderedImgConstraints.maxHeight;
 
+        double halfSpaceHorizontal = _cropSpaceHorizontal / 2;
+        double halfSpaceVertical = _cropSpaceVertical / 2;
+
         double outsidePadding = _screenPadding * 2;
         double cornerGap = _cropCornerLength * 2.25;
         double minCornerDistance = outsidePadding + cornerGap;
 
-        double dx = offset.dx + _viewRect.width / 2 + _cropSpaceHorizontal / 2;
-        double dy = offset.dy + _viewRect.height / 2 + _cropSpaceVertical / 2;
+        double dx = offset.dx + _viewRect.width / 2 + halfSpaceHorizontal;
+        double dy = offset.dy + _viewRect.height / 2 + halfSpaceVertical;
 
         double maxRight = cropRect.right + outsidePadding - minCornerDistance;
         double maxBottom = cropRect.bottom + outsidePadding - minCornerDistance;
+
+        double minLeft = halfSpaceHorizontal;
+        double minRight = imgW - halfSpaceHorizontal;
+        double minTop = halfSpaceVertical;
+        double minBottom = imgH - halfSpaceVertical;
+
+        if (_ratio < 0) {
+          minLeft = -(imgW * zoomFactor / 2 -
+              _viewRect.width / 2 -
+              halfSpaceHorizontal -
+              translate.dx * zoomFactor);
+          minRight = imgW +
+              (imgW * zoomFactor / 2 -
+                  _viewRect.width / 2 -
+                  halfSpaceHorizontal +
+                  translate.dx * zoomFactor);
+          minTop = -(imgH * zoomFactor / 2 -
+              _viewRect.height / 2 -
+              halfSpaceVertical -
+              translate.dy * zoomFactor);
+          minBottom = imgH +
+              (imgH * zoomFactor / 2 -
+                  _viewRect.height / 2 -
+                  halfSpaceVertical +
+                  translate.dy * zoomFactor);
+        }
+
         // Scale outside when the user move outside the scale area
-        if (offset.dx.abs() > _viewRect.width / 2 + _interactiveCornerArea ||
-            offset.dy.abs() > _viewRect.height / 2 + _interactiveCornerArea) {
+        /*  if (offset.dx.abs() > _viewRect.width / 2 + _interactiveCornerArea || offset.dy.abs() > _viewRect.height / 2 + _interactiveCornerArea) {
+
           if (!_activeScaleOut) {
             _activeScaleOut = true;
             _zoomOutside();
           }
-        } else if (!_activeScaleOut ||
+        } else */
+        if (!_activeScaleOut ||
             (offset.dx.abs() < _viewRect.width / 2 - _interactiveCornerArea)) {
           _activeScaleOut = false;
           switch (_currentCropAreaPart) {
             case CropAreaPart.topLeft:
-              double left = max(0, dx);
               cropRect = Rect.fromLTRB(
-                min(maxRight, left),
-                min(maxBottom, max(0, dy)),
+                dx.clamp(minLeft, maxRight),
+                dy.clamp(minTop, maxBottom),
                 cropRect.right,
                 cropRect.bottom,
               );
@@ -873,49 +795,49 @@ class CropRotateEditorState extends State<CropRotateEditor>
             case CropAreaPart.topRight:
               cropRect = Rect.fromLTRB(
                 cropRect.left,
-                max(0, min(dy, maxBottom)),
-                max(cornerGap + cropRect.left, min(imgW, dx)),
+                dy.clamp(minTop, maxBottom),
+                dx.clamp(cornerGap + cropRect.left, minRight),
                 cropRect.bottom,
               );
 
               break;
             case CropAreaPart.bottomLeft:
               cropRect = Rect.fromLTRB(
-                max(0, min(maxRight, dx)),
+                dx.clamp(minLeft, maxRight),
                 cropRect.top,
                 cropRect.right,
-                max(cornerGap + cropRect.top, min(imgH, dy)),
+                dy.clamp(cornerGap + cropRect.top, minBottom),
               );
               break;
             case CropAreaPart.bottomRight:
               cropRect = Rect.fromLTRB(
                 cropRect.left,
                 cropRect.top,
-                max(cornerGap + cropRect.left, min(imgW, dx)),
-                max(cornerGap + cropRect.top, min(imgH, dy)),
+                dx.clamp(cornerGap + cropRect.left, minRight),
+                dy.clamp(cornerGap + cropRect.top, minBottom),
               );
               break;
             case CropAreaPart.left:
               cropRect = Rect.fromLTRB(
-                min(maxRight, max(_cropSpaceHorizontal / 2, dx)),
+                dx.clamp(minLeft, maxRight),
                 cropRect.top,
                 cropRect.right,
                 cropRect.bottom,
               );
+              _setOffsetLimits();
               break;
             case CropAreaPart.right:
               cropRect = Rect.fromLTRB(
                 cropRect.left,
                 cropRect.top,
-                max(cornerGap + cropRect.left,
-                    min(imgW - _cropSpaceHorizontal / 2, dx)),
+                dx.clamp(cornerGap + cropRect.left, minRight),
                 cropRect.bottom,
               );
               break;
             case CropAreaPart.top:
               cropRect = Rect.fromLTRB(
                 cropRect.left,
-                min(maxBottom, max(_cropSpaceVertical / 2, dy)),
+                dy.clamp(minTop, maxBottom),
                 cropRect.right,
                 cropRect.bottom,
               );
@@ -925,8 +847,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 cropRect.left,
                 cropRect.top,
                 cropRect.right,
-                max(cornerGap + cropRect.top,
-                    min(imgH - _cropSpaceVertical / 2, dy)),
+                dy.clamp(cornerGap + cropRect.top, minBottom),
               );
               break;
             default:
@@ -980,6 +901,105 @@ class CropRotateEditorState extends State<CropRotateEditor>
       }
     }
     _blockInteraction = false;
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) async {
+    Rect interpolatedRect(Rect initRect, Rect targetRect, double curveT) {
+      return Rect.fromLTRB(
+        lerpDouble(initRect.left, targetRect.left, curveT)!,
+        lerpDouble(initRect.top, targetRect.top, curveT)!,
+        lerpDouble(initRect.right, targetRect.right, curveT)!,
+        lerpDouble(initRect.bottom, targetRect.bottom, curveT)!,
+      );
+    }
+
+    if (_blockInteraction) return;
+    _blockInteraction = true;
+    _interactionActive = false;
+    setState(() {});
+
+    if (cropRect != _viewRect) {
+      Rect initRect = Rect.fromCenter(
+          center: _viewRect.center,
+          width: _viewRect.width,
+          height: _viewRect.height);
+
+      /// Recalculate crop rect when aspect ratio is set to `free`
+      if (_ratio < 0) {
+        calcCropRect(
+          onlyViewRect: true,
+          newRatio: 1 / cropRect.size.aspectRatio,
+        );
+
+        calcAspectRatioZoomHelper();
+        calcFitToScreen();
+      }
+
+      Rect startCropRect = cropRect;
+      Rect targetCropRect = _viewRect;
+
+      double startZoom = userZoom;
+      double targetZoom = min(
+        userZoom *
+            targetCropRect.size.longestSide /
+            startCropRect.size.longestSide,
+        cropRotateEditorConfigs.maxScale,
+      );
+
+      Offset startOffset = translate;
+      Offset targetOffset = startOffset -
+          Offset(
+                (startCropRect.left -
+                    (targetCropRect.right - startCropRect.right) -
+                    _cropSpaceHorizontal / 2),
+                (startCropRect.top -
+                    (targetCropRect.bottom - startCropRect.bottom) -
+                    _cropSpaceVertical / 2),
+              ) /
+              startZoom /
+              2;
+
+      await loopWithTransitionTiming(
+        (double curveT) {
+          userZoom = lerpDouble(startZoom, targetZoom, curveT)!;
+
+          translate = Offset(
+            startOffset.dx +
+                (targetOffset.dx - startOffset.dx) *
+                    (targetCropRect.width / cropRect.width) *
+                    curveT,
+            startOffset.dy +
+                (targetOffset.dy - startOffset.dy) *
+                    (targetCropRect.height / cropRect.height) *
+                    curveT,
+          );
+
+          cropRect = interpolatedRect(startCropRect, targetCropRect, curveT);
+
+          _setOffsetLimits(
+            rect: _ratio < 0
+                ? interpolatedRect(initRect, targetCropRect, curveT)
+                : null,
+          );
+
+          setState(() {});
+        },
+        duration: cropRotateEditorConfigs.cropDragAnimationDuration,
+        transitionFunction:
+            cropRotateEditorConfigs.cropDragAnimationCurve.transform,
+      );
+
+      cropRect = targetCropRect;
+      translate = targetOffset;
+      userZoom = targetZoom;
+
+      _setOffsetLimits();
+    }
+    _activeScaleOut = false;
+    _blockInteraction = false;
+
+    addHistory();
+    setState(() {});
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
@@ -1285,7 +1305,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             backgroundColor: imageEditorTheme.cropRotateEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
-            bottomNavigationBar: _buildBottomNavigationBar(),
+            bottomNavigationBar: _buildBottomAppBar(),
           ),
         ),
       );
@@ -1336,98 +1356,104 @@ class CropRotateEditorState extends State<CropRotateEditor>
             : null);
   }
 
-  Widget? _buildBottomNavigationBar() {
+  Widget? _buildBottomAppBar() {
     return customWidgets.bottomBarCropRotateEditor ??
         (imageEditorTheme.editorMode == ThemeEditorMode.simple
-            ? Theme(
-                data: theme,
-                child: Scrollbar(
-                  controller: _bottomBarScrollCtrl,
-                  scrollbarOrientation: ScrollbarOrientation.top,
-                  thickness: isDesktop ? null : 0,
-                  child: BottomAppBar(
-                    height: kToolbarHeight,
-                    color: imageEditorTheme
-                        .cropRotateEditor.bottomBarBackgroundColor,
-                    padding: EdgeInsets.zero,
-                    child: Center(
-                      child: SingleChildScrollView(
-                        controller: _bottomBarScrollCtrl,
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth:
-                                min(MediaQuery.of(context).size.width, 500),
-                            maxWidth: 500,
+            ? (cropRotateEditorConfigs.canRotate ||
+                    cropRotateEditorConfigs.canFlip ||
+                    cropRotateEditorConfigs.canChangeAspectRatio ||
+                    cropRotateEditorConfigs.canReset
+                ? Theme(
+                    data: theme,
+                    child: Scrollbar(
+                      controller: _bottomBarScrollCtrl,
+                      scrollbarOrientation: ScrollbarOrientation.top,
+                      thickness: isDesktop ? null : 0,
+                      child: BottomAppBar(
+                        height: kToolbarHeight,
+                        color: imageEditorTheme
+                            .cropRotateEditor.bottomBarBackgroundColor,
+                        padding: EdgeInsets.zero,
+                        child: Center(
+                          child: SingleChildScrollView(
+                            controller: _bottomBarScrollCtrl,
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth:
+                                    min(MediaQuery.of(context).size.width, 500),
+                                maxWidth: 500,
+                              ),
+                              child: Builder(builder: (context) {
+                                Color foregroundColor = imageEditorTheme
+                                    .cropRotateEditor.appBarForegroundColor;
+                                return Wrap(
+                                  direction: Axis.horizontal,
+                                  alignment: WrapAlignment.spaceAround,
+                                  children: <Widget>[
+                                    if (cropRotateEditorConfigs.canRotate)
+                                      FlatIconTextButton(
+                                        label: Text(
+                                          i18n.cropRotateEditor.rotate,
+                                          style: TextStyle(
+                                              fontSize: 10.0,
+                                              color: foregroundColor),
+                                        ),
+                                        icon: Icon(
+                                            icons.cropRotateEditor.rotate,
+                                            color: foregroundColor),
+                                        onPressed: rotate,
+                                      ),
+                                    if (cropRotateEditorConfigs.canFlip)
+                                      FlatIconTextButton(
+                                        label: Text(
+                                          i18n.cropRotateEditor.flip,
+                                          style: TextStyle(
+                                              fontSize: 10.0,
+                                              color: foregroundColor),
+                                        ),
+                                        icon: Icon(icons.cropRotateEditor.flip,
+                                            color: foregroundColor),
+                                        onPressed: flip,
+                                      ),
+                                    if (cropRotateEditorConfigs
+                                        .canChangeAspectRatio)
+                                      FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'pro-image-editor-aspect-ratio-btn'),
+                                        label: Text(
+                                          i18n.cropRotateEditor.ratio,
+                                          style: TextStyle(
+                                              fontSize: 10.0,
+                                              color: foregroundColor),
+                                        ),
+                                        icon: Icon(
+                                            icons.cropRotateEditor.aspectRatio,
+                                            color: foregroundColor),
+                                        onPressed: openAspectRatioOptions,
+                                      ),
+                                    if (cropRotateEditorConfigs.canReset)
+                                      FlatIconTextButton(
+                                        label: Text(
+                                          i18n.cropRotateEditor.reset,
+                                          style: TextStyle(
+                                              fontSize: 10.0,
+                                              color: foregroundColor),
+                                        ),
+                                        icon: Icon(icons.cropRotateEditor.reset,
+                                            color: foregroundColor),
+                                        onPressed: reset,
+                                      ),
+                                  ],
+                                );
+                              }),
+                            ),
                           ),
-                          child: Builder(builder: (context) {
-                            Color foregroundColor = imageEditorTheme
-                                .cropRotateEditor.appBarForegroundColor;
-                            return Wrap(
-                              direction: Axis.horizontal,
-                              alignment: WrapAlignment.spaceAround,
-                              children: <Widget>[
-                                if (cropRotateEditorConfigs.canRotate)
-                                  FlatIconTextButton(
-                                    label: Text(
-                                      i18n.cropRotateEditor.rotate,
-                                      style: TextStyle(
-                                          fontSize: 10.0,
-                                          color: foregroundColor),
-                                    ),
-                                    icon: Icon(icons.cropRotateEditor.rotate,
-                                        color: foregroundColor),
-                                    onPressed: rotate,
-                                  ),
-                                if (cropRotateEditorConfigs.canFlip)
-                                  FlatIconTextButton(
-                                    label: Text(
-                                      i18n.cropRotateEditor.flip,
-                                      style: TextStyle(
-                                          fontSize: 10.0,
-                                          color: foregroundColor),
-                                    ),
-                                    icon: Icon(icons.cropRotateEditor.flip,
-                                        color: foregroundColor),
-                                    onPressed: flip,
-                                  ),
-                                if (cropRotateEditorConfigs
-                                    .canChangeAspectRatio)
-                                  FlatIconTextButton(
-                                    key: const ValueKey(
-                                        'pro-image-editor-aspect-ratio-btn'),
-                                    label: Text(
-                                      i18n.cropRotateEditor.ratio,
-                                      style: TextStyle(
-                                          fontSize: 10.0,
-                                          color: foregroundColor),
-                                    ),
-                                    icon: Icon(
-                                        icons.cropRotateEditor.aspectRatio,
-                                        color: foregroundColor),
-                                    onPressed: openAspectRatioOptions,
-                                  ),
-                                if (cropRotateEditorConfigs.canReset)
-                                  FlatIconTextButton(
-                                    label: Text(
-                                      i18n.cropRotateEditor.reset,
-                                      style: TextStyle(
-                                          fontSize: 10.0,
-                                          color: foregroundColor),
-                                    ),
-                                    icon: Icon(icons.cropRotateEditor.reset,
-                                        color: foregroundColor),
-                                    onPressed: reset,
-                                  ),
-                              ],
-                            );
-                          }),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              )
+                  )
+                : null)
             : imageEditorTheme.editorMode == ThemeEditorMode.whatsapp
                 ? WhatsAppCropRotateToolbar(
                     configs: configs,

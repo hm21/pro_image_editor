@@ -183,5 +183,5 @@ mixin CropAreaHistory
   @protected
   void calcAspectRatioZoomHelper() {}
   @protected
-  void calcFitToScreen() {}
+  calcFitToScreen() {}
 }

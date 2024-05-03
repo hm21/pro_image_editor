@@ -27,6 +27,7 @@ import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'painting_canvas.dart';
+import 'utils/paint_desktop_interaction_manager.dart';
 import 'utils/paint_editor_enum.dart';
 
 /// The `PaintingEditor` widget allows users to editing images with painting tools.
@@ -177,6 +178,9 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Determines whether redo actions can be performed on the current state.
   bool get canRedo => _imageKey.currentState?.canRedo == true;
 
+  /// Manager class for handling desktop interactions.
+  late final PaintDesktopInteractionManager _desktopInteractionManager;
+
   /// Get the current PaintMode from the ImageKey's currentState.
   PaintModeE? get paintMode => _imageKey.currentState?.mode;
 
@@ -230,21 +234,39 @@ class PaintingEditorState extends State<PaintingEditor>
 
   @override
   void initState() {
+    super.initState();
     _fill = paintEditorConfigs.initialFill;
     _bottomBarScrollCtrl = ScrollController();
+    _desktopInteractionManager =
+        PaintDesktopInteractionManager(context: context);
+    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     /// Important to set state after view init to set action icons
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {});
       onUpdateUI?.call();
     });
-    super.initState();
   }
 
   @override
   void dispose() {
     _bottomBarScrollCtrl.dispose();
+    ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
+  }
+
+  /// Handle keyboard events
+  bool _onKeyEvent(KeyEvent event) {
+    return _desktopInteractionManager.onKey(
+      event,
+      onUndoRedo: (undo) {
+        if (undo) {
+          undoAction();
+        } else {
+          redoAction();
+        }
+      },
+    );
   }
 
   /// Opens a bottom sheet to adjust the line weight when drawing.
