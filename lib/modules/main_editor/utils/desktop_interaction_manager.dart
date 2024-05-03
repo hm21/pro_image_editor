@@ -36,9 +36,7 @@ class DesktopInteractionManager {
   bool onKey(
     KeyEvent event, {
     required Layer? activeLayer,
-    required bool canPressEscape,
-    required bool isEditorOpen,
-    required Function onCloseEditor,
+    required Function onEscape,
     required Function(bool) onUndoRedo,
   }) {
     final key = event.logicalKey.keyLabel;
@@ -46,13 +44,7 @@ class DesktopInteractionManager {
       if (event is KeyDownEvent) {
         switch (key) {
           case 'Escape':
-            if (canPressEscape) {
-              if (isEditorOpen) {
-                Navigator.pop(context);
-              } else {
-                onCloseEditor();
-              }
-            }
+            onEscape();
             break;
 
           case 'Subtract':

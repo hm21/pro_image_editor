@@ -175,6 +175,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// A ScrollController for controlling the scrolling behavior of the bottom navigation bar.
   late ScrollController _bottomBarScrollCtrl;
 
+  bool _showFakeHero = true;
   bool _showWidgets = false;
   bool _blockInteraction = false;
 
@@ -226,10 +227,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Manager class for handling desktop interactions.
   late final CropDesktopInteractionManager _desktopInteractionManager;
 
+  late TransformConfigs _fakeHeroTransformConfigs;
+
   @override
   void initState() {
     super.initState();
     _bottomBarScrollCtrl = ScrollController();
+    _fakeHeroTransformConfigs = transformConfigs ?? TransformConfigs.empty();
     _interactiveCornerArea = isDesktop
         ? cropRotateEditorConfigs.desktopCornerDragArea
         : cropRotateEditorConfigs.mobileCornerDragArea;
@@ -278,19 +282,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
       history.clear();
       history.add(transformConfigs!);
     }
-
+    _showFakeHero = initConfigs.enableFakeHero;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
       calcCropRect();
-      _showWidgets = true;
-
-      loopWithTransitionTiming(
-        (double curveT) {
-          _painterOpacity = 1 * curveT;
-          setState(() {});
-        },
-        duration: const Duration(milliseconds: 250),
-      );
+      if (!initConfigs.enableFakeHero) hideFakeHero();
     });
   }
 
@@ -303,18 +299,43 @@ class CropRotateEditorState extends State<CropRotateEditor>
     super.dispose();
   }
 
+  void hideFakeHero() {
+    setState(() {
+      _showFakeHero = false;
+      _showWidgets = true;
+
+      loopWithTransitionTiming(
+        (double curveT) {
+          _painterOpacity = 1 * curveT;
+          setState(() {});
+        },
+        duration: const Duration(milliseconds: 150),
+      );
+    });
+  }
+
   bool _onKeyEvent(KeyEvent event) {
     return _desktopInteractionManager.onKey(
       event,
+      onRotate: rotate,
+      onFlip: flip,
       onTranslate: (offset) async {
+        // Calculate correct offset even image is rotated
+        double radianAngle = rotateAnimation.value;
+        double cosAngle = cos(radianAngle);
+        double sinAngle = sin(radianAngle);
+
+        double dx = offset.dy * sinAngle + offset.dx * cosAngle;
+        double dy = offset.dy * cosAngle - offset.dx * sinAngle;
+
         Offset startOffset = translate;
-        Offset targetOffset = translate += offset;
+        Offset targetOffset = translate += Offset(dx, dy);
 
         await loopWithTransitionTiming(
           (double curveT) {
             translate = Offset(
-              startOffset.dx + (targetOffset.dx - startOffset.dx) * curveT,
-              startOffset.dy + (targetOffset.dy - startOffset.dy) * curveT,
+              lerpDouble(startOffset.dx, targetOffset.dx, curveT)!,
+              lerpDouble(startOffset.dy, targetOffset.dy, curveT)!,
             );
             _setOffsetLimits();
             setState(() {});
@@ -361,6 +382,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Closes the editor without applying changes.
   void close() {
+    setState(() {
+      _showFakeHero = true;
+    });
     Navigator.pop(context);
   }
 
@@ -372,6 +396,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
             : activeHistory;
 
     if (!initConfigs.convertToUint8List) {
+      setState(() {
+        _fakeHeroTransformConfigs = transformC;
+        _showFakeHero = true;
+      });
       Navigator.pop(context, transformC);
     } else {
       // TODO: ensure image is correctly cropped
@@ -416,6 +444,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Flip the image horizontally
   void flip() {
+    if (!cropRotateEditorConfigs.canFlip) return;
+
     setState(() {
       if (rotationCount % 2 != 0) {
         flipY = !flipY;
@@ -428,6 +458,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Rotates the image clockwise.
   void rotate() {
+    if (!cropRotateEditorConfigs.canRotate) return;
+
     _blockInteraction = true;
     var piHelper =
         cropRotateEditorConfigs.rotateDirection == RotateDirection.left
@@ -1103,13 +1135,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
   }
 
-  void _mouseScroll(PointerSignalEvent event) {
+  void _mouseScroll(PointerSignalEvent event) async {
     // Check if interaction is blocked
     if (_blockInteraction) return;
 
     if (event is PointerScrollEvent) {
       // Define zoom factor and extract vertical scroll delta
-      double factor = cropRotateEditorConfigs.mouseScaleFactor;
+      double factor = cropRotateEditorConfigs.mouseScaleFactor *
+          (event.scrollDelta.dy / 50).abs().clamp(0.5, 2);
 
       double deltaY = event.scrollDelta.dy *
           (cropRotateEditorConfigs.reverseMouseScroll ? -1 : 1);
@@ -1474,19 +1507,30 @@ class CropRotateEditorState extends State<CropRotateEditor>
       builder: (context, constraints) {
         _contentConstraints = constraints;
 
-        return _buildMouseCursor(
-          child: DeferredPointerHandler(
-            child: _buildRotationTransform(
-              child: _buildFlipTransform(
-                child: _buildRotationScaleTransform(
-                  child: _buildPaintContainer(
-                    child: _buildCropPainter(
-                      child: _buildUserScaleTransform(
-                        child: _buildTranslate(
-                          child: DeferPointer(
-                            child: _buildMouseListener(
-                              child: _buildGestureDetector(
-                                child: _buildImage(),
+        return Stack(
+          children: [
+            if (_showFakeHero) _buildFakeHero(),
+            Opacity(
+              opacity: _showFakeHero ? 0 : 1,
+              child: HeroMode(
+                enabled: false,
+                child: _buildMouseCursor(
+                  child: DeferredPointerHandler(
+                    child: _buildRotationTransform(
+                      child: _buildFlipTransform(
+                        child: _buildRotationScaleTransform(
+                          child: _buildPaintContainer(
+                            child: _buildCropPainter(
+                              child: _buildUserScaleTransform(
+                                child: _buildTranslate(
+                                  child: DeferPointer(
+                                    child: _buildMouseListener(
+                                      child: _buildGestureDetector(
+                                        child: _buildImage(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1497,7 +1541,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ),
               ),
             ),
-          ),
+          ],
         );
       },
     );
@@ -1657,10 +1701,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 width: _imgWidth,
                 height: _imgHeight,
               ),
-
-              /// TODO: Add layers with hero animation.
-              /// Note: When the image is rotated or flipped it affect the hero animation.
-
               if (cropRotateEditorConfigs.transformLayers && layers != null)
                 ClipRRect(
                   clipBehavior: Clip.hardEdge,
@@ -1682,6 +1722,46 @@ class CropRotateEditorState extends State<CropRotateEditor>
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFakeHero() {
+    return Padding(
+      padding: EdgeInsets.all(_screenPadding),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Hero(
+            tag: heroTag,
+            createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+            child: TransformedContentGenerator(
+              configs: _fakeHeroTransformConfigs,
+              child: ImageWithMultipleFilters(
+                width: initConfigs.imageSize.width,
+                height: initConfigs.imageSize.height,
+                designMode: designMode,
+                image: editorImage,
+                filters: appliedFilters,
+                blurFactor: appliedBlurFactor,
+              ),
+            ),
+          ),
+          if (filterEditorConfigs.showLayers && layers != null)
+            LayerStack(
+              transformHelper: TransformHelper(
+                mainBodySize: bodySizeWithLayers,
+                mainImageSize: imageSizeWithLayers,
+                editorBodySize: Size(
+                  _contentConstraints.biggest.width - _screenPadding * 2,
+                  _contentConstraints.biggest.height - _screenPadding * 2,
+                ),
+              ),
+              configs: configs,
+              layers: layers!,
+              clipBehavior: Clip.none,
+            ),
+        ],
       ),
     );
   }

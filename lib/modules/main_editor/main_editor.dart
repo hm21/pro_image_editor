@@ -482,9 +482,22 @@ class ProImageEditorState extends State<ProImageEditor>
     return _desktopInteractionManager.onKey(
       event,
       activeLayer: _activeLayer,
-      canPressEscape: !_openDialog,
-      isEditorOpen: _isEditorOpen,
-      onCloseEditor: closeEditor,
+      onEscape: () {
+        if (!_openDialog) {
+          if (_isEditorOpen) {
+            print(cropRotateEditor.currentState);
+            if (cropRotateEditor.currentState != null) {
+              // Important to close the crop-editor like that cuz we need to set
+              // the fake hero first
+              cropRotateEditor.currentState!.close();
+            } else {
+              Navigator.pop(context);
+            }
+          } else {
+            closeEditor();
+          }
+        }
+      },
       onUndoRedo: (undo) {
         if (undo) {
           undoAction();
@@ -929,7 +942,11 @@ class ProImageEditorState extends State<ProImageEditor>
         },
         pageBuilder: (context, animation, secondaryAnimation) {
           void animationStatusListener(AnimationStatus status) {
-            if (status == AnimationStatus.dismissed) {
+            if (status == AnimationStatus.completed) {
+              if (cropRotateEditor.currentState != null) {
+                cropRotateEditor.currentState!.hideFakeHero();
+              }
+            } else if (status == AnimationStatus.dismissed) {
               setState(() => _isEditorOpen = false);
               animation.removeStatusListener(animationStatusListener);
             }
@@ -1014,6 +1031,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     _openPage<TransformConfigs?>(
       CropRotateEditor.autoSource(
+        key: cropRotateEditor,
         file: img.file,
         byteArray: img.byteArray,
         assetPath: img.assetPath,
@@ -1027,6 +1045,7 @@ class ProImageEditorState extends State<ProImageEditor>
           imageSize: Size(_screenSize.imageWidth, _screenSize.imageHeight),
           imageSizeWithLayers: _screenSize.renderedImageSize,
           bodySizeWithLayers: _screenSize.bodySize,
+          enableFakeHero: true,
         ),
       ),
     ).then((transformConfigs) async {

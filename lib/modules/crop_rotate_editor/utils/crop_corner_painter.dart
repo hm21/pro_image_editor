@@ -44,15 +44,6 @@ class CropCornerPainter extends CustomPainter {
     _drawDarkenOutside(canvas: canvas, size: size);
     if (interactionActive) _drawHelperAreas(canvas: canvas, size: size);
     _drawCorners(canvas: canvas, size: size);
-
-    /// TODO: Delete me
-    if (kDebugMode) {
-      canvas.drawCircle(
-        Offset(size.width / 2, size.height / 2),
-        2,
-        Paint()..color = Colors.red.shade900,
-      );
-    }
   }
 
   void _drawDarkenOutside({
@@ -90,12 +81,17 @@ class CropCornerPainter extends CustomPainter {
     path = Path.combine(PathOperation.difference, path, rectPath);
 
     /// Draw the darkened area
+    Color backgroundColor = imageEditorTheme.cropRotateEditor.background;
     canvas.drawPath(
       path,
       Paint()
         ..color = interactionActive
-            ? Colors.black.withOpacity(0.5 * opacity)
-            : Colors.black.withOpacity(0.7 * opacity)
+            ? backgroundColor.withOpacity(
+                (0.6 + 0.4 * (1 - opacity)).clamp(0, 1),
+              )
+            : backgroundColor.withOpacity(
+                (0.84 + 0.16 * (1 - opacity)).clamp(0, 1),
+              )
         ..style = PaintingStyle.fill,
     );
   }

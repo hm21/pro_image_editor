@@ -24,6 +24,8 @@ class CropDesktopInteractionManager {
     required Function(Offset) onTranslate,
     required Function(double) onScale,
     required Function(bool) onUndoRedo,
+    required Function() onFlip,
+    required Function() onRotate,
   }) {
     final key = event.logicalKey.keyLabel;
     if (context.mounted) {
@@ -31,6 +33,12 @@ class CropDesktopInteractionManager {
         double scaleFactor = 0.2;
         double translateFactor = 20;
         switch (key) {
+          case 'R':
+            onRotate();
+            break;
+          case 'F':
+            onFlip();
+            break;
           case 'Subtract':
           case 'Numpad Subtract':
           case 'Page Down':
