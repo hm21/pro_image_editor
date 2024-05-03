@@ -34,7 +34,6 @@ class LayerStack extends StatefulWidget {
 class _LayerStackState extends State<LayerStack> {
   @override
   Widget build(BuildContext context) {
-    // TODO: fix animation bug => layers on main page have full screen size and transform after that down
     return IgnorePointer(
       child: Transform.translate(
         offset: widget.transformHelper.offset,

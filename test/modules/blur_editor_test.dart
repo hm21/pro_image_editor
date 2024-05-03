@@ -16,7 +16,6 @@ void main() {
               fakeMemoryImage,
               initConfigs: BlurEditorInitConfigs(
                 theme: ThemeData.light(),
-                imageSize: const Size(200, 200),
               ),
             ),
           ),

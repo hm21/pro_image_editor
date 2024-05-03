@@ -255,8 +255,8 @@ class FilterEditorState extends State<FilterEditor>
               child: TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
-                  width: initConfigs.imageSize.width,
-                  height: initConfigs.imageSize.height,
+                  width: mainImageSize.width,
+                  height: mainImageSize.height,
                   designMode: designMode,
                   image: editorImage,
                   filters: [
@@ -273,8 +273,8 @@ class FilterEditorState extends State<FilterEditor>
             if (filterEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: bodySizeWithLayers,
-                  mainImageSize: imageSizeWithLayers,
+                  mainBodySize: mainBodySize,
+                  mainImageSize: mainImageSize,
                   editorBodySize: _bodySize,
                 ),
                 configs: configs,
@@ -311,8 +311,8 @@ class FilterEditorState extends State<FilterEditor>
                     ),
             ),
             FilterEditorItemList(
-              bodySizeWithLayers: bodySizeWithLayers,
-              imageSizeWithLayers: imageSizeWithLayers,
+              mainBodySize: mainBodySize,
+              mainImageSize: mainImageSize,
               byteArray: editorImage.byteArray,
               file: editorImage.file,
               assetPath: editorImage.assetPath,

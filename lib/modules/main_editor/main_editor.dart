@@ -7,7 +7,6 @@ import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
@@ -409,7 +408,8 @@ class ProImageEditorState extends State<ProImageEditor>
   bool get canRedo =>
       _stateManager.editPosition < _stateManager.stateHistory.length - 1;
 
-  /// TODO: doc
+  /// Hide all layers outside the drawn image when the screenshot controller
+  /// takes a picture
   bool _screenshotHideOutsideImgContent = false;
 
   /// Get the current image being edited from the change list.
@@ -485,7 +485,6 @@ class ProImageEditorState extends State<ProImageEditor>
       onEscape: () {
         if (!_openDialog) {
           if (_isEditorOpen) {
-            print(cropRotateEditor.currentState);
             if (cropRotateEditor.currentState != null) {
               // Important to close the crop-editor like that cuz we need to set
               // the fake hero first
@@ -805,30 +804,6 @@ class ProImageEditorState extends State<ProImageEditor>
     }
   }
 
-  /// Flip a layer horizontally or vertically.
-  ///
-  /// This method flips a layer either horizontally or vertically based on the specified parameters.
-  void _flipLayer({
-    required Layer layer,
-    required bool flipX,
-    required bool flipY,
-  }) {
-    if (flipY != layer.flipY) {
-      layer.flipY = !layer.flipY;
-      layer.offset = Offset(
-        layer.offset.dx,
-        _screenSize.imageHeight - layer.offset.dy,
-      );
-    }
-    if (flipX != layer.flipX) {
-      layer.flipX = !layer.flipX;
-      layer.offset = Offset(
-        _screenSize.imageWidth - layer.offset.dx,
-        layer.offset.dy,
-      );
-    }
-  }
-
   /// Handles zooming of a layer.
   ///
   /// This method calculates the zooming of a layer based on the specified parameters.
@@ -974,7 +949,8 @@ class ProImageEditorState extends State<ProImageEditor>
         initConfigs: PaintEditorInitConfigs(
           layers: activeLayers,
           theme: _theme,
-          imageSize: _screenSize.bodySize,
+          mainImageSize: _screenSize.imageSize,
+          mainBodySize: _screenSize.bodySize,
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: widget.onUpdateUI,
@@ -1042,14 +1018,35 @@ class ProImageEditorState extends State<ProImageEditor>
           configs: widget.configs,
           transformConfigs: _stateManager
               .stateHistory[_stateManager.editPosition].transformConfigs,
-          imageSize: Size(_screenSize.imageWidth, _screenSize.imageHeight),
-          imageSizeWithLayers: _screenSize.renderedImageSize,
-          bodySizeWithLayers: _screenSize.bodySize,
+          mainImageSize: _screenSize.imageSize,
+          mainBodySize: _screenSize.bodySize,
           enableFakeHero: true,
         ),
       ),
     ).then((transformConfigs) async {
       if (transformConfigs != null) {
+        /// Flip a layer horizontally or vertically.
+        void flipLayer({
+          required Layer layer,
+          required bool flipX,
+          required bool flipY,
+        }) {
+          if (flipY != layer.flipY) {
+            layer.flipY = !layer.flipY;
+            layer.offset = Offset(
+              layer.offset.dx,
+              _screenSize.bodySize.height - layer.offset.dy,
+            );
+          }
+          if (flipX != layer.flipX) {
+            layer.flipX = !layer.flipX;
+            layer.offset = Offset(
+              _screenSize.bodySize.width - layer.offset.dx,
+              layer.offset.dy,
+            );
+          }
+        }
+
         /// TODO: If user want to transform the layers we need to transform them here with the new position
         /// Note: it's not possible to transform also the layers in a stack with the image
         /// cuz that will make problem with the paint editor controller and all layers when we move them around.
@@ -1108,19 +1105,10 @@ class ProImageEditorState extends State<ProImageEditor>
             oldFullW: oldFullW,
             cropRect: res.cropRect,
             isHalfPi: res.isHalfPi,
-          ); */
-          _flipLayer(
-            layer: layer,
-            flipX: transformConfigs.flipX,
-            flipY: transformConfigs.flipY,
           );
           double angleFactor = transformConfigs.angle % pi;
-          var newImgW = angleFactor == 0 || angleFactor == pi / 2
-              ? _screenSize.imageWidth
-              : _screenSize.imageHeight;
-          var newImgH = angleFactor == 0 || angleFactor == pi / 2
-              ? _screenSize.imageHeight
-              : _screenSize.imageWidth;
+          var newImgW = angleFactor == 0 || angleFactor == pi / 2 ? _screenSize.imageWidth : _screenSize.imageHeight;
+          var newImgH = angleFactor == 0 || angleFactor == pi / 2 ? _screenSize.imageHeight : _screenSize.imageWidth;
           _rotateLayer(
             layer: layer,
             beforeIsFlipX: beforeIsFlipX,
@@ -1128,6 +1116,11 @@ class ProImageEditorState extends State<ProImageEditor>
             rotationScale: transformConfigs.scale,
             newImgW: newImgW,
             newImgH: newImgH,
+          ); */
+          flipLayer(
+            layer: layer,
+            flipX: transformConfigs.flipX,
+            flipY: transformConfigs.flipY,
           );
 
           updatedLayers.add(layer);
@@ -1257,9 +1250,8 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: widget.onUpdateUI,
           layers: activeLayers,
-          imageSize: Size(_screenSize.imageWidth, _screenSize.imageHeight),
-          imageSizeWithLayers: _screenSize.renderedImageSize,
-          bodySizeWithLayers: _screenSize.bodySize,
+          mainImageSize: _screenSize.imageSize,
+          mainBodySize: _screenSize.bodySize,
           convertToUint8List: false,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
           appliedFilters: _stateManager.filters,
@@ -1301,9 +1293,8 @@ class ProImageEditorState extends State<ProImageEditor>
         networkUrl: _image.networkUrl,
         initConfigs: BlurEditorInitConfigs(
           theme: _theme,
-          imageSize: Size(_screenSize.imageWidth, _screenSize.imageHeight),
-          imageSizeWithLayers: _screenSize.renderedImageSize,
-          bodySizeWithLayers: _screenSize.bodySize,
+          mainImageSize: _screenSize.imageSize,
+          mainBodySize: _screenSize.bodySize,
           layers: activeLayers,
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
@@ -2311,30 +2302,24 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildImageWithFilter() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        _screenSize.renderedImageSize = constraints.biggest;
-
-        return !_inited
-            ? AutoImage(
-                _image,
-                fit: BoxFit.contain,
-                width: _screenSize.imageWidth,
-                height: _screenSize.imageHeight,
-                designMode: designMode,
-              )
-            : TransformedContentGenerator(
-                configs: _stateManager.transformConfigs,
-                child: ImageWithMultipleFilters(
-                  width: _screenSize.imageWidth,
-                  height: _screenSize.imageHeight,
-                  designMode: designMode,
-                  image: _image,
-                  filters: _stateManager.filters,
-                  blurFactor: _stateManager.blurStateHistory.blur,
-                ),
-              );
-      },
-    );
+    return !_inited
+        ? AutoImage(
+            _image,
+            fit: BoxFit.contain,
+            width: _screenSize.imageWidth,
+            height: _screenSize.imageHeight,
+            designMode: designMode,
+          )
+        : TransformedContentGenerator(
+            configs: _stateManager.transformConfigs,
+            child: ImageWithMultipleFilters(
+              width: _screenSize.imageWidth,
+              height: _screenSize.imageHeight,
+              designMode: designMode,
+              image: _image,
+              filters: _stateManager.filters,
+              blurFactor: _stateManager.blurStateHistory.blur,
+            ),
+          );
   }
 }

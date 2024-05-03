@@ -15,11 +15,10 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
     super.onUpdateUI,
     super.transformConfigs,
     super.layers,
-    super.imageSizeWithLayers,
-    super.bodySizeWithLayers,
+    super.mainImageSize,
+    super.mainBodySize,
     super.appliedFilters,
     super.appliedBlurFactor,
-    required super.imageSize,
     required super.theme,
   });
 }

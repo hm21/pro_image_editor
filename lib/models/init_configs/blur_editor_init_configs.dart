@@ -18,11 +18,10 @@ class BlurEditorInitConfigs extends EditorInitConfigs {
     super.transformConfigs,
     super.layers,
     super.onUpdateUI,
-    super.imageSizeWithLayers,
-    super.bodySizeWithLayers,
+    super.mainImageSize,
+    super.mainBodySize,
     super.appliedFilters,
     super.appliedBlurFactor,
-    required super.imageSize,
     required super.theme,
     this.convertToUint8List = false,
   });

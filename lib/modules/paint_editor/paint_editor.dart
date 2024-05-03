@@ -497,8 +497,8 @@ class PaintingEditorState extends State<PaintingEditor>
               TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
-                  width: initConfigs.imageSize.width,
-                  height: initConfigs.imageSize.height,
+                  width: mainImageSize.width,
+                  height: mainImageSize.height,
                   designMode: designMode,
                   image: editorImage,
                   filters: appliedFilters,
@@ -621,7 +621,7 @@ class PaintingEditorState extends State<PaintingEditor>
         icons: icons,
         theme: theme,
         designMode: designMode,
-        drawAreaSize: initConfigs.imageSize,
+        drawAreaSize: mainBodySize,
         imageEditorTheme: imageEditorTheme,
         configs: paintEditorConfigs,
         onUpdate: () {

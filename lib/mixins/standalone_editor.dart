@@ -47,8 +47,8 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   List<FilterStateHistory> get appliedFilters => initConfigs.appliedFilters;
 
   /// Returns the body size with layers.
-  Size get bodySizeWithLayers => initConfigs.bodySizeWithLayers;
+  Size get mainBodySize => initConfigs.mainBodySize;
 
   /// Returns the image size with layers.
-  Size get imageSizeWithLayers => initConfigs.imageSizeWithLayers;
+  Size get mainImageSize => initConfigs.mainImageSize;
 }

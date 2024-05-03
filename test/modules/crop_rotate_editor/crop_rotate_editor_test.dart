@@ -10,7 +10,6 @@ import '../../fake/fake_image.dart';
 void main() {
   var initConfigs = CropRotateEditorInitConfigs(
     theme: ThemeData.light(),
-    imageSize: const Size(300, 300),
   );
   group('CropRotateEditor Tests', () {
     testWidgets(

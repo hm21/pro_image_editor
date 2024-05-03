@@ -98,5 +98,5 @@ class ScreenSizeHelper {
   Size bodySize = Size.zero;
 
   /// Stores the last recorded image size.
-  Size renderedImageSize = Size.zero;
+  Size get imageSize => Size(imageWidth, imageHeight);
 }

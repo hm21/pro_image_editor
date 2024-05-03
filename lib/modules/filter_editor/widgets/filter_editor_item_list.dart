@@ -12,6 +12,7 @@ import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
 import '../../../models/history/filter_state_history.dart';
+import '../../../models/layer.dart';
 
 class FilterEditorItemList extends StatefulWidget {
   /// A byte array representing the image data.
@@ -56,10 +57,10 @@ class FilterEditorItemList extends StatefulWidget {
   final Function(ColorFilterGenerator filter) onSelectFilter;
 
   /// The size of the image with layers applied.
-  final Size imageSizeWithLayers;
+  final Size mainImageSize;
 
   /// The size of the body with layers applied.
-  final Size bodySizeWithLayers;
+  final Size mainBodySize;
 
   const FilterEditorItemList({
     super.key,
@@ -71,8 +72,8 @@ class FilterEditorItemList extends StatefulWidget {
     this.blurFactor,
     this.itemScaleFactor,
     this.transformConfigs,
-    this.imageSizeWithLayers = Size.zero,
-    this.bodySizeWithLayers = Size.zero,
+    this.mainImageSize = Size.zero,
+    this.mainBodySize = Size.zero,
     required this.selectedFilter,
     required this.onSelectFilter,
     required this.configs,
@@ -166,12 +167,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     var size = const Size(64, 64);
     TransformConfigs transformConfigs =
         widget.transformConfigs ?? TransformConfigs.empty();
-    double offsetFactor =
-        widget.imageSizeWithLayers.longestSide / size.longestSide;
+    double offsetFactor = widget.mainImageSize.longestSide / size.longestSide;
 
     double oldAspectRatio = transformConfigs.cropRect != Rect.largest
         ? transformConfigs.cropRect.size.aspectRatio
-        : widget.imageSizeWithLayers.aspectRatio;
+        : widget.mainImageSize.aspectRatio;
 
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),

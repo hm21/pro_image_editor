@@ -17,7 +17,6 @@ void main() {
           fakeMemoryImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
-            imageSize: const Size(200, 200),
           ),
         ),
       ));
@@ -32,7 +31,6 @@ void main() {
             fakeNetworkImage,
             initConfigs: PaintEditorInitConfigs(
               theme: ThemeData(),
-              imageSize: const Size(200, 200),
             ),
           ),
         ));
@@ -47,7 +45,6 @@ void main() {
           fakeFileImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
-            imageSize: const Size(200, 200),
           ),
         ),
       ));
@@ -61,7 +58,6 @@ void main() {
           fakeMemoryImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
-            imageSize: const Size(200, 200),
           ),
         ),
       ));
@@ -74,7 +70,6 @@ void main() {
           fakeMemoryImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
-            imageSize: const Size(200, 200),
           ),
         ),
       ));

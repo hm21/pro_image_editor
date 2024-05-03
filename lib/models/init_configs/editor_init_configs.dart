@@ -14,11 +14,11 @@ abstract class EditorInitConfigs {
   /// A callback function that can be used to update the UI from custom widgets.
   final Function? onUpdateUI;
 
-  /// The size of the image with layers applied.
-  final Size imageSizeWithLayers;
+  /// The size of the image in the main editor.
+  final Size mainImageSize;
 
   /// The size of the body with layers applied.
-  final Size bodySizeWithLayers;
+  final Size mainBodySize;
 
   /// The list of applied filter history.
   final List<FilterStateHistory> appliedFilters;
@@ -35,27 +35,23 @@ abstract class EditorInitConfigs {
   /// The layers in the editor.
   final List<Layer>? layers;
 
-  /// The size of the image.
-  final Size imageSize;
-
   /// Creates a new instance of [EditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
   /// The [configs] parameter specifies the configuration options for the image editor.
   /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
-  /// The [imageSizeWithLayers] parameter specifies the size of the image with layers applied.
-  /// The [bodySizeWithLayers] parameter specifies the size of the body with layers applied.
+  /// The [mainImageSize] parameter specifies the size of the image with layers applied.
+  /// The [mainBodySize] parameter specifies the size of the body with layers applied.
   /// The [appliedFilters] parameter specifies the list of applied filter history.
   /// The [appliedBlurFactor] parameter specifies the applied blur factor.
   /// The [transformConfigs] parameter specifies the transformation configurations for the editor.
   /// The [layers] parameter specifies the layers in the editor.
   const EditorInitConfigs({
     required this.theme,
-    required this.imageSize,
     this.configs = const ProImageEditorConfigs(),
     this.onUpdateUI,
-    this.imageSizeWithLayers = Size.zero,
-    this.bodySizeWithLayers = Size.zero,
+    this.mainImageSize = Size.zero,
+    this.mainBodySize = Size.zero,
     this.transformConfigs,
     this.appliedFilters = const [],
     this.appliedBlurFactor = 0,

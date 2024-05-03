@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import '../aspect_ratio_item.dart';
 import '../crop_rotate_editor/rotate_direction.dart';

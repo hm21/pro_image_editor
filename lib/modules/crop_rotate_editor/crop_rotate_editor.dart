@@ -197,11 +197,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
   final double _cropCornerLength = 36;
   late final double _interactiveCornerArea;
 
-  double get _imgWidth => initConfigs.imageSize.width;
-  double get _imgHeight => initConfigs.imageSize.height;
+  double get _imgWidth => mainImageSize.width;
+  double get _imgHeight => mainImageSize.height;
 
   double get _ratio =>
-      1 / (aspectRatio == 0 ? initConfigs.imageSize.aspectRatio : aspectRatio);
+      1 / (aspectRatio == 0 ? mainImageSize.aspectRatio : aspectRatio);
 
   bool get imageSticksToScreenWidth =>
       _imgWidth >= _contentConstraints.maxWidth;
@@ -412,8 +412,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
             child: TransformedContentGenerator(
               configs: transformC,
               child: ImageWithMultipleFilters(
-                width: initConfigs.imageSize.width,
-                height: initConfigs.imageSize.height,
+                width: mainImageSize.width,
+                height: mainImageSize.height,
                 designMode: designMode,
                 image: editorImage,
                 filters: appliedFilters,
@@ -424,8 +424,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
           if (blurEditorConfigs.showLayers && layers != null)
             LayerStack(
               transformHelper: TransformHelper(
-                mainBodySize: bodySizeWithLayers,
-                mainImageSize: imageSizeWithLayers,
+                mainBodySize: mainBodySize,
+                mainImageSize: mainImageSize,
                 editorBodySize: _contentConstraints.biggest,
               ),
               configs: configs,
@@ -530,7 +530,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           return CropAspectRatioOptions(
             aspectRatio: aspectRatio,
             configs: configs,
-            originalAspectRatio: initConfigs.imageSize.aspectRatio,
+            originalAspectRatio: mainImageSize.aspectRatio,
           );
         }).then((value) {
       if (value != null) {
@@ -1290,7 +1290,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
       case CropAreaPart.none:
         if (userZoom > 1 ||
             cropRect.size.aspectRatio.toStringAsFixed(3) !=
-                _renderedImgSize.aspectRatio.toStringAsFixed(3)) {
+                (_rotated90deg
+                        ? 1 / _renderedImgSize.aspectRatio
+                        : _renderedImgSize.aspectRatio)
+                    .toStringAsFixed(3)) {
           _cursor = SystemMouseCursors.move;
         } else {
           _cursor = SystemMouseCursors.basic;
@@ -1706,12 +1709,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   clipBehavior: Clip.hardEdge,
                   child: LayerStack(
                     transformHelper: TransformHelper(
-                      alignTopLeft: false,
-                      mainBodySize: bodySizeWithLayers,
-                      mainImageSize: imageSizeWithLayers,
+                      mainBodySize: mainBodySize,
+                      mainImageSize: mainImageSize,
                       editorBodySize: Size(
-                        _renderedImgConstraints.maxWidth,
-                        _renderedImgConstraints.maxHeight,
+                        _renderedImgConstraints.biggest.width,
+                        _renderedImgConstraints.biggest.height,
                       ),
                     ),
                     configs: configs,
@@ -1729,40 +1731,41 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Widget _buildFakeHero() {
     return Padding(
       padding: EdgeInsets.all(_screenPadding),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Hero(
-            tag: heroTag,
-            createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-            child: TransformedContentGenerator(
-              configs: _fakeHeroTransformConfigs,
-              child: ImageWithMultipleFilters(
-                width: initConfigs.imageSize.width,
-                height: initConfigs.imageSize.height,
-                designMode: designMode,
-                image: editorImage,
-                filters: appliedFilters,
-                blurFactor: appliedBlurFactor,
-              ),
-            ),
-          ),
-          if (filterEditorConfigs.showLayers && layers != null)
-            LayerStack(
-              transformHelper: TransformHelper(
-                mainBodySize: bodySizeWithLayers,
-                mainImageSize: imageSizeWithLayers,
-                editorBodySize: Size(
-                  _contentConstraints.biggest.width - _screenPadding * 2,
-                  _contentConstraints.biggest.height - _screenPadding * 2,
+      child: LayoutBuilder(builder: (context, constraints) {
+        return Stack(
+          alignment: Alignment.center,
+          fit: StackFit.expand,
+          children: [
+            Hero(
+              tag: heroTag,
+              createRectTween: (begin, end) =>
+                  RectTween(begin: begin, end: end),
+              child: TransformedContentGenerator(
+                configs: _fakeHeroTransformConfigs,
+                child: ImageWithMultipleFilters(
+                  width: mainImageSize.width,
+                  height: mainImageSize.height,
+                  designMode: designMode,
+                  image: editorImage,
+                  filters: appliedFilters,
+                  blurFactor: appliedBlurFactor,
                 ),
               ),
-              configs: configs,
-              layers: layers!,
-              clipBehavior: Clip.none,
             ),
-        ],
-      ),
+            if (filterEditorConfigs.showLayers && layers != null)
+              LayerStack(
+                transformHelper: TransformHelper(
+                  mainBodySize: mainBodySize,
+                  mainImageSize: mainImageSize,
+                  editorBodySize: constraints.biggest,
+                ),
+                configs: configs,
+                layers: layers!,
+                clipBehavior: Clip.none,
+              ),
+          ],
+        );
+      }),
     );
   }
 

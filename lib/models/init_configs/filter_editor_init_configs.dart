@@ -16,13 +16,12 @@ class FilterEditorInitConfigs extends EditorInitConfigs {
     super.transformConfigs,
     super.configs,
     super.onUpdateUI,
-    super.imageSizeWithLayers,
-    super.bodySizeWithLayers,
+    super.mainImageSize,
+    super.mainBodySize,
     super.layers,
     super.appliedFilters,
     super.appliedBlurFactor,
     required super.theme,
-    required super.imageSize,
     this.convertToUint8List = false,
   });
 }

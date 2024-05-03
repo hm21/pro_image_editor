@@ -16,6 +16,7 @@ import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/platform_popup_menu.dart';
+import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'widgets/text_editor_bottom_bar.dart';
 
 /// A StatefulWidget that provides a text editing interface for adding and editing text layers.
@@ -282,6 +283,12 @@ class TextEditorState extends State<TextEditor>
             backgroundColor: imageEditorTheme.textEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
+            bottomNavigationBar: isDesktop &&
+                    imageEditorTheme.editorMode == ThemeEditorMode.simple
+                ? const SizedBox(
+                    height: kBottomNavigationBarHeight,
+                  )
+                : null,
           ),
         );
       },
