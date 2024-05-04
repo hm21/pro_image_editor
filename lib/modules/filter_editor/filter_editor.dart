@@ -259,7 +259,13 @@ class FilterEditorState extends State<FilterEditor>
                   height: getMinimumSize(mainImageSize, _bodySize).height,
                   designMode: designMode,
                   image: editorImage,
-                  filters: appliedFilters,
+                  filters: [
+                    ...appliedFilters,
+                    FilterStateHistory(
+                      filter: selectedFilter,
+                      opacity: filterOpacity,
+                    ),
+                  ],
                   blurFactor: appliedBlurFactor,
                 ),
               ),

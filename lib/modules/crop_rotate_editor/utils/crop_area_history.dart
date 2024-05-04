@@ -59,16 +59,16 @@ mixin CropAreaHistory
   bool get canRedo => _historyIndex < history.length - 1;
 
   /// Adds the current transformation to the history.
-  void addHistory() {
+  void addHistory({double? scale, double? angle}) {
     if (!initialized) return;
     cleanForwardChanges();
     history.add(
       TransformConfigs(
-        angle: rotateAnimation.value,
+        angle: angle ?? rotateAnimation.value,
         cropRect: cropRect,
         scaleAspectRatio: aspectRatioZoomHelper,
         scaleUser: userZoom,
-        scaleRotation: scaleAnimation.value,
+        scaleRotation: scale ?? scaleAnimation.value,
         aspectRatio: aspectRatio,
         flipX: flipX,
         flipY: flipY,
@@ -179,7 +179,10 @@ mixin CropAreaHistory
 
     initialized = true;
     if (!skipAddHistory) {
-      addHistory();
+      addHistory(
+        scale: 1,
+        angle: 0,
+      );
     }
 
     setState(() {});

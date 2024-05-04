@@ -81,6 +81,9 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the painting editor component.
   final Widget? bottomBarPaintingEditor;
 
+  /// A custom bottom bar widget for the crop-rotate editor component.
+  final Widget? bottomBarCropRotateEditor;
+
   /// Override the close warning dialog when we made changes.
   ///
   /// **Example:**

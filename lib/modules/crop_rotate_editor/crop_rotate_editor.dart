@@ -22,7 +22,6 @@ import '../../mixins/standalone_editor.dart';
 import '../../models/editor_image.dart';
 import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/transform_helper.dart';
-import '../../widgets/auto_image.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/outside_gestures/outside_gesture_behavior.dart';
@@ -266,7 +265,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     rotateAnimation =
         Tween<double>(begin: initAngle, end: initAngle).animate(rotateCtrl);
 
-    double initScale = transformConfigs?.scaleRotation ?? 1;
+    double initScale = (transformConfigs?.scaleRotation ?? 1) *
+        (transformConfigs?.scaleAspectRatio ?? 1);
     scaleCtrl = AnimationController(
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     scaleAnimation =
@@ -275,7 +275,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     aspectRatio =
         cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 
-    if (transformConfigs != null) {
+    if (transformConfigs != null && !transformConfigs!.isEmpty) {
       rotationCount = (transformConfigs!.angle * 2 / pi).abs().toInt();
       flipX = transformConfigs!.flipX;
       flipY = transformConfigs!.flipY;
@@ -283,13 +283,18 @@ class CropRotateEditorState extends State<CropRotateEditor>
       aspectRatioZoomHelper = transformConfigs!.scaleAspectRatio;
       userZoom = transformConfigs!.scaleUser;
       aspectRatio = transformConfigs!.aspectRatio;
+      cropRect = transformConfigs!.cropRect;
+      _viewRect = transformConfigs!.cropRect;
+      oldScaleFactor = transformConfigs!.scaleRotation;
+
       history.clear();
       history.add(transformConfigs!);
     }
     _showFakeHero = initConfigs.enableFakeHero;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
-      calcCropRect();
+      calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
+
       if (!initConfigs.enableFakeHero) hideFakeHero();
     });
   }
@@ -550,7 +555,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           calcCropRect();
           calcAspectRatioZoomHelper();
           calcFitToScreen();
-          addHistory();
+          addHistory(scale: oldScaleFactor, angle: 0);
         });
       }
     });
@@ -1042,7 +1047,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
     _activeScaleOut = false;
     _blockInteraction = false;
-
     addHistory();
     setState(() {});
   }
@@ -1520,7 +1524,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     return LayoutBuilder(
       builder: (context, constraints) {
         _contentConstraints = constraints;
-
         return Stack(
           children: [
             if (_showFakeHero) _buildFakeHero(),
@@ -1555,6 +1558,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ),
               ),
             ),
+            /*   HeroMode(
+              // TODO:
+              enabled: false,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.2,
+                  child: _buildFakeHero(),
+                ),
+              ),
+            ), */
           ],
         );
       },
@@ -1708,12 +1721,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
-              AutoImage(
-                editorImage,
-                fit: BoxFit.contain,
+              ImageWithMultipleFilters(
+                filters: appliedFilters,
+                blurFactor: appliedBlurFactor,
                 designMode: designMode,
                 width: _imgWidth,
                 height: _imgHeight,
+                image: editorImage,
               ),
               if (cropRotateEditorConfigs.transformLayers && layers != null)
                 ClipRRect(

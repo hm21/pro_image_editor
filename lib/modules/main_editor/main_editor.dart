@@ -1021,6 +1021,8 @@ class ProImageEditorState extends State<ProImageEditor>
           mainImageSize: _screenSize.imageSize,
           mainBodySize: _screenSize.bodySize,
           enableFakeHero: true,
+          appliedBlurFactor: _stateManager.blurStateHistory.blur,
+          appliedFilters: _stateManager.filters,
         ),
       ),
     ).then((transformConfigs) async {

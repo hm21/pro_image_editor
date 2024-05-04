@@ -64,13 +64,16 @@ class ImageWithMultipleFilters extends StatelessWidget {
       children: [
         img,
         filteredImg,
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blurFactor, sigmaY: blurFactor),
-          child: Container(
-            width: width,
-            height: height,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+        ClipRect(
+          clipBehavior: Clip.hardEdge,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: blurFactor, sigmaY: blurFactor),
+            child: Container(
+              width: width,
+              height: height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+            ),
           ),
         ),
       ],

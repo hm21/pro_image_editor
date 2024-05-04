@@ -58,6 +58,17 @@ class TransformConfigs {
       offset: Offset(0, 0),
     );
   }
+  bool get isEmpty {
+    return angle == 0 &&
+        cropRect == Rect.largest &&
+        scaleAspectRatio == 1 &&
+        scaleUser == 1 &&
+        scaleRotation == 1 &&
+        aspectRatio == -1 &&
+        flipX == false &&
+        flipY == false &&
+        offset == const Offset(0, 0);
+  }
 
   double get scale => scaleUser * scaleRotation * scaleAspectRatio;
   bool get is90DegRotated {
