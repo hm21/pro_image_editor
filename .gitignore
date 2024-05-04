@@ -31,5 +31,7 @@ migrate_working_dir/
 /example/.flutter-plugins
 /example/.flutter-plugins-dependencies
 /example/pubspec.lock
-/example/macos/flutter/GeneratedPluginRegistrant.swift
+/example/macos/flutter/
+/example/linux/flutter/
+/example/windows/flutter/
 build/

@@ -81,6 +81,37 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the painting editor component.
   final Widget? bottomBarPaintingEditor;
 
+  /// Override the close warning dialog when we made changes.
+  ///
+  /// **Example:**
+  /// ```dart
+  /// configs: ProImageEditorConfigs(
+  ///  customWidgets: ImageEditorCustomWidgets(
+  ///    closeWarningDialog: () async {
+  ///      return await showDialog<bool>(
+  ///            context: context,
+  ///            builder: (BuildContext context) => AlertDialog(
+  ///              title: const Text('Close?'),
+  ///              content: const Text('Are you sure you want to close the Image Editor? Your changes will not be saved.'),
+  ///              actions: <Widget>[
+  ///                TextButton(
+  ///                  onPressed: () => Navigator.pop(context, false),
+  ///                  child: const Text('Cancel'),
+  ///                ),
+  ///                TextButton(
+  ///                  onPressed: () => Navigator.pop(context, true),
+  ///                  child: const Text('OK'),
+  ///                ),
+  ///              ],
+  ///            ),
+  ///          ) ??
+  ///          false;
+  ///    },
+  ///  ),
+  /// ),
+  /// ```
+  final Future<bool> Function()? closeWarningDialog;
+
   /// The widget that is below the `Filter` button in the material design.
   /// You can create a text field and send button just like in whatsapp.
   ///
@@ -99,5 +130,6 @@ class ImageEditorCustomWidgets {
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
     this.whatsAppBottomWidget,
+    this.closeWarningDialog,
   });
 }

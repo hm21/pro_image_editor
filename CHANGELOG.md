@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.7.2
+- **feat**: Added a function in `customWidgets` within `configs` to show a custom `closeWarningDialog`.
+
 ## Version 2.7.1
 - **feat**: Introduces the ability for users to specify the initial offset position for new layers.
 
