@@ -6,8 +6,8 @@ import 'package:pro_image_editor/modules/blur_editor.dart';
 import '../fake/fake_image.dart';
 
 void main() {
-  group('FilterEditor Tests', () {
-    testWidgets('FilterEditor should build without error',
+  group('BlurEditor Tests', () {
+    testWidgets('BlurEditor should build without error',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(

@@ -252,8 +252,8 @@ class BlurEditorState extends State<BlurEditor>
               child: TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
-                  width: mainImageSize.width,
-                  height: mainImageSize.height,
+                  width: getMinimumSize(mainImageSize, _bodySize).width,
+                  height: getMinimumSize(mainImageSize, _bodySize).height,
                   designMode: designMode,
                   image: editorImage,
                   filters: appliedFilters,
@@ -264,8 +264,8 @@ class BlurEditorState extends State<BlurEditor>
             if (blurEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: mainBodySize,
-                  mainImageSize: mainImageSize,
+                  mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+                  mainImageSize: getMinimumSize(mainImageSize, _bodySize),
                   editorBodySize: _bodySize,
                 ),
                 configs: configs,

@@ -47,8 +47,16 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   List<FilterStateHistory> get appliedFilters => initConfigs.appliedFilters;
 
   /// Returns the body size with layers.
-  Size get mainBodySize => initConfigs.mainBodySize;
+  Size? get mainBodySize => initConfigs.mainBodySize;
 
   /// Returns the image size with layers.
-  Size get mainImageSize => initConfigs.mainImageSize;
+  Size? get mainImageSize => initConfigs.mainImageSize;
+
+  Size getMinimumSize(Size? a, Size b) {
+    return a == null || a.isEmpty
+        ? b.isEmpty
+            ? const Size(1, 1)
+            : b
+        : a;
+  }
 }

@@ -12,7 +12,6 @@ import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
 import '../../../models/history/filter_state_history.dart';
-import '../../../models/layer.dart';
 
 class FilterEditorItemList extends StatefulWidget {
   /// A byte array representing the image data.
@@ -167,6 +166,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     var size = const Size(64, 64);
     TransformConfigs transformConfigs =
         widget.transformConfigs ?? TransformConfigs.empty();
+
     double offsetFactor = widget.mainImageSize.longestSide / size.longestSide;
 
     double oldAspectRatio = transformConfigs.cropRect != Rect.largest

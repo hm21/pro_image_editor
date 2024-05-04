@@ -1495,9 +1495,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// is in progress.
   void doneEditing() async {
     if (_stateManager.editPosition <= 0 && activeLayers.isEmpty) {
-      final allowCompleteWithEmptyEditing =
-          widget.allowCompleteWithEmptyEditing;
-      if (!allowCompleteWithEmptyEditing) {
+      if (!widget.allowCompleteWithEmptyEditing) {
         return closeEditor();
       }
     }
@@ -1744,7 +1742,7 @@ class ProImageEditorState extends State<ProImageEditor>
                       ),
                       const Spacer(),
                       IconButton(
-                        key: const ValueKey('TextEditorMainUndoButton'),
+                        key: const ValueKey('MainEditorMainUndoButton'),
                         tooltip: i18n.undo,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
@@ -1757,7 +1755,7 @@ class ProImageEditorState extends State<ProImageEditor>
                         onPressed: undoAction,
                       ),
                       IconButton(
-                        key: const ValueKey('TextEditorMainRedoButton'),
+                        key: const ValueKey('MainEditorMainRedoButton'),
                         tooltip: i18n.redo,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
@@ -1771,7 +1769,7 @@ class ProImageEditorState extends State<ProImageEditor>
                         onPressed: redoAction,
                       ),
                       IconButton(
-                        key: const ValueKey('TextEditorMainDoneButton'),
+                        key: const ValueKey('MainEditorMainDoneButton'),
                         tooltip: i18n.done,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(icons.doneIcon),

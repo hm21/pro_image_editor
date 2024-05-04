@@ -7,7 +7,7 @@ import '../fake/fake_image.dart';
 
 void main() {
   group('EditorImage', () {
-    test('Constructor should initialize properties correctly', () {
+    test('Constructor should initialize properties correctly', () async {
       final Uint8List byteArray = fakeMemoryImage;
       final File file = fakeFileImage;
       const String networkUrl = fakeNetworkImage;
@@ -33,13 +33,13 @@ void main() {
       );
     });
 
-    test('hasBytes should return true when byteArray is not null', () {
+    test('hasBytes should return true when byteArray is not null', () async {
       final Uint8List byteArray = fakeMemoryImage;
       final EditorImage image = EditorImage(byteArray: byteArray);
       expect(image.hasBytes, isTrue);
     });
 
-    test('type should return the correct EditorImageType', () {
+    test('type should return the correct EditorImageType', () async {
       final Uint8List byteArray = fakeMemoryImage;
       final File file = fakeFileImage;
       const String networkUrl = fakeNetworkImage;

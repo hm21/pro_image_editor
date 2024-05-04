@@ -197,11 +197,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
   final double _cropCornerLength = 36;
   late final double _interactiveCornerArea;
 
-  double get _imgWidth => mainImageSize.width;
-  double get _imgHeight => mainImageSize.height;
+  double get _imgWidth => (mainImageSize ?? _contentConstraints.biggest).width;
+  double get _imgHeight =>
+      (mainImageSize ?? _contentConstraints.biggest).height;
 
   double get _ratio =>
-      1 / (aspectRatio == 0 ? mainImageSize.aspectRatio : aspectRatio);
+      1 /
+      (aspectRatio == 0
+          ? (mainImageSize ?? _contentConstraints.biggest).aspectRatio
+          : aspectRatio);
 
   bool get imageSticksToScreenWidth =>
       _imgWidth >= _contentConstraints.maxWidth;
@@ -309,6 +313,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
           _painterOpacity = 1 * curveT;
           setState(() {});
         },
+        mounted: mounted,
+        transitionFunction: Curves.decelerate.transform,
         duration: const Duration(milliseconds: 150),
       );
     });
@@ -340,6 +346,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             _setOffsetLimits();
             setState(() {});
           },
+          mounted: mounted,
           duration: cropRotateEditorConfigs.animationDuration,
           transitionFunction:
               cropRotateEditorConfigs.scaleAnimationCurve.transform,
@@ -361,6 +368,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             _setOffsetLimits();
             setState(() {});
           },
+          mounted: mounted,
           duration: cropRotateEditorConfigs.animationDuration,
           transitionFunction:
               cropRotateEditorConfigs.scaleAnimationCurve.transform,
@@ -412,8 +420,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
             child: TransformedContentGenerator(
               configs: transformC,
               child: ImageWithMultipleFilters(
-                width: mainImageSize.width,
-                height: mainImageSize.height,
+                width: (mainImageSize ?? _contentConstraints.biggest).width,
+                height: (mainImageSize ?? _contentConstraints.biggest).height,
                 designMode: designMode,
                 image: editorImage,
                 filters: appliedFilters,
@@ -424,8 +432,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
           if (blurEditorConfigs.showLayers && layers != null)
             LayerStack(
               transformHelper: TransformHelper(
-                mainBodySize: mainBodySize,
-                mainImageSize: mainImageSize,
+                mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
+                mainImageSize: (mainImageSize ?? _contentConstraints.biggest),
                 editorBodySize: _contentConstraints.biggest,
               ),
               configs: configs,
@@ -530,7 +538,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
           return CropAspectRatioOptions(
             aspectRatio: aspectRatio,
             configs: configs,
-            originalAspectRatio: mainImageSize.aspectRatio,
+            originalAspectRatio:
+                (mainImageSize ?? _contentConstraints.biggest).aspectRatio,
           );
         }).then((value) {
       if (value != null) {
@@ -1019,6 +1028,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
           setState(() {});
         },
+        mounted: mounted,
         duration: cropRotateEditorConfigs.cropDragAnimationDuration,
         transitionFunction:
             cropRotateEditorConfigs.cropDragAnimationCurve.transform,
@@ -1093,6 +1103,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             (targetOffset - startOffset) * targetZoom / userZoom * curveT;
         setState(() {});
       },
+      mounted: mounted,
       duration: cropRotateEditorConfigs.animationDuration,
       transitionFunction: Curves.decelerate.transform,
     );
@@ -1709,8 +1720,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   clipBehavior: Clip.hardEdge,
                   child: LayerStack(
                     transformHelper: TransformHelper(
-                      mainBodySize: mainBodySize,
-                      mainImageSize: mainImageSize,
+                      mainBodySize:
+                          (mainBodySize ?? _contentConstraints.biggest),
+                      mainImageSize:
+                          (mainImageSize ?? _contentConstraints.biggest),
                       editorBodySize: Size(
                         _renderedImgConstraints.biggest.width,
                         _renderedImgConstraints.biggest.height,
@@ -1743,8 +1756,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
               child: TransformedContentGenerator(
                 configs: _fakeHeroTransformConfigs,
                 child: ImageWithMultipleFilters(
-                  width: mainImageSize.width,
-                  height: mainImageSize.height,
+                  width: (mainImageSize ?? _contentConstraints.biggest).width,
+                  height: (mainImageSize ?? _contentConstraints.biggest).height,
                   designMode: designMode,
                   image: editorImage,
                   filters: appliedFilters,
@@ -1755,8 +1768,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
             if (filterEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: mainBodySize,
-                  mainImageSize: mainImageSize,
+                  mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
+                  mainImageSize: (mainImageSize ?? _contentConstraints.biggest),
                   editorBodySize: constraints.biggest,
                 ),
                 configs: configs,

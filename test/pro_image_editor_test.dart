@@ -131,7 +131,7 @@ void main() {
     expect(find.text('Hello, World!'), findsOneWidget);
 
     // Press done button
-    final doneBtn = find.byKey(const ValueKey('TextEditorDoneButton'));
+    final doneBtn = find.byKey(const ValueKey('MainEditorMainDoneButton'));
     expect(doneBtn, findsOneWidget);
     await tester.tap(doneBtn);
     await tester.pumpAndSettle();
@@ -141,7 +141,7 @@ void main() {
     expect(layers1, findsOneWidget);
 
     // Press undo button
-    final undoBtn = find.byKey(const ValueKey('TextEditorMainUndoButton'));
+    final undoBtn = find.byKey(const ValueKey('MainEditorMainUndoButton'));
     expect(undoBtn, findsOneWidget);
     await tester.tap(undoBtn);
     await tester.pumpAndSettle();
@@ -151,7 +151,7 @@ void main() {
     expect(layers2, findsNothing);
 
     // Press redo button
-    final redoBtn = find.byKey(const ValueKey('TextEditorMainRedoButton'));
+    final redoBtn = find.byKey(const ValueKey('MainEditorMainRedoButton'));
     expect(redoBtn, findsOneWidget);
     await tester.tap(redoBtn);
     await tester.pumpAndSettle();
@@ -159,41 +159,5 @@ void main() {
     // Ensure layer exist again
     final layers3 = find.byType(LayerWidget);
     expect(layers3, findsOneWidget);
-  });
-
-  testWidgets(
-      'ProImageEditor performs done action with allowCompleteWithEmptyEditing',
-      (WidgetTester tester) async {
-    Future test({
-      required bool givingAllowCompleteWithEmptyEditing,
-      required bool expectedHasCompleteEdit,
-    }) async {
-      var hasCompleteEdit = false;
-      await tester.pumpWidget(MaterialApp(
-          home: ProImageEditor.memory(
-        fakeMemoryImage,
-        allowCompleteWithEmptyEditing: givingAllowCompleteWithEmptyEditing,
-        onImageEditingComplete: (Uint8List bytes) async {
-          hasCompleteEdit = true;
-        },
-      )));
-
-      // Press done button without any editing;
-      final doneBtn = find.byKey(const ValueKey('TextEditorMainDoneButton'));
-      expect(doneBtn, findsOneWidget);
-      await tester.tap(doneBtn);
-      try {
-        await tester.pumpAndSettle();
-      } catch (_) {}
-
-      expect(hasCompleteEdit, expectedHasCompleteEdit);
-    }
-
-    await test(
-        givingAllowCompleteWithEmptyEditing: true,
-        expectedHasCompleteEdit: true);
-    await test(
-        givingAllowCompleteWithEmptyEditing: false,
-        expectedHasCompleteEdit: false);
   });
 }

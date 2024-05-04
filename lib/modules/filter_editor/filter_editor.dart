@@ -255,17 +255,11 @@ class FilterEditorState extends State<FilterEditor>
               child: TransformedContentGenerator(
                 configs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
-                  width: mainImageSize.width,
-                  height: mainImageSize.height,
+                  width: getMinimumSize(mainImageSize, _bodySize).width,
+                  height: getMinimumSize(mainImageSize, _bodySize).height,
                   designMode: designMode,
                   image: editorImage,
-                  filters: [
-                    ...appliedFilters,
-                    FilterStateHistory(
-                      filter: selectedFilter,
-                      opacity: filterOpacity,
-                    ),
-                  ],
+                  filters: appliedFilters,
                   blurFactor: appliedBlurFactor,
                 ),
               ),
@@ -273,8 +267,8 @@ class FilterEditorState extends State<FilterEditor>
             if (filterEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: mainBodySize,
-                  mainImageSize: mainImageSize,
+                  mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+                  mainImageSize: getMinimumSize(mainImageSize, _bodySize),
                   editorBodySize: _bodySize,
                 ),
                 configs: configs,
@@ -311,8 +305,8 @@ class FilterEditorState extends State<FilterEditor>
                     ),
             ),
             FilterEditorItemList(
-              mainBodySize: mainBodySize,
-              mainImageSize: mainImageSize,
+              mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+              mainImageSize: getMinimumSize(mainImageSize, _bodySize),
               byteArray: editorImage.byteArray,
               file: editorImage.file,
               assetPath: editorImage.assetPath,

@@ -15,10 +15,10 @@ abstract class EditorInitConfigs {
   final Function? onUpdateUI;
 
   /// The size of the image in the main editor.
-  final Size mainImageSize;
+  final Size? mainImageSize;
 
   /// The size of the body with layers applied.
-  final Size mainBodySize;
+  final Size? mainBodySize;
 
   /// The list of applied filter history.
   final List<FilterStateHistory> appliedFilters;
@@ -50,8 +50,8 @@ abstract class EditorInitConfigs {
     required this.theme,
     this.configs = const ProImageEditorConfigs(),
     this.onUpdateUI,
-    this.mainImageSize = Size.zero,
-    this.mainBodySize = Size.zero,
+    this.mainImageSize,
+    this.mainBodySize,
     this.transformConfigs,
     this.appliedFilters = const [],
     this.appliedBlurFactor = 0,
