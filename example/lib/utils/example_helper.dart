@@ -23,7 +23,9 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
             return PreviewImgPage(imgBytes: editedBytes!);
           },
         ),
-      );
+      ).whenComplete(() {
+        editedBytes = null;
+      });
     } else {
       Navigator.pop(context);
     }
