@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../../models/theme/theme.dart';
@@ -8,6 +10,7 @@ class CropCornerPainter extends CustomPainter {
   final Size screenSize;
   final ImageEditorTheme imageEditorTheme;
   final bool interactionActive;
+  final bool drawCircle;
   final Offset offset;
   final double opacity;
 
@@ -25,6 +28,7 @@ class CropCornerPainter extends CustomPainter {
   double get _cropOffsetBottom => cropRect.bottom;
 
   CropCornerPainter({
+    required this.drawCircle,
     required this.offset,
     required this.cropRect,
     required this.opacity,
@@ -41,7 +45,7 @@ class CropCornerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // TODO: Create rounded cropper
     _drawDarkenOutside(canvas: canvas, size: size);
-    if (interactionActive) _drawHelperAreas(canvas: canvas, size: size);
+/*     if (interactionActive) */ _drawHelperAreas(canvas: canvas, size: size);
     _drawCorners(canvas: canvas, size: size);
   }
 
@@ -62,25 +66,43 @@ class CropCornerPainter extends CustomPainter {
       width: size.width * scaleFactor,
       height: size.height * scaleFactor,
     ));
-
-    /// Create a path for the current rectangle
-    Path rectPath = Path()
-      ..addRect(
-        Rect.fromCenter(
-          center: Offset(
-            cropWidth / 2 + _cropOffsetLeft,
-            cropHeight / 2 + _cropOffsetTop,
+    if (drawCircle) {
+      /// Create a path for the current rectangle
+      Path circlePath = Path()
+        ..addOval(
+          Rect.fromCenter(
+            center: Offset(
+              cropWidth / 2 + _cropOffsetLeft,
+              cropHeight / 2 + _cropOffsetTop,
+            ),
+            width: cropWidth,
+            height: cropHeight,
           ),
-          width: cropWidth,
-          height: cropHeight,
-        ),
-      );
+        );
 
-    /// Subtract the area of the current rectangle from the path for the entire canvas
-    path = Path.combine(PathOperation.difference, path, rectPath);
+      /// Subtract the area of the current rectangle from the path for the entire canvas
+      path = Path.combine(PathOperation.difference, path, circlePath);
+    } else {
+      /// Create a path for the current rectangle
+      Path rectPath = Path()
+        ..addRect(
+          Rect.fromCenter(
+            center: Offset(
+              cropWidth / 2 + _cropOffsetLeft,
+              cropHeight / 2 + _cropOffsetTop,
+            ),
+            width: cropWidth,
+            height: cropHeight,
+          ),
+        );
+
+      /// Subtract the area of the current rectangle from the path for the entire canvas
+      path = Path.combine(PathOperation.difference, path, rectPath);
+    }
+
+    Color backgroundColor = imageEditorTheme.cropRotateEditor.background;
 
     /// Draw the darkened area
-    Color backgroundColor = imageEditorTheme.cropRotateEditor.background;
     canvas.drawPath(
       path,
       Paint()
@@ -144,21 +166,32 @@ class CropCornerPainter extends CustomPainter {
     double cropWidth = _cropOffsetRight - _cropOffsetLeft;
     double cropHeight = _cropOffsetBottom - _cropOffsetTop;
 
+    double degreesToRadians(double degrees) {
+      return degrees * (pi / 180);
+    }
+
+    double lineWidth =
+        !drawCircle ? cropWidth : cropWidth * cos(degreesToRadians(19.5));
+    double lineHeight =
+        !drawCircle ? cropHeight : cropHeight * cos(degreesToRadians(19.5));
+    double lineOffsetX = (cropWidth - lineWidth) / 2;
+    double lineOffsetY = (cropHeight - lineHeight) / 2;
+
     for (var i = 1; i < 3; i++) {
       path.addRect(
         Rect.fromLTWH(
           cropWidth / 3 * i + _cropOffsetLeft,
-          _cropOffsetTop,
+          _cropOffsetTop + lineOffsetY,
           helperLineWidth,
-          _cropOffsetBottom - _cropOffsetTop,
+          lineHeight,
         ),
       );
 
       path.addRect(
         Rect.fromLTWH(
-          _cropOffsetLeft,
+          _cropOffsetLeft + lineOffsetX,
           cropHeight / 3 * i + _cropOffsetTop,
-          cropWidth,
+          lineWidth,
           helperLineWidth,
         ),
       );

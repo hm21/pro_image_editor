@@ -1683,6 +1683,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 _contentConstraints.maxWidth,
                 _contentConstraints.maxHeight,
               ),
+              drawCircle: false, // TODO: Add circle mode for profile pictures
               opacity: _painterOpacity,
               imageEditorTheme: imageEditorTheme,
               cornerLength: _cropCornerLength,
