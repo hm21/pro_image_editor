@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.7.3
+- **fix**: Correct platform conditional to include web check. Details in [GitHub issue #35](https://github.com/hm21/pro_image_editor/issues/35)
+
 ## Version 2.7.2
 - **feat**: Added a function in `customWidgets` within `configs` to show a custom `closeWarningDialog`.
 
