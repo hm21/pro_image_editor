@@ -100,7 +100,7 @@ class CropCornerPainter extends CustomPainter {
       path = Path.combine(PathOperation.difference, path, rectPath);
     }
 
-    Color backgroundColor = imageEditorTheme.cropRotateEditor.background;
+    Color backgroundColor = imageEditorTheme.cropRotateEditor.cropOverlayColor;
 
     /// Draw the darkened area
     canvas.drawPath(
@@ -236,8 +236,12 @@ class CropCornerPainter extends CustomPainter {
     double cropAreaSpaceH = cropHeight / 3;
 
     /// Calculation is important for the round-cropper
-    double lineWidth = sqrt(pow(cropWidth, 2) - pow(cropAreaSpaceW, 2));
-    double lineHeight = sqrt(pow(cropHeight, 2) - pow(cropAreaSpaceH, 2));
+    double lineWidth = !drawCircle
+        ? cropWidth
+        : sqrt(pow(cropWidth, 2) - pow(cropAreaSpaceW, 2));
+    double lineHeight = !drawCircle
+        ? cropHeight
+        : sqrt(pow(cropHeight, 2) - pow(cropAreaSpaceH, 2));
 
     double gapW = (cropWidth - lineWidth) / 2;
     double gapH = (cropHeight - lineHeight) / 2;

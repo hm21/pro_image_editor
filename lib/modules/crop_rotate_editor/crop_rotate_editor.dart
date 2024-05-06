@@ -965,6 +965,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   halfSpaceVertical +
                   translate.dy * zoomFactor);
         }
+        print(dx);
 
         // Scale outside when the user move outside the scale area
         if (!isFreeAspectRatio &&
