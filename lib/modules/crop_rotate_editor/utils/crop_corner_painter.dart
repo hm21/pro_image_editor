@@ -58,6 +58,9 @@ class CropCornerPainter extends CustomPainter {
     double cropHeight = _cropOffsetBottom - _cropOffsetTop;
 
     Path path = Path();
+
+    /// Filltype "evenOdd" is important for the canvas web renderer
+    path.fillType = PathFillType.evenOdd;
     path.addRect(Rect.fromCenter(
       center: Offset(
         size.width / 2 + offset.dx * scaleFactor,

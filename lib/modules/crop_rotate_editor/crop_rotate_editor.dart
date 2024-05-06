@@ -338,9 +338,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _decodedImageHeight = h / pixelRatio;
 
     calcCropRect();
+    setState(() {});
     // Skip a few frames to ensure image constraints are set correctly
     Future.delayed(const Duration(milliseconds: 60)).whenComplete(() {
       calcCropRect();
+      calcAspectRatioZoomHelper();
+      calcFitToScreen();
       _imageSizeIsDecoded = true;
       setState(() {});
       onUpdateUI?.call();
@@ -378,13 +381,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
       onRotate: rotate,
       onFlip: flip,
       onTranslate: (offset) async {
-        // Calculate correct offset even image is rotated
+        // Calculate correct offset even image is rotated or flipped
         double radianAngle = rotateAnimation.value;
         double cosAngle = cos(radianAngle);
         double sinAngle = sin(radianAngle);
 
         double dx = offset.dy * sinAngle + offset.dx * cosAngle;
         double dy = offset.dy * cosAngle - offset.dx * sinAngle;
+
+        dx *= (flipX ? -1 : 1);
+        dy *= (flipY ? -1 : 1);
 
         Offset startOffset = translate;
         Offset targetOffset = translate += Offset(dx, dy);
@@ -796,10 +802,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   void _zoomOutside() async {
+    int frameHelper = 1000 ~/ 60;
+    print('run');
     while (userZoom > 1 && _activeScaleOut) {
       double oldZoom = userZoom;
 
-      double zoomFactor = 0.01;
+      double zoomFactor = 0.03;
       userZoom -= zoomFactor;
       userZoom = max(1, userZoom);
 
@@ -846,11 +854,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       translate -= offsetHelper / userZoom / 2;
 
+      cropRect = _viewRect;
+      calcCropRect();
       _setOffsetLimits();
-      _viewRect = cropRect;
       setState(() {});
 
-      await Future.delayed(const Duration(milliseconds: 10));
+      await Future.delayed(Duration(milliseconds: frameHelper));
     }
     _activeScaleOut = false;
   }
@@ -965,13 +974,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   halfSpaceVertical +
                   translate.dy * zoomFactor);
         }
-        print(dx);
+        print(offset.dx);
 
+        /*   _blockInteraction = false;
+        return; */
         // Scale outside when the user move outside the scale area
         if (!isFreeAspectRatio &&
-            (offset.dx.abs() > _viewRect.width / 2 + _interactiveCornerArea ||
-                offset.dy.abs() >
-                    _viewRect.height / 2 + _interactiveCornerArea)) {
+            (details.focalPoint.dx <
+                max(
+                    outsidePadding,
+                    (_contentConstraints.biggest.width - _viewRect.width) / 2 -
+                        _interactiveCornerArea * 2))) {
           if (!_activeScaleOut) {
             _activeScaleOut = true;
             _zoomOutside();
