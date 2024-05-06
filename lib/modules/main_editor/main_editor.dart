@@ -20,6 +20,7 @@ import 'package:pro_image_editor/modules/main_editor/utils/state_manager.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
+import 'package:pro_image_editor/utils/layer_transform_generator.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:vibration/vibration.dart';
@@ -31,7 +32,6 @@ import '../../utils/constants.dart';
 import '../../utils/image_helpers.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../crop_rotate_editor/utils/rotate_angle.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import '../text_editor/text_editor.dart';
 import 'utils/desktop_interaction_manager.dart';
@@ -765,87 +765,6 @@ class ProImageEditorState extends State<ProImageEditor>
     widget.onUpdateUI?.call();
   }
 
-  /// Rotate a layer.
-  ///
-  /// This method rotates a layer based on various factors, including flip and angle.
-  void _rotateLayer({
-    required Layer layer,
-    required bool beforeIsFlipX,
-    required double newImgW,
-    required double newImgH,
-    required double rotationScale,
-    required double rotationAngle,
-  }) {
-    if (beforeIsFlipX) {
-      layer.rotation -= rotationAngle;
-    } else {
-      layer.rotation += rotationAngle;
-    }
-
-    var angleSide = getRotateAngleSide(rotationAngle);
-
-    if (angleSide == RotateAngleSide.bottom) {
-      layer.offset = Offset(
-        newImgW - layer.offset.dx,
-        newImgH - layer.offset.dy,
-      );
-    } else if (angleSide == RotateAngleSide.right) {
-      layer.scale *= rotationScale;
-      layer.offset = Offset(
-        layer.offset.dy * rotationScale,
-        newImgH - layer.offset.dx * rotationScale,
-      );
-    } else if (angleSide == RotateAngleSide.left) {
-      layer.scale *= rotationScale;
-      layer.offset = Offset(
-        layer.offset.dy * rotationScale,
-        newImgH - layer.offset.dx * rotationScale,
-      );
-    }
-  }
-
-  /// Handles zooming of a layer.
-  ///
-  /// This method calculates the zooming of a layer based on the specified parameters.
-  /// It checks if the layer should be zoomed and performs the necessary transformations.
-  ///
-  /// Returns `true` if the layer was zoomed, otherwise `false`.
-  bool _zoomedLayer({
-    required Layer layer,
-    required double scale,
-    required double scaleX,
-    required double oldFullH,
-    required double oldFullW,
-    required Rect cropRect,
-    required bool isHalfPi,
-  }) {
-    var paddingTop = cropRect.top / _pixelRatio;
-    var paddingLeft = cropRect.left / _pixelRatio;
-    var paddingRight = oldFullW - cropRect.right;
-    var paddingBottom = oldFullH - cropRect.bottom;
-
-    // important to check with < 1 and >-1 cuz crop-editor has rounding bugs
-    if (paddingTop > 0.1 ||
-        paddingTop < -0.1 ||
-        paddingLeft > 0.1 ||
-        paddingLeft < -0.1 ||
-        paddingRight > 0.1 ||
-        paddingRight < -0.1 ||
-        paddingBottom > 0.1 ||
-        paddingBottom < -0.1) {
-      var initialIconX = (layer.offset.dx - paddingLeft) * scaleX;
-      var initialIconY = (layer.offset.dy - paddingTop) * scaleX;
-      layer.offset = Offset(
-        initialIconX,
-        initialIconY,
-      );
-
-      layer.scale *= scale;
-      return true;
-    }
-    return false;
-  }
-
   /// Handles tap events on a text layer.
   ///
   /// This method opens a text editor for the specified text layer and updates the layer's properties
@@ -1027,106 +946,14 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
     ).then((transformConfigs) async {
       if (transformConfigs != null) {
-        /// Flip a layer horizontally or vertically.
-        void flipLayer({
-          required Layer layer,
-          required bool flipX,
-          required bool flipY,
-        }) {
-          if (flipY != layer.flipY) {
-            layer.flipY = !layer.flipY;
-            layer.offset = Offset(
-              layer.offset.dx,
-              _screenSize.bodySize.height - layer.offset.dy,
-            );
-          }
-          if (flipX != layer.flipX) {
-            layer.flipX = !layer.flipX;
-            layer.offset = Offset(
-              _screenSize.bodySize.width - layer.offset.dx,
-              layer.offset.dy,
-            );
-          }
-        }
-
-        /// TODO: If user want to transform the layers we need to transform them here with the new position
-        /// Note: it's not possible to transform also the layers in a stack with the image
-        /// cuz that will make problem with the paint editor controller and all layers when we move them around.
         _stateManager.cleanForwardChanges();
-        List<Layer> updatedLayers = [];
 
-        /* var rotationScale = _imageWidth / newImgH;
-*/
-        double fitFactor = 1;
-
-        /*     bool oldFitWidth = _imageWidth >= _screen.width - 0.1 && _imageWidth <= _screen.width + 0.1;
-        bool newFitWidth = newImgW >= _screen.width - 0.1 && newImgW <= _screen.width + 0.1;
-        var scaleX = newFitWidth ? oldFullW / w : oldFullH / h;
-
-        if (oldFitWidth != newFitWidth) {
-          if (newFitWidth) {
-            fitFactor = _imageWidth / newImgW;
-          } else {
-            fitFactor = _imageHeight / newImgH;
-          }
-        } */
-
-        for (var el in _stateManager.activeLayers) {
-          var layer = _layerManager.copyLayer(el);
-          var beforeIsFlipX = layer.flipX;
-          print(transformConfigs.toMap());
-
-          if (transformConfigs.angle % pi == 0) {
-            layer.offset = Offset(
-              layer.offset.dx / fitFactor,
-              layer.offset.dy / fitFactor,
-            );
-          }
-
-          /*       switch (transformConfigs.angle) {
-            case  pi:
-              layer.offset = Offset(
-                layer.offset.dx / fitFactor,
-                layer.offset.dy / fitFactor,
-              );
-              break;
-            case 180:
-              layer.offset = Offset(
-                layer.offset.dx / fitFactor,
-                layer.offset.dy / fitFactor,
-              );
-              break;
-            de fault:
-          }*/
-
-          /*    bool zoomed = _zoomedLayer(
-            layer: layer,
-            scale: scale,
-            scaleX: scaleX,
-            oldFullH: oldFullH,
-            oldFullW: oldFullW,
-            cropRect: res.cropRect,
-            isHalfPi: res.isHalfPi,
-          );
-          double angleFactor = transformConfigs.angle % pi;
-          var newImgW = angleFactor == 0 || angleFactor == pi / 2 ? _screenSize.imageWidth : _screenSize.imageHeight;
-          var newImgH = angleFactor == 0 || angleFactor == pi / 2 ? _screenSize.imageHeight : _screenSize.imageWidth;
-          _rotateLayer(
-            layer: layer,
-            beforeIsFlipX: beforeIsFlipX,
-            rotationAngle: transformConfigs.angle,
-            rotationScale: transformConfigs.scale,
-            newImgW: newImgW,
-            newImgH: newImgH,
-          ); */
-          flipLayer(
-            layer: layer,
-            flipX: transformConfigs.flipX,
-            flipY: transformConfigs.flipY,
-          );
-
-          updatedLayers.add(layer);
-        }
+        List<Layer> updatedLayers = LayerTransformGenerator(
+          layers: _stateManager.activeLayers,
+          activeTransformConfigs: _stateManager.transformConfigs,
+          newTransformConfigs: transformConfigs,
+          layerDrawAreaSize: _screenSize.bodySize,
+        ).updatedLayers;
 
         _stateManager.stateHistory.add(
           EditorStateHistory(
@@ -1140,92 +967,6 @@ class ProImageEditorState extends State<ProImageEditor>
 
         setState(() {});
         widget.onUpdateUI?.call();
-        /*  var decodedImage = response.image;
-        if (!mounted) return;
-        var w = decodedImage.width;
-        var h = decodedImage.height;
-
-        var widthRatio = w.toDouble() / _screen.width;
-        var heightRatio = h.toDouble() / _screenInnerHeight;
-        var newPixelRatio = max(heightRatio, widthRatio);
-
-        var newImgW = w / newPixelRatio;
-        var newImgH = h / newPixelRatio;
-        var scale = (_imageWidth * _pixelRatio) / w;
-        var oldFullW = _imageWidth * _pixelRatio;
-        var oldFullH = _imageHeight * _pixelRatio;
-
-        var rotationScale = _imageWidth / newImgH;
-
-        double fitFactor = 1;
-
-        bool oldFitWidth = _imageWidth >= _screen.width - 0.1 && _imageWidth <= _screen.width + 0.1;
-        bool newFitWidth = newImgW >= _screen.width - 0.1 && newImgW <= _screen.width + 0.1;
-        var scaleX = newFitWidth ? oldFullW / w : oldFullH / h;
-
-        if (oldFitWidth != newFitWidth) {
-          if (newFitWidth) {
-            fitFactor = _imageWidth / newImgW;
-          } else {
-            fitFactor = _imageHeight / newImgH;
-          }
-        }
-
-        List<Layer> updatedLayers = [];
-        for (var el in _layers) {
-          var layer = _copyLayer(el);
-          var beforeIsFlipX = layer.flipX;
-          switch (res.rotationAngle) {
-            case 0:
-            case 180:
-              layer.offset = Offset(
-                layer.offset.dx / fitFactor,
-                layer.offset.dy / fitFactor,
-              );
-              break;
-            case 180:
-              layer.offset = Offset(
-                layer.offset.dx / fitFactor,
-                layer.offset.dy / fitFactor,
-              );
-              break;
-            default:
-          }
-          bool zoomed = _zoomedLayer(
-            layer: layer,
-            scale: scale,
-            scaleX: scaleX,
-            oldFullH: oldFullH,
-            oldFullW: oldFullW,
-            cropRect: res.cropRect,
-            isHalfPi: res.isHalfPi,
-          );
-          _flipLayer(
-            layer: layer,
-            flipX: res.flipX,
-            flipY: res.flipY,
-            isHalfPi: res.isHalfPi,
-          );
-          _rotateLayer(
-            layer: layer,
-            beforeIsFlipX: beforeIsFlipX,
-            newImgW: newImgW,
-            newImgH: newImgH,
-            rotationAngle: res.rotationAngle,
-            rotationRadian: res.rotationRadian,
-            rotationScale: zoomed ? 1 : rotationScale,
-          );
-
-          updatedLayers.add(layer);
-        }
-
-        _addCroppedImg(updatedLayers, EditorImage(byteArray: res.bytes));
-        _pixelRatio = max(heightRatio, widthRatio);
-        _imageWidth = w / _pixelRatio;
-        _imageHeight = h / _pixelRatio; 
-
-        setState(() {});
-        widget.onUpdateUI?.call();*/
       }
     });
   }
@@ -2323,7 +2064,8 @@ class ProImageEditorState extends State<ProImageEditor>
             designMode: designMode,
           )
         : TransformedContentGenerator(
-            configs: _stateManager.transformConfigs,
+            transformConfigs: _stateManager.transformConfigs,
+            configs: configs,
             child: ImageWithMultipleFilters(
               width: _screenSize.imageWidth,
               height: _screenSize.imageHeight,

@@ -217,7 +217,7 @@ class _LayerWidgetState extends State<LayerWidget>
     return Hero(
       key: _layerKey,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-      tag: widget.layerData.hashCode,
+      tag: widget.layerData.id,
       child: Transform(
         transform: transformMatrix,
         alignment: Alignment.center,

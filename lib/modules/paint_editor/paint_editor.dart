@@ -500,7 +500,9 @@ class PaintingEditorState extends State<PaintingEditor>
               clipBehavior: Clip.none,
               children: [
                 TransformedContentGenerator(
-                  configs: transformConfigs ?? TransformConfigs.empty(),
+                  configs: configs,
+                  transformConfigs:
+                      transformConfigs ?? TransformConfigs.empty(),
                   child: ImageWithMultipleFilters(
                     width: getMinimumSize(mainImageSize, _bodySize).width,
                     height: getMinimumSize(mainImageSize, _bodySize).height,

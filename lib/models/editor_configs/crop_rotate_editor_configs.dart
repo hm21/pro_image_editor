@@ -49,6 +49,11 @@ class CropRotateEditorConfigs {
   /// Determines if the drag direction should be reversed.
   final bool reverseDragDirection;
 
+  /// The cropper is round and not rectangular, which is optimal for cutting profile images.
+  ///
+  /// The round cropper only supports an aspect ratio of 1.
+  final bool roundCropper;
+
   /// The initial aspect ratio for cropping.
   ///
   /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
@@ -108,6 +113,7 @@ class CropRotateEditorConfigs {
     this.canReset = true,
     this.reverseMouseScroll = false,
     this.reverseDragDirection = false,
+    this.roundCropper = false,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,

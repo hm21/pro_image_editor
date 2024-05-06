@@ -108,10 +108,12 @@ class LayerInteractionHelper {
 
   /// Determines if layers are selectable based on the configuration and device type.
   bool layersAreSelectable(ProImageEditorConfigs configs) {
-    if (configs.layerInteraction.selectable == LayerInteractionSelectable.auto) {
+    if (configs.layerInteraction.selectable ==
+        LayerInteractionSelectable.auto) {
       return isDesktop;
     }
-    return configs.layerInteraction.selectable == LayerInteractionSelectable.enabled;
+    return configs.layerInteraction.selectable ==
+        LayerInteractionSelectable.enabled;
   }
 
   /// Calculates scaling and rotation based on user interactions.
@@ -140,7 +142,8 @@ class LayerInteractionHelper {
         rotateScaleLayerScaleHelper!;
 
     activeLayer.scale = newDistance / realSize.distance;
-    activeLayer.rotation = touchPositionFromCenter.direction - (45 / activeSize.aspectRatio * pi / 180);
+    activeLayer.rotation = touchPositionFromCenter.direction -
+        (45 / activeSize.aspectRatio * pi / 180);
 
     checkRotationLine(
       activeLayer: activeLayer,
@@ -166,46 +169,64 @@ class LayerInteractionHelper {
       activeLayer.offset.dy + detail.focalPointDelta.dy,
     );
 
-    hoverRemoveBtn = detail.focalPoint.dx <= kToolbarHeight && detail.focalPoint.dy <= kToolbarHeight + MediaQuery.of(context).viewPadding.top;
+    hoverRemoveBtn = detail.focalPoint.dx <= kToolbarHeight &&
+        detail.focalPoint.dy <=
+            kToolbarHeight + MediaQuery.of(context).viewPadding.top;
 
     bool vibarate = false;
     double posX = activeLayer.offset.dx + screenPaddingHelper.left;
     double posY = activeLayer.offset.dy + screenPaddingHelper.top;
 
-    bool hitAreaX = detail.focalPoint.dx >= snapStartPosX - hitSpan && detail.focalPoint.dx <= snapStartPosX + hitSpan;
-    bool hitAreaY = detail.focalPoint.dy >= snapStartPosY - hitSpan && detail.focalPoint.dy <= snapStartPosY + hitSpan;
+    bool hitAreaX = detail.focalPoint.dx >= snapStartPosX - hitSpan &&
+        detail.focalPoint.dx <= snapStartPosX + hitSpan;
+    bool hitAreaY = detail.focalPoint.dy >= snapStartPosY - hitSpan &&
+        detail.focalPoint.dy <= snapStartPosY + hitSpan;
 
-    bool helperGoNearLineLeft = posX >= screenMiddleX && lastPositionX == LayerLastPosition.left;
-    bool helperGoNearLineRight = posX <= screenMiddleX && lastPositionX == LayerLastPosition.right;
-    bool helperGoNearLineTop = posY >= screenMiddleY && lastPositionY == LayerLastPosition.top;
-    bool helperGoNearLineBottom = posY <= screenMiddleY && lastPositionY == LayerLastPosition.bottom;
+    bool helperGoNearLineLeft =
+        posX >= screenMiddleX && lastPositionX == LayerLastPosition.left;
+    bool helperGoNearLineRight =
+        posX <= screenMiddleX && lastPositionX == LayerLastPosition.right;
+    bool helperGoNearLineTop =
+        posY >= screenMiddleY && lastPositionY == LayerLastPosition.top;
+    bool helperGoNearLineBottom =
+        posY <= screenMiddleY && lastPositionY == LayerLastPosition.bottom;
 
     /// Calc vertical helper line
-    if ((!showVerticalHelperLine && (helperGoNearLineLeft || helperGoNearLineRight)) || (showVerticalHelperLine && hitAreaX)) {
+    if ((!showVerticalHelperLine &&
+            (helperGoNearLineLeft || helperGoNearLineRight)) ||
+        (showVerticalHelperLine && hitAreaX)) {
       if (!showVerticalHelperLine) {
         vibarate = true;
         snapStartPosX = detail.focalPoint.dx;
       }
       showVerticalHelperLine = true;
-      activeLayer.offset = Offset(screenMiddleX - screenPaddingHelper.left, activeLayer.offset.dy);
+      activeLayer.offset = Offset(
+          screenMiddleX - screenPaddingHelper.left, activeLayer.offset.dy);
       lastPositionX = LayerLastPosition.center;
     } else {
       showVerticalHelperLine = false;
-      lastPositionX = posX <= screenMiddleX ? LayerLastPosition.left : LayerLastPosition.right;
+      lastPositionX = posX <= screenMiddleX
+          ? LayerLastPosition.left
+          : LayerLastPosition.right;
     }
 
     /// Calc horizontal helper line
-    if ((!showHorizontalHelperLine && (helperGoNearLineTop || helperGoNearLineBottom)) || (showHorizontalHelperLine && hitAreaY)) {
+    if ((!showHorizontalHelperLine &&
+            (helperGoNearLineTop || helperGoNearLineBottom)) ||
+        (showHorizontalHelperLine && hitAreaY)) {
       if (!showHorizontalHelperLine) {
         vibarate = true;
         snapStartPosY = detail.focalPoint.dy;
       }
       showHorizontalHelperLine = true;
-      activeLayer.offset = Offset(activeLayer.offset.dx, screenMiddleY - screenPaddingHelper.top);
+      activeLayer.offset = Offset(
+          activeLayer.offset.dx, screenMiddleY - screenPaddingHelper.top);
       lastPositionY = LayerLastPosition.center;
     } else {
       showHorizontalHelperLine = false;
-      lastPositionY = posY <= screenMiddleY ? LayerLastPosition.top : LayerLastPosition.bottom;
+      lastPositionY = posY <= screenMiddleY
+          ? LayerLastPosition.top
+          : LayerLastPosition.bottom;
     }
 
     if (configEnabledHitVibration && vibarate) {
@@ -251,10 +272,14 @@ class LayerInteractionHelper {
     bool hitArea = hitAreaBelow || hitAreaAfter;
 
     if ((!showRotationHelperLine &&
-            ((degHit > 0 && degHit <= hitSpanX && snapLastRotation < deg) || (degHit < 45 && degHit >= 45 - hitSpanX && snapLastRotation > deg))) ||
+            ((degHit > 0 && degHit <= hitSpanX && snapLastRotation < deg) ||
+                (degHit < 45 &&
+                    degHit >= 45 - hitSpanX &&
+                    snapLastRotation > deg))) ||
         (showRotationHelperLine && hitArea)) {
       if (rotationStartedHelper) {
-        activeLayer.rotation = (deg - (degHit > 45 - hitSpanX ? degHit - 45 : degHit)) / 180 * pi;
+        activeLayer.rotation =
+            (deg - (degHit > 45 - hitSpanX ? degHit - 45 : degHit)) / 180 * pi;
         rotationHelperLineDeg = activeLayer.rotation;
 
         double posY = activeLayer.offset.dy + screenPaddingHelper.top;

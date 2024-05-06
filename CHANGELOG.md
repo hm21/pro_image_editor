@@ -1,5 +1,29 @@
 # Changelog
 
+## Version 3.0.0 New Crop-Rotate-Editor
+Replace the existing crop-rotate editor, which depended on the `extended_image` and `image_editor` packages, with a new solution that doesn't depend on any packages.
+
+#### **feat:**
+- Double tap to zoom in and out
+- Multiple cursors support
+- Undo/Redo function
+- Reset function
+- Flip function
+- Animated rotation
+- Keyboard shortcut support
+- More theme and configuration options
+- Hero animation for image and layers
+- Useable as standalone editor
+- Round "cropper" for profile pictures
+
+#### **fix:**
+- Layer rendering outside the background image now works everywhere.
+- The editor no longer depends on packages that only work with supported "native" functionality, which ensures that the editor works on all platforms. This fixes issue #23.
+
+#### **perf:**
+- Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
+<br/>
+
 ## Version 2.7.3
 - **fix**: Correct platform conditional to include web check. Details in [GitHub issue #35](https://github.com/hm21/pro_image_editor/issues/35)
 

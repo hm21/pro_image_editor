@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 import '../../models/crop_rotate_editor/transform_factors.dart';
 
 class TransformedContentGenerator extends StatefulWidget {
   final Widget child;
-  final TransformConfigs configs;
+  final TransformConfigs transformConfigs;
+  final ProImageEditorConfigs configs;
 
   const TransformedContentGenerator({
     required this.child,
+    required this.transformConfigs,
     required this.configs,
     super.key,
   });
@@ -31,22 +34,30 @@ class _TransformedContentGeneratorState
           alignment: Alignment.center,
           clipBehavior: Clip.hardEdge,
           child: Transform.rotate(
-            angle: widget.configs.angle,
+            angle: widget.transformConfigs.angle,
             alignment: Alignment.center,
             child: Transform.flip(
-              flipX: widget.configs.flipX,
-              flipY: widget.configs.flipY,
-              child: ClipRect(
-                clipper: CutOutsideArea(configs: widget.configs),
-                child: Transform.scale(
-                  scale: widget.configs.scale,
+              flipX: widget.transformConfigs.flipX,
+              flipY: widget.transformConfigs.flipY,
+              child: Builder(builder: (context) {
+                Widget child = Transform.scale(
+                  scale: widget.transformConfigs.scale,
                   alignment: Alignment.center,
                   child: Transform.translate(
-                    offset: widget.configs.offset * scaleHeightHelper,
+                    offset: widget.transformConfigs.offset * scaleHeightHelper,
                     child: widget.child,
                   ),
-                ),
-              ),
+                );
+
+                CutOutsideArea clipper =
+                    CutOutsideArea(configs: widget.transformConfigs);
+
+                if (widget.configs.cropRotateEditorConfigs.roundCropper) {
+                  return ClipOval(clipper: clipper, child: child);
+                } else {
+                  return ClipRect(clipper: clipper, child: child);
+                }
+              }),
             ),
           ),
         );

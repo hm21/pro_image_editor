@@ -7,6 +7,7 @@ import 'pages/google_font_example.dart';
 import 'pages/highly_configurable_example.dart';
 import 'pages/movable_background_image.dart';
 import 'pages/reorder_layer_example.dart';
+import 'pages/round_cropper_example.dart';
 import 'pages/stickers_example.dart';
 import 'pages/whatsapp_example.dart';
 
@@ -94,6 +95,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ReorderLayerExample(),
           Divider(height: 1),
           SelectableLayerExample(),
+          Divider(height: 1),
+          RoundCropperExample(),
         ],
       ),
     );

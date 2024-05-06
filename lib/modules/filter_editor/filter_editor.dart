@@ -253,7 +253,8 @@ class FilterEditorState extends State<FilterEditor>
               createRectTween: (begin, end) =>
                   RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
-                configs: transformConfigs ?? TransformConfigs.empty(),
+                configs: configs,
+                transformConfigs: transformConfigs ?? TransformConfigs.empty(),
                 child: ImageWithMultipleFilters(
                   width: getMinimumSize(mainImageSize, _bodySize).width,
                   height: getMinimumSize(mainImageSize, _bodySize).height,
