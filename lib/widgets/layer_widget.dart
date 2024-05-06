@@ -274,24 +274,6 @@ class _LayerWidgetState extends State<LayerWidget>
                 ),
               ),
             ),
-            /*     Positioned(
-              bottom: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
-              right: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
-              child: Container(
-                width: 105.7,
-                height: 115,
-                color: Colors.amber,
-              ),
-            ),
-            Positioned(
-              top: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
-              left: imageEditorTheme.layerInteraction.buttonRadius + imageEditorTheme.layerInteraction.strokeWidth * 2,
-              child: Container(
-                width: 105.7,
-                height: 115,
-                color: Colors.deepOrange,
-              ),
-            ), */
           ],
         ),
       ),
@@ -404,6 +386,7 @@ class _LayerWidgetState extends State<LayerWidget>
         painter: DrawCanvas(
           item: layer.item,
           scale: widget.layerData.scale,
+          selected: widget.selected,
           enabledHitDetection: widget.enableHitDetection,
           freeStyleHighPerformanceScaling:
               widget.freeStyleHighPerformanceScaling,

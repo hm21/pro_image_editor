@@ -643,8 +643,8 @@ class ProImageEditorState extends State<ProImageEditor>
     _layerInteraction.rotationStartedHelper = false;
     _layerInteraction.showHelperLines = true;
 
-    double posX = layer.offset.dx + _screenSize.screenPaddingHelper.left;
-    double posY = layer.offset.dy + _screenSize.screenPaddingHelper.top;
+    double posX = layer.offset.dx;
+    double posY = layer.offset.dy + _screenSize.appBarHeight;
 
     _layerInteraction.lastPositionY =
         posY <= _screenSize.screenMiddleY - _layerInteraction.hitSpan
@@ -691,7 +691,7 @@ class ProImageEditorState extends State<ProImageEditor>
           paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       _layerInteraction.calculateInteractiveButtonScaleRotate(
         activeLayer: _activeLayer!,
-        screenPaddingHelper: _screenSize.screenPaddingHelper,
+        screenPaddingHelper: EdgeInsets.only(top: _screenSize.appBarHeight),
         configEnabledHitVibration: helperLines.hitVibration,
         details: details,
         layerTheme: imageEditorTheme.layerInteraction,

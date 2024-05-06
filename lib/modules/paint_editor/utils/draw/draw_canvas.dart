@@ -27,8 +27,12 @@ class DrawCanvas extends CustomPainter {
   /// When `true`, allows detecting user interactions with the interface.
   bool enabledHitDetection = true;
 
+  /// Indicates whether the layer is currently selected.
+  bool selected = true;
+
   /// Constructor for the canvas.
   DrawCanvas({
+    this.selected = false,
     required this.item,
     required this.scale,
     required this.enabledHitDetection,
@@ -67,7 +71,13 @@ class DrawCanvas extends CustomPainter {
 
   @override
   bool hitTest(Offset position) {
-    if (!enabledHitDetection) return true;
+    if (!enabledHitDetection) {
+      return true;
+    } else if (selected) {
+      item.hit = true;
+      return true;
+    }
+
     var offsets = item.offsets;
     var strokeW =
         isDesktop ? item.strokeWidth * scale : max(item.strokeWidth, 30);
