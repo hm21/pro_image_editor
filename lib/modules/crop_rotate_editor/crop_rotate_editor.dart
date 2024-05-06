@@ -802,12 +802,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   void _zoomOutside() async {
-    int frameHelper = 1000 ~/ 60;
-    print('run');
+    const int frameHelper = 1000 ~/ 60;
     while (userZoom > 1 && _activeScaleOut) {
       double oldZoom = userZoom;
 
-      double zoomFactor = 0.03;
+      double zoomFactor = 0.025;
       userZoom -= zoomFactor;
       userZoom = max(1, userZoom);
 
@@ -847,14 +846,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
         }
       }
 
-      Offset offsetHelper = Offset(
-        offsetHelperX,
-        offsetHelperY,
-      );
+      Offset offsetHelper = Offset(offsetHelperX, offsetHelperY);
 
       translate -= offsetHelper / userZoom / 2;
 
-      cropRect = _viewRect;
       calcCropRect();
       _setOffsetLimits();
       setState(() {});
@@ -904,13 +899,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _setOffsetLimits();
       setState(() {});
     } else {
-      /// TODO: scale out when move outside => important check free ratio
-
       if (_currentCropAreaPart != CropAreaPart.none &&
           _currentCropAreaPart != CropAreaPart.inside) {
         Offset offset = _getRealHitPoint(
-                zoom: userZoom, position: details.localFocalPoint) +
-            translate * userZoom;
+                zoom: _startingPinchScale, position: details.localFocalPoint) +
+            _startingTranslate * _startingPinchScale;
         bool roundCropper = cropRotateEditorConfigs.roundCropper;
 
         double imgW = _renderedImgConstraints.maxWidth;
@@ -974,17 +967,37 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   halfSpaceVertical +
                   translate.dy * zoomFactor);
         }
-        print(offset.dx);
 
-        /*   _blockInteraction = false;
-        return; */
+        Size realViewRectSize = _viewRect.size * scaleAnimation.value;
+
+        double doubleInteractiveArea = _interactiveCornerArea * 2;
+        double halfScreenPadding = _screenPadding / 2;
+
+        double zoomOutHitAreaX = max(
+            halfScreenPadding,
+            (_contentConstraints.biggest.width - realViewRectSize.width) / 2 -
+                doubleInteractiveArea);
+        double zoomOutHitAreaY = max(
+            halfScreenPadding,
+            (_contentConstraints.biggest.height - realViewRectSize.height) / 2 -
+                doubleInteractiveArea);
+
+        double outsideHitPosY = details.focalPoint.dy -
+            (imageEditorTheme.editorMode == ThemeEditorMode.simple
+                ? kToolbarHeight
+                : 0) -
+            MediaQuery.of(context).padding.top;
+
+        bool outsideLeft = details.focalPoint.dx < zoomOutHitAreaX;
+        bool outsideRight = details.focalPoint.dx >
+            _contentConstraints.biggest.width - zoomOutHitAreaX;
+        bool outsideTop = outsideHitPosY < zoomOutHitAreaY;
+        bool outsideBottom = outsideHitPosY >
+            _contentConstraints.biggest.height - zoomOutHitAreaY;
+
         // Scale outside when the user move outside the scale area
         if (!isFreeAspectRatio &&
-            (details.focalPoint.dx <
-                max(
-                    outsidePadding,
-                    (_contentConstraints.biggest.width - _viewRect.width) / 2 -
-                        _interactiveCornerArea * 2))) {
+            (outsideLeft || outsideRight || outsideTop || outsideBottom)) {
           if (!_activeScaleOut) {
             _activeScaleOut = true;
             _zoomOutside();
@@ -1495,10 +1508,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     // Calculate the transformed local position of the pointer
     Offset transformedLocalPosition = position * zoom;
     // Calculate the size of the transformed image
-    Size transformedImgSize = Size(
-      imgW * zoom,
-      imgH * zoom,
-    );
+    Size transformedImgSize = Size(imgW, imgH) * zoom;
 
     // Calculate the center offset point from the old zoomed view
     return Offset(
