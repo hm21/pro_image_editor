@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:io';
 
@@ -22,13 +23,14 @@ import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/utils/layer_transform_generator.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../designs/whatsapp/whatsapp_filter_button.dart';
 import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../utils/constants.dart';
+import '../../utils/content_recorder.dart/content_recorder.dart';
+import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../../utils/image_helpers.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
@@ -1267,7 +1269,7 @@ class ProImageEditorState extends State<ProImageEditor>
     } catch (_) {}
 
     if (configs.removeTransparentAreas) {
-      bytes = removeTransparentImgAreas(bytes) ?? bytes;
+      bytes = await removeTransparentImgAreas(bytes) ?? bytes;
     }
 
     await widget.onImageEditingComplete(bytes);
@@ -1593,7 +1595,7 @@ class ProImageEditorState extends State<ProImageEditor>
               _screenshotHideOutsideImgContent ? _screenSize.imageWidth : null,
           height:
               _screenshotHideOutsideImgContent ? _screenSize.imageHeight : null,
-          child: Screenshot(
+          child: ContentRecorder(
             controller: _controllers.screenshot,
             child: Stack(
               alignment: Alignment.center,

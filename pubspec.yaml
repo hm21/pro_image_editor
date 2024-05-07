@@ -40,9 +40,7 @@ dependencies:
   defer_pointer: ^0.0.2
   emoji_picker_flutter: ^2.2.0
   http: ^1.2.1
-  image: ^4.1.7
   rounded_background_text: ^0.5.0
-  screenshot: ^2.3.0
   vibration: ^1.8.4
 
 dev_dependencies:

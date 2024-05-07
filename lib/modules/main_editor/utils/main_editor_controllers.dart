@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:screenshot/screenshot.dart';
+
+import '../../../utils/content_recorder.dart/content_recorder_controller.dart';
 
 /// A class that manages various controllers used in the main editor interface.
 class MainEditorControllers {
@@ -12,12 +13,12 @@ class MainEditorControllers {
   late final ScrollController bottomBarScroll;
 
   /// Controller for capturing screenshots of the editor content.
-  late final ScreenshotController screenshot;
+  late final ContentRecorderController screenshot;
 
   /// Constructs a new instance of [MainEditorControllers].
   MainEditorControllers() {
     mouseMoveStream = StreamController.broadcast();
-    screenshot = ScreenshotController();
+    screenshot = ContentRecorderController();
     bottomBarScroll = ScrollController();
   }
 

@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
-import 'package:screenshot/screenshot.dart';
 
+import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../history/state_history.dart';
 import '../layer.dart';
 import 'export_state_history_configs.dart';
@@ -20,7 +20,7 @@ class ExportStateHistory {
   final int _editorPosition;
   final Size _imgSize;
   final List<EditorStateHistory> stateHistory;
-  late ScreenshotController _screenshotController;
+  late ContentRecorderController _contentRecorderCtrl;
   final ExportEditorConfigs _configs;
 
   /// Constructs an [ExportStateHistory] object with the given parameters.
@@ -40,7 +40,7 @@ class ExportStateHistory {
   /// Returns a Map representing the state history of the editor,
   /// including layers, filters, stickers, and other configurations.
   Future<Map> toMap() async {
-    _screenshotController = ScreenshotController();
+    _contentRecorderCtrl = ContentRecorderController();
 
     List history = [];
     List<Uint8List> stickers = [];
@@ -149,7 +149,7 @@ class ExportStateHistory {
           layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
         stickers
-            .add(await _screenshotController.captureFromWidget(layer.sticker));
+            .add(await _contentRecorderCtrl.captureFromWidget(layer.sticker));
       }
     }
   }

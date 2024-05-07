@@ -15,7 +15,6 @@ import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
-import 'package:screenshot/screenshot.dart';
 
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
@@ -24,6 +23,7 @@ import '../../models/editor_image.dart';
 import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/layer.dart';
 import '../../models/transform_helper.dart';
+import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
@@ -520,7 +520,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       );
 
       Uint8List bytes =
-          await ScreenshotController().captureFromWidget(editorWidget);
+          await ContentRecorderController().captureFromWidget(editorWidget);
 
       if (mounted) loading.hide(context);
 
