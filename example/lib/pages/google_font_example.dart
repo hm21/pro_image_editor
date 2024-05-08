@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 import '../utils/example_helper.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class GoogleFontExample extends StatefulWidget {
   const GoogleFontExample({super.key});
@@ -49,11 +48,14 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
             GoogleFonts.nabla(),
           ],
         ),
-        emojiEditorConfigs: EmojiEditorConfigs(
-          checkPlatformCompatibility: false,
+        imageEditorTheme: ImageEditorTheme(
+            emojiEditor: EmojiEditorTheme(
           textStyle: DefaultEmojiTextStyle.copyWith(
             fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
           ),
+        )),
+        emojiEditorConfigs: const EmojiEditorConfigs(
+          checkPlatformCompatibility: false,
         ),
       ),
     );

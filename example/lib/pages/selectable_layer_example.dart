@@ -19,10 +19,7 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                LayoutBuilder(builder: (context, constraints) {
-              return _buildEditor();
-            }),
+            builder: (context) => _buildEditor(),
           ),
         );
       },

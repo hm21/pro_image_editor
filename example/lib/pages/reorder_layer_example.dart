@@ -22,10 +22,7 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                LayoutBuilder(builder: (context, constraints) {
-              return _buildEditor();
-            }),
+            builder: (context) => _buildEditor(),
           ),
         );
       },

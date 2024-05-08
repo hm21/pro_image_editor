@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 import 'dart:math';
 import 'dart:io';
 
@@ -30,7 +29,6 @@ import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../utils/constants.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
-import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../../utils/image_helpers.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
@@ -599,7 +597,7 @@ class ProImageEditorState extends State<ProImageEditor>
     var w = decodedImage.width;
     var h = decodedImage.height;
 
-    var widthRatio = w.toDouble() / _screenSize.screen.width;
+    var widthRatio = w.toDouble() / _screenSize.lastScreenSize.width;
     var heightRatio = h.toDouble() / _screenSize.screenInnerHeight;
     _pixelRatio = max(heightRatio, widthRatio);
 
@@ -1455,10 +1453,7 @@ class ProImageEditorState extends State<ProImageEditor>
               _screenSize.screenSizeDebouncer(() {
                 _decodeImage();
               });
-              _screenSize.lastScreenSize = Size(
-                constraints.maxWidth,
-                constraints.maxHeight,
-              );
+              _screenSize.lastScreenSize = constraints.biggest;
             }
             return AnnotatedRegion<SystemUiOverlayStyle>(
               value: imageEditorTheme.uiOverlayStyle,
@@ -1744,7 +1739,8 @@ class ProImageEditorState extends State<ProImageEditor>
                             scrollDirection: Axis.horizontal,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
-                                minWidth: min(_screenSize.screen.width, 600),
+                                minWidth:
+                                    min(_screenSize.lastScreenSize.width, 600),
                                 maxWidth: 600,
                               ),
                               child: Padding(

@@ -354,7 +354,7 @@ class _LayerWidgetState extends State<LayerWidget>
       child: Text(
         layer.emoji.toString(),
         textAlign: TextAlign.center,
-        style: emojiEditorConfigs.textStyle.copyWith(
+        style: imageEditorTheme.emojiEditor.textStyle.copyWith(
           fontSize: textEditorConfigs.initFontSize * _layer.scale,
         ),
       ),

@@ -24,6 +24,12 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 - Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
 <br/>
 
+## Version 2.7.5
+- **fix**: Corrected pixelRatio and layer interaction calculations in ProImageEditor for smaller screen areas, ensuring accuracy across various device sizes. See [GitHub issue #37](https://github.com/hm21/pro_image_editor/issues/37).
+
+## Version 2.7.4
+- **fix**: Migrated all emoji editor theme configurations from `EmojiEditorConfigs` to `EmojiEditorTheme` inside `ImageEditorTheme`, resolving [GitHub issue #38](https://github.com/hm21/pro_image_editor/issues/38).
+
 ## Version 2.7.3
 - **fix**: Correct platform conditional to include web check. Details in [GitHub issue #35](https://github.com/hm21/pro_image_editor/issues/35)
 

@@ -195,7 +195,24 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             appBarForegroundColor: Color(0xFFE1E1E1),
             background: Color.fromARGB(255, 187, 214, 255),
           ),
-          emojiEditor: EmojiEditorTheme(),
+          emojiEditor: EmojiEditorTheme(
+            bottomActionBarConfig: BottomActionBarConfig(
+              buttonIconColor: Colors.blue,
+              backgroundColor: Colors.red,
+              buttonColor: Colors.amber,
+              showBackspaceButton: false,
+            ),
+            skinToneConfig: SkinToneConfig(
+              enabled: true,
+              dialogBackgroundColor: Colors.green,
+              indicatorColor: Colors.pink,
+            ),
+            categoryViewConfig: CategoryViewConfig(
+              backgroundColor: Colors.amber,
+              iconColor: Colors.purple,
+            ),
+            textStyle: TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
+          ),
           stickerEditor: StickerEditorTheme(),
           background: Color.fromARGB(255, 255, 169, 169),
           appBarBackgroundColor: Color.fromARGB(255, 255, 211, 77),
@@ -321,7 +338,6 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
         emojiEditorConfigs: const EmojiEditorConfigs(
           enabled: true,
           initScale: 2.0,
-          textStyle: TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
           checkPlatformCompatibility: true,
         ),
         designMode: ImageEditorDesignModeE.material,
