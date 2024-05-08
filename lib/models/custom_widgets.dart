@@ -81,6 +81,9 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the painting editor component.
   final Widget? bottomBarPaintingEditor;
 
+  /// A custom bottom bar widget for the text editor component.
+  final Widget? bottomBarTextEditor;
+
   /// Override the close warning dialog when we made changes.
   ///
   /// **Example:**
@@ -129,6 +132,7 @@ class ImageEditorCustomWidgets {
     this.appBarBlurEditor,
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
+    this.bottomBarTextEditor,
     this.whatsAppBottomWidget,
     this.closeWarningDialog,
   });

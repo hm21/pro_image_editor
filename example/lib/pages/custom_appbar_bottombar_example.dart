@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/models/paint_editor/paint_bottom_bar_item.dart';
 import 'package:pro_image_editor/models/theme/theme_shared_values.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -25,6 +26,17 @@ class _CustomAppbarBottombarExampleState
     with ExampleHelperState<CustomAppbarBottombarExample> {
   late StreamController _updateUIStream;
   late ScrollController _bottomBarScrollCtrl;
+
+  final List<TextStyle> _customTextStyles = [
+    GoogleFonts.roboto(),
+    GoogleFonts.averiaLibre(),
+    GoogleFonts.lato(),
+    GoogleFonts.comicNeue(),
+    GoogleFonts.actor(),
+    GoogleFonts.odorMeanChey(),
+    GoogleFonts.nabla(),
+  ];
+
   final _bottomTextStyle = const TextStyle(fontSize: 10.0, color: Colors.white);
   final List<PaintModeBottomBarItem> paintModes = [
     const PaintModeBottomBarItem(
@@ -96,17 +108,20 @@ class _CustomAppbarBottombarExampleState
         onCloseEditor: onCloseEditor,
         onUpdateUI: () => _updateUIStream.add(null),
         configs: ProImageEditorConfigs(
-          customWidgets: ImageEditorCustomWidgets(
-            appBar: _buildAppBar(),
-            appBarPaintingEditor: _appBarPaintingEditor(),
-            appBarTextEditor: _appBarTextEditor(),
-            appBarCropRotateEditor: _appBarCropRotateEditor(),
-            appBarFilterEditor: _appBarFilterEditor(),
-            appBarBlurEditor: _appBarBlurEditor(),
-            bottomNavigationBar: _bottomNavigationBar(constraints),
-            bottomBarPaintingEditor: _bottomBarPaintingEditor(constraints),
-          ),
-        ),
+            customWidgets: ImageEditorCustomWidgets(
+              appBar: _buildAppBar(),
+              appBarPaintingEditor: _appBarPaintingEditor(),
+              appBarTextEditor: _appBarTextEditor(),
+              appBarCropRotateEditor: _appBarCropRotateEditor(),
+              appBarFilterEditor: _appBarFilterEditor(),
+              appBarBlurEditor: _appBarBlurEditor(),
+              bottomNavigationBar: _bottomNavigationBar(constraints),
+              bottomBarPaintingEditor: _bottomBarPaintingEditor(constraints),
+              bottomBarTextEditor: _bottomBarTextEditor(constraints),
+            ),
+            textEditorConfigs: TextEditorConfigs(
+              customTextStyles: _customTextStyles,
+            )),
       );
     });
   }
@@ -683,6 +698,65 @@ class _CustomAppbarBottombarExampleState
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _bottomBarTextEditor(BoxConstraints constraints) {
+    var items = _customTextStyles;
+    return StreamBuilder(
+      stream: _updateUIStream.stream,
+      builder: (_, __) {
+        return Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: kBottomNavigationBarHeight,
+          child: Container(
+            color: Colors.black,
+            height: kBottomNavigationBarHeight,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints:
+                    BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(
+                    items.length,
+                    (index) {
+                      bool isSelected = editorKey.currentState!.textEditor
+                              .currentState!.selectedTextStyle.hashCode ==
+                          items[index].hashCode;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: IconButton(
+                          onPressed: () {
+                            editorKey.currentState!.textEditor.currentState!
+                                .setTextStyle(items[index]);
+                          },
+                          icon: Text(
+                            'Aa',
+                            style: items[index].copyWith(
+                              color: isSelected ? Colors.black : Colors.white,
+                            ),
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor:
+                                isSelected ? Colors.white : Colors.black38,
+                            foregroundColor:
+                                isSelected ? Colors.black : Colors.white,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

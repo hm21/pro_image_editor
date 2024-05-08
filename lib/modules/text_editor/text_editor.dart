@@ -60,7 +60,7 @@ class TextEditorState extends State<TextEditor>
   late TextAlign align;
   late LayerBackgroundColorModeE backgroundColorMode;
   late double fontScale;
-  late TextStyle _customTextStyle;
+  late TextStyle selectedTextStyle;
   int _numLines = 0;
   double _colorPosition = 0;
 
@@ -71,7 +71,7 @@ class TextEditorState extends State<TextEditor>
     fontScale = textEditorConfigs.initFontScale;
     backgroundColorMode = textEditorConfigs.initialBackgroundColorMode;
 
-    _customTextStyle = widget.layer?.textStyle ??
+    selectedTextStyle = widget.layer?.textStyle ??
         textEditorConfigs.customTextStyles?.first ??
         const TextStyle();
     _initializeFromLayer();
@@ -244,6 +244,14 @@ class TextEditorState extends State<TextEditor>
     );
   }
 
+  /// Update the current text style.
+  void setTextStyle(TextStyle style) {
+    setState(() {
+      selectedTextStyle = style;
+      widget.onUpdateUI?.call();
+    });
+  }
+
   /// Closes the editor without applying changes.
   void close() {
     Navigator.pop(context);
@@ -261,7 +269,7 @@ class TextEditorState extends State<TextEditor>
           fontScale: fontScale,
           colorMode: backgroundColorMode,
           colorPickerPosition: _colorPosition,
-          textStyle: _customTextStyle,
+          textStyle: selectedTextStyle,
           // fontFamily: 'Roboto',
         ),
       );
@@ -403,6 +411,9 @@ class TextEditorState extends State<TextEditor>
 
   /// Builds the body of the text editor.
   Widget _buildBody() {
+    double barPickerPadding =
+        imageEditorTheme.editorMode == ThemeEditorMode.simple ? 10 : 60;
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: done,
@@ -413,9 +424,7 @@ class TextEditorState extends State<TextEditor>
             alignment: Alignment.topRight,
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: imageEditorTheme.editorMode == ThemeEditorMode.simple
-                    ? 10
-                    : 60,
+                vertical: barPickerPadding,
               ),
               child: BarColorPicker(
                 configs: widget.configs,
@@ -427,6 +436,7 @@ class TextEditorState extends State<TextEditor>
                       MediaQuery.of(context).viewInsets.bottom -
                       kToolbarHeight -
                       kBottomNavigationBarHeight -
+                      barPickerPadding * 2 -
                       MediaQuery.of(context).padding.top,
                 ),
                 onPositionChange: (value) {
@@ -447,15 +457,12 @@ class TextEditorState extends State<TextEditor>
               ),
             ),
           ),
-          TextEditorBottomBar(
-            configs: widget.configs,
-            selectedStyle: _customTextStyle,
-            onFontChange: (style) {
-              setState(() {
-                _customTextStyle = style;
-              });
-            },
-          ),
+          customWidgets.bottomBarTextEditor ??
+              TextEditorBottomBar(
+                configs: widget.configs,
+                selectedStyle: selectedTextStyle,
+                onFontChange: setTextStyle,
+              ),
           if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp)
             WhatsAppTextAppBar(
               configs: widget.configs,
@@ -495,7 +502,7 @@ class TextEditorState extends State<TextEditor>
                       _textCtrl.text,
                       backgroundColor: _getBackgroundColor,
                       textAlign: align,
-                      style: _customTextStyle.copyWith(
+                      style: selectedTextStyle.copyWith(
                         color: _getTextColor,
                         fontSize: _getTextFontSize,
                         fontWeight: FontWeight.w400,
@@ -524,13 +531,13 @@ class TextEditorState extends State<TextEditor>
                           hintText: _textCtrl.text.isEmpty
                               ? i18n.textEditor.inputHintText
                               : '',
-                          hintStyle: _customTextStyle.copyWith(
+                          hintStyle: selectedTextStyle.copyWith(
                             color: imageEditorTheme.textEditor.inputHintColor,
                             fontSize: _getTextFontSize,
                             fontWeight: FontWeight.w400,
                             height: 1.35,
                           )),
-                      style: _customTextStyle.copyWith(
+                      style: selectedTextStyle.copyWith(
                         color: Colors.transparent,
                         fontSize: _getTextFontSize,
                         fontWeight: FontWeight.w400,
