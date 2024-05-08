@@ -592,6 +592,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       scale *= aspectRatioZoomHelper;
     }
 
+    print(aspectRatioZoomHelper);
+
     scaleAnimation = Tween<double>(begin: oldScaleFactor, end: scale).animate(
       CurvedAnimation(
         parent: scaleCtrl,
@@ -635,6 +637,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   void calcAspectRatioZoomHelper() {
+    // TODO: check function?
+    return;
     double w = _rotated90deg ? _viewRect.height : _viewRect.width;
     double h = _rotated90deg ? _viewRect.width : _viewRect.height;
     double imgW = _rotated90deg
@@ -969,6 +973,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
         }
 
         Size realViewRectSize = _viewRect.size * scaleAnimation.value;
+        if (_rotated90deg) {
+          realViewRectSize =
+              Size(realViewRectSize.height, realViewRectSize.width);
+        }
 
         double doubleInteractiveArea = _interactiveCornerArea * 2;
         double halfScreenPadding = _screenPadding / 2;
@@ -1880,6 +1888,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       child: LayoutBuilder(
         builder: (context, constraints) {
           _renderedImgConstraints = constraints;
+          originalSize = constraints.biggest;
           return Stack(
             fit: StackFit.expand,
             alignment: Alignment.center,

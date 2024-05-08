@@ -1469,7 +1469,11 @@ class ProImageEditorState extends State<ProImageEditor>
                     backgroundColor: imageEditorTheme.background,
                     resizeToAvoidBottomInset: false,
                     appBar: _buildAppBar(),
-                    body: _buildBody(),
+                    body: Container(
+                      // TODO: delete me
+                      color: Colors.pink.shade100,
+                      child: _buildBody(),
+                    ),
                     bottomNavigationBar: _buildBottomNavBar(),
                   ),
                 ),

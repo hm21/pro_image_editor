@@ -46,6 +46,8 @@ mixin CropAreaHistory
   Offset translate = const Offset(0, 0);
   @protected
   Rect cropRect = Rect.zero;
+  @protected
+  Size originalSize = Size.zero;
 
   final List<TransformConfigs> history = [TransformConfigs.empty()];
 
@@ -66,6 +68,7 @@ mixin CropAreaHistory
       TransformConfigs(
         angle: angle ?? rotateAnimation.value,
         cropRect: cropRect,
+        originalSize: originalSize,
         scaleAspectRatio: aspectRatioZoomHelper,
         scaleUser: userZoom,
         scaleRotation: scale ?? scaleAnimation.value,
