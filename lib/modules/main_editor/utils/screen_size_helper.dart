@@ -30,18 +30,19 @@ class ScreenSizeHelper {
 
   /// Getter for the screen inner height, excluding top and bottom padding.
   double get screenInnerHeight =>
-      screen.height -
+      lastScreenSize.height -
       screenPadding.top -
       screenPadding.bottom -
       allToolbarHeight;
 
   /// Getter for the X-coordinate of the middle of the screen.
   double get screenMiddleX =>
-      screen.width / 2 - (screenPadding.left + screenPadding.right) / 2;
+      lastScreenSize.width / 2 - (screenPadding.left + screenPadding.right) / 2;
 
   /// Getter for the Y-coordinate of the middle of the screen.
   double get screenMiddleY =>
-      screen.height / 2 - (screenPadding.top + screenPadding.bottom) / 2;
+      lastScreenSize.height / 2 -
+      (screenPadding.top + screenPadding.bottom) / 2;
 
   /// Returns the total height of all toolbars.
   double get allToolbarHeight => appBarHeight + bottomBarHeight;
@@ -63,12 +64,12 @@ class ScreenSizeHelper {
 
   /// Get the screen padding values.
   EdgeInsets get screenPaddingHelper => EdgeInsets.only(
-        top: (screen.height -
+        top: (lastScreenSize.height -
                 screenPadding.top -
                 screenPadding.bottom -
                 imageHeight) /
             2,
-        left: (screen.width -
+        left: (lastScreenSize.width -
                 screenPadding.left -
                 screenPadding.right -
                 imageWidth) /

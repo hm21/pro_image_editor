@@ -595,7 +595,7 @@ class ProImageEditorState extends State<ProImageEditor>
     var w = decodedImage.width;
     var h = decodedImage.height;
 
-    var widthRatio = w.toDouble() / _screenSize.screen.width;
+    var widthRatio = w.toDouble() / _screenSize.lastScreenSize.width;
     var heightRatio = h.toDouble() / _screenSize.screenInnerHeight;
     _pixelRatio = max(heightRatio, widthRatio);
 
@@ -967,7 +967,7 @@ class ProImageEditorState extends State<ProImageEditor>
           var w = decodedImage.width;
           var h = decodedImage.height;
 
-          var widthRatio = w.toDouble() / _screenSize.screen.width;
+          var widthRatio = w.toDouble() / _screenSize.lastScreenSize.width;
           var heightRatio = h.toDouble() / _screenSize.screenInnerHeight;
           var newPixelRatio = max(heightRatio, widthRatio);
 
@@ -981,11 +981,12 @@ class ProImageEditorState extends State<ProImageEditor>
 
           double fitFactor = 1;
 
-          bool oldFitWidth =
-              _screenSize.imageWidth >= _screenSize.screen.width - 0.1 &&
-                  _screenSize.imageWidth <= _screenSize.screen.width + 0.1;
-          bool newFitWidth = newImgW >= _screenSize.screen.width - 0.1 &&
-              newImgW <= _screenSize.screen.width + 0.1;
+          bool oldFitWidth = _screenSize.imageWidth >=
+                  _screenSize.lastScreenSize.width - 0.1 &&
+              _screenSize.imageWidth <= _screenSize.lastScreenSize.width + 0.1;
+          bool newFitWidth =
+              newImgW >= _screenSize.lastScreenSize.width - 0.1 &&
+                  newImgW <= _screenSize.lastScreenSize.width + 0.1;
           var scaleX = newFitWidth ? oldFullW / w : oldFullH / h;
 
           if (oldFitWidth != newFitWidth) {
@@ -1541,10 +1542,7 @@ class ProImageEditorState extends State<ProImageEditor>
               _screenSize.screenSizeDebouncer(() {
                 _decodeImage();
               });
-              _screenSize.lastScreenSize = Size(
-                constraints.maxWidth,
-                constraints.maxHeight,
-              );
+              _screenSize.lastScreenSize = constraints.biggest;
             }
             return AnnotatedRegion<SystemUiOverlayStyle>(
               value: imageEditorTheme.uiOverlayStyle,
@@ -1842,7 +1840,8 @@ class ProImageEditorState extends State<ProImageEditor>
                             scrollDirection: Axis.horizontal,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
-                                minWidth: min(_screenSize.screen.width, 600),
+                                minWidth:
+                                    min(_screenSize.lastScreenSize.width, 600),
                                 maxWidth: 600,
                               ),
                               child: Padding(
