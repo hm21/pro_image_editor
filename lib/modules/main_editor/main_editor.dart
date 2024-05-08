@@ -1603,27 +1603,13 @@ class ProImageEditorState extends State<ProImageEditor>
               alignment: Alignment.center,
               fit: StackFit.expand,
               children: [
-                Center(
-                  child: Padding(
-                    padding: _selectedLayerIndex >= 0
-                        ? EdgeInsets.only(
-                            top: _screenSize.appBarHeight,
-                            bottom: _screenSize.bottomBarHeight,
-                          )
-                        : EdgeInsets.zero,
-                    child: Hero(
-                      tag: !_inited ? '--' : heroTag,
-                      createRectTween: (begin, end) =>
-                          RectTween(begin: begin, end: end),
-                      child: _buildImageWithFilter(),
-                    ),
-                  ),
-                ),
+                /// Build Image
+                _buildImageWithFilter(),
 
                 /// Build layer stack
                 _buildLayers(),
 
-                /// Build all helper stuff
+                /// Build helper stuff
                 if (!_doneEditing) ...[
                   _buildHelperLines(),
                   if (_selectedLayerIndex >= 0) _buildRemoveIcon(),
@@ -2060,28 +2046,39 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildImageWithFilter() {
-    return !_inited
-        ? AutoImage(
-            _image,
-            fit: BoxFit.contain,
-            width: _screenSize.decodedImageSize.width,
-            height: _screenSize.decodedImageSize.height,
-            designMode: designMode,
-          )
-        : TransformedContentGenerator(
-            transformConfigs: _stateManager.transformConfigs,
-            configs: configs,
-            bodySize: _screenSize.bodySize,
-            mainImageSize: _screenSize.decodedImageSize,
-            decodedImageSize: _screenSize.decodedImageSize,
-            child: ImageWithMultipleFilters(
-              width: _screenSize.decodedImageSize.width,
-              height: _screenSize.decodedImageSize.height,
-              designMode: designMode,
-              image: _image,
-              filters: _stateManager.filters,
-              blurFactor: _stateManager.blurStateHistory.blur,
-            ),
-          );
+    return Padding(
+      padding: _selectedLayerIndex >= 0
+          ? EdgeInsets.only(
+              top: _screenSize.appBarHeight,
+              bottom: _screenSize.bottomBarHeight)
+          : EdgeInsets.zero,
+      child: Hero(
+        tag: !_inited ? '--' : heroTag,
+        createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+        child: !_inited
+            ? AutoImage(
+                _image,
+                fit: BoxFit.contain,
+                width: _screenSize.decodedImageSize.width,
+                height: _screenSize.decodedImageSize.height,
+                designMode: designMode,
+              )
+            : TransformedContentGenerator(
+                transformConfigs: _stateManager.transformConfigs,
+                configs: configs,
+                bodySize: _screenSize.bodySize,
+                mainImageSize: _screenSize.decodedImageSize,
+                decodedImageSize: _screenSize.decodedImageSize,
+                child: ImageWithMultipleFilters(
+                  width: _screenSize.decodedImageSize.width,
+                  height: _screenSize.decodedImageSize.height,
+                  designMode: designMode,
+                  image: _image,
+                  filters: _stateManager.filters,
+                  blurFactor: _stateManager.blurStateHistory.blur,
+                ),
+              ),
+      ),
+    );
   }
 }

@@ -40,52 +40,47 @@ class _TransformedContentGeneratorState
     return LayoutBuilder(
       builder: (context, constraints) {
         TransformConfigs configs = widget.transformConfigs;
-
         Size size = constraints.biggest;
-        Size cropSize = configs.cropRect.size;
-        double cropScreenPadding = 40;
 
-        double scale = 1;
+        /*  print('-----------------');
+        double a = size.aspectRatio / configs.cropRect.size.aspectRatio;
+        double b = configs.originalSize.aspectRatio / configs.cropRect.size.aspectRatio * widget.transformConfigs.scaleRotation;
+        print(a);
+        print(b);
+        print(a / b); */
 
-        double fitChangedScaleHelper = 1;
-        double fitFactorWidth = size.width / (size.width - cropScreenPadding);
-        double fitFactorHeight = size.height / configs.originalSize.height;
+        double scaleHelper = 1;
 
-        bool beforeStickToWidth =
-            _stickToWidth(size.aspectRatio, configs.originalSize.aspectRatio);
-        bool afterStickToWidth = _stickToWidth(
-            size.aspectRatio,
-            configs.is90DegRotated
-                ? 1 / cropSize.aspectRatio
-                : cropSize.aspectRatio);
-/* 
-        if (beforeStickToWidth && !afterStickToWidth) {
-          fitChangedScaleHelper = 1 / (fitFactorWidth / fitFactorHeight);
-        } else if (!beforeStickToWidth && afterStickToWidth) {
-          fitChangedScaleHelper = fitFactorWidth / fitFactorHeight;
+        if (configs.is90DegRotated) {
+          // TODO: rotate helper
+          double a = size.height / configs.originalSize.height;
+          double b = size.width / configs.originalSize.width;
+
+          print('-----------------');
+          print(a);
+          print(b);
+          print(b / a);
         }
-        print(fitChangedScaleHelper); */
 
-        if (afterStickToWidth) {
-          fitChangedScaleHelper = fitFactorWidth;
-        } else {
-          fitChangedScaleHelper = fitFactorHeight;
-        }
-        fitChangedScaleHelper = 1.0;
-
-        return Container(
-          width: size.width - 40,
-          height: size.height - 40,
-          color: Colors.yellow,
-          child: Transform.scale(
-            scale: 1,
-            child: _buildRotationTransform(
-              child: _buildFlipTransform(
-                child: _buildRotationScaleTransform(
-                  child: _buildCropPainter(
-                    child: _buildUserScaleTransform(
-                      child: _buildTranslate(
-                        child: widget.child,
+        return FittedBox(
+          child: Container(
+            color: Colors.amber.withOpacity(0.3),
+            width: configs.originalSize.isInfinite
+                ? null
+                : configs.originalSize.width,
+            height: configs.originalSize.isInfinite
+                ? null
+                : configs.originalSize.height,
+            child: Transform.scale(
+              scale: scaleHelper,
+              child: _buildRotationTransform(
+                child: _buildFlipTransform(
+                  child: _buildRotationScaleTransform(
+                    child: _buildCropPainter(
+                      child: _buildUserScaleTransform(
+                        child: _buildTranslate(
+                          child: widget.child,
+                        ),
                       ),
                     ),
                   ),
@@ -132,7 +127,8 @@ class _TransformedContentGeneratorState
     }
 
     return Container(
-      color: Colors.blue.shade100,
+      //color: Colors.blue.shade100,
+      // TODO: margin?
       margin: const EdgeInsets.all(0.0),
       child: childClipper,
     );

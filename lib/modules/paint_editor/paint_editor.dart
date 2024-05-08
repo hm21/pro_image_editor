@@ -497,6 +497,7 @@ class PaintingEditorState extends State<PaintingEditor>
             textStyle: platformTextStyle(context, designMode),
             child: Stack(
               alignment: Alignment.center,
+              fit: StackFit.expand,
               clipBehavior: Clip.none,
               children: [
                 TransformedContentGenerator(
