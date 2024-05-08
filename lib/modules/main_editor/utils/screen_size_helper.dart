@@ -22,11 +22,8 @@ class ScreenSizeHelper {
   /// Getter for the screen size of the device.
   Size get screen => MediaQuery.of(context).size;
 
-  /// Width of the image being edited.
-  double imageWidth = 0;
-
-  /// Height of the image being edited.
-  double imageHeight = 0;
+  /// Width of the decoded image.
+  Size decodedImageSize = Size(0, 0);
 
   /// Getter for the screen inner height, excluding top and bottom padding.
   double get screenInnerHeight =>
@@ -67,25 +64,25 @@ class ScreenSizeHelper {
         top: (lastScreenSize.height -
                 screenPadding.top -
                 screenPadding.bottom -
-                imageHeight) /
+                decodedImageSize.height) /
             2,
         left: (lastScreenSize.width -
                 screenPadding.left -
                 screenPadding.right -
-                imageWidth) /
+                decodedImageSize.width) /
             2,
       );
   EdgeInsets get imageScreenGaps => EdgeInsets.only(
         top: (screen.height -
                 screenPadding.top -
                 screenPadding.bottom -
-                imageHeight -
+                decodedImageSize.height -
                 allToolbarHeight) /
             2,
         left: (screen.width -
                 screenPadding.left -
                 screenPadding.right -
-                imageWidth) /
+                decodedImageSize.width) /
             2,
       );
 
@@ -97,7 +94,4 @@ class ScreenSizeHelper {
 
   /// Stores the last recorded body size.
   Size bodySize = Size.zero;
-
-  /// Stores the last recorded image size.
-  Size get imageSize => Size(imageWidth, imageHeight);
 }

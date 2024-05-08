@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
-import '../../models/crop_rotate_editor/transform_factors.dart';
+/// TODO: delete full file is just for tests
 
 class TransformedContentGenerator extends StatefulWidget {
   final Widget child;
@@ -33,12 +34,96 @@ class TransformedContentGenerator extends StatefulWidget {
 
 class _TransformedContentGeneratorState
     extends State<TransformedContentGenerator> {
+  double _screenPadding = 20.0;
+  double _scaleFactor = 0;
+  double _cropSpaceVertical = 0;
+  double _cropSpaceHorizontal = 0;
+
+  Rect _viewRect = Rect.zero;
+  bool get imageSticksToScreenWidth =>
+      widget.mainImageSize.width >= _contentConstraints.width;
+
+  Size get _contentConstraints => widget.bodySize;
+  late BoxConstraints _renderedImgConstraints = const BoxConstraints();
+  Size get _renderedImgSize => Size(
+        widget.transformConfigs.is90DegRotated
+            ? _renderedImgConstraints.maxHeight
+            : _renderedImgConstraints.maxWidth,
+        widget.transformConfigs.is90DegRotated
+            ? _renderedImgConstraints.maxWidth
+            : _renderedImgConstraints.maxHeight,
+      );
+
+  void calcCropRect({bool onlyViewRect = false, double? newRatio}) {
+    double imgSizeRatio =
+        widget.mainImageSize.height / widget.mainImageSize.width;
+
+    var imgConstraints = _renderedImgConstraints.biggest.isInfinite
+        ? widget.decodedImageSize
+        : _renderedImgConstraints.biggest;
+
+    double imgW = imgConstraints.width;
+    double imgH = imgConstraints.height;
+
+    double realImgW = imageSticksToScreenWidth ? imgW : imgH / imgSizeRatio;
+    double realImgH = imageSticksToScreenWidth ? imgW * imgSizeRatio : imgH;
+
+    // Rect stick horizontal
+    double ratio = widget.transformConfigs.cropRect.size.aspectRatio;
+    double left = 0;
+    double top = 0;
+
+    if (imgSizeRatio >= ratio) {
+      double newH = realImgW * ratio;
+
+      top = (realImgH - newH) / 2;
+      realImgH = newH;
+    }
+    // Rect stick vertical
+    else {
+      double newW = realImgH / ratio;
+      left = (realImgW - newW) / 2;
+      realImgW = newW;
+    }
+
+    _cropSpaceVertical = top * 2;
+    _cropSpaceHorizontal = left * 2;
+
+    _viewRect = Rect.fromLTWH(left, top, realImgW, realImgH);
+  }
+
+  calcFitToScreen() {
+    Size contentSize = Size(
+      _contentConstraints.width - _screenPadding * 2,
+      _contentConstraints.height - _screenPadding * 2,
+    );
+
+    double cropSpaceHorizontal = widget.transformConfigs.is90DegRotated
+        ? _cropSpaceVertical
+        : _cropSpaceHorizontal;
+    double cropSpaceVertical = widget.transformConfigs.is90DegRotated
+        ? _cropSpaceHorizontal
+        : _cropSpaceVertical;
+
+    double scaleX =
+        contentSize.width / (_renderedImgSize.width - cropSpaceHorizontal);
+    double scaleY =
+        contentSize.height / (_renderedImgSize.height - cropSpaceVertical);
+
+    double scale = min(scaleX, scaleY);
+
+    _scaleFactor = scale;
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: remove timeDilation
     timeDilation = 2.5;
     return LayoutBuilder(
       builder: (context, constraints) {
+        calcCropRect();
+        calcFitToScreen();
+
         TransformConfigs configs = widget.transformConfigs;
 
         Size size = constraints.biggest;
@@ -73,20 +158,33 @@ class _TransformedContentGeneratorState
         }
         fitChangedScaleHelper = 1.0;
 
-        return Container(
-          width: size.width - 40,
-          height: size.height - 40,
-          color: Colors.yellow,
-          child: Transform.scale(
-            scale: 1,
-            child: _buildRotationTransform(
-              child: _buildFlipTransform(
-                child: _buildRotationScaleTransform(
-                  child: _buildCropPainter(
-                    child: _buildUserScaleTransform(
-                      child: _buildTranslate(
-                        child: widget.child,
-                      ),
+        return Transform.scale(
+          scale: 1,
+          child: _buildRotationTransform(
+            child: _buildFlipTransform(
+              child: _buildRotationScaleTransform(
+                child: _buildCropPainter(
+                  child: _buildUserScaleTransform(
+                    child: _buildTranslate(
+                      child: Builder(builder: (context) {
+                        double maxWidth = widget.mainImageSize.width /
+                            widget.mainImageSize.height *
+                            (_contentConstraints.height - _screenPadding * 2);
+                        double maxHeight =
+                            (_contentConstraints.width - _screenPadding * 2) *
+                                widget.mainImageSize.height /
+                                widget.mainImageSize.width;
+                        return ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: maxWidth,
+                            maxHeight: maxHeight,
+                          ),
+                          child: LayoutBuilder(builder: (context, constraints) {
+                            _renderedImgConstraints = constraints;
+                            return widget.child;
+                          }),
+                        );
+                      }),
                     ),
                   ),
                 ),
@@ -116,7 +214,7 @@ class _TransformedContentGeneratorState
 
   Transform _buildRotationScaleTransform({required Widget child}) {
     return Transform.scale(
-      scale: widget.transformConfigs.scaleRotation,
+      scale: _scaleFactor,
       alignment: Alignment.center,
       child: child,
     );

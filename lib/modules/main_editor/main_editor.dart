@@ -601,8 +601,7 @@ class ProImageEditorState extends State<ProImageEditor>
     var heightRatio = h.toDouble() / _screenSize.screenInnerHeight;
     _pixelRatio = max(heightRatio, widthRatio);
 
-    _screenSize.imageWidth = w / _pixelRatio;
-    _screenSize.imageHeight = h / _pixelRatio;
+    _screenSize.decodedImageSize = Size(w / _pixelRatio, h / _pixelRatio);
     _inited = true;
 
     if (shouldImportStateHistory) {
@@ -868,7 +867,7 @@ class ProImageEditorState extends State<ProImageEditor>
         initConfigs: PaintEditorInitConfigs(
           layers: activeLayers,
           theme: _theme,
-          mainImageSize: _screenSize.imageSize,
+          mainImageSize: _screenSize.decodedImageSize,
           mainBodySize: _screenSize.bodySize,
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
@@ -937,7 +936,7 @@ class ProImageEditorState extends State<ProImageEditor>
           configs: widget.configs,
           transformConfigs: _stateManager
               .stateHistory[_stateManager.editPosition].transformConfigs,
-          mainImageSize: _screenSize.imageSize,
+          mainImageSize: _screenSize.decodedImageSize,
           mainBodySize: _screenSize.bodySize,
           enableFakeHero: true,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
@@ -993,7 +992,7 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: widget.onUpdateUI,
           layers: activeLayers,
-          mainImageSize: _screenSize.imageSize,
+          mainImageSize: _screenSize.decodedImageSize,
           mainBodySize: _screenSize.bodySize,
           convertToUint8List: false,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
@@ -1036,7 +1035,7 @@ class ProImageEditorState extends State<ProImageEditor>
         networkUrl: _image.networkUrl,
         initConfigs: BlurEditorInitConfigs(
           theme: _theme,
-          mainImageSize: _screenSize.imageSize,
+          mainImageSize: _screenSize.decodedImageSize,
           mainBodySize: _screenSize.bodySize,
           layers: activeLayers,
           configs: widget.configs,
@@ -1360,8 +1359,10 @@ class ProImageEditorState extends State<ProImageEditor>
       for (var el in import.stateHistory) {
         for (var layer in el.layers) {
           // Calculate scaling factors for width and height
-          double scaleWidth = _screenSize.imageWidth / imgSize.width;
-          double scaleHeight = _screenSize.imageHeight / imgSize.height;
+          double scaleWidth =
+              _screenSize.decodedImageSize.width / imgSize.width;
+          double scaleHeight =
+              _screenSize.decodedImageSize.height / imgSize.height;
 
           if (scaleWidth == 0 || scaleWidth.isInfinite) scaleWidth = 1;
           if (scaleHeight == 0 || scaleHeight.isInfinite) scaleHeight = 1;
@@ -1417,7 +1418,7 @@ class ProImageEditorState extends State<ProImageEditor>
       {ExportEditorConfigs configs = const ExportEditorConfigs()}) {
     return ExportStateHistory(
       _stateManager.stateHistory,
-      Size(_screenSize.imageWidth, _screenSize.imageHeight),
+      _screenSize.decodedImageSize,
       _stateManager.editPosition,
       configs: configs,
     );
@@ -1590,10 +1591,12 @@ class ProImageEditorState extends State<ProImageEditor>
     return Center(
       child: ClipRect(
         child: SizedBox(
-          width:
-              _screenshotHideOutsideImgContent ? _screenSize.imageWidth : null,
-          height:
-              _screenshotHideOutsideImgContent ? _screenSize.imageHeight : null,
+          width: _screenshotHideOutsideImgContent
+              ? _screenSize.decodedImageSize.width
+              : null,
+          height: _screenshotHideOutsideImgContent
+              ? _screenSize.decodedImageSize.height
+              : null,
           child: ContentRecorder(
             controller: _controllers.screenshot,
             child: Stack(
@@ -2061,16 +2064,19 @@ class ProImageEditorState extends State<ProImageEditor>
         ? AutoImage(
             _image,
             fit: BoxFit.contain,
-            width: _screenSize.imageWidth,
-            height: _screenSize.imageHeight,
+            width: _screenSize.decodedImageSize.width,
+            height: _screenSize.decodedImageSize.height,
             designMode: designMode,
           )
         : TransformedContentGenerator(
             transformConfigs: _stateManager.transformConfigs,
             configs: configs,
+            bodySize: _screenSize.bodySize,
+            mainImageSize: _screenSize.decodedImageSize,
+            decodedImageSize: _screenSize.decodedImageSize,
             child: ImageWithMultipleFilters(
-              width: _screenSize.imageWidth,
-              height: _screenSize.imageHeight,
+              width: _screenSize.decodedImageSize.width,
+              height: _screenSize.decodedImageSize.height,
               designMode: designMode,
               image: _image,
               filters: _stateManager.filters,

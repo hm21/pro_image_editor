@@ -305,7 +305,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _showFakeHero = initConfigs.enableFakeHero;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
-      calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
+      if (transformConfigs != null &&
+          !transformConfigs!.isEmpty &&
+          transformConfigs!.aspectRatio < 0) {
+        aspectRatio = transformConfigs!.cropRect.size.aspectRatio;
+        calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
+        aspectRatio = -1;
+      } else {
+        calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
+      }
 
       if (!initConfigs.enableFakeHero) hideFakeHero();
     });
@@ -591,8 +599,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     if (_rotated90deg) {
       scale *= aspectRatioZoomHelper;
     }
-
-    print(aspectRatioZoomHelper);
 
     scaleAnimation = Tween<double>(begin: oldScaleFactor, end: scale).animate(
       CurvedAnimation(
@@ -1938,6 +1944,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
               child: TransformedContentGenerator(
                 transformConfigs: _fakeHeroTransformConfigs,
                 configs: configs,
+                fitToScreenSize: false,
+                mainImageSize: widget.initConfigs.mainImageSize!,
+                decodedImageSize: widget.initConfigs.mainImageSize!,
                 child: ImageWithMultipleFilters(
                   width: _mainImageSize.width,
                   height: _mainImageSize.height,

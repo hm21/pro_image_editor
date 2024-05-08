@@ -1,28 +1,21 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
-import '../../models/crop_rotate_editor/transform_factors.dart';
+import '../../../models/crop_rotate_editor/transform_factors.dart';
 
+/// TODO: delete full file is just for tests
 class TransformedContentGenerator extends StatefulWidget {
   final Widget child;
   final TransformConfigs transformConfigs;
   final ProImageEditorConfigs configs;
   final bool fitToScreenSize;
-  final Size bodySize;
-  final Size mainImageSize;
-  final Size decodedImageSize;
 
   const TransformedContentGenerator({
     required this.child,
     required this.transformConfigs,
     required this.configs,
     this.fitToScreenSize = true,
-    this.mainImageSize = Size.zero,
-    this.bodySize = Size.zero,
-    this.decodedImageSize = Size.zero,
     super.key,
   });
 
@@ -73,26 +66,31 @@ class _TransformedContentGeneratorState
         }
         fitChangedScaleHelper = 1.0;
 
-        return Container(
-          width: size.width - 40,
-          height: size.height - 40,
-          color: Colors.yellow,
-          child: Transform.scale(
-            scale: 1,
-            child: _buildRotationTransform(
-              child: _buildFlipTransform(
-                child: _buildRotationScaleTransform(
-                  child: _buildCropPainter(
-                    child: _buildUserScaleTransform(
-                      child: _buildTranslate(
-                        child: widget.child,
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: size.width - 40,
+              height: size.height - 40,
+              color: Colors.yellow,
+              child: Transform.scale(
+                scale: 1,
+                child: _buildRotationTransform(
+                  child: _buildFlipTransform(
+                    child: _buildRotationScaleTransform(
+                      child: _buildCropPainter(
+                        child: _buildUserScaleTransform(
+                          child: _buildTranslate(
+                            child: widget.child,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         );
       },
     );
