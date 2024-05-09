@@ -248,6 +248,7 @@ class FilterEditorState extends State<FilterEditor>
         controller: screenshotController,
         child: Stack(
           alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             Hero(
               tag: heroTag,

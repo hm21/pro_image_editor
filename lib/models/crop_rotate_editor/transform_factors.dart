@@ -5,6 +5,7 @@ class TransformConfigs {
   final Offset offset;
   final Rect cropRect;
   final Size originalSize;
+  final double cropEditorScreenRatio;
   final double angle;
   final double scaleAspectRatio;
   final double scaleUser;
@@ -17,6 +18,7 @@ class TransformConfigs {
     required this.angle,
     required this.cropRect,
     required this.originalSize,
+    required this.cropEditorScreenRatio,
     required this.scaleAspectRatio,
     required this.scaleUser,
     required this.scaleRotation,
@@ -39,6 +41,7 @@ class TransformConfigs {
         map['originalSize']?['width'] ?? 0,
         map['originalSize']?['height'] ?? 0,
       ),
+      cropEditorScreenRatio: map['cropEditorScreenRatio'] ?? 0,
       scaleAspectRatio: map['scaleAspectRatio'] ?? 1,
       scaleUser: map['scaleUser'] ?? 1,
       scaleRotation: map['scaleRotation'] ?? 1,
@@ -56,6 +59,7 @@ class TransformConfigs {
       angle: 0,
       originalSize: Size.infinite,
       cropRect: Rect.largest,
+      cropEditorScreenRatio: 0,
       scaleAspectRatio: 1,
       scaleUser: 1,
       scaleRotation: 1,
@@ -69,6 +73,7 @@ class TransformConfigs {
     return angle == 0 &&
         originalSize == Size.infinite &&
         cropRect == Rect.largest &&
+        cropEditorScreenRatio == 0 &&
         scaleAspectRatio == 1 &&
         scaleUser == 1 &&
         scaleRotation == 1 &&
@@ -97,6 +102,7 @@ class TransformConfigs {
         'width': originalSize.width,
         'height': originalSize.height,
       },
+      'cropEditorScreenRatio': cropEditorScreenRatio,
       'scaleAspectRatio': scaleAspectRatio,
       'scaleUser': scaleUser,
       'scaleRotation': scaleRotation,

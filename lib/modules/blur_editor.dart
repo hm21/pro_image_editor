@@ -245,6 +245,7 @@ class BlurEditorState extends State<BlurEditor>
         controller: screenshotController,
         child: Stack(
           alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             Hero(
               tag: heroTag,

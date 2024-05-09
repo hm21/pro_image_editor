@@ -464,6 +464,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Handles the crop image operation.
   Future<void> done() async {
+    if (_interactionActive) return;
+
     if (cropRotateEditorConfigs.roundCropper && !canRedo) {
       // Ensure that the round cropper is applied
       addHistory();
@@ -1232,6 +1234,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       userZoom = targetZoom;
 
       _setOffsetLimits();
+      calcFitToScreen();
     }
     _activeScaleOut = false;
     _blockInteraction = false;
@@ -1709,6 +1712,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
     return LayoutBuilder(
       builder: (context, constraints) {
         _contentConstraints = constraints;
+        cropEditorScreenRatio = Size(
+          _contentConstraints.maxWidth - _screenPadding * 2,
+          _contentConstraints.maxHeight - _screenPadding * 2,
+        ).aspectRatio;
         if (_imageNeedDecode) _decodeImage();
         return Stack(
           children: [

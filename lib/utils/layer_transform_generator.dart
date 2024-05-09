@@ -26,7 +26,7 @@ class LayerTransformGenerator {
 
       rotateLayer(layer);
       flipLayer(layer);
-      //TODO:  zoomLayer(layer);
+      zoomLayer(layer);
 
       updatedLayers.add(layer);
     }
@@ -51,11 +51,8 @@ class LayerTransformGenerator {
 
   /// Rotate a layer.
   void rotateLayer(Layer layer) {
-    double rotationScale = newTransformConfigs.scaleRotation;
+    double scale = newTransformConfigs.scale;
     double rotationAngle = newTransformConfigs.angle;
-
-    print(activeTransformConfigs.angle);
-    print(newTransformConfigs.angle);
 
     layer.rotation -= rotationAngle;
 
@@ -77,16 +74,14 @@ class LayerTransformGenerator {
         screenH - layer.offset.dy,
       );
     } else if (angleSide == RotateAngleSide.right) {
-      layer.scale *= rotationScale;
       layer.offset = Offset(
-        layer.offset.dy * rotationScale,
-        screenH - layer.offset.dx * rotationScale,
+        layer.offset.dy * scale,
+        screenH - layer.offset.dx * scale,
       );
     } else if (angleSide == RotateAngleSide.left) {
-      layer.scale *= rotationScale;
       layer.offset = Offset(
-        layer.offset.dy * rotationScale,
-        screenH - layer.offset.dx * rotationScale,
+        layer.offset.dy * scale,
+        screenH - layer.offset.dx * scale,
       );
     }
   }
@@ -95,9 +90,12 @@ class LayerTransformGenerator {
   void zoomLayer(Layer layer) {
     Rect cropRect = newTransformConfigs.cropRect;
     double scale = newTransformConfigs.scale;
+    print(scale);
 
-    var initialIconX = (cropRect.width * scale - cropRect.width);
-    var initialIconY = (cropRect.height * scale - cropRect.height);
+    var initialIconX =
+        (layerDrawAreaSize.width * scale - layerDrawAreaSize.width);
+    var initialIconY =
+        (layerDrawAreaSize.height * scale - layerDrawAreaSize.height);
     layer.offset = Offset(
       layer.offset.dx - initialIconX,
       layer.offset.dy - initialIconY,

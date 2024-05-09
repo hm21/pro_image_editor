@@ -34,6 +34,8 @@ mixin CropAreaHistory
   double aspectRatioZoomHelper = 1;
   @protected
   double userZoom = 1;
+  @protected
+  double cropEditorScreenRatio = 1;
 
   @protected
   bool flipX = false;
@@ -66,6 +68,7 @@ mixin CropAreaHistory
     cleanForwardChanges();
     history.add(
       TransformConfigs(
+        cropEditorScreenRatio: cropEditorScreenRatio,
         angle: angle ?? rotateAnimation.value,
         cropRect: cropRect,
         originalSize: originalSize,

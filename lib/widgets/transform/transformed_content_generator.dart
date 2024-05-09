@@ -42,24 +42,57 @@ class _TransformedContentGeneratorState
         TransformConfigs configs = widget.transformConfigs;
         Size size = constraints.biggest;
 
-        /*  print('-----------------');
-        double a = size.aspectRatio / configs.cropRect.size.aspectRatio;
-        double b = configs.originalSize.aspectRatio / configs.cropRect.size.aspectRatio * widget.transformConfigs.scaleRotation;
-        print(a);
-        print(b);
-        print(a / b); */
-
         double scaleHelper = 1;
 
-        if (configs.is90DegRotated) {
-          // TODO: rotate helper
-          double a = size.height / configs.originalSize.height;
-          double b = size.width / configs.originalSize.width;
+/* 
+     if (configs.cropEditorScreenRatio != 0) {
+          bool beforeFitToWidth = configs.cropEditorScreenRatio < configs.originalSize.aspectRatio;
+          bool afterFitToWidth = configs.cropEditorScreenRatio < configs.cropRect.size.aspectRatio;
 
-          print('-----------------');
-          print(a);
-          print(b);
-          print(b / a);
+          print(configs.cropRect.size);
+          print(beforeFitToWidth);
+          print(afterFitToWidth);
+
+          if (configs.is90DegRotated) {
+            if (beforeFitToWidth && afterFitToWidth) {
+              scaleHelper = configs.cropEditorScreenRatio / size.aspectRatio;
+            }
+          } else {
+            if (!beforeFitToWidth && afterFitToWidth) {
+              scaleHelper = size.aspectRatio / configs.cropEditorScreenRatio;
+            } else if (beforeFitToWidth && !afterFitToWidth) {
+              scaleHelper = configs.cropEditorScreenRatio / size.aspectRatio;
+            }
+          }
+        }
+ */
+        if (configs.cropEditorScreenRatio != 0) {
+          bool beforeOriginalFitToWidth =
+              configs.cropEditorScreenRatio < configs.originalSize.aspectRatio;
+          bool afterOriginalFitToWidth =
+              size.aspectRatio < configs.originalSize.aspectRatio;
+          bool beforeFitToWidth =
+              configs.cropEditorScreenRatio < configs.cropRect.size.aspectRatio;
+          bool afterFitToWidth =
+              size.aspectRatio < configs.cropRect.size.aspectRatio;
+
+          /*  print('--------------------');
+          print(beforeOriginalFitToWidth);
+          print(afterOriginalFitToWidth);
+          print(beforeFitToWidth);
+          print(afterFitToWidth); */
+
+          if (configs.is90DegRotated) {
+            if (beforeFitToWidth && afterFitToWidth) {
+              scaleHelper = configs.cropEditorScreenRatio / size.aspectRatio;
+            }
+          } else {
+            if (!beforeOriginalFitToWidth && beforeFitToWidth) {
+              scaleHelper = size.aspectRatio / configs.cropEditorScreenRatio;
+            } else if (beforeOriginalFitToWidth && !beforeFitToWidth) {
+              scaleHelper = configs.cropEditorScreenRatio / size.aspectRatio;
+            }
+          }
         }
 
         return FittedBox(
@@ -119,19 +152,12 @@ class _TransformedContentGeneratorState
 
   Widget _buildCropPainter({required Widget child}) {
     CutOutsideArea clipper = CutOutsideArea(configs: widget.transformConfigs);
-    late Widget childClipper;
-    if (widget.configs.cropRotateEditorConfigs.roundCropper) {
-      childClipper = ClipOval(clipper: clipper, child: child);
-    } else {
-      childClipper = ClipRect(clipper: clipper, child: child);
-    }
 
-    return Container(
-      //color: Colors.blue.shade100,
-      // TODO: margin?
-      margin: const EdgeInsets.all(0.0),
-      child: childClipper,
-    );
+    if (widget.configs.cropRotateEditorConfigs.roundCropper) {
+      return ClipOval(clipper: clipper, child: child);
+    } else {
+      return ClipRect(clipper: clipper, child: child);
+    }
   }
 
   Transform _buildUserScaleTransform({required Widget child}) {
