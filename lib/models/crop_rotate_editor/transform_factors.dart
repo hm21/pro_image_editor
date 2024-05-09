@@ -7,7 +7,6 @@ class TransformConfigs {
   final Size originalSize;
   final double cropEditorScreenRatio;
   final double angle;
-  final double scaleAspectRatio;
   final double scaleUser;
   final double scaleRotation;
   final double aspectRatio;
@@ -19,7 +18,6 @@ class TransformConfigs {
     required this.cropRect,
     required this.originalSize,
     required this.cropEditorScreenRatio,
-    required this.scaleAspectRatio,
     required this.scaleUser,
     required this.scaleRotation,
     required this.aspectRatio,
@@ -42,7 +40,6 @@ class TransformConfigs {
         map['originalSize']?['height'] ?? 0,
       ),
       cropEditorScreenRatio: map['cropEditorScreenRatio'] ?? 0,
-      scaleAspectRatio: map['scaleAspectRatio'] ?? 1,
       scaleUser: map['scaleUser'] ?? 1,
       scaleRotation: map['scaleRotation'] ?? 1,
       aspectRatio: map['aspectRatio'] ?? -1,
@@ -60,7 +57,6 @@ class TransformConfigs {
       originalSize: Size.infinite,
       cropRect: Rect.largest,
       cropEditorScreenRatio: 0,
-      scaleAspectRatio: 1,
       scaleUser: 1,
       scaleRotation: 1,
       aspectRatio: -1,
@@ -74,7 +70,6 @@ class TransformConfigs {
         originalSize == Size.infinite &&
         cropRect == Rect.largest &&
         cropEditorScreenRatio == 0 &&
-        scaleAspectRatio == 1 &&
         scaleUser == 1 &&
         scaleRotation == 1 &&
         aspectRatio == -1 &&
@@ -83,7 +78,7 @@ class TransformConfigs {
         offset == const Offset(0, 0);
   }
 
-  double get scale => scaleUser * scaleRotation * scaleAspectRatio;
+  double get scale => scaleUser * scaleRotation;
   bool get is90DegRotated {
     RotateAngleSide factor = getRotateAngleSide(angle);
     return factor == RotateAngleSide.left || factor == RotateAngleSide.right;
@@ -103,7 +98,6 @@ class TransformConfigs {
         'height': originalSize.height,
       },
       'cropEditorScreenRatio': cropEditorScreenRatio,
-      'scaleAspectRatio': scaleAspectRatio,
       'scaleUser': scaleUser,
       'scaleRotation': scaleRotation,
       'flipX': flipX,

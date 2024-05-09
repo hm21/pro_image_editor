@@ -226,6 +226,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   bool _activeScaleOut = false;
 
+  bool _imageNeedDecode = false;
+  bool _imageSizeIsDecoded = true;
+  double _decodedImageWidth = 1;
+  double _decodedImageHeight = 1;
+
+  Size get _mainImageSize =>
+      mainImageSize ?? Size(_decodedImageWidth, _decodedImageHeight);
+
   /// Manager class for handling desktop interactions.
   late final CropDesktopInteractionManager _desktopInteractionManager;
 
@@ -261,12 +269,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     rotateCtrl.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        var tempZoom = aspectRatioZoomHelper;
+        /* var tempZoom = aspectRatioZoomHelper;
         calcAspectRatioZoomHelper();
         if (tempZoom != aspectRatioZoomHelper) {
           userZoom *= tempZoom / aspectRatioZoomHelper;
           _setOffsetLimits();
-        }
+        } */
         if (_blockInteraction) {
           addHistory();
         }
@@ -277,8 +285,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     rotateAnimation =
         Tween<double>(begin: initAngle, end: initAngle).animate(rotateCtrl);
 
-    double initScale = (transformConfigs?.scaleRotation ?? 1) *
-        (transformConfigs?.scaleAspectRatio ?? 1);
+    double initScale = (transformConfigs?.scaleRotation ?? 1);
     scaleCtrl = AnimationController(
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     scaleAnimation =
@@ -292,7 +299,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
       flipX = transformConfigs!.flipX;
       flipY = transformConfigs!.flipY;
       translate = transformConfigs!.offset;
-      aspectRatioZoomHelper = transformConfigs!.scaleAspectRatio;
       userZoom = transformConfigs!.scaleUser;
       aspectRatio = transformConfigs!.aspectRatio;
       cropRect = transformConfigs!.cropRect;
@@ -350,21 +356,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
     // Skip a few frames to ensure image constraints are set correctly
     Future.delayed(const Duration(milliseconds: 60)).whenComplete(() {
       calcCropRect();
-      calcAspectRatioZoomHelper();
       calcFitToScreen();
       _imageSizeIsDecoded = true;
       setState(() {});
       onUpdateUI?.call();
     });
   }
-
-  bool _imageNeedDecode = false;
-  bool _imageSizeIsDecoded = true;
-  double _decodedImageWidth = 1;
-  double _decodedImageHeight = 1;
-
-  Size get _mainImageSize =>
-      mainImageSize ?? Size(_decodedImageWidth, _decodedImageHeight);
 
   void hideFakeHero() {
     setState(() {
@@ -378,7 +375,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         },
         mounted: mounted,
         transitionFunction: Curves.decelerate.transform,
-        duration: const Duration(milliseconds: 150),
+        duration: const Duration(milliseconds: 350),
       );
     });
   }
@@ -598,10 +595,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     double scale = min(scaleX, scaleY);
 
-    if (_rotated90deg) {
-      scale *= aspectRatioZoomHelper;
-    }
-
     scaleAnimation = Tween<double>(begin: oldScaleFactor, end: scale).animate(
       CurvedAnimation(
         parent: scaleCtrl,
@@ -635,34 +628,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
           aspectRatio = value;
 
           calcCropRect();
-          calcAspectRatioZoomHelper();
           calcFitToScreen();
           addHistory(scale: oldScaleFactor, angle: 0);
         });
       }
     });
-  }
-
-  @override
-  void calcAspectRatioZoomHelper() {
-    // TODO: check function?
-    return;
-    double w = _rotated90deg ? _viewRect.height : _viewRect.width;
-    double h = _rotated90deg ? _viewRect.width : _viewRect.height;
-    double imgW = _rotated90deg
-        ? _renderedImgConstraints.maxHeight
-        : _renderedImgConstraints.maxWidth;
-    double imgH = _rotated90deg
-        ? _renderedImgConstraints.maxWidth
-        : _renderedImgConstraints.maxHeight;
-
-    if (w > imgW) {
-      aspectRatioZoomHelper = w / imgW;
-    } else if (h > imgH) {
-      aspectRatioZoomHelper = h / imgH;
-    } else {
-      aspectRatioZoomHelper = 1;
-    }
   }
 
   @override
@@ -866,7 +836,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _setOffsetLimits();
       setState(() {});
 
-      await Future.delayed(Duration(milliseconds: frameHelper));
+      await Future.delayed(const Duration(milliseconds: frameHelper));
     }
     _activeScaleOut = false;
   }
@@ -1169,8 +1139,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
           onlyViewRect: true,
           newRatio: 1 / cropRect.size.aspectRatio,
         );
-
-        calcAspectRatioZoomHelper();
         calcFitToScreen();
       }
 

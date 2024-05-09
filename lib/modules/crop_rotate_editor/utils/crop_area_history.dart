@@ -27,11 +27,9 @@ mixin CropAreaHistory
   @protected
   double oldScaleFactor = 1;
   @protected
-  double get zoomFactor => aspectRatioZoomHelper * userZoom;
+  double get zoomFactor => userZoom;
   @protected
   late double aspectRatio;
-  @protected
-  double aspectRatioZoomHelper = 1;
   @protected
   double userZoom = 1;
   @protected
@@ -72,7 +70,6 @@ mixin CropAreaHistory
         angle: angle ?? rotateAnimation.value,
         cropRect: cropRect,
         originalSize: originalSize,
-        scaleAspectRatio: aspectRatioZoomHelper,
         scaleUser: userZoom,
         scaleRotation: scale ?? scaleAnimation.value,
         aspectRatio: aspectRatio,
@@ -140,7 +137,6 @@ mixin CropAreaHistory
       ..forward();
 
     calcCropRect();
-    calcAspectRatioZoomHelper();
     calcFitToScreen();
     // Important to set aspectRatio to -1 after calcCropRect that the viewRect
     // will have the correct size
@@ -175,12 +171,10 @@ mixin CropAreaHistory
     oldScaleFactor = 1;
 
     userZoom = 1;
-    aspectRatioZoomHelper = 1;
     aspectRatio =
         cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 
     calcCropRect();
-    calcAspectRatioZoomHelper();
     calcFitToScreen();
 
     initialized = true;
@@ -196,8 +190,6 @@ mixin CropAreaHistory
 
   @protected
   void calcCropRect() {}
-  @protected
-  void calcAspectRatioZoomHelper() {}
   @protected
   calcFitToScreen() {}
 }

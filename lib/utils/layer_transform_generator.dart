@@ -25,6 +25,7 @@ class LayerTransformGenerator {
       Layer layer = layerManager.copyLayer(el);
 
       rotateLayer(layer);
+      translateLayer(layer);
       flipLayer(layer);
       zoomLayer(layer);
 
@@ -49,15 +50,40 @@ class LayerTransformGenerator {
     }
   }
 
-  /// Rotate a layer.
+  void translateLayer(Layer layer) {
+    Offset offset = newTransformConfigs.offset - activeTransformConfigs.offset;
+
+    /*    print(activeTransformConfigs.cropRect);
+    Rect rect = activeTransformConfigs.cropRect;
+    if (!rect.isInfinite) {
+      double oldScale = activeTransformConfigs.scale;
+      double newScale = newTransformConfigs.scale;
+
+      double newPaddingWidth = rect.width * newScale - rect.width;
+      double oldPaddingWidth = rect.width * oldScale - rect.width;
+      double newPaddingHeight = rect.height * newScale - rect.height;
+      double oldPaddingHeight = rect.height * oldScale - rect.height;
+
+      print(newPaddingWidth - oldPaddingWidth);
+      layer.offset -= Offset(
+        newPaddingWidth - oldPaddingWidth,
+        newPaddingHeight - oldPaddingHeight,
+      );
+    } */
+    double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
+
+    layer.offset += newTransformConfigs.offset * newTransformConfigs.scale;
+    print(scale);
+  }
+
   void rotateLayer(Layer layer) {
     double scale = newTransformConfigs.scale;
-    double rotationAngle = newTransformConfigs.angle;
+    double rotationAngle =
+        activeTransformConfigs.angle - newTransformConfigs.angle;
 
     layer.rotation -= rotationAngle;
 
     var angleSide = getRotateAngleSide(rotationAngle);
-    print(angleSide);
 
     var screenW =
         angleSide == RotateAngleSide.top || angleSide == RotateAngleSide.bottom
@@ -86,19 +112,17 @@ class LayerTransformGenerator {
     }
   }
 
-  /// Zooming of a layer.
   void zoomLayer(Layer layer) {
     Rect cropRect = newTransformConfigs.cropRect;
-    double scale = newTransformConfigs.scale;
-    print(scale);
+    double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
 
     var initialIconX =
-        (layerDrawAreaSize.width * scale - layerDrawAreaSize.width);
+        (layerDrawAreaSize.width - layerDrawAreaSize.width / scale) / 2;
     var initialIconY =
-        (layerDrawAreaSize.height * scale - layerDrawAreaSize.height);
+        (layerDrawAreaSize.height - layerDrawAreaSize.height / scale) / 2;
     layer.offset = Offset(
-      layer.offset.dx - initialIconX,
-      layer.offset.dy - initialIconY,
+      layer.offset.dx,
+      layer.offset.dy,
     );
 
     layer.scale *= scale;

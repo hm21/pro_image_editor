@@ -22,8 +22,8 @@ class ScreenSizeHelper {
   /// Getter for the screen size of the device.
   Size get screen => MediaQuery.of(context).size;
 
-  /// Width of the decoded image.
-  Size decodedImageSize = Size(0, 0);
+  /// Size of the decoded image.
+  Size decodedImageSize = const Size(0, 0);
 
   /// Getter for the screen inner height, excluding top and bottom padding.
   double get screenInnerHeight =>

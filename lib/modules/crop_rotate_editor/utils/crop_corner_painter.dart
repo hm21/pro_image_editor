@@ -103,17 +103,21 @@ class CropCornerPainter extends CustomPainter {
       path = Path.combine(PathOperation.difference, path, rectPath);
     }
 
-    Color backgroundColor = imageEditorTheme.cropRotateEditor.cropOverlayColor;
+    Color interpolatedColor = Color.lerp(
+      imageEditorTheme.cropRotateEditor.background,
+      imageEditorTheme.cropRotateEditor.cropOverlayColor,
+      opacity,
+    )!;
 
     /// Draw the darkened area
     canvas.drawPath(
       path,
       Paint()
         ..color = interactionActive
-            ? backgroundColor.withOpacity(
+            ? interpolatedColor.withOpacity(
                 (0.6 + 0.4 * (1 - opacity)).clamp(0, 1),
               )
-            : backgroundColor.withOpacity(
+            : interpolatedColor.withOpacity(
                 (0.84 + 0.16 * (1 - opacity)).clamp(0, 1),
               )
         ..style = PaintingStyle.fill,
