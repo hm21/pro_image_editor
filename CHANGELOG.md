@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.7.7
+- **fix**: Deselect all layers when finished editing, resolving [GitHub issue #42](https://github.com/hm21/pro_image_editor/issues/42).
+
 ## Version 2.7.6
 - **feat:** Allow users to create a custom bottomBar for the text editor. Details in [GitHub issue #40](https://github.com/hm21/pro_image_editor/issues/40)
 

@@ -1292,6 +1292,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void undoAction() {
     if (_stateManager.editPosition > 0) {
       setState(() {
+        _layerInteraction.selectedLayerId = '';
         _stateManager.editPosition--;
         _decodeImage();
       });
@@ -1307,6 +1308,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void redoAction() {
     if (_stateManager.editPosition < stateHistory.length - 1) {
       setState(() {
+        _layerInteraction.selectedLayerId = '';
         _stateManager.editPosition++;
         _decodeImage();
       });
@@ -1331,6 +1333,8 @@ class ProImageEditorState extends State<ProImageEditor>
         return closeEditor();
       }
     }
+    setState(() => _layerInteraction.selectedLayerId = '');
+
     _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
       ..show(
