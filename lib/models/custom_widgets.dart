@@ -84,6 +84,9 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the crop-rotate editor component.
   final Widget? bottomBarCropRotateEditor;
 
+  /// A custom bottom bar widget for the text editor component.
+  final Widget? bottomBarTextEditor;
+
   /// Override the close warning dialog when we made changes.
   ///
   /// **Example:**
@@ -133,6 +136,7 @@ class ImageEditorCustomWidgets {
     this.bottomNavigationBar,
     this.bottomBarPaintingEditor,
     this.bottomBarCropRotateEditor,
+    this.bottomBarTextEditor,
     this.whatsAppBottomWidget,
     this.closeWarningDialog,
   });
