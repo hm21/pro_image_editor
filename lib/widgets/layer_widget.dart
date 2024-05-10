@@ -19,6 +19,8 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
 
+  final Size editorBodySize;
+
   /// Data for the layer.
   final Layer layerData;
 
@@ -70,6 +72,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     super.key,
     this.onScaleRotateDown,
     this.onScaleRotateUp,
+    required this.editorBodySize,
     required this.configs,
     required this.padding,
     required this.layerData,
@@ -193,10 +196,12 @@ class _LayerWidgetState extends State<LayerWidget>
   Layer get _layer => widget.layerData;
 
   /// Calculates the horizontal offset for the layer.
-  double get offsetX => _layer.offset.dx + widget.padding.left;
+  double get offsetX =>
+      _layer.offset.dx + widget.padding.left + widget.editorBodySize.width / 2;
 
   /// Calculates the vertical offset for the layer.
-  double get offsetY => _layer.offset.dy + widget.padding.top;
+  double get offsetY =>
+      _layer.offset.dy + widget.padding.top + widget.editorBodySize.height / 2;
 
   @override
   Widget build(BuildContext context) {

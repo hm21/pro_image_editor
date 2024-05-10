@@ -371,7 +371,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   /// ```dart
   /// List<PaintingLayerData> layers = exportPaintedItems();
   /// ```
-  List<PaintingLayerData> exportPaintedItems() {
+  List<PaintingLayerData> exportPaintedItems(Size editorSize) {
     // Convert to free positions
     return _paintCtrl.paintHistory.map((e) {
       var layer = PaintedModel(
@@ -414,8 +414,8 @@ class PaintingCanvasState extends State<PaintingCanvas> {
 
       // Calculate the final offset of the painting layer
       Offset finalOffset = Offset(
-        (points.leftTopmost?.dx ?? 0) + size.width / 2,
-        (points.leftTopmost?.dy ?? 0) + size.height / 2,
+        (points.leftTopmost?.dx ?? 0) + size.width / 2 - editorSize.width / 2,
+        (points.leftTopmost?.dy ?? 0) + size.height / 2 - editorSize.height / 2,
       );
 
       if (onlyStrokeMode) {

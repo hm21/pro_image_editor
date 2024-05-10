@@ -24,8 +24,8 @@ class LayerTransformGenerator {
     for (var el in layers) {
       Layer layer = layerManager.copyLayer(el);
 
-      rotateLayer(layer);
       translateLayer(layer);
+      rotateLayer(layer);
       flipLayer(layer);
       zoomLayer(layer);
 
@@ -38,13 +38,13 @@ class LayerTransformGenerator {
       layer.flipY = !layer.flipY;
       layer.offset = Offset(
         layer.offset.dx,
-        layerDrawAreaSize.height - layer.offset.dy,
+        -layer.offset.dy,
       );
     }
     if (activeTransformConfigs.flipX != newTransformConfigs.flipX) {
       layer.flipX = !layer.flipX;
       layer.offset = Offset(
-        layerDrawAreaSize.width - layer.offset.dx,
+        -layer.offset.dx,
         layer.offset.dy,
       );
     }
@@ -72,8 +72,7 @@ class LayerTransformGenerator {
     } */
     double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
 
-    layer.offset += newTransformConfigs.offset * newTransformConfigs.scale;
-    print(scale);
+    // TODO: layer.offset += newTransformConfigs.offset * newTransformConfigs.scale;
   }
 
   void rotateLayer(Layer layer) {
@@ -81,7 +80,7 @@ class LayerTransformGenerator {
     double rotationAngle =
         activeTransformConfigs.angle - newTransformConfigs.angle;
 
-    layer.rotation -= rotationAngle;
+    layer.rotation += rotationAngle;
 
     var angleSide = getRotateAngleSide(rotationAngle);
 
@@ -94,37 +93,29 @@ class LayerTransformGenerator {
             ? layerDrawAreaSize.height
             : layerDrawAreaSize.width;
 
+    print(angleSide);
     if (angleSide == RotateAngleSide.bottom) {
       layer.offset = Offset(
-        screenW - layer.offset.dx,
-        screenH - layer.offset.dy,
+        -layer.offset.dx,
+        -layer.offset.dy,
       );
     } else if (angleSide == RotateAngleSide.right) {
       layer.offset = Offset(
-        layer.offset.dy * scale,
-        screenH - layer.offset.dx * scale,
+        layer.offset.dy,
+        -layer.offset.dx,
       );
     } else if (angleSide == RotateAngleSide.left) {
       layer.offset = Offset(
-        layer.offset.dy * scale,
-        screenH - layer.offset.dx * scale,
+        -layer.offset.dy,
+        layer.offset.dx,
       );
     }
   }
 
   void zoomLayer(Layer layer) {
-    Rect cropRect = newTransformConfigs.cropRect;
     double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
 
-    var initialIconX =
-        (layerDrawAreaSize.width - layerDrawAreaSize.width / scale) / 2;
-    var initialIconY =
-        (layerDrawAreaSize.height - layerDrawAreaSize.height / scale) / 2;
-    layer.offset = Offset(
-      layer.offset.dx,
-      layer.offset.dy,
-    );
-
+    layer.offset *= scale;
     layer.scale *= scale;
   }
 }

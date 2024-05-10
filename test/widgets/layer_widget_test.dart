@@ -25,6 +25,7 @@ void main() {
           body: Stack(
             children: [
               LayerWidget(
+                editorBodySize: const Size(500, 500),
                 layerData: layer,
                 padding: EdgeInsets.zero,
                 onTapDown: () {},

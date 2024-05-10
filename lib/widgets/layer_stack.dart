@@ -35,30 +35,28 @@ class _LayerStackState extends State<LayerStack> {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: Transform.translate(
-        offset: widget.transformHelper.offset,
-        child: Transform.scale(
-          scale: widget.transformHelper.scale,
-          child: Stack(
-              fit: StackFit.expand,
-              alignment: Alignment.center,
-              clipBehavior: widget.clipBehavior,
-              children: widget.layers.map((layerItem) {
-                return LayerWidget(
-                  configs: widget.configs,
-                  padding: widget.paddingHelper ?? EdgeInsets.zero,
-                  layerData: layerItem,
-                  onTap: (layerData) async {},
-                  onTapUp: () {},
-                  onTapDown: () {},
-                  onEditTap: () {},
-                  onRemoveTap: () {},
-                  enableHitDetection: false,
-                  freeStyleHighPerformanceScaling: false,
-                  freeStyleHighPerformanceMoving: false,
-                );
-              }).toList()),
-        ),
+      child: Transform.scale(
+        scale: widget.transformHelper.scale,
+        child: Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
+            clipBehavior: widget.clipBehavior,
+            children: widget.layers.map((layerItem) {
+              return LayerWidget(
+                configs: widget.configs,
+                editorBodySize: widget.transformHelper.editorBodySize,
+                padding: widget.paddingHelper ?? EdgeInsets.zero,
+                layerData: layerItem,
+                onTap: (layerData) async {},
+                onTapUp: () {},
+                onTapDown: () {},
+                onEditTap: () {},
+                onRemoveTap: () {},
+                enableHitDetection: false,
+                freeStyleHighPerformanceScaling: false,
+                freeStyleHighPerformanceMoving: false,
+              );
+            }).toList()),
       ),
     );
   }

@@ -74,7 +74,7 @@ class CropRotateEditorTheme {
 
   /// This refers to the overlay area atop the image when the cropping area is smaller than the image.
   ///
-  /// The opacity of this area is 0.84 when no interaction is active and 0.6 when an interaction is active.
+  /// The opacity of this area is 0.55 when no interaction is active and 0.3 when an interaction is active.
   final Color cropOverlayColor;
 
   /// Background color for the bottombar when the editor use WhatsApp as theme

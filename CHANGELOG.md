@@ -22,6 +22,9 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 
 #### **perf:**
 - Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
+
+#### **breaking changes:**
+- Change the layer initial offset position is in the center of the screen, not the top left. Import from old state history must add half the screen to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the screen size.
 <br/>
 
 ## Version 2.7.7

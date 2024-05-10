@@ -31,12 +31,4 @@ class TransformHelper {
     double scaleImgSize = stickOnHeightNew ? scaleH : scaleW;
     return scaleImgSize * scaleStickSize;
   }
-
-  Offset get offset {
-    if (mainBodySize.isEmpty) return Offset.zero;
-    return Offset(
-      (editorBodySize.width - mainBodySize.width) / 2 * scale,
-      (editorBodySize.height - mainBodySize.height) / 2 * scale,
-    );
-  }
 }

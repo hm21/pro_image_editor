@@ -92,10 +92,7 @@ class _MoveableBackgroundImageExampleState
 
                           editorKey.currentState?.addLayer(
                             StickerLayerData(
-                              offset: Offset(
-                                editorSize.width / 2,
-                                editorSize.height / 2,
-                              ),
+                              offset: Offset.zero,
                               scale: _initScale,
                               sticker: Image.network(
                                 'https://picsum.photos/id/${Random().nextInt(200)}/2000',

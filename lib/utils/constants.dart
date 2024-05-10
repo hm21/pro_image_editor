@@ -13,6 +13,5 @@ class Constants extends InheritedWidget {
   @override
   bool updateShouldNotify(Constants oldWidget) {
     return false;
-    /* return oldWidget.minLayerSize != minLayerSize; */
   }
 }

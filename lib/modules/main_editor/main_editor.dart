@@ -6,6 +6,7 @@ import 'package:colorfilter_generator/presets.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
@@ -22,6 +23,7 @@ import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/utils/layer_transform_generator.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
+import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../designs/whatsapp/whatsapp_filter_button.dart';
@@ -156,7 +158,10 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
     this.file,
     this.configs = const ProImageEditorConfigs(),
   }) : assert(
-          byteArray != null || file != null || networkUrl != null || assetPath != null,
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
@@ -320,7 +325,11 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   State<ProImageEditor> createState() => ProImageEditorState();
 }
 
-class ProImageEditorState extends State<ProImageEditor> with ImageEditorConvertedConfigs, SimpleConfigsAccessState, MainEditorGlobalKeys {
+class ProImageEditorState extends State<ProImageEditor>
+    with
+        ImageEditorConvertedConfigs,
+        SimpleConfigsAccessState,
+        MainEditorGlobalKeys {
   /// Helper class for managing screen sizes and layout calculations.
   late final ScreenSizeHelper _screenSize;
 
@@ -378,14 +387,15 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   /// Indicates whether the browser's context menu was enabled before any changes.
   bool _browserContextMenuBeforeEnabled = false;
 
-  /// Store the last device Orientation
-  int _deviceOrientation = 0;
-
   /// Getter for the active layer currently being edited.
-  Layer? get _activeLayer => activeLayers.length > _selectedLayerIndex && _selectedLayerIndex >= 0 ? activeLayers[_selectedLayerIndex] : null;
+  Layer? get _activeLayer =>
+      activeLayers.length > _selectedLayerIndex && _selectedLayerIndex >= 0
+          ? activeLayers[_selectedLayerIndex]
+          : null;
 
   /// Get the list of layers from the current image editor changes.
-  List<Layer> get activeLayers => _stateManager.stateHistory[_stateManager.editPosition].layers;
+  List<Layer> get activeLayers =>
+      _stateManager.stateHistory[_stateManager.editPosition].layers;
 
   /// List to store the history of image editor changes.
   List<EditorStateHistory> get stateHistory => _stateManager.stateHistory;
@@ -394,7 +404,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   bool get canUndo => _stateManager.editPosition > 0;
 
   /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => _stateManager.editPosition < _stateManager.stateHistory.length - 1;
+  bool get canRedo =>
+      _stateManager.editPosition < _stateManager.stateHistory.length - 1;
 
   /// Hide all layers outside the drawn image when the screenshot controller
   /// takes a picture
@@ -404,11 +415,7 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   late EditorImage _image;
 
   Offset get newLayerOffsetPosition =>
-      layerInteraction.newLayerOffsetPosition ??
-      Offset(
-        _screenSize.screen.width / 2,
-        _screenSize.screenInnerHeight / 2,
-      );
+      layerInteraction.newLayerOffsetPosition ?? Offset.zero;
 
   @override
   void initState() {
@@ -420,7 +427,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
       setState: setState,
     );
     _screenSize = ScreenSizeHelper(configs: configs, context: context);
-    _layerInteraction.scaleDebounce = Debounce(const Duration(milliseconds: 100));
+    _layerInteraction.scaleDebounce =
+        Debounce(const Duration(milliseconds: 100));
 
     _image = EditorImage(
       assetPath: widget.assetPath,
@@ -436,8 +444,10 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
       filters: [],
     ));
 
-    Vibration.hasVibrator().then((value) => _layerInteraction.deviceCanVibrate = value ?? false);
-    Vibration.hasCustomVibrationsSupport().then((value) => _layerInteraction.deviceCanCustomVibrate = value ?? false);
+    Vibration.hasVibrator()
+        .then((value) => _layerInteraction.deviceCanVibrate = value ?? false);
+    Vibration.hasCustomVibrationsSupport().then(
+        (value) => _layerInteraction.deviceCanCustomVibrate = value ?? false);
 
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
     if (kIsWeb) {
@@ -450,8 +460,9 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   void dispose() {
     _controllers.dispose();
     _layerInteraction.scaleDebounce.dispose();
-    _screenSize.screenSizeDebouncer.dispose();
-    SystemChrome.setSystemUIOverlayStyle(_theme.brightness == Brightness.dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark);
+    SystemChrome.setSystemUIOverlayStyle(_theme.brightness == Brightness.dark
+        ? SystemUiOverlayStyle.light
+        : SystemUiOverlayStyle.dark);
     SystemChrome.restoreSystemUIOverlays();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     if (kIsWeb && _browserContextMenuBeforeEnabled) {
@@ -501,9 +512,12 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
 
     stateHistory.add(
       EditorStateHistory(
-        transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+        transformConfigs: _stateManager
+            .stateHistory[_stateManager.editPosition].transformConfigs,
         blur: _stateManager.blurStateHistory,
-        layers: List<Layer>.from(stateHistory.last.layers.map((e) => _layerManager.copyLayer(e)))..add(layer),
+        layers: List<Layer>.from(
+            stateHistory.last.layers.map((e) => _layerManager.copyLayer(e)))
+          ..add(layer),
         filters: _stateManager.filters,
       ),
     );
@@ -518,19 +532,23 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   /// This method removes a layer from the editor and updates the editing state.
   void removeLayer(int layerPos, {Layer? layer}) {
     _stateManager.cleanForwardChanges();
-    var layers = List<Layer>.from(activeLayers.map((e) => _layerManager.copyLayer(e)));
+    var layers =
+        List<Layer>.from(activeLayers.map((e) => _layerManager.copyLayer(e)));
     layers.removeAt(layerPos);
     stateHistory.add(
       EditorStateHistory(
-        transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+        transformConfigs: _stateManager
+            .stateHistory[_stateManager.editPosition].transformConfigs,
         blur: _stateManager.blurStateHistory,
         layers: layers,
         filters: _stateManager.filters,
       ),
     );
-    var oldIndex = activeLayers.indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
+    var oldIndex = activeLayers
+        .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
     if (oldIndex >= 0) {
-      stateHistory[_stateManager.editPosition].layers[oldIndex] = _layerManager.copyLayer(layer ?? _tempLayer!);
+      stateHistory[_stateManager.editPosition].layers[oldIndex] =
+          _layerManager.copyLayer(layer ?? _tempLayer!);
     }
     _stateManager.editPosition++;
   }
@@ -542,15 +560,19 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     _stateManager.cleanForwardChanges();
     stateHistory.add(
       EditorStateHistory(
-        transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+        transformConfigs: _stateManager
+            .stateHistory[_stateManager.editPosition].transformConfigs,
         blur: _stateManager.blurStateHistory,
-        layers: List.from(stateHistory.last.layers.map((e) => _layerManager.copyLayer(e))),
+        layers: List.from(
+            stateHistory.last.layers.map((e) => _layerManager.copyLayer(e))),
         filters: _stateManager.filters,
       ),
     );
-    var oldIndex = activeLayers.indexWhere((element) => element.id == _tempLayer!.id);
+    var oldIndex =
+        activeLayers.indexWhere((element) => element.id == _tempLayer!.id);
     if (oldIndex >= 0) {
-      stateHistory[_stateManager.editPosition].layers[oldIndex] = _layerManager.copyLayer(_tempLayer!);
+      stateHistory[_stateManager.editPosition].layers[oldIndex] =
+          _layerManager.copyLayer(_tempLayer!);
     }
     _stateManager.editPosition++;
     _tempLayer = null;
@@ -559,8 +581,9 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   /// Decode the image being edited.
   ///
   /// This method decodes the image if it hasn't been decoded yet and updates its properties.
-  void _decodeImage() async {
-    bool shouldImportStateHistory = _imageNeedDecode && initStateHistory != null;
+  Future<void> _decodeImage() async {
+    bool shouldImportStateHistory =
+        _imageNeedDecode && initStateHistory != null;
     _imageNeedDecode = false;
     var decodedImage = await decodeImageFromList(await _image.safeByteArray);
 
@@ -614,17 +637,17 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     _layerInteraction.showHelperLines = true;
 
     double posX = layer.offset.dx;
-    double posY = layer.offset.dy + _screenSize.appBarHeight;
+    double posY = layer.offset.dy;
 
-    _layerInteraction.lastPositionY = posY <= _screenSize.screenMiddleY - _layerInteraction.hitSpan
+    _layerInteraction.lastPositionY = posY <= -_layerInteraction.hitSpan
         ? LayerLastPosition.top
-        : posY >= _screenSize.screenMiddleY + _layerInteraction.hitSpan
+        : posY >= _layerInteraction.hitSpan
             ? LayerLastPosition.bottom
             : LayerLastPosition.center;
 
-    _layerInteraction.lastPositionX = posX <= _screenSize.screenMiddleX - _layerInteraction.hitSpan
+    _layerInteraction.lastPositionX = posX <= -_layerInteraction.hitSpan
         ? LayerLastPosition.left
-        : posX >= _screenSize.screenMiddleX + _layerInteraction.hitSpan
+        : posX >= _layerInteraction.hitSpan
             ? LayerLastPosition.right
             : LayerLastPosition.center;
   }
@@ -636,9 +659,11 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     if (_selectedLayerIndex < 0) {
       if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
         _whatsAppHelper.filterShowHelper -= details.focalPointDelta.dy;
-        _whatsAppHelper.filterShowHelper = max(0, min(120, _whatsAppHelper.filterShowHelper));
+        _whatsAppHelper.filterShowHelper =
+            max(0, min(120, _whatsAppHelper.filterShowHelper));
 
-        double pointerOffset = _layerInteraction.snapStartPosY - details.focalPoint.dy;
+        double pointerOffset =
+            _layerInteraction.snapStartPosY - details.focalPoint.dy;
         if (pointerOffset > 20) {
           _swipeDirection = SwipeMode.up;
         } else if (pointerOffset < -20) {
@@ -653,12 +678,13 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     if (_whatsAppHelper.filterShowHelper > 0 || _activeLayer == null) return;
 
     if (_layerInteraction.rotateScaleLayerSizeHelper != null) {
-      _layerInteraction.freeStyleHighPerformanceScaling = paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
+      _layerInteraction.freeStyleHighPerformanceScaling =
+          paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       _layerInteraction.calculateInteractiveButtonScaleRotate(
         activeLayer: _activeLayer!,
-        screenPaddingHelper: EdgeInsets.only(top: _screenSize.appBarHeight),
         configEnabledHitVibration: helperLines.hitVibration,
         details: details,
+        editorSize: _screenSize.editorSize,
         layerTheme: imageEditorTheme.layerInteraction,
       );
       setState(() {});
@@ -668,22 +694,22 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
 
     _layerInteraction.enabledHitDetection = false;
     if (details.pointerCount == 1) {
-      _layerInteraction.freeStyleHighPerformanceMoving = paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
+      _layerInteraction.freeStyleHighPerformanceMoving =
+          paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
       _layerInteraction.calculateMovement(
         activeLayer: _activeLayer!,
         context: context,
         detail: details,
-        screenMiddleX: _screenSize.screenMiddleX,
-        screenMiddleY: _screenSize.screenMiddleY,
-        screenPaddingHelper: EdgeInsets.only(top: _screenSize.appBarHeight),
         configEnabledHitVibration: helperLines.hitVibration,
       );
     } else if (details.pointerCount == 2) {
-      _layerInteraction.freeStyleHighPerformanceScaling = paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
+      _layerInteraction.freeStyleHighPerformanceScaling =
+          paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       _layerInteraction.calculateScaleRotate(
         activeLayer: _activeLayer!,
         detail: details,
-        screenPaddingHelper: _screenSize.screenPaddingHelper,
+        editorSize: _screenSize.editorSize,
+        screenPaddingHelper: _screenSize.imageMargin,
         configEnabledHitVibration: helperLines.hitVibration,
       );
     }
@@ -695,10 +721,12 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   ///
   /// This method is called when a scaling operation ends and resets helper lines and flags.
   void _onScaleEnd(ScaleEndDetails detail) async {
-    if (_selectedLayerIndex < 0 && imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+    if (_selectedLayerIndex < 0 &&
+        imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
       _layerInteraction.showHelperLines = false;
 
-      if (_swipeDirection != SwipeMode.none && DateTime.now().difference(_swipeStartTime).inMilliseconds < 200) {
+      if (_swipeDirection != SwipeMode.none &&
+          DateTime.now().difference(_swipeStartTime).inMilliseconds < 200) {
         if (_swipeDirection == SwipeMode.up) {
           _whatsAppHelper.filterSheetAutoAnimation(true, setState);
         } else if (_swipeDirection == SwipeMode.down) {
@@ -712,7 +740,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
         }
       }
 
-      _whatsAppHelper.filterShowHelper = max(0, min(120, _whatsAppHelper.filterShowHelper));
+      _whatsAppHelper.filterShowHelper =
+          max(0, min(120, _whatsAppHelper.filterShowHelper));
       setState(() {});
     }
 
@@ -895,35 +924,39 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
           theme: _theme,
           layers: _stateManager.activeLayers,
           configs: widget.configs,
-          transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+          transformConfigs: _stateManager
+              .stateHistory[_stateManager.editPosition].transformConfigs,
           mainImageSize: _screenSize.decodedImageSize,
           mainBodySize: _screenSize.bodySize,
           enableFakeHero: true,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
           appliedFilters: _stateManager.filters,
+          onDone: (transformConfigs) {
+            _stateManager.cleanForwardChanges();
+
+            /// TODO: Update layers before close editor for better hero
+            List<Layer> updatedLayers = LayerTransformGenerator(
+              layers: _stateManager.activeLayers,
+              activeTransformConfigs: _stateManager.transformConfigs,
+              newTransformConfigs: transformConfigs,
+              layerDrawAreaSize: _screenSize.bodySize,
+            ).updatedLayers;
+
+            _stateManager.stateHistory.add(
+              EditorStateHistory(
+                blur: _stateManager.blurStateHistory,
+                layers: updatedLayers,
+                filters: _stateManager.filters,
+                transformConfigs: transformConfigs,
+              ),
+            );
+            _stateManager.editPosition++;
+            setState(() {});
+          },
         ),
       ),
     ).then((transformConfigs) async {
       if (transformConfigs != null) {
-        _stateManager.cleanForwardChanges();
-
-        List<Layer> updatedLayers = LayerTransformGenerator(
-          layers: _stateManager.activeLayers,
-          activeTransformConfigs: _stateManager.transformConfigs,
-          newTransformConfigs: transformConfigs,
-          layerDrawAreaSize: _screenSize.bodySize,
-        ).updatedLayers;
-
-        _stateManager.stateHistory.add(
-          EditorStateHistory(
-            blur: _stateManager.blurStateHistory,
-            layers: updatedLayers,
-            filters: _stateManager.filters,
-            transformConfigs: transformConfigs,
-          ),
-        );
-        _stateManager.editPosition++;
-
         setState(() {});
         widget.onUpdateUI?.call();
       }
@@ -967,7 +1000,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
 
     stateHistory.add(
       EditorStateHistory(
-        transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+        transformConfigs: _stateManager
+            .stateHistory[_stateManager.editPosition].transformConfigs,
         blur: _stateManager.blurStateHistory,
         layers: activeLayers,
         filters: [
@@ -1013,7 +1047,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
 
     stateHistory.add(
       EditorStateHistory(
-        transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+        transformConfigs: _stateManager
+            .stateHistory[_stateManager.editPosition].transformConfigs,
         blur: BlurStateHistory(blur: blur),
         layers: activeLayers,
         filters: _stateManager.filters,
@@ -1322,8 +1357,10 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
       for (var el in import.stateHistory) {
         for (var layer in el.layers) {
           // Calculate scaling factors for width and height
-          double scaleWidth = _screenSize.decodedImageSize.width / imgSize.width;
-          double scaleHeight = _screenSize.decodedImageSize.height / imgSize.height;
+          double scaleWidth =
+              _screenSize.decodedImageSize.width / imgSize.width;
+          double scaleHeight =
+              _screenSize.decodedImageSize.height / imgSize.height;
 
           if (scaleWidth == 0 || scaleWidth.isInfinite) scaleWidth = 1;
           if (scaleHeight == 0 || scaleHeight.isInfinite) scaleHeight = 1;
@@ -1347,7 +1384,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
       _stateManager.editPosition = import.editorPosition + 1;
       _stateManager.stateHistory = [
         EditorStateHistory(
-            transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+            transformConfigs: _stateManager
+                .stateHistory[_stateManager.editPosition].transformConfigs,
             blur: BlurStateHistory(),
             filters: [],
             layers: []),
@@ -1374,7 +1412,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   /// `configs` specifies the export configurations, such as whether to include filters or layers.
   ///
   /// Returns an [ExportStateHistory] object containing the exported state history, image state history, image size, edit position, and export configurations.
-  ExportStateHistory exportStateHistory({ExportEditorConfigs configs = const ExportEditorConfigs()}) {
+  ExportStateHistory exportStateHistory(
+      {ExportEditorConfigs configs = const ExportEditorConfigs()}) {
     return ExportStateHistory(
       _stateManager.stateHistory,
       _screenSize.decodedImageSize,
@@ -1385,6 +1424,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
 
   @override
   Widget build(BuildContext context) {
+    // TODO: remove timeDilation
+    timeDilation = 2.5;
     _theme = configs.theme ??
         ThemeData(
           useMaterial3: true,
@@ -1393,45 +1434,89 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
             brightness: Brightness.dark,
           ),
         );
+
     if (_imageNeedDecode) _decodeImage();
+
     return Constants(
-      child: OrientationBuilder(builder: (context, orientation) {
-        if (_deviceOrientation != orientation.index) {
-          _deviceOrientation = orientation.index;
-        }
-        return PopScope(
-          canPop: _stateManager.editPosition <= 0 || _doneEditing,
-          onPopInvoked: (didPop) {
-            if (_stateManager.editPosition > 0 && !_doneEditing) {
-              closeWarning();
-            }
+      child: PopScope(
+        canPop: _stateManager.editPosition <= 0 || _doneEditing,
+        onPopInvoked: (didPop) {
+          if (_stateManager.editPosition > 0 && !_doneEditing) {
+            closeWarning();
+          }
+        },
+        child: ScreenResizeDetector(
+          imageMargin: _screenSize.imageMargin,
+          onResizeUpdate: (event) {
+            _screenSize.lastScreenSize = event.newConstraints.biggest;
+            /*
+            double screenPaddingLeftFactor = _screenSize.imageMargin.left - event.imageMargin.left;
+            double screenPaddingTopFactor = _screenSize.imageMargin.top - event.imageMargin.top;
+            for (var layer in _stateManager.activeLayers) {
+              layer.offset += Offset(
+                event.widthChanged - screenPaddingLeftFactor,
+                event.heightChanged - screenPaddingTopFactor,
+              );
+            } */
           },
-          child: LayoutBuilder(builder: (context, constraints) {
-            // Check if screensize changed to recalculate image size
-            if (_screenSize.lastScreenSize.width != constraints.maxWidth || _screenSize.lastScreenSize.height != constraints.maxHeight) {
-              _screenSize.screenSizeDebouncer(() {
-                _decodeImage();
-              });
-              _screenSize.lastScreenSize = constraints.biggest;
+          onResizeEnd: (event) async {
+            Size oldImageSize = _screenSize.decodedImageSize;
+            await _decodeImage();
+
+            /// TODO:
+            var oldCenterH =
+                oldImageSize.height / 2 + event.imageMargin.top / 2;
+            var newCenterH = _screenSize.decodedImageSize.height / 2 +
+                _screenSize.imageMargin.top / 2;
+
+            for (var layer in _stateManager.activeLayers) {
+              var distanceToImageCenter = layer.offset.dy -
+                  _screenSize.decodedImageSize.height / 2 -
+                  _screenSize.imageMargin.top +
+                  _screenSize.appBarHeight;
+              var newDistanceToCenter = layer.offset.dy -
+                  oldImageSize.height / 2 -
+                  _screenSize.imageMargin.top +
+                  _screenSize.appBarHeight;
+              print('--------------------');
+              print(distanceToImageCenter);
+              print(newDistanceToCenter);
+
+              layer.offset = Offset(
+                layer.offset.dx,
+                layer.offset.dy - distanceToImageCenter + newDistanceToCenter,
+              );
             }
-            return AnnotatedRegion<SystemUiOverlayStyle>(
-              value: imageEditorTheme.uiOverlayStyle,
-              child: Theme(
-                data: _theme,
-                child: SafeArea(
-                  child: Scaffold(
+            /*  double screenPaddingLeftFactor = _screenSize.imageMargin.left - event.imageMargin.left;
+            double screenPaddingTopFactor = (_screenSize.imageMargin.top - event.imageMargin.top);
+            print((event.newConstraints.maxHeight / _screenSize.screenInnerHeight));
+            for (var layer in _stateManager.activeLayers) {
+              layer.offset += Offset(
+                event.widthChanged - screenPaddingLeftFactor,
+                event.heightChanged - screenPaddingTopFactor,
+              );
+            } */
+          },
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: imageEditorTheme.uiOverlayStyle,
+            child: Theme(
+              data: _theme,
+              child: SafeArea(
+                child: LayoutBuilder(builder: (context, constraints) {
+                  _screenSize.editorSize = constraints.biggest;
+                  return Scaffold(
                     backgroundColor: imageEditorTheme.background,
                     resizeToAvoidBottomInset: false,
                     appBar: _buildAppBar(),
                     body: _buildBody(),
                     bottomNavigationBar: _buildBottomNavBar(),
-                  ),
-                ),
+                  );
+                }),
               ),
-            );
-          }),
-        );
-      }),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1460,7 +1545,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                           icons.undoAction,
                           color: _stateManager.editPosition > 0
                               ? imageEditorTheme.appBarForegroundColor
-                              : imageEditorTheme.appBarForegroundColor.withAlpha(80),
+                              : imageEditorTheme.appBarForegroundColor
+                                  .withAlpha(80),
                         ),
                         onPressed: undoAction,
                       ),
@@ -1470,9 +1556,11 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           icons.redoAction,
-                          color: _stateManager.editPosition < stateHistory.length - 1
+                          color: _stateManager.editPosition <
+                                  stateHistory.length - 1
                               ? imageEditorTheme.appBarForegroundColor
-                              : imageEditorTheme.appBarForegroundColor.withAlpha(80),
+                              : imageEditorTheme.appBarForegroundColor
+                                  .withAlpha(80),
                         ),
                         onPressed: redoAction,
                       ),
@@ -1524,7 +1612,10 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                   children: [
                     Transform.scale(
                       transformHitTests: false,
-                      scale: 1 / constraints.maxHeight * (constraints.maxHeight - _whatsAppHelper.filterShowHelper * 2),
+                      scale: 1 /
+                          constraints.maxHeight *
+                          (constraints.maxHeight -
+                              _whatsAppHelper.filterShowHelper * 2),
                       child: _buildInteractiveContent(),
                     ),
                     if (_selectedLayerIndex < 0) ..._buildWhatsAppWidgets()
@@ -1539,8 +1630,12 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
     return Center(
       child: ClipRect(
         child: SizedBox(
-          width: _screenshotHideOutsideImgContent ? _screenSize.decodedImageSize.width : null,
-          height: _screenshotHideOutsideImgContent ? _screenSize.decodedImageSize.height : null,
+          width: _screenshotHideOutsideImgContent
+              ? _screenSize.decodedImageSize.width
+              : null,
+          height: _screenshotHideOutsideImgContent
+              ? _screenSize.decodedImageSize.height
+              : null,
           child: ContentRecorder(
             controller: _controllers.screenshot,
             child: Stack(
@@ -1567,7 +1662,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
   }
 
   List<Widget> _buildWhatsAppWidgets() {
-    double opacity = max(0, min(1, 1 - 1 / 120 * _whatsAppHelper.filterShowHelper));
+    double opacity =
+        max(0, min(1, 1 - 1 / 120 * _whatsAppHelper.filterShowHelper));
     return [
       WhatsAppAppBar(
         configs: widget.configs,
@@ -1605,7 +1701,8 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
             margin: const EdgeInsets.only(top: 7),
             color: imageEditorTheme.filterEditor.whatsAppBottomBarColor,
             child: FilterEditorItemList(
-              itemScaleFactor: max(0, min(1, 1 / 120 * _whatsAppHelper.filterShowHelper)),
+              itemScaleFactor:
+                  max(0, min(1, 1 / 120 * _whatsAppHelper.filterShowHelper)),
               byteArray: widget.byteArray,
               file: widget.file,
               assetPath: widget.assetPath,
@@ -1613,13 +1710,17 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
               blurFactor: _stateManager.blurStateHistory.blur,
               activeFilters: _stateManager.filters,
               configs: widget.configs,
-              selectedFilter: _stateManager.filters.isNotEmpty ? _stateManager.filters.first.filter : PresetFilters.none,
+              selectedFilter: _stateManager.filters.isNotEmpty
+                  ? _stateManager.filters.first.filter
+                  : PresetFilters.none,
               onSelectFilter: (filter) {
                 _stateManager.cleanForwardChanges();
 
                 stateHistory.add(
                   EditorStateHistory(
-                    transformConfigs: _stateManager.stateHistory[_stateManager.editPosition].transformConfigs,
+                    transformConfigs: _stateManager
+                        .stateHistory[_stateManager.editPosition]
+                        .transformConfigs,
                     blur: _stateManager.blurStateHistory,
                     layers: activeLayers,
                     filters: [
@@ -1650,117 +1751,153 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
         ? null
         : customWidgets.bottomNavigationBar ??
             (imageEditorTheme.editorMode == ThemeEditorMode.simple
-                ? Theme(
-                    data: _theme,
-                    child: Scrollbar(
-                      controller: _controllers.bottomBarScroll,
-                      scrollbarOrientation: ScrollbarOrientation.top,
-                      thickness: isDesktop ? null : 0,
-                      child: BottomAppBar(
-                        height: _screenSize.bottomBarHeight,
-                        color: imageEditorTheme.bottomBarBackgroundColor,
-                        padding: EdgeInsets.zero,
-                        child: Center(
-                          child: SingleChildScrollView(
-                            controller: _controllers.bottomBarScroll,
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minWidth: min(_screenSize.lastScreenSize.width, 600),
-                                maxWidth: 600,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    if (paintEditorConfigs.enabled)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-painting-editor-btn'),
-                                        label: Text(i18n.paintEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.paintingEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                ? LayoutBuilder(builder: (context, constraints) {
+                    return Theme(
+                      data: _theme,
+                      child: Scrollbar(
+                        controller: _controllers.bottomBarScroll,
+                        scrollbarOrientation: ScrollbarOrientation.top,
+                        thickness: isDesktop ? null : 0,
+                        child: BottomAppBar(
+                          height: _screenSize.bottomBarHeight,
+                          color: imageEditorTheme.bottomBarBackgroundColor,
+                          padding: EdgeInsets.zero,
+                          child: Center(
+                            child: SingleChildScrollView(
+                              controller: _controllers.bottomBarScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth: min(
+                                      _screenSize.lastScreenSize.width != 0
+                                          ? _screenSize.lastScreenSize.width
+                                          : constraints.maxWidth,
+                                      600),
+                                  maxWidth: 600,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      if (paintEditorConfigs.enabled)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-painting-editor-btn'),
+                                          label: Text(
+                                              i18n.paintEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.paintingEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openPaintingEditor,
                                         ),
-                                        onPressed: openPaintingEditor,
-                                      ),
-                                    if (textEditorConfigs.enabled)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-text-editor-btn'),
-                                        label: Text(i18n.textEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.textEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                                      if (textEditorConfigs.enabled)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-text-editor-btn'),
+                                          label: Text(
+                                              i18n.textEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.textEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openTextEditor,
                                         ),
-                                        onPressed: openTextEditor,
-                                      ),
-                                    if (cropRotateEditorConfigs.enabled)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-crop-rotate-editor-btn'),
-                                        label: Text(i18n.cropRotateEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.cropRotateEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                                      if (cropRotateEditorConfigs.enabled)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-crop-rotate-editor-btn'),
+                                          label: Text(
+                                              i18n.cropRotateEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.cropRotateEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openCropEditor,
                                         ),
-                                        onPressed: openCropEditor,
-                                      ),
-                                    if (filterEditorConfigs.enabled)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-filter-editor-btn'),
-                                        label: Text(i18n.filterEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.filterEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                                      if (filterEditorConfigs.enabled)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-filter-editor-btn'),
+                                          label: Text(
+                                              i18n.filterEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.filterEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openFilterEditor,
                                         ),
-                                        onPressed: openFilterEditor,
-                                      ),
-                                    if (blurEditorConfigs.enabled)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-blur-editor-btn'),
-                                        label: Text(i18n.blurEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.blurEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                                      if (blurEditorConfigs.enabled)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-blur-editor-btn'),
+                                          label: Text(
+                                              i18n.blurEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.blurEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openBlurEditor,
                                         ),
-                                        onPressed: openBlurEditor,
-                                      ),
-                                    if (emojiEditorConfigs.enabled)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-emoji-editor-btn'),
-                                        label: Text(i18n.emojiEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.emojiEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                                      if (emojiEditorConfigs.enabled)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-emoji-editor-btn'),
+                                          label: Text(
+                                              i18n.emojiEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.emojiEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openEmojiEditor,
                                         ),
-                                        onPressed: openEmojiEditor,
-                                      ),
-                                    if (stickerEditorConfigs?.enabled == true)
-                                      FlatIconTextButton(
-                                        key: const ValueKey('open-sticker-editor-btn'),
-                                        label: Text(i18n.stickerEditor.bottomNavigationBarText, style: bottomTextStyle),
-                                        icon: Icon(
-                                          icons.stickerEditor.bottomNavBar,
-                                          size: bottomIconSize,
-                                          color: Colors.white,
+                                      if (stickerEditorConfigs?.enabled == true)
+                                        FlatIconTextButton(
+                                          key: const ValueKey(
+                                              'open-sticker-editor-btn'),
+                                          label: Text(
+                                              i18n.stickerEditor
+                                                  .bottomNavigationBarText,
+                                              style: bottomTextStyle),
+                                          icon: Icon(
+                                            icons.stickerEditor.bottomNavBar,
+                                            size: bottomIconSize,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: openStickerEditor,
                                         ),
-                                        onPressed: openStickerEditor,
-                                      ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  )
+                    );
+                  })
                 : null);
   }
 
@@ -1772,10 +1909,15 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
           initialData: false,
           builder: (context, snapshot) {
             return MouseRegion(
-              cursor: snapshot.data != true ? SystemMouseCursors.basic : imageEditorTheme.layerInteraction.hoverCursor,
+              cursor: snapshot.data != true
+                  ? SystemMouseCursors.basic
+                  : imageEditorTheme.layerInteraction.hoverCursor,
               onHover: isDesktop
                   ? (event) {
-                      var hasHit = activeLayers.indexWhere((element) => element is PaintingLayerData && element.item.hit) >= 0;
+                      var hasHit = activeLayers.indexWhere((element) =>
+                              element is PaintingLayerData &&
+                              element.item.hit) >=
+                          0;
                       if (hasHit != snapshot.data) {
                         _controllers.mouseMoveStream.add(hasHit);
                       }
@@ -1790,19 +1932,21 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                     return LayerWidget(
                       key: ValueKey('${layerItem.id}-$i'),
                       configs: configs,
+                      editorBodySize: _screenSize.bodySize,
                       padding: _screenshotHideOutsideImgContent
                           ? EdgeInsets.only(
                               top: -_screenSize.imageScreenGaps.top,
                               left: -_screenSize.imageScreenGaps.left,
                             )
-                          : _selectedLayerIndex < 0
-                              ? EdgeInsets.zero
-                              : EdgeInsets.only(top: _screenSize.appBarHeight),
+                          : EdgeInsets.zero,
                       layerData: layerItem,
                       enableHitDetection: _layerInteraction.enabledHitDetection,
-                      freeStyleHighPerformanceScaling: _layerInteraction.freeStyleHighPerformanceScaling,
-                      freeStyleHighPerformanceMoving: _layerInteraction.freeStyleHighPerformanceMoving,
-                      selected: _layerInteraction.selectedLayerId == layerItem.id,
+                      freeStyleHighPerformanceScaling:
+                          _layerInteraction.freeStyleHighPerformanceScaling,
+                      freeStyleHighPerformanceMoving:
+                          _layerInteraction.freeStyleHighPerformanceMoving,
+                      selected:
+                          _layerInteraction.selectedLayerId == layerItem.id,
                       isInteractive: !_isEditorOpen,
                       onEditTap: () {
                         if (layerItem is TextLayerData) {
@@ -1811,7 +1955,10 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                       },
                       onTap: (layer) async {
                         if (_layerInteraction.layersAreSelectable(configs)) {
-                          _layerInteraction.selectedLayerId = layer.id == _layerInteraction.selectedLayerId ? '' : layer.id;
+                          _layerInteraction.selectedLayerId =
+                              layer.id == _layerInteraction.selectedLayerId
+                                  ? ''
+                                  : layer.id;
                         } else if (layer is TextLayerData) {
                           _onTextLayerTap(layer);
                         }
@@ -1830,8 +1977,10 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                       },
                       onScaleRotateDown: (details, layerOriginalSize) {
                         _selectedLayerIndex = i;
-                        _layerInteraction.rotateScaleLayerSizeHelper = layerOriginalSize;
-                        _layerInteraction.rotateScaleLayerScaleHelper = layerItem.scale;
+                        _layerInteraction.rotateScaleLayerSizeHelper =
+                            layerOriginalSize;
+                        _layerInteraction.rotateScaleLayerScaleHelper =
+                            layerItem.scale;
                       },
                       onScaleRotateUp: (details) {
                         _layerInteraction.rotateScaleLayerSizeHelper = null;
@@ -1843,7 +1992,10 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
                       },
                       onRemoveTap: () {
                         setState(() {
-                          removeLayer(activeLayers.indexWhere((element) => element.id == layerItem.id), layer: layerItem);
+                          removeLayer(
+                              activeLayers.indexWhere(
+                                  (element) => element.id == layerItem.id),
+                              layer: layerItem);
                         });
                         widget.onUpdateUI?.call();
                       },
@@ -1918,8 +2070,11 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
               decoration: BoxDecoration(
                 color: _layerInteraction.hoverRemoveBtn
                     ? Colors.red
-                    : (imageEditorTheme.editorMode == ThemeEditorMode.simple ? Colors.grey.shade800 : Colors.black12),
-                borderRadius: const BorderRadius.only(bottomRight: Radius.circular(100)),
+                    : (imageEditorTheme.editorMode == ThemeEditorMode.simple
+                        ? Colors.grey.shade800
+                        : Colors.black12),
+                borderRadius:
+                    const BorderRadius.only(bottomRight: Radius.circular(100)),
               ),
               padding: const EdgeInsets.only(right: 12, bottom: 7),
               child: Center(
@@ -1935,7 +2090,11 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
 
   Widget _buildImageWithFilter() {
     return Padding(
-      padding: _selectedLayerIndex >= 0 ? EdgeInsets.only(top: _screenSize.appBarHeight, bottom: _screenSize.bottomBarHeight) : EdgeInsets.zero,
+      padding: _selectedLayerIndex >= 0
+          ? EdgeInsets.only(
+              top: _screenSize.appBarHeight,
+              bottom: _screenSize.bottomBarHeight)
+          : EdgeInsets.zero,
       child: Hero(
         tag: !_inited ? '--' : heroTag,
         createRectTween: (begin, end) => RectTween(begin: begin, end: end),
@@ -1950,9 +2109,6 @@ class ProImageEditorState extends State<ProImageEditor> with ImageEditorConverte
             : TransformedContentGenerator(
                 transformConfigs: _stateManager.transformConfigs,
                 configs: configs,
-                bodySize: _screenSize.bodySize,
-                mainImageSize: _screenSize.decodedImageSize,
-                decodedImageSize: _screenSize.decodedImageSize,
                 child: ImageWithMultipleFilters(
                   width: _screenSize.decodedImageSize.width,
                   height: _screenSize.decodedImageSize.height,

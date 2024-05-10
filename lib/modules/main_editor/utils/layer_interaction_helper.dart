@@ -120,17 +120,21 @@ class LayerInteractionHelper {
   calculateInteractiveButtonScaleRotate({
     required ScaleUpdateDetails details,
     required Layer activeLayer,
-    required EdgeInsets screenPaddingHelper,
+    required Size editorSize,
     required bool configEnabledHitVibration,
     required ThemeLayerInteraction layerTheme,
   }) {
     Offset layerOffset = Offset(
-      activeLayer.offset.dx + screenPaddingHelper.left,
-      activeLayer.offset.dy + screenPaddingHelper.top,
+      activeLayer.offset.dx,
+      activeLayer.offset.dy,
     );
     Size activeSize = rotateScaleLayerSizeHelper!;
 
-    final touchPositionFromCenter = details.focalPoint - layerOffset;
+    final touchPositionFromCenter = Offset(
+          details.focalPoint.dx - editorSize.width / 2,
+          details.focalPoint.dy - editorSize.height / 2,
+        ) -
+        layerOffset;
 
     double newDistance = touchPositionFromCenter.distance;
 
@@ -142,12 +146,17 @@ class LayerInteractionHelper {
         rotateScaleLayerScaleHelper!;
 
     activeLayer.scale = newDistance / realSize.distance;
-    activeLayer.rotation = touchPositionFromCenter.direction -
-        (45 / activeSize.aspectRatio * pi / 180);
+
+    double calcAlpha() {
+      return atan(1 / activeSize.aspectRatio) * 180 / pi;
+    }
+
+    activeLayer.rotation =
+        touchPositionFromCenter.direction - (calcAlpha() * pi / 180);
 
     checkRotationLine(
       activeLayer: activeLayer,
-      screenPaddingHelper: screenPaddingHelper,
+      editorSize: editorSize,
       configEnabledHitVibration: configEnabledHitVibration,
     );
   }
@@ -157,9 +166,6 @@ class LayerInteractionHelper {
     required BuildContext context,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
-    required double screenMiddleX,
-    required double screenMiddleY,
-    required EdgeInsets screenPaddingHelper,
     required bool configEnabledHitVibration,
   }) {
     if (_activeScale) return;
@@ -174,8 +180,8 @@ class LayerInteractionHelper {
             kToolbarHeight + MediaQuery.of(context).viewPadding.top;
 
     bool vibarate = false;
-    double posX = activeLayer.offset.dx + screenPaddingHelper.left;
-    double posY = activeLayer.offset.dy + screenPaddingHelper.top;
+    double posX = activeLayer.offset.dx;
+    double posY = activeLayer.offset.dy;
 
     bool hitAreaX = detail.focalPoint.dx >= snapStartPosX - hitSpan &&
         detail.focalPoint.dx <= snapStartPosX + hitSpan;
@@ -183,13 +189,13 @@ class LayerInteractionHelper {
         detail.focalPoint.dy <= snapStartPosY + hitSpan;
 
     bool helperGoNearLineLeft =
-        posX >= screenMiddleX && lastPositionX == LayerLastPosition.left;
+        posX >= 0 && lastPositionX == LayerLastPosition.left;
     bool helperGoNearLineRight =
-        posX <= screenMiddleX && lastPositionX == LayerLastPosition.right;
+        posX <= 0 && lastPositionX == LayerLastPosition.right;
     bool helperGoNearLineTop =
-        posY >= screenMiddleY && lastPositionY == LayerLastPosition.top;
+        posY >= 0 && lastPositionY == LayerLastPosition.top;
     bool helperGoNearLineBottom =
-        posY <= screenMiddleY && lastPositionY == LayerLastPosition.bottom;
+        posY <= 0 && lastPositionY == LayerLastPosition.bottom;
 
     /// Calc vertical helper line
     if ((!showVerticalHelperLine &&
@@ -200,14 +206,12 @@ class LayerInteractionHelper {
         snapStartPosX = detail.focalPoint.dx;
       }
       showVerticalHelperLine = true;
-      activeLayer.offset = Offset(
-          screenMiddleX - screenPaddingHelper.left, activeLayer.offset.dy);
+      activeLayer.offset = Offset(0, activeLayer.offset.dy);
       lastPositionX = LayerLastPosition.center;
     } else {
       showVerticalHelperLine = false;
-      lastPositionX = posX <= screenMiddleX
-          ? LayerLastPosition.left
-          : LayerLastPosition.right;
+      lastPositionX =
+          posX <= 0 ? LayerLastPosition.left : LayerLastPosition.right;
     }
 
     /// Calc horizontal helper line
@@ -219,14 +223,12 @@ class LayerInteractionHelper {
         snapStartPosY = detail.focalPoint.dy;
       }
       showHorizontalHelperLine = true;
-      activeLayer.offset = Offset(
-          activeLayer.offset.dx, screenMiddleY - screenPaddingHelper.top);
+      activeLayer.offset = Offset(activeLayer.offset.dx, 0);
       lastPositionY = LayerLastPosition.center;
     } else {
       showHorizontalHelperLine = false;
-      lastPositionY = posY <= screenMiddleY
-          ? LayerLastPosition.top
-          : LayerLastPosition.bottom;
+      lastPositionY =
+          posY <= 0 ? LayerLastPosition.top : LayerLastPosition.bottom;
     }
 
     if (configEnabledHitVibration && vibarate) {
@@ -238,6 +240,7 @@ class LayerInteractionHelper {
   calculateScaleRotate({
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
+    required Size editorSize,
     required EdgeInsets screenPaddingHelper,
     required bool configEnabledHitVibration,
   }) {
@@ -248,7 +251,7 @@ class LayerInteractionHelper {
 
     checkRotationLine(
       activeLayer: activeLayer,
-      screenPaddingHelper: screenPaddingHelper,
+      editorSize: editorSize,
       configEnabledHitVibration: configEnabledHitVibration,
     );
 
@@ -258,7 +261,7 @@ class LayerInteractionHelper {
   /// Checks the rotation line based on user interactions, adjusting rotation accordingly.
   checkRotationLine({
     required Layer activeLayer,
-    required EdgeInsets screenPaddingHelper,
+    required Size editorSize,
     required bool configEnabledHitVibration,
   }) {
     double rotation = activeLayer.rotation - baseAngleFactor;
@@ -282,11 +285,11 @@ class LayerInteractionHelper {
             (deg - (degHit > 45 - hitSpanX ? degHit - 45 : degHit)) / 180 * pi;
         rotationHelperLineDeg = activeLayer.rotation;
 
-        double posY = activeLayer.offset.dy + screenPaddingHelper.top;
-        double posX = activeLayer.offset.dx + screenPaddingHelper.left;
+        double posY = activeLayer.offset.dy;
+        double posX = activeLayer.offset.dx;
 
-        rotationHelperLineX = posX;
-        rotationHelperLineY = posY;
+        rotationHelperLineX = posX + editorSize.width / 2;
+        rotationHelperLineY = posY + editorSize.height / 2;
         if (configEnabledHitVibration && !showRotationHelperLine) {
           _lineHitVibrate();
         }

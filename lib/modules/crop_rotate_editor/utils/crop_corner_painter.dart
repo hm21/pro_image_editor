@@ -115,10 +115,10 @@ class CropCornerPainter extends CustomPainter {
       Paint()
         ..color = interactionActive
             ? interpolatedColor.withOpacity(
-                (0.6 + 0.4 * (1 - opacity)).clamp(0, 1),
+                (0.3 + 0.7 * (1 - opacity)).clamp(0, 1),
               )
             : interpolatedColor.withOpacity(
-                (0.84 + 0.16 * (1 - opacity)).clamp(0, 1),
+                (0.55 + 0.45 * (1 - opacity)).clamp(0, 1),
               )
         ..style = PaintingStyle.fill,
     );

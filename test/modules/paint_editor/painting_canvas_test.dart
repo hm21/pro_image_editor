@@ -165,7 +165,8 @@ void main() {
       await tester.pump();
 
       // Export the painted items
-      final List<PaintingLayerData> exportedItems = state.exportPaintedItems();
+      final List<PaintingLayerData> exportedItems =
+          state.exportPaintedItems(const Size(500, 500));
 
       // Verify that the exported items match the expected result
       expect(exportedItems, isNotEmpty); // Assuming there are painted items

@@ -7,19 +7,11 @@ class TransformedContentGenerator extends StatefulWidget {
   final Widget child;
   final TransformConfigs transformConfigs;
   final ProImageEditorConfigs configs;
-  final bool fitToScreenSize;
-  final Size bodySize;
-  final Size mainImageSize;
-  final Size decodedImageSize;
 
   const TransformedContentGenerator({
     required this.child,
     required this.transformConfigs,
     required this.configs,
-    this.fitToScreenSize = true,
-    this.mainImageSize = Size.zero,
-    this.bodySize = Size.zero,
-    this.decodedImageSize = Size.zero,
     super.key,
   });
 

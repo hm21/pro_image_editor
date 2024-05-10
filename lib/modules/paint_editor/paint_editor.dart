@@ -15,6 +15,7 @@ import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/init_configs/paint_editor_init_configs.dart';
+import '../../models/transform_helper.dart';
 import '../../utils/design_mode.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
@@ -322,7 +323,8 @@ class PaintingEditorState extends State<PaintingEditor>
   /// If no changes have been made, it closes the editor without returning any changes.
   void done() async {
     if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
-    Navigator.of(context).pop(_imageKey.currentState?.exportPaintedItems());
+    Navigator.of(context)
+        .pop(_imageKey.currentState?.exportPaintedItems(_bodySize));
   }
 
   @override
@@ -335,7 +337,6 @@ class PaintingEditorState extends State<PaintingEditor>
         child: LayoutBuilder(builder: (context, constraints) {
           return Scaffold(
             resizeToAvoidBottomInset: false,
-            extendBodyBehindAppBar: true,
             backgroundColor: imageEditorTheme.paintingEditor.background,
             key: _key,
             appBar: _buildAppBar(constraints),
@@ -489,59 +490,59 @@ class PaintingEditorState extends State<PaintingEditor>
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
       _bodySize = constraints.biggest;
-      return SafeArea(
-        child: Theme(
-          data: theme,
-          child: Material(
-            color: Colors.transparent,
-            textStyle: platformTextStyle(context, designMode),
-            child: Stack(
-              alignment: Alignment.center,
-              fit: StackFit.expand,
-              clipBehavior: Clip.none,
-              children: [
-                TransformedContentGenerator(
+      return Theme(
+        data: theme,
+        child: Material(
+          color: Colors.transparent,
+          textStyle: platformTextStyle(context, designMode),
+          child: Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            children: [
+              TransformedContentGenerator(
+                configs: configs,
+                transformConfigs: transformConfigs ?? TransformConfigs.empty(),
+                child: ImageWithMultipleFilters(
+                  width: getMinimumSize(mainImageSize, _bodySize).width,
+                  height: getMinimumSize(mainImageSize, _bodySize).height,
+                  designMode: designMode,
+                  image: editorImage,
+                  filters: appliedFilters,
+                  blurFactor: appliedBlurFactor,
+                ),
+              ),
+              if (layers != null)
+                LayerStack(
                   configs: configs,
-                  transformConfigs:
-                      transformConfigs ?? TransformConfigs.empty(),
-                  child: ImageWithMultipleFilters(
-                    width: getMinimumSize(mainImageSize, _bodySize).width,
-                    height: getMinimumSize(mainImageSize, _bodySize).height,
-                    designMode: designMode,
-                    image: editorImage,
-                    filters: appliedFilters,
-                    blurFactor: appliedBlurFactor,
+                  layers: layers!,
+                  transformHelper: TransformHelper(
+                    mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+                    mainImageSize: getMinimumSize(mainImageSize, _bodySize),
+                    editorBodySize: _bodySize,
                   ),
                 ),
-                if (layers != null)
-                  LayerStack(
-                    configs: configs,
-                    layers: layers!,
-                  ),
-                _buildPainter(),
-                if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
-                if (imageEditorTheme.editorMode ==
-                    ThemeEditorMode.whatsapp) ...[
-                  WhatsAppPaintBottomBar(
-                    configs: configs,
-                    strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
-                    onSetLineWidth: (val) {
-                      setState(() {
-                        _imageKey.currentState!.setStrokeWidth(val);
-                      });
-                    },
-                  ),
-                  WhatsAppPaintAppBar(
-                    configs: configs,
-                    canUndo: canUndo,
-                    onDone: done,
-                    onTapUndo: undoAction,
-                    onClose: close,
-                    activeColor: activeColor,
-                  ),
-                ]
-              ],
-            ),
+              _buildPainter(),
+              if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
+              if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) ...[
+                WhatsAppPaintBottomBar(
+                  configs: configs,
+                  strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
+                  onSetLineWidth: (val) {
+                    setState(() {
+                      _imageKey.currentState!.setStrokeWidth(val);
+                    });
+                  },
+                ),
+                WhatsAppPaintAppBar(
+                  configs: configs,
+                  canUndo: canUndo,
+                  onDone: done,
+                  onTapUndo: undoAction,
+                  onClose: close,
+                  activeColor: activeColor,
+                ),
+              ]
+            ],
           ),
         ),
       );

@@ -180,6 +180,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   bool _showFakeHero = true;
   bool _showWidgets = false;
   bool _blockInteraction = false;
+  bool _scaleStarted = false;
 
   double _painterOpacity = 0;
   final double _screenPadding = 20;
@@ -453,9 +454,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Closes the editor without applying changes.
   void close() {
-    setState(() {
-      _showFakeHero = true;
-    });
     Navigator.pop(context);
   }
 
@@ -485,6 +483,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         ).updatedLayers;
         _layers = updatedLayers;
       });
+      initConfigs.onDone?.call(transformC);
       Navigator.pop(context, transformC);
     } else {
       LoadingDialog loading = LoadingDialog()
@@ -842,9 +841,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   void _onScaleStart(ScaleStartDetails details) {
-    if (_blockInteraction) return;
+    if (_blockInteraction || _scaleStarted) return;
+    _scaleStarted = true;
     _blockInteraction = true;
-
     _startingPinchScale = userZoom;
     _startingTranslate = translate;
 
@@ -1122,6 +1121,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       );
     }
 
+    _scaleStarted = false;
     if (_blockInteraction) return;
     _blockInteraction = true;
     _interactionActive = false;
@@ -1504,22 +1504,27 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: imageEditorTheme.uiOverlayStyle,
-        child: Theme(
-          data: theme.copyWith(
-              tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: imageEditorTheme.cropRotateEditor.background,
-            appBar: _buildAppBar(constraints),
-            body: _buildBody(),
-            bottomNavigationBar: _buildBottomAppBar(),
+    return PopScope(
+      onPopInvoked: (didPop) {
+        setState(() => _showFakeHero = true);
+      },
+      child: LayoutBuilder(builder: (context, constraints) {
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: imageEditorTheme.uiOverlayStyle,
+          child: Theme(
+            data: theme.copyWith(
+                tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: imageEditorTheme.cropRotateEditor.background,
+              appBar: _buildAppBar(constraints),
+              body: _buildBody(),
+              bottomNavigationBar: _buildBottomAppBar(),
+            ),
           ),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   /// Builds the app bar for the editor, including buttons for actions such as back, rotate, aspect ratio, and done.
@@ -1919,9 +1924,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
               child: TransformedContentGenerator(
                 transformConfigs: _fakeHeroTransformConfigs,
                 configs: configs,
-                fitToScreenSize: false,
-                mainImageSize: widget.initConfigs.mainImageSize!,
-                decodedImageSize: widget.initConfigs.mainImageSize!,
                 child: ImageWithMultipleFilters(
                   width: _mainImageSize.width,
                   height: _mainImageSize.height,
