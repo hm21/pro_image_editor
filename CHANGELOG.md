@@ -5,7 +5,7 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 
 #### **feat:**
 - Double tap to zoom in and out
-- Multiple cursors support
+- Multiple cursor support
 - Undo/Redo function
 - Reset function
 - Flip function
@@ -13,7 +13,7 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 - Keyboard shortcut support
 - More theme and configuration options
 - Hero animation for image and layers
-- Useable as standalone editor
+- Useable as a standalone editor
 - Round "cropper" for profile pictures
 
 #### **fix:**
@@ -26,6 +26,8 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 #### **breaking changes:**
 - Change the layer initial offset position is in the center of the screen, not the top left. Import from old state history must add half the screen to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the screen size.
 <br/>
+## Version 2.7.8
+- **feat**: Added option for layers to be selected upon creation. Details in [GitHub issue #44](https://github.com/hm21/pro_image_editor/issues/44).
 
 ## Version 2.7.7
 - **fix**: Deselect all layers when finished editing, resolving [GitHub issue #42](https://github.com/hm21/pro_image_editor/issues/42).

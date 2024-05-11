@@ -43,6 +43,7 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
           /// Automatically determines if the layer is selectable based on the device type.
           /// If the device is a desktop-device, the layer is selectable; otherwise, the layer is not selectable.
           selectable: LayerInteractionSelectable.enabled,
+          initialSelected: true,
         ),
         imageEditorTheme: ImageEditorTheme(
           layerInteraction: ThemeLayerInteraction(
