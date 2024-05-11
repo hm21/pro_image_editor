@@ -528,6 +528,10 @@ class ProImageEditorState extends State<ProImageEditor>
     if (removeLayerIndex >= 0) {
       activeLayers.removeAt(removeLayerIndex);
     }
+    if (_layerInteraction.layersAreSelectable(configs) &&
+        layerInteraction.initialSelected) {
+      _layerInteraction.selectedLayerId = layer.id;
+    }
   }
 
   /// Remove a layer from the editor.

@@ -142,8 +142,8 @@ class LayerInteractionHelper {
         rotateScaleLayerScaleHelper!;
 
     activeLayer.scale = newDistance / realSize.distance;
-    activeLayer.rotation = touchPositionFromCenter.direction -
-        (45 / activeSize.aspectRatio * pi / 180);
+    activeLayer.rotation =
+        touchPositionFromCenter.direction - atan(1 / activeSize.aspectRatio);
 
     checkRotationLine(
       activeLayer: activeLayer,

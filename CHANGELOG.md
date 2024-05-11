@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.7.8
+- **feat**: Added option for layers to be selected upon creation. Details in [GitHub issue #44](https://github.com/hm21/pro_image_editor/issues/44).
+
 ## Version 2.7.7
 - **fix**: Deselect all layers when finished editing, resolving [GitHub issue #42](https://github.com/hm21/pro_image_editor/issues/42).
 

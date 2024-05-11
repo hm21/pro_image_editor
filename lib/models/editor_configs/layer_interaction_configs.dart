@@ -10,8 +10,13 @@ class LayerInteraction {
   /// The offset position where the new layer will be inserted. If null, it will be inserted in the center of the screen.
   final Offset? newLayerOffsetPosition;
 
+  /// The layer is automatically selected upon creation.
+  /// This option takes effect only when `selectable` is set to `enabled` or `auto` where the device is a desktop.
+  final bool initialSelected;
+
   const LayerInteraction({
     this.selectable = LayerInteractionSelectable.auto,
+    this.initialSelected = false,
     this.newLayerOffsetPosition,
   });
 }
