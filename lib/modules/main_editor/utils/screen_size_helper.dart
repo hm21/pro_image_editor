@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 
 import '../../../models/editor_configs/pro_image_editor_configs.dart';
+import '../../../models/layer.dart';
 
 /// A helper class for managing screen size and padding calculations.
 class ScreenSizeHelper {
@@ -21,6 +24,11 @@ class ScreenSizeHelper {
 
   /// Size of the decoded image.
   Size decodedImageSize = const Size(0, 0);
+
+  /// Helper size when resizing the screen
+  Size temporaryDecodedImageSize = const Size(0, 0);
+
+  bool shouldRecalculateLayerPosition = false;
 
   /// Getter for the screen inner height, excluding top and bottom padding.
   double get screenInnerHeight =>
@@ -82,4 +90,19 @@ class ScreenSizeHelper {
 
   /// Stores the last recorded editor size.
   Size editorSize = Size.zero;
+
+  void recalculateLayerPosition(List<Layer> layers) {
+    double scaleFactor = min(
+      temporaryDecodedImageSize.height / decodedImageSize.height,
+      temporaryDecodedImageSize.width / decodedImageSize.width,
+    );
+    for (var layer in layers) {
+      layer.scale /= scaleFactor;
+      layer.offset = Offset(
+        layer.offset.dx / scaleFactor,
+        layer.offset.dy / scaleFactor,
+      );
+    }
+    shouldRecalculateLayerPosition = false;
+  }
 }

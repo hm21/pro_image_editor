@@ -834,7 +834,12 @@ class ProImageEditorState extends State<ProImageEditor>
                 cropRotateEditor.currentState!.hideFakeHero();
               }
             } else if (status == AnimationStatus.dismissed) {
-              setState(() => _isEditorOpen = false);
+              setState(() {
+                _isEditorOpen = false;
+                if (_screenSize.shouldRecalculateLayerPosition) {
+                  _screenSize.recalculateLayerPosition(activeLayers);
+                }
+              });
               animation.removeStatusListener(animationStatusListener);
             }
           }
@@ -1453,53 +1458,19 @@ class ProImageEditorState extends State<ProImageEditor>
           imageMargin: _screenSize.imageMargin,
           onResizeUpdate: (event) {
             _screenSize.lastScreenSize = event.newConstraints.biggest;
-            /*
-            double screenPaddingLeftFactor = _screenSize.imageMargin.left - event.imageMargin.left;
-            double screenPaddingTopFactor = _screenSize.imageMargin.top - event.imageMargin.top;
-            for (var layer in _stateManager.activeLayers) {
-              layer.offset += Offset(
-                event.widthChanged - screenPaddingLeftFactor,
-                event.heightChanged - screenPaddingTopFactor,
-              );
-            } */
           },
           onResizeEnd: (event) async {
-            Size oldImageSize = _screenSize.decodedImageSize;
-            await _decodeImage();
-
-            /// TODO:
-            var oldCenterH =
-                oldImageSize.height / 2 + event.imageMargin.top / 2;
-            var newCenterH = _screenSize.decodedImageSize.height / 2 +
-                _screenSize.imageMargin.top / 2;
-
-            for (var layer in _stateManager.activeLayers) {
-              var distanceToImageCenter = layer.offset.dy -
-                  _screenSize.decodedImageSize.height / 2 -
-                  _screenSize.imageMargin.top +
-                  _screenSize.appBarHeight;
-              var newDistanceToCenter = layer.offset.dy -
-                  oldImageSize.height / 2 -
-                  _screenSize.imageMargin.top +
-                  _screenSize.appBarHeight;
-              print('--------------------');
-              print(distanceToImageCenter);
-              print(newDistanceToCenter);
-
-              layer.offset = Offset(
-                layer.offset.dx,
-                layer.offset.dy - distanceToImageCenter + newDistanceToCenter,
-              );
+            if (!_screenSize.shouldRecalculateLayerPosition) {
+              _screenSize.temporaryDecodedImageSize =
+                  _screenSize.decodedImageSize;
             }
-            /*  double screenPaddingLeftFactor = _screenSize.imageMargin.left - event.imageMargin.left;
-            double screenPaddingTopFactor = (_screenSize.imageMargin.top - event.imageMargin.top);
-            print((event.newConstraints.maxHeight / _screenSize.screenInnerHeight));
-            for (var layer in _stateManager.activeLayers) {
-              layer.offset += Offset(
-                event.widthChanged - screenPaddingLeftFactor,
-                event.heightChanged - screenPaddingTopFactor,
-              );
-            } */
+            await _decodeImage();
+            if (_isEditorOpen) {
+              _screenSize.shouldRecalculateLayerPosition = true;
+              return;
+            }
+
+            _screenSize.recalculateLayerPosition(activeLayers);
           },
           child: AnnotatedRegion<SystemUiOverlayStyle>(
             value: imageEditorTheme.uiOverlayStyle,

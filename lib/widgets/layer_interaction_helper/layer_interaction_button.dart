@@ -40,7 +40,7 @@ class LayerInteractionButton extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
+                  borderRadius: BorderRadius.circular(buttonRadius * 2),
                   color: Colors.white,
                 ),
                 child: Icon(

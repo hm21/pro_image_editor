@@ -33,7 +33,7 @@ class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
 
   @override
   void initState() {
-    _resizeDebounce$ = Debounce(const Duration(milliseconds: 250));
+    _resizeDebounce$ = Debounce(const Duration(milliseconds: 50));
     super.initState();
   }
 
