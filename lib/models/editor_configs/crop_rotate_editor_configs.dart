@@ -79,6 +79,9 @@ class CropRotateEditorConfigs {
   /// The duration of drag-crop animations.
   final Duration cropDragAnimationDuration;
 
+  /// Fade in animation from content outside the crop area.
+  final Duration fadeInOutsideCropAreaAnimationDuration;
+
   /// The curve used for the rotation animation.
   final Curve rotateAnimationCurve;
 
@@ -87,6 +90,9 @@ class CropRotateEditorConfigs {
 
   /// The animation curve used for crop animations.
   final Curve cropDragAnimationCurve;
+
+  /// The animation curve used for the fade in animation from content outside the crop area.
+  final Curve fadeInOutsideCropAreaAnimationCurve;
 
   /// The direction in which the image will be rotated.
   final RotateDirection rotateDirection;
@@ -118,8 +124,11 @@ class CropRotateEditorConfigs {
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
     this.cropDragAnimationCurve = Curves.decelerate,
+    this.fadeInOutsideCropAreaAnimationCurve = Curves.decelerate,
     this.rotateDirection = RotateDirection.left,
     this.animationDuration = const Duration(milliseconds: 250),
+    this.fadeInOutsideCropAreaAnimationDuration =
+        const Duration(milliseconds: 350),
     this.cropDragAnimationDuration = const Duration(milliseconds: 400),
     this.maxScale = 7,
     this.mouseScaleFactor = 0.1,

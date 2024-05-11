@@ -1052,7 +1052,6 @@ class DemoState extends State<Demo> {
                   stream: _updateAppBarStream.stream,
                   builder: (_, __) {
                     return IconButton(
-                      key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
                       icon: const Icon(Icons.crop),
                       onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.openAspectRatioOptions,
                     );

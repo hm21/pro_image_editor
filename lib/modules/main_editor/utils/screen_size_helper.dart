@@ -25,9 +25,10 @@ class ScreenSizeHelper {
   /// Size of the decoded image.
   Size decodedImageSize = const Size(0, 0);
 
-  /// Helper size when resizing the screen
+  /// Represents a temporary decoded image size which is required for screen resizing.
   Size temporaryDecodedImageSize = const Size(0, 0);
 
+  /// Indicates whether the layer position should be recalculated.
   bool shouldRecalculateLayerPosition = false;
 
   /// Getter for the screen inner height, excluding top and bottom padding.
@@ -91,6 +92,7 @@ class ScreenSizeHelper {
   /// Stores the last recorded editor size.
   Size editorSize = Size.zero;
 
+  /// Recalculates the position and scale of layers based on the temporary decoded image size.
   void recalculateLayerPosition(List<Layer> layers) {
     double scaleFactor = min(
       temporaryDecodedImageSize.height / decodedImageSize.height,

@@ -5,7 +5,7 @@ class CropRotateEditorInitConfigs extends EditorInitConfigs {
   /// Determines whether to return the image as a Uint8List when closing the editor.
   final bool convertToUint8List;
 
-  ///TODO: doc
+  /// A callback function called when editing is completed.
   final Function(TransformConfigs)? onDone;
 
   /// Determines whether we draw a "fake" hero widget or not.
@@ -34,7 +34,6 @@ class CropRotateEditorInitConfigs extends EditorInitConfigs {
   ///           animation.removeStatusListener(animationStatusListener);
   ///         }
   ///       }
-
   ///       animation.addStatusListener(animationStatusListener);
   ///       return page;
   ///     },

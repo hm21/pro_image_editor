@@ -33,7 +33,7 @@ import '../../widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/image_with_multiple_filters.dart';
 import 'utils/crop_area_part.dart';
 import 'utils/crop_aspect_ratios.dart';
-import 'utils/crop_corner_painter.dart';
+import 'widgets/crop_corner_painter.dart';
 import 'utils/crop_desktop_interaction_manager.dart';
 import 'utils/rotate_angle.dart';
 import 'widgets/crop_aspect_ratio_options.dart';
@@ -375,8 +375,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
           setState(() {});
         },
         mounted: mounted,
-        transitionFunction: Curves.decelerate.transform,
-        duration: const Duration(milliseconds: 350),
+        transitionFunction: cropRotateEditorConfigs
+            .fadeInOutsideCropAreaAnimationCurve.transform,
+        duration:
+            cropRotateEditorConfigs.fadeInOutsideCropAreaAnimationDuration,
       );
     });
   }
@@ -1608,6 +1610,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                                   children: <Widget>[
                                     if (cropRotateEditorConfigs.canRotate)
                                       FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'crop-rotate-editor-rotate-btn'),
                                         label: Text(
                                           i18n.cropRotateEditor.rotate,
                                           style: TextStyle(
@@ -1621,6 +1625,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                                       ),
                                     if (cropRotateEditorConfigs.canFlip)
                                       FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'crop-rotate-editor-flip-btn'),
                                         label: Text(
                                           i18n.cropRotateEditor.flip,
                                           style: TextStyle(
@@ -1635,7 +1641,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                                         .canChangeAspectRatio)
                                       FlatIconTextButton(
                                         key: const ValueKey(
-                                            'pro-image-editor-aspect-ratio-btn'),
+                                            'crop-rotate-editor-ratio-btn'),
                                         label: Text(
                                           i18n.cropRotateEditor.ratio,
                                           style: TextStyle(
@@ -1649,6 +1655,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                                       ),
                                     if (cropRotateEditorConfigs.canReset)
                                       FlatIconTextButton(
+                                        key: const ValueKey(
+                                            'crop-rotate-editor-reset-btn'),
                                         label: Text(
                                           i18n.cropRotateEditor.reset,
                                           style: TextStyle(

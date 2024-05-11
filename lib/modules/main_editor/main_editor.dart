@@ -6,7 +6,6 @@ import 'package:colorfilter_generator/presets.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
@@ -1433,8 +1432,6 @@ class ProImageEditorState extends State<ProImageEditor>
 
   @override
   Widget build(BuildContext context) {
-    // TODO: remove timeDilation
-    timeDilation = 2.5;
     _theme = configs.theme ??
         ThemeData(
           useMaterial3: true,

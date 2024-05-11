@@ -21,12 +21,13 @@ class LayerTransformGenerator {
   }) {
     LayerManager layerManager = LayerManager();
 
+    /* print('is90Deg: ${activeTransformConfigs.is90DegRotated}'); */
     for (var el in layers) {
       Layer layer = layerManager.copyLayer(el);
 
-      translateLayer(layer);
       rotateLayer(layer);
       flipLayer(layer);
+      translateLayer(layer);
       zoomLayer(layer);
 
       updatedLayers.add(layer);
@@ -34,66 +35,95 @@ class LayerTransformGenerator {
   }
 
   void flipLayer(Layer layer) {
-    if (activeTransformConfigs.flipY != newTransformConfigs.flipY) {
-      layer.flipY = !layer.flipY;
-      layer.offset = Offset(
-        layer.offset.dx,
-        -layer.offset.dy,
-      );
-    }
-    if (activeTransformConfigs.flipX != newTransformConfigs.flipX) {
-      layer.flipX = !layer.flipX;
-      layer.offset = Offset(
-        -layer.offset.dx,
-        layer.offset.dy,
-      );
+    bool shouldFlipX =
+        activeTransformConfigs.flipX != newTransformConfigs.flipX;
+    bool shouldFlipY =
+        activeTransformConfigs.flipY != newTransformConfigs.flipY;
+    /*  
+   print('shouldFlipY $shouldFlipY');
+    print('shouldFlipX $shouldFlipX');
+     */
+
+    if (activeTransformConfigs.is90DegRotated &&
+        newTransformConfigs.is90DegRotated) {
+      if ((shouldFlipY)) {
+        layer.flipX = !layer.flipX;
+        layer.offset = Offset(
+          -layer.offset.dx,
+          layer.offset.dy,
+        );
+      }
+      if (shouldFlipX) {
+        layer.flipY = !layer.flipY;
+        layer.offset = Offset(
+          layer.offset.dx,
+          -layer.offset.dy,
+        );
+      }
+    } else if (activeTransformConfigs.is90DegRotated) {
+      if ((shouldFlipY)) {
+        layer.flipX = !layer.flipX;
+        layer.offset = Offset(
+          layer.offset.dx,
+          -layer.offset.dy,
+        );
+      }
+      if (shouldFlipX) {
+        layer.flipY = !layer.flipY;
+        layer.offset = Offset(
+          -layer.offset.dx,
+          layer.offset.dy,
+        );
+      }
+    } else if (newTransformConfigs.is90DegRotated) {
+      if (shouldFlipX) {
+        layer.flipY = !layer.flipY;
+        layer.offset = Offset(
+          layer.offset.dx,
+          -layer.offset.dy,
+        );
+      }
+      if (shouldFlipY) {
+        layer.flipX = !layer.flipX;
+        layer.offset = Offset(
+          -layer.offset.dx,
+          layer.offset.dy,
+        );
+      }
+    } else {
+      if ((shouldFlipX)) {
+        layer.flipX = !layer.flipX;
+        layer.offset = Offset(
+          -layer.offset.dx,
+          layer.offset.dy,
+        );
+      }
+      if (shouldFlipY) {
+        layer.flipY = !layer.flipY;
+        layer.offset = Offset(
+          layer.offset.dx,
+          -layer.offset.dy,
+        );
+      }
     }
   }
 
   void translateLayer(Layer layer) {
     Offset offset = newTransformConfigs.offset - activeTransformConfigs.offset;
 
-    /*    print(activeTransformConfigs.cropRect);
-    Rect rect = activeTransformConfigs.cropRect;
-    if (!rect.isInfinite) {
-      double oldScale = activeTransformConfigs.scale;
-      double newScale = newTransformConfigs.scale;
-
-      double newPaddingWidth = rect.width * newScale - rect.width;
-      double oldPaddingWidth = rect.width * oldScale - rect.width;
-      double newPaddingHeight = rect.height * newScale - rect.height;
-      double oldPaddingHeight = rect.height * oldScale - rect.height;
-
-      print(newPaddingWidth - oldPaddingWidth);
-      layer.offset -= Offset(
-        newPaddingWidth - oldPaddingWidth,
-        newPaddingHeight - oldPaddingHeight,
-      );
-    } */
     double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
 
-    // TODO: layer.offset += newTransformConfigs.offset * newTransformConfigs.scale;
+    layer.offset += offset / scale;
   }
 
   void rotateLayer(Layer layer) {
-    double scale = newTransformConfigs.scale;
     double rotationAngle =
         activeTransformConfigs.angle - newTransformConfigs.angle;
 
-    layer.rotation += rotationAngle;
+    layer.rotation -= rotationAngle;
 
     var angleSide = getRotateAngleSide(rotationAngle);
 
-    var screenW =
-        angleSide == RotateAngleSide.top || angleSide == RotateAngleSide.bottom
-            ? layerDrawAreaSize.width
-            : layerDrawAreaSize.height;
-    var screenH =
-        angleSide == RotateAngleSide.top || angleSide == RotateAngleSide.bottom
-            ? layerDrawAreaSize.height
-            : layerDrawAreaSize.width;
-
-    print(angleSide);
     if (angleSide == RotateAngleSide.bottom) {
       layer.offset = Offset(
         -layer.offset.dx,
