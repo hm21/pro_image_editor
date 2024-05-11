@@ -26,6 +26,8 @@ class _CustomAppbarBottombarExampleState
     with ExampleHelperState<CustomAppbarBottombarExample> {
   late StreamController _updateUIStream;
   late ScrollController _bottomBarScrollCtrl;
+  late ScrollController _paintingBottomBarScrollCtrl;
+  late ScrollController _cropBottomBarScrollCtrl;
 
   final List<TextStyle> _customTextStyles = [
     GoogleFonts.roboto(),
@@ -75,6 +77,8 @@ class _CustomAppbarBottombarExampleState
   void initState() {
     _updateUIStream = StreamController.broadcast();
     _bottomBarScrollCtrl = ScrollController();
+    _paintingBottomBarScrollCtrl = ScrollController();
+    _cropBottomBarScrollCtrl = ScrollController();
     super.initState();
   }
 
@@ -82,6 +86,8 @@ class _CustomAppbarBottombarExampleState
   void dispose() {
     _updateUIStream.close();
     _bottomBarScrollCtrl.dispose();
+    _paintingBottomBarScrollCtrl.dispose();
+    _cropBottomBarScrollCtrl.dispose();
     super.dispose();
   }
 
@@ -118,6 +124,7 @@ class _CustomAppbarBottombarExampleState
               bottomNavigationBar: _bottomNavigationBar(constraints),
               bottomBarPaintingEditor: _bottomBarPaintingEditor(constraints),
               bottomBarTextEditor: _bottomBarTextEditor(constraints),
+              bottomBarCropRotateEditor: _bottomBarCropEditor(constraints),
             ),
             textEditorConfigs: TextEditorConfigs(
               customTextStyles: _customTextStyles,
@@ -411,22 +418,36 @@ class _CustomAppbarBottombarExampleState
             stream: _updateUIStream.stream,
             builder: (_, __) {
               return IconButton(
-                icon: const Icon(Icons.rotate_90_degrees_ccw_outlined),
+                tooltip: 'Undo',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: Icon(
+                  Icons.undo,
+                  color: editorKey
+                          .currentState!.cropRotateEditor.currentState!.canUndo
+                      ? Colors.white
+                      : Colors.white.withAlpha(80),
+                ),
                 onPressed: editorKey
-                    .currentState?.cropRotateEditor.currentState?.rotate,
+                    .currentState!.cropRotateEditor.currentState!.undoAction,
               );
             }),
         StreamBuilder(
             stream: _updateUIStream.stream,
             builder: (_, __) {
               return IconButton(
-                key: const ValueKey('pro-image-editor-aspect-ratio-btn'),
-                icon: const Icon(Icons.crop),
-                onPressed: editorKey.currentState?.cropRotateEditor.currentState
-                    ?.openAspectRatioOptions,
+                tooltip: 'Redo',
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: Icon(
+                  Icons.redo,
+                  color: editorKey
+                          .currentState!.cropRotateEditor.currentState!.canRedo
+                      ? Colors.white
+                      : Colors.white.withAlpha(80),
+                ),
+                onPressed: editorKey
+                    .currentState!.cropRotateEditor.currentState!.redoAction,
               );
             }),
-        const Spacer(),
         StreamBuilder(
             stream: _updateUIStream.stream,
             builder: (_, __) {
@@ -435,7 +456,7 @@ class _CustomAppbarBottombarExampleState
                 icon: const Icon(Icons.done),
                 iconSize: 28,
                 onPressed:
-                    editorKey.currentState?.cropRotateEditor.currentState?.done,
+                    editorKey.currentState!.cropRotateEditor.currentState!.done,
               );
             }),
       ],
@@ -639,7 +660,7 @@ class _CustomAppbarBottombarExampleState
       stream: _updateUIStream.stream,
       builder: (_, __) {
         return Scrollbar(
-          controller: _bottomBarScrollCtrl,
+          controller: _paintingBottomBarScrollCtrl,
           scrollbarOrientation: ScrollbarOrientation.top,
           thickness: isDesktop ? null : 0,
           child: BottomAppBar(
@@ -648,7 +669,7 @@ class _CustomAppbarBottombarExampleState
             padding: EdgeInsets.zero,
             child: Center(
               child: SingleChildScrollView(
-                controller: _bottomBarScrollCtrl,
+                controller: _paintingBottomBarScrollCtrl,
                 scrollDirection: Axis.horizontal,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -758,6 +779,90 @@ class _CustomAppbarBottombarExampleState
                       );
                     },
                   ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _bottomBarCropEditor(BoxConstraints constraints) {
+    return StreamBuilder(
+      stream: _updateUIStream.stream,
+      builder: (_, __) {
+        return Scrollbar(
+          controller: _cropBottomBarScrollCtrl,
+          scrollbarOrientation: ScrollbarOrientation.top,
+          thickness: isDesktop ? null : 0,
+          child: BottomAppBar(
+            height: kBottomNavigationBarHeight,
+            color: Colors.black,
+            padding: EdgeInsets.zero,
+            child: Center(
+              child: SingleChildScrollView(
+                controller: _cropBottomBarScrollCtrl,
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: min(MediaQuery.of(context).size.width, 500),
+                    maxWidth: 500,
+                  ),
+                  child: Builder(builder: (context) {
+                    Color foregroundColor = Colors.white;
+                    return Wrap(
+                      direction: Axis.horizontal,
+                      alignment: WrapAlignment.spaceAround,
+                      children: <Widget>[
+                        FlatIconTextButton(
+                          key: const ValueKey('crop-rotate-editor-rotate-btn'),
+                          label: Text(
+                            'Rotate',
+                            style: TextStyle(
+                                fontSize: 10.0, color: foregroundColor),
+                          ),
+                          icon: Icon(Icons.rotate_90_degrees_ccw_outlined,
+                              color: foregroundColor),
+                          onPressed: editorKey.currentState!.cropRotateEditor
+                              .currentState!.rotate,
+                        ),
+                        FlatIconTextButton(
+                          key: const ValueKey('crop-rotate-editor-flip-btn'),
+                          label: Text(
+                            'Flip',
+                            style: TextStyle(
+                                fontSize: 10.0, color: foregroundColor),
+                          ),
+                          icon: Icon(Icons.flip, color: foregroundColor),
+                          onPressed: editorKey.currentState!.cropRotateEditor
+                              .currentState!.flip,
+                        ),
+                        FlatIconTextButton(
+                          key: const ValueKey('crop-rotate-editor-ratio-btn'),
+                          label: Text(
+                            'Ratio',
+                            style: TextStyle(
+                                fontSize: 10.0, color: foregroundColor),
+                          ),
+                          icon: Icon(Icons.crop, color: foregroundColor),
+                          onPressed: editorKey.currentState!.cropRotateEditor
+                              .currentState!.openAspectRatioOptions,
+                        ),
+                        FlatIconTextButton(
+                          key: const ValueKey('crop-rotate-editor-reset-btn'),
+                          label: Text(
+                            'Reset',
+                            style: TextStyle(
+                                fontSize: 10.0, color: foregroundColor),
+                          ),
+                          icon: Icon(Icons.restore, color: foregroundColor),
+                          onPressed: editorKey.currentState!.cropRotateEditor
+                              .currentState!.reset,
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ),

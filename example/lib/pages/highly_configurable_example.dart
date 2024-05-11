@@ -181,8 +181,15 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
           cropRotateEditor: CropRotateEditorTheme(
             appBarBackgroundColor: Color.fromARGB(255, 85, 0, 0),
             appBarForegroundColor: Color(0xFFE1E1E1),
+            bottomBarBackgroundColor: Color.fromARGB(255, 136, 0, 84),
+            bottomBarForegroundColor: Color.fromARGB(255, 223, 255, 210),
             background: Color.fromARGB(255, 255, 203, 203),
             cropCornerColor: Color.fromARGB(255, 0, 212, 195),
+            aspectRatioSheetBackgroundColor: Colors.green,
+            aspectRatioSheetForegroundColor: Color.fromARGB(255, 255, 210, 141),
+            cropOverlayColor: Colors.orange,
+            helperLineColor: Colors.blue,
+            whatsappCupertinoBottomBarColor: Colors.red,
           ),
           filterEditor: FilterEditorTheme(
             appBarBackgroundColor: Color.fromARGB(255, 82, 0, 82),
@@ -251,9 +258,11 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             resetFontScale: Icons.restore,
           ),
           cropRotateEditor: IconsCropRotateEditor(
-            bottomNavBar: Icons.crop_free,
-            rotate: Icons.rotate_90_degrees_ccw_outlined,
+            bottomNavBar: Icons.crop_free_rounded,
+            rotate: Icons.rotate_left,
             aspectRatio: Icons.crop,
+            flip: Icons.swap_horiz,
+            reset: Icons.reset_tv,
           ),
           filterEditor: IconsFilterEditor(
             bottomNavBar: Icons.filter_b_and_w_outlined,

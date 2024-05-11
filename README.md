@@ -134,9 +134,16 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - ✅ Change Text Scale
   - ✅ Multiple background modes like in whatsapp
 - ✅ Crop-Rotate-Editor
+  - ✅ Rotate
+  - ✅ Flip
+  - ✅ Multiple aspect ratios
+  - ✅ Reset
+  - ✅ Double-Tap
+  - ✅ Round cropper
 - ✅ Filter-Editor
 - ✅ Blur-Editor
 - ✅ Emoji-Picker
+- ✅ Add stickers or widgets
 - ✅ Move and scalable layers
 - ✅ Helper lines for better positioning
 - ✅ Undo and redo function
@@ -148,7 +155,6 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Selectable design mode between Material and Cupertino
 - ✅ Interactive layers
 - ✅ Hit detection for painted layers
-- ✅ Loading of stickers or widgets in the editor
 - ✅ Reorder layer level
 - ✅ WhatsApp Theme
 - ✅ Movable background image
@@ -156,6 +162,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
 #### Future Features
+- ✨ Faster image creation when editing is complete
 - ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 
 
@@ -200,9 +207,9 @@ If you're displaying emoji on the web and want them to be colored by default (es
 
 <br/>
 
-To ensure compatibility with older Android phones and ensure that all filters you use work correctly, it's advisable to consider using the Canvaskit renderer. The default HTML renderer may encounter issues with certain filters on some devices.
+The HTML renderer can cause problems on some devices, especially mobile devices. If you don't know the exact type of phone your customers will be using, it is recommended to use the Canvas renderer.
 
-To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `index.html`:
+To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `index.html
 
 <details>
   <summary>Show code example</summary>
@@ -1021,52 +1028,62 @@ class DemoState extends State<Demo> {
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
             actions: [
-              StreamBuilder(
-                  stream: _updateAppBarStream.stream,
-                  builder: (_, __) {
-                    return IconButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.close,
-                    );
-                  }),
-              const Spacer(),
-              IconButton(
-                tooltip: 'Custom Icon',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(
-                  Icons.bug_report,
-                  color: Colors.white,
+                StreamBuilder(
+                stream: _updateUIStream.stream,
+                builder: (_, __) {
+                  return IconButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: editorKey.currentState?.cropRotateEditor.currentState?.close,
+                  );
+                }),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'My Button',
+                  color: Colors.amber,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: const Icon(
+                    Icons.bug_report,
+                    color: Colors.amber,
+                  ),
+                  onPressed: () {},
                 ),
-                onPressed: () {},
-              ),
-              StreamBuilder(
-                  stream: _updateAppBarStream.stream,
-                  builder: (_, __) {
-                    return IconButton(
-                      icon: const Icon(Icons.rotate_90_degrees_ccw_outlined),
-                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.rotate,
-                    );
-                  }),
-              StreamBuilder(
-                  stream: _updateAppBarStream.stream,
-                  builder: (_, __) {
-                    return IconButton(
-                      icon: const Icon(Icons.crop),
-                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.openAspectRatioOptions,
-                    );
-                  }),
-              const Spacer(),
-              StreamBuilder(
-                  stream: _updateAppBarStream.stream,
-                  builder: (_, __) {
-                    return IconButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      icon: const Icon(Icons.done),
-                      iconSize: 28,
-                      onPressed: _editorKey.currentState?.cropRotateEditor.currentState?.done,
-                    );
-                  }),
+                StreamBuilder(
+                    stream: _updateUIStream.stream,
+                    builder: (_, __) {
+                      return IconButton(
+                        tooltip: 'Undo',
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(
+                          Icons.undo,
+                          color: editorKey.currentState!.cropRotateEditor.currentState!.canUndo ? Colors.white : Colors.white.withAlpha(80),
+                        ),
+                        onPressed: editorKey.currentState!.cropRotateEditor.currentState!.undoAction,
+                      );
+                    }),
+                StreamBuilder(
+                    stream: _updateUIStream.stream,
+                    builder: (_, __) {
+                      return IconButton(
+                        tooltip: 'Redo',
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: Icon(
+                          Icons.redo,
+                          color: editorKey.currentState!.cropRotateEditor.currentState!.canRedo ? Colors.white : Colors.white.withAlpha(80),
+                        ),
+                        onPressed: editorKey.currentState!.cropRotateEditor.currentState!.redoAction,
+                      );
+                    }),
+                StreamBuilder(
+                    stream: _updateUIStream.stream,
+                    builder: (_, __) {
+                      return IconButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: const Icon(Icons.done),
+                        iconSize: 28,
+                        onPressed: editorKey.currentState!.cropRotateEditor.currentState!.done,
+                      );
+                    }),
             ],
           ),
           appBarFilterEditor: AppBar(
@@ -1117,11 +1134,11 @@ class DemoState extends State<Demo> {
 
 The state history from the image editor can be exported and imported. However, it's important to note that the crop and rotate feature currently only allows exporting the final cropped image and not individual states. Additionally, all sticker widgets are converted into images and saved in that format during the export process.
 
-##### Export example
+
 
 
 <details>
-  <summary>Show code example</summary>
+  <summary> <b>Export example</b> </summary>
 
 ```dart
  await _editor.currentState?.exportStateHistory(
@@ -1139,10 +1156,10 @@ The state history from the image editor can be exported and imported. However, i
 ```
 </details>
 
-##### Import example
+<br/>
 
 <details>
-  <summary>Show code example</summary>
+  <summary><b>Import example</b></summary>
 
 ```dart
  _editor.currentState?.importStateHistory(
@@ -1158,12 +1175,12 @@ The state history from the image editor can be exported and imported. However, i
 ```
 </details>
 
-##### Initial import example
-
-If you wish to open the editor directly with your exported state history, you can do so by utilizing the import feature. Simply load the exported state history into the editor, and it will recreate the previous editing session, allowing you to continue where you left off.
+<br/>
 
 <details>
-  <summary>Show code example</summary>
+  <summary><b>Initial import example</b></summary>
+  
+If you wish to open the editor directly with your exported state history, you can do so by utilizing the import feature. Simply load the exported state history into the editor, and it will recreate the previous editing session, allowing you to continue where you left off.
 
 ```dart
 ProImageEditor.memory(
@@ -1680,22 +1697,15 @@ git clone https://github.com/hm21/pro_image_editor.git
 
 <br/>
 
-### Inspiration
-
-This package is inspired by the [image_editor_plus](https://pub.dev/packages/image_editor_plus) package, which is also a great tool for image editing in Flutter.
-
-<br/>
-
 ### Included Packages
 
 This package uses several Flutter packages to provide a seamless editing experience. Here's a list of the packages used in this project:
 
-- [rounded_background_text](https://pub.dev/packages/rounded_background_text)
 - [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
-- [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
-- [screenshot](https://pub.dev/packages/screenshot)
-- [vibration](https://pub.dev/packages/vibration)
-- [http](https://pub.dev/packages/http)
 - [defer_pointer](https://pub.dev/packages/defer_pointer)
+- [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
+- [rounded_background_text](https://pub.dev/packages/rounded_background_text)
+- [http](https://pub.dev/packages/http)
+- [vibration](https://pub.dev/packages/vibration)
 
 These packages play a crucial role in enabling various features and functionalities in this package.

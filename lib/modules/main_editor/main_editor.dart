@@ -104,19 +104,25 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// File object representing the image file.
   final File? file;
 
+  /// Whether [onImageEditingComplete] call with empty editing.
+  ///
+  /// The default value is false.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  final bool allowCompleteWithEmptyEditing;
+
   /// A callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///
   /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
   /// when the editing is completed.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   final ImageEditingCompleteCallback onImageEditingComplete;
 
-  /// Whether [onImageEditingComplete] call with empty editing.
-  ///
-  /// The default value is false.
-  final bool allowCompleteWithEmptyEditing;
-
   /// A callback function that will be called before the image editor will close.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   final ImageEditingEmptyCallback? onCloseEditor;
 
   /// A callback function that can be used to update the UI from custom widgets.
@@ -145,6 +151,8 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// to prevent Navigator.pop(context) from being automatically triggered.
   ///
   /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   const ProImageEditor._({
     super.key,
     required this.onImageEditingComplete,
@@ -183,6 +191,8 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// to prevent Navigator.pop(context) from being automatically triggered.
   ///
   /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   factory ProImageEditor.memory(
     Uint8List byteArray, {
     Key? key,
@@ -222,6 +232,8 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// to prevent Navigator.pop(context) from being automatically triggered.
   ///
   /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   factory ProImageEditor.file(
     File file, {
     Key? key,
@@ -261,6 +273,8 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// to prevent Navigator.pop(context) from being automatically triggered.
   ///
   /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   factory ProImageEditor.asset(
     String assetPath, {
     Key? key,
@@ -300,6 +314,8 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// to prevent Navigator.pop(context) from being automatically triggered.
   ///
   /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
   factory ProImageEditor.network(
     String networkUrl, {
     Key? key,
@@ -929,6 +945,7 @@ class ProImageEditorState extends State<ProImageEditor>
         assetPath: img.assetPath,
         networkUrl: img.networkUrl,
         initConfigs: CropRotateEditorInitConfigs(
+          onUpdateUI: widget.onUpdateUI,
           theme: _theme,
           layers: _stateManager.activeLayers,
           configs: widget.configs,
