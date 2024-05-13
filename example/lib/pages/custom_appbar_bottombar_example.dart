@@ -110,9 +110,11 @@ class _CustomAppbarBottombarExampleState
       return ProImageEditor.network(
         'https://picsum.photos/id/237/2000',
         key: editorKey,
-        onImageEditingComplete: onImageEditingComplete,
-        onCloseEditor: onCloseEditor,
-        onUpdateUI: () => _updateUIStream.add(null),
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: onImageEditingComplete,
+          onCloseEditor: onCloseEditor,
+          onUpdateUI: () => _updateUIStream.add(null),
+        ),
         configs: ProImageEditorConfigs(
             customWidgets: ImageEditorCustomWidgets(
               appBar: _buildAppBar(),

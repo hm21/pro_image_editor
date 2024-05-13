@@ -7,8 +7,8 @@ import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
 import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
 import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
 
-import 'package:pro_image_editor/modules/main_editor/main_editor.dart';
 import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/layer_widget.dart';
 
 import 'fake/fake_image.dart';
@@ -19,7 +19,9 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: ProImageEditor.memory(
         fakeMemoryImage,
-        onImageEditingComplete: (Uint8List bytes) async {},
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
       ),
     ));
 
@@ -32,7 +34,9 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
-        onImageEditingComplete: (Uint8List bytes) async {},
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
       )));
 
       final openBtn = find.byKey(const ValueKey('open-painting-editor-btn'));
@@ -47,7 +51,9 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
-        onImageEditingComplete: (Uint8List bytes) async {},
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
       )));
 
       final openBtn = find.byKey(const ValueKey('open-text-editor-btn'));
@@ -62,7 +68,9 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
-        onImageEditingComplete: (Uint8List bytes) async {},
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
       )));
 
       final openBtn = find.byKey(const ValueKey('open-blur-editor-btn'));
@@ -78,7 +86,9 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
-        onImageEditingComplete: (Uint8List bytes) async {},
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
       )));
 
       final openBtn = find.byKey(const ValueKey('open-filter-editor-btn'));
@@ -94,7 +104,9 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
-        onImageEditingComplete: (Uint8List bytes) async {},
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
       )));
 
       final openBtn = find.byKey(const ValueKey('open-emoji-editor-btn'));
@@ -116,7 +128,9 @@ void main() {
         home: ProImageEditor.memory(
       fakeMemoryImage,
       key: key,
-      onImageEditingComplete: (Uint8List bytes) async {},
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: (Uint8List bytes) async {},
+      ),
     )));
 
     // Open text editor

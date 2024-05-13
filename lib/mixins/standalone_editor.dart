@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
+import '../models/editor_callbacks/main_editor_callbacks.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';
 import '../models/editor_image.dart';
 import '../models/history/filter_state_history.dart';
@@ -38,7 +39,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   List<Layer>? get layers => initConfigs.layers;
 
   /// Returns the callback function to update the UI.
-  Function? get onUpdateUI => initConfigs.onUpdateUI;
+  UpdateUiCallback? get onUpdateUI => initConfigs.onUpdateUI;
 
   /// Returns the applied blur factor.
   double get appliedBlurFactor => initConfigs.appliedBlurFactor;

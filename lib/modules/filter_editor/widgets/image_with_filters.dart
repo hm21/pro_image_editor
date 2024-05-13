@@ -11,7 +11,7 @@ import '../utils/generate_filtered_image.dart';
 /// Represents an image with multiple filters applied.
 ///
 /// This widget displays an image with multiple filters applied on top of it. It also supports blur effect.
-class ImageWithMultipleFilters extends StatelessWidget {
+class ImageWithFilters extends StatelessWidget {
   /// The width of the image.
   final double width;
 
@@ -30,7 +30,7 @@ class ImageWithMultipleFilters extends StatelessWidget {
   /// The blur factor
   final double blurFactor;
 
-  const ImageWithMultipleFilters({
+  const ImageWithFilters({
     super.key,
     required this.width,
     required this.height,

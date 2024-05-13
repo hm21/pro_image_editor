@@ -31,8 +31,10 @@ class _StickersExampleState extends State<StickersExample>
   Widget _buildEditor() {
     return ProImageEditor.network(
       'https://picsum.photos/id/176/2000',
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
       configs: ProImageEditorConfigs(
         blurEditorConfigs: const BlurEditorConfigs(enabled: false),
         stickerEditorConfigs: StickerEditorConfigs(

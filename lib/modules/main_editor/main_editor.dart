@@ -2,23 +2,17 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:io';
 
-import 'package:colorfilter_generator/presets.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
-import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
-import 'package:pro_image_editor/models/init_configs/blur_editor_init_configs.dart';
 import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
-import 'package:pro_image_editor/models/init_configs/filter_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/layer_manager.dart';
-import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/main_editor_controllers.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/state_manager.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
-import 'package:pro_image_editor/utils/design_mode.dart';
 import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/utils/layer_transform_generator.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
@@ -27,16 +21,17 @@ import 'package:vibration/vibration.dart';
 
 import '../../designs/whatsapp/whatsapp_filter_button.dart';
 import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
+import '../../mixins/editor_callbacks_mixin.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
+import '../../pro_image_editor.dart';
 import '../../utils/constants.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
 import '../../utils/image_helpers.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/image_with_multiple_filters.dart';
+import '../filter_editor/widgets/image_with_filters.dart';
 import '../text_editor/text_editor.dart';
 import 'utils/desktop_interaction_manager.dart';
-import 'utils/main_editor_callbacks.dart';
 import 'utils/screen_size_helper.dart';
 import 'utils/whatsapp_helper.dart';
 import '../../models/history/filter_state_history.dart';
@@ -45,10 +40,7 @@ import '../../models/history/last_position.dart';
 import '../../models/editor_image.dart';
 import '../../models/history/blur_state_history.dart';
 import '../../models/import_export/export_state_history.dart';
-import '../../models/import_export/export_state_history_configs.dart';
-import '../../models/import_export/import_state_history.dart';
 import '../../models/layer.dart';
-import '../../models/init_configs/paint_editor_init_configs.dart';
 import 'utils/layer_interaction_helper.dart';
 import '../crop_rotate_editor/crop_rotate_editor.dart';
 import '../emoji_editor/emoji_editor.dart';
@@ -57,7 +49,6 @@ import '../filter_editor/widgets/filter_editor_item_list.dart';
 import '../blur_editor.dart';
 import '../paint_editor/paint_editor.dart';
 import '../../utils/debounce.dart';
-import '../../models/editor_configs/pro_image_editor_configs.dart';
 import '../../mixins/converted_configs.dart';
 import '../../widgets/adaptive_dialog.dart';
 import '../../widgets/flat_icon_text_button.dart';
@@ -88,9 +79,13 @@ import '../../widgets/pro_image_editor_desktop_mode.dart';
 ///
 /// See also:
 /// - [ProImageEditorConfigs] for configuring image editing options.
-class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
+/// - [ProImageEditorCallbacks] for callbacks.
+class ProImageEditor extends StatefulWidget
+    with SimpleConfigsAccess, SimpleCallbacksAccess {
   @override
   final ProImageEditorConfigs configs;
+  @override
+  final ProImageEditorCallbacks callbacks;
 
   /// Image data as a `Uint8List` from memory.
   final Uint8List? byteArray;
@@ -104,30 +99,6 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// File object representing the image file.
   final File? file;
 
-  /// Whether [onImageEditingComplete] call with empty editing.
-  ///
-  /// The default value is false.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
-  final bool allowCompleteWithEmptyEditing;
-
-  /// A callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
-  ///
-  /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
-  /// when the editing is completed.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
-  final ImageEditingCompleteCallback onImageEditingComplete;
-
-  /// A callback function that will be called before the image editor will close.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
-  final ImageEditingEmptyCallback? onCloseEditor;
-
-  /// A callback function that can be used to update the UI from custom widgets.
-  final ImageEditingEmptyCallback? onUpdateUI;
-
   /// Creates a `ProImageEditor` widget for image editing.
   ///
   /// Use one of the specific constructors like `memory`, `file`, `asset`, or `network`
@@ -139,26 +110,10 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
   /// The `configs` parameter allows you to customize the image editing experience by providing
   /// various configuration options. If not specified, default settings will be used.
   ///
-  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
-  ///
-  /// If `allowCompleteWithEmptyEditing` parameter is true,
-  /// `onImageEditingComplete` will be called even if user done nothing to image.
-  /// The default value is false.
-  ///
-  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
-  /// You can use this callback if you want to close the editor with your own parameters or if you want
-  /// to prevent Navigator.pop(context) from being automatically triggered.
-  ///
-  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
   const ProImageEditor._({
     super.key,
-    required this.onImageEditingComplete,
-    required this.allowCompleteWithEmptyEditing,
-    this.onCloseEditor,
-    this.onUpdateUI,
+    required this.callbacks,
     this.byteArray,
     this.assetPath,
     this.networkUrl,
@@ -172,167 +127,171 @@ class ProImageEditor extends StatefulWidget with SimpleConfigsAccess {
           'At least one of bytes, file, networkUrl, or assetPath must not be null.',
         );
 
-  /// Creates a `ProImageEditor` widget for editing an image from memory.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `byteArray`.
   ///
   /// The `byteArray` parameter should contain the image data as a `Uint8List`.
   ///
-  /// The `configs` parameter allows you to customize the image editing experience by providing
-  /// various configuration options. If not specified, default settings will be used.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
   ///
-  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
+  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// If `allowCompleteWithEmptyEditing` parameter is true,
-  /// `onImageEditingComplete` will be called even if user done nothing to image.
-  /// The default value is false.
+  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
   ///
-  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
-  /// You can use this callback if you want to close the editor with your own parameters or if you want
-  /// to prevent Navigator.pop(context) from being automatically triggered.
+  /// Example usage:
+  /// ```dart
+  /// ProImageEditor.ProImageEditor.memory(
+  ///   bytes,
+  ///   configs: ProImageEditorConfigs(),
+  ///   callbacks: ProImageEditorCallbacks(
+  ///      onImageEditingComplete: (Uint8List bytes) async {
+  ///        /*
+  ///          `Your code to handle the edited image. Upload it to your server as an example.
   ///
-  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           or no async, so that the load dialog closes immediately.
+  ///        */
+  ///        Navigator.pop(context);
+  ///      },
+  ///   ),
+  /// )
+  /// ```
   factory ProImageEditor.memory(
     Uint8List byteArray, {
     Key? key,
-    required ImageEditingCompleteCallback onImageEditingComplete,
-    bool allowCompleteWithEmptyEditing = false,
-    ImageEditingEmptyCallback? onUpdateUI,
-    ImageEditingEmptyCallback? onCloseEditor,
+    required ProImageEditorCallbacks callbacks,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
   }) {
     return ProImageEditor._(
       key: key,
       byteArray: byteArray,
       configs: configs,
-      onImageEditingComplete: onImageEditingComplete,
-      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
-      onCloseEditor: onCloseEditor,
-      onUpdateUI: onUpdateUI,
+      callbacks: callbacks,
     );
   }
 
-  /// Creates a `ProImageEditor` widget for editing an image from a file.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `file`.
   ///
   /// The `file` parameter should point to the image file.
   ///
-  /// The `configs` parameter allows you to customize the image editing experience by providing
-  /// various configuration options. If not specified, default settings will be used.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
   ///
-  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
+  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// If `allowCompleteWithEmptyEditing` parameter is true,
-  /// `onImageEditingComplete` will be called even if user done nothing to image.
-  /// The default value is false.
+  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
   ///
-  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
-  /// You can use this callback if you want to close the editor with your own parameters or if you want
-  /// to prevent Navigator.pop(context) from being automatically triggered.
+  /// Example usage:
+  /// ```dart
+  /// ProImageEditor.ProImageEditor.file(
+  ///   File(pathToMyFile),
+  ///   configs: ProImageEditorConfigs(),
+  ///   callbacks: ProImageEditorCallbacks(
+  ///      onImageEditingComplete: (Uint8List bytes) async {
+  ///        /*
+  ///          `Your code to handle the edited image. Upload it to your server as an example.
   ///
-  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           or no async, so that the load dialog closes immediately.
+  ///        */
+  ///        Navigator.pop(context);
+  ///      },
+  ///   ),
+  /// )
+  /// ```
   factory ProImageEditor.file(
     File file, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    required ImageEditingCompleteCallback onImageEditingComplete,
-    bool allowCompleteWithEmptyEditing = false,
-    ImageEditingEmptyCallback? onUpdateUI,
-    ImageEditingEmptyCallback? onCloseEditor,
+    required ProImageEditorCallbacks callbacks,
   }) {
     return ProImageEditor._(
       key: key,
       file: file,
       configs: configs,
-      onImageEditingComplete: onImageEditingComplete,
-      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
-      onCloseEditor: onCloseEditor,
-      onUpdateUI: onUpdateUI,
+      callbacks: callbacks,
     );
   }
 
-  /// Creates a `ProImageEditor` widget for editing an image from an asset.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `assetPath`.
   ///
   /// The `assetPath` parameter should specify the path to the image asset.
   ///
-  /// The `configs` parameter allows you to customize the image editing experience by providing
-  /// various configuration options. If not specified, default settings will be used.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
   ///
-  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
+  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// If `allowCompleteWithEmptyEditing` parameter is true,
-  /// `onImageEditingComplete` will be called even if user done nothing to image.
-  /// The default value is false.
+  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
   ///
-  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
-  /// You can use this callback if you want to close the editor with your own parameters or if you want
-  /// to prevent Navigator.pop(context) from being automatically triggered.
+  /// Example usage:
+  /// ```dart
+  /// ProImageEditor.asset(
+  ///   'assets/demo.png',
+  ///   configs: ProImageEditorConfigs(),
+  ///   callbacks: ProImageEditorCallbacks(
+  ///      onImageEditingComplete: (Uint8List bytes) async {
+  ///        /*
+  ///          `Your code to handle the edited image. Upload it to your server as an example.
   ///
-  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           or no async, so that the load dialog closes immediately.
+  ///        */
+  ///        Navigator.pop(context);
+  ///      },
+  ///   ),
+  /// )
+  /// ```
   factory ProImageEditor.asset(
     String assetPath, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    required ImageEditingCompleteCallback onImageEditingComplete,
-    bool allowCompleteWithEmptyEditing = false,
-    ImageEditingEmptyCallback? onUpdateUI,
-    ImageEditingEmptyCallback? onCloseEditor,
+    required ProImageEditorCallbacks callbacks,
   }) {
     return ProImageEditor._(
       key: key,
       assetPath: assetPath,
       configs: configs,
-      onImageEditingComplete: onImageEditingComplete,
-      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
-      onCloseEditor: onCloseEditor,
-      onUpdateUI: onUpdateUI,
+      callbacks: callbacks,
     );
   }
 
-  /// Creates a `ProImageEditor` widget for editing an image from a network URL.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `networkUrl`.
   ///
-  /// The `networkUrl` parameter should specify the URL of the image to be loaded.
+  /// The `networkUrl` parameter specifies the URL from which the image will be loaded.
   ///
-  /// The `configs` parameter allows you to customize the image editing experience by providing
-  /// various configuration options. If not specified, default settings will be used.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
   ///
-  /// The `onImageEditingComplete` parameter is a callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
+  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// If `allowCompleteWithEmptyEditing` parameter is true,
-  /// `onImageEditingComplete` will be called even if user done nothing to image.
-  /// The default value is false.
+  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
   ///
-  /// The `onCloseEditor` parameter is a callback function that gets invoked when the editor is closed.
-  /// You can use this callback if you want to close the editor with your own parameters or if you want
-  /// to prevent Navigator.pop(context) from being automatically triggered.
+  /// Example usage:
+  /// ```dart
+  /// ProImageEditor.network(
+  ///   'https://example.com/image.jpg',
+  ///   configs: ProImageEditorConfigs(),
+  ///   callbacks: ProImageEditorCallbacks(
+  ///      onImageEditingComplete: (Uint8List bytes) async {
+  ///        /*
+  ///          `Your code to handle the edited image. Upload it to your server as an example.
   ///
-  /// The `onUpdateUI` parameter is a callback function that can be used to update the UI from custom widgets.
-  ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           or no async, so that the load dialog closes immediately.
+  ///        */
+  ///        Navigator.pop(context);
+  ///      },
+  ///   ),
+  /// )
+  /// ```
   factory ProImageEditor.network(
     String networkUrl, {
     Key? key,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-    required ImageEditingCompleteCallback onImageEditingComplete,
-    bool allowCompleteWithEmptyEditing = false,
-    ImageEditingEmptyCallback? onUpdateUI,
-    ImageEditingEmptyCallback? onCloseEditor,
+    required ProImageEditorCallbacks callbacks,
   }) {
     return ProImageEditor._(
       key: key,
       networkUrl: networkUrl,
       configs: configs,
-      onImageEditingComplete: onImageEditingComplete,
-      allowCompleteWithEmptyEditing: allowCompleteWithEmptyEditing,
-      onCloseEditor: onCloseEditor,
-      onUpdateUI: onUpdateUI,
+      callbacks: callbacks,
     );
   }
 
@@ -344,6 +303,7 @@ class ProImageEditorState extends State<ProImageEditor>
     with
         ImageEditorConvertedConfigs,
         SimpleConfigsAccessState,
+        SimpleCallbacksAccessState,
         MainEditorGlobalKeys {
   /// Helper class for managing screen sizes and layout calculations.
   late final ScreenSizeHelper _screenSize;
@@ -438,7 +398,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _desktopInteractionManager = DesktopInteractionManager(
       configs: configs,
       context: context,
-      onUpdateUI: widget.onUpdateUI,
+      onUpdateUI: onUpdateUI,
       setState: setState,
     );
     _screenSize = ScreenSizeHelper(configs: configs, context: context);
@@ -622,7 +582,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Set the temporary layer to a copy of the provided layer.
@@ -707,7 +667,7 @@ class ProImageEditorState extends State<ProImageEditor>
         layerTheme: imageEditorTheme.layerInteraction,
       );
       setState(() {});
-      widget.onUpdateUI?.call();
+      onUpdateUI?.call();
       return;
     }
 
@@ -733,7 +693,7 @@ class ProImageEditorState extends State<ProImageEditor>
       );
     }
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Handle the end of a scaling operation.
@@ -770,7 +730,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     _layerInteraction.onScaleEnd();
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Handles tap events on a text layer.
@@ -787,7 +747,7 @@ class ProImageEditorState extends State<ProImageEditor>
         heroTag: layerData.id,
         configs: widget.configs,
         theme: _theme,
-        onUpdateUI: widget.onUpdateUI,
+        onUpdateUI: onUpdateUI,
       ),
       duration: const Duration(milliseconds: 50),
     );
@@ -818,7 +778,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Open a new page on top of the current page.
@@ -885,7 +845,7 @@ class ProImageEditorState extends State<ProImageEditor>
           mainBodySize: _screenSize.bodySize,
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
-          onUpdateUI: widget.onUpdateUI,
+          onUpdateUI: onUpdateUI,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
           appliedFilters: _stateManager.filters,
         ),
@@ -898,7 +858,7 @@ class ProImageEditorState extends State<ProImageEditor>
         }
 
         setState(() {});
-        widget.onUpdateUI?.call();
+        onUpdateUI?.call();
       }
     });
   }
@@ -912,7 +872,7 @@ class ProImageEditorState extends State<ProImageEditor>
         key: textEditor,
         configs: widget.configs,
         theme: _theme,
-        onUpdateUI: widget.onUpdateUI,
+        onUpdateUI: onUpdateUI,
       ),
       duration: const Duration(milliseconds: 50),
     );
@@ -923,7 +883,7 @@ class ProImageEditorState extends State<ProImageEditor>
     addLayer(layer);
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Opens the crop editor.
@@ -945,7 +905,7 @@ class ProImageEditorState extends State<ProImageEditor>
         assetPath: img.assetPath,
         networkUrl: img.networkUrl,
         initConfigs: CropRotateEditorInitConfigs(
-          onUpdateUI: widget.onUpdateUI,
+          onUpdateUI: onUpdateUI,
           theme: _theme,
           layers: _stateManager.activeLayers,
           configs: widget.configs,
@@ -965,6 +925,7 @@ class ProImageEditorState extends State<ProImageEditor>
               activeTransformConfigs: _stateManager.transformConfigs,
               newTransformConfigs: transformConfigs,
               layerDrawAreaSize: _screenSize.bodySize,
+              undoChanges: false,
             ).updatedLayers;
 
             _stateManager.stateHistory.add(
@@ -983,7 +944,7 @@ class ProImageEditorState extends State<ProImageEditor>
     ).then((transformConfigs) async {
       if (transformConfigs != null) {
         setState(() {});
-        widget.onUpdateUI?.call();
+        onUpdateUI?.call();
       }
     });
   }
@@ -1008,7 +969,7 @@ class ProImageEditorState extends State<ProImageEditor>
           theme: _theme,
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
-          onUpdateUI: widget.onUpdateUI,
+          onUpdateUI: onUpdateUI,
           layers: activeLayers,
           mainImageSize: _screenSize.decodedImageSize,
           mainBodySize: _screenSize.bodySize,
@@ -1038,7 +999,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _stateManager.editPosition++;
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Opens the blur editor as a modal bottom sheet.
@@ -1058,7 +1019,7 @@ class ProImageEditorState extends State<ProImageEditor>
           layers: activeLayers,
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
-          onUpdateUI: widget.onUpdateUI,
+          onUpdateUI: onUpdateUI,
           convertToUint8List: false,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
           appliedFilters: _stateManager.filters,
@@ -1082,7 +1043,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _stateManager.editPosition++;
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Opens the emoji editor.
@@ -1111,7 +1072,7 @@ class ProImageEditorState extends State<ProImageEditor>
     addLayer(layer);
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Opens the sticker editor as a modal bottom sheet.
@@ -1132,7 +1093,7 @@ class ProImageEditorState extends State<ProImageEditor>
     addLayer(layer);
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Opens the WhatsApp sticker editor.
@@ -1194,7 +1155,7 @@ class ProImageEditorState extends State<ProImageEditor>
     addLayer(layer);
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Moves a layer in the list to a new position.
@@ -1226,7 +1187,7 @@ class ProImageEditorState extends State<ProImageEditor>
         _stateManager.editPosition--;
         _decodeImage();
       });
-      widget.onUpdateUI?.call();
+      onUpdateUI?.call();
     }
   }
 
@@ -1242,7 +1203,7 @@ class ProImageEditorState extends State<ProImageEditor>
         _stateManager.editPosition++;
         _decodeImage();
       });
-      widget.onUpdateUI?.call();
+      onUpdateUI?.call();
     }
   }
 
@@ -1257,7 +1218,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// is in progress.
   void doneEditing() async {
     if (_stateManager.editPosition <= 0 && activeLayers.isEmpty) {
-      if (!widget.allowCompleteWithEmptyEditing) {
+      if (!configs.allowCompleteWithEmptyEditing) {
         return closeEditor();
       }
     }
@@ -1292,11 +1253,11 @@ class ProImageEditorState extends State<ProImageEditor>
       bytes = await removeTransparentImgAreas(bytes) ?? bytes;
     }
 
-    await widget.onImageEditingComplete(bytes);
+    await onImageEditingComplete(bytes);
 
     if (mounted) loading.hide(context);
 
-    widget.onCloseEditor?.call();
+    onCloseEditor?.call();
   }
 
   /// Close the image editor.
@@ -1305,10 +1266,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// It navigates back to the previous screen or closes the modal editor.
   void closeEditor() {
     if (_stateManager.editPosition <= 0) {
-      if (widget.onCloseEditor == null) {
+      if (onCloseEditor == null) {
         Navigator.pop(context);
       } else {
-        widget.onCloseEditor!.call();
+        onCloseEditor!.call();
       }
     } else {
       closeWarning();
@@ -1356,10 +1317,10 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     if (close) {
-      if (widget.onCloseEditor == null) {
+      if (onCloseEditor == null) {
         if (mounted) Navigator.pop(context);
       } else {
-        widget.onCloseEditor!.call();
+        onCloseEditor!.call();
       }
     }
 
@@ -1429,7 +1390,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     setState(() {});
-    widget.onUpdateUI?.call();
+    onUpdateUI?.call();
   }
 
   /// Exports the current state history.
@@ -1469,7 +1430,6 @@ class ProImageEditorState extends State<ProImageEditor>
           }
         },
         child: ScreenResizeDetector(
-          imageMargin: _screenSize.imageMargin,
           onResizeUpdate: (event) {
             _screenSize.lastScreenSize = event.newConstraints.biggest;
           },
@@ -1723,7 +1683,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 _stateManager.editPosition++;
 
                 setState(() {});
-                widget.onUpdateUI?.call();
+                onUpdateUI?.call();
               },
             ),
           ),
@@ -1959,7 +1919,7 @@ class ProImageEditorState extends State<ProImageEditor>
                           }
                           _selectedLayerIndex = -1;
                         });
-                        widget.onUpdateUI?.call();
+                        onUpdateUI?.call();
                       },
                       onTapDown: () {
                         _selectedLayerIndex = i;
@@ -1977,7 +1937,7 @@ class ProImageEditorState extends State<ProImageEditor>
                         setState(() {
                           _selectedLayerIndex = -1;
                         });
-                        widget.onUpdateUI?.call();
+                        onUpdateUI?.call();
                       },
                       onRemoveTap: () {
                         setState(() {
@@ -1986,7 +1946,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                   (element) => element.id == layerItem.id),
                               layer: layerItem);
                         });
-                        widget.onUpdateUI?.call();
+                        onUpdateUI?.call();
                       },
                     );
                   }).toList(),
@@ -2098,7 +2058,7 @@ class ProImageEditorState extends State<ProImageEditor>
             : TransformedContentGenerator(
                 transformConfigs: _stateManager.transformConfigs,
                 configs: configs,
-                child: ImageWithMultipleFilters(
+                child: ImageWithFilters(
                   width: _screenSize.decodedImageSize.width,
                   height: _screenSize.decodedImageSize.height,
                   designMode: designMode,

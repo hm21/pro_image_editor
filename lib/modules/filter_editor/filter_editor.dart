@@ -17,7 +17,7 @@ import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import 'widgets/filter_editor_item_list.dart';
-import 'widgets/image_with_multiple_filters.dart';
+import 'widgets/image_with_filters.dart';
 
 /// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
@@ -257,7 +257,7 @@ class FilterEditorState extends State<FilterEditor>
               child: TransformedContentGenerator(
                 configs: configs,
                 transformConfigs: transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithMultipleFilters(
+                child: ImageWithFilters(
                   width: getMinimumSize(mainImageSize, _bodySize).width,
                   height: getMinimumSize(mainImageSize, _bodySize).height,
                   designMode: designMode,
@@ -279,10 +279,11 @@ class FilterEditorState extends State<FilterEditor>
                   mainBodySize: getMinimumSize(mainBodySize, _bodySize),
                   mainImageSize: getMinimumSize(mainImageSize, _bodySize),
                   editorBodySize: _bodySize,
+                  cropAspectRatio: transformConfigs?.cropRect.size.aspectRatio,
                 ),
                 configs: configs,
                 layers: layers!,
-                clipBehavior: Clip.none,
+                clipBehavior: Clip.hardEdge,
               ),
           ],
         ),
@@ -293,11 +294,12 @@ class FilterEditorState extends State<FilterEditor>
   /// Builds the bottom navigation bar with filter options.
   Widget _buildBottomNavBar() {
     return SafeArea(
-      child: SizedBox(
-        height: 160,
-        child: Column(
-          children: [
-            SizedBox(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: SizedBox(
               height: 40,
               child: selectedFilter == PresetFilters.none
                   ? null
@@ -313,26 +315,26 @@ class FilterEditorState extends State<FilterEditor>
                       },
                     ),
             ),
-            FilterEditorItemList(
-              mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-              mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-              byteArray: editorImage.byteArray,
-              file: editorImage.file,
-              assetPath: editorImage.assetPath,
-              networkUrl: editorImage.networkUrl,
-              activeFilters: appliedFilters,
-              blurFactor: appliedBlurFactor,
-              configs: configs,
-              transformConfigs: transformConfigs,
-              selectedFilter: selectedFilter,
-              onSelectFilter: (filter) {
-                selectedFilter = filter;
-                setState(() {});
-                onUpdateUI?.call();
-              },
-            ),
-          ],
-        ),
+          ),
+          FilterEditorItemList(
+            mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+            mainImageSize: getMinimumSize(mainImageSize, _bodySize),
+            byteArray: editorImage.byteArray,
+            file: editorImage.file,
+            assetPath: editorImage.assetPath,
+            networkUrl: editorImage.networkUrl,
+            activeFilters: appliedFilters,
+            blurFactor: appliedBlurFactor,
+            configs: configs,
+            transformConfigs: transformConfigs,
+            selectedFilter: selectedFilter,
+            onSelectFilter: (filter) {
+              selectedFilter = filter;
+              setState(() {});
+              onUpdateUI?.call();
+            },
+          ),
+        ],
       ),
     );
   }

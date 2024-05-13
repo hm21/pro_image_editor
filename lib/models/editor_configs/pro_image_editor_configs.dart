@@ -44,6 +44,13 @@ class ProImageEditorConfigs {
   /// By default, this property is set to `true`.
   final bool captureOnlyImageArea;
 
+  /// Whether the callback `onImageEditingComplete` call with empty editing.
+  ///
+  /// The default value is false.
+  ///
+  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  final bool allowCompleteWithEmptyEditing;
+
   /// A unique hero tag for the Image Editor widget.
   final String heroTag;
 
@@ -114,6 +121,7 @@ class ProImageEditorConfigs {
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
     this.i18n = const I18n(),
+    this.allowCompleteWithEmptyEditing = false,
     this.removeTransparentAreas = false,
     this.captureOnlyImageArea = true,
     this.helperLines = const HelperLines(),

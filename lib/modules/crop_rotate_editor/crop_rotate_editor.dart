@@ -15,6 +15,7 @@ import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
+import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
 
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
@@ -30,7 +31,7 @@ import '../../widgets/layer_stack.dart';
 import '../../widgets/outside_gestures/outside_gesture_behavior.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/image_with_multiple_filters.dart';
+import '../filter_editor/widgets/image_with_filters.dart';
 import 'utils/crop_area_part.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'widgets/crop_corner_painter.dart';
@@ -263,6 +264,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       activeTransformConfigs: _fakeHeroTransformConfigs,
       newTransformConfigs: TransformConfigs.empty(),
       layerDrawAreaSize: mainBodySize ?? Size.zero,
+      undoChanges: true,
     ).updatedLayers;
 
     double initAngle = transformConfigs?.angle ?? 0.0;
@@ -482,6 +484,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
               initConfigs.transformConfigs ?? TransformConfigs.empty(),
           newTransformConfigs: transformC,
           layerDrawAreaSize: mainBodySize ?? _contentConstraints.biggest,
+          undoChanges: false,
         ).updatedLayers;
         _layers = updatedLayers;
       });
@@ -504,7 +507,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           TransformedContentGenerator(
             transformConfigs: transformC,
             configs: configs,
-            child: ImageWithMultipleFilters(
+            child: ImageWithFilters(
               width: _mainImageSize.width,
               height: _mainImageSize.height,
               designMode: designMode,
@@ -519,6 +522,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
                 mainImageSize: _mainImageSize,
                 editorBodySize: _contentConstraints.biggest,
+                cropAspectRatio: transformConfigs?.cropRect.size.aspectRatio,
               ),
               configs: configs,
               layers: _layers,
@@ -1510,22 +1514,26 @@ class CropRotateEditorState extends State<CropRotateEditor>
       onPopInvoked: (didPop) {
         setState(() => _showFakeHero = true);
       },
-      child: LayoutBuilder(builder: (context, constraints) {
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: imageEditorTheme.uiOverlayStyle,
-          child: Theme(
-            data: theme.copyWith(
-                tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-            child: Scaffold(
-              resizeToAvoidBottomInset: false,
-              backgroundColor: imageEditorTheme.cropRotateEditor.background,
-              appBar: _buildAppBar(constraints),
-              body: _buildBody(),
-              bottomNavigationBar: _buildBottomAppBar(),
+      child: ScreenResizeDetector(
+        onResizeUpdate: (event) {},
+        onResizeEnd: (event) {},
+        child: LayoutBuilder(builder: (context, constraints) {
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: imageEditorTheme.uiOverlayStyle,
+            child: Theme(
+              data: theme.copyWith(
+                  tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: imageEditorTheme.cropRotateEditor.background,
+                appBar: _buildAppBar(constraints),
+                body: _buildBody(),
+                bottomNavigationBar: _buildBottomAppBar(),
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 
@@ -1887,7 +1895,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
-              ImageWithMultipleFilters(
+              ImageWithFilters(
                 filters: appliedFilters,
                 blurFactor: appliedBlurFactor,
                 designMode: designMode,
@@ -1932,7 +1940,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
               child: TransformedContentGenerator(
                 transformConfigs: _fakeHeroTransformConfigs,
                 configs: configs,
-                child: ImageWithMultipleFilters(
+                child: ImageWithFilters(
                   width: _mainImageSize.width,
                   height: _mainImageSize.height,
                   designMode: designMode,
@@ -1948,6 +1956,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
                   mainImageSize: _mainImageSize,
                   editorBodySize: constraints.biggest,
+                  cropAspectRatio: transformConfigs?.cropRect.size.aspectRatio,
                 ),
                 configs: configs,
                 layers: _layers,

@@ -84,62 +84,65 @@ class _MoveableBackgroundImageExampleState
                     child: ProImageEditor.memory(
                       _transparentBytes,
                       key: editorKey,
-                      onImageEditingComplete: onImageEditingComplete,
-                      onCloseEditor: onCloseEditor,
-                      onUpdateUI: () {
-                        if (!inited) {
-                          inited = true;
+                      callbacks: ProImageEditorCallbacks(
+                        onImageEditingComplete: onImageEditingComplete,
+                        onCloseEditor: onCloseEditor,
+                        onUpdateUI: () {
+                          if (!inited) {
+                            inited = true;
 
-                          editorKey.currentState?.addLayer(
-                            StickerLayerData(
-                              offset: Offset.zero,
-                              scale: _initScale,
-                              sticker: Image.network(
-                                'https://picsum.photos/id/${Random().nextInt(200)}/2000',
-                                width: editorSize.width,
-                                height: editorSize.height,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  return AnimatedSwitcher(
-                                    layoutBuilder:
-                                        (currentChild, previousChildren) {
-                                      return SizedBox(
-                                        width: 120,
-                                        height: 120,
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          alignment: Alignment.center,
-                                          children: <Widget>[
-                                            ...previousChildren,
-                                            if (currentChild != null)
-                                              currentChild,
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    duration: const Duration(milliseconds: 200),
-                                    child: loadingProgress == null
-                                        ? child
-                                        : Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                  : null,
-                                            ),
+                            editorKey.currentState?.addLayer(
+                              StickerLayerData(
+                                offset: Offset.zero,
+                                scale: _initScale,
+                                sticker: Image.network(
+                                  'https://picsum.photos/id/${Random().nextInt(200)}/2000',
+                                  width: editorSize.width,
+                                  height: editorSize.height,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    return AnimatedSwitcher(
+                                      layoutBuilder:
+                                          (currentChild, previousChildren) {
+                                        return SizedBox(
+                                          width: 120,
+                                          height: 120,
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            alignment: Alignment.center,
+                                            children: <Widget>[
+                                              ...previousChildren,
+                                              if (currentChild != null)
+                                                currentChild,
+                                            ],
                                           ),
-                                  );
-                                },
+                                        );
+                                      },
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      child: loadingProgress == null
+                                          ? child
+                                          : Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            ),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                      },
+                            );
+                          }
+                        },
+                      ),
                       configs: ProImageEditorConfigs(
                           removeTransparentAreas: true,
 

@@ -26,7 +26,7 @@ import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/image_with_multiple_filters.dart';
+import '../filter_editor/widgets/image_with_filters.dart';
 import 'painting_canvas.dart';
 import 'utils/paint_desktop_interaction_manager.dart';
 import 'utils/paint_editor_enum.dart';
@@ -502,7 +502,7 @@ class PaintingEditorState extends State<PaintingEditor>
               TransformedContentGenerator(
                 configs: configs,
                 transformConfigs: transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithMultipleFilters(
+                child: ImageWithFilters(
                   width: getMinimumSize(mainImageSize, _bodySize).width,
                   height: getMinimumSize(mainImageSize, _bodySize).height,
                   designMode: designMode,
@@ -519,6 +519,8 @@ class PaintingEditorState extends State<PaintingEditor>
                     mainBodySize: getMinimumSize(mainBodySize, _bodySize),
                     mainImageSize: getMinimumSize(mainImageSize, _bodySize),
                     editorBodySize: _bodySize,
+                    cropAspectRatio:
+                        transformConfigs?.cropRect.size.aspectRatio,
                   ),
                 ),
               _buildPainter(),

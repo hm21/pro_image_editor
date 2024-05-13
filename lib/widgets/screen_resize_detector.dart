@@ -13,19 +13,16 @@ import '../utils/debounce.dart';
 /// - [child]: The child widget to render.
 /// - [onResizeUpdate]: A callback function called when the screen size changes.
 /// - [onResizeEnd]: A callback function called when the screen resize ends.
-/// - [imageMargin]: The margin around the image.
 class ScreenResizeDetector extends StatefulWidget {
   final Widget child;
   final Function(ResizeEvent) onResizeUpdate;
   final Function(ResizeEvent) onResizeEnd;
-  final EdgeInsets imageMargin;
 
   const ScreenResizeDetector({
     super.key,
     required this.child,
     required this.onResizeUpdate,
     required this.onResizeEnd,
-    required this.imageMargin,
   });
 
   @override
@@ -33,7 +30,6 @@ class ScreenResizeDetector extends StatefulWidget {
 }
 
 class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
-  EdgeInsets _startImageMargin = EdgeInsets.zero;
   BoxConstraints _startResizeEvent = const BoxConstraints();
   BoxConstraints _lastConstraints = const BoxConstraints();
   late Debounce _resizeDebounce$;
@@ -58,13 +54,11 @@ class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
         widget.onResizeUpdate(ResizeEvent(
           oldConstraints: _lastConstraints,
           newConstraints: constraints,
-          imageMargin: widget.imageMargin,
         ));
         _lastConstraints = constraints;
 
         if (!_activeResizing) {
           _startResizeEvent = constraints;
-          _startImageMargin = widget.imageMargin;
           _activeResizing = true;
         }
 
@@ -72,7 +66,6 @@ class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
           widget.onResizeEnd(ResizeEvent(
             oldConstraints: _startResizeEvent,
             newConstraints: constraints,
-            imageMargin: _startImageMargin,
           ));
           _activeResizing = false;
         });
@@ -91,13 +84,9 @@ class ResizeEvent {
   /// The new constraints after the resize.
   final BoxConstraints newConstraints;
 
-  /// The margin around the image.
-  final EdgeInsets imageMargin;
-
   const ResizeEvent({
     required this.oldConstraints,
     required this.newConstraints,
-    required this.imageMargin,
   });
 
   /// Gets the change in width after the resize.

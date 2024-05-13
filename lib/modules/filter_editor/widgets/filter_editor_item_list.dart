@@ -6,7 +6,7 @@ import 'package:colorfilter_generator/presets.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
-import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_multiple_filters.dart';
+import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_filters.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 import '../../../models/crop_rotate_editor/transform_factors.dart';
@@ -169,9 +169,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
 
     double offsetFactor = widget.mainImageSize.longestSide / size.longestSide;
 
-    double oldAspectRatio = transformConfigs.cropRect != Rect.largest
-        ? transformConfigs.cropRect.size.aspectRatio
-        : widget.mainImageSize.aspectRatio;
+    double oldAspectRatio = widget.mainImageSize.aspectRatio;
+    double scale = transformConfigs.scale / oldAspectRatio * size.aspectRatio;
 
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),
@@ -185,6 +184,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             width: size.width,
             margin: const EdgeInsets.only(bottom: 4),
             decoration: BoxDecoration(
+              color: Colors.pink,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: const Color(0xFF242424),
@@ -200,12 +200,10 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                   flipX: transformConfigs.flipX,
                   flipY: transformConfigs.flipY,
                   child: Transform.scale(
-                    scale: transformConfigs.scale /
-                        oldAspectRatio *
-                        size.aspectRatio,
+                    scale: scale,
                     child: Transform.translate(
-                      offset: transformConfigs.offset / offsetFactor,
-                      child: ImageWithMultipleFilters(
+                      offset: transformConfigs.offset / offsetFactor / scale,
+                      child: ImageWithFilters(
                         image: EditorImage(
                           file: widget.file,
                           byteArray: widget.byteArray,
@@ -270,7 +268,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
               child: Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
-                  ImageWithMultipleFilters(
+                  ImageWithFilters(
                     image: EditorImage(
                       file: widget.file,
                       byteArray: widget.byteArray,

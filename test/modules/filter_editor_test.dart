@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/models/init_configs/filter_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
-import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_multiple_filters.dart';
+import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_filters.dart';
 
 import '../fake/fake_image.dart';
 
@@ -41,7 +41,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(ImageWithMultipleFilters), findsWidgets);
+      expect(find.byType(ImageWithFilters), findsWidgets);
     });
   });
 }

@@ -35,10 +35,12 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
     return ProImageEditor.network(
       'https://picsum.photos/id/350/1500/3000',
       key: editorKey,
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
-      allowCompleteWithEmptyEditing: true,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
       configs: ProImageEditorConfigs(
+        allowCompleteWithEmptyEditing: true,
         textEditorConfigs: TextEditorConfigs(
           customTextStyles: [
             GoogleFonts.roboto(),

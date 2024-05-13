@@ -34,8 +34,10 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
   Widget _buildEditor() {
     return ProImageEditor.network(
       'https://picsum.photos/id/230/2000',
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
       configs: ProImageEditorConfigs(
         i18n: const I18n(
           various: I18nVarious(

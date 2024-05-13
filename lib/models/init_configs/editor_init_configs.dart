@@ -12,7 +12,7 @@ abstract class EditorInitConfigs {
   final ProImageEditorConfigs configs;
 
   /// A callback function that can be used to update the UI from custom widgets.
-  final Function? onUpdateUI;
+  final UpdateUiCallback? onUpdateUI;
 
   /// The size of the image in the main editor.
   final Size? mainImageSize;

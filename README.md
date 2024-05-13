@@ -265,15 +265,16 @@ void _openEditor() {
     MaterialPageRoute(
       builder: (context) => ProImageEditor.network(
         'https://picsum.photos/id/237/2000',
-        onImageEditingComplete: (byte) async {
-          /*
-            `Your code for handling the edited image. Upload it to your server as an example.`
-
-            You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
-            or without async, so that the loading-dialog closes immediately.
-          */
-          Navigator.pop(context);
-        },
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {
+            /*
+              `Your code to handle the edited image. Upload it to your server as an example.
+                You can choose to use await, so that the load dialog remains visible until your code is ready,
+                or no async, so that the load dialog closes immediately.
+            */
+            Navigator.pop(context);
+          },
+        ),
       ),
     ),
   );
@@ -288,14 +289,16 @@ Widget build(BuildContext context) {
     return Scaffold(
         body: ProImageEditor.network(
           'https://picsum.photos/id/237/2000',
-           onImageEditingComplete: (Uint8List bytes) async {
-              /*
-               `Your code for handling the edited image. Upload it to your server as an example.`
-
-               You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
-               or without async, so that the loading-dialog closes immediately.
-              */
-           },
+           callbacks: ProImageEditorCallbacks(
+             onImageEditingComplete: (Uint8List bytes) async {
+               /*
+               `Your code to handle the edited image. Upload it to your server as an example.
+                 You can choose to use await, so that the load dialog remains visible until your code is ready,
+                 or no async, so that the load dialog closes immediately.
+             */
+               Navigator.pop(context);
+             },
+          ),
         ),
     );
 }
@@ -310,10 +313,17 @@ To display stickers or widgets in the ProImageEditor, you have the flexibility t
 
 ```dart
 ProImageEditor.network(
-  'https://picsum.photos/id/156/2000',
-  onImageEditingComplete: (bytes) async {
-    Navigator.pop(context);
-  },
+  'https://picsum.photos/id/156/2000',  
+  callbacks: ProImageEditorCallbacks(
+    onImageEditingComplete: (Uint8List bytes) async {
+      /*
+      `Your code to handle the edited image. Upload it to your server as an example.
+        You can choose to use await, so that the load dialog remains visible until your code is ready,
+        or no async, so that the load dialog closes immediately.
+    */
+      Navigator.pop(context);
+    },
+  ),
   configs: ProImageEditorConfigs(
     stickerEditorConfigs: StickerEditorConfigs(
       enabled: true,
@@ -400,15 +410,16 @@ Navigator.of(context).push(
   MaterialPageRoute(
     builder: (context) => ProImageEditor.network(
       'https://picsum.photos/id/176/2000',
-      onImageEditingComplete: (bytes) async {
-         /*
-          Your code for handling the edited image. Upload it to your server as an example.
-
-          You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
-          or without async, so that the loading-dialog closes immediately.
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: (Uint8List bytes) async {
+          /*
+          `Your code to handle the edited image. Upload it to your server as an example.
+            You can choose to use await, so that the load dialog remains visible until your code is ready,
+            or no async, so that the load dialog closes immediately.
         */
-        Navigator.pop(context);
-      },
+          Navigator.pop(context);
+        },
+      ),
       configs: ProImageEditorConfigs(
         textEditorConfigs: TextEditorConfigs(
           whatsAppCustomTextStyles: [
@@ -630,14 +641,16 @@ return Scaffold(
     body: ProImageEditor.network(
         'https://picsum.photos/id/237/2000',
             key: _editor,
-            onImageEditingComplete: (Uint8List bytes) async {
-              /*
-               `Your code for handling the edited image. Upload it to your server as an example.`
-
-               You can choose whether you want to use await, so that the loading-dialog remains visible until your code is also ready, 
-               or without async, so that the loading-dialog closes immediately.
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {
+                /*
+                `Your code to handle the edited image. Upload it to your server as an example.
+                  You can choose to use await, so that the load dialog remains visible until your code is ready,
+                  or no async, so that the load dialog closes immediately.
               */
-            },
+                Navigator.pop(context);
+              },
+            ),
             configs: ProImageEditorConfigs(
               activePreferredOrientations: [
                   DeviceOrientation.portraitUp,
@@ -800,12 +813,19 @@ class DemoState extends State<Demo> {
     return ProImageEditor.network(
       'https://picsum.photos/id/237/2000',
       key: _editorKey,
-      onImageEditingComplete: (byte) async {
-        Navigator.pop(context);
-      },
-      onUpdateUI: () {
-        _updateAppBarStream.add(null);
-      },
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: (Uint8List bytes) async {
+          /*
+          `Your code to handle the edited image. Upload it to your server as an example.
+            You can choose to use await, so that the load dialog remains visible until your code is ready,
+            or no async, so that the load dialog closes immediately.
+         */
+          Navigator.pop(context);
+        },
+        onUpdateUI: () {
+          _updateAppBarStream.add(null);
+        },
+      ),
       configs: ProImageEditorConfigs(
         customWidgets: ImageEditorCustomWidgets(
           appBar: AppBar(
@@ -1186,9 +1206,16 @@ If you wish to open the editor directly with your exported state history, you ca
 ProImageEditor.memory(
   bytes,
   key: _editor,
-  onImageEditingComplete: (bytes) async {
-    /* Your code for handling the edited image. Upload it to your server as an example. */
-  },
+  callbacks: ProImageEditorCallbacks(
+    onImageEditingComplete: (Uint8List bytes) async {
+      /*
+      `Your code to handle the edited image. Upload it to your server as an example.
+        You can choose to use await, so that the load dialog remains visible until your code is ready,
+        or no async, so that the load dialog closes immediately.
+    */
+      Navigator.pop(context);
+    },
+  ),
   configs: ProImageEditorConfigs(
     initStateHistory: ImportStateHistory.fromJson( 
       /* Json-String from your exported state history */,
@@ -1218,9 +1245,8 @@ On desktop devices, you can click and hold a layer with the mouse to move it. Ad
 | `file`                          | File object representing the image file.                                                                  |
 | `assetPath`                     | Path to the image asset.                                                                                  |
 | `networkUrl`                    | URL of the image to be loaded from the network.                                                           |
-| `onImageEditingComplete`        | Callback function that is invoked when editing is finished and returns the edited image as a `Uint8List`. |
-| `allowCompleteWithEmptyEditing` | Whether [onImageEditingComplete] call with empty editing.                                                 |                                                |
 | `configs`                       | Configuration options for the image editor.                                                               |
+| `callbacks`                     | Callbacks for the image editor.                                                                           |
 
 
 #### Constructors
@@ -1242,24 +1268,37 @@ Creates a `ProImageEditor` widget for editing an image from an asset.
 Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 ### ProImageEditorConfigs
- | Property Name              | Description                                                                                                                    | Default Value                                               |
-|---------------------------|--------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
-| `i18n`                    | Internationalization settings for the Image Editor.                                                                            | `I18n()`                                       |
-| `helperLines`             | Configuration options for helper lines in the Image Editor.                                                                    | `HelperLines()`                                |
-| `customWidgets`           | Custom widgets to be used in the Image Editor.                                                                                 | `ImageEditorCustomWidgets()`                   |
-| `imageEditorTheme`        | Theme settings for the Image Editor.                                                                                           | `ImageEditorTheme()`                           |
-| `icons`                   | Icons to be used in the Image Editor.                                                                                          | `ImageEditorIcons()`                           |
-| `paintEditorConfigs`      | Configuration options for the Paint Editor.                                                                                    | `PaintEditorConfigs()`                         |
-| `textEditorConfigs`       | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                          |
-| `cropRotateEditorConfigs` | Configuration options for the Crop and Rotate Editor.                                                                          | `CropRotateEditorConfigs()`                    |
-| `filterEditorConfigs`     | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                        |
-| `blurEditorConfigs`       | Configuration options for the Blur Editor.                                                                                     | `BlurEditorConfigs()`                          |
-| `emojiEditorConfigs`      | Configuration options for the Emoji Editor.                                                                                    | `EmojiEditorConfigs()`                         |
-| `stickerEditorConfigs`    | Configuration options for the Sticker Editor.                                                                                  | `StickerEditorConfigs()`                       |
-| `designMode`              | The design mode for the Image Editor.                                                                                          | `ImageEditorDesignModeE.material`              |
-| `theme`                   | The theme to be used for the Image Editor.                                                                                     | `null`                                         |
-| `heroTag`                 | A unique hero tag for the Image Editor widget.                                                                                 | `'Pro-Image-Editor-Hero'`                      |
-| `activePreferredOrientations` | The editor currently supports only 'portraitUp' orientation. After closing the editor, it will revert to your default settings. | `[DeviceOrientation.portraitUp, DeviceOrientation.portraitDown, DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]` |
+| Property Name                     | Description                                                                                                                    | Default Value                                               |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| `i18n`                            | Internationalization settings for the Image Editor.                                                                            | `I18n()`                                                    |
+| `helperLines`                     | Configuration options for helper lines in the Image Editor.                                                                    | `HelperLines()`                                             |
+| `customWidgets`                   | Custom widgets to be used in the Image Editor.                                                                                 | `ImageEditorCustomWidgets()`                                |
+| `imageEditorTheme`                | Theme settings for the Image Editor.                                                                                           | `ImageEditorTheme()`                                        |
+| `icons`                           | Icons to be used in the Image Editor.                                                                                          | `ImageEditorIcons()`                                        |
+| `paintEditorConfigs`              | Configuration options for the Paint Editor.                                                                                    | `PaintEditorConfigs()`                                      |
+| `textEditorConfigs`               | Configuration options for the Text Editor.                                                                                     | `TextEditorConfigs()`                                       |
+| `cropRotateEditorConfigs`         | Configuration options for the Crop and Rotate Editor.                                                                          | `CropRotateEditorConfigs()`                                 |
+| `filterEditorConfigs`             | Configuration options for the Filter Editor.                                                                                   | `FilterEditorConfigs()`                                     |
+| `blurEditorConfigs`               | Configuration options for the Blur Editor.                                                                                     | `BlurEditorConfigs()`                                       |
+| `emojiEditorConfigs`              | Configuration options for the Emoji Editor.                                                                                    | `EmojiEditorConfigs()`                                      |
+| `stickerEditorConfigs`            | Configuration options for the Sticker Editor.                                                                                  | `StickerEditorConfigs()`                                    |
+| `designMode`                      | The design mode for the Image Editor.                                                                                          | `ImageEditorDesignModeE.material`                           |
+| `theme`                           | The theme to be used for the Image Editor.                                                                                     | `null`                                                      |
+| `heroTag`                         | A unique hero tag for the Image Editor widget.                                                                                 | `'Pro-Image-Editor-Hero'`                                   |
+| `removeTransparentAreas`          | Determines whether to remove transparent areas of the final image.                                                              | `false`                                                     |
+| `captureOnlyImageArea`            | Captures only the content within the boundaries of the image when editing is complete.                                          | `true`                                                      |
+| `allowCompleteWithEmptyEditing`   | Whether the callback `onImageEditingComplete` can be called with empty editing.                                                | `false`                                                     |
+| `layerInteraction`                | Configuration options for the layer interaction behavior.                                                                      | `LayerInteraction()`                                        |
+| `activePreferredOrientations`     | Preferred device orientations supported by the editor before and after usage.                                                  | `[DeviceOrientation.portraitUp, DeviceOrientation.portraitDown, DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]` |
+| `initStateHistory`                | Holds the initial state history of the Image Editor, allowing for state recovery.                                              | `null`                                                      |
+
+### ProImageEditorCallbacks
+| Property Name              | Description                                                                                                                   | Type                                                          |
+|----------------------------|-------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| `onImageEditingComplete`   | A callback function that is called when the image editing is completed. It returns the edited image as a `Uint8List`.         | `ImageEditingCompleteCallback`                                |
+| `onCloseEditor`            | A callback function that is called before the image editor closes.                                                            | `ImageEditingEmptyCallback?`                                  |
+| `onUpdateUI`               | A callback function used to update the UI from within custom widgets, enabling dynamic UI changes during editing.             | `UpdateUiCallback?`                                           |
+
 
 
 <details>

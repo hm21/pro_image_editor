@@ -34,8 +34,10 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
   Widget _buildEditor() {
     return ProImageEditor.asset(
       'assets/demo.png',
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
       configs: ProImageEditorConfigs(
         textEditorConfigs: TextEditorConfigs(
           customTextStyles: [

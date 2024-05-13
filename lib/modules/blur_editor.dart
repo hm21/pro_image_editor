@@ -15,7 +15,7 @@ import '../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../widgets/layer_stack.dart';
 import '../widgets/loading_dialog.dart';
 import '../widgets/transform/transformed_content_generator.dart';
-import 'filter_editor/widgets/image_with_multiple_filters.dart';
+import 'filter_editor/widgets/image_with_filters.dart';
 
 /// The `BlurEditor` widget allows users to apply blur to images.
 ///
@@ -254,7 +254,7 @@ class BlurEditorState extends State<BlurEditor>
               child: TransformedContentGenerator(
                 configs: configs,
                 transformConfigs: transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithMultipleFilters(
+                child: ImageWithFilters(
                   width: getMinimumSize(mainImageSize, _bodySize).width,
                   height: getMinimumSize(mainImageSize, _bodySize).height,
                   designMode: designMode,
@@ -269,11 +269,12 @@ class BlurEditorState extends State<BlurEditor>
                 transformHelper: TransformHelper(
                   mainBodySize: getMinimumSize(mainBodySize, _bodySize),
                   mainImageSize: getMinimumSize(mainImageSize, _bodySize),
+                  cropAspectRatio: transformConfigs?.cropRect.size.aspectRatio,
                   editorBodySize: _bodySize,
                 ),
                 configs: configs,
                 layers: layers!,
-                clipBehavior: Clip.none,
+                clipBehavior: Clip.hardEdge,
               ),
           ],
         ),
@@ -286,16 +287,22 @@ class BlurEditorState extends State<BlurEditor>
     return SafeArea(
       child: SizedBox(
         height: 100,
-        child: Slider(
-          min: 0,
-          max: blurEditorConfigs.maxBlur,
-          divisions: 100,
-          value: selectedBlur,
-          onChanged: (value) {
-            selectedBlur = value;
-            setState(() {});
-            onUpdateUI?.call();
-          },
+        child: Align(
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Slider(
+              min: 0,
+              max: blurEditorConfigs.maxBlur,
+              divisions: 100,
+              value: selectedBlur,
+              onChanged: (value) {
+                selectedBlur = value;
+                setState(() {});
+                onUpdateUI?.call();
+              },
+            ),
+          ),
         ),
       ),
     );

@@ -17,8 +17,7 @@ class DefaultExample extends StatefulWidget {
   State<DefaultExample> createState() => _DefaultExampleState();
 }
 
-class _DefaultExampleState extends State<DefaultExample>
-    with ExampleHelperState<DefaultExample> {
+class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState<DefaultExample> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -32,14 +31,11 @@ class _DefaultExampleState extends State<DefaultExample>
               children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('Mode',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  child: Text('Mode', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Text(
-                      'The editor support to directly open your type of data without converting it first.'),
+                  child: Text('The editor support to directly open your type of data without converting it first.'),
                 ),
                 const Divider(),
                 ListTile(
@@ -66,8 +62,7 @@ class _DefaultExampleState extends State<DefaultExample>
                     if (context.mounted) await loading.hide(context);
                     if (!context.mounted) return;
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => _buildMemoryEditor(bytes)),
+                      MaterialPageRoute(builder: (context) => _buildMemoryEditor(bytes)),
                     );
                   },
                 ),
@@ -78,8 +73,7 @@ class _DefaultExampleState extends State<DefaultExample>
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => _buildAssetEditor()),
+                      MaterialPageRoute(builder: (context) => _buildAssetEditor()),
                     );
                   },
                 ),
@@ -90,8 +84,7 @@ class _DefaultExampleState extends State<DefaultExample>
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => _buildNetworkEditor()),
+                      MaterialPageRoute(builder: (context) => _buildNetworkEditor()),
                     );
                   },
                 ),
@@ -100,8 +93,7 @@ class _DefaultExampleState extends State<DefaultExample>
                   title: const Text('Editor from file'),
                   trailing: const Icon(Icons.chevron_right),
                   subtitle: kIsWeb
-                      ? const Text(
-                          'The file editor does not work in a web application because Flutter does not support files in web environments.')
+                      ? const Text('The file editor does not work in a web application because Flutter does not support files in web environments.')
                       : null,
                   enabled: !kIsWeb,
                   onTap: kIsWeb
@@ -109,14 +101,12 @@ class _DefaultExampleState extends State<DefaultExample>
                       : () async {
                           Navigator.pop(context);
 
-                          FilePickerResult? result = await FilePicker.platform
-                              .pickFiles(type: FileType.image);
+                          FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
 
                           if (result != null && context.mounted) {
                             File file = File(result.files.single.path!);
                             Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (context) => _buildFileEditor(file)),
+                              MaterialPageRoute(builder: (context) => _buildFileEditor(file)),
                             );
                           }
                         },
@@ -132,39 +122,76 @@ class _DefaultExampleState extends State<DefaultExample>
     );
   }
 
+  void _openEditor() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProImageEditor.network(
+          'https://picsum.photos/id/237/2000',
+          callbacks: ProImageEditorCallbacks(
+            onImageEditingComplete: (Uint8List bytes) async {
+              /*
+              `Your code to handle the edited image. Upload it to your server as an example.
+                You can choose to use await, so that the load dialog remains visible until your code is ready,
+                or no async, so that the load dialog closes immediately.
+            */
+              Navigator.pop(context);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAssetEditor() {
     return ProImageEditor.asset(
       'assets/demo.png',
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
-      allowCompleteWithEmptyEditing: true,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
+      configs: const ProImageEditorConfigs(
+        allowCompleteWithEmptyEditing: true,
+      ),
     );
   }
 
   Widget _buildMemoryEditor(Uint8List bytes) {
     return ProImageEditor.memory(
       bytes,
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
-      allowCompleteWithEmptyEditing: true,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
+      configs: const ProImageEditorConfigs(
+        allowCompleteWithEmptyEditing: true,
+      ),
     );
   }
 
   Widget _buildNetworkEditor() {
     return ProImageEditor.network(
       'https://picsum.photos/id/237/2000',
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
-      allowCompleteWithEmptyEditing: true,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
+      configs: const ProImageEditorConfigs(
+        allowCompleteWithEmptyEditing: true,
+      ),
     );
   }
 
   Widget _buildFileEditor(File file) {
     return ProImageEditor.file(
       file,
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
-      allowCompleteWithEmptyEditing: true,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
+      configs: const ProImageEditorConfigs(
+        allowCompleteWithEmptyEditing: true,
+      ),
     );
   }
 }

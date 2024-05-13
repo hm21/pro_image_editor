@@ -33,8 +33,10 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
     return ProImageEditor.asset(
       'assets/demo.png',
       key: editorKey,
-      onImageEditingComplete: onImageEditingComplete,
-      onCloseEditor: onCloseEditor,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
       configs: const ProImageEditorConfigs(
         layerInteraction: LayerInteraction(
           /// Choose between `auto`, `enabled` and `disabled`.

@@ -11,3 +11,6 @@ typedef ImageEditingCompleteCallback = Future<void> Function(Uint8List bytes);
 /// This callback does not receive any parameters and is typically used to handle scenarios
 /// where the user cancels or exits the image editing process without making any changes.
 typedef ImageEditingEmptyCallback = void Function();
+
+/// A typedef representing a callback function invoked when the ui should update.
+typedef UpdateUiCallback = void Function();

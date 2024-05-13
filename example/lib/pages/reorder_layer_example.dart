@@ -38,8 +38,10 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
         ProImageEditor.asset(
           'assets/demo.png',
           key: editorKey,
-          onImageEditingComplete: onImageEditingComplete,
-          onCloseEditor: onCloseEditor,
+          callbacks: ProImageEditorCallbacks(
+            onImageEditingComplete: onImageEditingComplete,
+            onCloseEditor: onCloseEditor,
+          ),
         ),
         Positioned(
           bottom: 2 * kBottomNavigationBarHeight,
