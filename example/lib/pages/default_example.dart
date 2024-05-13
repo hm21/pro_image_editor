@@ -17,7 +17,8 @@ class DefaultExample extends StatefulWidget {
   State<DefaultExample> createState() => _DefaultExampleState();
 }
 
-class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState<DefaultExample> {
+class _DefaultExampleState extends State<DefaultExample>
+    with ExampleHelperState<DefaultExample> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -31,11 +32,14 @@ class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState
               children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('Mode', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  child: Text('Mode',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Text('The editor support to directly open your type of data without converting it first.'),
+                  child: Text(
+                      'The editor support to directly open your type of data without converting it first.'),
                 ),
                 const Divider(),
                 ListTile(
@@ -62,7 +66,8 @@ class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState
                     if (context.mounted) await loading.hide(context);
                     if (!context.mounted) return;
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => _buildMemoryEditor(bytes)),
+                      MaterialPageRoute(
+                          builder: (context) => _buildMemoryEditor(bytes)),
                     );
                   },
                 ),
@@ -73,7 +78,8 @@ class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => _buildAssetEditor()),
+                      MaterialPageRoute(
+                          builder: (context) => _buildAssetEditor()),
                     );
                   },
                 ),
@@ -84,7 +90,8 @@ class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => _buildNetworkEditor()),
+                      MaterialPageRoute(
+                          builder: (context) => _buildNetworkEditor()),
                     );
                   },
                 ),
@@ -93,7 +100,8 @@ class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState
                   title: const Text('Editor from file'),
                   trailing: const Icon(Icons.chevron_right),
                   subtitle: kIsWeb
-                      ? const Text('The file editor does not work in a web application because Flutter does not support files in web environments.')
+                      ? const Text(
+                          'The file editor does not work in a web application because Flutter does not support files in web environments.')
                       : null,
                   enabled: !kIsWeb,
                   onTap: kIsWeb
@@ -101,12 +109,14 @@ class _DefaultExampleState extends State<DefaultExample> with ExampleHelperState
                       : () async {
                           Navigator.pop(context);
 
-                          FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+                          FilePickerResult? result = await FilePicker.platform
+                              .pickFiles(type: FileType.image);
 
                           if (result != null && context.mounted) {
                             File file = File(result.files.single.path!);
                             Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => _buildFileEditor(file)),
+                              MaterialPageRoute(
+                                  builder: (context) => _buildFileEditor(file)),
                             );
                           }
                         },

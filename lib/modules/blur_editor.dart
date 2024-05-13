@@ -274,7 +274,7 @@ class BlurEditorState extends State<BlurEditor>
                 ),
                 configs: configs,
                 layers: layers!,
-                clipBehavior: Clip.hardEdge,
+                clipBehavior: Clip.none,
               ),
           ],
         ),
@@ -285,7 +285,8 @@ class BlurEditorState extends State<BlurEditor>
   /// Builds the bottom navigation bar with blur slider.
   Widget _buildBottomNavBar() {
     return SafeArea(
-      child: SizedBox(
+      child: Container(
+        color: imageEditorTheme.blurEditor.background,
         height: 100,
         child: Align(
           alignment: Alignment.center,

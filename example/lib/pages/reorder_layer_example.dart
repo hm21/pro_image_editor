@@ -155,7 +155,6 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
                           : Text(
                               layer.id.toString(),
                             ),
-          trailing: const Icon(Icons.drag_handle_rounded),
         );
       },
       itemCount: widget.layers.length,

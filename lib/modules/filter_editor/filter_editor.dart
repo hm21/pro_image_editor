@@ -283,7 +283,7 @@ class FilterEditorState extends State<FilterEditor>
                 ),
                 configs: configs,
                 layers: layers!,
-                clipBehavior: Clip.hardEdge,
+                clipBehavior: Clip.none,
               ),
           ],
         ),
@@ -294,47 +294,50 @@ class FilterEditorState extends State<FilterEditor>
   /// Builds the bottom navigation bar with filter options.
   Widget _buildBottomNavBar() {
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: SizedBox(
-              height: 40,
-              child: selectedFilter == PresetFilters.none
-                  ? null
-                  : Slider(
-                      min: 0,
-                      max: 1,
-                      divisions: 100,
-                      value: filterOpacity,
-                      onChanged: (value) {
-                        filterOpacity = value;
-                        setState(() {});
-                        onUpdateUI?.call();
-                      },
-                    ),
+      child: Container(
+        color: imageEditorTheme.filterEditor.background,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: SizedBox(
+                height: 40,
+                child: selectedFilter == PresetFilters.none
+                    ? null
+                    : Slider(
+                        min: 0,
+                        max: 1,
+                        divisions: 100,
+                        value: filterOpacity,
+                        onChanged: (value) {
+                          filterOpacity = value;
+                          setState(() {});
+                          onUpdateUI?.call();
+                        },
+                      ),
+              ),
             ),
-          ),
-          FilterEditorItemList(
-            mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-            mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-            byteArray: editorImage.byteArray,
-            file: editorImage.file,
-            assetPath: editorImage.assetPath,
-            networkUrl: editorImage.networkUrl,
-            activeFilters: appliedFilters,
-            blurFactor: appliedBlurFactor,
-            configs: configs,
-            transformConfigs: transformConfigs,
-            selectedFilter: selectedFilter,
-            onSelectFilter: (filter) {
-              selectedFilter = filter;
-              setState(() {});
-              onUpdateUI?.call();
-            },
-          ),
-        ],
+            FilterEditorItemList(
+              mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+              mainImageSize: getMinimumSize(mainImageSize, _bodySize),
+              byteArray: editorImage.byteArray,
+              file: editorImage.file,
+              assetPath: editorImage.assetPath,
+              networkUrl: editorImage.networkUrl,
+              activeFilters: appliedFilters,
+              blurFactor: appliedBlurFactor,
+              configs: configs,
+              transformConfigs: transformConfigs,
+              selectedFilter: selectedFilter,
+              onSelectFilter: (filter) {
+                selectedFilter = filter;
+                setState(() {});
+                onUpdateUI?.call();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
