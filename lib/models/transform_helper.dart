@@ -1,31 +1,41 @@
 import 'dart:ui';
 
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
+
 class TransformHelper {
   final Size mainBodySize;
   final Size mainImageSize;
   final Size editorBodySize;
-  final double? cropAspectRatio;
+  final TransformConfigs? transformConfigs;
 
   const TransformHelper({
     required this.mainBodySize,
     required this.mainImageSize,
     required this.editorBodySize,
-    this.cropAspectRatio,
+    this.transformConfigs,
   });
 
   double get scale {
     if (mainBodySize.isEmpty) return 1;
 
+    Size imageSize = transformConfigs?.is90DegRotated == true
+        ? mainImageSize.flipped
+        : mainImageSize;
+    double? cropRectRatio = transformConfigs?.cropRect.size.aspectRatio;
+    if (transformConfigs?.is90DegRotated == true) {
+      cropRectRatio = 1 / cropRectRatio!;
+    }
+
     double scaleW = editorBodySize.width / mainBodySize.width;
     double scaleH = editorBodySize.height / mainBodySize.height;
 
-    double scaleOldDifferenceW = mainBodySize.width / mainImageSize.width;
-    double scaleOldDifferenceH = mainBodySize.height / mainImageSize.height;
+    double scaleOldDifferenceW = mainBodySize.width / imageSize.width;
+    double scaleOldDifferenceH = mainBodySize.height / imageSize.height;
 
-    bool stickOnHeightOld = mainBodySize.aspectRatio >
-        (cropAspectRatio ?? mainImageSize.aspectRatio);
-    bool stickOnHeightNew = editorBodySize.aspectRatio >
-        (cropAspectRatio ?? mainImageSize.aspectRatio);
+    bool stickOnHeightOld =
+        mainBodySize.aspectRatio > (cropRectRatio ?? imageSize.aspectRatio);
+    bool stickOnHeightNew =
+        editorBodySize.aspectRatio > (cropRectRatio ?? imageSize.aspectRatio);
 
     double scaleStickSize = stickOnHeightNew != stickOnHeightOld
         ? (stickOnHeightOld ? scaleOldDifferenceW : scaleOldDifferenceH)

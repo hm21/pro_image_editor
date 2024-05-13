@@ -279,7 +279,7 @@ class FilterEditorState extends State<FilterEditor>
                   mainBodySize: getMinimumSize(mainBodySize, _bodySize),
                   mainImageSize: getMinimumSize(mainImageSize, _bodySize),
                   editorBodySize: _bodySize,
-                  cropAspectRatio: transformConfigs?.cropRect.size.aspectRatio,
+                  transformConfigs: transformConfigs,
                 ),
                 configs: configs,
                 layers: layers!,

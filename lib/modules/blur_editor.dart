@@ -269,7 +269,7 @@ class BlurEditorState extends State<BlurEditor>
                 transformHelper: TransformHelper(
                   mainBodySize: getMinimumSize(mainBodySize, _bodySize),
                   mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-                  cropAspectRatio: transformConfigs?.cropRect.size.aspectRatio,
+                  transformConfigs: transformConfigs,
                   editorBodySize: _bodySize,
                 ),
                 configs: configs,

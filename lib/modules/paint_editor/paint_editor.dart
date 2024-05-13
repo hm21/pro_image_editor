@@ -519,8 +519,7 @@ class PaintingEditorState extends State<PaintingEditor>
                     mainBodySize: getMinimumSize(mainBodySize, _bodySize),
                     mainImageSize: getMinimumSize(mainImageSize, _bodySize),
                     editorBodySize: _bodySize,
-                    cropAspectRatio:
-                        transformConfigs?.cropRect.size.aspectRatio,
+                    transformConfigs: transformConfigs,
                   ),
                 ),
               _buildPainter(),
