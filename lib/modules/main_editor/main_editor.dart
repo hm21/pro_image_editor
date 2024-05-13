@@ -1432,6 +1432,56 @@ class ProImageEditorState extends State<ProImageEditor>
         child: ScreenResizeDetector(
           onResizeUpdate: (event) {
             _screenSize.lastScreenSize = event.newConstraints.biggest;
+/*  TODO: resize croprect
+            Size originalSize = _stateManager.transformConfigs.originalSize;
+            Rect cropRect = _stateManager.transformConfigs.cropRect;
+            if (cropRect != Rect.largest) {
+              double bodyHelperW = _screenSize.bodySize.width - 20;
+              double bodyHelperH = _screenSize.bodySize.height - 20;
+
+              bool widthToSmall = cropRect.width > bodyHelperW;
+              bool heightToSmall = cropRect.height > bodyHelperH;
+
+              bool widthToBig = cropRect.width > bodyHelperW;
+              bool heightToBig = cropRect.height > bodyHelperH;
+
+              if (widthToSmall && heightToSmall) {
+                print('width 1');
+                _stateManager.transformConfigs.originalSize = Size(
+                  bodyHelperW,
+                  bodyHelperW / originalSize.aspectRatio,
+                );
+                _stateManager.transformConfigs.cropRect = Rect.fromCenter(
+                  center: cropRect.center,
+                  width: bodyHelperW,
+                  height: bodyHelperW / cropRect.size.aspectRatio,
+                );
+              } else if (widthToSmall) {
+                print('width 2');
+                _stateManager.transformConfigs.originalSize = Size(
+                  bodyHelperW,
+                  bodyHelperW / originalSize.aspectRatio,
+                );
+                _stateManager.transformConfigs.cropRect = Rect.fromCenter(
+                  center: cropRect.center,
+                  width: bodyHelperW,
+                  height: bodyHelperW / cropRect.size.aspectRatio,
+                );
+              } else if (heightToSmall) {
+                print('width 3');
+                _stateManager.transformConfigs.originalSize = Size(
+                  bodyHelperW,
+                  bodyHelperW / originalSize.aspectRatio,
+                );
+                _stateManager.transformConfigs.cropRect = Rect.fromCenter(
+                  center: cropRect.center,
+                  width: bodyHelperW,
+                  height: bodyHelperW / cropRect.size.aspectRatio,
+                );
+              } else if (widthToBig && heightToBig) {
+                print('w');
+              }
+            } */
           },
           onResizeEnd: (event) async {
             if (!_screenSize.shouldRecalculateLayerPosition) {

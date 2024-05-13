@@ -3,8 +3,8 @@ import 'package:pro_image_editor/modules/crop_rotate_editor/utils/rotate_angle.d
 
 class TransformConfigs {
   final Offset offset;
-  final Rect cropRect;
-  final Size originalSize;
+  late Rect cropRect;
+  late Size originalSize;
   final double cropEditorScreenRatio;
   final double angle;
   final double scaleUser;
@@ -13,7 +13,7 @@ class TransformConfigs {
   final bool flipX;
   final bool flipY;
 
-  const TransformConfigs({
+  TransformConfigs({
     required this.angle,
     required this.cropRect,
     required this.originalSize,
@@ -52,7 +52,7 @@ class TransformConfigs {
     );
   }
   factory TransformConfigs.empty() {
-    return const TransformConfigs(
+    return TransformConfigs(
       angle: 0,
       originalSize: Size.infinite,
       cropRect: Rect.largest,

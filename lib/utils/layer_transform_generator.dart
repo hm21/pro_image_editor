@@ -78,21 +78,26 @@ class LayerTransformGenerator {
     double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
 
     double areaScale =
-        layerDrawAreaSize.height / (layerDrawAreaSize.height + 40);
+        layerDrawAreaSize.height / (layerDrawAreaSize.height - 40);
 
+    /*     
     print('----------------');
     print(areaScale);
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height + 40));
     print((layerDrawAreaSize.height + 40) / layerDrawAreaSize.height);
     print(layerDrawAreaSize.width / (layerDrawAreaSize.width + 40));
     print((layerDrawAreaSize.width + 40) / layerDrawAreaSize.width);
-
-    // 0.9416195856873822
+    print(layerDrawAreaSize.height / (layerDrawAreaSize.height - 40));
+    print((layerDrawAreaSize.height - 40) / layerDrawAreaSize.height);
+    print(layerDrawAreaSize.width / (layerDrawAreaSize.width - 40));
+    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width); 
+    */
 
     if (undoChanges) {
-      layer.offset += offset / scale * 1.062;
+      layer.offset += offset * activeTransformConfigs.scale * areaScale;
     } else {
-      layer.offset += offset * newTransformConfigs.scale / scale;
+      layer.offset += (newTransformConfigs.offset * newTransformConfigs.scale) -
+          (activeTransformConfigs.offset * activeTransformConfigs.scale);
     }
   }
 
