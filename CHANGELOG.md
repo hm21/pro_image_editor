@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.7.9
+- **chore**: Update the `screenshot` package so that it's compatible with Flutter 3.22.0. This fix [GitHub issue #45](https://github.com/hm21/pro_image_editor/issues/45).
+
 ## Version 2.7.8
 - **feat**: Added option for layers to be selected upon creation. Details in [GitHub issue #44](https://github.com/hm21/pro_image_editor/issues/44).
 

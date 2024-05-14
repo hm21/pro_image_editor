@@ -54,7 +54,7 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
             style: buttonStyle.copyWith(
               backgroundColor: widget.strokeWidth != 2
                   ? null
-                  : const MaterialStatePropertyAll(Colors.white24),
+                  : const WidgetStatePropertyAll(Colors.white24),
             ),
           ),
           IconButton(
@@ -67,7 +67,7 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
             style: buttonStyle.copyWith(
               backgroundColor: widget.strokeWidth != 5
                   ? null
-                  : const MaterialStatePropertyAll(Colors.white24),
+                  : const WidgetStatePropertyAll(Colors.white24),
             ),
           ),
           IconButton(
@@ -79,7 +79,7 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
             style: buttonStyle.copyWith(
               backgroundColor: widget.strokeWidth != 10
                   ? null
-                  : const MaterialStatePropertyAll(Colors.white24),
+                  : const WidgetStatePropertyAll(Colors.white24),
             ),
           ),
 
