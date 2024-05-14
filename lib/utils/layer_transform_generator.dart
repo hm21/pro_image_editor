@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:pro_image_editor/modules/main_editor/utils/layer_manager.dart';
+import 'package:pro_image_editor/modules/main_editor/utils/layer_copy_manager.dart';
 
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/layer.dart';
@@ -20,7 +20,7 @@ class LayerTransformGenerator {
     required this.newTransformConfigs,
     required this.layerDrawAreaSize,
   }) {
-    LayerManager layerManager = LayerManager();
+    LayerCopyManager layerManager = LayerCopyManager();
 
     for (var el in layers) {
       Layer layer = layerManager.copyLayer(el);

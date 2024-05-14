@@ -7,7 +7,7 @@ import 'package:pro_image_editor/models/layer.dart';
 /// The `LayerManager` provides methods for copying layers to create new instances
 /// of the same type. It supports various types of layers, including text, emoji,
 /// painting, and sticker layers.
-class LayerManager {
+class LayerCopyManager {
   /// Copy a layer to create a new instance of the same type.
   ///
   /// This method takes a [layer] as input and creates a new instance of the same type.

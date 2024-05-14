@@ -7,14 +7,14 @@ import '../../../models/editor_configs/pro_image_editor_configs.dart';
 import '../../../models/layer.dart';
 
 /// A helper class for managing screen size and padding calculations.
-class ScreenSizeHelper {
+class SizesManager {
   /// The build context used to obtain screen size information.
   final BuildContext context;
 
   /// Configuration options for the image editor.
   final ProImageEditorConfigs configs;
 
-  ScreenSizeHelper({
+  SizesManager({
     required this.context,
     required this.configs,
   });

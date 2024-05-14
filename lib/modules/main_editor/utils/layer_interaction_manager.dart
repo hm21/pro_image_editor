@@ -14,11 +14,11 @@ import '../../../models/layer.dart';
 
 /// A helper class responsible for managing layer interactions in the editor.
 ///
-/// The `LayerInteractionHelper` class provides methods for handling various interactions
+/// The `LayerInteractionManager` class provides methods for handling various interactions
 /// with layers in an image editing environment, including scaling, rotating, flipping,
 /// and zooming. It also manages the display of helper lines and provides haptic feedback
 /// when interacting with these lines to enhance the user experience.
-class LayerInteractionHelper {
+class LayerInteractionManager {
   /// Debounce for scaling actions in the editor.
   late Debounce scaleDebounce;
 
