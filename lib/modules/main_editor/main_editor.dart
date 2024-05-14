@@ -2018,8 +2018,9 @@ class ProImageEditorState extends State<ProImageEditor>
     double screenW = _sizesManager.screen.width;
     double lineH = 1.25;
     int duration = 100;
-    if (!_layerInteractionManager.showHelperLines)
+    if (!_layerInteractionManager.showHelperLines) {
       return const SizedBox.shrink();
+    }
     return Stack(
       children: [
         if (helperLines.showVerticalLine)

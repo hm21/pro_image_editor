@@ -184,7 +184,6 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             width: size.width,
             margin: const EdgeInsets.only(bottom: 4),
             decoration: BoxDecoration(
-              color: Colors.pink,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: const Color(0xFF242424),

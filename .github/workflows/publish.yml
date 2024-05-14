@@ -13,7 +13,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: master
-          flutter-version: '3.19.5'
+          flutter-version: 3.22.0
       - name: Install Package Dependencies
         run: flutter pub get
       - name: Format dart code

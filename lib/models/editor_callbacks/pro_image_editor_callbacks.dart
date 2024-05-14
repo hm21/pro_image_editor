@@ -10,12 +10,12 @@ class ProImageEditorCallbacks {
   /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
   /// when the editing is completed.
   ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" width="400px"/>
   final ImageEditingCompleteCallback onImageEditingComplete;
 
   /// A callback function that will be called before the image editor will close.
   ///
-  /// ![Schema](https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true)
+  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" width="400px"/>
   final ImageEditingEmptyCallback? onCloseEditor;
 
   /// A callback function that can be used to update the UI from custom widgets.
