@@ -15,7 +15,6 @@ import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
-import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
 
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
@@ -488,8 +487,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
         ).updatedLayers;
         _layers = updatedLayers;
       });
-      initConfigs.onDone?.call(transformC);
-      Navigator.pop(context, transformC);
+      await initConfigs.onDone?.call(transformC);
+      if (mounted) Navigator.pop(context, transformC);
     } else {
       LoadingDialog loading = LoadingDialog()
         ..show(
@@ -1513,26 +1512,23 @@ class CropRotateEditorState extends State<CropRotateEditor>
       onPopInvoked: (didPop) {
         setState(() => _showFakeHero = true);
       },
-      child: ScreenResizeDetector(
-        onResizeUpdate: (event) {},
-        onResizeEnd: (event) {},
-        child: LayoutBuilder(builder: (context, constraints) {
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: imageEditorTheme.uiOverlayStyle,
-            child: Theme(
-              data: theme.copyWith(
-                  tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-              child: Scaffold(
-                resizeToAvoidBottomInset: false,
-                backgroundColor: imageEditorTheme.cropRotateEditor.background,
-                appBar: _buildAppBar(constraints),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomAppBar(),
-              ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: imageEditorTheme.uiOverlayStyle,
+          child: Theme(
+            data: theme.copyWith(
+                tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: Colors.transparent,
+              // backgroundColor: imageEditorTheme.cropRotateEditor.background,
+              appBar: _buildAppBar(constraints),
+              body: _buildBody(),
+              bottomNavigationBar: _buildBottomAppBar(),
             ),
-          );
-        }),
-      ),
+          ),
+        );
+      }),
     );
   }
 

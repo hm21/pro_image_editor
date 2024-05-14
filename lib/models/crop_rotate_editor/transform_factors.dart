@@ -62,7 +62,7 @@ class TransformConfigs {
       aspectRatio: -1,
       flipX: false,
       flipY: false,
-      offset: Offset(0, 0),
+      offset: const Offset(0, 0),
     );
   }
   bool get isEmpty {

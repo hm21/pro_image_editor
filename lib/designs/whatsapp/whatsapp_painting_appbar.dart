@@ -85,7 +85,7 @@ class _WhatsAppPaintAppBarState extends State<WhatsAppPaintAppBar> {
               onPressed: () {},
               icon: Icon(widget.configs.icons.paintingEditor.bottomNavBar),
               style: whatsAppButtonStyle.copyWith(
-                backgroundColor: MaterialStateProperty.all(widget.activeColor),
+                backgroundColor: WidgetStateProperty.all(widget.activeColor),
               ),
             ),
           ],

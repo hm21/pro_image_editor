@@ -132,27 +132,6 @@ class _DefaultExampleState extends State<DefaultExample>
     );
   }
 
-  void _openEditor() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProImageEditor.network(
-          'https://picsum.photos/id/237/2000',
-          callbacks: ProImageEditorCallbacks(
-            onImageEditingComplete: (Uint8List bytes) async {
-              /*
-              `Your code to handle the edited image. Upload it to your server as an example.
-                You can choose to use await, so that the load dialog remains visible until your code is ready,
-                or no async, so that the load dialog closes immediately.
-            */
-              Navigator.pop(context);
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildAssetEditor() {
     return ProImageEditor.asset(
       'assets/demo.png',

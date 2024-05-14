@@ -613,7 +613,8 @@ class _CustomAppbarBottombarExampleState
                             size: 22.0,
                             color: Colors.white,
                           ),
-                          onPressed: editorKey.currentState?.openCropEditor,
+                          onPressed:
+                              editorKey.currentState?.openCropRotateEditor,
                         ),
                         FlatIconTextButton(
                           label: Text('Filter', style: _bottomTextStyle),

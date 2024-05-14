@@ -148,7 +148,7 @@ class _MoveableBackgroundImageExampleState
 
                           /// Crop-Rotate, Filter and Blur editors are not supported
                           cropRotateEditorConfigs:
-                              const CropRotateEditorConfigs(enabled: false),
+                              const CropRotateEditorConfigs(enabled: true),
                           filterEditorConfigs:
                               const FilterEditorConfigs(enabled: false),
                           blurEditorConfigs:

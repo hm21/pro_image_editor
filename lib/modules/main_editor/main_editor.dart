@@ -329,6 +329,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// The current theme used by the image editor.
   late ThemeData _theme;
 
+  /// This boolean helps to reset the `hero` animations which will make a bug
+  /// after we translate them in the crop-rotate-editor
+  late final StreamController<bool> _layerHeroResetCtrl;
+
   /// Temporary layer used during editing.
   Layer? _tempLayer;
 
@@ -395,6 +399,7 @@ class ProImageEditorState extends State<ProImageEditor>
   @override
   void initState() {
     super.initState();
+    _layerHeroResetCtrl = StreamController.broadcast();
     _desktopInteractionManager = DesktopInteractionManager(
       configs: configs,
       context: context,
@@ -433,6 +438,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   @override
   void dispose() {
+    _layerHeroResetCtrl.close();
     _controllers.dispose();
     _layerInteraction.scaleDebounce.dispose();
     SystemChrome.setSystemUIOverlayStyle(_theme.brightness == Brightness.dark
@@ -886,10 +892,10 @@ class ProImageEditorState extends State<ProImageEditor>
     onUpdateUI?.call();
   }
 
-  /// Opens the crop editor.
+  /// Opens the crop rotate editor.
   ///
   /// This method opens the crop editor, allowing the user to crop and rotate the image.
-  void openCropEditor() async {
+  void openCropRotateEditor() async {
     EditorImage img = EditorImage(
       assetPath: _image.assetPath,
       byteArray: _image.byteArray,
@@ -916,10 +922,9 @@ class ProImageEditorState extends State<ProImageEditor>
           enableFakeHero: true,
           appliedBlurFactor: _stateManager.blurStateHistory.blur,
           appliedFilters: _stateManager.filters,
-          onDone: (transformConfigs) {
+          onDone: (transformConfigs) async {
             _stateManager.cleanForwardChanges();
 
-            /// TODO: Update layers before close editor for better hero
             List<Layer> updatedLayers = LayerTransformGenerator(
               layers: _stateManager.activeLayers,
               activeTransformConfigs: _stateManager.transformConfigs,
@@ -937,6 +942,14 @@ class ProImageEditorState extends State<ProImageEditor>
               ),
             );
             _stateManager.editPosition++;
+
+            /// Important to reset the layer hero positions
+            if (activeLayers.isNotEmpty) {
+              _layerHeroResetCtrl.add(true);
+              await Future.delayed(const Duration(milliseconds: 60));
+              _layerHeroResetCtrl.add(false);
+            }
+
             setState(() {});
           },
         ),
@@ -1667,7 +1680,7 @@ class ProImageEditorState extends State<ProImageEditor>
       WhatsAppAppBar(
         configs: widget.configs,
         onClose: closeEditor,
-        onTapCropRotateEditor: openCropEditor,
+        onTapCropRotateEditor: openCropRotateEditor,
         onTapStickerEditor: openWhatsAppStickerEditor,
         onTapPaintEditor: openPaintingEditor,
         onTapTextEditor: openTextEditor,
@@ -1825,7 +1838,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                             size: bottomIconSize,
                                             color: Colors.white,
                                           ),
-                                          onPressed: openCropEditor,
+                                          onPressed: openCropRotateEditor,
                                         ),
                                       if (filterEditorConfigs.enabled)
                                         FlatIconTextButton(
@@ -1903,106 +1916,117 @@ class ProImageEditorState extends State<ProImageEditor>
   Widget _buildLayers() {
     return IgnorePointer(
       ignoring: _selectedLayerIndex >= 0,
-      child: StreamBuilder<Object>(
-          stream: _controllers.mouseMoveStream.stream,
+      child: StreamBuilder<bool>(
+          stream: _layerHeroResetCtrl.stream,
           initialData: false,
-          builder: (context, snapshot) {
-            return MouseRegion(
-              cursor: snapshot.data != true
-                  ? SystemMouseCursors.basic
-                  : imageEditorTheme.layerInteraction.hoverCursor,
-              onHover: isDesktop
-                  ? (event) {
-                      var hasHit = activeLayers.indexWhere((element) =>
-                              element is PaintingLayerData &&
-                              element.item.hit) >=
-                          0;
-                      if (hasHit != snapshot.data) {
-                        _controllers.mouseMoveStream.add(hasHit);
-                      }
-                    }
-                  : null,
-              child: DeferredPointerHandler(
-                child: Stack(
-                  children: activeLayers.asMap().entries.map((entry) {
-                    final int i = entry.key;
-                    final Layer layerItem = entry.value;
+          builder: (context, resetLayerSnapshot) {
+            if (resetLayerSnapshot.data!) return Container();
 
-                    return LayerWidget(
-                      key: ValueKey('${layerItem.id}-$i'),
-                      configs: configs,
-                      editorBodySize: _screenSize.bodySize,
-                      padding: _screenshotHideOutsideImgContent
-                          ? EdgeInsets.only(
-                              top: -_screenSize.imageScreenGaps.top,
-                              left: -_screenSize.imageScreenGaps.left,
-                            )
-                          : EdgeInsets.zero,
-                      layerData: layerItem,
-                      enableHitDetection: _layerInteraction.enabledHitDetection,
-                      freeStyleHighPerformanceScaling:
-                          _layerInteraction.freeStyleHighPerformanceScaling,
-                      freeStyleHighPerformanceMoving:
-                          _layerInteraction.freeStyleHighPerformanceMoving,
-                      selected:
-                          _layerInteraction.selectedLayerId == layerItem.id,
-                      isInteractive: !_isEditorOpen,
-                      onEditTap: () {
-                        if (layerItem is TextLayerData) {
-                          _onTextLayerTap(layerItem);
-                        }
-                      },
-                      onTap: (layer) async {
-                        if (_layerInteraction.layersAreSelectable(configs)) {
-                          _layerInteraction.selectedLayerId =
-                              layer.id == _layerInteraction.selectedLayerId
-                                  ? ''
-                                  : layer.id;
-                        } else if (layer is TextLayerData) {
-                          _onTextLayerTap(layer);
-                        }
-                      },
-                      onTapUp: () {
-                        setState(() {
-                          if (_layerInteraction.hoverRemoveBtn) {
-                            removeLayer(_selectedLayerIndex);
+            return StreamBuilder<Object>(
+                stream: _controllers.mouseMoveStream.stream,
+                initialData: false,
+                builder: (context, snapshot) {
+                  return MouseRegion(
+                    cursor: snapshot.data != true
+                        ? SystemMouseCursors.basic
+                        : imageEditorTheme.layerInteraction.hoverCursor,
+                    onHover: isDesktop
+                        ? (event) {
+                            var hasHit = activeLayers.indexWhere((element) =>
+                                    element is PaintingLayerData &&
+                                    element.item.hit) >=
+                                0;
+                            if (hasHit != snapshot.data) {
+                              _controllers.mouseMoveStream.add(hasHit);
+                            }
                           }
-                          _selectedLayerIndex = -1;
-                        });
-                        onUpdateUI?.call();
-                      },
-                      onTapDown: () {
-                        _selectedLayerIndex = i;
-                      },
-                      onScaleRotateDown: (details, layerOriginalSize) {
-                        _selectedLayerIndex = i;
-                        _layerInteraction.rotateScaleLayerSizeHelper =
-                            layerOriginalSize;
-                        _layerInteraction.rotateScaleLayerScaleHelper =
-                            layerItem.scale;
-                      },
-                      onScaleRotateUp: (details) {
-                        _layerInteraction.rotateScaleLayerSizeHelper = null;
-                        _layerInteraction.rotateScaleLayerScaleHelper = null;
-                        setState(() {
-                          _selectedLayerIndex = -1;
-                        });
-                        onUpdateUI?.call();
-                      },
-                      onRemoveTap: () {
-                        setState(() {
-                          removeLayer(
-                              activeLayers.indexWhere(
-                                  (element) => element.id == layerItem.id),
-                              layer: layerItem);
-                        });
-                        onUpdateUI?.call();
-                      },
-                    );
-                  }).toList(),
-                ),
-              ),
-            );
+                        : null,
+                    child: DeferredPointerHandler(
+                      child: Stack(
+                        children: activeLayers.asMap().entries.map((entry) {
+                          final int i = entry.key;
+                          final Layer layerItem = entry.value;
+
+                          return LayerWidget(
+                            key: ValueKey('${layerItem.id}-$i'),
+                            configs: configs,
+                            editorBodySize: _screenSize.bodySize,
+                            padding: _screenshotHideOutsideImgContent
+                                ? EdgeInsets.only(
+                                    top: -_screenSize.imageScreenGaps.top,
+                                    left: -_screenSize.imageScreenGaps.left,
+                                  )
+                                : EdgeInsets.zero,
+                            layerData: layerItem,
+                            enableHitDetection:
+                                _layerInteraction.enabledHitDetection,
+                            freeStyleHighPerformanceScaling: _layerInteraction
+                                .freeStyleHighPerformanceScaling,
+                            freeStyleHighPerformanceMoving: _layerInteraction
+                                .freeStyleHighPerformanceMoving,
+                            selected: _layerInteraction.selectedLayerId ==
+                                layerItem.id,
+                            isInteractive: !_isEditorOpen,
+                            onEditTap: () {
+                              if (layerItem is TextLayerData) {
+                                _onTextLayerTap(layerItem);
+                              }
+                            },
+                            onTap: (layer) async {
+                              if (_layerInteraction
+                                  .layersAreSelectable(configs)) {
+                                _layerInteraction.selectedLayerId = layer.id ==
+                                        _layerInteraction.selectedLayerId
+                                    ? ''
+                                    : layer.id;
+                              } else if (layer is TextLayerData) {
+                                _onTextLayerTap(layer);
+                              }
+                            },
+                            onTapUp: () {
+                              setState(() {
+                                if (_layerInteraction.hoverRemoveBtn) {
+                                  removeLayer(_selectedLayerIndex);
+                                }
+                                _selectedLayerIndex = -1;
+                              });
+                              onUpdateUI?.call();
+                            },
+                            onTapDown: () {
+                              _selectedLayerIndex = i;
+                            },
+                            onScaleRotateDown: (details, layerOriginalSize) {
+                              _selectedLayerIndex = i;
+                              _layerInteraction.rotateScaleLayerSizeHelper =
+                                  layerOriginalSize;
+                              _layerInteraction.rotateScaleLayerScaleHelper =
+                                  layerItem.scale;
+                            },
+                            onScaleRotateUp: (details) {
+                              _layerInteraction.rotateScaleLayerSizeHelper =
+                                  null;
+                              _layerInteraction.rotateScaleLayerScaleHelper =
+                                  null;
+                              setState(() {
+                                _selectedLayerIndex = -1;
+                              });
+                              onUpdateUI?.call();
+                            },
+                            onRemoveTap: () {
+                              setState(() {
+                                removeLayer(
+                                    activeLayers.indexWhere((element) =>
+                                        element.id == layerItem.id),
+                                    layer: layerItem);
+                              });
+                              onUpdateUI?.call();
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  );
+                });
           }),
     );
   }
