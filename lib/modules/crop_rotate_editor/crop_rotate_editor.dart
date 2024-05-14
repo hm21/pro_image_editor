@@ -1520,8 +1520,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
             child: Scaffold(
               resizeToAvoidBottomInset: false,
-              backgroundColor: Colors.transparent,
-              // backgroundColor: imageEditorTheme.cropRotateEditor.background,
+              backgroundColor: imageEditorTheme.cropRotateEditor.background,
               appBar: _buildAppBar(constraints),
               body: _buildBody(),
               bottomNavigationBar: _buildBottomAppBar(),

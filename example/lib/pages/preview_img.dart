@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'movable_background_image.dart';
+
 class PreviewImgPage extends StatefulWidget {
   final Uint8List imgBytes;
 
@@ -20,15 +22,18 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
         appBar: AppBar(
           title: const Text('Result'),
         ),
-        body: Stack(
-          fit: StackFit.expand,
-          alignment: Alignment.center,
-          children: [
-            Image.memory(
-              widget.imgBytes,
-              fit: BoxFit.contain,
-            ),
-          ],
+        body: CustomPaint(
+          painter: PixelTransparentPainter(),
+          child: Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
+            children: [
+              Image.memory(
+                widget.imgBytes,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
         ),
       ),
     );

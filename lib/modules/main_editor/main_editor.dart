@@ -386,10 +386,6 @@ class ProImageEditorState extends State<ProImageEditor>
   bool get canRedo =>
       _stateManager.editPosition < _stateManager.stateHistory.length - 1;
 
-  /// Hide all layers outside the drawn image when the screenshot controller
-  /// takes a picture
-  bool _screenshotHideOutsideImgContent = false;
-
   /// Get the current image being edited from the change list.
   late EditorImage _image;
 
@@ -1240,10 +1236,8 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {
       _doneEditing = true;
       _layerInteraction.selectedLayerId = '';
-      _screenshotHideOutsideImgContent = configs.captureOnlyImageArea;
     });
 
-    _doneEditing = true;
     LoadingDialog loading = LoadingDialog()
       ..show(
         context,
@@ -1640,34 +1634,24 @@ class ProImageEditorState extends State<ProImageEditor>
 
   Widget _buildInteractiveContent() {
     return Center(
-      child: ClipRect(
-        child: SizedBox(
-          width: _screenshotHideOutsideImgContent
-              ? _screenSize.decodedImageSize.width
-              : null,
-          height: _screenshotHideOutsideImgContent
-              ? _screenSize.decodedImageSize.height
-              : null,
-          child: ContentRecorder(
-            controller: _controllers.screenshot,
-            child: Stack(
-              alignment: Alignment.center,
-              fit: StackFit.expand,
-              children: [
-                /// Build Image
-                _buildImageWithFilter(),
+      child: ContentRecorder(
+        controller: _controllers.screenshot,
+        child: Stack(
+          alignment: Alignment.center,
+          fit: StackFit.expand,
+          children: [
+            /// Build Image
+            _buildImageWithFilter(),
 
-                /// Build layer stack
-                _buildLayers(),
+            /// Build layer stack
+            _buildLayers(),
 
-                /// Build helper stuff
-                if (!_doneEditing) ...[
-                  _buildHelperLines(),
-                  if (_selectedLayerIndex >= 0) _buildRemoveIcon(),
-                ],
-              ],
-            ),
-          ),
+            /// Build helper stuff
+            if (!_doneEditing) ...[
+              _buildHelperLines(),
+              if (_selectedLayerIndex >= 0) _buildRemoveIcon(),
+            ],
+          ],
         ),
       ),
     );
@@ -1951,12 +1935,6 @@ class ProImageEditorState extends State<ProImageEditor>
                             key: ValueKey('${layerItem.id}-$i'),
                             configs: configs,
                             editorBodySize: _screenSize.bodySize,
-                            padding: _screenshotHideOutsideImgContent
-                                ? EdgeInsets.only(
-                                    top: -_screenSize.imageScreenGaps.top,
-                                    left: -_screenSize.imageScreenGaps.left,
-                                  )
-                                : EdgeInsets.zero,
                             layerData: layerItem,
                             enableHitDetection:
                                 _layerInteraction.enabledHitDetection,

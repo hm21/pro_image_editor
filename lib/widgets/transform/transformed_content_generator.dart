@@ -33,9 +33,11 @@ class _TransformedContentGeneratorState
 
         if (configs.cropEditorScreenRatio != 0) {
           // bool beforeOriginalFitToWidth = configs.cropEditorScreenRatio < configs.originalSize.aspectRatio;
-          bool beforeOriginalFitToWidth =
-              size.aspectRatio < configs.originalSize.aspectRatio;
-          bool beforeFitToWidth = configs.cropEditorScreenRatio <
+          bool beforeOriginalFitToWidth = size.aspectRatio <=
+              Size(configs.originalSize.width + 40,
+                      configs.originalSize.height + 40)
+                  .aspectRatio;
+          bool beforeFitToWidth = configs.cropEditorScreenRatio <=
               (configs.is90DegRotated
                   ? 1 / configs.cropRect.size.aspectRatio
                   : configs.cropRect.size.aspectRatio);
@@ -48,7 +50,6 @@ class _TransformedContentGeneratorState
                 configs.cropEditorScreenRatio / size.aspectRatio;
           }
         }
-
         return FittedBox(
           child: SizedBox(
             width: configs.originalSize.isInfinite

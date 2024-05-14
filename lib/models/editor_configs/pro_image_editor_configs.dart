@@ -122,7 +122,7 @@ class ProImageEditorConfigs {
     this.heroTag = 'Pro-Image-Editor-Hero',
     this.i18n = const I18n(),
     this.allowCompleteWithEmptyEditing = false,
-    this.removeTransparentAreas = false,
+    this.removeTransparentAreas = true,
     this.captureOnlyImageArea = true,
     this.helperLines = const HelperLines(),
     this.layerInteraction = const LayerInteraction(),

@@ -27,7 +27,6 @@ void main() {
               LayerWidget(
                 editorBodySize: const Size(500, 500),
                 layerData: layer,
-                padding: EdgeInsets.zero,
                 onTapDown: () {},
                 onTapUp: () {},
                 onTap: (Layer layer) {

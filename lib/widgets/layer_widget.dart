@@ -42,9 +42,6 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   final Function(PointerDownEvent, Size)? onScaleRotateDown;
   final Function(PointerUpEvent)? onScaleRotateUp;
 
-  /// Padding for positioning the layer within the canvas.
-  final EdgeInsets padding;
-
   /// Enables high-performance scaling for free-style drawing when set to `true`.
   ///
   /// When this option is enabled, it optimizes scaling for improved performance.
@@ -74,7 +71,6 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.onScaleRotateUp,
     required this.editorBodySize,
     required this.configs,
-    required this.padding,
     required this.layerData,
     required this.onTapDown,
     required this.onTapUp,
@@ -196,12 +192,10 @@ class _LayerWidgetState extends State<LayerWidget>
   Layer get _layer => widget.layerData;
 
   /// Calculates the horizontal offset for the layer.
-  double get offsetX =>
-      _layer.offset.dx + widget.padding.left + widget.editorBodySize.width / 2;
+  double get offsetX => _layer.offset.dx + widget.editorBodySize.width / 2;
 
   /// Calculates the vertical offset for the layer.
-  double get offsetY =>
-      _layer.offset.dy + widget.padding.top + widget.editorBodySize.height / 2;
+  double get offsetY => _layer.offset.dy + widget.editorBodySize.height / 2;
 
   @override
   Widget build(BuildContext context) {

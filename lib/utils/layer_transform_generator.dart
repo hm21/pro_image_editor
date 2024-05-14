@@ -80,7 +80,6 @@ class LayerTransformGenerator {
     double areaScale =
         layerDrawAreaSize.height / (layerDrawAreaSize.height - 40);
 
-    /*     
     print('----------------');
     print(areaScale);
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height + 40));
@@ -90,14 +89,13 @@ class LayerTransformGenerator {
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height - 40));
     print((layerDrawAreaSize.height - 40) / layerDrawAreaSize.height);
     print(layerDrawAreaSize.width / (layerDrawAreaSize.width - 40));
-    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width); 
-    */
+    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width);
 
     if (undoChanges) {
       layer.offset += offset * activeTransformConfigs.scale * areaScale;
     } else {
-      layer.offset += (newTransformConfigs.offset * newTransformConfigs.scale) -
-          (activeTransformConfigs.offset * activeTransformConfigs.scale);
+      layer.offset +=
+          offset * activeTransformConfigs.scale / 0.9406528189910979;
     }
   }
 
@@ -154,6 +152,42 @@ class LayerTransformGenerator {
         -layer.offset.dy,
         layer.offset.dx,
       );
+    }
+
+    var transformConfigs =
+        undoChanges ? activeTransformConfigs : newTransformConfigs;
+
+    if (transformConfigs.cropEditorScreenRatio != 0 &&
+        !layerDrawAreaSize.isEmpty) {
+      double aspectRatioScaleHelper = 1;
+
+      Size originalSize = Size(activeTransformConfigs.originalSize.width + 40,
+          activeTransformConfigs.originalSize.height + 40);
+
+      bool beforeOriginalFitToWidth = layerDrawAreaSize.aspectRatio <
+          (activeTransformConfigs.is90DegRotated
+              ? 1 / originalSize.aspectRatio
+              : originalSize.aspectRatio);
+
+      bool beforeFitToWidth = transformConfigs.cropEditorScreenRatio <
+          (transformConfigs.is90DegRotated
+              ? 1 / transformConfigs.cropRect.size.aspectRatio
+              : transformConfigs.cropRect.size.aspectRatio);
+
+      if (!beforeOriginalFitToWidth && beforeFitToWidth) {
+        aspectRatioScaleHelper = layerDrawAreaSize.aspectRatio /
+            transformConfigs.cropEditorScreenRatio;
+      } else if (beforeOriginalFitToWidth && !beforeFitToWidth) {
+        aspectRatioScaleHelper = transformConfigs.cropEditorScreenRatio /
+            layerDrawAreaSize.aspectRatio;
+      }
+
+      if (!undoChanges) {
+        layer.offset *= aspectRatioScaleHelper;
+      } else {
+        layer.scale /= aspectRatioScaleHelper;
+        layer.offset /= aspectRatioScaleHelper;
+      }
     }
   }
 

@@ -9,7 +9,6 @@ class LayerStack extends StatefulWidget {
   final ProImageEditorConfigs configs;
   final List<Layer> layers;
 
-  final EdgeInsets? paddingHelper;
   final Clip clipBehavior;
 
   final TransformHelper transformHelper;
@@ -18,7 +17,6 @@ class LayerStack extends StatefulWidget {
     super.key,
     required this.configs,
     required this.layers,
-    this.paddingHelper,
     this.transformHelper = const TransformHelper(
       editorBodySize: Size.zero,
       mainBodySize: Size.zero,
@@ -45,7 +43,6 @@ class _LayerStackState extends State<LayerStack> {
               return LayerWidget(
                 configs: widget.configs,
                 editorBodySize: widget.transformHelper.editorBodySize,
-                padding: widget.paddingHelper ?? EdgeInsets.zero,
                 layerData: layerItem,
                 onTap: (layerData) async {},
                 onTapUp: () {},

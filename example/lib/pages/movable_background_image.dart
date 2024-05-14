@@ -1,14 +1,13 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/layer.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'dart:ui' as ui;
 
 import '../utils/example_helper.dart';
+import 'reorder_layer_example.dart';
 
 class MoveableBackgroundImageExample extends StatefulWidget {
   const MoveableBackgroundImageExample({super.key});
@@ -247,90 +246,5 @@ class PixelTransparentPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
-  }
-}
-
-class ReorderLayerSheet extends StatefulWidget {
-  final List<Layer> layers;
-  final ReorderCallback onReorder;
-
-  const ReorderLayerSheet({
-    super.key,
-    required this.layers,
-    required this.onReorder,
-  });
-
-  @override
-  State<ReorderLayerSheet> createState() => _ReorderLayerSheetState();
-}
-
-class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            'Reorder',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
-          ),
-        ),
-        Expanded(
-          child: ReorderableListView.builder(
-            itemBuilder: (context, index) {
-              Layer layer = widget.layers[index];
-              return ListTile(
-                key: ValueKey(layer),
-                title: layer.runtimeType == TextLayerData
-                    ? Text(
-                        (layer as TextLayerData).text,
-                        style: const TextStyle(fontSize: 20),
-                      )
-                    : layer.runtimeType == EmojiLayerData
-                        ? Text(
-                            (layer as EmojiLayerData).emoji,
-                            style: const TextStyle(fontSize: 24),
-                          )
-                        : layer.runtimeType == PaintingLayerData
-                            ? SizedBox(
-                                height: 40,
-                                child: FittedBox(
-                                  alignment: Alignment.centerLeft,
-                                  child: CustomPaint(
-                                    size: (layer as PaintingLayerData).size,
-                                    willChange: true,
-                                    isComplex:
-                                        layer.item.mode == PaintModeE.freeStyle,
-                                    painter: DrawCanvas(
-                                      item: layer.item,
-                                      scale: layer.scale,
-                                      enabledHitDetection: false,
-                                      freeStyleHighPerformanceScaling: false,
-                                      freeStyleHighPerformanceMoving: false,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : layer.runtimeType == StickerLayerData
-                                ? SizedBox(
-                                    height: 40,
-                                    child: FittedBox(
-                                      alignment: Alignment.centerLeft,
-                                      child:
-                                          (layer as StickerLayerData).sticker,
-                                    ),
-                                  )
-                                : Text(layer.id.toString()),
-              );
-            },
-            itemCount: widget.layers.length,
-            onReorder: widget.onReorder,
-          ),
-        ),
-      ],
-    );
   }
 }
