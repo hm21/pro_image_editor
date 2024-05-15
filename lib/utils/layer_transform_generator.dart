@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:pro_image_editor/modules/main_editor/utils/layer_copy_manager.dart';
@@ -10,7 +11,7 @@ class LayerTransformGenerator {
   final List<Layer> updatedLayers = [];
   final TransformConfigs activeTransformConfigs;
   final TransformConfigs newTransformConfigs;
-  final Size layerDrawAreaSize; // Required parameter?
+  final Size layerDrawAreaSize;
   final bool undoChanges;
 
   LayerTransformGenerator({
@@ -73,14 +74,33 @@ class LayerTransformGenerator {
   }
 
   void _translateLayer(Layer layer) {
+    double getTransformedRatio(Rect rect) {
+      return newTransformConfigs.is90DegRotated
+          ? 1 / rect.size.aspectRatio
+          : rect.size.aspectRatio;
+    }
+
     Offset offset = newTransformConfigs.offset - activeTransformConfigs.offset;
 
-    double scale = newTransformConfigs.scale / activeTransformConfigs.scale;
+    double radianAngle = -newTransformConfigs.angle;
+    double cosAngle = cos(radianAngle);
+    double sinAngle = sin(radianAngle);
 
-    double areaScale =
-        layerDrawAreaSize.height / (layerDrawAreaSize.height - 40);
+    double dx = offset.dy * sinAngle + offset.dx * cosAngle;
+    double dy = offset.dy * cosAngle - offset.dx * sinAngle;
 
-    print('----------------');
+    offset = Offset(dx, dy);
+
+    bool fitToWidth = undoChanges
+        ? getTransformedRatio(activeTransformConfigs.cropRect) >
+            layerDrawAreaSize.aspectRatio
+        : getTransformedRatio(newTransformConfigs.cropRect) >
+            layerDrawAreaSize.aspectRatio;
+    double areaScale = fitToWidth
+        ? layerDrawAreaSize.width / (layerDrawAreaSize.width - 40)
+        : layerDrawAreaSize.height / (layerDrawAreaSize.height - 40);
+
+/*     print('----------------');
     print(areaScale);
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height + 40));
     print((layerDrawAreaSize.height + 40) / layerDrawAreaSize.height);
@@ -89,13 +109,12 @@ class LayerTransformGenerator {
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height - 40));
     print((layerDrawAreaSize.height - 40) / layerDrawAreaSize.height);
     print(layerDrawAreaSize.width / (layerDrawAreaSize.width - 40));
-    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width);
+    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width); */
 
     if (undoChanges) {
       layer.offset += offset * activeTransformConfigs.scale * areaScale;
     } else {
-      layer.offset +=
-          offset * activeTransformConfigs.scale / 0.9406528189910979;
+      layer.offset += offset * activeTransformConfigs.scale * areaScale;
     }
   }
 
