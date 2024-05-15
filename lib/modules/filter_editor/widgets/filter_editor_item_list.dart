@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:colorfilter_generator/colorfilter_generator.dart';
@@ -167,10 +168,19 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     TransformConfigs transformConfigs =
         widget.transformConfigs ?? TransformConfigs.empty();
 
-    double offsetFactor = widget.mainImageSize.longestSide / size.longestSide;
+    Size imageSize = transformConfigs.cropRect == Rect.largest
+        ? widget.mainImageSize
+        : transformConfigs.cropRect.size;
 
-    double oldAspectRatio = widget.mainImageSize.aspectRatio;
-    double scale = transformConfigs.scale / oldAspectRatio * size.aspectRatio;
+    double offsetFactor =
+        imageSize.longestSide / size.shortestSide / transformConfigs.scale;
+    double fitCoverScale = max(
+      max(widget.mainImageSize.aspectRatio,
+          1 / widget.mainImageSize.aspectRatio),
+      max(imageSize.aspectRatio, 1 / imageSize.aspectRatio),
+    );
+
+    double scale = fitCoverScale * transformConfigs.scale;
 
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),
@@ -198,10 +208,10 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                 child: Transform.flip(
                   flipX: transformConfigs.flipX,
                   flipY: transformConfigs.flipY,
-                  child: Transform.scale(
-                    scale: scale,
-                    child: Transform.translate(
-                      offset: transformConfigs.offset / offsetFactor / scale,
+                  child: Transform.translate(
+                    offset: transformConfigs.offset / offsetFactor,
+                    child: Transform.scale(
+                      scale: scale,
                       child: ImageWithFilters(
                         image: EditorImage(
                           file: widget.file,

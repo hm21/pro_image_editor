@@ -98,6 +98,7 @@ class SizesManager {
       temporaryDecodedImageSize.height / decodedImageSize.height,
       temporaryDecodedImageSize.width / decodedImageSize.width,
     );
+    if (scaleFactor == 0) return;
     for (var layer in layers) {
       layer.scale /= scaleFactor;
       layer.offset = Offset(

@@ -292,6 +292,9 @@ class TextEditorState extends State<TextEditor>
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
             bottomNavigationBar: isDesktop &&
+                    widget.configs.textEditorConfigs.customTextStyles
+                            ?.isNotEmpty ==
+                        false &&
                     imageEditorTheme.editorMode == ThemeEditorMode.simple
                 ? const SizedBox(
                     height: kBottomNavigationBarHeight,

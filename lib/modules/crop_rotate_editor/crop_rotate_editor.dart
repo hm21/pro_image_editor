@@ -24,6 +24,7 @@ import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/layer.dart';
 import '../../models/transform_helper.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
+import '../../utils/image_helpers.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
@@ -499,38 +500,44 @@ class CropRotateEditorState extends State<CropRotateEditor>
           message: i18n.doneLoadingMsg,
           imageEditorTheme: imageEditorTheme,
         );
-      // TODO: ensure image is correctly cropped
-      Widget editorWidget = Stack(
-        alignment: Alignment.center,
-        children: [
-          TransformedContentGenerator(
-            transformConfigs: transformC,
-            configs: configs,
-            child: ImageWithFilters(
-              width: _mainImageSize.width,
-              height: _mainImageSize.height,
-              designMode: designMode,
-              image: editorImage,
-              filters: appliedFilters,
-              blurFactor: appliedBlurFactor,
-            ),
-          ),
-          if (blurEditorConfigs.showLayers && layers != null)
-            LayerStack(
-              transformHelper: TransformHelper(
-                mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
-                mainImageSize: _mainImageSize,
-                editorBodySize: _contentConstraints.biggest,
-                transformConfigs: transformConfigs,
-              ),
+      Widget editorWidget = SizedBox(
+        width: _contentConstraints.maxWidth,
+        height: _contentConstraints.maxHeight,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            TransformedContentGenerator(
+              transformConfigs: transformC,
               configs: configs,
-              layers: _layers,
+              child: ImageWithFilters(
+                width: _mainImageSize.width,
+                height: _mainImageSize.height,
+                designMode: designMode,
+                image: editorImage,
+                filters: appliedFilters,
+                blurFactor: appliedBlurFactor,
+              ),
             ),
-        ],
+            if (blurEditorConfigs.showLayers && layers != null)
+              LayerStack(
+                transformHelper: TransformHelper(
+                  mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
+                  mainImageSize: _mainImageSize,
+                  editorBodySize: _contentConstraints.biggest,
+                  transformConfigs: transformConfigs,
+                ),
+                configs: configs,
+                layers: _layers,
+              ),
+          ],
+        ),
       );
 
       Uint8List bytes =
           await ContentRecorderController().captureFromWidget(editorWidget);
+      if (configs.removeTransparentAreas) {
+        bytes = await removeTransparentImgAreas(bytes) ?? bytes;
+      }
 
       if (mounted) loading.hide(context);
 
@@ -1700,6 +1707,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           _contentConstraints.maxHeight - _screenPadding * 2,
         ).aspectRatio;
         if (_imageNeedDecode) _decodeImage();
+
         return Stack(
           children: [
             if (_showFakeHero) _buildFakeHero(),

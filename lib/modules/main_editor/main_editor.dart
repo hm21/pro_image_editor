@@ -501,6 +501,7 @@ class ProImageEditorState extends State<ProImageEditor>
         layerInteraction.initialSelected) {
       _layerInteractionManager.selectedLayerId = layer.id;
     }
+    callbacks.onAddLayer?.call();
   }
 
   /// Remove a layer from the editor.
@@ -527,6 +528,7 @@ class ProImageEditorState extends State<ProImageEditor>
           _layerCopyManager.copyLayer(layer ?? _tempLayer!);
     }
     _stateManager.editPosition++;
+    callbacks.onRemoveLayer?.call();
   }
 
   /// Update the temporary layer in the editor.
@@ -577,7 +579,6 @@ class ProImageEditorState extends State<ProImageEditor>
     if (shouldImportStateHistory) {
       importStateHistory(initStateHistory!);
     }
-
     setState(() {});
     onUpdateUI?.call();
   }
@@ -629,6 +630,8 @@ class ProImageEditorState extends State<ProImageEditor>
             : posX >= _layerInteractionManager.hitSpan
                 ? LayerLastPosition.right
                 : LayerLastPosition.center;
+
+    callbacks.onScaleStart?.call(details);
   }
 
   /// Handle updates during scaling.
@@ -694,12 +697,13 @@ class ProImageEditorState extends State<ProImageEditor>
     }
     setState(() {});
     onUpdateUI?.call();
+    callbacks.onScaleUpdate?.call(details);
   }
 
   /// Handle the end of a scaling operation.
   ///
   /// This method is called when a scaling operation ends and resets helper lines and flags.
-  void _onScaleEnd(ScaleEndDetails detail) async {
+  void _onScaleEnd(ScaleEndDetails details) async {
     if (_selectedLayerIndex < 0 &&
         imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
       _layerInteractionManager.showHelperLines = false;
@@ -731,6 +735,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _layerInteractionManager.onScaleEnd();
     setState(() {});
     onUpdateUI?.call();
+    callbacks.onScaleEnd?.call(details);
   }
 
   /// Handles tap events on a text layer.
@@ -790,6 +795,7 @@ class ProImageEditorState extends State<ProImageEditor>
   }) {
     _layerInteractionManager.selectedLayerId = '';
     setState(() => _isEditorOpen = true);
+    callbacks.onOpenSubEditor?.call();
     return Navigator.push<T?>(
       context,
       PageRouteBuilder(
@@ -816,6 +822,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 }
               });
               animation.removeStatusListener(animationStatusListener);
+              callbacks.onCloseSubEditor?.call();
             }
           }
 
@@ -1424,8 +1431,6 @@ class ProImageEditorState extends State<ProImageEditor>
           ),
         );
 
-    if (_imageNeedDecode) _decodeImage();
-
     return Constants(
       child: PopScope(
         canPop: _stateManager.editPosition <= 0 || _doneEditing,
@@ -1928,7 +1933,6 @@ class ProImageEditorState extends State<ProImageEditor>
                         children: activeLayers.asMap().entries.map((entry) {
                           final int i = entry.key;
                           final Layer layerItem = entry.value;
-
                           return LayerWidget(
                             key: ValueKey('${layerItem.id}-$i'),
                             configs: configs,

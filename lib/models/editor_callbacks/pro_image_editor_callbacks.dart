@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import 'main_editor_callbacks.dart';
 
 export 'main_editor_callbacks.dart';
@@ -21,9 +23,43 @@ class ProImageEditorCallbacks {
   /// A callback function that can be used to update the UI from custom widgets.
   final UpdateUiCallback? onUpdateUI;
 
+  /// A callback function that is triggered when a layer is added.
+  final Function()? onAddLayer;
+
+  /// A callback function that is triggered when a layer is removed.
+  final Function()? onRemoveLayer;
+
+  /// A callback function that is triggered when a sub-editor is opened.
+  final Function()? onOpenSubEditor;
+
+  /// A callback function that is triggered when a sub-editor is closed.
+  final Function()? onCloseSubEditor;
+
+  /// A callback function that is triggered when a scaling gesture starts.
+  ///
+  /// The [ScaleStartDetails] parameter provides information about the scaling gesture.
+  final Function(ScaleStartDetails)? onScaleStart;
+
+  /// A callback function that is triggered when a scaling gesture is updated.
+  ///
+  /// The [ScaleUpdateDetails] parameter provides information about the scaling gesture.
+  final Function(ScaleUpdateDetails)? onScaleUpdate;
+
+  /// A callback function that is triggered when a scaling gesture ends.
+  ///
+  /// The [ScaleEndDetails] parameter provides information about the scaling gesture.
+  final Function(ScaleEndDetails)? onScaleEnd;
+
   const ProImageEditorCallbacks({
     required this.onImageEditingComplete,
     this.onCloseEditor,
     this.onUpdateUI,
+    this.onAddLayer,
+    this.onRemoveLayer,
+    this.onOpenSubEditor,
+    this.onCloseSubEditor,
+    this.onScaleStart,
+    this.onScaleUpdate,
+    this.onScaleEnd,
   });
 }
