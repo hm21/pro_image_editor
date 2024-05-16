@@ -96,11 +96,12 @@ class LayerTransformGenerator {
             layerDrawAreaSize.aspectRatio
         : getTransformedRatio(newTransformConfigs.cropRect) >
             layerDrawAreaSize.aspectRatio;
-    double areaScale = fitToWidth
-        ? layerDrawAreaSize.width / (layerDrawAreaSize.width - 40)
-        : layerDrawAreaSize.height / (layerDrawAreaSize.height - 40);
+    double areaScale = !fitToWidth
+        ? (layerDrawAreaSize.width + 40) / layerDrawAreaSize.width
+        : (layerDrawAreaSize.height + 40) / layerDrawAreaSize.height;
 
-/*     print('----------------');
+    print(areaScale);
+    /*   print('----------------');
     print(areaScale);
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height + 40));
     print((layerDrawAreaSize.height + 40) / layerDrawAreaSize.height);
@@ -183,26 +184,26 @@ class LayerTransformGenerator {
       Size originalSize = Size(activeTransformConfigs.originalSize.width + 40,
           activeTransformConfigs.originalSize.height + 40);
 
-      bool beforeOriginalFitToWidth = layerDrawAreaSize.aspectRatio <
-          (activeTransformConfigs.is90DegRotated
-              ? 1 / originalSize.aspectRatio
-              : originalSize.aspectRatio);
+      bool originalFitToWidth =
+          layerDrawAreaSize.aspectRatio < originalSize.aspectRatio;
 
-      bool beforeFitToWidth = transformConfigs.cropEditorScreenRatio <
+      bool fitToWidth = transformConfigs.cropEditorScreenRatio <
           (transformConfigs.is90DegRotated
               ? 1 / transformConfigs.cropRect.size.aspectRatio
               : transformConfigs.cropRect.size.aspectRatio);
 
-      if (!beforeOriginalFitToWidth && beforeFitToWidth) {
+      if (!originalFitToWidth && fitToWidth) {
         aspectRatioScaleHelper = layerDrawAreaSize.aspectRatio /
             transformConfigs.cropEditorScreenRatio;
-      } else if (beforeOriginalFitToWidth && !beforeFitToWidth) {
+      } else if (originalFitToWidth && !fitToWidth) {
         aspectRatioScaleHelper = transformConfigs.cropEditorScreenRatio /
             layerDrawAreaSize.aspectRatio;
       }
 
       if (!undoChanges) {
-        layer.offset *= aspectRatioScaleHelper;
+        if (!newTransformConfigs.is90DegRotated) {
+          layer.offset *= aspectRatioScaleHelper;
+        }
       } else {
         layer.scale /= aspectRatioScaleHelper;
         layer.offset /= aspectRatioScaleHelper;
