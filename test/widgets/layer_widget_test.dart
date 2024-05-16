@@ -38,6 +38,7 @@ void main() {
                 enableHitDetection: true,
                 freeStyleHighPerformanceScaling: true,
                 freeStyleHighPerformanceMoving: true,
+                freeStyleHighPerformanceHero: false,
               ),
             ],
           ),

@@ -100,8 +100,14 @@ class LayerTransformGenerator {
         ? (layerDrawAreaSize.width + 40) / layerDrawAreaSize.width
         : (layerDrawAreaSize.height + 40) / layerDrawAreaSize.height;
 
-    print(areaScale);
-    /*   print('----------------');
+    if (undoChanges) {
+      areaScale = fitToWidth
+          ? layerDrawAreaSize.width / (layerDrawAreaSize.width - 40)
+          : layerDrawAreaSize.height / (layerDrawAreaSize.height - 40);
+    }
+
+    /*
+    print('----------------');
     print(areaScale);
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height + 40));
     print((layerDrawAreaSize.height + 40) / layerDrawAreaSize.height);
@@ -110,8 +116,8 @@ class LayerTransformGenerator {
     print(layerDrawAreaSize.height / (layerDrawAreaSize.height - 40));
     print((layerDrawAreaSize.height - 40) / layerDrawAreaSize.height);
     print(layerDrawAreaSize.width / (layerDrawAreaSize.width - 40));
-    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width); */
-
+    print((layerDrawAreaSize.width - 40) / layerDrawAreaSize.width);
+*/
     if (undoChanges) {
       layer.offset += offset * activeTransformConfigs.scale * areaScale;
     } else {

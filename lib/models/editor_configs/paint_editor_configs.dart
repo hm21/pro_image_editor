@@ -73,6 +73,12 @@ class PaintEditorConfigs {
   /// By default, it's set to `true` only on mobile-web devices.
   final bool? freeStyleHighPerformanceMoving;
 
+  /// Enables high-performance hero-animations for free-style drawing when set to `true`.
+  ///
+  /// When this option is enabled, it optimizes hero-animations for improved performance.
+  /// By default, it's set to `false`.
+  final bool freeStyleHighPerformanceHero;
+
   /// Indicates the initial stroke width.
   final double initialStrokeWidth;
 
@@ -103,6 +109,7 @@ class PaintEditorConfigs {
     this.showColorPicker = true,
     this.freeStyleHighPerformanceScaling,
     this.freeStyleHighPerformanceMoving,
+    this.freeStyleHighPerformanceHero = false,
     this.initialStrokeWidth = 10.0,
     this.initialColor = const Color(0xffff0000),
     this.initialPaintMode = PaintModeE.freeStyle,

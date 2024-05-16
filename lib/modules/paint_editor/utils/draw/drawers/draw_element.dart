@@ -25,20 +25,14 @@ import 'draw_free_style.dart';
 ///   dashed lines, rectangles, and circles).
 /// - [end]: The ending point of the element (used for straight lines, arrows,
 ///   dashed lines, rectangles, and circles).
-/// - [freeStyleHighPerformanceScaling]: Controls high-performance scaling for
-///   free-style drawing. When set to `true`, it enables optimized scaling for
-///   improved performance.
-/// - [freeStyleHighPerformanceMoving]: Controls high-performance moving for
-///   free-style drawing. When set to `true`, it enables optimized moving for
-///   improved performance.
+/// - [freeStyleHighPerformance]: Controls high-performance for free-style drawing.
 void drawElement({
   required Canvas canvas,
   required Size size,
   required PaintModeE mode,
   required List<Offset?> offsets,
   required Paint painter,
-  required bool freeStyleHighPerformanceScaling,
-  required bool freeStyleHighPerformanceMoving,
+  required bool freeStyleHighPerformance,
   double scale = 1,
   Offset? start,
   Offset? end,
@@ -50,8 +44,7 @@ void drawElement({
         canvas: canvas,
         painter: painter,
         scale: scale,
-        freeStyleHighPerformanceScaling: freeStyleHighPerformanceScaling,
-        freeStyleHighPerformanceMoving: freeStyleHighPerformanceMoving,
+        freeStyleHighPerformance: freeStyleHighPerformance,
       );
       break;
     case PaintModeE.line:

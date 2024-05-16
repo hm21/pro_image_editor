@@ -1178,6 +1178,8 @@ ProImageEditor.asset(
 ```
 </details>
 
+<br/>
+
 <details>
   <summary> <b>Supabase example</b> </summary>
 

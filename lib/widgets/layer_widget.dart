@@ -54,6 +54,12 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   /// By default, it's set to `true` only on mobile-web devices.
   final bool freeStyleHighPerformanceMoving;
 
+  /// Enables high-performance hero-animation for free-style drawing when set to `true`.
+  ///
+  /// When this option is enabled, it optimizes hero-animations for improved performance.
+  /// By default, it's set to `false`.
+  final bool freeStyleHighPerformanceHero;
+
   /// Enables or disables hit detection.
   /// When set to `true`, it allows detecting user interactions with the interface.
   final bool enableHitDetection;
@@ -80,6 +86,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     required this.enableHitDetection,
     required this.freeStyleHighPerformanceScaling,
     required this.freeStyleHighPerformanceMoving,
+    required this.freeStyleHighPerformanceHero,
     this.selected = false,
     this.isInteractive = false,
   });
@@ -387,9 +394,9 @@ class _LayerWidgetState extends State<LayerWidget>
           scale: widget.layerData.scale,
           selected: widget.selected,
           enabledHitDetection: widget.enableHitDetection,
-          freeStyleHighPerformanceScaling:
-              widget.freeStyleHighPerformanceScaling,
-          freeStyleHighPerformanceMoving: widget.freeStyleHighPerformanceMoving,
+          freeStyleHighPerformance: widget.freeStyleHighPerformanceScaling ||
+              widget.freeStyleHighPerformanceMoving ||
+              widget.freeStyleHighPerformanceHero,
         ),
       ),
     );

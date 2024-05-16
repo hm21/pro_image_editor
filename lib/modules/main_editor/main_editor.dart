@@ -794,7 +794,12 @@ class ProImageEditorState extends State<ProImageEditor>
     Duration duration = const Duration(milliseconds: 300),
   }) {
     _layerInteractionManager.selectedLayerId = '';
-    setState(() => _isEditorOpen = true);
+    _isEditorOpen = true;
+
+    if (paintEditorConfigs.freeStyleHighPerformanceHero) {
+      _layerInteractionManager.freeStyleHighPerformanceHero = true;
+    }
+    setState(() {});
     callbacks.onOpenSubEditor?.call();
     return Navigator.push<T?>(
       context,
@@ -817,6 +822,7 @@ class ProImageEditorState extends State<ProImageEditor>
             } else if (status == AnimationStatus.dismissed) {
               setState(() {
                 _isEditorOpen = false;
+                _layerInteractionManager.freeStyleHighPerformanceHero = false;
                 if (_sizesManager.shouldRecalculateLayerPosition) {
                   _sizesManager.recalculateLayerPosition(activeLayers);
                 }
@@ -1937,6 +1943,9 @@ class ProImageEditorState extends State<ProImageEditor>
                             freeStyleHighPerformanceMoving:
                                 _layerInteractionManager
                                     .freeStyleHighPerformanceMoving,
+                            freeStyleHighPerformanceHero:
+                                _layerInteractionManager
+                                    .freeStyleHighPerformanceHero,
                             selected:
                                 _layerInteractionManager.selectedLayerId ==
                                     layerItem.id,

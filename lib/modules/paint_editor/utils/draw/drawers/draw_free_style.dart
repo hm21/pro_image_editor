@@ -11,28 +11,29 @@ import 'dart:ui';
 /// - [painter]: The paint object specifying the appearance of the lines (e.g., color,
 ///   stroke cap).
 /// - [scale]: The scaling factor applied to the coordinates of the lines.
-/// - [freeStyleHighPerformanceScaling]: Controls high-performance scaling for freehand
-///   drawing. When set to `true`, it enables optimized scaling for improved performance.
-/// - [freeStyleHighPerformanceScaling]: Controls high-performance moving for freehand
-///   drawing. When set to `true`, it enables optimized moving for improved performance.
+/// - [freeStyleHighPerformance]: Controls high-performance for freehand drawing.
 void drawFreeStyle({
   required List<Offset?> offsets,
   required Canvas canvas,
   required Paint painter,
   required double scale,
-  required bool freeStyleHighPerformanceScaling,
-  required bool freeStyleHighPerformanceMoving,
+  required bool freeStyleHighPerformance,
 }) {
-  painter.strokeCap = StrokeCap.round; // Set strokeCap outside the loop
-  if (!freeStyleHighPerformanceScaling && !freeStyleHighPerformanceMoving) {
+  painter.strokeCap = StrokeCap.round;
+  if (!freeStyleHighPerformance) {
+    final path = Path();
+
     for (int i = 0; i < offsets.length - 1; i++) {
-      if (offsets[i] != null && offsets[i + 1] != null) {
-        final path0 = Path()
-          ..moveTo(offsets[i]!.dx * scale, offsets[i]!.dy * scale)
-          ..lineTo(offsets[i + 1]!.dx * scale, offsets[i + 1]!.dy * scale);
-        canvas.drawPath(path0, painter);
-      } else if (offsets[i] != null && offsets[i + 1] == null) {
-        canvas.drawPoints(PointMode.points, [offsets[i]!], painter);
+      final currentOffset = offsets[i];
+      final nextOffset = offsets[i + 1];
+
+      if (currentOffset != null && nextOffset != null) {
+        path.reset();
+        path.moveTo(currentOffset.dx * scale, currentOffset.dy * scale);
+        path.lineTo(nextOffset.dx * scale, nextOffset.dy * scale);
+        canvas.drawPath(path, painter);
+      } else if (currentOffset != null && nextOffset == null) {
+        canvas.drawPoints(PointMode.points, [currentOffset], painter);
       }
     }
   } else {
@@ -46,15 +47,15 @@ void drawFreeStyle({
             Offset(offsets[i + 1]!.dx * scale, offsets[i + 1]!.dy * scale);
 
         if (i == 0) {
-          path.moveTo(startPoint.dx, startPoint.dy); // Move to the first point
+          path.moveTo(startPoint.dx, startPoint.dy);
         }
 
-        path.lineTo(endPoint.dx, endPoint.dy); // Add line segment
+        path.lineTo(endPoint.dx, endPoint.dy);
       } else if (offsets[i] != null && offsets[i + 1] == null) {
         canvas.drawPoints(PointMode.points, [offsets[i]!], painter);
       }
     }
 
-    canvas.drawPath(path, painter); // Draw the merged path
+    canvas.drawPath(path, painter);
   }
 }

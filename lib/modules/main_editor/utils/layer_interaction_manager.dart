@@ -85,6 +85,10 @@ class LayerInteractionManager {
   /// When `true`, enables optimized moving for improved performance.
   bool freeStyleHighPerformanceMoving = false;
 
+  /// Controls high-performance hero animation for free-style drawing.
+  /// When `true`, enables optimized hero-animation for improved performance.
+  bool freeStyleHighPerformanceHero = false;
+
   /// Flag indicating if the scaling tool is active.
   bool _activeScale = false;
 

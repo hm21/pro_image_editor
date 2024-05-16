@@ -52,6 +52,7 @@ class _LayerStackState extends State<LayerStack> {
                 enableHitDetection: false,
                 freeStyleHighPerformanceScaling: false,
                 freeStyleHighPerformanceMoving: false,
+                freeStyleHighPerformanceHero: false,
               );
             }).toList()),
       ),
