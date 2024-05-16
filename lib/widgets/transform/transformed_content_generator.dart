@@ -31,6 +31,7 @@ class _TransformedContentGeneratorState
 
         double aspectRatioScaleHelper = 1;
 
+        print(configs.cropEditorScreenRatio);
         if (configs.cropEditorScreenRatio != 0) {
           // bool beforeOriginalFitToWidth = configs.cropEditorScreenRatio < configs.originalSize.aspectRatio;
           bool beforeOriginalFitToWidth = size.aspectRatio <=

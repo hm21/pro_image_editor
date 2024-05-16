@@ -22,9 +22,7 @@ class ExportEditorConfigs {
 
   /// Whether to export the crop and rotate actions.
   ///
-  /// Defaults to `false`.
-  ///
-  /// Warning: Exporting cropRotate may result in increased file size.
+  /// Defaults to `true`.
   final bool exportCropRotate;
 
   /// Whether to export the applied filters.
@@ -48,7 +46,7 @@ class ExportEditorConfigs {
     this.historySpan = ExportHistorySpan.all,
     this.exportPainting = true,
     this.exportText = true,
-    this.exportCropRotate = false,
+    this.exportCropRotate = true,
     this.exportFilter = true,
     this.exportEmoji = true,
     this.exportSticker = true,

@@ -164,24 +164,6 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
         activeFilters: activeFilters,
       );
     }
-    var size = const Size(64, 64);
-    TransformConfigs transformConfigs =
-        widget.transformConfigs ?? TransformConfigs.empty();
-
-    Size imageSize = transformConfigs.cropRect == Rect.largest
-        ? widget.mainImageSize
-        : transformConfigs.cropRect.size;
-
-    double offsetFactor =
-        imageSize.longestSide / size.shortestSide / transformConfigs.scale;
-    double fitCoverScale = max(
-      max(widget.mainImageSize.aspectRatio,
-          1 / widget.mainImageSize.aspectRatio),
-      max(imageSize.aspectRatio, 1 / imageSize.aspectRatio),
-    );
-
-    double scale = fitCoverScale * transformConfigs.scale;
-
     return GestureDetector(
       key: ValueKey('Filter-$name-$index'),
       onTap: () {
@@ -189,51 +171,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
       },
       child: Column(
         children: [
-          Container(
-            height: size.height,
-            width: size.width,
-            margin: const EdgeInsets.only(bottom: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: const Color(0xFF242424),
-                width: 1,
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Transform.rotate(
-                angle: transformConfigs.angle,
-                alignment: Alignment.center,
-                child: Transform.flip(
-                  flipX: transformConfigs.flipX,
-                  flipY: transformConfigs.flipY,
-                  child: Transform.translate(
-                    offset: transformConfigs.offset / offsetFactor,
-                    child: Transform.scale(
-                      scale: scale,
-                      child: ImageWithFilters(
-                        image: EditorImage(
-                          file: widget.file,
-                          byteArray: widget.byteArray,
-                          networkUrl: widget.networkUrl,
-                          assetPath: widget.assetPath,
-                        ),
-                        width: size.width,
-                        height: size.height,
-                        filters: [
-                          ...(widget.activeFilters ?? []),
-                          FilterStateHistory(filter: filter, opacity: 1),
-                        ],
-                        designMode: widget.configs.designMode,
-                        blurFactor: widget.blurFactor ?? 0,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _buildPreviewImage(const Size(64, 64), filter),
           Text(
             widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
             style: TextStyle(
@@ -243,6 +181,73 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewImage(
+    Size size,
+    ColorFilterGenerator filter,
+  ) {
+    TransformConfigs transformConfigs =
+        widget.transformConfigs ?? TransformConfigs.empty();
+
+    Size imageSize = transformConfigs.cropRect == Rect.largest
+        ? widget.mainImageSize
+        : transformConfigs.cropRect.size;
+
+    double offsetFactor = widget.mainImageSize.longestSide / size.shortestSide;
+    double fitCoverScale = max(
+      max(widget.mainImageSize.aspectRatio,
+          1 / widget.mainImageSize.aspectRatio),
+      max(imageSize.aspectRatio, 1 / imageSize.aspectRatio),
+    );
+
+    double scale = fitCoverScale * transformConfigs.scaleUser;
+
+    return Container(
+      height: size.height,
+      width: size.width,
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: const Color(0xFF242424),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Transform.rotate(
+          angle: transformConfigs.angle,
+          alignment: Alignment.center,
+          child: Transform.flip(
+            flipX: transformConfigs.flipX,
+            flipY: transformConfigs.flipY,
+            child: Transform.scale(
+              scale: scale,
+              child: Transform.translate(
+                offset: transformConfigs.offset / offsetFactor,
+                child: ImageWithFilters(
+                  image: EditorImage(
+                    file: widget.file,
+                    byteArray: widget.byteArray,
+                    networkUrl: widget.networkUrl,
+                    assetPath: widget.assetPath,
+                  ),
+                  width: size.width,
+                  height: size.height,
+                  filters: [
+                    ...(widget.activeFilters ?? []),
+                    FilterStateHistory(filter: filter, opacity: 1),
+                  ],
+                  designMode: widget.configs.designMode,
+                  blurFactor: widget.blurFactor ?? 0,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -277,7 +282,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
               child: Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
-                  ImageWithFilters(
+                  _buildPreviewImage(size, filter),
+                  /*  ImageWithFilters(
                     image: EditorImage(
                       file: widget.file,
                       byteArray: widget.byteArray,
@@ -292,7 +298,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                       ...(widget.activeFilters ?? []),
                       FilterStateHistory(filter: filter, opacity: 1),
                     ],
-                  ),
+                  ), */
                   Align(
                     alignment: Alignment.bottomLeft,
                     child: Container(

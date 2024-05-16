@@ -38,6 +38,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - [WhatsApp-Design](#whatsapp-design)
   - [Highly configurable](#highly-configurable)
   - [Custom AppBar](#custom-appbar)
+  - [Upload to Firebase or Supabase](#upload-to-firebase-or-supabase)
   - [Import-Export state history](#import-export-state-history)
 - **[📚 Documentation](#documentation)**
 - **[🤝 Contributing](#contributing)**
@@ -268,9 +269,9 @@ void _openEditor() {
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {
             /*
-              `Your code to handle the edited image. Upload it to your server as an example.
-                You can choose to use await, so that the load dialog remains visible until your code is ready,
-                or no async, so that the load dialog closes immediately.
+              Your code to handle the edited image. Upload it to your server as an example.
+              You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+              The returned image format is `png`.
             */
             Navigator.pop(context);
           },
@@ -292,10 +293,10 @@ Widget build(BuildContext context) {
            callbacks: ProImageEditorCallbacks(
              onImageEditingComplete: (Uint8List bytes) async {
                /*
-               `Your code to handle the edited image. Upload it to your server as an example.
-                 You can choose to use await, so that the load dialog remains visible until your code is ready,
-                 or no async, so that the load dialog closes immediately.
-             */
+                 Your code to handle the edited image. Upload it to your server as an example.
+                 You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+                 The returned image format is `png`.
+                */
                Navigator.pop(context);
              },
           ),
@@ -317,10 +318,10 @@ ProImageEditor.network(
   callbacks: ProImageEditorCallbacks(
     onImageEditingComplete: (Uint8List bytes) async {
       /*
-      `Your code to handle the edited image. Upload it to your server as an example.
-        You can choose to use await, so that the load dialog remains visible until your code is ready,
-        or no async, so that the load dialog closes immediately.
-    */
+        Your code to handle the edited image. Upload it to your server as an example.
+        You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+        The returned image format is `png`.
+      */
       Navigator.pop(context);
     },
   ),
@@ -412,10 +413,10 @@ Navigator.of(context).push(
       'https://picsum.photos/id/176/2000',
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: (Uint8List bytes) async {
-          /*
-          `Your code to handle the edited image. Upload it to your server as an example.
-            You can choose to use await, so that the load dialog remains visible until your code is ready,
-            or no async, so that the load dialog closes immediately.
+        /*
+          Your code to handle the edited image. Upload it to your server as an example.
+          You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+          The returned image format is `png`.
         */
           Navigator.pop(context);
         },
@@ -644,10 +645,10 @@ return Scaffold(
             callbacks: ProImageEditorCallbacks(
               onImageEditingComplete: (Uint8List bytes) async {
                 /*
-                `Your code to handle the edited image. Upload it to your server as an example.
-                  You can choose to use await, so that the load dialog remains visible until your code is ready,
-                  or no async, so that the load dialog closes immediately.
-              */
+                  Your code to handle the edited image. Upload it to your server as an example.
+                  You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+                  The returned image format is `png`.
+                */
                 Navigator.pop(context);
               },
             ),
@@ -816,10 +817,10 @@ class DemoState extends State<Demo> {
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: (Uint8List bytes) async {
           /*
-          `Your code to handle the edited image. Upload it to your server as an example.
-            You can choose to use await, so that the load dialog remains visible until your code is ready,
-            or no async, so that the load dialog closes immediately.
-         */
+            Your code to handle the edited image. Upload it to your server as an example.
+            You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+            The returned image format is `png`.
+          */
           Navigator.pop(context);
         },
         onUpdateUI: () {
@@ -1150,6 +1151,61 @@ class DemoState extends State<Demo> {
 ```
 </details>
 
+#### Upload to Firebase or Supabase
+
+<details>
+  <summary> <b>Firebase example</b> </summary>
+
+```dart
+ProImageEditor.asset(
+  'assets/demo.png',
+  callbacks: ProImageEditorCallbacks(
+    onImageEditingComplete: (bytes) async {
+      try {
+        String path = 'your-storage-path/my-image-name.png';
+        Reference ref = FirebaseStorage.instance.ref(path);
+
+        /// In some special cases detect firebase the contentType wrong,
+        /// so we make sure the contentType is set to png.
+        await ref.putData(bytes, SettableMetadata(contentType: 'image/png'));
+      } on FirebaseException catch (e) {
+        debugPrint(e.message);
+      }
+      if (mounted) Navigator.pop(context);
+    },
+  ),
+);
+```
+</details>
+
+<details>
+  <summary> <b>Supabase example</b> </summary>
+
+```dart
+final _supabase = Supabase.instance.client;
+
+ProImageEditor.asset(
+  'assets/demo.png',
+  callbacks: ProImageEditorCallbacks(
+    onImageEditingComplete: (bytes) async {
+      try {
+        String path = 'your-storage-path/my-image-name.png';
+        await _supabase.storage.from('my_bucket').uploadBinary(
+              path,
+              bytes,
+              retryAttempts: 3,
+            );
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+      if (mounted) Navigator.pop(context);
+    },
+  ),
+);
+```
+</details>
+
+
 #### Import-Export state history
 
 The state history from the image editor can be exported and imported. However, it's important to note that the crop and rotate feature currently only allows exporting the final cropped image and not individual states. Additionally, all sticker widgets are converted into images and saved in that format during the export process.
@@ -1209,10 +1265,10 @@ ProImageEditor.memory(
   callbacks: ProImageEditorCallbacks(
     onImageEditingComplete: (Uint8List bytes) async {
       /*
-      `Your code to handle the edited image. Upload it to your server as an example.
-        You can choose to use await, so that the load dialog remains visible until your code is ready,
-        or no async, so that the load dialog closes immediately.
-    */
+        Your code to handle the edited image. Upload it to your server as an example.
+        You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
+        The returned image format is `png`.
+      */
       Navigator.pop(context);
     },
   ),

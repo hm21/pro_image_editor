@@ -7,7 +7,7 @@ export 'main_editor_callbacks.dart';
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorCallbacks {
   /// A callback function that will be called when the editing is done,
-  /// and it returns the edited image as a Uint8List.
+  /// and it returns the edited image as a `Uint8List` with the format `png`.
   ///
   /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
   /// when the editing is completed.

@@ -15,6 +15,7 @@ import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
+import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
 
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
@@ -1699,36 +1700,36 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildBody() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        _contentConstraints = constraints;
+    return ScreenResizeDetector(
+      onResizeUpdate: (event) {
+        _contentConstraints = event.newConstraints;
         cropEditorScreenRatio = Size(
           _contentConstraints.maxWidth - _screenPadding * 2,
           _contentConstraints.maxHeight - _screenPadding * 2,
         ).aspectRatio;
         if (_imageNeedDecode) _decodeImage();
-
-        return Stack(
-          children: [
-            if (_showFakeHero) _buildFakeHero(),
-            Opacity(
-              opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
-              child: HeroMode(
-                enabled: false,
-                child: _buildMouseCursor(
-                  child: DeferredPointerHandler(
-                    child: _buildRotationTransform(
-                      child: _buildFlipTransform(
-                        child: _buildRotationScaleTransform(
-                          child: _buildPaintContainer(
-                            child: _buildCropPainter(
-                              child: _buildUserScaleTransform(
-                                child: _buildTranslate(
-                                  child: DeferPointer(
-                                    child: _buildMouseListener(
-                                      child: _buildGestureDetector(
-                                        child: _buildImage(),
-                                      ),
+      },
+      onResizeEnd: (event) {},
+      child: Stack(
+        children: [
+          if (_showFakeHero) _buildFakeHero(),
+          Opacity(
+            opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
+            child: HeroMode(
+              enabled: false,
+              child: _buildMouseCursor(
+                child: DeferredPointerHandler(
+                  child: _buildRotationTransform(
+                    child: _buildFlipTransform(
+                      child: _buildRotationScaleTransform(
+                        child: _buildPaintContainer(
+                          child: _buildCropPainter(
+                            child: _buildUserScaleTransform(
+                              child: _buildTranslate(
+                                child: DeferPointer(
+                                  child: _buildMouseListener(
+                                    child: _buildGestureDetector(
+                                      child: _buildImage(),
                                     ),
                                   ),
                                 ),
@@ -1742,9 +1743,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ),
               ),
             ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 

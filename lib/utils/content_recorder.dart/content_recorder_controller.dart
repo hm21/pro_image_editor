@@ -15,13 +15,9 @@ class ContentRecorderController {
     containerKey = GlobalKey();
   }
 
-  Future<Uint8List?> capture({
-    double? pixelRatio,
-    Duration delay = const Duration(milliseconds: 20),
-  }) {
-    return Future.delayed(delay, () async {
-      ui.Image? image =
-          await _getRenderedImage(delay: Duration.zero, pixelRatio: pixelRatio);
+  Future<Uint8List?> capture([double? pixelRatio]) {
+    return Future.delayed(const Duration(milliseconds: 20), () async {
+      ui.Image? image = await _getRenderedImage(pixelRatio);
       if (image == null) return null;
 
       ByteData? byteData =
@@ -32,31 +28,26 @@ class ContentRecorderController {
     });
   }
 
-  Future<ui.Image?> _getRenderedImage({
-    double? pixelRatio = 1,
-    Duration delay = const Duration(milliseconds: 20),
-  }) {
-    return Future.delayed(delay, () async {
-      try {
-        var findRenderObject = containerKey.currentContext?.findRenderObject();
-        if (findRenderObject == null) return null;
+  Future<ui.Image?> _getRenderedImage(double? pixelRatio) async {
+    try {
+      var findRenderObject = containerKey.currentContext?.findRenderObject();
+      if (findRenderObject == null) return null;
 
-        RenderRepaintBoundary boundary =
-            findRenderObject as RenderRepaintBoundary;
-        BuildContext? context = containerKey.currentContext;
+      RenderRepaintBoundary boundary =
+          findRenderObject as RenderRepaintBoundary;
+      BuildContext? context = containerKey.currentContext;
 
-        if (context != null) {
-          pixelRatio ??= MediaQuery.of(context).devicePixelRatio;
-        }
-
-        /// TODO: search a way to capture it isolated to main thread by every state change
-        /// Maybe use other flutter isolate package
-        ui.Image image = await boundary.toImage(pixelRatio: pixelRatio ?? 1);
-        return image;
-      } catch (e) {
-        throw ErrorHint(e.toString());
+      if (context != null) {
+        pixelRatio ??= MediaQuery.of(context).devicePixelRatio;
       }
-    });
+
+      /// TODO: search a way to capture it isolated to main thread by every state change
+      /// Maybe use other flutter isolate package
+      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio ?? 1);
+      return image;
+    } catch (e) {
+      throw ErrorHint(e.toString());
+    }
   }
 
   /// Value for [delay] should increase with widget tree size. Prefered value is 1 seconds

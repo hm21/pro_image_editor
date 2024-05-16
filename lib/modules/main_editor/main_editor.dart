@@ -1255,9 +1255,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
     Uint8List bytes = Uint8List.fromList([]);
     try {
-      bytes = await _controllers.screenshot.capture(
-            pixelRatio: configs.removeTransparentAreas ? null : _pixelRatio,
-          ) ??
+      bytes = await _controllers.screenshot
+              .capture(configs.removeTransparentAreas ? null : _pixelRatio) ??
           bytes;
     } catch (_) {}
 
@@ -1382,11 +1381,11 @@ class ProImageEditorState extends State<ProImageEditor>
       _stateManager.editPosition = import.editorPosition + 1;
       _stateManager.stateHistory = [
         EditorStateHistory(
-            transformConfigs: _stateManager
-                .stateHistory[_stateManager.editPosition].transformConfigs,
-            blur: BlurStateHistory(),
-            filters: [],
-            layers: []),
+          transformConfigs: TransformConfigs.empty(),
+          blur: BlurStateHistory(),
+          filters: [],
+          layers: [],
+        ),
         ...import.stateHistory
       ];
     } else {
@@ -1442,12 +1441,14 @@ class ProImageEditorState extends State<ProImageEditor>
         child: ScreenResizeDetector(
           onResizeUpdate: (event) {
             _sizesManager.lastScreenSize = event.newConstraints.biggest;
-/*  TODO: resize croprect
-            Size originalSize = _stateManager.transformConfigs.originalSize;
+/*  TODO: resize croprect*/
+            /*       Size originalSize = _stateManager.transformConfigs.originalSize;
             Rect cropRect = _stateManager.transformConfigs.cropRect;
             if (cropRect != Rect.largest) {
-              double bodyHelperW = _screenSize.bodySize.width - 20;
-              double bodyHelperH = _screenSize.bodySize.height - 20;
+              double bodyW = _sizesManager.bodySize.width;
+
+              double bodyHelperW = bodyW - 40;
+              double bodyHelperH = _sizesManager.bodySize.height - 40;
 
               bool widthToSmall = cropRect.width > bodyHelperW;
               bool heightToSmall = cropRect.height > bodyHelperH;
@@ -1455,42 +1456,29 @@ class ProImageEditorState extends State<ProImageEditor>
               bool widthToBig = cropRect.width > bodyHelperW;
               bool heightToBig = cropRect.height > bodyHelperH;
 
-              if (widthToSmall && heightToSmall) {
-                print('width 1');
-                _stateManager.transformConfigs.originalSize = Size(
-                  bodyHelperW,
-                  bodyHelperW / originalSize.aspectRatio,
-                );
-                _stateManager.transformConfigs.cropRect = Rect.fromCenter(
-                  center: cropRect.center,
-                  width: bodyHelperW,
-                  height: bodyHelperW / cropRect.size.aspectRatio,
-                );
-              } else if (widthToSmall) {
-                print('width 2');
-                _stateManager.transformConfigs.originalSize = Size(
-                  bodyHelperW,
-                  bodyHelperW / originalSize.aspectRatio,
-                );
-                _stateManager.transformConfigs.cropRect = Rect.fromCenter(
-                  center: cropRect.center,
-                  width: bodyHelperW,
-                  height: bodyHelperW / cropRect.size.aspectRatio,
-                );
-              } else if (heightToSmall) {
-                print('width 3');
-                _stateManager.transformConfigs.originalSize = Size(
-                  bodyHelperW,
-                  bodyHelperW / originalSize.aspectRatio,
-                );
-                _stateManager.transformConfigs.cropRect = Rect.fromCenter(
-                  center: cropRect.center,
-                  width: bodyHelperW,
-                  height: bodyHelperW / cropRect.size.aspectRatio,
-                );
-              } else if (widthToBig && heightToBig) {
-                print('w');
-              }
+              bool fitToWidth = bodyHelperW == cropRect.width;
+              bool fitToHeight = bodyHelperH == cropRect.height;
+
+              print({
+                'widthToSmall': widthToSmall,
+                'heightToSmall': heightToSmall,
+                'fitToWidth': fitToWidth,
+                'fitToHeight': fitToHeight,
+                'cropRect': cropRect,
+                'cropRectRatio': cropRect.size.aspectRatio,
+                'originalSizeRatio': originalSize.aspectRatio,
+                'margin': _sizesManager.imageMargin,
+              });
+              _stateManager.transformConfigs.cropEditorScreenRatio = _sizesManager.bodySize.aspectRatio;
+              _stateManager.transformConfigs.originalSize = Size(
+                bodyHelperW,
+                bodyHelperW / originalSize.aspectRatio,
+              );
+              _stateManager.transformConfigs.cropRect = Rect.fromCenter(
+                center: cropRect.center,
+                width: bodyHelperW,
+                height: bodyHelperW / cropRect.size.aspectRatio,
+              );
             } */
           },
           onResizeEnd: (event) async {
@@ -1700,6 +1688,9 @@ class ProImageEditorState extends State<ProImageEditor>
             margin: const EdgeInsets.only(top: 7),
             color: imageEditorTheme.filterEditor.whatsAppBottomBarColor,
             child: FilterEditorItemList(
+              mainBodySize: _sizesManager.bodySize,
+              mainImageSize: _sizesManager.decodedImageSize,
+              transformConfigs: _stateManager.transformConfigs,
               itemScaleFactor:
                   max(0, min(1, 1 / 120 * _whatsAppHelper.filterShowHelper)),
               byteArray: widget.byteArray,

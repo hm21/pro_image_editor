@@ -1,5 +1,3 @@
-// ignore_for_file: depend_on_referenced_packages
-
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';

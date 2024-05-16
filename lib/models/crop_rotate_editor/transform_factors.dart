@@ -5,7 +5,7 @@ class TransformConfigs {
   final Offset offset;
   late Rect cropRect;
   late Size originalSize;
-  final double cropEditorScreenRatio;
+  late double cropEditorScreenRatio;
   final double angle;
   final double scaleUser;
   final double scaleRotation;
@@ -85,6 +85,7 @@ class TransformConfigs {
   }
 
   Map toMap() {
+    if (isEmpty) return {};
     return {
       'angle': angle,
       'cropRect': {
