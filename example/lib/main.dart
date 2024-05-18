@@ -2,6 +2,7 @@ import 'package:example/pages/firebase_supabase_example.dart';
 import 'package:example/pages/import_export_example.dart';
 import 'package:example/pages/pick_image_example.dart';
 import 'package:example/pages/selectable_layer_example.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,6 +23,7 @@ void main() async {
   await Supabase.initialize(
     url: 'SUPABASE_URL',
     anonKey: 'SUPABASE_ANON_KEY',
+    debug: false,
   );
 
   runApp(const MyApp());
@@ -70,75 +72,102 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildCard(),
+      body: SafeArea(child: _buildCard()),
     );
   }
 
   Widget _buildCard() {
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 700),
-        child: Card(
-          clipBehavior: Clip.hardEdge,
-          margin: const EdgeInsets.all(16),
-          child: _buildExamples(),
-        ),
-      ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        if (constraints.maxWidth >= 750) {
+          return Container(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: Card.outlined(
+              margin: const EdgeInsets.all(16),
+              clipBehavior: Clip.hardEdge,
+              child: _buildExamples(),
+            ),
+          );
+        } else {
+          return _buildExamples();
+        }
+      }),
     );
   }
 
   Widget _buildExamples() {
-    return Scrollbar(
-      controller: _scrollCtrl,
-      thumbVisibility: true,
-      trackVisibility: true,
-      child: SingleChildScrollView(
-        controller: _scrollCtrl,
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Text(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
                 'Examples',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            Divider(height: 1),
-            DefaultExample(),
-            Divider(height: 1),
-            StickersExample(),
-            Divider(height: 1),
-            WhatsAppExample(),
-            Divider(height: 1),
-            GoogleFontExample(),
-            Divider(height: 1),
-            CustomAppbarBottombarExample(),
-            Divider(height: 1),
-            MoveableBackgroundImageExample(),
-            Divider(height: 1),
-            HighlyConfigurableExample(),
-            Divider(height: 1),
-            ReorderLayerExample(),
-            Divider(height: 1),
-            SelectableLayerExample(),
-            Divider(height: 1),
-            PickImageExample(),
-            Divider(height: 1),
-            RoundCropperExample(),
-            Divider(height: 1),
-            FirebaseSupabaseExample(),
-            Divider(height: 1),
-            ImportExportExample(),
-            Divider(height: 1),
-            ImageFormatConvertExample(),
-          ],
+              if (kIsWeb)
+                Text(
+                  'The "web" platform has slower performance compared to the other platforms because the "web" platform doesn\'t support isolates.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
         ),
-      ),
+        const Divider(height: 1),
+        Flexible(
+          child: Scrollbar(
+            controller: _scrollCtrl,
+            thumbVisibility: true,
+            trackVisibility: true,
+            child: SingleChildScrollView(
+              controller: _scrollCtrl,
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DefaultExample(),
+                  Divider(height: 1),
+                  StickersExample(),
+                  Divider(height: 1),
+                  WhatsAppExample(),
+                  Divider(height: 1),
+                  GoogleFontExample(),
+                  Divider(height: 1),
+                  CustomAppbarBottombarExample(),
+                  Divider(height: 1),
+                  MoveableBackgroundImageExample(),
+                  Divider(height: 1),
+                  HighlyConfigurableExample(),
+                  Divider(height: 1),
+                  ReorderLayerExample(),
+                  Divider(height: 1),
+                  SelectableLayerExample(),
+                  Divider(height: 1),
+                  PickImageExample(),
+                  Divider(height: 1),
+                  RoundCropperExample(),
+                  Divider(height: 1),
+                  FirebaseSupabaseExample(),
+                  Divider(height: 1),
+                  ImportExportExample(),
+                  Divider(height: 1),
+                  ImageFormatConvertExample(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

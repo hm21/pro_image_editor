@@ -14,8 +14,8 @@ class LayerInteractionHelperWidget extends StatefulWidget
   final ProImageEditorConfigs configs;
   final Widget child;
 
-  final Function() onEditLayer;
-  final Function() onRemoveLayer;
+  final Function()? onEditLayer;
+  final Function()? onRemoveLayer;
   final Function(PointerDownEvent)? onScaleRotateDown;
   final Function(PointerUpEvent)? onScaleRotateUp;
 
@@ -30,8 +30,8 @@ class LayerInteractionHelperWidget extends StatefulWidget
     required this.layerData,
     required this.child,
     required this.configs,
-    required this.onEditLayer,
-    required this.onRemoveLayer,
+    this.onEditLayer,
+    this.onRemoveLayer,
     this.onScaleRotateDown,
     this.onScaleRotateUp,
     this.selected = false,

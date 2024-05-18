@@ -67,8 +67,13 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
         onImageEditingComplete: (bytes) async {
           editedBytes = bytes;
 
-          await _uploadFirebase(bytes);
-          await _uploadSupabase(bytes);
+          try {
+            await _uploadFirebase(bytes);
+            await _uploadSupabase(bytes);
+          } catch (e) {
+            debugPrint(
+                'Failed: You need to completly set up firebase or supabase in your project.');
+          }
 
           if (mounted) Navigator.pop(context);
         },

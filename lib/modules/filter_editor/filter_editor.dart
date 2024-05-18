@@ -182,7 +182,7 @@ class FilterEditorState extends State<FilterEditor>
           message: i18n.filterEditor.applyFilterDialogMsg,
           imageEditorTheme: imageEditorTheme,
         );
-      var data = await screenshotController.capture();
+      var data = await screenshotController.capture(configs: configs);
       _createScreenshot = false;
       if (mounted) {
         loading.hide(context);

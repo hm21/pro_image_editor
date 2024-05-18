@@ -1,5 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -27,6 +30,9 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
       },
       leading: const Icon(Icons.emoji_emotions_outlined),
       title: const Text('Google-Font Emojis'),
+      subtitle: !kIsWeb && Platform.isWindows
+          ? const Text('Windows didn\'t support "GoogleFonts.notoColorEmoji".')
+          : null,
       trailing: const Icon(Icons.chevron_right),
     );
   }

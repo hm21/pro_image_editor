@@ -25,7 +25,6 @@ import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/layer.dart';
 import '../../models/transform_helper.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../../utils/image_helpers.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
@@ -534,11 +533,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
         ),
       );
 
-      Uint8List bytes =
-          await ContentRecorderController().captureFromWidget(editorWidget);
-      if (configs.removeTransparentAreas) {
-        bytes = await removeTransparentImgAreas(bytes) ?? bytes;
-      }
+      Uint8List? bytes = await ContentRecorderController().captureFromWidget(
+        editorWidget,
+        configs: configs,
+      );
 
       if (mounted) loading.hide(context);
 

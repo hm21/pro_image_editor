@@ -61,11 +61,11 @@ class PaintingController extends ChangeNotifier {
 
   /// Creates an instance of the `PaintingController` with initial settings.
   ///
-  /// - [strokeWidth]: The initial stroke width.
-  /// - [color]: The initial color.
-  /// - [mode]: The initial painting mode (e.g., line, circle, rectangle).
-  /// - [fill]: Whether the initial mode should fill the shape (e.g., circle or rectangle).
-  /// - [strokeMultiplier]: The multiplier for the stroke width.
+  /// - `strokeWidth`: The initial stroke width.
+  /// - `color`: The initial color.
+  /// - `mode`: The initial painting mode (e.g., line, circle, rectangle).
+  /// - `fill`: Whether the initial mode should fill the shape (e.g., circle or rectangle).
+  /// - `strokeMultiplier`: The multiplier for the stroke width.
   PaintingController({
     required double strokeWidth,
     required Color color,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
@@ -12,6 +14,8 @@ class StickersExample extends StatefulWidget {
 
 class _StickersExampleState extends State<StickersExample>
     with ExampleHelperState<StickersExample> {
+  final Map<int, GlobalKey<StickerState>> _keys = {};
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -55,53 +59,22 @@ class _StickersExampleState extends State<StickersExample>
                   itemCount: 21,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
-                    Widget widget = ClipRRect(
-                      borderRadius: BorderRadius.circular(7),
-                      child: Image.network(
-                        'https://picsum.photos/id/${(index + 3) * 3}/2000',
-                        width: 120,
-                        height: 120,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          return AnimatedSwitcher(
-                            layoutBuilder: (currentChild, previousChildren) {
-                              return SizedBox(
-                                width: 120,
-                                height: 120,
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  alignment: Alignment.center,
-                                  children: <Widget>[
-                                    ...previousChildren,
-                                    if (currentChild != null) currentChild,
-                                  ],
-                                ),
-                              );
-                            },
-                            duration: const Duration(milliseconds: 200),
-                            child: loadingProgress == null
-                                ? child
-                                : Center(
-                                    child: CircularProgressIndicator(
-                                      value:
-                                          loadingProgress.expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                    ),
-                                  ),
-                          );
-                        },
-                      ),
-                    );
+                    if (!_keys.containsKey(index)) _keys[index] = GlobalKey();
+
                     return GestureDetector(
-                      onTap: () => setLayer(widget),
+                      onTap: () async {
+                        // Important make sure the image is completly loaded
+                        // cuz the editor will directly take a screenshot
+                        // inside of a background isolated thread.
+                        await _keys[index]!
+                            .currentState!
+                            .imgLoadedCompleter
+                            .future;
+                        setLayer(Sticker(index: index));
+                      },
                       child: MouseRegion(
                         cursor: SystemMouseCursors.click,
-                        child: widget,
+                        child: Sticker(key: _keys[index], index: index),
                       ),
                     );
                   },
@@ -110,6 +83,69 @@ class _StickersExampleState extends State<StickersExample>
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class Sticker extends StatefulWidget {
+  final int index;
+
+  const Sticker({
+    super.key,
+    required this.index,
+  });
+
+  @override
+  State<Sticker> createState() => StickerState();
+}
+
+class StickerState extends State<Sticker> {
+  final Completer imgLoadedCompleter = Completer.sync();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(7),
+      child: Image.network(
+        'https://picsum.photos/id/${(widget.index + 3) * 3}/2000',
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          return AnimatedSwitcher(
+            layoutBuilder: (currentChild, previousChildren) {
+              return SizedBox(
+                width: 120,
+                height: 120,
+                child: Stack(
+                  fit: StackFit.expand,
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    ...previousChildren,
+                    if (currentChild != null) currentChild,
+                  ],
+                ),
+              );
+            },
+            duration: const Duration(milliseconds: 200),
+            child: loadingProgress == null
+                ? Builder(builder: (context) {
+                    if (!imgLoadedCompleter.isCompleted) {
+                      imgLoadedCompleter.complete();
+                    }
+                    return child;
+                  })
+                : Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+          );
+        },
       ),
     );
   }

@@ -27,18 +27,10 @@ void main() {
               LayerWidget(
                 editorBodySize: const Size(500, 500),
                 layerData: layer,
-                onTapDown: () {},
-                onTapUp: () {},
+                configs: const ProImageEditorConfigs(),
                 onTap: (Layer layer) {
                   expect(layer, equals(layer));
                 },
-                configs: const ProImageEditorConfigs(),
-                onEditTap: () {},
-                onRemoveTap: () {},
-                enableHitDetection: true,
-                freeStyleHighPerformanceScaling: true,
-                freeStyleHighPerformanceMoving: true,
-                freeStyleHighPerformanceHero: false,
               ),
             ],
           ),

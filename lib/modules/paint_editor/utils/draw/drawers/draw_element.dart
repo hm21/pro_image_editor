@@ -1,5 +1,6 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
+import '../../../../../models/paint_editor/painted_model.dart';
 import '../../paint_editor_enum.dart';
 import 'draw_arrow.dart';
 import 'draw_dash_line.dart';
@@ -12,31 +13,28 @@ import 'draw_free_style.dart';
 /// of the element is determined by the provided [mode] and additional parameters
 /// such as [offsets], [painter], [scale], [start], and [end].
 ///
-/// - [canvas]: The canvas on which to draw the element.
-/// - [size]: The size of the canvas.
-/// - [mode]: The paint mode indicating the type of element to draw (e.g., freehand,
-///   straight line, arrow, etc.).
-/// - [offsets]: A list of points representing the element's path (used for freehand
-///   drawing).
-/// - [painter]: The paint object specifying the element's appearance (e.g., color,
-///   stroke width).
-/// - [scale]: The scaling factor applied to the coordinates of the element.
-/// - [start]: The starting point of the element (used for straight lines, arrows,
-///   dashed lines, rectangles, and circles).
-/// - [end]: The ending point of the element (used for straight lines, arrows,
-///   dashed lines, rectangles, and circles).
-/// - [freeStyleHighPerformance]: Controls high-performance for free-style drawing.
+/// - `canvas`: The canvas on which to draw the element.
+/// - `size`: The size of the canvas.
+/// - `scale`: The scaling factor applied to the coordinates of the element.
+/// - `freeStyleHighPerformance`: Controls high-performance for free-style drawing.
+/// - `item` Represents a unit of shape or drawing information used in painting.
 void drawElement({
   required Canvas canvas,
   required Size size,
-  required PaintModeE mode,
-  required List<Offset?> offsets,
-  required Paint painter,
-  required bool freeStyleHighPerformance,
+  required PaintedModel item,
+  bool freeStyleHighPerformance = false,
   double scale = 1,
-  Offset? start,
-  Offset? end,
 }) {
+  var painter = Paint()
+    ..color = item.paint.color
+    ..style = item.paint.style
+    ..strokeWidth = item.paint.strokeWidth * scale;
+
+  PaintModeE mode = item.mode;
+  List<Offset?> offsets = item.offsets;
+  Offset? start = item.offsets[0];
+  Offset? end = item.offsets[1];
+
   switch (mode) {
     case PaintModeE.freeStyle:
       drawFreeStyle(
@@ -69,6 +67,6 @@ void drawElement({
       canvas.drawPath(path, painter);
       break;
     default:
-      throw '$mode is not a valid PaintModeE';
+      throw ErrorHint('$mode is not a valid PaintModeE');
   }
 }

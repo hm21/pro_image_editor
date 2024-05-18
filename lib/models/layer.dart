@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/unique_id_generator.dart';
 import '../widgets/layer_widget.dart';
 import 'paint_editor/painted_model.dart';
 
@@ -37,7 +36,7 @@ class Layer {
     bool? flipY,
   }) {
     // Initialize properties with provided values or defaults.
-    this.id = id ?? _generateUniqueId();
+    this.id = id ?? generateUniqueId();
     this.offset = offset ?? const Offset(64, 64);
     this.rotation = rotation ?? 0;
     this.scale = scale ?? 1;
@@ -123,24 +122,6 @@ class Layer {
       default:
         return layer;
     }
-  }
-
-  /// Generates a unique ID based on the current time.
-  String _generateUniqueId() {
-    const String characters =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-    final Random random = Random();
-    final String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000)
-        .toRadixString(36)
-        .padLeft(8, '0');
-
-    String randomPart = '';
-    for (int i = 0; i < 20; i++) {
-      randomPart += characters[random.nextInt(characters.length)];
-    }
-
-    return '$timestamp$randomPart';
   }
 
   /// Converts this transform object to a Map.

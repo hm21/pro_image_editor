@@ -60,16 +60,18 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
                   context: context,
                   showDragHandle: true,
                   builder: (context) {
-                    return ReorderLayerSheet(
-                      layers: editorKey.currentState!.activeLayers,
-                      onReorder: (oldIndex, newIndex) {
-                        editorKey.currentState!.moveLayerListPosition(
-                          oldIndex: oldIndex,
-                          newIndex: newIndex,
-                        );
-                        /* Navigator.pop(context); */
-                      },
-                    );
+                    return StatefulBuilder(builder: (context, setState) {
+                      return ReorderLayerSheet(
+                        layers: editorKey.currentState!.activeLayers,
+                        onReorder: (oldIndex, newIndex) {
+                          editorKey.currentState!.moveLayerListPosition(
+                            oldIndex: oldIndex,
+                            newIndex: newIndex,
+                          );
+                          setState(() {});
+                        },
+                      );
+                    });
                   },
                 );
               },

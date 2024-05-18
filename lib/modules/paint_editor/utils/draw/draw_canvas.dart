@@ -36,20 +36,11 @@ class DrawCanvas extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var painter = Paint()
-      ..color = item.paint.color
-      ..style = item.paint.style
-      ..strokeWidth = item.paint.strokeWidth * scale;
-
     drawElement(
       canvas: canvas,
       size: size,
-      mode: item.mode,
-      painter: painter,
+      item: item,
       scale: scale,
-      offsets: item.offsets,
-      start: item.offsets[0],
-      end: item.offsets[1],
       freeStyleHighPerformance: freeStyleHighPerformance,
     );
   }
@@ -58,9 +49,6 @@ class DrawCanvas extends CustomPainter {
   bool shouldRepaint(DrawCanvas oldDelegate) {
     return oldDelegate.item != item;
   }
-
-  @override
-  bool shouldRebuildSemantics(DrawCanvas oldDelegate) => true;
 
   @override
   bool hitTest(Offset position) {

@@ -179,30 +179,28 @@ To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE
 
 ### Web
 
-If you're displaying emoji on the web and want them to be colored by default (especially if you're not using a custom font like Noto Emoji), you can achieve this by adding the `useColorEmoji: true` parameter to your `index.html`, as shown in the code snippet below:
+If you're displaying emoji on the web and want them to be colored by default (especially if you're not using a custom font like Noto Emoji), you can achieve this by adding the `useColorEmoji: true` parameter to your `flutter_bootstrap.js` file, as shown in the code snippet below:
 
 <details>
   <summary>Show code example</summary>
 
-```html
-<body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function (engineInitializer) {
-          engineInitializer.initializeEngine({
-            useColorEmoji: true, // add this parameter
-          }).then(function (appRunner) {
-            appRunner.runApp();
-          });
-        }
+```js
+{{flutter_js}}
+{{flutter_build_config}}
+
+_flutter.loader.load({
+    serviceWorkerSettings: {
+        serviceWorkerVersion: {{flutter_service_worker_version}},
+    },
+    onEntrypointLoaded: function (engineInitializer) {
+      engineInitializer.initializeEngine({
+        useColorEmoji: true, // add this parameter
+        renderer: 'canvaskit'
+      }).then(function (appRunner) {
+        appRunner.runApp();
       });
-    });
-  </script>
-</body>
+    }
+});
 ```
 </details>
 
@@ -210,36 +208,36 @@ If you're displaying emoji on the web and want them to be colored by default (es
 
 The HTML renderer can cause problems on some devices, especially mobile devices. If you don't know the exact type of phone your customers will be using, it is recommended to use the Canvas renderer.
 
-To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `index.html
+To enable the Canvaskit renderer by default for better compatibility with mobile web devices, you can do the following in your `flutter_bootstrap.js` file.
 
 <details>
   <summary>Show code example</summary>
 
-```html
-<body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function (engineInitializer) {
-          engineInitializer.initializeEngine({
-            useColorEmoji: true,
-            renderer:'canvaskit', // add this parameter
-          }).then(function (appRunner) {
-            appRunner.runApp();
-          });
-        }
+```js
+{{flutter_js}}
+{{flutter_build_config}}
+
+_flutter.loader.load({
+    serviceWorkerSettings: {
+        serviceWorkerVersion: {{flutter_service_worker_version}},
+    },
+    onEntrypointLoaded: function (engineInitializer) {
+      engineInitializer.initializeEngine({
+        useColorEmoji: true,
+        renderer: 'canvaskit' // add this parameter
+      }).then(function (appRunner) {
+        appRunner.runApp();
       });
-    });
-  </script>
-</body>
+    }
+});
 ```
 </details>
+
 <br/>
 
 By making this change, you can enhance filter compatibility and ensure a smoother experience on older Android phones and various mobile web devices.
+<br/>
+You can view the full web example [here](https://github.com/hm21/pro_image_editor/tree/stable/example/web).
 
 
 ### iOS, macOS, Linux, Windows
@@ -307,96 +305,9 @@ Widget build(BuildContext context) {
 
 #### Own stickers or widgets
 
-To display stickers or widgets in the ProImageEditor, you have the flexibility to customize and load your own content. The `buildStickers` method allows you to define your own logic for loading stickers, whether from a backend, assets, or local storage, and then push them into the editor. The example below demonstrates how to load images that can serve as stickers and then add them to the editor:
+To display stickers or widgets in the ProImageEditor, you have the flexibility to customize and load your own content. The `buildStickers` method allows you to define your own logic for loading stickers, whether from a backend, assets, or local storage, and then push them into the editor. The example [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/stickers_example.dart) demonstrates how to load images that can serve as stickers and then add them to the editor.
 
-<details>
-  <summary>Show code example</summary>
 
-```dart
-ProImageEditor.network(
-  'https://picsum.photos/id/156/2000',  
-  callbacks: ProImageEditorCallbacks(
-    onImageEditingComplete: (Uint8List bytes) async {
-      /*
-        Your code to handle the edited image. Upload it to your server as an example.
-        You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-        The returned image format is `png`.
-      */
-      Navigator.pop(context);
-    },
-  ),
-  configs: ProImageEditorConfigs(
-    stickerEditorConfigs: StickerEditorConfigs(
-      enabled: true,
-      buildStickers: (setLayer) {
-         return ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: Container(
-            color: const Color.fromARGB(255, 224, 239, 251),
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 150,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-              ),
-              itemCount: 21,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                Widget widget = ClipRRect(
-                  borderRadius: BorderRadius.circular(7),
-                  child: Image.network(
-                    'https://picsum.photos/id/${(index + 3) * 3}/2000',
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      return AnimatedSwitcher(
-                        layoutBuilder: (currentChild, previousChildren) {
-                          return SizedBox(
-                            width: 120,
-                            height: 120,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              alignment: Alignment.center,
-                              children: <Widget>[
-                                ...previousChildren,
-                                if (currentChild != null) currentChild,
-                              ],
-                            ),
-                          );
-                        },
-                        duration: const Duration(milliseconds: 200),
-                        child: loadingProgress == null
-                            ? child
-                            : Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              ),
-                      );
-                    },
-                  ),
-                );
-                return GestureDetector(
-                  onTap: () => setLayer(widget),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: widget,
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    ),
-  ),
-),
-```
-</details>
 
 #### WhatsApp design
 
@@ -1801,8 +1712,9 @@ This package uses several Flutter packages to provide a seamless editing experie
 - [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
 - [defer_pointer](https://pub.dev/packages/defer_pointer)
 - [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
-- [rounded_background_text](https://pub.dev/packages/rounded_background_text)
 - [http](https://pub.dev/packages/http)
+- [image](https://pub.dev/packages/image)
+- [rounded_background_text](https://pub.dev/packages/rounded_background_text)
 - [vibration](https://pub.dev/packages/vibration)
 
 These packages play a crucial role in enabling various features and functionalities in this package.

@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:rounded_background_text/rounded_background_text.dart';
+
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/theme_functions.dart';
-import 'package:rounded_background_text/rounded_background_text.dart';
 
 import '../mixins/converted_configs.dart';
 import '../mixins/editor_configs_mixin.dart';
@@ -25,40 +26,25 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   final Layer layerData;
 
   /// Callback when a tap down event occurs.
-  final Function() onTapDown;
+  final Function()? onTapDown;
 
   /// Callback when a tap up event occurs.
-  final Function() onTapUp;
+  final Function()? onTapUp;
 
   /// Callback when a tap event occurs.
-  final Function(Layer) onTap;
+  final Function(Layer)? onTap;
 
   /// Callback for removing the layer.
-  final Function() onRemoveTap;
+  final Function()? onRemoveTap;
 
   /// Callback for editing the layer.
-  final Function() onEditTap;
+  final Function()? onEditTap;
 
   final Function(PointerDownEvent, Size)? onScaleRotateDown;
   final Function(PointerUpEvent)? onScaleRotateUp;
 
-  /// Enables high-performance scaling for free-style drawing when set to `true`.
-  ///
-  /// When this option is enabled, it optimizes scaling for improved performance.
-  /// By default, it's set to `true` on mobile devices and `false` on desktop devices.
-  final bool freeStyleHighPerformanceScaling;
-
-  /// Enables high-performance moving for free-style drawing when set to `true`.
-  ///
-  /// When this option is enabled, it optimizes moving for improved performance.
-  /// By default, it's set to `true` only on mobile-web devices.
-  final bool freeStyleHighPerformanceMoving;
-
-  /// Enables high-performance hero-animation for free-style drawing when set to `true`.
-  ///
-  /// When this option is enabled, it optimizes hero-animations for improved performance.
-  /// By default, it's set to `false`.
-  final bool freeStyleHighPerformanceHero;
+  /// Controls high-performance for free-style drawing.
+  final bool highPerformanceMode;
 
   /// Enables or disables hit detection.
   /// When set to `true`, it allows detecting user interactions with the interface.
@@ -78,15 +64,13 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     required this.editorBodySize,
     required this.configs,
     required this.layerData,
-    required this.onTapDown,
-    required this.onTapUp,
-    required this.onTap,
-    required this.onEditTap,
-    required this.onRemoveTap,
-    required this.enableHitDetection,
-    required this.freeStyleHighPerformanceScaling,
-    required this.freeStyleHighPerformanceMoving,
-    required this.freeStyleHighPerformanceHero,
+    this.onTapDown,
+    this.onTapUp,
+    this.onTap,
+    this.onEditTap,
+    this.onRemoveTap,
+    this.highPerformanceMode = false,
+    this.enableHitDetection = false,
     this.selected = false,
     this.isInteractive = false,
   });
@@ -156,7 +140,7 @@ class _LayerWidgetState extends State<LayerWidget>
       ],
     ).then((String? selectedValue) {
       if (selectedValue != null) {
-        widget.onRemoveTap();
+        widget.onRemoveTap?.call();
       }
     });
   }
@@ -164,20 +148,20 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Handles a tap event on the layer.
   void _onTap() {
     if (_checkHitIsOutsideInCanvas()) return;
-    widget.onTap(_layer);
+    widget.onTap?.call(_layer);
   }
 
   /// Handles a pointer down event on the layer.
   void _onPointerDown(PointerDownEvent event) {
     if (_checkHitIsOutsideInCanvas()) return;
     if (!isDesktop || event.buttons != kSecondaryMouseButton) {
-      widget.onTapDown();
+      widget.onTapDown?.call();
     }
   }
 
   /// Handles a pointer up event on the layer.
   void _onPointerUp(PointerUpEvent event) {
-    widget.onTapUp();
+    widget.onTapUp?.call();
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
@@ -382,6 +366,7 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Build the canvas widget
   Widget _buildCanvas() {
     var layer = _layer as PaintingLayerData;
+
     return Padding(
       // Better hit detection for mobile devices
       padding: EdgeInsets.all(isDesktop ? 0 : 15),
@@ -394,9 +379,7 @@ class _LayerWidgetState extends State<LayerWidget>
           scale: widget.layerData.scale,
           selected: widget.selected,
           enabledHitDetection: widget.enableHitDetection,
-          freeStyleHighPerformance: widget.freeStyleHighPerformanceScaling ||
-              widget.freeStyleHighPerformanceMoving ||
-              widget.freeStyleHighPerformanceHero,
+          freeStyleHighPerformance: widget.highPerformanceMode,
         ),
       ),
     );

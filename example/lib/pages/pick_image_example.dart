@@ -50,7 +50,7 @@ class _PickImageExampleState extends State<PickImageExample>
       return;
     }
 
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       showCupertinoModalPopup(
         context: context,
         builder: (BuildContext context) => CupertinoTheme(
@@ -142,7 +142,7 @@ class _PickImageExampleState extends State<PickImageExample>
       title: const Text('Pick from Gallery or Camera'),
       subtitle: !kIsWeb &&
               (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
-          ? const Text('Camera is not supported on this platform.')
+          ? const Text('The camera is not supported on this platform.')
           : null,
       trailing: const Icon(Icons.chevron_right),
     );

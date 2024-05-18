@@ -2,30 +2,134 @@
 // https://pub.dev/packages/screenshot
 
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:isolate';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:image/image.dart' as img;
+import 'package:pro_image_editor/utils/unique_id_generator.dart';
+
+import '../image_helpers.dart';
 
 class ContentRecorderController {
   late final GlobalKey containerKey;
+  Isolate? _isolate;
+  final Map<String, Completer<Uint8List?>> _uniqueCompleter = {};
+  late SendPort _sendPort;
+  late ReceivePort _receivePort;
+  late Completer _isolateReady;
 
   ContentRecorderController() {
     containerKey = GlobalKey();
+    if (!kIsWeb) _initIsolate();
   }
 
-  Future<Uint8List?> capture([double? pixelRatio]) {
-    return Future.delayed(const Duration(milliseconds: 20), () async {
-      ui.Image? image = await _getRenderedImage(pixelRatio);
-      if (image == null) return null;
-
-      ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      image.dispose();
-
-      return byteData?.buffer.asUint8List();
+  void _initIsolate() async {
+    _isolateReady = Completer.sync();
+    _receivePort = ReceivePort();
+    _receivePort.listen((message) {
+      if (message is SendPort) {
+        _sendPort = message;
+        _isolateReady.complete();
+      } else if (message is ResponseFromImageThread) {
+        _uniqueCompleter[message.completerId]!.complete(message.bytes);
+      }
     });
+    _isolate =
+        await Isolate.spawn(isolatedImageConverter, _receivePort.sendPort);
+  }
+
+  void destroy() {
+    if (!kIsWeb) {
+      _isolate?.kill();
+      _receivePort.close();
+    }
+  }
+
+  Future<Uint8List?> capture({
+    required ProImageEditorConfigs configs,
+    Function(ui.Image?)? onImageCaptured,
+    String? completerId,
+    double? pixelRatio,
+    ui.Image? image,
+  }) async {
+    image ??= await _getRenderedImage(pixelRatio);
+    completerId ??= generateUniqueId();
+    onImageCaptured?.call(image);
+    if (image == null) return null;
+
+    if (!kIsWeb) {
+      try {
+        // Run in dart native the thread seperate.
+        return await _captureIsolated(
+            configs: configs, image: image, completerId: completerId);
+      } catch (e) {
+        // Fallback to the main thread.
+        debugPrint(e.toString());
+        return await _captureInsideMainThread(configs: configs, image: image);
+      }
+    } else {
+      // In the web we need to run the thread inside the main thread.
+      // TODO: search faster solution for the web
+      return await _captureInsideMainThread(configs: configs, image: image);
+    }
+  }
+
+  Future<Uint8List?> _captureInsideMainThread({
+    required ProImageEditorConfigs configs,
+    required ui.Image image,
+  }) async {
+    if (configs.removeTransparentAreas) {
+      image = await dartUiRemoveTransparentImgAreas(
+            image,
+          ) ??
+          image;
+    }
+
+    // toByteData is a very slow task
+    final croppedByteData =
+        await image.toByteData(format: ui.ImageByteFormat.png);
+
+    image.dispose();
+
+    return croppedByteData?.buffer.asUint8List();
+  }
+
+  Future<Uint8List?> _captureIsolated({
+    required ProImageEditorConfigs configs,
+    required ui.Image image,
+    required String completerId,
+  }) async {
+    if (!_isolateReady.isCompleted) await _isolateReady.future;
+    _uniqueCompleter[completerId] = Completer.sync();
+
+    _sendPort.send(
+      ImageFromMainThread(
+        completerId: completerId,
+        image: await _convertFlutterUiToImage(image),
+      ),
+    );
+
+    Uint8List? bytes = await _uniqueCompleter[completerId]!.future;
+    _uniqueCompleter.remove(completerId);
+    return bytes;
+  }
+
+  Future<img.Image> _convertFlutterUiToImage(ui.Image uiImage) async {
+    final uiBytes =
+        await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+
+    final image = img.Image.fromBytes(
+      width: uiImage.width,
+      height: uiImage.height,
+      bytes: uiBytes!.buffer,
+      numChannels: 4,
+    );
+
+    return image;
   }
 
   Future<ui.Image?> _getRenderedImage(double? pixelRatio) async {
@@ -41,35 +145,34 @@ class ContentRecorderController {
         pixelRatio ??= MediaQuery.of(context).devicePixelRatio;
       }
 
-      /// TODO: search a way to capture it isolated to main thread by every state change
-      /// Maybe use other flutter isolate package
       ui.Image image = await boundary.toImage(pixelRatio: pixelRatio ?? 1);
       return image;
     } catch (e) {
-      throw ErrorHint(e.toString());
+      return null;
     }
   }
 
   /// Value for [delay] should increase with widget tree size. Prefered value is 1 seconds
   ///
   /// [context] parameter is used to Inherit App Theme and MediaQuery data.
-  Future<Uint8List> captureFromWidget(
+  Future<Uint8List?> captureFromWidget(
     Widget widget, {
     Duration delay = const Duration(seconds: 1),
     double? pixelRatio,
     BuildContext? context,
     Size? targetSize,
+    required ProImageEditorConfigs configs,
   }) async {
     ui.Image image = await widgetToUiImage(widget,
         delay: delay,
         pixelRatio: pixelRatio,
         context: context,
         targetSize: targetSize);
-    final ByteData? byteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-
-    return byteData!.buffer.asUint8List();
+    return capture(
+      configs: configs,
+      image: image,
+      pixelRatio: pixelRatio,
+    );
   }
 
   /// If you are building a desktop/web application that supports multiple view. Consider passing the [context] so that flutter know which view to capture.

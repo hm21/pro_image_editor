@@ -19,28 +19,27 @@ import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
 import 'package:vibration/vibration.dart';
 
-import '../../designs/whatsapp/whatsapp_filter_button.dart';
-import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
-import '../../mixins/editor_callbacks_mixin.dart';
-import '../../mixins/main_editor/main_editor_global_keys.dart';
-import '../../pro_image_editor.dart';
-import '../../utils/constants.dart';
-import '../../utils/content_recorder.dart/content_recorder.dart';
-import '../../utils/image_helpers.dart';
-import '../../widgets/auto_image.dart';
-import '../../widgets/transform/transformed_content_generator.dart';
+import '/designs/whatsapp/whatsapp_filter_button.dart';
+import '/designs/whatsapp/whatsapp_sticker_editor.dart';
+import '/mixins/editor_callbacks_mixin.dart';
+import '/mixins/main_editor/main_editor_global_keys.dart';
+import '/pro_image_editor.dart';
+import '/utils/constants.dart';
+import '/utils/content_recorder.dart/content_recorder.dart';
+import '/widgets/auto_image.dart';
+import '/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/image_with_filters.dart';
 import '../text_editor/text_editor.dart';
 import 'utils/desktop_interaction_manager.dart';
 import 'utils/sizes_manager.dart';
 import 'utils/whatsapp_helper.dart';
-import '../../models/history/filter_state_history.dart';
-import '../../models/history/state_history.dart';
-import '../../models/history/last_position.dart';
-import '../../models/editor_image.dart';
-import '../../models/history/blur_state_history.dart';
-import '../../models/import_export/export_state_history.dart';
-import '../../models/layer.dart';
+import '/models/history/filter_state_history.dart';
+import '/models/history/state_history.dart';
+import '/models/history/last_position.dart';
+import '/models/editor_image.dart';
+import '/models/history/blur_state_history.dart';
+import '/models/import_export/export_state_history.dart';
+import '/models/layer.dart';
 import 'utils/layer_interaction_manager.dart';
 import '../crop_rotate_editor/crop_rotate_editor.dart';
 import '../emoji_editor/emoji_editor.dart';
@@ -48,13 +47,13 @@ import '../filter_editor/filter_editor.dart';
 import '../filter_editor/widgets/filter_editor_item_list.dart';
 import '../blur_editor.dart';
 import '../paint_editor/paint_editor.dart';
-import '../../utils/debounce.dart';
-import '../../mixins/converted_configs.dart';
-import '../../widgets/adaptive_dialog.dart';
-import '../../widgets/flat_icon_text_button.dart';
-import '../../widgets/layer_widget.dart';
-import '../../widgets/loading_dialog.dart';
-import '../../widgets/pro_image_editor_desktop_mode.dart';
+import '/utils/debounce.dart';
+import '/mixins/converted_configs.dart';
+import '/widgets/adaptive_dialog.dart';
+import '/widgets/flat_icon_text_button.dart';
+import '/widgets/layer_widget.dart';
+import '/widgets/loading_dialog.dart';
+import '/widgets/pro_image_editor_desktop_mode.dart';
 
 /// A widget for image editing using ProImageEditor.
 ///
@@ -389,6 +388,8 @@ class ProImageEditorState extends State<ProImageEditor>
   Offset get newLayerOffsetPosition =>
       layerInteraction.newLayerOffsetPosition ?? Offset.zero;
 
+  Completer _pageOpenCompleter = Completer();
+
   @override
   void initState() {
     super.initState();
@@ -479,6 +480,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void addLayer(
     Layer layer, {
     int removeLayerIndex = -1,
+    bool blockSelectLayer = false,
   }) {
     _stateManager.cleanForwardChanges();
 
@@ -493,13 +495,19 @@ class ProImageEditorState extends State<ProImageEditor>
         filters: _stateManager.filters,
       ),
     );
+    takeScreenshot();
     _stateManager.editPosition++;
     if (removeLayerIndex >= 0) {
       activeLayers.removeAt(removeLayerIndex);
     }
-    if (_layerInteractionManager.layersAreSelectable(configs) &&
+    if (!blockSelectLayer &&
+        _layerInteractionManager.layersAreSelectable(configs) &&
         layerInteraction.initialSelected) {
-      _layerInteractionManager.selectedLayerId = layer.id;
+      /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        _layerInteractionManager.selectedLayerId = layer.id;
+        setState(() {});
+      });
     }
     callbacks.onAddLayer?.call();
   }
@@ -521,6 +529,7 @@ class ProImageEditorState extends State<ProImageEditor>
         filters: _stateManager.filters,
       ),
     );
+    takeScreenshot();
     var oldIndex = activeLayers
         .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
     if (oldIndex >= 0) {
@@ -546,6 +555,22 @@ class ProImageEditorState extends State<ProImageEditor>
         filters: _stateManager.filters,
       ),
     );
+    _layerInteractionManager.selectedLayerId = '';
+    setState(() {});
+    takeScreenshot();
+    /* 
+    String selectedLayerId = _layerInteractionManager.selectedLayerId;
+    _layerInteractionManager.selectedLayerId = '';
+    setState(() {});
+    takeScreenshot();
+    if (selectedLayerId.isNotEmpty) {
+      /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        _layerInteractionManager.selectedLayerId = selectedLayerId;
+        setState(() {});
+      });
+    } */
+
     var oldIndex =
         activeLayers.indexWhere((element) => element.id == _tempLayer!.id);
     if (oldIndex >= 0) {
@@ -801,6 +826,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
     setState(() {});
     callbacks.onOpenSubEditor?.call();
+    _pageOpenCompleter = Completer.sync();
     return Navigator.push<T?>(
       context,
       PageRouteBuilder(
@@ -822,11 +848,17 @@ class ProImageEditorState extends State<ProImageEditor>
             } else if (status == AnimationStatus.dismissed) {
               setState(() {
                 _isEditorOpen = false;
+                _pageOpenCompleter.complete(true);
                 _layerInteractionManager.freeStyleHighPerformanceHero = false;
                 if (_sizesManager.shouldRecalculateLayerPosition) {
                   _sizesManager.recalculateLayerPosition(activeLayers);
                 }
+                if (_stateManager.heroScreenshotRequired) {
+                  _stateManager.heroScreenshotRequired = false;
+                  takeScreenshot();
+                }
               });
+
               animation.removeStatusListener(animationStatusListener);
               callbacks.onCloseSubEditor?.call();
             }
@@ -844,7 +876,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method opens the painting editor and allows the user to draw on the current image.
   /// After closing the painting editor, any changes made are applied to the image's layers.
   void openPaintingEditor() async {
-    await _openPage<List<PaintingLayerData>>(
+    List<PaintingLayerData>? paintingLayers =
+        await _openPage<List<PaintingLayerData>>(
       PaintingEditor.autoSource(
         key: paintingEditor,
         file: _image.file,
@@ -864,16 +897,27 @@ class ProImageEditorState extends State<ProImageEditor>
         ),
       ),
       duration: const Duration(milliseconds: 150),
-    ).then((List<PaintingLayerData>? paintingLayers) {
-      if (paintingLayers != null && paintingLayers.isNotEmpty) {
-        for (var layer in paintingLayers) {
-          addLayer(layer);
-        }
-
-        setState(() {});
-        onUpdateUI?.call();
+    );
+    if (paintingLayers != null && paintingLayers.isNotEmpty) {
+      for (var layer in paintingLayers) {
+        addLayer(layer, blockSelectLayer: true);
       }
-    });
+
+      if (_layerInteractionManager.layersAreSelectable(configs) &&
+          layerInteraction.initialSelected) {
+        /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+        Future.delayed(const Duration(milliseconds: 1), () async {
+          if (_isEditorOpen) await _pageOpenCompleter.future;
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            _layerInteractionManager.selectedLayerId = paintingLayers.last.id;
+            setState(() {});
+          });
+        });
+      }
+
+      setState(() {});
+      onUpdateUI?.call();
+    }
   }
 
   /// Opens the text editor.
@@ -949,6 +993,7 @@ class ProImageEditorState extends State<ProImageEditor>
               ),
             );
             _stateManager.editPosition++;
+            _stateManager.heroScreenshotRequired = true;
 
             /// Important to reset the layer hero positions
             if (activeLayers.isNotEmpty) {
@@ -1017,6 +1062,7 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
     );
     _stateManager.editPosition++;
+    _stateManager.heroScreenshotRequired = true;
 
     setState(() {});
     onUpdateUI?.call();
@@ -1061,6 +1107,7 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
     );
     _stateManager.editPosition++;
+    _stateManager.heroScreenshotRequired = true;
 
     setState(() {});
     onUpdateUI?.call();
@@ -1193,6 +1240,19 @@ class ProImageEditorState extends State<ProImageEditor>
       var item = activeLayers.removeAt(oldIndex);
       activeLayers.insert(newIndex, item);
     }
+    _stateManager.cleanForwardChanges();
+    stateHistory.add(
+      EditorStateHistory(
+        transformConfigs: _stateManager
+            .stateHistory[_stateManager.editPosition].transformConfigs,
+        blur: _stateManager.blurStateHistory,
+        layers: List<Layer>.from(stateHistory.last.layers
+            .map((e) => _layerCopyManager.copyLayer(e))),
+        filters: _stateManager.filters,
+      ),
+    );
+    takeScreenshot();
+    _stateManager.editPosition++;
     setState(() {});
   }
 
@@ -1227,6 +1287,30 @@ class ProImageEditorState extends State<ProImageEditor>
     }
   }
 
+  /// Takes a screenshot of the current editor state.
+  ///
+  /// This method is intended to be used for capturing the current state of the editor
+  /// and saving it as an image. It will not perform any action if the app is running on the web.
+  ///
+  /// - If a subeditor is currently open, the method waits until it is fully loaded.
+  /// - The screenshot is taken in a post-frame callback to ensure the UI is fully rendered.
+  void takeScreenshot() async {
+    // Return immediately if running on the web platform
+    if (kIsWeb) return;
+
+    // Wait for the editor to be fully open, if it is currently opening
+    if (_isEditorOpen) await _pageOpenCompleter.future;
+
+    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _stateManager.isolateCaptureImage(
+        screenshotCtrl: _controllers.screenshot,
+        configs: configs,
+        pixelRatio: _pixelRatio,
+      );
+    });
+  }
+
   /// Complete the editing process and return the edited image.
   ///
   /// This function is called when the user is done editing the image. If no changes have been made
@@ -1237,6 +1321,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Before returning the edited image, a loading dialog is displayed to indicate that the operation
   /// is in progress.
   void doneEditing() async {
+    if (_doneEditing) return;
     if (_stateManager.editPosition <= 0 && activeLayers.isEmpty) {
       if (!configs.allowCompleteWithEmptyEditing) {
         return closeEditor();
@@ -1249,32 +1334,53 @@ class ProImageEditorState extends State<ProImageEditor>
       _layerInteractionManager.selectedLayerId = '';
     });
 
-    LoadingDialog loading = LoadingDialog()
-      ..show(
-        context,
-        i18n: i18n,
-        theme: _theme,
-        designMode: designMode,
-        message: i18n.doneLoadingMsg,
-        imageEditorTheme: imageEditorTheme,
-      );
+    /// Ensure hero animations finished
+    if (_isEditorOpen) await _pageOpenCompleter.future;
 
-    Uint8List bytes = Uint8List.fromList([]);
-    try {
-      bytes = await _controllers.screenshot
-              .capture(configs.removeTransparentAreas ? null : _pixelRatio) ??
-          bytes;
-    } catch (_) {}
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      LoadingDialog loading = LoadingDialog()
+        ..show(
+          context,
+          i18n: i18n,
+          theme: _theme,
+          designMode: designMode,
+          message: i18n.doneLoadingMsg,
+          imageEditorTheme: imageEditorTheme,
+        );
 
-    if (configs.removeTransparentAreas) {
-      bytes = await removeTransparentImgAreas(bytes) ?? bytes;
-    }
+      /// Make sure in the web that the loading dialog is visible before the main thread freezes.
+      if (kIsWeb) await Future.delayed(const Duration(milliseconds: 100));
 
-    await onImageEditingComplete(bytes);
+      double? pixelRatio = configs.removeTransparentAreas ? null : _pixelRatio;
+      late Uint8List? bytes;
 
-    if (mounted) loading.hide(context);
+      try {
+        if (_stateManager.editPosition > 0) {
+          if (!kIsWeb && !_stateManager.activeScreenshotIsBroken) {
+            // Get screenshot from isolated generated thread.
+            bytes = await _stateManager.activeScreenshot;
+          } else {
+            // Take a new screenshot if kIsWeb or the screenshot is broken.
+            bytes = await _controllers.screenshot
+                .capture(configs: configs, pixelRatio: pixelRatio);
+          }
+        } else {
+          // If the user didn't change anything return the original image.
+          bytes = await _image.safeByteArray;
+        }
+      } catch (e) {
+        debugPrint(e.toString());
+        // Take a new screenshot when something goes wrong.
+        bytes = await _controllers.screenshot
+            .capture(configs: configs, pixelRatio: pixelRatio);
+      }
 
-    onCloseEditor?.call();
+      await onImageEditingComplete(bytes ?? Uint8List.fromList([]));
+
+      if (mounted) loading.hide(context);
+
+      onCloseEditor?.call();
+    });
   }
 
   /// Close the image editor.
@@ -1394,6 +1500,9 @@ class ProImageEditorState extends State<ProImageEditor>
         ),
         ...import.stateHistory
       ];
+      for (var _ in import.stateHistory) {
+        takeScreenshot();
+      }
     } else {
       for (var el in import.stateHistory) {
         if (import.configs.mergeMode == ImportEditorMergeMode.merge) {
@@ -1402,7 +1511,10 @@ class ProImageEditorState extends State<ProImageEditor>
         }
       }
 
-      stateHistory.addAll(import.stateHistory);
+      for (var el in import.stateHistory) {
+        stateHistory.add(el);
+        takeScreenshot();
+      }
       _stateManager.editPosition = stateHistory.length - 1;
     }
 
@@ -1727,6 +1839,7 @@ class ProImageEditorState extends State<ProImageEditor>
                     ],
                   ),
                 );
+                takeScreenshot();
                 _stateManager.editPosition++;
 
                 setState(() {});
@@ -1937,19 +2050,16 @@ class ProImageEditorState extends State<ProImageEditor>
                             layerData: layerItem,
                             enableHitDetection:
                                 _layerInteractionManager.enabledHitDetection,
-                            freeStyleHighPerformanceScaling:
-                                _layerInteractionManager
-                                    .freeStyleHighPerformanceScaling,
-                            freeStyleHighPerformanceMoving:
-                                _layerInteractionManager
-                                    .freeStyleHighPerformanceMoving,
-                            freeStyleHighPerformanceHero:
-                                _layerInteractionManager
-                                    .freeStyleHighPerformanceHero,
                             selected:
                                 _layerInteractionManager.selectedLayerId ==
                                     layerItem.id,
                             isInteractive: !_isEditorOpen,
+                            highPerformanceMode: _layerInteractionManager
+                                    .freeStyleHighPerformanceScaling ||
+                                _layerInteractionManager
+                                    .freeStyleHighPerformanceMoving ||
+                                _layerInteractionManager
+                                    .freeStyleHighPerformanceHero,
                             onEditTap: () {
                               if (layerItem is TextLayerData) {
                                 _onTextLayerTap(layerItem);

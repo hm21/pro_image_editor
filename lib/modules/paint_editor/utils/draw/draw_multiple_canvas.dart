@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/paint_editor/painted_model.dart';
+import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
 
 import '../paint_controller.dart';
 import 'drawers/draw_element.dart';
@@ -24,12 +26,7 @@ class DrawImage extends CustomPainter {
       drawElement(
         canvas: canvas,
         size: size,
-        mode: item.mode,
-        painter: item.paint,
-        offsets: item.offsets,
-        start: item.offsets[0],
-        end: item.offsets[1],
-        freeStyleHighPerformance: false,
+        item: item,
       );
     }
 
@@ -38,12 +35,14 @@ class DrawImage extends CustomPainter {
       drawElement(
         canvas: canvas,
         size: size,
-        mode: _paintCtrl.mode,
-        painter: _paintCtrl.brush,
-        offsets: _paintCtrl.offsets,
-        start: _paintCtrl.start,
-        end: _paintCtrl.end,
-        freeStyleHighPerformance: false,
+        item: PaintedModel(
+          mode: _paintCtrl.mode,
+          offsets: _paintCtrl.mode == PaintModeE.freeStyle
+              ? _paintCtrl.offsets
+              : [_paintCtrl.start, _paintCtrl.end],
+          color: _paintCtrl.color,
+          strokeWidth: _paintCtrl.strokeWidth,
+        ),
       );
     }
   }

@@ -1,7 +1,7 @@
 # Changelog
 
 ## Version 3.0.0 New Crop-Rotate-Editor
-Replace the existing crop-rotate editor, which depended on the `extended_image`, `image_editor` and `image` packages, with a new solution that doesn't depend on this packages.
+Replace the existing crop-rotate editor, which depended on the `extended_image` and `image_editor` package, with a new solution that doesn't depend on this packages.
 
 #### **feat:**
 - Double tap to zoom in and out
@@ -22,6 +22,7 @@ Replace the existing crop-rotate editor, which depended on the `extended_image`,
 
 #### **perf:**
 - Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
+- Image generation is now isolated from the main thread, speeding up the process significantly. Generation time varies between 0 and 1400ms, depending on user interaction and device performance.
 
 #### **Breaking Changes:**
 - Change the layer initial offset position to the center of the screen, not the top left. When we import from old state history we must add the half of the editor size to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the editor size.

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
 
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
@@ -148,8 +149,12 @@ class ExportStateHistory {
       } else if (_configs.exportSticker &&
           layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
-        stickers
-            .add(await _contentRecorderCtrl.captureFromWidget(layer.sticker));
+        stickers.add(
+          await _contentRecorderCtrl.captureFromWidget(
+            layer.sticker,
+            configs: const ProImageEditorConfigs(),
+          ),
+        );
       }
     }
   }

@@ -26,6 +26,12 @@ class ContentRecorderState extends State<ContentRecorder> {
   }
 
   @override
+  void dispose() {
+    _controller.destroy();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
       key: _controller.containerKey,
