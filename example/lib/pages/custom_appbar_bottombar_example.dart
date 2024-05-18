@@ -73,6 +73,8 @@ class _CustomAppbarBottombarExampleState
     ),
   ];
 
+  final String _url = 'https://picsum.photos/id/237/2000';
+
   @override
   void initState() {
     _updateUIStream = StreamController.broadcast();
@@ -94,7 +96,9 @@ class _CustomAppbarBottombarExampleState
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
+      onTap: () async {
+        await precacheImage(NetworkImage(_url), context);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => _buildEditor()),
         );
@@ -108,7 +112,7 @@ class _CustomAppbarBottombarExampleState
   Widget _buildEditor() {
     return LayoutBuilder(builder: (context, constraints) {
       return ProImageEditor.network(
-        'https://picsum.photos/id/237/2000',
+        _url,
         key: editorKey,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: onImageEditingComplete,

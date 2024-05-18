@@ -14,8 +14,10 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
     Navigator.pop(context);
   }
 
-  void onCloseEditor() {
+  void onCloseEditor() async {
     if (editedBytes != null) {
+      await precacheImage(MemoryImage(editedBytes!), context);
+      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(

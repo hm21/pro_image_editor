@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class HighlyConfigurableExample extends StatefulWidget {
@@ -19,6 +20,10 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        await precacheImage(
+            NetworkImage(ExampleConstants.of(context)!.demoNetworkUrl),
+            context);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => _buildEditor(),
@@ -33,7 +38,7 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
 
   Widget _buildEditor() {
     return ProImageEditor.network(
-      'https://picsum.photos/id/230/2000',
+      ExampleConstants.of(context)!.demoNetworkUrl,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,

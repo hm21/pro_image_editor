@@ -2,6 +2,7 @@ import 'package:example/pages/firebase_supabase_example.dart';
 import 'package:example/pages/import_export_example.dart';
 import 'package:example/pages/pick_image_example.dart';
 import 'package:example/pages/selectable_layer_example.dart';
+import 'package:example/utils/example_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -71,8 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(child: _buildCard()),
+    return ExampleConstants(
+      child: Scaffold(
+        body: SafeArea(child: _buildCard()),
+      ),
     );
   }
 

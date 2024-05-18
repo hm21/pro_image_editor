@@ -3,6 +3,7 @@ import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_con
 import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '../utils/example_constants.dart';
 import 'preview_img.dart';
 
 class RoundCropperExample extends StatefulWidget {
@@ -17,6 +18,9 @@ class _RoundCropperExampleState extends State<RoundCropperExample> {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -46,7 +50,7 @@ class _RoundCropperExampleState extends State<RoundCropperExample> {
 
   Widget _buildEditor() {
     return CropRotateEditor.asset(
-      'assets/demo.png',
+      ExampleConstants.of(context)!.demoAssetPath,
       initConfigs: CropRotateEditorInitConfigs(
         theme: ThemeData.dark(),
         convertToUint8List: true,

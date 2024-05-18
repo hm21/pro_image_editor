@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 import '../utils/import_history_demo_data.dart';
 
@@ -16,7 +17,10 @@ class _ImportExportExampleState extends State<ImportExportExample>
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
+      onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -34,7 +38,7 @@ class _ImportExportExampleState extends State<ImportExportExample>
     return Stack(
       children: [
         ProImageEditor.asset(
-          'assets/demo.png',
+          ExampleConstants.of(context)!.demoAssetPath,
           key: editorKey,
           callbacks: ProImageEditorCallbacks(
             onImageEditingComplete: onImageEditingComplete,

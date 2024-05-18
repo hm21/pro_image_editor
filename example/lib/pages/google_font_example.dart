@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class GoogleFontExample extends StatefulWidget {
@@ -21,7 +22,10 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
+      onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => _buildEditor(),
@@ -39,7 +43,7 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
 
   Widget _buildEditor() {
     return ProImageEditor.asset(
-      'assets/demo.png',
+      ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,

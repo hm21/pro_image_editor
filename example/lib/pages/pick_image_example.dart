@@ -29,8 +29,13 @@ class _PickImageExampleState extends State<PickImageExample>
 
     if (kIsWeb) {
       bytes = await image.readAsBytes();
+
+      if (!mounted) return;
+      await precacheImage(MemoryImage(bytes), context);
     } else {
       path = image.path;
+      if (!mounted) return;
+      await precacheImage(FileImage(File(path)), context);
     }
 
     if (!mounted) return;

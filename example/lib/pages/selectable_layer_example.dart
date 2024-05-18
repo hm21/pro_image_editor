@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class SelectableLayerExample extends StatefulWidget {
@@ -16,6 +17,9 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -31,7 +35,7 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
 
   Widget _buildEditor() {
     return ProImageEditor.asset(
-      'assets/demo.png',
+      ExampleConstants.of(context)!.demoAssetPath,
       key: editorKey,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,

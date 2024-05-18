@@ -1,10 +1,11 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'dart:ui' as ui;
 
 import '../utils/example_helper.dart';
 import 'reorder_layer_example.dart';
@@ -79,7 +80,10 @@ class _MoveableBackgroundImageExampleState
                 children: [
                   CustomPaint(
                     size: Size(constraints.maxWidth, constraints.maxHeight),
-                    painter: PixelTransparentPainter(),
+                    painter: const PixelTransparentPainter(
+                      primary: Colors.white,
+                      secondary: Color(0xFFE2E2E2),
+                    ),
                     child: ProImageEditor.memory(
                       _transparentBytes,
                       key: editorKey,
@@ -224,17 +228,23 @@ class _MoveableBackgroundImageExampleState
 }
 
 class PixelTransparentPainter extends CustomPainter {
+  final Color primary;
+  final Color secondary;
+
+  const PixelTransparentPainter({
+    required this.primary,
+    required this.secondary,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
     const cellSize = 22.0; // Size of each square
     final numCellsX = size.width / cellSize;
     final numCellsY = size.height / cellSize;
-    const grayColor = Color(0xFFE2E2E2); // Gray color
-    const whiteColor = Colors.white; // White color
 
     for (int row = 0; row < numCellsY; row++) {
       for (int col = 0; col < numCellsX; col++) {
-        final color = (row + col) % 2 == 0 ? whiteColor : grayColor;
+        final color = (row + col) % 2 == 0 ? primary : secondary;
         canvas.drawRect(
           Rect.fromLTWH(col * cellSize, row * cellSize, cellSize, cellSize),
           Paint()..color = color,

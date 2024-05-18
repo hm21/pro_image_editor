@@ -16,10 +16,14 @@ class _StickersExampleState extends State<StickersExample>
     with ExampleHelperState<StickersExample> {
   final Map<int, GlobalKey<StickerState>> _keys = {};
 
+  final String _url = 'https://picsum.photos/id/176/2000';
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
+      onTap: () async {
+        await precacheImage(NetworkImage(_url), context);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => _buildEditor(),
@@ -34,7 +38,7 @@ class _StickersExampleState extends State<StickersExample>
 
   Widget _buildEditor() {
     return ProImageEditor.network(
-      'https://picsum.photos/id/176/2000',
+      _url,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,

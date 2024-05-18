@@ -4,6 +4,7 @@ import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class ReorderLayerExample extends StatefulWidget {
@@ -19,6 +20,9 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -36,7 +40,7 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
     return Stack(
       children: [
         ProImageEditor.asset(
-          'assets/demo.png',
+          ExampleConstants.of(context)!.demoAssetPath,
           key: editorKey,
           callbacks: ProImageEditorCallbacks(
             onImageEditingComplete: onImageEditingComplete,

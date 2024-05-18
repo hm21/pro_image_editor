@@ -1,3 +1,4 @@
+import 'package:example/utils/example_constants.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +48,9 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -62,7 +66,7 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
 
   Widget _buildEditor() {
     return ProImageEditor.asset(
-      'assets/demo.png',
+      ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: (bytes) async {
           editedBytes = bytes;

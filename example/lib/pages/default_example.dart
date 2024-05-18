@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class DefaultExample extends StatefulWidget {
@@ -62,6 +63,10 @@ class _DefaultExampleState extends State<DefaultExample>
                     var bytes = await fetchImageAsUint8List(url);
 
                     if (context.mounted) await loading.hide(context);
+
+                    if (!context.mounted) return;
+                    await precacheImage(MemoryImage(bytes), context);
+
                     if (!context.mounted) return;
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -73,8 +78,12 @@ class _DefaultExampleState extends State<DefaultExample>
                   leading: const Icon(Icons.folder_outlined),
                   title: const Text('Editor from asset'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
+                    await precacheImage(
+                        AssetImage(ExampleConstants.of(context)!.demoAssetPath),
+                        context);
+                    if (!context.mounted) return;
                     Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => _buildAssetEditor()),
@@ -85,8 +94,13 @@ class _DefaultExampleState extends State<DefaultExample>
                   leading: const Icon(Icons.public_outlined),
                   title: const Text('Editor from network'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
+                    await precacheImage(
+                        NetworkImage(
+                            ExampleConstants.of(context)!.demoNetworkUrl),
+                        context);
+                    if (!context.mounted) return;
                     Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => _buildNetworkEditor()),
@@ -112,6 +126,8 @@ class _DefaultExampleState extends State<DefaultExample>
 
                           if (result != null && context.mounted) {
                             File file = File(result.files.single.path!);
+                            await precacheImage(FileImage(file), context);
+                            if (!context.mounted) return;
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                   builder: (context) => _buildFileEditor(file)),
@@ -132,7 +148,7 @@ class _DefaultExampleState extends State<DefaultExample>
 
   Widget _buildAssetEditor() {
     return ProImageEditor.asset(
-      'assets/demo.png',
+      ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
@@ -158,7 +174,7 @@ class _DefaultExampleState extends State<DefaultExample>
 
   Widget _buildNetworkEditor() {
     return ProImageEditor.network(
-      'https://picsum.photos/id/237/2000',
+      ExampleConstants.of(context)!.demoNetworkUrl,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,

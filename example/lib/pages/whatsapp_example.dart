@@ -15,10 +15,13 @@ class WhatsAppExample extends StatefulWidget {
 
 class _WhatsAppExampleState extends State<WhatsAppExample>
     with ExampleHelperState<WhatsAppExample> {
+  final String _url = 'https://picsum.photos/id/350/1500/3000';
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
+      onTap: () async {
+        await precacheImage(NetworkImage(_url), context);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => _buildEditor(),
@@ -33,7 +36,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
 
   Widget _buildEditor() {
     return ProImageEditor.network(
-      'https://picsum.photos/id/350/1500/3000',
+      _url,
       key: editorKey,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: onImageEditingComplete,

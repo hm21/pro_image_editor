@@ -23,7 +23,10 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
           title: const Text('Result'),
         ),
         body: CustomPaint(
-          painter: PixelTransparentPainter(),
+          painter: const PixelTransparentPainter(
+            primary: Color.fromARGB(255, 17, 17, 17),
+            secondary: Color.fromARGB(255, 36, 36, 37),
+          ),
           child: Stack(
             fit: StackFit.expand,
             alignment: Alignment.center,

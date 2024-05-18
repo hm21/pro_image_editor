@@ -6,6 +6,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:image/image.dart' as img;
 
+import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class ImageFormatConvertExample extends StatefulWidget {
@@ -64,6 +65,9 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        await precacheImage(
+            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -81,7 +85,7 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
 
   Widget _buildEditor() {
     return ProImageEditor.asset(
-      'assets/demo.png',
+      ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: (bytes) async {
           editedBytes = bytes;
