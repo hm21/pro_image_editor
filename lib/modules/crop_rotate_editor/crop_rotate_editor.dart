@@ -494,11 +494,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: i18n,
+          configs: configs,
           theme: theme,
-          designMode: designMode,
           message: i18n.doneLoadingMsg,
-          imageEditorTheme: imageEditorTheme,
         );
       Widget editorWidget = SizedBox(
         width: _contentConstraints.maxWidth,

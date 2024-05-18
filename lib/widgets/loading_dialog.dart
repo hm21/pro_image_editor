@@ -1,10 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
-import '../models/theme/theme.dart';
-import '../models/i18n/i18n.dart';
-import '../utils/design_mode.dart';
 import '../utils/theme_functions.dart';
 import 'platform_circular_progress_indicator.dart';
 
@@ -36,13 +34,13 @@ class LoadingDialog {
     BuildContext context, {
     String? message,
     bool isDismissible = kDebugMode,
-    required ThemeData theme,
-    required ImageEditorTheme imageEditorTheme,
-    required ImageEditorDesignModeE designMode,
-    required I18n i18n,
+    ThemeData? theme,
+    required ProImageEditorConfigs configs,
   }) async {
+    theme ??= configs.theme ?? Theme.of(context);
+
     if (message == null) {
-      msg = i18n.various.loadingDialogMsg;
+      msg = configs.i18n.various.loadingDialogMsg;
     } else {
       msg = message;
     }
@@ -67,7 +65,7 @@ class LoadingDialog {
                     width: 40,
                     child: FittedBox(
                       child: PlatformCircularProgressIndicator(
-                        designMode: designMode,
+                        designMode: configs.designMode,
                       ),
                     ),
                   ),
@@ -77,10 +75,11 @@ class LoadingDialog {
                     _msg,
                     style: platformTextStyle(
                       context,
-                      designMode,
+                      configs.designMode,
                     ).copyWith(
                       fontSize: 16,
-                      color: imageEditorTheme.loadingDialogTheme.textColor,
+                      color:
+                          configs.imageEditorTheme.loadingDialogTheme.textColor,
                     ),
                     textAlign: TextAlign.start,
                   ),
@@ -100,22 +99,22 @@ class LoadingDialog {
             if (context.mounted) Navigator.of(context).pop();
           });
         }
-        return designMode == ImageEditorDesignModeE.cupertino
+        return configs.designMode == ImageEditorDesignModeE.cupertino
             ? CupertinoTheme(
                 data: CupertinoTheme.of(context).copyWith(
-                  brightness: theme.brightness,
+                  brightness: theme!.brightness,
                   primaryColor: theme.brightness == Brightness.dark
-                      ? imageEditorTheme
-                          .loadingDialogTheme.cupertinoPrimaryColorDark
-                      : imageEditorTheme
-                          .loadingDialogTheme.cupertinoPrimaryColorLight,
+                      ? configs.imageEditorTheme.loadingDialogTheme
+                          .cupertinoPrimaryColorDark
+                      : configs.imageEditorTheme.loadingDialogTheme
+                          .cupertinoPrimaryColorLight,
                   textTheme: CupertinoTextThemeData(
                     textStyle: TextStyle(
                       color: theme.brightness == Brightness.dark
-                          ? imageEditorTheme
-                              .loadingDialogTheme.cupertinoPrimaryColorDark
-                          : imageEditorTheme
-                              .loadingDialogTheme.cupertinoPrimaryColorLight,
+                          ? configs.imageEditorTheme.loadingDialogTheme
+                              .cupertinoPrimaryColorDark
+                          : configs.imageEditorTheme.loadingDialogTheme
+                              .cupertinoPrimaryColorLight,
                     ),
                   ),
                 ),
@@ -124,7 +123,7 @@ class LoadingDialog {
                 ),
               )
             : Theme(
-                data: theme,
+                data: theme!,
                 child: AlertDialog(
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 20),

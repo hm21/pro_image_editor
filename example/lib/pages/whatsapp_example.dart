@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 import '../utils/example_helper.dart';
 
@@ -20,7 +21,14 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        LoadingDialog loading = LoadingDialog()
+          ..show(
+            context,
+            configs: const ProImageEditorConfigs(),
+            theme: ThemeData.dark(),
+          );
         await precacheImage(NetworkImage(_url), context);
+        if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(

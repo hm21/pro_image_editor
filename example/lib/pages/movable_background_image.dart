@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 import '../utils/example_helper.dart';
 import 'reorder_layer_example.dart';
@@ -55,6 +56,12 @@ class _MoveableBackgroundImageExampleState
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        LoadingDialog loading = LoadingDialog()
+          ..show(
+            context,
+            configs: const ProImageEditorConfigs(),
+            theme: ThemeData.dark(),
+          );
         var width = MediaQuery.of(context).size.width;
         var height = MediaQuery.of(context).size.height;
 
@@ -71,6 +78,15 @@ class _MoveableBackgroundImageExampleState
 
         if (!context.mounted) return;
         bool inited = false;
+
+        String imageUrl =
+            'https://picsum.photos/id/${Random().nextInt(200)}/2000';
+        await precacheImage(NetworkImage(imageUrl), context);
+
+        if (context.mounted) await loading.hide(context);
+
+        if (!context.mounted) return;
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -99,7 +115,7 @@ class _MoveableBackgroundImageExampleState
                                 offset: Offset.zero,
                                 scale: _initScale,
                                 sticker: Image.network(
-                                  'https://picsum.photos/id/${Random().nextInt(200)}/2000',
+                                  imageUrl,
                                   width: editorSize.width,
                                   height: editorSize.height,
                                   fit: BoxFit.cover,

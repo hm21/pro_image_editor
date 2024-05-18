@@ -588,6 +588,17 @@ class ProImageEditorState extends State<ProImageEditor>
     bool shouldImportStateHistory =
         _imageNeedDecode && initStateHistory != null;
     _imageNeedDecode = false;
+    LoadingDialog? loading;
+    if (shouldImportStateHistory && i18n.importStateHistoryMsg.isNotEmpty) {
+      loading = LoadingDialog()
+        ..show(
+          context,
+          theme: _theme,
+          configs: configs,
+          message: i18n.importStateHistoryMsg,
+        );
+    }
+
     var decodedImage = await decodeImageFromList(await _image.safeByteArray);
 
     if (!mounted) return;
@@ -603,6 +614,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (shouldImportStateHistory) {
       importStateHistory(initStateHistory!);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await loading?.hide(context);
+      });
     }
     setState(() {});
     onUpdateUI?.call();
@@ -1341,11 +1355,9 @@ class ProImageEditorState extends State<ProImageEditor>
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: i18n,
           theme: _theme,
-          designMode: designMode,
+          configs: configs,
           message: i18n.doneLoadingMsg,
-          imageEditorTheme: imageEditorTheme,
         );
 
       /// Make sure in the web that the loading dialog is visible before the main thread freezes.

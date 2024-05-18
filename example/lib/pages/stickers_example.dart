@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 import '../utils/example_helper.dart';
 
@@ -22,7 +23,14 @@ class _StickersExampleState extends State<StickersExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        LoadingDialog loading = LoadingDialog()
+          ..show(
+            context,
+            configs: const ProImageEditorConfigs(),
+            theme: ThemeData.dark(),
+          );
         await precacheImage(NetworkImage(_url), context);
+        if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(

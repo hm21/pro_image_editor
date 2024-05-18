@@ -132,6 +132,10 @@ class I18n {
   /// Message displayed while changes are being applied.
   final String doneLoadingMsg;
 
+  /// Message displayed during the import of state history.
+  /// If the text is empty, no loading dialog will be shown.
+  final String importStateHistoryMsg;
+
   /// Text for the "Cancel" action.
   final String cancel;
 
@@ -191,6 +195,7 @@ class I18n {
     this.emojiEditor = const I18nEmojiEditor(),
     this.stickerEditor = const I18nStickerEditor(),
     this.various = const I18nVarious(),
+    this.importStateHistoryMsg = 'Initialize Editor',
     this.cancel = 'Cancel',
     this.undo = 'Undo',
     this.redo = 'Redo',

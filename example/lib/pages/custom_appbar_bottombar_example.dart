@@ -9,6 +9,7 @@ import 'package:pro_image_editor/models/paint_editor/paint_bottom_bar_item.dart'
 import 'package:pro_image_editor/models/theme/theme_shared_values.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/flat_icon_text_button.dart';
+import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 import '../utils/example_helper.dart';
@@ -97,7 +98,14 @@ class _CustomAppbarBottombarExampleState
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        LoadingDialog loading = LoadingDialog()
+          ..show(
+            context,
+            configs: const ProImageEditorConfigs(),
+            theme: ThemeData.dark(),
+          );
         await precacheImage(NetworkImage(_url), context);
+        if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => _buildEditor()),

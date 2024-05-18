@@ -50,22 +50,16 @@ class _DefaultExampleState extends State<DefaultExample>
                     LoadingDialog loading = LoadingDialog()
                       ..show(
                         context,
-                        theme: Theme.of(context),
-                        imageEditorTheme: const ImageEditorTheme(
-                          loadingDialogTheme: LoadingDialogTheme(
-                            textColor: Colors.black,
-                          ),
-                        ),
-                        designMode: ImageEditorDesignModeE.material,
-                        i18n: const I18n(),
+                        configs: const ProImageEditorConfigs(),
+                        theme: ThemeData.dark(),
                       );
                     var url = 'https://picsum.photos/2000';
                     var bytes = await fetchImageAsUint8List(url);
 
-                    if (context.mounted) await loading.hide(context);
-
                     if (!context.mounted) return;
                     await precacheImage(MemoryImage(bytes), context);
+
+                    if (context.mounted) await loading.hide(context);
 
                     if (!context.mounted) return;
                     Navigator.of(context).push(
@@ -96,10 +90,18 @@ class _DefaultExampleState extends State<DefaultExample>
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
                     Navigator.pop(context);
+
+                    LoadingDialog loading = LoadingDialog()
+                      ..show(
+                        context,
+                        configs: const ProImageEditorConfigs(),
+                        theme: ThemeData.dark(),
+                      );
                     await precacheImage(
                         NetworkImage(
                             ExampleConstants.of(context)!.demoNetworkUrl),
                         context);
+                    if (context.mounted) await loading.hide(context);
                     if (!context.mounted) return;
                     Navigator.of(context).push(
                       MaterialPageRoute(

@@ -176,11 +176,9 @@ class FilterEditorState extends State<FilterEditor>
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: i18n,
+          configs: configs,
           theme: theme,
-          designMode: designMode,
           message: i18n.filterEditor.applyFilterDialogMsg,
-          imageEditorTheme: imageEditorTheme,
         );
       var data = await screenshotController.capture(configs: configs);
       _createScreenshot = false;

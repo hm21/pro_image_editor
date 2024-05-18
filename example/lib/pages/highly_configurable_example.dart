@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
@@ -20,9 +21,16 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
+        LoadingDialog loading = LoadingDialog()
+          ..show(
+            context,
+            configs: const ProImageEditorConfigs(),
+            theme: ThemeData.dark(),
+          );
         await precacheImage(
             NetworkImage(ExampleConstants.of(context)!.demoNetworkUrl),
             context);
+        if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(

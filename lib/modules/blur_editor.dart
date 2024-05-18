@@ -177,11 +177,9 @@ class BlurEditorState extends State<BlurEditor>
       LoadingDialog loading = LoadingDialog()
         ..show(
           context,
-          i18n: i18n,
+          configs: configs,
           theme: theme,
-          designMode: designMode,
           message: i18n.blurEditor.applyBlurDialogMsg,
-          imageEditorTheme: imageEditorTheme,
         );
       var data = await screenshotController.capture(
         configs: configs,
