@@ -109,19 +109,23 @@ class ContentRecorderController {
     onImageCaptured?.call(image);
     if (image == null) return null;
 
-    try {
-      if (!kIsWeb) {
-        // Run in dart native the thread isolated.
-        return await _captureNativeIsolated(
-            configs: configs, image: image, completerId: completerId);
-      } else {
-        // Run in web worker
-        return await _captureInsideWebWorker(
-            configs: configs, image: image, completerId: completerId);
+    if (configs.enableIsolatedGeneration) {
+      try {
+        if (!kIsWeb) {
+          // Run in dart native the thread isolated.
+          return await _captureNativeIsolated(
+              configs: configs, image: image, completerId: completerId);
+        } else {
+          // Run in web worker
+          return await _captureInsideWebWorker(
+              configs: configs, image: image, completerId: completerId);
+        }
+      } catch (e) {
+        // Fallback to the main thread.
+        debugPrint('Fallback to main thread: $e');
+        return await _captureInsideMainThread(configs: configs, image: image);
       }
-    } catch (e) {
-      // Fallback to the main thread.
-      debugPrint('Fallback to main thread: $e');
+    } else {
       return await _captureInsideMainThread(configs: configs, image: image);
     }
   }

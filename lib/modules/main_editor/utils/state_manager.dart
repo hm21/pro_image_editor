@@ -109,6 +109,9 @@ class StateManager {
     required ProImageEditorConfigs configs,
     required double? pixelRatio,
   }) async {
+    if (!configs.captureImageInBackground || !configs.enableIsolatedGeneration)
+      return;
+
     /// Set every screenshot to broken which didn't read the ui image before
     /// changes happen.
     screenshots.where((el) => !el.readedRenderedImage).forEach((screenshot) {
@@ -121,6 +124,7 @@ class StateManager {
       configs: configs,
       completerId: isolateCaptureState.id,
       pixelRatio: configs.removeTransparentAreas ? null : pixelRatio,
+      stateHistroyScreenshot: true,
       onImageCaptured: (img) {
         isolateCaptureState.readedRenderedImage = true;
       },

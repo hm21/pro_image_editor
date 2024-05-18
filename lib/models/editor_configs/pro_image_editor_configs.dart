@@ -46,6 +46,21 @@ class ProImageEditorConfigs {
   /// By default, this property is set to `true`.
   final bool captureOnlyImageArea;
 
+  /// Captures the final image after each change, such as adding a layer.
+  /// This significantly speeds up the editor because in most cases, the image is already created when the user presses "done".
+  ///
+  /// On Dart native platforms (all platforms except web), this runs on an isolate thread.
+  /// On Dart web, it runs on a web worker.
+  final bool captureImageInBackground;
+
+  /// Allows image generation to run in an isolated thread, preventing any impact on the UI.
+  /// On web platforms, this will run in a separate web worker.
+  ///
+  /// Enabling this feature will significantly speed up the image creation process.
+  ///
+  /// If this is disabled, `captureImagesInBackground` will also be disabled.
+  final bool enableIsolatedGeneration;
+
   /// Whether the callback `onImageEditingComplete` call with empty editing.
   ///
   /// The default value is false.
@@ -153,7 +168,9 @@ class ProImageEditorConfigs {
     this.heroTag = 'Pro-Image-Editor-Hero',
     this.i18n = const I18n(),
     this.allowCompleteWithEmptyEditing = false,
+    this.enableIsolatedGeneration = true,
     this.removeTransparentAreas = true,
+    this.captureImageInBackground = true,
     this.captureOnlyImageArea = true,
     this.stateHistoryLimit = 8000,
     this.helperLines = const HelperLines(),
