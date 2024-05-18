@@ -1,9 +1,13 @@
 // ignore_for_file: depend_on_referenced_packages
 
+// Dart imports:
 import 'dart:async';
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/models/paint_editor/paint_bottom_bar_item.dart';
 import 'package:pro_image_editor/models/theme/theme_shared_values.dart';
@@ -12,6 +16,7 @@ import 'package:pro_image_editor/widgets/flat_icon_text_button.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
+// Project imports:
 import '../utils/example_helper.dart';
 
 class CustomAppbarBottombarExample extends StatefulWidget {

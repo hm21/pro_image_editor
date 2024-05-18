@@ -6,8 +6,11 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
         EmojiViewConfig,
         SearchViewConfig,
         SkinToneConfig;
+
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../theme/theme_shared_values.dart';
 
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'

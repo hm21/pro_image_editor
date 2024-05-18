@@ -1,24 +1,27 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+// Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_appbar.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.dart';
 import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
-
+import '../../mixins/converted_configs.dart';
+import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
-import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/init_configs/paint_editor_init_configs.dart';
+import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/transform_helper.dart';
 import '../../utils/design_mode.dart';
-import '../../mixins/converted_configs.dart';
-import '../../mixins/standalone_editor.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';

@@ -1,5 +1,8 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 /// Represents the bottom bar for the emoji editor.
 class EmojiEditorBottomBar extends StatelessWidget {

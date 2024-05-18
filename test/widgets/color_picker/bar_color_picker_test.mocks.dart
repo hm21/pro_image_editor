@@ -3,12 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes, must_be_immutable
+
+// Dart imports:
 import 'dart:ui' as _i2;
 
+// Flutter imports:
 import 'package:flutter/foundation.dart' as _i4;
 import 'package:flutter/material.dart' as _i3;
+
+// Package imports:
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
+
 import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart'
     as _i5;
 import 'package:pro_image_editor/widgets/color_picker/color_picker_configs.dart'

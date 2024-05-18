@@ -1,18 +1,25 @@
-// This code is inspired from the package `screenshot` from the autor SachinGanesh.
-// https://pub.dev/packages/screenshot
-
+// Dart imports:
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:image/image.dart' as img;
-import 'package:pro_image_editor/utils/unique_id_generator.dart';
 
-import '../image_helpers.dart';
+// Package imports:
+import 'package:image/image.dart' as img;
+
+// Project imports:
+import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/utils/unique_id_generator.dart';
+import 'utils/content_recorder_models.dart';
+import 'utils/dart_ui_remove_transparent_image_areas.dart';
+import 'utils/isolate_image_converter.dart';
+
+// This code is inspired from the package `screenshot` from the autor SachinGanesh.
+// https://pub.dev/packages/screenshot
 
 class ContentRecorderController {
   late final GlobalKey containerKey;
@@ -64,7 +71,7 @@ class ContentRecorderController {
     if (!kIsWeb) {
       try {
         // Run in dart native the thread seperate.
-        return await _captureIsolated(
+        return await _captureNativeIsolated(
             configs: configs, image: image, completerId: completerId);
       } catch (e) {
         // Fallback to the main thread.
@@ -98,7 +105,7 @@ class ContentRecorderController {
     return croppedByteData?.buffer.asUint8List();
   }
 
-  Future<Uint8List?> _captureIsolated({
+  Future<Uint8List?> _captureNativeIsolated({
     required ProImageEditorConfigs configs,
     required ui.Image image,
     required String completerId,

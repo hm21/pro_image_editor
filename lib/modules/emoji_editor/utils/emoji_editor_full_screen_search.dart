@@ -1,5 +1,8 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class EmojiEditorFullScreenSearchView extends StatefulWidget {
   /// Config for customizations

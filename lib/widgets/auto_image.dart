@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../models/editor_image.dart';
 import '../utils/design_mode.dart';
 import 'platform_circular_progress_indicator.dart';

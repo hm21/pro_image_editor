@@ -1,8 +1,9 @@
+// Dart imports:
 import 'dart:math';
 import 'dart:ui';
 
+// Project imports:
 import 'package:pro_image_editor/modules/main_editor/utils/layer_copy_manager.dart';
-
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/layer.dart';
 import '../modules/crop_rotate_editor/utils/rotate_angle.dart';

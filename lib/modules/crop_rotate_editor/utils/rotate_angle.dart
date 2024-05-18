@@ -1,3 +1,4 @@
+// Dart imports:
 import 'dart:math';
 
 /// Calculates the rotation angle side based on the given angle factor.

@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/editor_callbacks/main_editor_callbacks.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';

@@ -1,10 +1,14 @@
-import 'package:example/utils/example_constants.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// Project imports:
+import 'package:example/utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
 class FirebaseSupabaseExample extends StatefulWidget {

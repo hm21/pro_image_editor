@@ -1,8 +1,12 @@
-import 'dart:typed_data';
+// Dart imports:
 import 'dart:io';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:pro_image_editor/models/editor_image.dart';
+import 'dart:typed_data';
 
+// Package imports:
+import 'package:flutter_test/flutter_test.dart';
+
+// Project imports:
+import 'package:pro_image_editor/models/editor_image.dart';
 import '../fake/fake_image.dart';
 
 void main() {

@@ -1,6 +1,8 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
+// Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 
 class TransformedContentGenerator extends StatefulWidget {

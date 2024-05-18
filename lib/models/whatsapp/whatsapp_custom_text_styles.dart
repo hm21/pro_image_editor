@@ -1,3 +1,4 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
 /// Represents custom text styles for the text editor in the `WhatsApp` design.

@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../../widgets/layer_widget.dart';
 
 /// Configuration options for a text editor.

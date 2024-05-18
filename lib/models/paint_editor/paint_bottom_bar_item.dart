@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
 
 /// Represents a model for a painting mode, including an icon, a mode identifier, and a label.

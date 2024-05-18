@@ -1,7 +1,10 @@
+// Dart imports:
 import 'dart:async';
 
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../../../utils/content_recorder.dart/content_recorder_controller.dart';
 
 /// A class that manages various controllers used in the main editor interface.

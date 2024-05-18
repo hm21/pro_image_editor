@@ -1,5 +1,10 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+
+// Project imports:
 import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_editor_bottom_bar.dart';
 
 class EmojiEditorCategoryView extends CategoryView {

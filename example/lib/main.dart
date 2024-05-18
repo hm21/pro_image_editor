@@ -1,12 +1,16 @@
+// Flutter imports:
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+// Project imports:
 import 'package:example/pages/firebase_supabase_example.dart';
 import 'package:example/pages/import_export_example.dart';
 import 'package:example/pages/pick_image_example.dart';
 import 'package:example/pages/selectable_layer_example.dart';
 import 'package:example/utils/example_constants.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'pages/custom_appbar_bottombar_example.dart';
 import 'pages/default_example.dart';
 import 'pages/google_font_example.dart';

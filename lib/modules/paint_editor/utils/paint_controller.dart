@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../../../models/paint_editor/painted_model.dart';
 import 'paint_editor_enum.dart';
 

@@ -1,12 +1,15 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
-
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../history/state_history.dart';
 import '../layer.dart';

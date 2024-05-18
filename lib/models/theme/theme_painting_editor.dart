@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import 'theme_shared_values.dart';
 
 /// Flutter PaintingEditorTheme Class Documentation

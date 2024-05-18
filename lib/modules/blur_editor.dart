@@ -1,15 +1,18 @@
+// Dart imports:
 import 'dart:io';
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// Project imports:
+import '../mixins/converted_configs.dart';
+import '../mixins/standalone_editor.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/editor_image.dart';
 import '../models/init_configs/blur_editor_init_configs.dart';
 import '../models/transform_helper.dart';
-import '../mixins/converted_configs.dart';
-import '../mixins/standalone_editor.dart';
 import '../utils/content_recorder.dart/content_recorder.dart';
 import '../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../widgets/layer_stack.dart';

@@ -1,3 +1,4 @@
+// Dart imports:
 import 'dart:typed_data';
 
 /// A typedef representing a callback function invoked when image editing is complete.

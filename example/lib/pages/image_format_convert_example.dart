@@ -1,11 +1,16 @@
+// Dart imports:
 import 'dart:io';
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:image/image.dart' as img;
 
+// Package imports:
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image/image.dart' as img;
+import 'package:pro_image_editor/pro_image_editor.dart';
+
+// Project imports:
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 

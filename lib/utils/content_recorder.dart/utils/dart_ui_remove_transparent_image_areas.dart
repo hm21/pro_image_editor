@@ -1,35 +1,13 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart' as img;
 
-class RemoveHelper {
-  int width;
-  int height;
-  int minX = 0, minY = 0, maxX = 0, maxY = 0;
-  ByteData bytes;
-
-  RemoveHelper({
-    required this.width,
-    required this.height,
-    required this.minX,
-    required this.minY,
-    required this.maxX,
-    required this.maxY,
-    required this.bytes,
-  });
-}
-
-class BoundingBox {
-  final int left;
-  final int top;
-  final int width;
-  final int height;
-
-  BoundingBox(this.left, this.top, this.width, this.height);
-}
+// Project imports:
+import 'content_recorder_models.dart';
 
 /// Function to remove transparent areas from the image using dart:ui
 Future<ui.Image?> dartUiRemoveTransparentImgAreas(
@@ -115,89 +93,4 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
 
   // Encode the cropped image to PNG
   return croppedImage;
-}
-
-void isolatedImageConverter(SendPort port) {
-  final receivePort = ReceivePort();
-  port.send(receivePort.sendPort);
-
-  receivePort.listen((dynamic message) async {
-    if (message is ImageFromMainThread) {
-      port.send(await _dartNativeConvertImageToPng(message));
-    }
-  });
-}
-
-Future<ResponseFromImageThread> _dartNativeConvertImageToPng(
-    ImageFromMainThread res) async {
-  BoundingBox findBoundingBox(img.Image image) {
-    int left = image.width;
-    int right = 0;
-    int top = image.height;
-    int bottom = 0;
-
-    for (int y = 0; y < image.height; y++) {
-      for (int x = 0; x < image.width; x++) {
-        var pixel = image.getPixel(x, y);
-        if (pixel.a != 0) {
-          if (x < left) left = x;
-          if (x > right) right = x;
-          if (y < top) top = y;
-          if (y > bottom) bottom = y;
-        }
-      }
-    }
-
-    final width = right - left + 1;
-    final height = bottom - top + 1;
-
-    return BoundingBox(left, top, width, height);
-  }
-
-  try {
-    // Find the bounding box of the non-transparent area
-    final bbox = findBoundingBox(res.image);
-
-    // Crop the image to the bounding box
-    final croppedImage = img.copyCrop(
-      res.image,
-      x: bbox.left,
-      y: bbox.top,
-      width: bbox.width,
-      height: bbox.height,
-    );
-
-    Uint8List bytes = img.encodePng(croppedImage, filter: img.PngFilter.none);
-
-    return ResponseFromImageThread(
-      bytes: bytes,
-      completerId: res.completerId,
-    );
-  } catch (e) {
-    debugPrint(e.toString());
-    return ResponseFromImageThread(
-      bytes: null,
-      completerId: res.completerId,
-    );
-  }
-}
-
-class ImageFromMainThread {
-  final String completerId;
-  final img.Image image;
-
-  const ImageFromMainThread({
-    required this.completerId,
-    required this.image,
-  });
-}
-
-class ResponseFromImageThread {
-  final String completerId;
-  final Uint8List? bytes;
-
-  const ResponseFromImageThread({
-    required this.completerId,
-    required this.bytes,
-  });
 }

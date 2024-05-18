@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import '../../pro_image_editor.dart';
 import '../crop_rotate_editor/transform_factors.dart';
 import '../history/filter_state_history.dart';

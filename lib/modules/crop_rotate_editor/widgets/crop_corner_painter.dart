@@ -1,7 +1,10 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../../../models/theme/theme.dart';
 
 class CropCornerPainter extends CustomPainter {

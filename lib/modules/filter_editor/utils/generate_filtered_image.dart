@@ -1,5 +1,8 @@
-import 'package:colorfilter_generator/colorfilter_generator.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:colorfilter_generator/colorfilter_generator.dart';
 
 Widget generateFilteredImage({
   required Widget child,

@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../../modules/blur_editor.dart';
 import '../../modules/crop_rotate_editor/crop_rotate_editor.dart';
 import '../../modules/emoji_editor/emoji_editor.dart';

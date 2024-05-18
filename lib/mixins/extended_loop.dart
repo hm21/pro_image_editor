@@ -1,3 +1,4 @@
+// Project imports:
 import 'package:pro_image_editor/utils/transition_timing.dart';
 
 mixin ExtendedLoop {

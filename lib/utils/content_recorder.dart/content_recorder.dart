@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import 'content_recorder_controller.dart';
 
 class ContentRecorder extends StatefulWidget {

@@ -1,8 +1,10 @@
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import 'outside_gesture_behavior.dart';
 import 'outside_gesture_listener.dart';
 import 'outside_render_semantics_gesture_handler.dart';

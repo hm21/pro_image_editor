@@ -1,10 +1,13 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
+// Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import '../../../models/layer.dart';
 
 /// A manager class responsible for handling desktop interactions in the image editor.

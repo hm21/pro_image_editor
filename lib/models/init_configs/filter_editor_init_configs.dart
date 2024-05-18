@@ -1,3 +1,4 @@
+// Project imports:
 import 'editor_init_configs.dart';
 
 /// Configuration class for initializing the filter editor.

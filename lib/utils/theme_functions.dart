@@ -1,6 +1,8 @@
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// Project imports:
 import 'design_mode.dart';
 
 /// Determines the appropriate text style based on the platform and design mode.

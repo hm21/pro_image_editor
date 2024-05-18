@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 /// Represents the bottom bar for the paint functionality in the WhatsApp theme.

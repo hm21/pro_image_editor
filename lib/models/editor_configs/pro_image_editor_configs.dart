@@ -1,20 +1,22 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/import_export/import_state_history.dart';
 
+// Project imports:
+import 'package:pro_image_editor/models/import_export/import_state_history.dart';
+import '../../utils/design_mode.dart';
 import '../custom_widgets.dart';
-import 'crop_rotate_editor_configs.dart';
-import 'emoji_editor_configs.dart';
-import 'filter_editor_configs.dart';
-import 'blur_editor_configs.dart';
-import 'layer_interaction_configs.dart';
-import 'paint_editor_configs.dart';
-import 'text_editor_configs.dart';
-import 'helper_lines_configs.dart';
-import 'sticker_editor_configs.dart';
 import '../i18n/i18n.dart';
 import '../icons/icons.dart';
 import '../theme/theme.dart';
-import '../../utils/design_mode.dart';
+import 'blur_editor_configs.dart';
+import 'crop_rotate_editor_configs.dart';
+import 'emoji_editor_configs.dart';
+import 'filter_editor_configs.dart';
+import 'helper_lines_configs.dart';
+import 'layer_interaction_configs.dart';
+import 'paint_editor_configs.dart';
+import 'sticker_editor_configs.dart';
+import 'text_editor_configs.dart';
 
 export 'helper_lines_configs.dart';
 export 'paint_editor_configs.dart';

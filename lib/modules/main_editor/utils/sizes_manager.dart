@@ -1,8 +1,11 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 
+// Project imports:
+import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import '../../../models/editor_configs/pro_image_editor_configs.dart';
 import '../../../models/layer.dart';
 

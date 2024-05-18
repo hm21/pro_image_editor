@@ -1,9 +1,12 @@
+// Dart imports:
 import 'dart:ui';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_image.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-
 import '../../../models/history/filter_state_history.dart';
 import '../../../widgets/auto_image.dart';
 import '../utils/generate_filtered_image.dart';

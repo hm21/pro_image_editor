@@ -1,3 +1,4 @@
+// Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 /// A mixin providing access to converted configurations from [ProImageEditorConfigs].

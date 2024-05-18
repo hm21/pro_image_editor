@@ -1,8 +1,9 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:typed_data';
 
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/history/blur_state_history.dart';
 import '../../../models/history/filter_state_history.dart';

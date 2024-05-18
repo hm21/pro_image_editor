@@ -1,15 +1,20 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:rounded_background_text/rounded_background_text.dart';
+
+// Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_text_appbar.dart';
+import 'package:pro_image_editor/mixins/converted_configs.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:rounded_background_text/rounded_background_text.dart';
-
-import '../../models/layer.dart';
 import '../../mixins/editor_configs_mixin.dart';
+import '../../models/layer.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/bottom_sheets_header_row.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';

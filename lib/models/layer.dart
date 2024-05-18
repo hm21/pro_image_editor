@@ -1,6 +1,8 @@
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../utils/unique_id_generator.dart';
 import '../widgets/layer_widget.dart';
 import 'paint_editor/painted_model.dart';

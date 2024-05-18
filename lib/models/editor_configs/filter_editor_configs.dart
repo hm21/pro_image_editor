@@ -1,3 +1,4 @@
+// Package imports:
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 
 /// Configuration options for a filter editor.

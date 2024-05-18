@@ -1,12 +1,17 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+// Project imports:
 import '../utils/example_helper.dart';
 
 class PickImageExample extends StatefulWidget {

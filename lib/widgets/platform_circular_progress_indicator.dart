@@ -1,6 +1,8 @@
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../utils/design_mode.dart';
 
 /// A circular progress indicator that adapts to the platform.

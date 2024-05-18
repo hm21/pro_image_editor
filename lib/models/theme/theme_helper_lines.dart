@@ -1,3 +1,4 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
 /// The `HelperLineTheme` class defines the theme for helper lines in the image editor.

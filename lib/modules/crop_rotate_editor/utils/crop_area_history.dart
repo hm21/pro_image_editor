@@ -1,7 +1,10 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../../../mixins/standalone_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/init_configs/crop_rotate_editor_init_configs.dart';

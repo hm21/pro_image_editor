@@ -1,11 +1,14 @@
+// Dart imports:
 import 'dart:ui';
 
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
-
 import '../../models/editor_configs/pro_image_editor_configs.dart';
 
 /// Represents the temporary sticker mode for WhatsApp.

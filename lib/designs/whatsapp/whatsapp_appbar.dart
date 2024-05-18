@@ -1,6 +1,8 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
+// Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'utils/whatsapp_appbar_button_style.dart';
 
 /// Represents the app bar for the WhatsApp theme.

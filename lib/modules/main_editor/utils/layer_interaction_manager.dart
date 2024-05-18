@@ -1,16 +1,21 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:vibration/vibration.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme_layer_interaction.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
-import 'package:vibration/vibration.dart';
-
-import '../../../utils/debounce.dart';
 import '../../../models/history/last_position.dart';
 import '../../../models/layer.dart';
+import '../../../utils/debounce.dart';
 
 /// A helper class responsible for managing layer interactions in the editor.
 ///

@@ -1,10 +1,13 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart' hide Image, decodeImageFromList;
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 
+// Project imports:
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../models/editor_image.dart';
 import '../../models/init_configs/paint_canvas_init_configs.dart';
 import '../../models/layer.dart';

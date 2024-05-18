@@ -1,9 +1,15 @@
+// Dart imports:
 import 'dart:typed_data';
+
+// Flutter imports:
 import 'package:flutter/services.dart';
+
+// Package imports:
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
-import 'package:pro_image_editor/utils/converters.dart';
 
+// Project imports:
+import 'package:pro_image_editor/utils/converters.dart';
 import '../fake/fake_image.dart';
 
 void main() {

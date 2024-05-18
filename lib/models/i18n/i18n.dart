@@ -1,8 +1,9 @@
-import 'i18n_layer_interaction.dart';
+// Project imports:
+import 'i18n_blur_editor.dart';
 import 'i18n_crop_rotate_editor.dart';
 import 'i18n_emoji_editor.dart';
 import 'i18n_filter_editor.dart';
-import 'i18n_blur_editor.dart';
+import 'i18n_layer_interaction.dart';
 import 'i18n_painting_editor.dart';
 import 'i18n_sticker_editor.dart';
 import 'i18n_text_editor.dart';

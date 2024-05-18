@@ -1,9 +1,11 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
+import 'icons_blur_editor.dart';
 import 'icons_crop_rotate_editor.dart';
 import 'icons_emoji_editor.dart';
 import 'icons_filter_editor.dart';
-import 'icons_blur_editor.dart';
 import 'icons_layer_interaction.dart';
 import 'icons_painting_editor.dart';
 import 'icons_sticker_editor.dart';

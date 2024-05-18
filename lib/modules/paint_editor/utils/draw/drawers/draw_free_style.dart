@@ -1,3 +1,4 @@
+// Dart imports:
 import 'dart:ui';
 
 /// Draws freehand lines on a canvas.

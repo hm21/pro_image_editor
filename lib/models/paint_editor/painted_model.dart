@@ -1,5 +1,7 @@
+// Dart imports:
 import 'dart:ui';
 
+// Project imports:
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
 
 /// Represents a unit of shape or drawing information used in painting.

@@ -1,12 +1,18 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:defer_pointer/defer_pointer.dart';
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:defer_pointer/defer_pointer.dart';
+
+// Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_area_history.dart';
@@ -16,7 +22,6 @@ import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
 import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
-
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
 import '../../mixins/standalone_editor.dart';
@@ -34,10 +39,10 @@ import '../../widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/image_with_filters.dart';
 import 'utils/crop_area_part.dart';
 import 'utils/crop_aspect_ratios.dart';
-import 'widgets/crop_corner_painter.dart';
 import 'utils/crop_desktop_interaction_manager.dart';
 import 'utils/rotate_angle.dart';
 import 'widgets/crop_aspect_ratio_options.dart';
+import 'widgets/crop_corner_painter.dart';
 
 /// The `CropRotateEditor` widget allows users to editing images with crop, flip and rotate tools.
 ///

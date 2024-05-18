@@ -1,59 +1,64 @@
+// Dart imports:
 import 'dart:async';
-import 'dart:math';
 import 'dart:io';
+import 'dart:math';
 
-import 'package:defer_pointer/defer_pointer.dart';
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:defer_pointer/defer_pointer.dart';
+import 'package:vibration/vibration.dart';
+
+// Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
+import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/layer_copy_manager.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/main_editor_controllers.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/state_manager.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/utils/layer_transform_generator.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
-import 'package:vibration/vibration.dart';
-
-import '/designs/whatsapp/whatsapp_filter_button.dart';
-import '/designs/whatsapp/whatsapp_sticker_editor.dart';
-import '/mixins/editor_callbacks_mixin.dart';
-import '/mixins/main_editor/main_editor_global_keys.dart';
-import '/pro_image_editor.dart';
-import '/utils/constants.dart';
-import '/utils/content_recorder.dart/content_recorder.dart';
-import '/widgets/auto_image.dart';
-import '/widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/image_with_filters.dart';
-import '../text_editor/text_editor.dart';
-import 'utils/desktop_interaction_manager.dart';
-import 'utils/sizes_manager.dart';
-import 'utils/whatsapp_helper.dart';
-import '/models/history/filter_state_history.dart';
-import '/models/history/state_history.dart';
-import '/models/history/last_position.dart';
-import '/models/editor_image.dart';
-import '/models/history/blur_state_history.dart';
-import '/models/import_export/export_state_history.dart';
-import '/models/layer.dart';
-import 'utils/layer_interaction_manager.dart';
+import '../blur_editor.dart';
 import '../crop_rotate_editor/crop_rotate_editor.dart';
 import '../emoji_editor/emoji_editor.dart';
 import '../filter_editor/filter_editor.dart';
 import '../filter_editor/widgets/filter_editor_item_list.dart';
-import '../blur_editor.dart';
+import '../filter_editor/widgets/image_with_filters.dart';
 import '../paint_editor/paint_editor.dart';
-import '/utils/debounce.dart';
+import '../text_editor/text_editor.dart';
+import '/designs/whatsapp/whatsapp_filter_button.dart';
+import '/designs/whatsapp/whatsapp_sticker_editor.dart';
 import '/mixins/converted_configs.dart';
+import '/mixins/editor_callbacks_mixin.dart';
+import '/mixins/main_editor/main_editor_global_keys.dart';
+import '/models/editor_image.dart';
+import '/models/history/blur_state_history.dart';
+import '/models/history/filter_state_history.dart';
+import '/models/history/last_position.dart';
+import '/models/history/state_history.dart';
+import '/models/import_export/export_state_history.dart';
+import '/models/layer.dart';
+import '/pro_image_editor.dart';
+import '/utils/constants.dart';
+import '/utils/content_recorder.dart/content_recorder.dart';
+import '/utils/debounce.dart';
 import '/widgets/adaptive_dialog.dart';
+import '/widgets/auto_image.dart';
 import '/widgets/flat_icon_text_button.dart';
 import '/widgets/layer_widget.dart';
 import '/widgets/loading_dialog.dart';
 import '/widgets/pro_image_editor_desktop_mode.dart';
+import '/widgets/transform/transformed_content_generator.dart';
+import 'utils/desktop_interaction_manager.dart';
+import 'utils/layer_interaction_manager.dart';
+import 'utils/sizes_manager.dart';
+import 'utils/whatsapp_helper.dart';
 
 /// A widget for image editing using ProImageEditor.
 ///

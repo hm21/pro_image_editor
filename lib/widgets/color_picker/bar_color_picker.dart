@@ -1,7 +1,11 @@
+// Dart imports:
 import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'color_picker_configs.dart';
 
 /// A padding used to calculate bar height(thumbRadius * 2 - kBarPadding).

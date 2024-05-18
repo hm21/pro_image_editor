@@ -1,7 +1,11 @@
-import 'package:defer_pointer/defer_pointer.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
+// Package imports:
+import 'package:defer_pointer/defer_pointer.dart';
+
+// Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../models/layer.dart';

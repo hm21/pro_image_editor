@@ -1,12 +1,16 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:rounded_background_text/rounded_background_text.dart';
 
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/theme_functions.dart';
-
 import '../mixins/converted_configs.dart';
 import '../mixins/editor_configs_mixin.dart';
 import '../models/layer.dart';

@@ -1,15 +1,20 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:colorfilter_generator/presets.dart';
-import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_filters.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
-
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
 import '../../../models/history/filter_state_history.dart';

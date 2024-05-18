@@ -1,3 +1,4 @@
+// Package imports:
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 
 /// Represents the history of a filter state.

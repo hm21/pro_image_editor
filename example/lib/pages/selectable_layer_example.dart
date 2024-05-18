@@ -1,6 +1,10 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+// Project imports:
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 

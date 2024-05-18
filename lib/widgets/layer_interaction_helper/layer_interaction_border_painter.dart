@@ -1,6 +1,10 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/theme/theme_layer_interaction.dart';
 
 class LayerInteractionBorderPainter extends CustomPainter {

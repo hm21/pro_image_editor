@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import 'theme_shared_values.dart';
 
 /// The `CropRotateEditorTheme` class defines the theme for the crop and rotate editor in the image editor.

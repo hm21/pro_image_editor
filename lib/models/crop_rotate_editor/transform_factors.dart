@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/rotate_angle.dart';
 
 class TransformConfigs {

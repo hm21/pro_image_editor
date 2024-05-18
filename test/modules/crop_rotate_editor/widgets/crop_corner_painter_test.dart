@@ -1,5 +1,10 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:flutter_test/flutter_test.dart';
+
+// Project imports:
 import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_corner_painter.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 

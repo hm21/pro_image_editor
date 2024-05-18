@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../../utils/pro_image_editor_icons.dart';
 
 /// Customizable icons for the Sticker Editor component.

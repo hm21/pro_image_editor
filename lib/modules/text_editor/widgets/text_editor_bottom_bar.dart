@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 /// Represents the bottom bar for the text-editor.

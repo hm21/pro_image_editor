@@ -1,9 +1,11 @@
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import 'outside_gesture_behavior.dart';
 import 'outside_render_proxy_box.dart';
 

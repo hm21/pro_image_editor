@@ -1,8 +1,10 @@
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 
+// Project imports:
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/theme_functions.dart';
 import 'platform_circular_progress_indicator.dart';
 
