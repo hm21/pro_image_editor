@@ -17,38 +17,62 @@ import 'package:pro_image_editor/utils/unique_id_generator.dart';
 import 'utils/content_recorder_models.dart';
 import 'utils/dart_ui_remove_transparent_image_areas.dart';
 import 'utils/isolate_image_converter.dart';
+import 'utils/web_worker/web_worker_image_converter_dummy.dart'
+    if (dart.library.html) 'utils/web_worker/web_worker_image_converter.dart';
 
 // This code is inspired from the package `screenshot` from the autor SachinGanesh.
 // https://pub.dev/packages/screenshot
 
+/// A controller class responsible for capturing and processing images
+/// using an isolated thread for performance improvements.
 class ContentRecorderController {
+  /// A key to identify the container widget for rendering the image.
   late final GlobalKey containerKey;
+
+  /// The isolate used for offloading image processing tasks.
   Isolate? _isolate;
+
+  /// A map to store unique completers for handling asynchronous image processing tasks.
   final Map<String, Completer<Uint8List?>> _uniqueCompleter = {};
+
+  /// The port used to send messages to the isolate.
   late SendPort _sendPort;
+
+  /// The port used to receive messages from the isolate.
   late ReceivePort _receivePort;
+
+  /// A completer to track when the isolate is ready for communication.
   late Completer _isolateReady;
 
+  final ProImageEditorWebWorker _webWorker = ProImageEditorWebWorker();
+
+  /// Constructor to initialize the controller and set up the isolate if not running on the web.
   ContentRecorderController() {
     containerKey = GlobalKey();
-    if (!kIsWeb) _initIsolate();
+    _initIsolate();
   }
 
+  /// Initializes the isolate and sets up communication ports.
   void _initIsolate() async {
-    _isolateReady = Completer.sync();
-    _receivePort = ReceivePort();
-    _receivePort.listen((message) {
-      if (message is SendPort) {
-        _sendPort = message;
-        _isolateReady.complete();
-      } else if (message is ResponseFromImageThread) {
-        _uniqueCompleter[message.completerId]!.complete(message.bytes);
-      }
-    });
-    _isolate =
-        await Isolate.spawn(isolatedImageConverter, _receivePort.sendPort);
+    if (kIsWeb) {
+      _webWorker.init();
+    } else {
+      _isolateReady = Completer.sync();
+      _receivePort = ReceivePort();
+      _receivePort.listen((message) {
+        if (message is SendPort) {
+          _sendPort = message;
+          _isolateReady.complete();
+        } else if (message is ResponseFromImageThread) {
+          _uniqueCompleter[message.completerId]!.complete(message.bytes);
+        }
+      });
+      _isolate =
+          await Isolate.spawn(isolatedImageConverter, _receivePort.sendPort);
+    }
   }
 
+  /// Destroys the isolate and closes the receive port if not running on the web.
   void destroy() {
     if (!kIsWeb) {
       _isolate?.kill();
@@ -56,35 +80,56 @@ class ContentRecorderController {
     }
   }
 
+  /// Captures an image using the provided configuration and optionally a specific completer ID and pixel ratio.
+  /// The method determines if the task should be processed in an isolate or on the main thread based on the platform.
+  ///
+  /// [configs] - The configuration for image capturing.
+  /// [onImageCaptured] - Optional callback to handle the captured image.
+  /// [completerId] - Optional unique identifier for the completer.
+  /// [pixelRatio] - Optional pixel ratio for image rendering.
+  /// [image] - Optional pre-rendered image.
   Future<Uint8List?> capture({
     required ProImageEditorConfigs configs,
     Function(ui.Image?)? onImageCaptured,
+    bool stateHistroyScreenshot = false,
     String? completerId,
     double? pixelRatio,
     ui.Image? image,
   }) async {
+    // If we're just capturing a screenshot for the state history in the web platform,
+    // but web worker is not supported, we return null.
+    if (kIsWeb &&
+        stateHistroyScreenshot &&
+        !(await _webWorker.readyState.future)) {
+      return null;
+    }
+
     image ??= await _getRenderedImage(pixelRatio);
     completerId ??= generateUniqueId();
     onImageCaptured?.call(image);
     if (image == null) return null;
 
-    if (!kIsWeb) {
-      try {
-        // Run in dart native the thread seperate.
+    try {
+      if (!kIsWeb) {
+        // Run in dart native the thread isolated.
         return await _captureNativeIsolated(
             configs: configs, image: image, completerId: completerId);
-      } catch (e) {
-        // Fallback to the main thread.
-        debugPrint(e.toString());
-        return await _captureInsideMainThread(configs: configs, image: image);
+      } else {
+        // Run in web worker
+        return await _captureInsideWebWorker(
+            configs: configs, image: image, completerId: completerId);
       }
-    } else {
-      // In the web we need to run the thread inside the main thread.
-      // TODO: search faster solution for the web
+    } catch (e) {
+      // Fallback to the main thread.
+      debugPrint('Fallback to main thread: $e');
       return await _captureInsideMainThread(configs: configs, image: image);
     }
   }
 
+  /// Captures an image on the main thread and processes it according to the provided configuration.
+  ///
+  /// [configs] - The configuration for image capturing.
+  /// [image] - The image to be processed.
   Future<Uint8List?> _captureInsideMainThread({
     required ProImageEditorConfigs configs,
     required ui.Image image,
@@ -105,6 +150,11 @@ class ContentRecorderController {
     return croppedByteData?.buffer.asUint8List();
   }
 
+  /// Captures an image using an isolated thread and processes it according to the provided configuration.
+  ///
+  /// [configs] - The configuration for image capturing.
+  /// [image] - The image to be processed.
+  /// [completerId] - The unique identifier for the completer.
   Future<Uint8List?> _captureNativeIsolated({
     required ProImageEditorConfigs configs,
     required ui.Image image,
@@ -125,6 +175,30 @@ class ContentRecorderController {
     return bytes;
   }
 
+  /// Captures an image using an web worker and processes it according to the provided configuration.
+  ///
+  /// [configs] - The configuration for image capturing.
+  /// [image] - The image to be processed.
+  /// [completerId] - The unique identifier for the completer.
+  Future<Uint8List?> _captureInsideWebWorker({
+    required ProImageEditorConfigs configs,
+    required ui.Image image,
+    required String completerId,
+  }) async {
+    bool readyAndSupported = await _webWorker.readyState.future;
+    if (!readyAndSupported) {
+      return await _captureInsideMainThread(configs: configs, image: image);
+    } else {
+      return await _webWorker.sendImage(ImageFromMainThread(
+        completerId: completerId,
+        image: await _convertFlutterUiToImage(image),
+      ));
+    }
+  }
+
+  /// Converts a Flutter ui.Image to img.Image suitable for processing.
+  ///
+  /// [uiImage] - The image to be converted.
   Future<img.Image> _convertFlutterUiToImage(ui.Image uiImage) async {
     final uiBytes =
         await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -139,6 +213,9 @@ class ContentRecorderController {
     return image;
   }
 
+  /// Get the rendered image from the widget tree using the specified pixel ratio.
+  ///
+  /// [pixelRatio] - The pixel ratio to be used for rendering the image.
   Future<ui.Image?> _getRenderedImage(double? pixelRatio) async {
     try {
       var findRenderObject = containerKey.currentContext?.findRenderObject();
@@ -170,7 +247,7 @@ class ContentRecorderController {
     Size? targetSize,
     required ProImageEditorConfigs configs,
   }) async {
-    ui.Image image = await widgetToUiImage(widget,
+    ui.Image image = await _widgetToUiImage(widget,
         delay: delay,
         pixelRatio: pixelRatio,
         context: context,
@@ -183,7 +260,7 @@ class ContentRecorderController {
   }
 
   /// If you are building a desktop/web application that supports multiple view. Consider passing the [context] so that flutter know which view to capture.
-  Future<ui.Image> widgetToUiImage(
+  Future<ui.Image> _widgetToUiImage(
     Widget widget, {
     Duration delay = const Duration(seconds: 1),
     double? pixelRatio,

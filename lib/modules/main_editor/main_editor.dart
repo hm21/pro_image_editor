@@ -1300,14 +1300,11 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Takes a screenshot of the current editor state.
   ///
   /// This method is intended to be used for capturing the current state of the editor
-  /// and saving it as an image. It will not perform any action if the app is running on the web.
+  /// and saving it as an image.
   ///
   /// - If a subeditor is currently open, the method waits until it is fully loaded.
   /// - The screenshot is taken in a post-frame callback to ensure the UI is fully rendered.
   void takeScreenshot() async {
-    // Return immediately if running on the web platform
-    if (kIsWeb) return;
-
     // Wait for the editor to be fully open, if it is currently opening
     if (_isEditorOpen) await _pageOpenCompleter.future;
 
@@ -1356,19 +1353,16 @@ class ProImageEditorState extends State<ProImageEditor>
           message: i18n.doneLoadingMsg,
         );
 
-      /// Make sure in the web that the loading dialog is visible before the main thread freezes.
-      if (kIsWeb) await Future.delayed(const Duration(milliseconds: 100));
-
       double? pixelRatio = configs.removeTransparentAreas ? null : _pixelRatio;
       late Uint8List? bytes;
 
       try {
         if (_stateManager.position > 0) {
-          if (!kIsWeb && !_stateManager.activeScreenshotIsBroken) {
+          if (!_stateManager.activeScreenshotIsBroken) {
             // Get screenshot from isolated generated thread.
             bytes = await _stateManager.activeScreenshot;
           } else {
-            // Take a new screenshot if kIsWeb or the screenshot is broken.
+            // Take a new screenshot if the screenshot is broken.
             bytes = await _controllers.screenshot
                 .capture(configs: configs, pixelRatio: pixelRatio);
           }
