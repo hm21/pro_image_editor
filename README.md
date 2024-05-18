@@ -162,8 +162,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Improved layer movement and scaling functionality for desktop devices
 
 
-#### Future Features
-- ✨ Faster image creation when editing is complete
+#### Planned features
 - ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 
 
