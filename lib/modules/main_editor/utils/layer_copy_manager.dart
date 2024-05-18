@@ -28,6 +28,11 @@ class LayerCopyManager {
     }
   }
 
+  /// Copy a list of layers to create a new instances of the same type.
+  List<Layer> copyLayerList(List<Layer> layers) {
+    return layers.map((e) => copyLayer(e)).toList();
+  }
+
   /// Create a copy of a TextLayerData instance.
   TextLayerData createCopyTextLayer(TextLayerData layer) {
     return TextLayerData(

@@ -375,17 +375,17 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Get the list of layers from the current image editor changes.
   List<Layer> get activeLayers =>
-      _stateManager.stateHistory[_stateManager.editPosition].layers;
+      _stateManager.stateHistory[_stateManager.position].layers;
 
   /// List to store the history of image editor changes.
   List<EditorStateHistory> get stateHistory => _stateManager.stateHistory;
 
   /// Determines whether undo actions can be performed on the current state.
-  bool get canUndo => _stateManager.editPosition > 0;
+  bool get canUndo => _stateManager.position > 0;
 
   /// Determines whether redo actions can be performed on the current state.
   bool get canRedo =>
-      _stateManager.editPosition < _stateManager.stateHistory.length - 1;
+      _stateManager.position < _stateManager.stateHistory.length - 1;
 
   /// Get the current image being edited from the change list.
   late EditorImage _image;
@@ -479,6 +479,64 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
+  /// Adds a new state to the history with the given configuration and updates the state manager.
+  ///
+  /// This method is responsible for capturing the current state of the editor,
+  /// including layers, transformations, filters, and blur settings. It then adds
+  /// this state to the history, enabling undo and redo functionality. Additionally,
+  /// it can take a screenshot if required.
+  ///
+  /// - [layers]: An optional list of layers to be included in the new state.
+  /// - [newLayer]: An optional new layer to be added to the current layers.
+  /// - [transformConfigs]: Optional transformation configurations for the new state.
+  /// - [filters]: An optional list of filter states to be included in the new state.
+  /// - [blur]: An optional blur state to be included in the new state.
+  /// - [heroScreenshotRequired]: A flag indicating whether a hero screenshot is required.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// _addHistory(
+  ///   layers: currentLayers,
+  ///   newLayer: additionalLayer,
+  ///   transformConfigs: currentTransformConfigs,
+  ///   filters: currentFilters,
+  ///   blur: currentBlurState,
+  ///   heroScreenshotRequired: false,
+  /// );
+  /// ```
+  void _addHistory({
+    List<Layer>? layers,
+    Layer? newLayer,
+    TransformConfigs? transformConfigs,
+    List<FilterStateHistory>? filters,
+    BlurStateHistory? blur,
+    bool heroScreenshotRequired = false,
+  }) {
+    _stateManager.cleanForwardChanges();
+
+    List<Layer> activeLayerList = _layerCopyManager.copyLayerList(activeLayers);
+
+    stateHistory.add(
+      EditorStateHistory(
+        transformConfigs: transformConfigs ?? _stateManager.transformConfigs,
+        blur: blur ?? _stateManager.activeBlur,
+        layers: layers ??
+            (newLayer != null
+                ? [...activeLayerList, newLayer]
+                : activeLayerList),
+        filters: filters ?? _stateManager.activeFilters,
+      ),
+    );
+    if (!heroScreenshotRequired) {
+      takeScreenshot();
+    } else {
+      _stateManager.heroScreenshotRequired = true;
+    }
+    _stateManager.position++;
+
+    _stateManager.setHistoryLimit(configs.stateHistoryLimit);
+  }
+
   /// Add a new layer to the image editor.
   ///
   /// This method adds a new layer to the image editor and updates the editing state.
@@ -487,21 +545,8 @@ class ProImageEditorState extends State<ProImageEditor>
     int removeLayerIndex = -1,
     bool blockSelectLayer = false,
   }) {
-    _stateManager.cleanForwardChanges();
+    _addHistory(newLayer: layer);
 
-    stateHistory.add(
-      EditorStateHistory(
-        transformConfigs: _stateManager
-            .stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: _stateManager.blurStateHistory,
-        layers: List<Layer>.from(
-            stateHistory.last.layers.map((e) => _layerCopyManager.copyLayer(e)))
-          ..add(layer),
-        filters: _stateManager.filters,
-      ),
-    );
-    takeScreenshot();
-    _stateManager.editPosition++;
     if (removeLayerIndex >= 0) {
       activeLayers.removeAt(removeLayerIndex);
     }
@@ -521,27 +566,16 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method removes a layer from the editor and updates the editing state.
   void removeLayer(int layerPos, {Layer? layer}) {
-    _stateManager.cleanForwardChanges();
-    var layers = List<Layer>.from(
-        activeLayers.map((e) => _layerCopyManager.copyLayer(e)));
+    var layers = _layerCopyManager.copyLayerList(activeLayers);
     layers.removeAt(layerPos);
-    stateHistory.add(
-      EditorStateHistory(
-        transformConfigs: _stateManager
-            .stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: _stateManager.blurStateHistory,
-        layers: layers,
-        filters: _stateManager.filters,
-      ),
-    );
-    takeScreenshot();
+    _addHistory(layers: layers);
+
     var oldIndex = activeLayers
         .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
     if (oldIndex >= 0) {
-      stateHistory[_stateManager.editPosition].layers[oldIndex] =
+      stateHistory[_stateManager.position].layers[oldIndex] =
           _layerCopyManager.copyLayer(layer ?? _tempLayer!);
     }
-    _stateManager.editPosition++;
     callbacks.onRemoveLayer?.call();
   }
 
@@ -549,20 +583,9 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method updates the temporary layer in the editor and updates the editing state.
   void _updateTempLayer() {
-    _stateManager.cleanForwardChanges();
-    stateHistory.add(
-      EditorStateHistory(
-        transformConfigs: _stateManager
-            .stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: _stateManager.blurStateHistory,
-        layers: List.from(stateHistory.last.layers
-            .map((e) => _layerCopyManager.copyLayer(e))),
-        filters: _stateManager.filters,
-      ),
-    );
+    _addHistory();
     _layerInteractionManager.selectedLayerId = '';
     setState(() {});
-    takeScreenshot();
     /* 
     String selectedLayerId = _layerInteractionManager.selectedLayerId;
     _layerInteractionManager.selectedLayerId = '';
@@ -576,13 +599,12 @@ class ProImageEditorState extends State<ProImageEditor>
       });
     } */
 
-    var oldIndex =
-        activeLayers.indexWhere((element) => element.id == _tempLayer!.id);
+    List<Layer> oldLayers = stateHistory[_stateManager.position - 1].layers;
+    int oldIndex =
+        oldLayers.indexWhere((element) => element.id == _tempLayer!.id);
     if (oldIndex >= 0) {
-      stateHistory[_stateManager.editPosition].layers[oldIndex] =
-          _layerCopyManager.copyLayer(_tempLayer!);
+      oldLayers[oldIndex] = _layerCopyManager.copyLayer(_tempLayer!);
     }
-    _stateManager.editPosition++;
     _tempLayer = null;
   }
 
@@ -830,6 +852,20 @@ class ProImageEditorState extends State<ProImageEditor>
     onUpdateUI?.call();
   }
 
+  void _selectLayerAfterHeroIsDone(String id) {
+    if (_layerInteractionManager.layersAreSelectable(configs) &&
+        layerInteraction.initialSelected) {
+      /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+      Future.delayed(const Duration(milliseconds: 1), () async {
+        if (_isEditorOpen) await _pageOpenCompleter.future;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          _layerInteractionManager.selectedLayerId = id;
+          setState(() {});
+        });
+      });
+    }
+  }
+
   /// Open a new page on top of the current page.
   ///
   /// This method navigates to a new page using a fade transition animation.
@@ -911,8 +947,8 @@ class ProImageEditorState extends State<ProImageEditor>
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: onUpdateUI,
-          appliedBlurFactor: _stateManager.blurStateHistory.blur,
-          appliedFilters: _stateManager.filters,
+          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedFilters: _stateManager.activeFilters,
         ),
       ),
       duration: const Duration(milliseconds: 150),
@@ -922,17 +958,7 @@ class ProImageEditorState extends State<ProImageEditor>
         addLayer(layer, blockSelectLayer: true);
       }
 
-      if (_layerInteractionManager.layersAreSelectable(configs) &&
-          layerInteraction.initialSelected) {
-        /// Skip one frame to ensure captured image in seperate thread will not capture the border.
-        Future.delayed(const Duration(milliseconds: 1), () async {
-          if (_isEditorOpen) await _pageOpenCompleter.future;
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            _layerInteractionManager.selectedLayerId = paintingLayers.last.id;
-            setState(() {});
-          });
-        });
-      }
+      _selectLayerAfterHeroIsDone(paintingLayers.last.id);
 
       setState(() {});
       onUpdateUI?.call();
@@ -956,7 +982,8 @@ class ProImageEditorState extends State<ProImageEditor>
     if (layer == null || !mounted) return;
     layer.offset = newLayerOffsetPosition;
 
-    addLayer(layer);
+    addLayer(layer, blockSelectLayer: true);
+    _selectLayerAfterHeroIsDone(layer.id);
 
     setState(() {});
     onUpdateUI?.call();
@@ -986,15 +1013,13 @@ class ProImageEditorState extends State<ProImageEditor>
           layers: _stateManager.activeLayers,
           configs: widget.configs,
           transformConfigs: _stateManager
-              .stateHistory[_stateManager.editPosition].transformConfigs,
+              .stateHistory[_stateManager.position].transformConfigs,
           mainImageSize: _sizesManager.decodedImageSize,
           mainBodySize: _sizesManager.bodySize,
           enableFakeHero: true,
-          appliedBlurFactor: _stateManager.blurStateHistory.blur,
-          appliedFilters: _stateManager.filters,
+          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedFilters: _stateManager.activeFilters,
           onDone: (transformConfigs) async {
-            _stateManager.cleanForwardChanges();
-
             List<Layer> updatedLayers = LayerTransformGenerator(
               layers: _stateManager.activeLayers,
               activeTransformConfigs: _stateManager.transformConfigs,
@@ -1003,16 +1028,11 @@ class ProImageEditorState extends State<ProImageEditor>
               undoChanges: false,
             ).updatedLayers;
 
-            _stateManager.stateHistory.add(
-              EditorStateHistory(
-                blur: _stateManager.blurStateHistory,
-                layers: updatedLayers,
-                filters: _stateManager.filters,
-                transformConfigs: transformConfigs,
-              ),
+            _addHistory(
+              transformConfigs: transformConfigs,
+              layers: updatedLayers,
+              heroScreenshotRequired: true,
             );
-            _stateManager.editPosition++;
-            _stateManager.heroScreenshotRequired = true;
 
             /// Important to reset the layer hero positions
             if (activeLayers.isNotEmpty) {
@@ -1058,30 +1078,21 @@ class ProImageEditorState extends State<ProImageEditor>
           mainImageSize: _sizesManager.decodedImageSize,
           mainBodySize: _sizesManager.bodySize,
           convertToUint8List: false,
-          appliedBlurFactor: _stateManager.blurStateHistory.blur,
-          appliedFilters: _stateManager.filters,
+          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedFilters: _stateManager.activeFilters,
         ),
       ),
     );
 
     if (filterAppliedImage == null) return;
 
-    _stateManager.cleanForwardChanges();
-
-    stateHistory.add(
-      EditorStateHistory(
-        transformConfigs: _stateManager
-            .stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: _stateManager.blurStateHistory,
-        layers: activeLayers,
-        filters: [
-          filterAppliedImage,
-          ..._stateManager.filters,
-        ],
-      ),
+    _addHistory(
+      filters: [
+        filterAppliedImage,
+        ..._stateManager.activeFilters,
+      ],
+      heroScreenshotRequired: true,
     );
-    _stateManager.editPosition++;
-    _stateManager.heroScreenshotRequired = true;
 
     setState(() {});
     onUpdateUI?.call();
@@ -1106,27 +1117,18 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: onUpdateUI,
           convertToUint8List: false,
-          appliedBlurFactor: _stateManager.blurStateHistory.blur,
-          appliedFilters: _stateManager.filters,
+          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedFilters: _stateManager.activeFilters,
         ),
       ),
     );
 
     if (blur == null) return;
 
-    _stateManager.cleanForwardChanges();
-
-    stateHistory.add(
-      EditorStateHistory(
-        transformConfigs: _stateManager
-            .stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: BlurStateHistory(blur: blur),
-        layers: activeLayers,
-        filters: _stateManager.filters,
-      ),
+    _addHistory(
+      blur: BlurStateHistory(blur: blur),
+      heroScreenshotRequired: true,
     );
-    _stateManager.editPosition++;
-    _stateManager.heroScreenshotRequired = true;
 
     setState(() {});
     onUpdateUI?.call();
@@ -1252,26 +1254,15 @@ class ProImageEditorState extends State<ProImageEditor>
     required int oldIndex,
     required int newIndex,
   }) {
+    List<Layer> layers = _layerCopyManager.copyLayerList(activeLayers);
     if (newIndex > oldIndex) {
-      var item = activeLayers.removeAt(oldIndex);
-      activeLayers.insert(newIndex - 1, item);
+      var item = layers.removeAt(oldIndex);
+      layers.insert(newIndex - 1, item);
     } else {
-      var item = activeLayers.removeAt(oldIndex);
-      activeLayers.insert(newIndex, item);
+      var item = layers.removeAt(oldIndex);
+      layers.insert(newIndex, item);
     }
-    _stateManager.cleanForwardChanges();
-    stateHistory.add(
-      EditorStateHistory(
-        transformConfigs: _stateManager
-            .stateHistory[_stateManager.editPosition].transformConfigs,
-        blur: _stateManager.blurStateHistory,
-        layers: List<Layer>.from(stateHistory.last.layers
-            .map((e) => _layerCopyManager.copyLayer(e))),
-        filters: _stateManager.filters,
-      ),
-    );
-    takeScreenshot();
-    _stateManager.editPosition++;
+    _addHistory(layers: layers);
     setState(() {});
   }
 
@@ -1280,10 +1271,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This function allows the user to undo the most recent editing action performed on the image.
   /// It decreases the edit position, and the image is decoded to reflect the previous state.
   void undoAction() {
-    if (_stateManager.editPosition > 0) {
+    if (_stateManager.position > 0) {
       setState(() {
         _layerInteractionManager.selectedLayerId = '';
-        _stateManager.editPosition--;
+        _stateManager.position--;
         _decodeImage();
       });
       onUpdateUI?.call();
@@ -1296,10 +1287,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// `undoAction` function. It increases the edit position, and the image is decoded to reflect
   /// the next state.
   void redoAction() {
-    if (_stateManager.editPosition < stateHistory.length - 1) {
+    if (_stateManager.position < stateHistory.length - 1) {
       setState(() {
         _layerInteractionManager.selectedLayerId = '';
-        _stateManager.editPosition++;
+        _stateManager.position++;
         _decodeImage();
       });
       onUpdateUI?.call();
@@ -1341,7 +1332,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// is in progress.
   void doneEditing() async {
     if (_doneEditing) return;
-    if (_stateManager.editPosition <= 0 && activeLayers.isEmpty) {
+    if (_stateManager.position <= 0 && activeLayers.isEmpty) {
       if (!configs.allowCompleteWithEmptyEditing) {
         return closeEditor();
       }
@@ -1372,7 +1363,7 @@ class ProImageEditorState extends State<ProImageEditor>
       late Uint8List? bytes;
 
       try {
-        if (_stateManager.editPosition > 0) {
+        if (_stateManager.position > 0) {
           if (!kIsWeb && !_stateManager.activeScreenshotIsBroken) {
             // Get screenshot from isolated generated thread.
             bytes = await _stateManager.activeScreenshot;
@@ -1405,7 +1396,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This function allows the user to close the image editor without saving any changes or edits.
   /// It navigates back to the previous screen or closes the modal editor.
   void closeEditor() {
-    if (_stateManager.editPosition <= 0) {
+    if (_stateManager.position <= 0) {
       if (onCloseEditor == null) {
         Navigator.pop(context);
       } else {
@@ -1445,7 +1436,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 designMode: designMode,
                 onPressed: () {
                   close = true;
-                  _stateManager.editPosition = 0;
+                  _stateManager.position = 0;
                   Navigator.pop(context, 'OK');
                 },
                 child: Text(i18n.various.closeEditorWarningConfirmBtn),
@@ -1507,7 +1498,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     if (import.configs.mergeMode == ImportEditorMergeMode.replace) {
-      _stateManager.editPosition = import.editorPosition + 1;
+      _stateManager.position = import.editorPosition + 1;
       _stateManager.stateHistory = [
         EditorStateHistory(
           transformConfigs: TransformConfigs.empty(),
@@ -1532,7 +1523,7 @@ class ProImageEditorState extends State<ProImageEditor>
         stateHistory.add(el);
         takeScreenshot();
       }
-      _stateManager.editPosition = stateHistory.length - 1;
+      _stateManager.position = stateHistory.length - 1;
     }
 
     setState(() {});
@@ -1549,7 +1540,7 @@ class ProImageEditorState extends State<ProImageEditor>
     return ExportStateHistory(
       _stateManager.stateHistory,
       _sizesManager.decodedImageSize,
-      _stateManager.editPosition,
+      _stateManager.position,
       configs: configs,
     );
   }
@@ -1567,9 +1558,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
     return Constants(
       child: PopScope(
-        canPop: _stateManager.editPosition <= 0 || _doneEditing,
+        canPop: _stateManager.position <= 0 || _doneEditing,
         onPopInvoked: (didPop) {
-          if (_stateManager.editPosition > 0 && !_doneEditing) {
+          if (_stateManager.position > 0 && !_doneEditing) {
             closeWarning();
           }
         },
@@ -1675,7 +1666,7 @@ class ProImageEditorState extends State<ProImageEditor>
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           icons.undoAction,
-                          color: _stateManager.editPosition > 0
+                          color: _stateManager.position > 0
                               ? imageEditorTheme.appBarForegroundColor
                               : imageEditorTheme.appBarForegroundColor
                                   .withAlpha(80),
@@ -1688,11 +1679,11 @@ class ProImageEditorState extends State<ProImageEditor>
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         icon: Icon(
                           icons.redoAction,
-                          color: _stateManager.editPosition <
-                                  stateHistory.length - 1
-                              ? imageEditorTheme.appBarForegroundColor
-                              : imageEditorTheme.appBarForegroundColor
-                                  .withAlpha(80),
+                          color:
+                              _stateManager.position < stateHistory.length - 1
+                                  ? imageEditorTheme.appBarForegroundColor
+                                  : imageEditorTheme.appBarForegroundColor
+                                      .withAlpha(80),
                         ),
                         onPressed: redoAction,
                       ),
@@ -1832,32 +1823,19 @@ class ProImageEditorState extends State<ProImageEditor>
               file: widget.file,
               assetPath: widget.assetPath,
               networkUrl: widget.networkUrl,
-              blurFactor: _stateManager.blurStateHistory.blur,
-              activeFilters: _stateManager.filters,
+              blurFactor: _stateManager.activeBlur.blur,
+              activeFilters: _stateManager.activeFilters,
               configs: widget.configs,
-              selectedFilter: _stateManager.filters.isNotEmpty
-                  ? _stateManager.filters.first.filter
+              selectedFilter: _stateManager.activeFilters.isNotEmpty
+                  ? _stateManager.activeFilters.first.filter
                   : PresetFilters.none,
               onSelectFilter: (filter) {
-                _stateManager.cleanForwardChanges();
-
-                stateHistory.add(
-                  EditorStateHistory(
-                    transformConfigs: _stateManager
-                        .stateHistory[_stateManager.editPosition]
-                        .transformConfigs,
-                    blur: _stateManager.blurStateHistory,
-                    layers: activeLayers,
-                    filters: [
-                      FilterStateHistory(
-                        filter: filter,
-                        opacity: 1,
-                      ),
-                    ],
+                _addHistory(filters: [
+                  FilterStateHistory(
+                    filter: filter,
+                    opacity: 1,
                   ),
-                );
-                takeScreenshot();
-                _stateManager.editPosition++;
+                ]);
 
                 setState(() {});
                 onUpdateUI?.call();
@@ -2256,8 +2234,8 @@ class ProImageEditorState extends State<ProImageEditor>
                   height: _sizesManager.decodedImageSize.height,
                   designMode: designMode,
                   image: _image,
-                  filters: _stateManager.filters,
-                  blurFactor: _stateManager.blurStateHistory.blur,
+                  filters: _stateManager.activeFilters,
+                  blurFactor: _stateManager.activeBlur.blur,
                 ),
               ),
       ),
