@@ -12,8 +12,10 @@ class MainEditorControllers {
   /// Stream controller for tracking mouse movement within the editor.
   late final StreamController<bool> mouseMoveStream;
 
-  /// Controller which help to reset layer hero position after they are transformed.
   late final StreamController<bool> layerHeroResetCtrl;
+
+  /// Controller which update only the ui from the layers.
+  late final StreamController uiLayerStream;
 
   /// Scroll controller for the bottom bar in the editor interface.
   late final ScrollController bottomBarScroll;
@@ -24,6 +26,7 @@ class MainEditorControllers {
   /// Constructs a new instance of [MainEditorControllers].
   MainEditorControllers() {
     mouseMoveStream = StreamController.broadcast();
+    uiLayerStream = StreamController.broadcast();
     layerHeroResetCtrl = StreamController.broadcast();
     screenshot = ContentRecorderController();
     bottomBarScroll = ScrollController();
@@ -32,6 +35,7 @@ class MainEditorControllers {
   /// Disposes of resources held by the controllers.
   void dispose() {
     mouseMoveStream.close();
+    uiLayerStream.close();
     layerHeroResetCtrl.close();
     bottomBarScroll.dispose();
   }

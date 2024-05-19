@@ -1,4 +1,5 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:io';
 
 // Flutter imports:
@@ -151,6 +152,9 @@ class BlurEditorState extends State<BlurEditor>
   /// Manages the capturing a screenshot of the image.
   ContentRecorderController screenshotController = ContentRecorderController();
 
+  /// Update the image with the applied blur and the slider value.
+  late final StreamController _uiBlurStream;
+
   /// Represents the selected blur state.
   late double selectedBlur;
 
@@ -163,7 +167,14 @@ class BlurEditorState extends State<BlurEditor>
   @override
   void initState() {
     selectedBlur = appliedBlurFactor;
+    _uiBlurStream = StreamController.broadcast();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _uiBlurStream.close();
+    super.dispose();
   }
 
   /// Closes the editor without applying changes.
@@ -257,14 +268,18 @@ class BlurEditorState extends State<BlurEditor>
               child: TransformedContentGenerator(
                 configs: configs,
                 transformConfigs: transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithFilters(
-                  width: getMinimumSize(mainImageSize, _bodySize).width,
-                  height: getMinimumSize(mainImageSize, _bodySize).height,
-                  designMode: designMode,
-                  image: editorImage,
-                  filters: appliedFilters,
-                  blurFactor: selectedBlur,
-                ),
+                child: StreamBuilder(
+                    stream: _uiBlurStream.stream,
+                    builder: (context, snapshot) {
+                      return ImageWithFilters(
+                        width: getMinimumSize(mainImageSize, _bodySize).width,
+                        height: getMinimumSize(mainImageSize, _bodySize).height,
+                        designMode: designMode,
+                        image: editorImage,
+                        filters: appliedFilters,
+                        blurFactor: selectedBlur,
+                      );
+                    }),
               ),
             ),
             if (blurEditorConfigs.showLayers && layers != null)
@@ -295,17 +310,21 @@ class BlurEditorState extends State<BlurEditor>
           alignment: Alignment.center,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
-            child: Slider(
-              min: 0,
-              max: blurEditorConfigs.maxBlur,
-              divisions: 100,
-              value: selectedBlur,
-              onChanged: (value) {
-                selectedBlur = value;
-                setState(() {});
-                onUpdateUI?.call();
-              },
-            ),
+            child: StreamBuilder(
+                stream: _uiBlurStream.stream,
+                builder: (context, snapshot) {
+                  return Slider(
+                    min: 0,
+                    max: blurEditorConfigs.maxBlur,
+                    divisions: 100,
+                    value: selectedBlur,
+                    onChanged: (value) {
+                      selectedBlur = value;
+                      _uiBlurStream.add(null);
+                      onUpdateUI?.call();
+                    },
+                  );
+                }),
           ),
         ),
       ),

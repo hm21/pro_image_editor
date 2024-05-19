@@ -126,25 +126,26 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 ## Features
 
-- ✅ Painting-Editor
-  - ✅ Color picker
-  - ✅ Multiple forms like arrow, rectangle, circle and freestyle
-- ✅ Text-Editor
-  - ✅ Color picker
-  - ✅ Align-Text => left, right and center
-  - ✅ Change Text Scale
-  - ✅ Multiple background modes like in whatsapp
-- ✅ Crop-Rotate-Editor
-  - ✅ Rotate
-  - ✅ Flip
-  - ✅ Multiple aspect ratios
-  - ✅ Reset
-  - ✅ Double-Tap
-  - ✅ Round cropper
-- ✅ Filter-Editor
-- ✅ Blur-Editor
-- ✅ Emoji-Picker
-- ✅ Add stickers or widgets
+- ✅ Multiple-Editors
+  - ✅ Painting-Editor
+    - ✅ Color picker
+    - ✅ Multiple forms like arrow, rectangle, circle and freestyle
+  - ✅ Text-Editor
+    - ✅ Color picker
+    - ✅ Align-Text => left, right and center
+    - ✅ Change Text Scale
+    - ✅ Multiple background modes like in whatsapp
+  - ✅ Crop-Rotate-Editor
+    - ✅ Rotate
+    - ✅ Flip
+    - ✅ Multiple aspect ratios
+    - ✅ Reset
+    - ✅ Double-Tap
+    - ✅ Round cropper
+  - ✅ Filter-Editor
+  - ✅ Blur-Editor
+  - ✅ Emoji-Picker
+  - ✅ Sticker-Editor
 - ✅ Move and scalable layers
 - ✅ Helper lines for better positioning
 - ✅ Undo and redo function
@@ -160,6 +161,9 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ WhatsApp Theme
 - ✅ Movable background image
 - ✅ Improved layer movement and scaling functionality for desktop devices
+- ✅ Super fast performance
+  - ✅ Use isolates for background tasks on Dart native devices
+  - ✅ Use web-workers for background tasks on Dart web devices
 
 
 #### Planned features

@@ -556,7 +556,7 @@ class ProImageEditorState extends State<ProImageEditor>
       /// Skip one frame to ensure captured image in seperate thread will not capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         _layerInteractionManager.selectedLayerId = layer.id;
-        setState(() {});
+        _controllers.uiLayerStream.add(null);
       });
     }
     callbacks.onAddLayer?.call();
@@ -585,7 +585,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void _updateTempLayer() {
     _addHistory();
     _layerInteractionManager.selectedLayerId = '';
-    setState(() {});
+    _controllers.uiLayerStream.add(null);
     /* 
     String selectedLayerId = _layerInteractionManager.selectedLayerId;
     _layerInteractionManager.selectedLayerId = '';
@@ -696,7 +696,7 @@ class ProImageEditorState extends State<ProImageEditor>
             : posX >= _layerInteractionManager.hitSpan
                 ? LayerLastPosition.right
                 : LayerLastPosition.center;
-
+    setState(() {});
     callbacks.onScaleStart?.call(details);
   }
 
@@ -735,7 +735,7 @@ class ProImageEditorState extends State<ProImageEditor>
         editorSize: _sizesManager.editorSize,
         layerTheme: imageEditorTheme.layerInteraction,
       );
-      setState(() {});
+      _controllers.uiLayerStream.add(null);
       onUpdateUI?.call();
       return;
     }
@@ -761,7 +761,7 @@ class ProImageEditorState extends State<ProImageEditor>
         configEnabledHitVibration: helperLines.hitVibration,
       );
     }
-    setState(() {});
+    _controllers.uiLayerStream.add(null);
     onUpdateUI?.call();
     callbacks.onScaleUpdate?.call(details);
   }
@@ -903,7 +903,9 @@ class ProImageEditorState extends State<ProImageEditor>
             } else if (status == AnimationStatus.dismissed) {
               setState(() {
                 _isEditorOpen = false;
-                _pageOpenCompleter.complete(true);
+                if (!_pageOpenCompleter.isCompleted) {
+                  _pageOpenCompleter.complete(true);
+                }
                 _layerInteractionManager.freeStyleHighPerformanceHero = false;
                 if (_sizesManager.shouldRecalculateLayerPosition) {
                   _sizesManager.recalculateLayerPosition(activeLayers);
@@ -2028,87 +2030,94 @@ class ProImageEditorState extends State<ProImageEditor>
                           }
                         : null,
                     child: DeferredPointerHandler(
-                      child: Stack(
-                        children: activeLayers.asMap().entries.map((entry) {
-                          final int i = entry.key;
-                          final Layer layerItem = entry.value;
-                          return LayerWidget(
-                            key: ValueKey('${layerItem.id}-$i'),
-                            configs: configs,
-                            editorBodySize: _sizesManager.bodySize,
-                            layerData: layerItem,
-                            enableHitDetection:
-                                _layerInteractionManager.enabledHitDetection,
-                            selected:
-                                _layerInteractionManager.selectedLayerId ==
-                                    layerItem.id,
-                            isInteractive: !_isEditorOpen,
-                            highPerformanceMode: _layerInteractionManager
-                                    .freeStyleHighPerformanceScaling ||
-                                _layerInteractionManager
-                                    .freeStyleHighPerformanceMoving ||
-                                _layerInteractionManager
-                                    .freeStyleHighPerformanceHero,
-                            onEditTap: () {
-                              if (layerItem is TextLayerData) {
-                                _onTextLayerTap(layerItem);
-                              }
-                            },
-                            onTap: (layer) async {
-                              if (_layerInteractionManager
-                                  .layersAreSelectable(configs)) {
-                                _layerInteractionManager.selectedLayerId = layer
-                                            .id ==
-                                        _layerInteractionManager.selectedLayerId
-                                    ? ''
-                                    : layer.id;
-                              } else if (layer is TextLayerData) {
-                                _onTextLayerTap(layer);
-                              }
-                            },
-                            onTapUp: () {
-                              setState(() {
-                                if (_layerInteractionManager.hoverRemoveBtn) {
-                                  removeLayer(_selectedLayerIndex);
-                                }
-                                _selectedLayerIndex = -1;
-                              });
-                              onUpdateUI?.call();
-                            },
-                            onTapDown: () {
-                              _selectedLayerIndex = i;
-                            },
-                            onScaleRotateDown: (details, layerOriginalSize) {
-                              _selectedLayerIndex = i;
-                              _layerInteractionManager
-                                      .rotateScaleLayerSizeHelper =
-                                  layerOriginalSize;
-                              _layerInteractionManager
-                                      .rotateScaleLayerScaleHelper =
-                                  layerItem.scale;
-                            },
-                            onScaleRotateUp: (details) {
-                              _layerInteractionManager
-                                  .rotateScaleLayerSizeHelper = null;
-                              _layerInteractionManager
-                                  .rotateScaleLayerScaleHelper = null;
-                              setState(() {
-                                _selectedLayerIndex = -1;
-                              });
-                              onUpdateUI?.call();
-                            },
-                            onRemoveTap: () {
-                              setState(() {
-                                removeLayer(
-                                    activeLayers.indexWhere((element) =>
-                                        element.id == layerItem.id),
-                                    layer: layerItem);
-                              });
-                              onUpdateUI?.call();
-                            },
-                          );
-                        }).toList(),
-                      ),
+                      child: StreamBuilder(
+                          stream: _controllers.uiLayerStream.stream,
+                          builder: (context, snapshot) {
+                            return Stack(
+                              children:
+                                  activeLayers.asMap().entries.map((entry) {
+                                final int i = entry.key;
+                                final Layer layerItem = entry.value;
+                                return LayerWidget(
+                                  key: ValueKey('${layerItem.id}-$i'),
+                                  configs: configs,
+                                  editorBodySize: _sizesManager.bodySize,
+                                  layerData: layerItem,
+                                  enableHitDetection: _layerInteractionManager
+                                      .enabledHitDetection,
+                                  selected: _layerInteractionManager
+                                          .selectedLayerId ==
+                                      layerItem.id,
+                                  isInteractive: !_isEditorOpen,
+                                  highPerformanceMode: _layerInteractionManager
+                                          .freeStyleHighPerformanceScaling ||
+                                      _layerInteractionManager
+                                          .freeStyleHighPerformanceMoving ||
+                                      _layerInteractionManager
+                                          .freeStyleHighPerformanceHero,
+                                  onEditTap: () {
+                                    if (layerItem is TextLayerData) {
+                                      _onTextLayerTap(layerItem);
+                                    }
+                                  },
+                                  onTap: (layer) async {
+                                    if (_layerInteractionManager
+                                        .layersAreSelectable(configs)) {
+                                      _layerInteractionManager.selectedLayerId =
+                                          layer.id ==
+                                                  _layerInteractionManager
+                                                      .selectedLayerId
+                                              ? ''
+                                              : layer.id;
+                                    } else if (layer is TextLayerData) {
+                                      _onTextLayerTap(layer);
+                                    }
+                                  },
+                                  onTapUp: () {
+                                    if (_layerInteractionManager
+                                        .hoverRemoveBtn) {
+                                      removeLayer(_selectedLayerIndex);
+                                    }
+                                    _controllers.uiLayerStream.add(null);
+                                    onUpdateUI?.call();
+                                    _selectedLayerIndex = -1;
+                                  },
+                                  onTapDown: () {
+                                    _selectedLayerIndex = i;
+                                  },
+                                  onScaleRotateDown:
+                                      (details, layerOriginalSize) {
+                                    _selectedLayerIndex = i;
+                                    _layerInteractionManager
+                                            .rotateScaleLayerSizeHelper =
+                                        layerOriginalSize;
+                                    _layerInteractionManager
+                                            .rotateScaleLayerScaleHelper =
+                                        layerItem.scale;
+                                  },
+                                  onScaleRotateUp: (details) {
+                                    _layerInteractionManager
+                                        .rotateScaleLayerSizeHelper = null;
+                                    _layerInteractionManager
+                                        .rotateScaleLayerScaleHelper = null;
+                                    setState(() {
+                                      _selectedLayerIndex = -1;
+                                    });
+                                    onUpdateUI?.call();
+                                  },
+                                  onRemoveTap: () {
+                                    setState(() {
+                                      removeLayer(
+                                          activeLayers.indexWhere((element) =>
+                                              element.id == layerItem.id),
+                                          layer: layerItem);
+                                    });
+                                    onUpdateUI?.call();
+                                  },
+                                );
+                              }).toList(),
+                            );
+                          }),
                     ),
                   );
                 });
@@ -2124,51 +2133,57 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!_layerInteractionManager.showHelperLines) {
       return const SizedBox.shrink();
     }
-    return Stack(
-      children: [
-        if (helperLines.showVerticalLine)
-          Align(
-            alignment: Alignment.center,
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: duration),
-              width:
-                  _layerInteractionManager.showVerticalHelperLine ? lineH : 0,
-              height: screenH,
-              color: imageEditorTheme.helperLine.verticalColor,
-            ),
-          ),
-        if (helperLines.showHorizontalLine)
-          Align(
-            alignment: Alignment.center,
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: duration),
-              width: screenW,
-              height:
-                  _layerInteractionManager.showHorizontalHelperLine ? lineH : 0,
-              color: imageEditorTheme.helperLine.horizontalColor,
-            ),
-          ),
-        if (helperLines.showRotateLine)
-          Positioned(
-            left: _layerInteractionManager.rotationHelperLineX,
-            top: _layerInteractionManager.rotationHelperLineY,
-            child: FractionalTranslation(
-              translation: const Offset(-0.5, -0.5),
-              child: Transform.rotate(
-                angle: _layerInteractionManager.rotationHelperLineDeg,
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: duration),
-                  width: _layerInteractionManager.showRotationHelperLine
-                      ? lineH
-                      : 0,
-                  height: screenH * 2,
-                  color: imageEditorTheme.helperLine.rotateColor,
+    return StreamBuilder(
+        stream: _controllers.uiLayerStream.stream,
+        builder: (context, snapshot) {
+          return Stack(
+            children: [
+              if (helperLines.showVerticalLine)
+                Align(
+                  alignment: Alignment.center,
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: duration),
+                    width: _layerInteractionManager.showVerticalHelperLine
+                        ? lineH
+                        : 0,
+                    height: screenH,
+                    color: imageEditorTheme.helperLine.verticalColor,
+                  ),
                 ),
-              ),
-            ),
-          ),
-      ],
-    );
+              if (helperLines.showHorizontalLine)
+                Align(
+                  alignment: Alignment.center,
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: duration),
+                    width: screenW,
+                    height: _layerInteractionManager.showHorizontalHelperLine
+                        ? lineH
+                        : 0,
+                    color: imageEditorTheme.helperLine.horizontalColor,
+                  ),
+                ),
+              if (helperLines.showRotateLine)
+                Positioned(
+                  left: _layerInteractionManager.rotationHelperLineX,
+                  top: _layerInteractionManager.rotationHelperLineY,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Transform.rotate(
+                      angle: _layerInteractionManager.rotationHelperLineDeg,
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: duration),
+                        width: _layerInteractionManager.showRotationHelperLine
+                            ? lineH
+                            : 0,
+                        height: screenH * 2,
+                        color: imageEditorTheme.helperLine.rotateColor,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        });
   }
 
   Widget _buildRemoveIcon() {
@@ -2178,26 +2193,31 @@ class ProImageEditorState extends State<ProImageEditor>
           left: 0,
           child: SafeArea(
             bottom: false,
-            child: Container(
-              height: kToolbarHeight,
-              width: kToolbarHeight,
-              decoration: BoxDecoration(
-                color: _layerInteractionManager.hoverRemoveBtn
-                    ? Colors.red
-                    : (imageEditorTheme.editorMode == ThemeEditorMode.simple
-                        ? Colors.grey.shade800
-                        : Colors.black12),
-                borderRadius:
-                    const BorderRadius.only(bottomRight: Radius.circular(100)),
-              ),
-              padding: const EdgeInsets.only(right: 12, bottom: 7),
-              child: Center(
-                child: Icon(
-                  icons.removeElementZone,
-                  size: 28,
-                ),
-              ),
-            ),
+            child: StreamBuilder(
+                stream: _controllers.uiLayerStream.stream,
+                builder: (context, snapshot) {
+                  return Container(
+                    height: kToolbarHeight,
+                    width: kToolbarHeight,
+                    decoration: BoxDecoration(
+                      color: _layerInteractionManager.hoverRemoveBtn
+                          ? Colors.red
+                          : (imageEditorTheme.editorMode ==
+                                  ThemeEditorMode.simple
+                              ? Colors.grey.shade800
+                              : Colors.black12),
+                      borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(100)),
+                    ),
+                    padding: const EdgeInsets.only(right: 12, bottom: 7),
+                    child: Center(
+                      child: Icon(
+                        icons.removeElementZone,
+                        size: 28,
+                      ),
+                    ),
+                  );
+                }),
           ),
         );
   }

@@ -44,6 +44,7 @@ class DrawImage extends CustomPainter {
               : [_paintCtrl.start, _paintCtrl.end],
           color: _paintCtrl.color,
           strokeWidth: _paintCtrl.strokeWidth,
+          fill: _paintCtrl.fill,
         ),
       );
     }

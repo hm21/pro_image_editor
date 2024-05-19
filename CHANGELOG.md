@@ -22,7 +22,7 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 
 #### **perf:**
 - Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
-- Image generation is now isolated from the main thread, speeding up the process significantly. Generation time varies between 0 and 1400ms, depending on user interaction and device performance.
+- Image generation is now isolated from the main thread, speeding up the process significantly. Generation time varies between 0 and 1400ms, depending on user interaction and device performance. On the web, it runs inside a separate web worker.
 
 #### **Breaking Changes:**
 - Change the layer initial offset position to the center of the screen, not the top left. When we import from old state history we must add the half of the editor size to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the editor size.

@@ -1,4 +1,5 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:io';
 
 // Flutter imports:
@@ -153,6 +154,9 @@ class FilterEditorState extends State<FilterEditor>
   /// Manages the capturing a screenshot of the image.
   ContentRecorderController screenshotController = ContentRecorderController();
 
+  /// Update the image with the applied filter and the slider value.
+  late final StreamController _uiFilterStream;
+
   /// The selected filter.
   ColorFilterGenerator selectedFilter = PresetFilters.none;
 
@@ -164,6 +168,18 @@ class FilterEditorState extends State<FilterEditor>
 
   /// Indicates it create a screenshot or not.
   bool _createScreenshot = false;
+
+  @override
+  void initState() {
+    _uiFilterStream = StreamController.broadcast();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _uiFilterStream.close();
+    super.dispose();
+  }
 
   /// Closes the editor without applying changes.
   void close() {
@@ -258,20 +274,24 @@ class FilterEditorState extends State<FilterEditor>
               child: TransformedContentGenerator(
                 configs: configs,
                 transformConfigs: transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithFilters(
-                  width: getMinimumSize(mainImageSize, _bodySize).width,
-                  height: getMinimumSize(mainImageSize, _bodySize).height,
-                  designMode: designMode,
-                  image: editorImage,
-                  filters: [
-                    ...appliedFilters,
-                    FilterStateHistory(
-                      filter: selectedFilter,
-                      opacity: filterOpacity,
-                    ),
-                  ],
-                  blurFactor: appliedBlurFactor,
-                ),
+                child: StreamBuilder(
+                    stream: _uiFilterStream.stream,
+                    builder: (context, snapshot) {
+                      return ImageWithFilters(
+                        width: getMinimumSize(mainImageSize, _bodySize).width,
+                        height: getMinimumSize(mainImageSize, _bodySize).height,
+                        designMode: designMode,
+                        image: editorImage,
+                        filters: [
+                          ...appliedFilters,
+                          FilterStateHistory(
+                            filter: selectedFilter,
+                            opacity: filterOpacity,
+                          ),
+                        ],
+                        blurFactor: appliedBlurFactor,
+                      );
+                    }),
               ),
             ),
             if (filterEditorConfigs.showLayers && layers != null)
@@ -302,22 +322,26 @@ class FilterEditorState extends State<FilterEditor>
           children: [
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
-              child: SizedBox(
-                height: 40,
-                child: selectedFilter == PresetFilters.none
-                    ? null
-                    : Slider(
-                        min: 0,
-                        max: 1,
-                        divisions: 100,
-                        value: filterOpacity,
-                        onChanged: (value) {
-                          filterOpacity = value;
-                          setState(() {});
-                          onUpdateUI?.call();
-                        },
-                      ),
-              ),
+              child: StreamBuilder(
+                  stream: _uiFilterStream.stream,
+                  builder: (context, snapshot) {
+                    return SizedBox(
+                      height: 40,
+                      child: selectedFilter == PresetFilters.none
+                          ? null
+                          : Slider(
+                              min: 0,
+                              max: 1,
+                              divisions: 100,
+                              value: filterOpacity,
+                              onChanged: (value) {
+                                filterOpacity = value;
+                                _uiFilterStream.add(null);
+                                onUpdateUI?.call();
+                              },
+                            ),
+                    );
+                  }),
             ),
             FilterEditorItemList(
               mainBodySize: getMinimumSize(mainBodySize, _bodySize),
@@ -333,7 +357,7 @@ class FilterEditorState extends State<FilterEditor>
               selectedFilter: selectedFilter,
               onSelectFilter: (filter) {
                 selectedFilter = filter;
-                setState(() {});
+                _uiFilterStream.add(null);
                 onUpdateUI?.call();
               },
             ),

@@ -176,7 +176,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
       },
       child: Column(
         children: [
-          _buildPreviewImage(const Size(64, 64), filter),
+          _buildPreviewImage(
+            const Size(64, 64),
+            filter,
+            margin: const EdgeInsets.only(bottom: 4),
+          ),
           Text(
             widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
             style: TextStyle(
@@ -192,8 +196,9 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
 
   Widget _buildPreviewImage(
     Size size,
-    ColorFilterGenerator filter,
-  ) {
+    ColorFilterGenerator filter, {
+    EdgeInsets? margin,
+  }) {
     TransformConfigs transformConfigs =
         widget.transformConfigs ?? TransformConfigs.empty();
 
@@ -213,7 +218,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     return Container(
       height: size.height,
       width: size.width,
-      margin: const EdgeInsets.only(bottom: 4),
+      margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4),
         border: Border.all(

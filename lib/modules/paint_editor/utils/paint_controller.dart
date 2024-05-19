@@ -85,6 +85,7 @@ class PaintingController extends ChangeNotifier {
   /// Adds a painted model to the painting history and notifies listeners of the change.
   void addPaintInfo(PaintedModel paintInfo) {
     _paintHistory.add(paintInfo);
+    _paintRedoHistory.clear();
     notifyListeners();
   }
 
