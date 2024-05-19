@@ -17,6 +17,9 @@ class ProImageEditorCallbacks {
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px"/>
   final ImageEditingCompleteCallback onImageEditingComplete;
 
+  /// A callback function that is triggered when the image generation is started.
+  final Function()? onImageEditingStarted;
+
   /// A callback function that will be called before the image editor will close.
   ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
@@ -54,6 +57,7 @@ class ProImageEditorCallbacks {
 
   const ProImageEditorCallbacks({
     required this.onImageEditingComplete,
+    this.onImageEditingStarted,
     this.onCloseEditor,
     this.onUpdateUI,
     this.onAddLayer,

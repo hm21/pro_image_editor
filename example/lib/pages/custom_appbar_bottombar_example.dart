@@ -128,6 +128,7 @@ class _CustomAppbarBottombarExampleState
         _url,
         key: editorKey,
         callbacks: ProImageEditorCallbacks(
+          onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
           onUpdateUI: () => _updateUIStream.add(null),

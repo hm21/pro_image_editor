@@ -109,15 +109,16 @@ class StateManager {
     required ProImageEditorConfigs configs,
     required double? pixelRatio,
   }) async {
-    if (!configs.captureImageInBackground || !configs.enableIsolatedGeneration)
+    if (!configs.captureImageInBackground ||
+        !configs.enableIsolatedGeneration) {
       return;
+    }
 
     /// Set every screenshot to broken which didn't read the ui image before
     /// changes happen.
     screenshots.where((el) => !el.readedRenderedImage).forEach((screenshot) {
       screenshot.broken = true;
     });
-
     _IsolateCaptureState isolateCaptureState = _IsolateCaptureState();
     screenshots.add(isolateCaptureState);
     Uint8List? bytes = await screenshotCtrl.capture(
@@ -133,6 +134,12 @@ class StateManager {
     if (bytes == null) {
       isolateCaptureState.broken = true;
     }
+  }
+
+  void isolateAddEmptyScreenshot() {
+    _IsolateCaptureState isolateCaptureState = _IsolateCaptureState();
+    isolateCaptureState.broken = true;
+    screenshots.add(isolateCaptureState);
   }
 }
 

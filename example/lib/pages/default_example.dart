@@ -157,6 +157,7 @@ class _DefaultExampleState extends State<DefaultExample>
     return ProImageEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
@@ -170,6 +171,7 @@ class _DefaultExampleState extends State<DefaultExample>
     return ProImageEditor.memory(
       bytes,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
@@ -183,6 +185,7 @@ class _DefaultExampleState extends State<DefaultExample>
     return ProImageEditor.network(
       ExampleConstants.of(context)!.demoNetworkUrl,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
@@ -196,6 +199,7 @@ class _DefaultExampleState extends State<DefaultExample>
     return ProImageEditor.file(
       file,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),

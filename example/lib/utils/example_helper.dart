@@ -13,28 +13,50 @@ import '../pages/preview_img.dart';
 mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
   final editorKey = GlobalKey<ProImageEditorState>();
   Uint8List? editedBytes;
+  double? _generationTime;
+  String? contentType;
+  DateTime? startEditingTime;
+
+  Future<void> onImageEditingStarted() async {
+    startEditingTime = DateTime.now();
+  }
 
   Future<void> onImageEditingComplete(bytes) async {
     editedBytes = bytes;
-    Navigator.pop(context);
+    setGenerationTime();
+  }
+
+  void setGenerationTime() {
+    if (startEditingTime != null) {
+      _generationTime = DateTime.now()
+          .difference(startEditingTime!)
+          .inMilliseconds
+          .toDouble();
+    }
   }
 
   void onCloseEditor() async {
     if (editedBytes != null) {
       await precacheImage(MemoryImage(editedBytes!), context);
       if (!mounted) return;
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) {
-            return PreviewImgPage(imgBytes: editedBytes!);
+            return PreviewImgPage(
+              imgBytes: editedBytes!,
+              generationTime: _generationTime,
+              contentType: contentType,
+            );
           },
         ),
       ).whenComplete(() {
         editedBytes = null;
+        _generationTime = null;
+        startEditingTime = null;
+        contentType = null;
       });
-    } else {
-      Navigator.pop(context);
     }
+    if (mounted) Navigator.pop(context);
   }
 }

@@ -146,6 +146,9 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - ✅ Blur-Editor
   - ✅ Emoji-Picker
   - ✅ Sticker-Editor
+- ✅ Super fast performance
+  - ✅ Use isolates for background tasks on Dart native devices
+  - ✅ Use web-workers for background tasks on Dart web devices
 - ✅ Move and scalable layers
 - ✅ Helper lines for better positioning
 - ✅ Undo and redo function
@@ -161,9 +164,6 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ WhatsApp Theme
 - ✅ Movable background image
 - ✅ Improved layer movement and scaling functionality for desktop devices
-- ✅ Super fast performance
-  - ✅ Use isolates for background tasks on Dart native devices
-  - ✅ Use web-workers for background tasks on Dart web devices
 
 
 #### Planned features

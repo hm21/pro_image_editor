@@ -511,6 +511,7 @@ class ProImageEditorState extends State<ProImageEditor>
     List<FilterStateHistory>? filters,
     BlurStateHistory? blur,
     bool heroScreenshotRequired = false,
+    bool blockCaptureScreenshot = false,
   }) {
     _stateManager.cleanForwardChanges();
 
@@ -527,10 +528,14 @@ class ProImageEditorState extends State<ProImageEditor>
         filters: filters ?? _stateManager.activeFilters,
       ),
     );
-    if (!heroScreenshotRequired) {
-      takeScreenshot();
+    if (!blockCaptureScreenshot) {
+      if (!heroScreenshotRequired) {
+        _takeScreenshot();
+      } else {
+        _stateManager.heroScreenshotRequired = true;
+      }
     } else {
-      _stateManager.heroScreenshotRequired = true;
+      _stateManager.isolateAddEmptyScreenshot();
     }
     _stateManager.position++;
 
@@ -544,8 +549,10 @@ class ProImageEditorState extends State<ProImageEditor>
     Layer layer, {
     int removeLayerIndex = -1,
     bool blockSelectLayer = false,
+    bool blockCaptureScreenshot = false,
   }) {
-    _addHistory(newLayer: layer);
+    _addHistory(
+        newLayer: layer, blockCaptureScreenshot: blockCaptureScreenshot);
 
     if (removeLayerIndex >= 0) {
       activeLayers.removeAt(removeLayerIndex);
@@ -912,7 +919,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 }
                 if (_stateManager.heroScreenshotRequired) {
                   _stateManager.heroScreenshotRequired = false;
-                  takeScreenshot();
+                  _takeScreenshot();
                 }
               });
 
@@ -956,8 +963,12 @@ class ProImageEditorState extends State<ProImageEditor>
       duration: const Duration(milliseconds: 150),
     );
     if (paintingLayers != null && paintingLayers.isNotEmpty) {
-      for (var layer in paintingLayers) {
-        addLayer(layer, blockSelectLayer: true);
+      for (var i = 0; i < paintingLayers.length; i++) {
+        addLayer(
+          paintingLayers[i],
+          blockSelectLayer: true,
+          blockCaptureScreenshot: i != paintingLayers.length - 1,
+        );
       }
 
       _selectLayerAfterHeroIsDone(paintingLayers.last.id);
@@ -1306,7 +1317,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// - If a subeditor is currently open, the method waits until it is fully loaded.
   /// - The screenshot is taken in a post-frame callback to ensure the UI is fully rendered.
-  void takeScreenshot() async {
+  void _takeScreenshot() async {
     // Wait for the editor to be fully open, if it is currently opening
     if (_isEditorOpen) await _pageOpenCompleter.future;
 
@@ -1336,6 +1347,7 @@ class ProImageEditorState extends State<ProImageEditor>
         return closeEditor();
       }
     }
+    callbacks.onImageEditingStarted?.call();
 
     /// Hide every unnessacary element that Screenshot Controller will capture a correct image.
     setState(() {
@@ -1504,8 +1516,12 @@ class ProImageEditorState extends State<ProImageEditor>
         ),
         ...import.stateHistory
       ];
-      for (var _ in import.stateHistory) {
-        takeScreenshot();
+      for (var i = 0; i < import.stateHistory.length; i++) {
+        if (i < import.stateHistory.length - 1) {
+          _stateManager.isolateAddEmptyScreenshot();
+        } else {
+          _takeScreenshot();
+        }
       }
     } else {
       for (var el in import.stateHistory) {
@@ -1515,9 +1531,13 @@ class ProImageEditorState extends State<ProImageEditor>
         }
       }
 
-      for (var el in import.stateHistory) {
-        stateHistory.add(el);
-        takeScreenshot();
+      for (var i = 0; i < import.stateHistory.length; i++) {
+        stateHistory.add(import.stateHistory[i]);
+        if (i < import.stateHistory.length - 1) {
+          _stateManager.isolateAddEmptyScreenshot();
+        } else {
+          _takeScreenshot();
+        }
       }
       _stateManager.position = stateHistory.length - 1;
     }

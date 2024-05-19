@@ -522,70 +522,74 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Builds the main body of the painting editor.
   /// Returns a [Widget] representing the editor's body.
   Widget _buildBody() {
-    return LayoutBuilder(builder: (context, constraints) {
-      _bodySize = constraints.biggest;
-      return Theme(
-        data: theme,
-        child: Material(
-          color: Colors.transparent,
-          textStyle: platformTextStyle(context, designMode),
-          child: Stack(
-            alignment: Alignment.center,
-            fit: StackFit.expand,
-            children: [
-              TransformedContentGenerator(
-                configs: configs,
-                transformConfigs: transformConfigs ?? TransformConfigs.empty(),
-                child: ImageWithFilters(
-                  width: getMinimumSize(mainImageSize, _bodySize).width,
-                  height: getMinimumSize(mainImageSize, _bodySize).height,
-                  designMode: designMode,
-                  image: editorImage,
-                  filters: appliedFilters,
-                  blurFactor: appliedBlurFactor,
-                ),
-              ),
-              if (layers != null)
-                LayerStack(
+    return SafeArea(
+      child: LayoutBuilder(builder: (context, constraints) {
+        _bodySize = constraints.biggest;
+        return Theme(
+          data: theme,
+          child: Material(
+            color: Colors.transparent,
+            textStyle: platformTextStyle(context, designMode),
+            child: Stack(
+              alignment: Alignment.center,
+              fit: StackFit.expand,
+              children: [
+                TransformedContentGenerator(
                   configs: configs,
-                  layers: layers!,
-                  transformHelper: TransformHelper(
-                    mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-                    mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-                    editorBodySize: _bodySize,
-                    transformConfigs: transformConfigs,
+                  transformConfigs:
+                      transformConfigs ?? TransformConfigs.empty(),
+                  child: ImageWithFilters(
+                    width: getMinimumSize(mainImageSize, _bodySize).width,
+                    height: getMinimumSize(mainImageSize, _bodySize).height,
+                    designMode: designMode,
+                    image: editorImage,
+                    filters: appliedFilters,
+                    blurFactor: appliedBlurFactor,
                   ),
                 ),
-              _buildPainter(),
-              if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
-              if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) ...[
-                WhatsAppPaintBottomBar(
-                  configs: configs,
-                  strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
-                  onSetLineWidth: (val) {
-                    setState(() {
-                      _imageKey.currentState!.setStrokeWidth(val);
-                    });
-                  },
-                ),
-                StreamBuilder(
-                    stream: _uiPickerStream.stream,
-                    builder: (context, snapshot) {
-                      return WhatsAppPaintAppBar(
-                        configs: configs,
-                        canUndo: canUndo,
-                        onDone: done,
-                        onTapUndo: undoAction,
-                        onClose: close,
-                        activeColor: activeColor,
-                      );
-                    }),
-              ]
-            ],
+                if (layers != null)
+                  LayerStack(
+                    configs: configs,
+                    layers: layers!,
+                    transformHelper: TransformHelper(
+                      mainBodySize: getMinimumSize(mainBodySize, _bodySize),
+                      mainImageSize: getMinimumSize(mainImageSize, _bodySize),
+                      editorBodySize: _bodySize,
+                      transformConfigs: transformConfigs,
+                    ),
+                  ),
+                _buildPainter(),
+                if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
+                if (imageEditorTheme.editorMode ==
+                    ThemeEditorMode.whatsapp) ...[
+                  WhatsAppPaintBottomBar(
+                    configs: configs,
+                    strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
+                    onSetLineWidth: (val) {
+                      setState(() {
+                        _imageKey.currentState!.setStrokeWidth(val);
+                      });
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: _uiPickerStream.stream,
+                      builder: (context, snapshot) {
+                        return WhatsAppPaintAppBar(
+                          configs: configs,
+                          canUndo: canUndo,
+                          onDone: done,
+                          onTapUndo: undoAction,
+                          onClose: close,
+                          activeColor: activeColor,
+                        );
+                      }),
+                ]
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   /// Builds the bottom navigation bar of the painting editor.

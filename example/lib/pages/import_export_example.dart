@@ -45,6 +45,7 @@ class _ImportExportExampleState extends State<ImportExportExample>
           ExampleConstants.of(context)!.demoAssetPath,
           key: editorKey,
           callbacks: ProImageEditorCallbacks(
+            onImageEditingStarted: onImageEditingStarted,
             onImageEditingComplete: onImageEditingComplete,
             onCloseEditor: onCloseEditor,
           ),

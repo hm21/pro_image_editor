@@ -47,6 +47,7 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
           ExampleConstants.of(context)!.demoAssetPath,
           key: editorKey,
           callbacks: ProImageEditorCallbacks(
+            onImageEditingStarted: onImageEditingStarted,
             onImageEditingComplete: onImageEditingComplete,
             onCloseEditor: onCloseEditor,
           ),

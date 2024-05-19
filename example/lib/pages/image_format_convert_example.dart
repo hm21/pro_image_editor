@@ -40,6 +40,7 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
 
   /// Supports only Android, iOS, Web, MacOS
   Future<void> _convertNative(Uint8List bytes) async {
+    contentType = 'image/jpeg';
     final result = await FlutterImageCompress.compressWithList(
       bytes,
       format: CompressFormat.jpeg,
@@ -52,12 +53,13 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
   }
 
   Future<void> _convertDart(Uint8List bytes) async {
-    // Decode the PNG image
+    // In a real case you should use a web worker that does not freeze the main ui.
     img.Image? image = img.decodePng(bytes);
 
     if (image != null) {
       // Encode the image to JPEG format
       Uint8List jpegBytes = img.encodeJpg(image);
+      contentType = 'image/jpeg';
 
       editedBytes = jpegBytes;
       // Upload or save the result from the converted image.
@@ -92,12 +94,13 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
     return ProImageEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: (bytes) async {
           editedBytes = bytes;
 
           await _convertImage(bytes);
 
-          if (mounted) Navigator.pop(context);
+          setGenerationTime();
         },
         onCloseEditor: onCloseEditor,
       ),

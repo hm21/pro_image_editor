@@ -108,6 +108,7 @@ class _MoveableBackgroundImageExampleState
                       _transparentBytes,
                       key: editorKey,
                       callbacks: ProImageEditorCallbacks(
+                        onImageEditingStarted: onImageEditingStarted,
                         onImageEditingComplete: onImageEditingComplete,
                         onCloseEditor: onCloseEditor,
                         onUpdateUI: () {

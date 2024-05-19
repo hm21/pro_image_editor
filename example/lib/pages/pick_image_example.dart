@@ -44,6 +44,11 @@ class _PickImageExampleState extends State<PickImageExample>
     }
 
     if (!mounted) return;
+    if (kIsWeb ||
+        (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS)) {
+      Navigator.pop(context);
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -163,6 +168,7 @@ class _PickImageExampleState extends State<PickImageExample>
       return ProImageEditor.file(
         File(path),
         callbacks: ProImageEditorCallbacks(
+          onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
         ),
@@ -174,6 +180,7 @@ class _PickImageExampleState extends State<PickImageExample>
       return ProImageEditor.memory(
         bytes!,
         callbacks: ProImageEditorCallbacks(
+          onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
         ),

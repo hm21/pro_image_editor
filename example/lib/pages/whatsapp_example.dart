@@ -52,6 +52,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
       _url,
       key: editorKey,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
@@ -294,10 +295,12 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
         ),
         itemCount: max(3, 3 + offset % 6),
         itemBuilder: (context, index) {
+          String url =
+              'https://picsum.photos/id/${offset + (index + 3) * 3}/2000';
           var widget = ClipRRect(
             borderRadius: BorderRadius.circular(7),
             child: Image.network(
-              'https://picsum.photos/id/${offset + (index + 3) * 3}/2000',
+              url,
               width: 120,
               height: 120,
               fit: BoxFit.cover,
@@ -333,7 +336,20 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
             ),
           );
           return GestureDetector(
-            onTap: () => setLayer(widget),
+            onTap: () async {
+              // Important make sure the image is completly loaded
+              // cuz the editor will directly take a screenshot
+              // inside of a background isolated thread.
+              LoadingDialog loading = LoadingDialog()
+                ..show(
+                  context,
+                  configs: const ProImageEditorConfigs(),
+                  theme: ThemeData.dark(),
+                );
+              await precacheImage(NetworkImage(url), context);
+              if (context.mounted) await loading.hide(context);
+              setLayer(widget);
+            },
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: widget,

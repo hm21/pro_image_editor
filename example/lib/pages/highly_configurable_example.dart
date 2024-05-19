@@ -52,6 +52,7 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
     return ProImageEditor.network(
       ExampleConstants.of(context)!.demoNetworkUrl,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),

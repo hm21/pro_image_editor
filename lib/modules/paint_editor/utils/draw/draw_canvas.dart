@@ -62,10 +62,11 @@ class DrawCanvas extends CustomPainter {
       return true;
     }
 
-    var offsets = item.offsets;
-    var strokeW =
-        isDesktop ? item.strokeWidth * scale : max(item.strokeWidth, 30);
-    var strokeHalfW = strokeW / 2;
+    List<Offset?> offsets = item.offsets;
+    double strokeW = isDesktop
+        ? item.strokeWidth * scale
+        : max(item.strokeWidth * scale, 30);
+    double strokeHalfW = strokeW / 2;
     switch (item.mode) {
       case PaintModeE.line:
       case PaintModeE.dashLine:
@@ -150,7 +151,6 @@ class DrawCanvas extends CustomPainter {
       default:
         item.hit = true;
     }
-
     return item.hit;
   }
 
@@ -173,21 +173,20 @@ class DrawCanvas extends CustomPainter {
     final path = Path();
 
     // Calculate the vector from start to end
-    final vector = end - start;
+    Offset vector = end - start;
 
     // Calculate the normalized vector
-    final normalizedVector = vector / vector.distance;
+    Offset normalizedVector = vector / max(vector.distance, 0.00001);
 
     // Calculate the perpendicular vector
-    final perpendicularVector =
+    Offset perpendicularVector =
         Offset(-normalizedVector.dy, normalizedVector.dx);
 
     // Define the four points that represent the rounded line
-    final startPoint = start + perpendicularVector * strokeHalfWidth;
-    final endPoint = end + perpendicularVector * strokeHalfWidth;
-    final startCap = start - perpendicularVector * strokeHalfWidth;
-    final endCap = end - perpendicularVector * strokeHalfWidth;
-
+    Offset startPoint = start + perpendicularVector * strokeHalfWidth;
+    Offset endPoint = end + perpendicularVector * strokeHalfWidth;
+    Offset startCap = start - perpendicularVector * strokeHalfWidth;
+    Offset endCap = end - perpendicularVector * strokeHalfWidth;
     // Move to the starting point
     path.moveTo(startPoint.dx, startPoint.dy);
 

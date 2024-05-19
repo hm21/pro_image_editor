@@ -1,6 +1,3 @@
-// Dart imports:
-import 'dart:async';
-
 // Flutter imports:
 import 'package:flutter/material.dart';
 
@@ -20,8 +17,6 @@ class StickersExample extends StatefulWidget {
 
 class _StickersExampleState extends State<StickersExample>
     with ExampleHelperState<StickersExample> {
-  final Map<int, GlobalKey<StickerState>> _keys = {};
-
   final String _url = 'https://picsum.photos/id/176/2000';
 
   @override
@@ -53,6 +48,7 @@ class _StickersExampleState extends State<StickersExample>
     return ProImageEditor.network(
       _url,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
@@ -76,22 +72,27 @@ class _StickersExampleState extends State<StickersExample>
                   itemCount: 21,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
-                    if (!_keys.containsKey(index)) _keys[index] = GlobalKey();
-
                     return GestureDetector(
                       onTap: () async {
                         // Important make sure the image is completly loaded
                         // cuz the editor will directly take a screenshot
                         // inside of a background isolated thread.
-                        await _keys[index]!
-                            .currentState!
-                            .imgLoadedCompleter
-                            .future;
+                        LoadingDialog loading = LoadingDialog()
+                          ..show(
+                            context,
+                            configs: const ProImageEditorConfigs(),
+                            theme: ThemeData.dark(),
+                          );
+                        await precacheImage(
+                            NetworkImage(
+                                'https://picsum.photos/id/${(index + 3) * 3}/2000'),
+                            context);
+                        if (context.mounted) await loading.hide(context);
                         setLayer(Sticker(index: index));
                       },
                       child: MouseRegion(
                         cursor: SystemMouseCursors.click,
-                        child: Sticker(key: _keys[index], index: index),
+                        child: Sticker(index: index),
                       ),
                     );
                   },
@@ -118,8 +119,6 @@ class Sticker extends StatefulWidget {
 }
 
 class StickerState extends State<Sticker> {
-  final Completer imgLoadedCompleter = Completer.sync();
-
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -147,12 +146,7 @@ class StickerState extends State<Sticker> {
             },
             duration: const Duration(milliseconds: 200),
             child: loadingProgress == null
-                ? Builder(builder: (context) {
-                    if (!imgLoadedCompleter.isCompleted) {
-                      imgLoadedCompleter.complete();
-                    }
-                    return child;
-                  })
+                ? child
                 : Center(
                     child: CircularProgressIndicator(
                       value: loadingProgress.expectedTotalBytes != null

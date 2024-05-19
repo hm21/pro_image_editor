@@ -72,6 +72,7 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
     return ProImageEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: (bytes) async {
           editedBytes = bytes;
 
@@ -82,8 +83,7 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
             debugPrint(
                 'Failed: You need to completly set up firebase or supabase in your project.');
           }
-
-          if (mounted) Navigator.pop(context);
+          setGenerationTime();
         },
         onCloseEditor: onCloseEditor,
       ),

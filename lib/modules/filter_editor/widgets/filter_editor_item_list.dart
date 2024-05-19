@@ -180,6 +180,14 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             const Size(64, 64),
             filter,
             margin: const EdgeInsets.only(bottom: 4),
+            borderRadius: BorderRadius.circular(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: const Color(0xFF242424),
+                width: 1,
+              ),
+            ),
           ),
           Text(
             widget.configs.i18n.filterEditor.filters.getFilterI18n(name),
@@ -198,6 +206,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     Size size,
     ColorFilterGenerator filter, {
     EdgeInsets? margin,
+    Decoration? decoration,
+    BorderRadius borderRadius = BorderRadius.zero,
   }) {
     TransformConfigs transformConfigs =
         widget.transformConfigs ?? TransformConfigs.empty();
@@ -219,15 +229,9 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
       height: size.height,
       width: size.width,
       margin: margin,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: const Color(0xFF242424),
-          width: 1,
-        ),
-      ),
+      decoration: decoration,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: borderRadius,
         child: Transform.rotate(
           angle: transformConfigs.angle,
           alignment: Alignment.center,

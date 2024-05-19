@@ -50,6 +50,7 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
     return ProImageEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
       callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),

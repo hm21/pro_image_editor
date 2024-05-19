@@ -225,14 +225,21 @@ class ContentRecorderController {
       var findRenderObject = containerKey.currentContext?.findRenderObject();
       if (findRenderObject == null) return null;
 
+      // If the render object's paint information is dirty we waiting until it's painted
+      // or 500ms are ago.
+      int retryHelper = 0;
+      while (findRenderObject.debugNeedsPaint && retryHelper < 25) {
+        await Future.delayed(const Duration(milliseconds: 20));
+        retryHelper++;
+      }
+
       RenderRepaintBoundary boundary =
           findRenderObject as RenderRepaintBoundary;
       BuildContext? context = containerKey.currentContext;
 
-      if (context != null) {
+      if (context != null && context.mounted) {
         pixelRatio ??= MediaQuery.of(context).devicePixelRatio;
       }
-
       ui.Image image = await boundary.toImage(pixelRatio: pixelRatio ?? 1);
       return image;
     } catch (e) {

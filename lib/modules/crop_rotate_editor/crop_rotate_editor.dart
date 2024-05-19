@@ -1701,36 +1701,38 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildBody() {
-    return ScreenResizeDetector(
-      onResizeUpdate: (event) {
-        _contentConstraints = event.newConstraints;
-        cropEditorScreenRatio = Size(
-          _contentConstraints.maxWidth - _screenPadding * 2,
-          _contentConstraints.maxHeight - _screenPadding * 2,
-        ).aspectRatio;
-        if (_imageNeedDecode) _decodeImage();
-      },
-      onResizeEnd: (event) {},
-      child: Stack(
-        children: [
-          if (_showFakeHero) _buildFakeHero(),
-          Opacity(
-            opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
-            child: HeroMode(
-              enabled: false,
-              child: _buildMouseCursor(
-                child: DeferredPointerHandler(
-                  child: _buildRotationTransform(
-                    child: _buildFlipTransform(
-                      child: _buildRotationScaleTransform(
-                        child: _buildPaintContainer(
-                          child: _buildCropPainter(
-                            child: _buildUserScaleTransform(
-                              child: _buildTranslate(
-                                child: DeferPointer(
-                                  child: _buildMouseListener(
-                                    child: _buildGestureDetector(
-                                      child: _buildImage(),
+    return SafeArea(
+      child: ScreenResizeDetector(
+        onResizeUpdate: (event) {
+          _contentConstraints = event.newConstraints;
+          cropEditorScreenRatio = Size(
+            _contentConstraints.maxWidth - _screenPadding * 2,
+            _contentConstraints.maxHeight - _screenPadding * 2,
+          ).aspectRatio;
+          if (_imageNeedDecode) _decodeImage();
+        },
+        onResizeEnd: (event) {},
+        child: Stack(
+          children: [
+            if (_showFakeHero) _buildFakeHero(),
+            Opacity(
+              opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
+              child: HeroMode(
+                enabled: false,
+                child: _buildMouseCursor(
+                  child: DeferredPointerHandler(
+                    child: _buildRotationTransform(
+                      child: _buildFlipTransform(
+                        child: _buildRotationScaleTransform(
+                          child: _buildPaintContainer(
+                            child: _buildCropPainter(
+                              child: _buildUserScaleTransform(
+                                child: _buildTranslate(
+                                  child: DeferPointer(
+                                    child: _buildMouseListener(
+                                      child: _buildGestureDetector(
+                                        child: _buildImage(),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1744,8 +1746,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
