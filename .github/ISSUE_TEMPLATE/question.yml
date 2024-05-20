@@ -7,3 +7,11 @@ body:
     attributes:
       value: |
        Please use the [discuss](https://github.com/hm21/pro_image_editor/discussions) tab to ask a question.
+  - type: textarea
+    id: placeholder
+    attributes:
+      label: Placeholder
+      description: "Placeholder"
+      placeholder: ""
+    validations:
+      required: false
