@@ -539,7 +539,8 @@ class ProImageEditorState extends State<ProImageEditor>
     }
     _stateManager.position++;
 
-    _stateManager.setHistoryLimit(configs.stateHistoryLimit);
+    _stateManager
+        .setHistoryLimit(configs.stateHistoryConfigs.stateHistoryLimit);
   }
 
   /// Add a new layer to the image editor.
@@ -620,7 +621,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method decodes the image if it hasn't been decoded yet and updates its properties.
   Future<void> _decodeImage() async {
     bool shouldImportStateHistory =
-        _imageNeedDecode && initStateHistory != null;
+        _imageNeedDecode && stateHistoryConfigs.initStateHistory != null;
     _imageNeedDecode = false;
     LoadingDialog? loading;
     if (shouldImportStateHistory && i18n.importStateHistoryMsg.isNotEmpty) {
@@ -647,7 +648,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _inited = true;
 
     if (shouldImportStateHistory) {
-      importStateHistory(initStateHistory!);
+      importStateHistory(stateHistoryConfigs.initStateHistory!);
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await loading?.hide(context);
       });
@@ -1343,7 +1344,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void doneEditing() async {
     if (_doneEditing) return;
     if (_stateManager.position <= 0 && activeLayers.isEmpty) {
-      if (!configs.allowCompleteWithEmptyEditing) {
+      if (!imageGenerationConfigs.allowEmptyEditCompletion) {
         return closeEditor();
       }
     }
@@ -1367,7 +1368,8 @@ class ProImageEditorState extends State<ProImageEditor>
           message: i18n.doneLoadingMsg,
         );
 
-      double? pixelRatio = configs.removeTransparentAreas ? null : _pixelRatio;
+      double? pixelRatio =
+          imageGenerationConfigs.removeTransparentAreas ? null : _pixelRatio;
       late Uint8List? bytes;
 
       try {

@@ -109,8 +109,8 @@ class StateManager {
     required ProImageEditorConfigs configs,
     required double? pixelRatio,
   }) async {
-    if (!configs.captureImageInBackground ||
-        !configs.enableIsolatedGeneration) {
+    if (!configs.imageGenerationConfigs.generateImageInBackground ||
+        !configs.imageGenerationConfigs.generateIsolated) {
       return;
     }
 
@@ -124,7 +124,9 @@ class StateManager {
     Uint8List? bytes = await screenshotCtrl.capture(
       configs: configs,
       completerId: isolateCaptureState.id,
-      pixelRatio: configs.removeTransparentAreas ? null : pixelRatio,
+      pixelRatio: configs.imageGenerationConfigs.removeTransparentAreas
+          ? null
+          : pixelRatio,
       stateHistroyScreenshot: true,
       onImageCaptured: (img) {
         isolateCaptureState.readedRenderedImage = true;

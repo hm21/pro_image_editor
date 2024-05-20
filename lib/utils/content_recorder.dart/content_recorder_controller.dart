@@ -109,7 +109,7 @@ class ContentRecorderController {
     onImageCaptured?.call(image);
     if (image == null) return null;
 
-    if (configs.enableIsolatedGeneration) {
+    if (configs.imageGenerationConfigs.generateIsolated) {
       try {
         if (!kIsWeb) {
           // Run in dart native the thread isolated.
@@ -138,7 +138,7 @@ class ContentRecorderController {
     required ProImageEditorConfigs configs,
     required ui.Image image,
   }) async {
-    if (configs.removeTransparentAreas) {
+    if (configs.imageGenerationConfigs.removeTransparentAreas) {
       image = await dartUiRemoveTransparentImgAreas(
             image,
           ) ??

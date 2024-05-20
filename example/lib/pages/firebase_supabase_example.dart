@@ -88,7 +88,9 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: const ProImageEditorConfigs(
-        allowCompleteWithEmptyEditing: true,
+        imageGenerationConfigs: ImageGeneratioConfigs(
+          allowEmptyEditCompletion: true,
+        ),
         i18n: I18n(doneLoadingMsg: 'Uploading image...'),
       ),
     );

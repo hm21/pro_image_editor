@@ -44,14 +44,18 @@ mixin ImageEditorConvertedConfigs {
   /// Returns the internationalization settings for the image editor.
   I18n get i18n => configs.i18n;
 
-  /// Returns the initial state history for the image editor.
-  ImportStateHistory? get initStateHistory => configs.initStateHistory;
-
   /// Returns helper lines configurations for the image editor.
   HelperLines get helperLines => configs.helperLines;
 
   /// Returns layerInteraction configurations for the image editor.
   LayerInteraction get layerInteraction => configs.layerInteraction;
+
+  /// Gets the configurations related to state history management.
+  StateHistoryConfigs get stateHistoryConfigs => configs.stateHistoryConfigs;
+
+  /// Gets the configurations related to image generation.
+  ImageGeneratioConfigs get imageGenerationConfigs =>
+      configs.imageGenerationConfigs;
 
   /// Returns the hero tag used in the image editor.
   String get heroTag => configs.heroTag;

@@ -162,7 +162,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: const ProImageEditorConfigs(
-        allowCompleteWithEmptyEditing: true,
+        imageGenerationConfigs: ImageGeneratioConfigs(
+          allowEmptyEditCompletion: true,
+        ),
       ),
     );
   }
@@ -176,7 +178,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: const ProImageEditorConfigs(
-        allowCompleteWithEmptyEditing: true,
+        imageGenerationConfigs: ImageGeneratioConfigs(
+          allowEmptyEditCompletion: true,
+        ),
       ),
     );
   }
@@ -190,7 +194,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: const ProImageEditorConfigs(
-        allowCompleteWithEmptyEditing: true,
+        imageGenerationConfigs: ImageGeneratioConfigs(
+          allowEmptyEditCompletion: true,
+        ),
       ),
     );
   }
@@ -204,7 +210,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: const ProImageEditorConfigs(
-        allowCompleteWithEmptyEditing: true,
+        imageGenerationConfigs: ImageGeneratioConfigs(
+          allowEmptyEditCompletion: true,
+        ),
       ),
     );
   }

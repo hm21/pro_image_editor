@@ -57,7 +57,9 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: ProImageEditorConfigs(
-        allowCompleteWithEmptyEditing: true,
+        imageGenerationConfigs: const ImageGeneratioConfigs(
+          allowEmptyEditCompletion: true,
+        ),
         textEditorConfigs: TextEditorConfigs(
           customTextStyles: [
             GoogleFonts.roboto(),

@@ -168,7 +168,9 @@ class _MoveableBackgroundImageExampleState
                         },
                       ),
                       configs: ProImageEditorConfigs(
-                          removeTransparentAreas: true,
+                          imageGenerationConfigs: const ImageGeneratioConfigs(
+                            removeTransparentAreas: true,
+                          ),
 
                           /// Crop-Rotate, Filter and Blur editors are not supported
                           cropRotateEditorConfigs:
