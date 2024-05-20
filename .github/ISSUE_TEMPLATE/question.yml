@@ -1,32 +1,9 @@
 name: Question
-description: Ask a question about this package
+description: Please use the [discuss](https://github.com/hm21/pro_image_editor/discussions) tab to ask a question.
 title: "[Question] "
 labels: ["question"]
 body:
   - type: markdown
     attributes:
       value: |
-        Read the documentation before asking a question. You should also search your question in the other issues and on StackOverflow to see if someone else has asked the same question.
-  - type: dropdown
-    id: platforms
-    attributes:
-      label: Platforms
-      description: Check all that apply
-      multiple: true
-      options:
-        - Android
-        - iOS
-        - macOS
-        - Web
-        - Windows
-        - Linux
-    validations:
-      required: false
-  - type: textarea
-    id: description
-    attributes:
-      label: Your question
-      description: "Describe your question"
-    validations:
-      required: false
- 
+       Please use the [discuss](https://github.com/hm21/pro_image_editor/discussions) tab to ask a question.
