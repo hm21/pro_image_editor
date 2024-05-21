@@ -67,12 +67,15 @@ class ImageFromMainThread {
   /// The image object from the `image` package.
   final img.Image image;
 
+  final bool generateOnlyImageBounds;
+
   /// Constructs an [ImageFromMainThread] instance.
   ///
   /// All parameters are required.
   const ImageFromMainThread({
     required this.completerId,
     required this.image,
+    required this.generateOnlyImageBounds,
   });
 }
 

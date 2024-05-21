@@ -16,18 +16,15 @@ Future<DecodedImageInfos> decodeImageInfos({
   int w = decodedImage.width;
   int h = decodedImage.height;
 
+  if (configs != null && !configs.isEmpty) {
+    w = w ~/ configs.scaleUser;
+    h = h ~/ configs.scaleUser;
+  }
+
   double widthRatio = (rotated ? h : w).toDouble() / screenSize.width;
   double heightRatio = (rotated ? w : h).toDouble() / screenSize.height;
   double pixelRatio = max(heightRatio, widthRatio);
 
-  /// TODO: fix pixel ratio bug
-  print({
-    'decodedImage': Size(w.toDouble(), h.toDouble()),
-    'screenSize': screenSize,
-    'pixelRatio': pixelRatio,
-    'imageSize': Size(w / pixelRatio, h / pixelRatio),
-    'rawImageSize': Size(w.toDouble(), h.toDouble()),
-  });
   return DecodedImageInfos(
     rawImageSize: Size(w.toDouble(), h.toDouble()),
     imageSize: Size(w / pixelRatio, h / pixelRatio),
@@ -46,10 +43,3 @@ class DecodedImageInfos {
     required this.pixelRatio,
   });
 }
-
-/// Original 1024 x 1792 => 2.258
-/*
-Size(1024.0, 1792.0)
-Size(1536.0, 681.6)
-2.629107981220657 
-*/

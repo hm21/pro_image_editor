@@ -24,19 +24,24 @@ Future<ResponseFromImageThread> convertImageToPng(
     int right = 0;
     int top = image.height;
     int bottom = 0;
-
-    for (int y = 0; y < image.height; y++) {
-      for (int x = 0; x < image.width; x++) {
-        var pixel = image.getPixel(x, y);
-        if (pixel.a != 0) {
-          if (x < left) left = x;
-          if (x > right) right = x;
-          if (y < top) top = y;
-          if (y > bottom) bottom = y;
+    if (res.generateOnlyImageBounds) {
+      for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+          var pixel = image.getPixel(x, y);
+          if (pixel.a != 0) {
+            if (x < left) left = x;
+            if (x > right) right = x;
+            if (y < top) top = y;
+            if (y > bottom) bottom = y;
+          }
         }
       }
+    } else {
+      left = 0;
+      top = 0;
+      right = image.width;
+      bottom = image.height;
     }
-
     final width = right - left + 1;
     final height = bottom - top + 1;
 

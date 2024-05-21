@@ -5,10 +5,10 @@
 class ImageGeneratioConfigs {
   /// Determines whether to capture only the content within the boundaries of the image when editing is complete.
   ///
-  /// If set to `true`, editing completion will result in cropping all content outside the image boundaries, returning only the content overlaid on the image.
+  /// If set to `true`, editing completion will result in cropping all content outside the image boundaries.
   ///
   /// Setting this property to `true` is useful when you want to focus on the image content and exclude any surrounding elements.
-  /// Setting this property to `false` is useful when you want to capture all content also layers which placed outside the image.
+  /// Setting this property to `false` is useful when you want to capture the full content.
   ///
   /// By default, this property is set to `true`.
   final bool generateOnlyImageBounds;

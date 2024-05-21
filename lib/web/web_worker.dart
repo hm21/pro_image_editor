@@ -23,6 +23,7 @@ void main() {
       var imageData = data['image'] ?? {};
       ImageFromMainThread image = ImageFromMainThread(
         completerId: id,
+        generateOnlyImageBounds: data['generateOnlyImageBounds'] ?? true,
         image: img.Image.fromBytes(
           bytes: imageData['buffer'],
           width: imageData['width'],

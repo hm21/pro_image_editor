@@ -139,11 +139,16 @@ class LayerInteractionManager {
     );
     Size activeSize = rotateScaleLayerSizeHelper!;
 
-    final touchPositionFromCenter = Offset(
+    Offset touchPositionFromCenter = Offset(
           details.focalPoint.dx - editorSize.width / 2,
           details.focalPoint.dy - editorSize.height / 2,
         ) -
         layerOffset;
+
+    touchPositionFromCenter = Offset(
+      touchPositionFromCenter.dx * (activeLayer.flipX ? -1 : 1),
+      touchPositionFromCenter.dy * (activeLayer.flipY ? -1 : 1),
+    );
 
     double newDistance = touchPositionFromCenter.distance;
 

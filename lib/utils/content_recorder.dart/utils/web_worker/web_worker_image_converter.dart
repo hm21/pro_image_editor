@@ -48,6 +48,7 @@ class ProImageEditorWebWorker {
 
     _worker.postMessage({
       'completerId': data.completerId,
+      'generateOnlyImageBounds': data.generateOnlyImageBounds,
       'image': {
         'buffer': data.image.buffer,
         'width': data.image.width,

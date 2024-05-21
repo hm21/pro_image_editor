@@ -1,6 +1,9 @@
 // Dart imports:
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 // Flutter imports:
@@ -93,10 +96,10 @@ class ContentRecorderController {
   /// [image] - Optional pre-rendered image.
   Future<Uint8List?> capture({
     required ProImageEditorConfigs configs,
+    required double? pixelRatio,
     Function(ui.Image?)? onImageCaptured,
     bool stateHistroyScreenshot = false,
     String? completerId,
-    double? pixelRatio,
     ui.Image? image,
   }) async {
     // If we're just capturing a screenshot for the state history in the web platform,
@@ -107,7 +110,11 @@ class ContentRecorderController {
       return null;
     }
 
-    image ??= await _getRenderedImage(pixelRatio);
+    image ??= await _getRenderedImage(
+      pixelRatio: pixelRatio,
+      generateOnlyImageBounds:
+          configs.imageGenerationConfigs.generateOnlyImageBounds,
+    );
     completerId ??= generateUniqueId();
     onImageCaptured?.call(image);
     if (image == null) return null;
@@ -173,6 +180,8 @@ class ContentRecorderController {
     _sendPort.send(
       ImageFromMainThread(
         completerId: completerId,
+        generateOnlyImageBounds:
+            configs.imageGenerationConfigs.generateOnlyImageBounds,
         image: await _convertFlutterUiToImage(image),
       ),
     );
@@ -198,6 +207,8 @@ class ContentRecorderController {
     } else {
       return await _webWorker.sendImage(ImageFromMainThread(
         completerId: completerId,
+        generateOnlyImageBounds:
+            configs.imageGenerationConfigs.generateOnlyImageBounds,
         image: await _convertFlutterUiToImage(image),
       ));
     }
@@ -223,7 +234,10 @@ class ContentRecorderController {
   /// Get the rendered image from the widget tree using the specified pixel ratio.
   ///
   /// [pixelRatio] - The pixel ratio to be used for rendering the image.
-  Future<ui.Image?> _getRenderedImage(double? pixelRatio) async {
+  Future<ui.Image?> _getRenderedImage({
+    required double? pixelRatio,
+    required bool generateOnlyImageBounds,
+  }) async {
     try {
       var findRenderObject = containerKey.currentContext?.findRenderObject();
       if (findRenderObject == null) return null;
@@ -241,9 +255,14 @@ class ContentRecorderController {
       BuildContext? context = containerKey.currentContext;
 
       if (context != null && context.mounted) {
-        pixelRatio ??= MediaQuery.of(context).devicePixelRatio;
+        if (!generateOnlyImageBounds && pixelRatio != null) {
+          pixelRatio = max(pixelRatio, MediaQuery.of(context).devicePixelRatio);
+        } else {
+          pixelRatio ??= MediaQuery.of(context).devicePixelRatio;
+        }
       }
       ui.Image image = await boundary.toImage(pixelRatio: pixelRatio ?? 1);
+
       return image;
     } catch (e) {
       return null;
@@ -437,9 +456,7 @@ class ContentRecorderController {
         ? await capture(
             configs: configs,
             completerId: isolateCaptureState.id,
-            pixelRatio: configs.imageGenerationConfigs.generateOnlyImageBounds
-                ? null
-                : pixelRatio,
+            pixelRatio: pixelRatio,
             stateHistroyScreenshot: true,
             onImageCaptured: (img) {
               isolateCaptureState.readedRenderedImage = true;
@@ -449,9 +466,7 @@ class ContentRecorderController {
             widget,
             configs: configs,
             completerId: isolateCaptureState.id,
-            pixelRatio: configs.imageGenerationConfigs.generateOnlyImageBounds
-                ? null
-                : pixelRatio,
+            pixelRatio: pixelRatio,
             stateHistroyScreenshot: true,
             onImageCaptured: (img) {
               isolateCaptureState.readedRenderedImage = true;
@@ -501,7 +516,6 @@ class ContentRecorderController {
       // Take a new screenshot when something goes wrong.
       bytes = widget == null
           ? await capture(configs: configs, pixelRatio: pixelRatio)
-          // ignore: use_build_context_synchronously
           : await captureFromWidget(widget,
               context: context, configs: configs, pixelRatio: pixelRatio);
     }
