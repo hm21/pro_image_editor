@@ -14,6 +14,7 @@ import 'content_recorder_models.dart';
 /// and encodes it to PNG format.
 ///
 /// Returns a [ResponseFromImageThread] containing the PNG byte data.
+@pragma('vm:entry-point')
 Future<ResponseFromImageThread> convertImageToPng(
     ImageFromMainThread res) async {
   /// Finds the bounding box of the non-transparent area in the given [image].

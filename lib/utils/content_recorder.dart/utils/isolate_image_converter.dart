@@ -10,6 +10,7 @@ import 'convert_image_to_png.dart';
 /// This function sets up a [ReceivePort] to listen for incoming messages.
 /// When it receives an [ImageFromMainThread] message, it processes the image
 /// and sends back the result.
+@pragma('vm:entry-point')
 void isolatedImageConverter(SendPort port) {
   final receivePort = ReceivePort();
   port.send(receivePort.sendPort);

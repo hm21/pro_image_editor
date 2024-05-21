@@ -109,7 +109,6 @@ class ContentRecorderController {
         !(await _webWorker.readyState.future)) {
       return null;
     }
-
     image ??= await _getRenderedImage(
       pixelRatio: pixelRatio,
       generateOnlyImageBounds:
@@ -245,7 +244,7 @@ class ContentRecorderController {
       // If the render object's paint information is dirty we waiting until it's painted
       // or 500ms are ago.
       int retryHelper = 0;
-      while (findRenderObject.debugNeedsPaint && retryHelper < 25) {
+      while (!findRenderObject.attached && retryHelper < 25) {
         await Future.delayed(const Duration(milliseconds: 20));
         retryHelper++;
       }
@@ -390,7 +389,7 @@ class ContentRecorderController {
       // If the render object's paint information is dirty we waiting until it's painted
       // or 1000ms are ago.
       int retryHelper = 0;
-      while (repaintBoundary.debugNeedsPaint && retryHelper < 50) {
+      while (!repaintBoundary.attached && retryHelper < 50) {
         await Future.delayed(const Duration(milliseconds: 20));
         retryHelper++;
       }
