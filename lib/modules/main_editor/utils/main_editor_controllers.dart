@@ -38,5 +38,6 @@ class MainEditorControllers {
     uiLayerStream.close();
     layerHeroResetCtrl.close();
     bottomBarScroll.dispose();
+    screenshot.destroy();
   }
 }

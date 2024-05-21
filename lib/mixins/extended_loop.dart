@@ -7,6 +7,7 @@ mixin ExtendedLoop {
     required Duration duration,
     required bool mounted,
     Function(double t) transitionFunction = linear,
+    Function()? onDone,
   }) async {
     int frameRate = 1000 ~/ 60;
     double fullTime = duration.inMilliseconds.toDouble();
@@ -21,5 +22,6 @@ mixin ExtendedLoop {
       await Future.delayed(Duration(milliseconds: frameRate));
     }
     function(1.0);
+    onDone?.call();
   }
 }

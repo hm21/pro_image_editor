@@ -30,24 +30,27 @@ class ImageWithFilters extends StatelessWidget {
   /// The editor image to display.
   final EditorImage image;
 
+  /// How the image should be inscribed into the space allocated for it.
+  final BoxFit fit;
+
   /// The blur factor
   final double blurFactor;
 
-  const ImageWithFilters({
-    super.key,
-    required this.width,
-    required this.height,
-    required this.designMode,
-    required this.filters,
-    required this.image,
-    required this.blurFactor,
-  });
+  const ImageWithFilters(
+      {super.key,
+      required this.width,
+      required this.height,
+      required this.designMode,
+      required this.filters,
+      required this.image,
+      required this.blurFactor,
+      this.fit = BoxFit.contain});
 
   @override
   Widget build(BuildContext context) {
     Widget img = AutoImage(
       image,
-      fit: BoxFit.contain,
+      fit: fit,
       width: width,
       height: height,
       designMode: designMode,

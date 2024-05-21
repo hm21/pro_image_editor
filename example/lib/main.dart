@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/pages/standalone_example.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -161,6 +162,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   SelectableLayerExample(),
                   Divider(height: 1),
                   PickImageExample(),
+                  Divider(height: 1),
+                  StandaloneExample(),
                   Divider(height: 1),
                   RoundCropperExample(),
                   Divider(height: 1),

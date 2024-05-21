@@ -22,7 +22,7 @@ class PaintCanvasInitConfigs {
   final Function? save;
 
   /// Callback function to update the canvas.
-  final VoidCallback? onUpdate;
+  final VoidCallback? onUpdateDone;
 
   /// Icon widget for undo action.
   final Widget? undoIcon;
@@ -66,7 +66,7 @@ class PaintCanvasInitConfigs {
     this.showColorPicker,
     this.colors,
     this.save,
-    this.onUpdate,
+    this.onUpdateDone,
     this.undoIcon,
     this.colorIcon,
     required this.drawAreaSize,

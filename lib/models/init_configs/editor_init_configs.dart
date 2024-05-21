@@ -38,6 +38,23 @@ abstract class EditorInitConfigs {
   /// The layers in the editor.
   final List<Layer>? layers;
 
+  /// A callback function that will be called when the editing is done,
+  /// and it returns the edited image as a `Uint8List` with the format `png`.
+  ///
+  /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
+  /// when the editing is completed.
+  ///
+  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px"/>
+  final ImageEditingCompleteCallback? onImageEditingComplete;
+
+  /// A callback function that is triggered when the image generation is started.
+  final Function()? onImageEditingStarted;
+
+  /// A callback function that will be called before the image editor will close.
+  ///
+  /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
+  final ImageEditingEmptyCallback? onCloseEditor;
+
   /// Creates a new instance of [EditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
@@ -59,5 +76,8 @@ abstract class EditorInitConfigs {
     this.appliedFilters = const [],
     this.appliedBlurFactor = 0,
     this.layers,
+    this.onCloseEditor,
+    this.onImageEditingComplete,
+    this.onImageEditingStarted,
   });
 }

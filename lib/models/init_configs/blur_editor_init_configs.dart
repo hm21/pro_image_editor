@@ -23,6 +23,9 @@ class BlurEditorInitConfigs extends EditorInitConfigs {
     super.mainBodySize,
     super.appliedFilters,
     super.appliedBlurFactor,
+    super.onCloseEditor,
+    super.onImageEditingComplete,
+    super.onImageEditingStarted,
     required super.theme,
     this.convertToUint8List = false,
   });

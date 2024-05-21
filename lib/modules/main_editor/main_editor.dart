@@ -24,6 +24,7 @@ import 'package:pro_image_editor/modules/sticker_editor.dart';
 import 'package:pro_image_editor/utils/layer_transform_generator.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
+import '../../utils/decode_image.dart';
 import '../blur_editor.dart';
 import '../crop_rotate_editor/crop_rotate_editor.dart';
 import '../emoji_editor/emoji_editor.dart';
@@ -535,7 +536,8 @@ class ProImageEditorState extends State<ProImageEditor>
         _stateManager.heroScreenshotRequired = true;
       }
     } else {
-      _stateManager.isolateAddEmptyScreenshot();
+      _controllers.screenshot
+          .isolateAddEmptyScreenshot(screenshots: _stateManager.screenshots);
     }
     _stateManager.position++;
 
@@ -619,7 +621,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Decode the image being edited.
   ///
   /// This method decodes the image if it hasn't been decoded yet and updates its properties.
-  Future<void> _decodeImage() async {
+  Future<void> _decodeImage([TransformConfigs? transformConfigs]) async {
     bool shouldImportStateHistory =
         _imageNeedDecode && stateHistoryConfigs.initStateHistory != null;
     _imageNeedDecode = false;
@@ -633,18 +635,17 @@ class ProImageEditorState extends State<ProImageEditor>
           message: i18n.importStateHistoryMsg,
         );
     }
+    DecodedImageInfos infos = await decodeImageInfos(
+      bytes: await _image.safeByteArray,
+      screenSize: Size(
+        _sizesManager.lastScreenSize.width,
+        _sizesManager.bodySize.height,
+      ),
+      configs: transformConfigs ?? _stateManager.transformConfigs,
+    );
+    _sizesManager.decodedImageSize = infos.imageSize;
+    _pixelRatio = infos.pixelRatio;
 
-    var decodedImage = await decodeImageFromList(await _image.safeByteArray);
-
-    if (!mounted) return;
-    var w = decodedImage.width;
-    var h = decodedImage.height;
-
-    var widthRatio = w.toDouble() / _sizesManager.lastScreenSize.width;
-    var heightRatio = h.toDouble() / _sizesManager.screenInnerHeight;
-    _pixelRatio = max(heightRatio, widthRatio);
-
-    _sizesManager.decodedImageSize = Size(w / _pixelRatio, h / _pixelRatio);
     _inited = true;
 
     if (shouldImportStateHistory) {
@@ -1042,6 +1043,8 @@ class ProImageEditorState extends State<ProImageEditor>
               undoChanges: false,
             ).updatedLayers;
 
+            await _decodeImage(transformConfigs);
+
             _addHistory(
               transformConfigs: transformConfigs,
               layers: updatedLayers,
@@ -1324,10 +1327,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
     // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _stateManager.isolateCaptureImage(
-        screenshotCtrl: _controllers.screenshot,
+      _controllers.screenshot.isolateCaptureImage(
         configs: configs,
         pixelRatio: _pixelRatio,
+        screenshots: _stateManager.screenshots,
       );
     });
   }
@@ -1368,30 +1371,18 @@ class ProImageEditorState extends State<ProImageEditor>
           message: i18n.doneLoadingMsg,
         );
 
-      double? pixelRatio =
-          imageGenerationConfigs.removeTransparentAreas ? null : _pixelRatio;
-      late Uint8List? bytes;
+      double pixelRatio = imageGenerationConfigs.generateOnlyImageBounds
+          ? _pixelRatio
+          : max(_pixelRatio, MediaQuery.of(context).devicePixelRatio);
 
-      try {
-        if (_stateManager.position > 0) {
-          if (!_stateManager.activeScreenshotIsBroken) {
-            // Get screenshot from isolated generated thread.
-            bytes = await _stateManager.activeScreenshot;
-          } else {
-            // Take a new screenshot if the screenshot is broken.
-            bytes = await _controllers.screenshot
-                .capture(configs: configs, pixelRatio: pixelRatio);
-          }
-        } else {
-          // If the user didn't change anything return the original image.
-          bytes = await _image.safeByteArray;
-        }
-      } catch (e) {
-        debugPrint(e.toString());
-        // Take a new screenshot when something goes wrong.
-        bytes = await _controllers.screenshot
-            .capture(configs: configs, pixelRatio: pixelRatio);
-      }
+      Uint8List? bytes = await _controllers.screenshot.getFinalScreenshot(
+        pixelRatio: pixelRatio,
+        configs: configs,
+        backgroundScreenshot:
+            _stateManager.position > 0 ? _stateManager.activeScreenshot : null,
+        originalImageBytes:
+            _stateManager.position > 0 ? null : await _image.safeByteArray,
+      );
 
       await onImageEditingComplete(bytes ?? Uint8List.fromList([]));
 
@@ -1520,7 +1511,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ];
       for (var i = 0; i < import.stateHistory.length; i++) {
         if (i < import.stateHistory.length - 1) {
-          _stateManager.isolateAddEmptyScreenshot();
+          _controllers.screenshot.isolateAddEmptyScreenshot(
+              screenshots: _stateManager.screenshots);
         } else {
           _takeScreenshot();
         }
@@ -1536,7 +1528,8 @@ class ProImageEditorState extends State<ProImageEditor>
       for (var i = 0; i < import.stateHistory.length; i++) {
         stateHistory.add(import.stateHistory[i]);
         if (i < import.stateHistory.length - 1) {
-          _stateManager.isolateAddEmptyScreenshot();
+          _controllers.screenshot.isolateAddEmptyScreenshot(
+              screenshots: _stateManager.screenshots);
         } else {
           _takeScreenshot();
         }

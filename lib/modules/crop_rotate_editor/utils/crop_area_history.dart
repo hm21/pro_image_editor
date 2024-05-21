@@ -3,6 +3,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/isolate_models/isolate_capture_model.dart';
 
 // Project imports:
 import '../../../mixins/standalone_editor.dart';
@@ -24,7 +25,7 @@ mixin CropAreaHistory
   @protected
   late Animation<double> scaleAnimation;
 
-  int _historyIndex = 0;
+  int historyPosition = 0;
   @protected
   int rotationCount = 0;
   @protected
@@ -55,13 +56,22 @@ mixin CropAreaHistory
   final List<TransformConfigs> history = [TransformConfigs.empty()];
 
   /// Retrieves the active transformation history.
-  TransformConfigs get activeHistory => history[_historyIndex];
+  TransformConfigs get activeHistory => history[historyPosition];
+
+  /// List of captured screenshots for each state in the history.
+  List<IsolateCaptureState> screenshots = [];
 
   /// Determines whether undo actions can be performed on the current state.
-  bool get canUndo => _historyIndex > 0;
+  bool get canUndo => historyPosition > 0;
 
   /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => _historyIndex < history.length - 1;
+  bool get canRedo => historyPosition < history.length - 1;
+
+  @protected
+  void setInitHistory(TransformConfigs configs) {
+    history.clear();
+    history.add(configs);
+  }
 
   /// Adds the current transformation to the history.
   void addHistory({double? scale, double? angle}) {
@@ -81,26 +91,34 @@ mixin CropAreaHistory
         offset: translate,
       ),
     );
-    _historyIndex++;
+    historyPosition++;
+    takeScreenshot();
     onUpdateUI?.call();
   }
 
   /// Clears forward changes from the history.
   void cleanForwardChanges() {
     if (history.length > 1) {
-      while (_historyIndex < history.length - 1) {
+      while (historyPosition < history.length - 1) {
         history.removeLast();
       }
+      while (historyPosition < screenshots.length - 1) {
+        screenshots.removeLast();
+      }
     }
-    _historyIndex = history.length - 1;
+    historyPosition = history.length - 1;
   }
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
     if (canUndo) {
       setState(() {
-        _historyIndex--;
-        _setParametersFromHistory();
+        historyPosition--;
+        if (historyPosition == 0) {
+          reset(skipAddHistory: true);
+        } else {
+          _setParametersFromHistory();
+        }
       });
     }
   }
@@ -109,7 +127,7 @@ mixin CropAreaHistory
   void redoAction() {
     if (canRedo) {
       setState(() {
-        _historyIndex++;
+        historyPosition++;
         _setParametersFromHistory();
       });
     }
@@ -195,4 +213,6 @@ mixin CropAreaHistory
   void calcCropRect() {}
   @protected
   calcFitToScreen() {}
+  @protected
+  takeScreenshot() {}
 }

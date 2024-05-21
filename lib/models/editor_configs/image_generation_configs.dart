@@ -3,9 +3,6 @@
 /// [ImageGeneratioConfigs] holds various configuration options
 /// that affect how images are generated.
 class ImageGeneratioConfigs {
-  /// Remove the transparent area of the final image.
-  final bool removeTransparentAreas;
-
   /// Determines whether to capture only the content within the boundaries of the image when editing is complete.
   ///
   /// If set to `true`, editing completion will result in cropping all content outside the image boundaries, returning only the content overlaid on the image.
@@ -35,19 +32,19 @@ class ImageGeneratioConfigs {
   ///
   /// The default value is false.
   ///
+  /// This option only affects the main editor and does not work in standalone editors.
+  ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
   final bool allowEmptyEditCompletion;
 
   /// Creates a new instance of [ImageGeneratioConfigs].
   ///
   /// - The [allowEmptyEditCompletion] parameter controls if empty edit completions are allowed.
-  /// - The [removeTransparentAreas] parameter controls if transparent areas are removed.
   /// - The [generateIsolated] parameter controls if image generation occurs inside an isolate.
   /// - The [generateImageInBackground] parameter controls if image generation runs in the background.
   /// - The [generateOnlyImageBounds] parameter controls if only image bounds are generated.
   const ImageGeneratioConfigs({
     this.allowEmptyEditCompletion = false,
-    this.removeTransparentAreas = true,
     this.generateIsolated = true,
     this.generateImageInBackground = true,
     this.generateOnlyImageBounds = true,

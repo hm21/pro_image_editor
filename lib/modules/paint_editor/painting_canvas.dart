@@ -268,7 +268,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   /// This method adds a [PaintedModel] object to the paint history and calls the [onUpdate] callback if provided.
   void _addPaintHistory(PaintedModel info) {
     _paintCtrl.addPaintInfo(info);
-    widget.initConfigs.onUpdate?.call();
+    widget.initConfigs.onUpdateDone?.call();
   }
 
   /// Set the stroke width.

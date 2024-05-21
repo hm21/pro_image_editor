@@ -13,6 +13,7 @@ import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_appbar.dart'
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.dart';
 import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
@@ -20,13 +21,17 @@ import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/init_configs/paint_editor_init_configs.dart';
+import '../../models/isolate_models/isolate_capture_model.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/transform_helper.dart';
+import '../../utils/content_recorder.dart/content_recorder_controller.dart';
+import '../../utils/decode_image.dart';
 import '../../utils/design_mode.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/flat_icon_text_button.dart';
+import '../../widgets/loading_dialog.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
@@ -165,6 +170,9 @@ class PaintingEditorState extends State<PaintingEditor>
   /// A global key for accessing the state of the PaintingCanvas widget.
   final _imageKey = GlobalKey<PaintingCanvasState>();
 
+  /// Manages the capturing a screenshot of the image.
+  ContentRecorderController screenshotCtrl = ContentRecorderController();
+
   /// A global key for accessing the state of the Scaffold widget.
   final _key = GlobalKey<ScaffoldState>();
 
@@ -246,6 +254,20 @@ class PaintingEditorState extends State<PaintingEditor>
           ),
       ];
 
+  /// Indicates it create a screenshot or not.
+  bool _createScreenshot = false;
+
+  /// The position in the history of screenshots. This is used to track the
+  /// current position in the list of screenshots.
+  int _historyPosition = 0;
+
+  /// The pixel ratio of the image.
+  double? _pixelRatio;
+
+  /// A list of captured screenshots. Each element in the list represents the
+  /// state of a screenshot captured by the isolate.
+  final List<IsolateCaptureState> _screenshots = [];
+
   @override
   void initState() {
     super.initState();
@@ -269,6 +291,7 @@ class PaintingEditorState extends State<PaintingEditor>
     _bottomBarScrollCtrl.dispose();
     _uiPickerStream.close();
     _uiAppbarIconsStream.close();
+    screenshotCtrl.destroy();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
   }
@@ -316,6 +339,7 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
+    if (_imageKey.currentState!.canUndo) _historyPosition--;
     _imageKey.currentState!.undo();
     _uiAppbarIconsStream.add(null);
     onUpdateUI?.call();
@@ -323,6 +347,7 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Redoes the previously undone action in the painting editor.
   void redoAction() {
+    if (_imageKey.currentState!.canRedo) _historyPosition++;
     _imageKey.currentState!.redo();
     _uiAppbarIconsStream.add(null);
     onUpdateUI?.call();
@@ -330,15 +355,82 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Closes the editor without applying changes.
   void close() {
-    Navigator.pop(context);
+    if (initConfigs.onCloseEditor == null) {
+      Navigator.pop(context);
+    } else {
+      initConfigs.onCloseEditor!.call();
+    }
   }
 
   /// Finishes editing in the painting editor and returns the painted items as a result.
   /// If no changes have been made, it closes the editor without returning any changes.
   void done() async {
-    if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
-    Navigator.of(context)
-        .pop(_imageKey.currentState?.exportPaintedItems(_bodySize));
+    if (_createScreenshot) return;
+    initConfigs.onImageEditingStarted?.call();
+
+    if (initConfigs.convertToUint8List) {
+      _createScreenshot = true;
+      LoadingDialog loading = LoadingDialog()
+        ..show(
+          context,
+          configs: configs,
+          theme: theme,
+          message: i18n.filterEditor.applyFilterDialogMsg,
+        );
+      if (_pixelRatio == null) await _setPixelRatio();
+      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
+        pixelRatio: _pixelRatio,
+        configs: configs,
+        backgroundScreenshot:
+            _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
+        originalImageBytes: _historyPosition > 0
+            ? null
+            : await widget.editorImage.safeByteArray,
+      );
+
+      _createScreenshot = false;
+      if (mounted) {
+        loading.hide(context);
+
+        await initConfigs.onImageEditingComplete
+            ?.call(bytes ?? Uint8List.fromList([]));
+
+        initConfigs.onCloseEditor?.call();
+      }
+    } else {
+      if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
+      Navigator.of(context)
+          .pop(_imageKey.currentState?.exportPaintedItems(_bodySize));
+    }
+  }
+
+  Future<void> _setPixelRatio() async {
+    _pixelRatio ??= (await decodeImageInfos(
+      bytes: await widget.editorImage.safeByteArray,
+      screenSize: _bodySize,
+    ))
+        .pixelRatio;
+  }
+
+  /// Takes a screenshot of the current editor state.
+  void _takeScreenshot() async {
+    if (!widget.initConfigs.convertToUint8List) return;
+
+    await _setPixelRatio();
+    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
+    _pixelRatio ??= (await decodeImageInfos(
+      bytes: await widget.editorImage.safeByteArray,
+      screenSize: _bodySize,
+    ))
+        .pixelRatio;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _historyPosition++;
+      screenshotCtrl.isolateCaptureImage(
+        configs: configs,
+        pixelRatio: _pixelRatio,
+        screenshots: _screenshots,
+      );
+    });
   }
 
   @override
@@ -534,31 +626,43 @@ class PaintingEditorState extends State<PaintingEditor>
               alignment: Alignment.center,
               fit: StackFit.expand,
               children: [
-                TransformedContentGenerator(
-                  configs: configs,
-                  transformConfigs:
-                      transformConfigs ?? TransformConfigs.empty(),
-                  child: ImageWithFilters(
-                    width: getMinimumSize(mainImageSize, _bodySize).width,
-                    height: getMinimumSize(mainImageSize, _bodySize).height,
-                    designMode: designMode,
-                    image: editorImage,
-                    filters: appliedFilters,
-                    blurFactor: appliedBlurFactor,
+                ContentRecorder(
+                  controller: screenshotCtrl,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    fit: StackFit.expand,
+                    children: [
+                      TransformedContentGenerator(
+                        configs: configs,
+                        transformConfigs:
+                            transformConfigs ?? TransformConfigs.empty(),
+                        child: ImageWithFilters(
+                          width: getMinimumSize(mainImageSize, _bodySize).width,
+                          height:
+                              getMinimumSize(mainImageSize, _bodySize).height,
+                          designMode: designMode,
+                          image: editorImage,
+                          filters: appliedFilters,
+                          blurFactor: appliedBlurFactor,
+                        ),
+                      ),
+                      if (layers != null)
+                        LayerStack(
+                          configs: configs,
+                          layers: layers!,
+                          transformHelper: TransformHelper(
+                            mainBodySize:
+                                getMinimumSize(mainBodySize, _bodySize),
+                            mainImageSize:
+                                getMinimumSize(mainImageSize, _bodySize),
+                            editorBodySize: _bodySize,
+                            transformConfigs: transformConfigs,
+                          ),
+                        ),
+                      _buildPainter(),
+                    ],
                   ),
                 ),
-                if (layers != null)
-                  LayerStack(
-                    configs: configs,
-                    layers: layers!,
-                    transformHelper: TransformHelper(
-                      mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-                      mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-                      editorBodySize: _bodySize,
-                      transformConfigs: transformConfigs,
-                    ),
-                  ),
-                _buildPainter(),
                 if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
                 if (imageEditorTheme.editorMode ==
                     ThemeEditorMode.whatsapp) ...[
@@ -682,9 +786,10 @@ class PaintingEditorState extends State<PaintingEditor>
         drawAreaSize: mainBodySize ?? _bodySize,
         imageEditorTheme: imageEditorTheme,
         configs: paintEditorConfigs,
-        onUpdate: () {
+        onUpdateDone: () {
           _uiAppbarIconsStream.add(null);
           onUpdateUI?.call();
+          _takeScreenshot();
         },
       ),
     );

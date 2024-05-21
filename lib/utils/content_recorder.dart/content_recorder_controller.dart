@@ -7,13 +7,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:image/image.dart' as img;
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/unique_id_generator.dart';
+import '../../models/isolate_models/isolate_capture_model.dart';
 import 'utils/content_recorder_models.dart';
 import 'utils/dart_ui_remove_transparent_image_areas.dart';
 import 'utils/isolate_image_converter.dart';
@@ -138,7 +141,7 @@ class ContentRecorderController {
     required ProImageEditorConfigs configs,
     required ui.Image image,
   }) async {
-    if (configs.imageGenerationConfigs.removeTransparentAreas) {
+    if (configs.imageGenerationConfigs.generateOnlyImageBounds) {
       image = await dartUiRemoveTransparentImgAreas(
             image,
           ) ??
@@ -252,28 +255,33 @@ class ContentRecorderController {
   /// [context] parameter is used to Inherit App Theme and MediaQuery data.
   Future<Uint8List?> captureFromWidget(
     Widget widget, {
-    Duration delay = const Duration(seconds: 1),
     double? pixelRatio,
     BuildContext? context,
     Size? targetSize,
+    Function(ui.Image?)? onImageCaptured,
+    bool stateHistroyScreenshot = false,
+    String? completerId,
     required ProImageEditorConfigs configs,
   }) async {
-    ui.Image image = await _widgetToUiImage(widget,
-        delay: delay,
-        pixelRatio: pixelRatio,
-        context: context,
-        targetSize: targetSize);
+    ui.Image image = await _widgetToUiImage(
+      widget,
+      pixelRatio: pixelRatio,
+      context: context,
+      targetSize: targetSize,
+    );
     return capture(
       configs: configs,
       image: image,
       pixelRatio: pixelRatio,
+      completerId: completerId,
+      onImageCaptured: onImageCaptured,
+      stateHistroyScreenshot: stateHistroyScreenshot,
     );
   }
 
   /// If you are building a desktop/web application that supports multiple view. Consider passing the [context] so that flutter know which view to capture.
   Future<ui.Image> _widgetToUiImage(
     Widget widget, {
-    Duration delay = const Duration(seconds: 1),
     double? pixelRatio,
     BuildContext? context,
     Size? targetSize,
@@ -360,11 +368,16 @@ class ContentRecorderController {
       ///Reset the dirty flag
       isDirty = false;
 
+      // If the render object's paint information is dirty we waiting until it's painted
+      // or 1000ms are ago.
+      int retryHelper = 0;
+      while (repaintBoundary.debugNeedsPaint && retryHelper < 50) {
+        await Future.delayed(const Duration(milliseconds: 20));
+        retryHelper++;
+      }
+
       image = await repaintBoundary.toImage(
           pixelRatio: pixelRatio ?? (imageSize.width / logicalSize.width));
-
-      ///This delay sholud increas with Widget tree Size
-      await Future.delayed(delay);
 
       ///Check does this require rebuild
       if (isDirty) {
@@ -392,5 +405,106 @@ class ContentRecorderController {
     }
 
     return image; // Adapted to directly return the image and not the Uint8List
+  }
+
+  /// Capture an image of the current editor state in an isolate.
+  ///
+  /// This method captures the current state of the image editor as a screenshot.
+  /// It sets all previously unprocessed screenshots to broken before capturing a new one.
+  ///
+  /// - `screenshotCtrl`: The controller to capture the screenshot.
+  /// - `configs`: Configuration for the image editor.
+  /// - `pixelRatio`: The pixel ratio to use for capturing the screenshot.
+  void isolateCaptureImage({
+    required ProImageEditorConfigs configs,
+    required double? pixelRatio,
+    required List<IsolateCaptureState> screenshots,
+    Widget? widget,
+  }) async {
+    if (!configs.imageGenerationConfigs.generateImageInBackground ||
+        !configs.imageGenerationConfigs.generateIsolated) {
+      return;
+    }
+
+    /// Set every screenshot to broken which didn't read the ui image before
+    /// changes happen.
+    screenshots.where((el) => !el.readedRenderedImage).forEach((screenshot) {
+      screenshot.broken = true;
+    });
+    IsolateCaptureState isolateCaptureState = IsolateCaptureState();
+    screenshots.add(isolateCaptureState);
+    Uint8List? bytes = widget == null
+        ? await capture(
+            configs: configs,
+            completerId: isolateCaptureState.id,
+            pixelRatio: configs.imageGenerationConfigs.generateOnlyImageBounds
+                ? null
+                : pixelRatio,
+            stateHistroyScreenshot: true,
+            onImageCaptured: (img) {
+              isolateCaptureState.readedRenderedImage = true;
+            },
+          )
+        : await captureFromWidget(
+            widget,
+            configs: configs,
+            completerId: isolateCaptureState.id,
+            pixelRatio: configs.imageGenerationConfigs.generateOnlyImageBounds
+                ? null
+                : pixelRatio,
+            stateHistroyScreenshot: true,
+            onImageCaptured: (img) {
+              isolateCaptureState.readedRenderedImage = true;
+            },
+          );
+    isolateCaptureState.completer.complete(bytes ?? Uint8List.fromList([]));
+    if (bytes == null) {
+      isolateCaptureState.broken = true;
+    }
+  }
+
+  void isolateAddEmptyScreenshot({
+    required List<IsolateCaptureState> screenshots,
+  }) {
+    IsolateCaptureState isolateCaptureState = IsolateCaptureState();
+    isolateCaptureState.broken = true;
+    screenshots.add(isolateCaptureState);
+  }
+
+  Future<Uint8List?> getFinalScreenshot({
+    required double? pixelRatio,
+    required ProImageEditorConfigs configs,
+    required IsolateCaptureState? backgroundScreenshot,
+    Widget? widget,
+    BuildContext? context,
+    Uint8List? originalImageBytes,
+  }) async {
+    Uint8List? bytes;
+    try {
+      if (originalImageBytes == null) {
+        if (backgroundScreenshot != null && !backgroundScreenshot.broken) {
+          // Get screenshot from isolated generated thread.
+          bytes = await backgroundScreenshot.completer.future;
+        } else {
+          // Take a new screenshot if the screenshot is broken.
+          bytes = widget == null
+              ? await capture(configs: configs, pixelRatio: pixelRatio)
+              : await captureFromWidget(widget,
+                  context: context, configs: configs, pixelRatio: pixelRatio);
+        }
+      } else {
+        // If the user didn't change anything return the original image.
+        bytes = originalImageBytes;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      // Take a new screenshot when something goes wrong.
+      bytes = widget == null
+          ? await capture(configs: configs, pixelRatio: pixelRatio)
+          // ignore: use_build_context_synchronously
+          : await captureFromWidget(widget,
+              context: context, configs: configs, pixelRatio: pixelRatio);
+    }
+    return bytes;
   }
 }

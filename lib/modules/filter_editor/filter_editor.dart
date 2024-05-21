@@ -15,8 +15,10 @@ import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
 import '../../models/history/filter_state_history.dart';
+import '../../models/isolate_models/isolate_capture_model.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
+import '../../utils/decode_image.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/loading_dialog.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
@@ -152,7 +154,7 @@ class FilterEditorState extends State<FilterEditor>
         ImageEditorConvertedConfigs,
         StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
-  ContentRecorderController screenshotController = ContentRecorderController();
+  ContentRecorderController screenshotCtrl = ContentRecorderController();
 
   /// Update the image with the applied filter and the slider value.
   late final StreamController _uiFilterStream;
@@ -169,6 +171,17 @@ class FilterEditorState extends State<FilterEditor>
   /// Indicates it create a screenshot or not.
   bool _createScreenshot = false;
 
+  /// The position in the history of screenshots. This is used to track the
+  /// current position in the list of screenshots.
+  int _historyPosition = 0;
+
+  /// The pixel ratio of the image.
+  double? _pixelRatio;
+
+  /// A list of captured screenshots. Each element in the list represents the
+  /// state of a screenshot captured by the isolate.
+  final List<IsolateCaptureState> _screenshots = [];
+
   @override
   void initState() {
     _uiFilterStream = StreamController.broadcast();
@@ -178,17 +191,23 @@ class FilterEditorState extends State<FilterEditor>
   @override
   void dispose() {
     _uiFilterStream.close();
+    screenshotCtrl.destroy();
     super.dispose();
   }
 
   /// Closes the editor without applying changes.
   void close() {
-    Navigator.pop(context);
+    if (initConfigs.onCloseEditor == null) {
+      Navigator.pop(context);
+    } else {
+      initConfigs.onCloseEditor!.call();
+    }
   }
 
   /// Handles the "Done" action, either by applying changes or closing the editor.
   void done() async {
     if (_createScreenshot) return;
+    initConfigs.onImageEditingStarted?.call();
 
     if (widget.initConfigs.convertToUint8List) {
       _createScreenshot = true;
@@ -199,11 +218,25 @@ class FilterEditorState extends State<FilterEditor>
           theme: theme,
           message: i18n.filterEditor.applyFilterDialogMsg,
         );
-      var data = await screenshotController.capture(configs: configs);
+      if (_pixelRatio == null) await _setPixelRatio();
+      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
+        pixelRatio: _pixelRatio,
+        configs: configs,
+        backgroundScreenshot:
+            _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
+        originalImageBytes: _historyPosition > 0
+            ? null
+            : await widget.editorImage.safeByteArray,
+      );
+
       _createScreenshot = false;
       if (mounted) {
         loading.hide(context);
-        Navigator.pop(context, data);
+
+        await initConfigs.onImageEditingComplete
+            ?.call(bytes ?? Uint8List.fromList([]));
+
+        initConfigs.onCloseEditor?.call();
       }
     } else {
       FilterStateHistory filter = FilterStateHistory(
@@ -212,6 +245,30 @@ class FilterEditorState extends State<FilterEditor>
       );
       Navigator.pop(context, filter);
     }
+  }
+
+  Future<void> _setPixelRatio() async {
+    _pixelRatio ??= (await decodeImageInfos(
+      bytes: await widget.editorImage.safeByteArray,
+      screenSize: _bodySize,
+    ))
+        .pixelRatio;
+  }
+
+  /// Takes a screenshot of the current editor state.
+  void _takeScreenshot() async {
+    if (!widget.initConfigs.convertToUint8List) return;
+
+    await _setPixelRatio();
+    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _historyPosition++;
+      screenshotCtrl.isolateCaptureImage(
+        configs: configs,
+        pixelRatio: _pixelRatio,
+        screenshots: _screenshots,
+      );
+    });
   }
 
   @override
@@ -262,7 +319,7 @@ class FilterEditorState extends State<FilterEditor>
     return LayoutBuilder(builder: (context, constraints) {
       _bodySize = constraints.biggest;
       return ContentRecorder(
-        controller: screenshotController,
+        controller: screenshotCtrl,
         child: Stack(
           alignment: Alignment.center,
           fit: StackFit.expand,
@@ -339,6 +396,9 @@ class FilterEditorState extends State<FilterEditor>
                                 _uiFilterStream.add(null);
                                 onUpdateUI?.call();
                               },
+                              onChangeEnd: (value) {
+                                _takeScreenshot();
+                              },
                             ),
                     );
                   }),
@@ -359,6 +419,7 @@ class FilterEditorState extends State<FilterEditor>
                 selectedFilter = filter;
                 _uiFilterStream.add(null);
                 onUpdateUI?.call();
+                _takeScreenshot();
               },
             ),
           ],

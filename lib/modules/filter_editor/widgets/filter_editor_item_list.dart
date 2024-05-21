@@ -249,6 +249,8 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                     networkUrl: widget.networkUrl,
                     assetPath: widget.assetPath,
                   ),
+                  fit:
+                      !transformConfigs.isEmpty ? BoxFit.contain : BoxFit.cover,
                   width: size.width,
                   height: size.height,
                   filters: [

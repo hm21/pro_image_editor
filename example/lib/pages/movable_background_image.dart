@@ -169,7 +169,7 @@ class _MoveableBackgroundImageExampleState
                       ),
                       configs: ProImageEditorConfigs(
                           imageGenerationConfigs: const ImageGeneratioConfigs(
-                            removeTransparentAreas: true,
+                            generateOnlyImageBounds: true,
                           ),
 
                           /// Crop-Rotate, Filter and Blur editors are not supported

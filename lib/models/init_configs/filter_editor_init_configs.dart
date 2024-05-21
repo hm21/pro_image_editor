@@ -22,6 +22,9 @@ class FilterEditorInitConfigs extends EditorInitConfigs {
     super.layers,
     super.appliedFilters,
     super.appliedBlurFactor,
+    super.onCloseEditor,
+    super.onImageEditingComplete,
+    super.onImageEditingStarted,
     required super.theme,
     this.convertToUint8List = false,
   });

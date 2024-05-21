@@ -5,6 +5,9 @@ import 'editor_init_configs.dart';
 ///
 /// This class extends [EditorInitConfigs] and adds specific parameters related to painting functionality.
 class PaintEditorInitConfigs extends EditorInitConfigs {
+  /// Determines whether to return the image as a Uint8List when closing the editor.
+  final bool convertToUint8List;
+
   /// Creates a new instance of [PaintEditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
@@ -20,6 +23,10 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
     super.mainBodySize,
     super.appliedFilters,
     super.appliedBlurFactor,
+    super.onCloseEditor,
+    super.onImageEditingComplete,
+    super.onImageEditingStarted,
+    this.convertToUint8List = false,
     required super.theme,
   });
 }
