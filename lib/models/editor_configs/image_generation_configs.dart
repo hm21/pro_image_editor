@@ -37,6 +37,16 @@ class ImageGeneratioConfigs {
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
   final bool allowEmptyEditCompletion;
 
+  /// The pixel ratio of the image relative to the content.
+  ///
+  /// Normally, you do not need to set any value here as the editor detects the pixel ratio automatically from the image.
+  /// Only set a value here if you have a movable background, which may require a custom pixel ratio for proper scaling.
+  final double? customPixelRatio;
+
+  /// Configuration settings for the processor.
+  ///
+  /// Use this property to customize various processing options.
+  /// Refer to the `ProcessorConfigs` class for detailed information on available configuration settings.
   final ProcessorConfigs processorConfigs;
 
   /// Creates a new instance of [ImageGeneratioConfigs].
@@ -45,11 +55,14 @@ class ImageGeneratioConfigs {
   /// - The [generateIsolated] parameter controls if image generation occurs inside an isolate.
   /// - The [generateImageInBackground] parameter controls if image generation runs in the background.
   /// - The [generateOnlyImageBounds] parameter controls if only image bounds are generated.
+  /// - The [customPixelRatio] parameter set the pixel ratio of the image relative to the content.
+  /// - The [processorConfigs] parameter set the processor configs.
   const ImageGeneratioConfigs({
     this.allowEmptyEditCompletion = false,
     this.generateIsolated = true,
     this.generateImageInBackground = true,
     this.generateOnlyImageBounds = true,
+    this.customPixelRatio,
     this.processorConfigs = const ProcessorConfigs(),
   });
 }

@@ -395,6 +395,7 @@ class ProImageEditorState extends State<ProImageEditor>
       layerInteraction.newLayerOffsetPosition ?? Offset.zero;
 
   Completer _pageOpenCompleter = Completer();
+  final Completer _decodeImageCompleter = Completer();
 
   @override
   void initState() {
@@ -639,7 +640,7 @@ class ProImageEditorState extends State<ProImageEditor>
         );
     }
     DecodedImageInfos infos = await decodeImageInfos(
-      bytes: await _image.safeByteArray,
+      bytes: await _image.safeByteArray(context),
       screenSize: Size(
         _sizesManager.lastScreenSize.width,
         _sizesManager.bodySize.height,
@@ -650,6 +651,9 @@ class ProImageEditorState extends State<ProImageEditor>
     _pixelRatio = infos.pixelRatio;
 
     _inited = true;
+    if (!_decodeImageCompleter.isCompleted) {
+      _decodeImageCompleter.complete(true);
+    }
 
     if (shouldImportStateHistory) {
       importStateHistory(stateHistoryConfigs.initStateHistory!);
@@ -891,6 +895,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (paintEditorConfigs.freeStyleHighPerformanceHero) {
       _layerInteractionManager.freeStyleHighPerformanceHero = true;
     }
+
     setState(() {});
     callbacks.onOpenSubEditor?.call();
     _pageOpenCompleter = Completer.sync();
@@ -1046,20 +1051,15 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method opens the crop editor, allowing the user to crop and rotate the image.
   void openCropRotateEditor() async {
-    EditorImage img = EditorImage(
-      assetPath: _image.assetPath,
-      byteArray: _image.byteArray,
-      file: _image.file,
-      networkUrl: _image.networkUrl,
-    );
+    if (!_inited) await _decodeImageCompleter.future;
 
     _openPage<TransformConfigs?>(
       CropRotateEditor.autoSource(
         key: cropRotateEditor,
-        file: img.file,
-        byteArray: img.byteArray,
-        assetPath: img.assetPath,
-        networkUrl: img.networkUrl,
+        file: _image.file,
+        byteArray: _image.byteArray,
+        assetPath: _image.assetPath,
+        networkUrl: _image.networkUrl,
         initConfigs: CropRotateEditorInitConfigs(
           onUpdateUI: onUpdateUI,
           theme: _theme,
@@ -1416,8 +1416,9 @@ class ProImageEditorState extends State<ProImageEditor>
         pixelRatio: pixelRatio,
         backgroundScreenshot:
             _stateManager.position > 0 ? _stateManager.activeScreenshot : null,
-        originalImageBytes:
-            _stateManager.position > 0 ? null : await _image.safeByteArray,
+        originalImageBytes: _stateManager.position > 0
+            ? null
+            : await _image.safeByteArray(context),
       );
 
       await onImageEditingComplete(bytes ?? Uint8List.fromList([]));
@@ -1788,7 +1789,7 @@ class ProImageEditorState extends State<ProImageEditor>
                               _whatsAppHelper.filterShowHelper * 2),
                       child: _buildInteractiveContent(),
                     ),
-                    if (_selectedLayerIndex < 0) ..._buildWhatsAppWidgets()
+                    if (_selectedLayerIndex < 0) ..._buildWhatsAppWidgets(),
                   ],
                 ),
         ),

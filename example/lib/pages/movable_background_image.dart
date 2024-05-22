@@ -35,8 +35,7 @@ class _MoveableBackgroundImageExampleState
   Future<void> _createTransparentImage(double aspectRatio) async {
     if (_transparentAspectRatio == aspectRatio) return;
 
-    /// The larger the value, the more precise but also slower.
-    double minSize = 500;
+    double minSize = 1;
 
     double width = aspectRatio < 1 ? minSize : minSize * aspectRatio;
     double height = aspectRatio < 1 ? minSize / aspectRatio : minSize;
@@ -90,7 +89,6 @@ class _MoveableBackgroundImageExampleState
         if (context.mounted) await loading.hide(context);
 
         if (!context.mounted) return;
-
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -168,8 +166,13 @@ class _MoveableBackgroundImageExampleState
                         },
                       ),
                       configs: ProImageEditorConfigs(
-                          imageGenerationConfigs: const ImageGeneratioConfigs(
+                          imageGenerationConfigs: ImageGeneratioConfigs(
                             generateOnlyImageBounds: true,
+
+                            /// Set the pixel ratio manually. You can also set this value higher than the device pixel ratio for higher quality.
+                            customPixelRatio: max(
+                                2000 / MediaQuery.of(context).size.width,
+                                MediaQuery.of(context).devicePixelRatio),
                           ),
 
                           /// Crop-Rotate, Filter and Blur editors are not supported

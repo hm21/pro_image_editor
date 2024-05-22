@@ -130,7 +130,7 @@ class ContentRecorderController {
     }
 
     image ??= await _getRenderedImage(
-      pixelRatio: pixelRatio,
+      pixelRatio: configs.imageGenerationConfigs.customPixelRatio ?? pixelRatio,
       generateOnlyImageBounds:
           configs.imageGenerationConfigs.generateOnlyImageBounds,
     );

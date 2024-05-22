@@ -65,24 +65,34 @@ class ImageWithFilters extends StatelessWidget {
       );
     }
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        img,
-        filteredImg,
-        ClipRect(
-          clipBehavior: Clip.hardEdge,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blurFactor, sigmaY: blurFactor),
-            child: Container(
-              width: width,
-              height: height,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+    /*    print('-----------------------');
+    print(width);
+    print(height); */
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Stack(
+        // StackFit.expand is importent for [transformed_content_generator.dart]
+        fit: StackFit.expand,
+        alignment: Alignment.center,
+        children: [
+          img,
+          filteredImg,
+          ClipRect(
+            clipBehavior: Clip.hardEdge,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blurFactor, sigmaY: blurFactor),
+              child: Container(
+                width: width,
+                height: height,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

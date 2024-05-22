@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 // Project imports:
+import 'package:flutter/material.dart';
+
 import '../utils/converters.dart';
 
 /// Flutter EditorImage Class Documentation
@@ -75,7 +77,7 @@ import '../utils/converters.dart';
 /// Please refer to the documentation of individual properties and methods for more details.
 class EditorImage {
   /// A byte array representing the image data.
-  final Uint8List? byteArray;
+  Uint8List? byteArray;
 
   /// A `File` object representing the image file.
   final File? file;
@@ -89,7 +91,7 @@ class EditorImage {
   /// Creates an instance of the `EditorImage` class with the specified properties.
   ///
   /// At least one of `byteArray`, `file`, `networkUrl`, or `assetPath` must not be null.
-  const EditorImage({
+  EditorImage({
     this.byteArray,
     this.file,
     this.networkUrl,
@@ -116,17 +118,25 @@ class EditorImage {
 
   /// A future that retrieves the image data as a `Uint8List` from the appropriate source
   /// based on the `EditorImageType`.
-  Future<Uint8List> get safeByteArray {
+  Future<Uint8List> safeByteArray(BuildContext context) async {
     switch (type) {
       case EditorImageType.memory:
-        return Future.value(byteArray!);
+        return byteArray!;
       case EditorImageType.asset:
-        return loadAssetImageAsUint8List(assetPath!);
+        byteArray = await loadAssetImageAsUint8List(assetPath!);
+        if (!context.mounted) return byteArray!;
+        break;
       case EditorImageType.file:
-        return readFileAsUint8List(file!);
+        byteArray = await readFileAsUint8List(file!);
+        if (!context.mounted) return byteArray!;
+        break;
       case EditorImageType.network:
-        return fetchImageAsUint8List(networkUrl!);
+        byteArray = await fetchImageAsUint8List(networkUrl!);
+        if (!context.mounted) return byteArray!;
+        break;
     }
+    await precacheImage(MemoryImage(byteArray!), context);
+    return byteArray!;
   }
 
   /// Returns the type of the image source, determined by the available properties.

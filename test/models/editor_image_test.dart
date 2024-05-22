@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 // Package imports:
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
@@ -60,22 +61,36 @@ void main() {
       );
 
       expect(
-        const EditorImage(networkUrl: networkUrl).type,
+        EditorImage(networkUrl: networkUrl).type,
         equals(EditorImageType.network),
       );
 
       expect(
-        const EditorImage(assetPath: assetPath).type,
+        EditorImage(assetPath: assetPath).type,
         equals(EditorImageType.asset),
       );
     });
 
-    test('safeByteArray should return the correct data', () async {
+    testWidgets('safeByteArray should return the correct data',
+        (WidgetTester tester) async {
+      final key = GlobalKey();
       final Uint8List byteArray = Uint8List.fromList(fakeMemoryImage);
 
       final EditorImage memoryImage = EditorImage(byteArray: byteArray);
 
-      final Uint8List memoryData = await memoryImage.safeByteArray;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            key: key,
+            builder: (BuildContext context) {
+              return Container();
+            },
+          ),
+        ),
+      );
+
+      final Uint8List memoryData =
+          await memoryImage.safeByteArray(key.currentContext!);
       expect(memoryData, fakeMemoryImage);
     });
   });

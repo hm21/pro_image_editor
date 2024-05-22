@@ -3,15 +3,11 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _i4;
+import 'dart:typed_data' as _i3;
 
-// Dart imports:
-import 'dart:async' as _i3;
-import 'dart:typed_data' as _i4;
-
-// Package imports:
+import 'package:flutter/material.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-
-// Project imports:
 import 'package:pro_image_editor/models/editor_image.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -31,6 +27,15 @@ import 'package:pro_image_editor/models/editor_image.dart' as _i2;
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockEditorImage extends _i1.Mock implements _i2.EditorImage {
+  @override
+  set byteArray(_i3.Uint8List? _byteArray) => super.noSuchMethod(
+        Invocation.setter(
+          #byteArray,
+          _byteArray,
+        ),
+        returnValueForMissingStub: null,
+      );
+
   @override
   bool get hasBytes => (super.noSuchMethod(
         Invocation.getter(#hasBytes),
@@ -60,17 +65,21 @@ class MockEditorImage extends _i1.Mock implements _i2.EditorImage {
       ) as bool);
 
   @override
-  _i3.Future<_i4.Uint8List> get safeByteArray => (super.noSuchMethod(
-        Invocation.getter(#safeByteArray),
-        returnValue: _i3.Future<_i4.Uint8List>.value(_i4.Uint8List(0)),
-        returnValueForMissingStub:
-            _i3.Future<_i4.Uint8List>.value(_i4.Uint8List(0)),
-      ) as _i3.Future<_i4.Uint8List>);
-
-  @override
   _i2.EditorImageType get type => (super.noSuchMethod(
         Invocation.getter(#type),
         returnValue: _i2.EditorImageType.file,
         returnValueForMissingStub: _i2.EditorImageType.file,
       ) as _i2.EditorImageType);
+
+  @override
+  _i4.Future<_i3.Uint8List> safeByteArray(_i5.BuildContext? context) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #safeByteArray,
+          [context],
+        ),
+        returnValue: _i4.Future<_i3.Uint8List>.value(_i3.Uint8List(0)),
+        returnValueForMissingStub:
+            _i4.Future<_i3.Uint8List>.value(_i3.Uint8List(0)),
+      ) as _i4.Future<_i3.Uint8List>);
 }

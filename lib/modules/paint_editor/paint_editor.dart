@@ -380,13 +380,14 @@ class PaintingEditorState extends State<PaintingEditor>
           message: i18n.filterEditor.applyFilterDialogMsg,
         );
       if (_pixelRatio == null) await _setPixelRatio();
+      if (!mounted) return;
       Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
         pixelRatio: _pixelRatio,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
         originalImageBytes: _historyPosition > 0
             ? null
-            : await widget.editorImage.safeByteArray,
+            : await widget.editorImage.safeByteArray(context),
       );
 
       _createScreenshot = false;
@@ -407,7 +408,7 @@ class PaintingEditorState extends State<PaintingEditor>
 
   Future<void> _setPixelRatio() async {
     _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray,
+      bytes: await widget.editorImage.safeByteArray(context),
       screenSize: _bodySize,
     ))
         .pixelRatio;
@@ -418,12 +419,13 @@ class PaintingEditorState extends State<PaintingEditor>
     if (!widget.initConfigs.convertToUint8List) return;
 
     await _setPixelRatio();
-    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
+    if (!mounted) return;
     _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray,
+      bytes: await widget.editorImage.safeByteArray(context),
       screenSize: _bodySize,
     ))
         .pixelRatio;
+    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _historyPosition++;
       screenshotCtrl.isolateCaptureImage(

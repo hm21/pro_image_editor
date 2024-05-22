@@ -416,7 +416,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _imageSizeIsDecoded = false;
     _imageNeedDecode = false;
     var decodedImage =
-        await decodeImageFromList(await editorImage.safeByteArray);
+        await decodeImageFromList(await editorImage.safeByteArray(context));
 
     if (!mounted) return;
     var w = decodedImage.width;
@@ -605,7 +605,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   Future<void> _setPixelRatio() async {
     _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray,
+      bytes: await widget.editorImage.safeByteArray(context),
       screenSize: _contentConstraints.biggest,
     ))
         .pixelRatio;
@@ -1994,8 +1994,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
         _imgWidth;
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: maxWidth,
-        maxHeight: maxHeight,
+        maxWidth: maxWidth.isNaN ? _imgWidth : maxWidth,
+        maxHeight: maxHeight.isNaN ? _imgHeight : maxHeight,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
