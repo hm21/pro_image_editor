@@ -109,6 +109,11 @@ void main() {
       ));
 
       await zoom(tester, editorKey);
+
+      /// Fake tap that widget will stay alive until loop finish
+      await tester
+          .tap(find.byKey(const ValueKey('crop-rotate-editor-reset-btn')));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('Handles reset correctly', (WidgetTester tester) async {

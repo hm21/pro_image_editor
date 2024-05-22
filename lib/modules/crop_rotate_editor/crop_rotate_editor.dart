@@ -250,6 +250,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The opacity of the painter.
   double _painterOpacity = 0;
 
+  /// The interaction progress for opactiy.
+  double _interactionOpacityProgress = 0;
+
   /// The padding around the screen.
   final double _screenPadding = 20;
 
@@ -604,9 +607,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Future<void> _setPixelRatio() async {
-    _pixelRatio ??= (await decodeImageInfos(
+    _pixelRatio = (await decodeImageInfos(
       bytes: await widget.editorImage.safeByteArray(context),
       screenSize: _contentConstraints.biggest,
+      configs: activeHistory,
     ))
         .pixelRatio;
   }
@@ -974,6 +978,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _currentCropAreaPart = _determineCropAreaPart(details.localFocalPoint);
     }
     _interactionActive = true;
+    loopWithTransitionTiming(
+      (double curveT) {
+        _interactionOpacityProgress = 1 * curveT;
+        setState(() {});
+      },
+      mounted: mounted,
+      transitionFunction: Curves.decelerate.transform,
+      duration: const Duration(milliseconds: 100),
+    );
     _blockInteraction = false;
     setState(() {});
   }
@@ -1242,6 +1255,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
     if (_blockInteraction) return;
     _blockInteraction = true;
     _interactionActive = false;
+
+    loopWithTransitionTiming(
+      (double curveT) {
+        _interactionOpacityProgress = 1 - 1 * curveT;
+        setState(() {});
+      },
+      mounted: mounted,
+      transitionFunction: Curves.decelerate.transform,
+      duration: const Duration(milliseconds: 100),
+    );
     setState(() {});
 
     if (cropRect != _viewRect) {
@@ -1960,13 +1983,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
               viewRect: _viewRect,
               scaleFactor: zoomFactor,
               rotationScaleFactor: oldScaleFactor,
-              interactionActive: _interactionActive,
+              interactionOpacity: _interactionOpacityProgress,
               screenSize: Size(
                 _contentConstraints.maxWidth,
                 _contentConstraints.maxHeight,
               ),
               drawCircle: cropRotateEditorConfigs.roundCropper,
-              opacity: _painterOpacity,
+              fadeInOpacity: _painterOpacity,
               imageEditorTheme: imageEditorTheme,
               cornerLength: _cropCornerLength,
             )
