@@ -573,6 +573,7 @@ class ProImageEditorState extends State<ProImageEditor>
         _controllers.uiLayerStream.add(null);
       });
     }
+    setState(() {});
     callbacks.onAddLayer?.call();
   }
 

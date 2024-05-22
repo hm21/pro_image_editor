@@ -7,8 +7,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/utils/decode_image.dart';
 
-// Project imports:
-import 'movable_background_image.dart';
+import '../utils/pixel_transparent_painter.dart';
 
 class PreviewImgPage extends StatefulWidget {
   final Uint8List imgBytes;
