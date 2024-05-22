@@ -7,20 +7,24 @@ on:
 
 jobs:
   publish:
+    permissions:
+      id-token: write # Required for authentication using OIDC
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: master
-          flutter-version: 3.22.0
-      - name: Install Package Dependencies
-        run: flutter pub get
-      - name: Format dart code
-        run: dart format .
-      - name: Analyze dart code
-        run: dart analyze .
-      - name: Check publish with dry run
-        run: flutter pub publish --dry-run
-      - name: Publish package
-        run: flutter pub publish -f
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: format code
+        run: flutter format .
+
+      - name: analyze code
+        run: flutter analyze .
+
+      - name: run tests
+        run: flutter test
+
+      - name: Publish
+        run: dart pub publish --force
