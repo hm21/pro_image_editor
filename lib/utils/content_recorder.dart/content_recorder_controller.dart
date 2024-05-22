@@ -25,7 +25,8 @@ import 'isolate_model.dart';
 import 'utils/content_recorder_models.dart';
 import 'utils/dart_ui_remove_transparent_image_areas.dart';
 
-import 'utils/web_worker/web_worker_image_converter_dummy.dart' if (dart.library.html) 'utils/web_worker/web_worker_image_converter.dart';
+import 'utils/web_worker/web_worker_image_converter_dummy.dart'
+    if (dart.library.html) 'utils/web_worker/web_worker_image_converter.dart';
 
 // This code is inspired from the package `screenshot` from the autor SachinGanesh.
 // https://pub.dev/packages/screenshot
@@ -60,14 +61,17 @@ class ContentRecorderController {
     }
   }
 
-  ProcessorConfigs get _processorConfigs => configs.imageGenerationConfigs.processorConfigs;
+  ProcessorConfigs get _processorConfigs =>
+      configs.imageGenerationConfigs.processorConfigs;
 
   /// Initializes the isolate and sets up communication ports.
   void _initIsolate() async {
     if (kIsWeb) {
       _webWorkerManager.init(configs);
     } else {
-      int processors = getNumberOfProcessors(configs: _processorConfigs, deviceNumberOfProcessors: Platform.numberOfProcessors);
+      int processors = getNumberOfProcessors(
+          configs: _processorConfigs,
+          deviceNumberOfProcessors: Platform.numberOfProcessors);
       for (var i = 0; i < processors; i++) {
         if (!_destroyed) {
           var isolate = IsolateModel(
@@ -119,13 +123,16 @@ class ContentRecorderController {
   }) async {
     // If we're just capturing a screenshot for the state history in the web platform,
     // but web worker is not supported, we return null.
-    if (kIsWeb && stateHistroyScreenshot && !_webWorkerManager.supportWebWorkers) {
+    if (kIsWeb &&
+        stateHistroyScreenshot &&
+        !_webWorkerManager.supportWebWorkers) {
       return null;
     }
 
     image ??= await _getRenderedImage(
       pixelRatio: pixelRatio,
-      generateOnlyImageBounds: configs.imageGenerationConfigs.generateOnlyImageBounds,
+      generateOnlyImageBounds:
+          configs.imageGenerationConfigs.generateOnlyImageBounds,
     );
     completerId ??= generateUniqueId();
     onImageCaptured?.call(image);
@@ -135,10 +142,12 @@ class ContentRecorderController {
       try {
         if (!kIsWeb) {
           // Run in dart native the thread isolated.
-          return await _captureNativeIsolated(image: image, completerId: completerId);
+          return await _captureNativeIsolated(
+              image: image, completerId: completerId);
         } else {
           // Run in web worker
-          return await _captureInsideWebWorker(image: image, completerId: completerId);
+          return await _captureInsideWebWorker(
+              image: image, completerId: completerId);
         }
       } catch (e) {
         // Fallback to the main thread.
@@ -165,7 +174,8 @@ class ContentRecorderController {
     }
 
     // toByteData is a very slow task
-    final croppedByteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final croppedByteData =
+        await image.toByteData(format: ui.ImageByteFormat.png);
 
     image.dispose();
 
@@ -187,9 +197,11 @@ class ContentRecorderController {
     // Find the minimum number of active tasks among the ready models
     int minActiveTasks = models.map((model) => model.activeTasks).reduce(min);
     // Filter the models to include only those with the minimum number of active tasks
-    List<IsolateModel> leastActiveTaskModels = models.where((model) => model.activeTasks == minActiveTasks).toList();
+    List<IsolateModel> leastActiveTaskModels =
+        models.where((model) => model.activeTasks == minActiveTasks).toList();
     // Randomly select one model from the list of models with the minimum number of active tasks
-    IsolateModel isolateModel = leastActiveTaskModels[Random().nextInt(leastActiveTaskModels.length)];
+    IsolateModel isolateModel =
+        leastActiveTaskModels[Random().nextInt(leastActiveTaskModels.length)];
 
     isolateModel.activeTasks++;
 
@@ -200,7 +212,8 @@ class ContentRecorderController {
     _uniqueCompleter[completerId] = Completer.sync();
 
     /// Kill all active isolates if reach limit
-    if (_processorConfigs.processorMode == ProcessorMode.limit && isolateModel.activeTasks > _processorConfigs.maxConcurrency) {
+    if (_processorConfigs.processorMode == ProcessorMode.limit &&
+        isolateModel.activeTasks > _processorConfigs.maxConcurrency) {
       _uniqueCompleter.forEach((key, value) async {
         value.complete(null);
         await value.future;
@@ -221,7 +234,8 @@ class ContentRecorderController {
     isolateModel.send(
       ImageFromMainThread(
         completerId: completerId,
-        generateOnlyImageBounds: configs.imageGenerationConfigs.generateOnlyImageBounds,
+        generateOnlyImageBounds:
+            configs.imageGenerationConfigs.generateOnlyImageBounds,
         image: await _convertFlutterUiToImage(image),
       ),
     );
@@ -246,7 +260,8 @@ class ContentRecorderController {
       return await _webWorkerManager.sendImage(
         ImageFromMainThread(
           completerId: completerId,
-          generateOnlyImageBounds: configs.imageGenerationConfigs.generateOnlyImageBounds,
+          generateOnlyImageBounds:
+              configs.imageGenerationConfigs.generateOnlyImageBounds,
           image: await _convertFlutterUiToImage(image),
         ),
       );
@@ -257,7 +272,8 @@ class ContentRecorderController {
   ///
   /// [uiImage] - The image to be converted.
   Future<img.Image> _convertFlutterUiToImage(ui.Image uiImage) async {
-    final uiBytes = await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final uiBytes =
+        await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
 
     final image = img.Image.fromBytes(
       width: uiImage.width,
@@ -288,7 +304,8 @@ class ContentRecorderController {
         retryHelper++;
       }
 
-      RenderRepaintBoundary boundary = findRenderObject as RenderRepaintBoundary;
+      RenderRepaintBoundary boundary =
+          findRenderObject as RenderRepaintBoundary;
       BuildContext? context = containerKey.currentContext;
 
       if (context != null && context.mounted) {
@@ -361,15 +378,20 @@ class ContentRecorderController {
     final RenderRepaintBoundary repaintBoundary = RenderRepaintBoundary();
     final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
     final fallBackView = platformDispatcher.views.first;
-    final view = context == null ? fallBackView : View.maybeOf(context) ?? fallBackView;
-    Size logicalSize = targetSize ?? view.physicalSize / view.devicePixelRatio; // Adapted
+    final view =
+        context == null ? fallBackView : View.maybeOf(context) ?? fallBackView;
+    Size logicalSize =
+        targetSize ?? view.physicalSize / view.devicePixelRatio; // Adapted
     Size imageSize = targetSize ?? view.physicalSize; // Adapted
 
-    assert(logicalSize.aspectRatio.toStringAsPrecision(5) == imageSize.aspectRatio.toStringAsPrecision(5)); // Adapted (toPrecision was not available)
+    assert(logicalSize.aspectRatio.toStringAsPrecision(5) ==
+        imageSize.aspectRatio
+            .toStringAsPrecision(5)); // Adapted (toPrecision was not available)
 
     final RenderView renderView = RenderView(
       view: view,
-      child: RenderPositionedBox(alignment: Alignment.center, child: repaintBoundary),
+      child: RenderPositionedBox(
+          alignment: Alignment.center, child: repaintBoundary),
       configuration: ViewConfiguration(
         // size: logicalSize,
         logicalConstraints: BoxConstraints(
@@ -391,12 +413,13 @@ class ContentRecorderController {
     pipelineOwner.rootNode = renderView;
     renderView.prepareInitialFrame();
 
-    final RenderObjectToWidgetElement<RenderBox> rootElement = RenderObjectToWidgetAdapter<RenderBox>(
-        container: repaintBoundary,
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: child,
-        )).attachToRenderTree(
+    final RenderObjectToWidgetElement<RenderBox> rootElement =
+        RenderObjectToWidgetAdapter<RenderBox>(
+            container: repaintBoundary,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: child,
+            )).attachToRenderTree(
       buildOwner,
     );
 
@@ -424,7 +447,8 @@ class ContentRecorderController {
         retryHelper++;
       }
 
-      image = await repaintBoundary.toImage(pixelRatio: pixelRatio ?? (imageSize.width / logicalSize.width));
+      image = await repaintBoundary.toImage(
+          pixelRatio: pixelRatio ?? (imageSize.width / logicalSize.width));
 
       ///Check does this require rebuild
       if (isDirty) {
@@ -467,7 +491,8 @@ class ContentRecorderController {
     required List<IsolateCaptureState> screenshots,
     Widget? widget,
   }) async {
-    if (!configs.imageGenerationConfigs.generateImageInBackground || !configs.imageGenerationConfigs.generateIsolated) {
+    if (!configs.imageGenerationConfigs.generateImageInBackground ||
+        !configs.imageGenerationConfigs.generateIsolated) {
       return;
     }
 
@@ -519,8 +544,11 @@ class ContentRecorderController {
   }) async {
     Uint8List? bytes;
 
-    bool activeScreenshotGeneration = backgroundScreenshot != null && !backgroundScreenshot.broken;
-    String completerId = activeScreenshotGeneration ? backgroundScreenshot.id : generateUniqueId();
+    bool activeScreenshotGeneration =
+        backgroundScreenshot != null && !backgroundScreenshot.broken;
+    String completerId = activeScreenshotGeneration
+        ? backgroundScreenshot.id
+        : generateUniqueId();
 
     try {
       if (originalImageBytes == null) {

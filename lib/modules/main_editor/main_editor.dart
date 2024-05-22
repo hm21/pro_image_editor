@@ -459,12 +459,14 @@ class ProImageEditorState extends State<ProImageEditor>
       onEscape: () {
         if (!_openDialog) {
           if (_isEditorOpen) {
-            if (cropRotateEditor.currentState != null) {
-              // Important to close the crop-editor like that cuz we need to set
-              // the fake hero first
-              cropRotateEditor.currentState!.close();
-            } else {
-              Navigator.pop(context);
+            if (!imageEditorTheme.subEditorPage.barrierDismissible) {
+              if (cropRotateEditor.currentState != null) {
+                // Important to close the crop-editor like that cuz we need to set
+                // the fake hero first
+                cropRotateEditor.currentState!.close();
+              } else {
+                Navigator.pop(context);
+              }
             }
           } else {
             closeEditor();
@@ -896,14 +898,17 @@ class ProImageEditorState extends State<ProImageEditor>
       context,
       PageRouteBuilder(
         opaque: false,
+        barrierColor: imageEditorTheme.subEditorPage.barrierColor,
+        barrierDismissible: imageEditorTheme.subEditorPage.barrierDismissible,
         transitionDuration: duration,
         reverseTransitionDuration: duration,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
+        transitionsBuilder: imageEditorTheme.subEditorPage.transitionsBuilder ??
+            (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
         pageBuilder: (context, animation, secondaryAnimation) {
           void animationStatusListener(AnimationStatus status) {
             if (status == AnimationStatus.completed) {
@@ -932,7 +937,39 @@ class ProImageEditorState extends State<ProImageEditor>
           }
 
           animation.addStatusListener(animationStatusListener);
-          return page;
+          if (imageEditorTheme.subEditorPage.requireReposition) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned(
+                  top: imageEditorTheme.subEditorPage.positionTop,
+                  left: imageEditorTheme.subEditorPage.positionLeft,
+                  right: imageEditorTheme.subEditorPage.positionRight,
+                  bottom: imageEditorTheme.subEditorPage.positionBottom,
+                  child: Center(
+                    child: Container(
+                      width: imageEditorTheme
+                              .subEditorPage.enforceSizeFromMainEditor
+                          ? _sizesManager.lastScreenSize.width
+                          : null,
+                      height: imageEditorTheme
+                              .subEditorPage.enforceSizeFromMainEditor
+                          ? _sizesManager.lastScreenSize.height
+                          : null,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            imageEditorTheme.subEditorPage.borderRadius,
+                      ),
+                      child: page,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return page;
+          }
         },
       ),
     );

@@ -14,6 +14,7 @@ import 'theme_layer_interaction.dart';
 import 'theme_loading_dialog.dart';
 import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
+import 'theme_sub_editor_page.dart';
 import 'theme_text_editor.dart';
 
 export 'theme_emoji_editor.dart';
@@ -27,6 +28,7 @@ export 'theme_sticker_editor.dart';
 export 'theme_loading_dialog.dart';
 export 'theme_adaptive_dialog.dart';
 export 'theme_editor_mode.dart';
+export 'theme_sub_editor_page.dart';
 export 'theme_layer_interaction.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
@@ -116,6 +118,9 @@ class ImageEditorTheme {
   /// Theme for the sticker editor.
   final StickerEditorTheme stickerEditor;
 
+  /// The theme configuration for the sub-editor page.
+  final SubEditorPageTheme subEditorPage;
+
   /// Background color for the image editor in the overview.
   final Color background;
 
@@ -157,6 +162,7 @@ class ImageEditorTheme {
     this.stickerEditor = const StickerEditorTheme(),
     this.loadingDialogTheme = const LoadingDialogTheme(),
     this.adaptiveDialogTheme = const AdaptiveDialogTheme(),
+    this.subEditorPage = const SubEditorPageTheme(),
     this.background = imageEditorBackgroundColor,
     this.bottomBarBackgroundColor = const Color(0xFF000000),
     this.appBarForegroundColor = const Color(0xFFFFFFFF),
