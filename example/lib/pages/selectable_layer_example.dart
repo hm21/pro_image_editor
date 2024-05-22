@@ -33,6 +33,8 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
       },
       leading: const Icon(Icons.select_all_outlined),
       title: const Text('Selectable layer'),
+      subtitle: const Text(
+          'When you click on a layer, it will show interaction buttons.'),
       trailing: const Icon(Icons.chevron_right),
     );
   }

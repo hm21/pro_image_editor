@@ -63,6 +63,24 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late final ScrollController _scrollCtrl;
 
+  final List<Widget> _examples = [
+    const DefaultExample(),
+    const WhatsAppExample(),
+    const StandaloneExample(),
+    const StickersExample(),
+    const FirebaseSupabaseExample(),
+    const ReorderLayerExample(),
+    const RoundCropperExample(),
+    const HighlyConfigurableExample(),
+    const SelectableLayerExample(),
+    const PickImageExample(),
+    const GoogleFontExample(),
+    const CustomAppbarBottombarExample(),
+    const ImportExportExample(),
+    const MoveableBackgroundImageExample(),
+    const ImageFormatConvertExample(),
+  ];
+
   @override
   void initState() {
     _scrollCtrl = ScrollController();
@@ -131,7 +149,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
-        const Divider(height: 1),
         Flexible(
           child: Scrollbar(
             controller: _scrollCtrl,
@@ -139,46 +156,25 @@ class _MyHomePageState extends State<MyHomePage> {
             trackVisibility: true,
             child: SingleChildScrollView(
               controller: _scrollCtrl,
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  DefaultExample(),
-                  Divider(height: 1),
-                  StickersExample(),
-                  Divider(height: 1),
-                  WhatsAppExample(),
-                  Divider(height: 1),
-                  GoogleFontExample(),
-                  Divider(height: 1),
-                  CustomAppbarBottombarExample(),
-                  Divider(height: 1),
-                  MoveableBackgroundImageExample(),
-                  Divider(height: 1),
-                  HighlyConfigurableExample(),
-                  Divider(height: 1),
-                  ReorderLayerExample(),
-                  Divider(height: 1),
-                  SelectableLayerExample(),
-                  Divider(height: 1),
-                  PickImageExample(),
-                  Divider(height: 1),
-                  StandaloneExample(),
-                  Divider(height: 1),
-                  RoundCropperExample(),
-                  Divider(height: 1),
-                  FirebaseSupabaseExample(),
-                  Divider(height: 1),
-                  ImportExportExample(),
-                  Divider(height: 1),
-                  ImageFormatConvertExample(),
-                ],
+                children: _buildExampleList(),
               ),
             ),
           ),
         ),
       ],
     );
+  }
+
+  List<Widget> _buildExampleList() {
+    List<Widget> list = [];
+    for (var example in _examples) {
+      list.add(const Divider(height: 1));
+      list.add(example);
+    }
+    return list;
   }
 }
 
