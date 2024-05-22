@@ -146,9 +146,11 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - ✅ Blur-Editor
   - ✅ Emoji-Picker
   - ✅ Sticker-Editor
-- ✅ Super fast performance
+- ✅ Multi-Threading
   - ✅ Use isolates for background tasks on Dart native devices
   - ✅ Use web-workers for background tasks on Dart web devices
+  - ✅ Automatically set the number of active background processors based on the device
+  - ✅ Manually set the number of active background processors
 - ✅ Move and scalable layers
 - ✅ Helper lines for better positioning
 - ✅ Undo and redo function
@@ -1748,13 +1750,15 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 <details>
   <summary><b>imageGenerationConfigs</b></summary>
 
-| Property Name                   | Description                                                                                                                                                                                                                        | Default Value  |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|
-| `removeTransparentAreas`        | Remove the transparent area of the final image.                                                                                                                                                                                    | `true`         |
-| `generateOnlyImageBounds`       | Determines whether to capture only the content within the boundaries of the image when editing is complete. If set to `true`, it crops all content outside the image boundaries, returning only the content overlaid on the image. | `true`         |
-| `generateImageInBackground`     | Captures the final image after each change, significantly speeding up the editor. On Dart native platforms, it runs on an isolate thread; on Dart web, it runs on a web worker.                                                    | `true`         |
-| `generateInsideIsolate`         | Allows image generation to run in an isolated thread, preventing any impact on the UI. On web platforms, it runs in a separate web worker. Disabling this will also disable `captureImagesInBackground`.                           | `true`         |
-| `allowEmptyEditCompletion`      | Whether the callback `onImageEditingComplete` is called with empty editing.                                                                                                                                                        | `false`        |
+| Property Name                   | Description                                                                                                                                                                                                                        | Default Value      |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
+| `allowEmptyEditCompletion`      | Whether the callback `onImageEditingComplete` is called with empty editing.                                                                                                                                                        | `false`            |
+| `generateIsolated`              | Allows image generation to run in an isolated thread, preventing any impact on the UI. On web platforms, it runs in a separate web worker. Disabling this will also disable `captureImagesInBackground`.                           | `true`             |
+| `generateImageInBackground`     | Captures the final image after each change, significantly speeding up the editor. On Dart native platforms, it runs on an isolate thread; on Dart web, it runs on a web worker.                                                    | `true`             |
+| `generateOnlyImageBounds`       | Determines whether to capture only the content within the boundaries of the image when editing is complete. If set to `true`, it crops all content outside the image boundaries, returning only the content overlaid on the image. | `true`             |
+| `processorConfigs`              | Configuration configs for background processors.                                                                                                                                                                                   | ProcessorConfigs() |
+
+
 
 </details>
 

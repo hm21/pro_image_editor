@@ -152,7 +152,7 @@ class BlurEditorState extends State<BlurEditor>
         ImageEditorConvertedConfigs,
         StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
-  ContentRecorderController screenshotCtrl = ContentRecorderController();
+  late ContentRecorderController screenshotCtrl;
 
   /// Update the image with the applied blur and the slider value.
   late final StreamController _uiBlurStream;
@@ -179,6 +179,8 @@ class BlurEditorState extends State<BlurEditor>
 
   @override
   void initState() {
+    screenshotCtrl = ContentRecorderController(
+        configs: configs, ignore: !initConfigs.convertToUint8List);
     selectedBlur = appliedBlurFactor;
     _uiBlurStream = StreamController.broadcast();
     super.initState();
@@ -217,7 +219,6 @@ class BlurEditorState extends State<BlurEditor>
       if (_pixelRatio == null) await _setPixelRatio();
       Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
         pixelRatio: _pixelRatio,
-        configs: configs,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
         originalImageBytes: _historyPosition > 0
@@ -261,7 +262,6 @@ class BlurEditorState extends State<BlurEditor>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _historyPosition++;
       screenshotCtrl.isolateCaptureImage(
-        configs: configs,
         pixelRatio: _pixelRatio,
         screenshots: _screenshots,
       );

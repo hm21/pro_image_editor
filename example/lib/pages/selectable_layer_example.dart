@@ -48,6 +48,9 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
       ),
       configs: const ProImageEditorConfigs(
         imageGenerationConfigs: ImageGeneratioConfigs(
+          processorConfigs: ProcessorConfigs(
+            processorMode: ProcessorMode.auto,
+          ),
           allowEmptyEditCompletion: true,
         ),
         layerInteraction: LayerInteraction(

@@ -1,3 +1,4 @@
+// Project imports:
 import '../import_export/import_state_history.dart';
 
 class StateHistoryConfigs {
@@ -39,5 +40,5 @@ class StateHistoryConfigs {
   const StateHistoryConfigs({
     this.stateHistoryLimit = 1000,
     this.initStateHistory,
-  });
+  }) : assert(stateHistoryLimit > 0, 'stateHistoryLimit must be positive');
 }

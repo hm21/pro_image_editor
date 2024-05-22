@@ -42,5 +42,5 @@ class EmojiEditorConfigs {
     this.initScale = 5.0,
     this.checkPlatformCompatibility = true,
     this.emojiSet = defaultEmojiSet,
-  });
+  }) : assert(initScale > 0, 'initScale must be positive');
 }

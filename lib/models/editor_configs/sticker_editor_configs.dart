@@ -52,7 +52,7 @@ class StickerEditorConfigs {
     this.onSearchChanged,
     this.initWidth = 100,
     this.enabled = false,
-  });
+  }) : assert(initWidth > 0, 'initWidth must be positive');
 }
 
 typedef BuildStickers = Widget Function(Function(Widget) setLayer);

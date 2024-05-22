@@ -27,5 +27,5 @@ class BlurEditorConfigs {
     this.enabled = true,
     this.showLayers = true,
     this.maxBlur = 2.0,
-  });
+  }) : assert(maxBlur > 0, 'maxBlur must be positive');
 }

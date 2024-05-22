@@ -44,7 +44,8 @@ class ExportStateHistory {
   /// Returns a Map representing the state history of the editor,
   /// including layers, filters, stickers, and other configurations.
   Future<Map> toMap() async {
-    _contentRecorderCtrl = ContentRecorderController();
+    _contentRecorderCtrl =
+        ContentRecorderController(configs: const ProImageEditorConfigs());
 
     List history = [];
     List<Uint8List> stickers = [];
@@ -155,7 +156,6 @@ class ExportStateHistory {
         stickers.add(
           await _contentRecorderCtrl.captureFromWidget(
             layer.sticker,
-            configs: const ProImageEditorConfigs(),
           ),
         );
       }

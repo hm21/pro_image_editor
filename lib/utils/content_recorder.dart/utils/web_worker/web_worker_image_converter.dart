@@ -3,73 +3,74 @@
 // Dart imports:
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:js' as js;
+import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder_controller.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/web_worker/web_worker_model.dart';
 import '../content_recorder_models.dart';
 
 class ProImageEditorWebWorker {
-  Completer readyState = Completer.sync();
-  final String _workerUrl =
-      'assets/packages/pro_image_editor/lib/web/web_worker.dart.js';
-
-  late final html.Worker _worker;
+  final List<WebWorkerModel> _webWorkers = [];
 
   /// A map to store unique completers for handling asynchronous image processing tasks.
   final Map<String, Completer<Uint8List?>> _uniqueCompleter = {};
 
-  void init() {
-    try {
-      if (html.Worker.supported) {
-        _worker = html.Worker(_workerUrl);
-        _worker.onMessage.listen((event) {
-          var data = event.data;
-          if (data?['completerId'] != null) {
-            _uniqueCompleter[data['completerId']]?.complete(data['bytes']);
-          }
-        });
-        readyState.complete(true);
-      } else {
-        debugPrint('Your browser doesn\'t support web workers.');
-        readyState.complete(false);
-      }
-    } catch (e) {
-      if (readyState.isCompleted) {
-        readyState = Completer.sync();
-      }
-      readyState.complete(false);
+  final bool supportWebWorkers = html.Worker.supported;
+
+  void init(ProImageEditorConfigs configs) {
+    int processors = getNumberOfProcessors(
+      configs: configs.imageGenerationConfigs.processorConfigs,
+      deviceNumberOfProcessors: _deviceNumberOfProcessors(),
+    );
+    for (var i = 0; i < processors; i++) {
+      _webWorkers.add(WebWorkerModel(
+        onMessage: (message) {
+          _uniqueCompleter[message.completerId]?.complete(message.bytes);
+        },
+      ));
+    }
+  }
+
+  void destroy() {
+    for (var worker in _webWorkers) {
+      worker.destroy();
     }
   }
 
   Future<Uint8List?> sendImage(ImageFromMainThread data) async {
     _uniqueCompleter[data.completerId] = Completer.sync();
 
-    _worker.postMessage({
-      'completerId': data.completerId,
-      'generateOnlyImageBounds': data.generateOnlyImageBounds,
-      'image': {
-        'buffer': data.image.buffer,
-        'width': data.image.width,
-        'height': data.image.height,
-        'textData': data.image.textData,
-        'frameDuration': data.image.frameDuration,
-        'frameIndex': data.image.frameIndex,
-        'loopCount': data.image.loopCount,
-        'numChannels': data.image.numChannels,
-        'rowStride': data.image.rowStride,
-        'frameType': data.image.frameType.name,
-        'format': data.image.format.name,
-        // 'exif': data.image.exif,
-        // 'palette': data.image.palette,
-        // 'backgroundColor': data.image.backgroundColor,
-      }
-    });
+    var models = _webWorkers.where((model) => model.isReady).toList();
+    if (models.isEmpty) models.add(_webWorkers.first);
+
+    // Find the minimum number of active tasks among the ready models
+    int minActiveTasks = models.map((model) => model.activeTasks).reduce(min);
+    // Filter the models to include only those with the minimum number of active tasks
+    List<WebWorkerModel> leastActiveTaskModels =
+        models.where((model) => model.activeTasks == minActiveTasks).toList();
+    // Randomly select one model from the list of models with the minimum number of active tasks
+    WebWorkerModel webWorker =
+        leastActiveTaskModels[Random().nextInt(leastActiveTaskModels.length)];
+
+    webWorker.send(data);
 
     Uint8List? bytes = await _uniqueCompleter[data.completerId]!.future;
     _uniqueCompleter.remove(data.completerId);
 
     return bytes;
+  }
+
+  int _deviceNumberOfProcessors() {
+    var hardwareConcurrency = js.context['navigator']?['hardwareConcurrency'];
+    return hardwareConcurrency != null ||
+            hardwareConcurrency.runtimeType is! int
+        ? hardwareConcurrency as int
+        : 1;
   }
 }

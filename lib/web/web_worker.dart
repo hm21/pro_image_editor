@@ -17,7 +17,6 @@ void main() {
 
   workerScope.onMessage.listen((dynamic event) async {
     var data = event.data;
-
     if (data?['completerId'] != null) {
       String id = data['completerId'];
       var imageData = data['image'] ?? {};
@@ -53,6 +52,8 @@ void main() {
         'bytes': result.bytes,
         'completerId': result.completerId,
       });
+    } else if (data?['kill'] == true) {
+      workerScope.close();
     }
   });
 }

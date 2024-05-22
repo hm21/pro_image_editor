@@ -144,5 +144,15 @@ class CropRotateEditorConfigs {
       AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
       AspectRatioItem(text: '9*16', value: 9.0 / 16.0)
     ],
-  });
+  })  : assert(maxScale >= 1, 'maxScale must be greater than or equal to 1'),
+        assert(desktopCornerDragArea > 0,
+            'desktopCornerDragArea must be positive'),
+        assert(!roundCropper || !canChangeAspectRatio,
+            'In roundCropper mode, canChangeAspectRatio must be disabled.'),
+        assert(!roundCropper || initAspectRatio == 1,
+            'In roundCropper mode, initAspectRatio must be 1.'),
+        assert(
+            mobileCornerDragArea > 0, 'mobileCornerDragArea must be positive'),
+        assert(doubleTapScaleFactor > 1,
+            'doubleTapScaleFactor must be greater than 1');
 }

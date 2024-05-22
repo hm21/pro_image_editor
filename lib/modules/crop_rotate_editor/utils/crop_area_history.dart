@@ -3,9 +3,9 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/isolate_models/isolate_capture_model.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/isolate_models/isolate_capture_model.dart';
 import '../../../mixins/standalone_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/init_configs/crop_rotate_editor_init_configs.dart';

@@ -116,5 +116,5 @@ class PaintEditorConfigs {
     this.initialColor = const Color(0xffff0000),
     this.initialPaintMode = PaintModeE.freeStyle,
     this.strokeWidthOnChanged,
-  });
+  }) : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive');
 }

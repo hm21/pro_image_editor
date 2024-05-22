@@ -1,8 +1,9 @@
 // Dart imports:
 // ignore_for_file: use_build_context_synchronously
 
+// Dart imports:
 import 'dart:async';
-import 'dart:isolate';
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -14,17 +15,17 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:image/image.dart' as img;
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/unique_id_generator.dart';
 import '../../models/isolate_models/isolate_capture_model.dart';
+import 'isolate_model.dart';
 import 'utils/content_recorder_models.dart';
 import 'utils/dart_ui_remove_transparent_image_areas.dart';
-import 'utils/isolate_image_converter.dart';
-import 'utils/web_worker/web_worker_image_converter_dummy.dart'
-    if (dart.library.html) 'utils/web_worker/web_worker_image_converter.dart';
+
+import 'utils/web_worker/web_worker_image_converter_dummy.dart' if (dart.library.html) 'utils/web_worker/web_worker_image_converter.dart';
 
 // This code is inspired from the package `screenshot` from the autor SachinGanesh.
 // https://pub.dev/packages/screenshot
@@ -35,54 +36,69 @@ class ContentRecorderController {
   /// A key to identify the container widget for rendering the image.
   late final GlobalKey containerKey;
 
-  /// The isolate used for offloading image processing tasks.
-  Isolate? _isolate;
+  final ProImageEditorConfigs configs;
 
   /// A map to store unique completers for handling asynchronous image processing tasks.
   final Map<String, Completer<Uint8List?>> _uniqueCompleter = {};
 
-  /// The port used to send messages to the isolate.
-  late SendPort _sendPort;
+  /// List of isolate models used for managing isolates.
+  final List<IsolateModel> _isolateModels = [];
 
-  /// The port used to receive messages from the isolate.
-  late ReceivePort _receivePort;
+  /// Instance of ProImageEditorWebWorker used for web worker communication.
+  final ProImageEditorWebWorker _webWorkerManager = ProImageEditorWebWorker();
 
-  /// A completer to track when the isolate is ready for communication.
-  late Completer _isolateReady;
-
-  final ProImageEditorWebWorker _webWorker = ProImageEditorWebWorker();
+  bool _destroyed = false;
 
   /// Constructor to initialize the controller and set up the isolate if not running on the web.
-  ContentRecorderController() {
+  ContentRecorderController({
+    required this.configs,
+    bool ignore = false,
+  }) {
     containerKey = GlobalKey();
-    _initIsolate();
+    if (!ignore) {
+      _initIsolate();
+    }
   }
+
+  ProcessorConfigs get _processorConfigs => configs.imageGenerationConfigs.processorConfigs;
 
   /// Initializes the isolate and sets up communication ports.
   void _initIsolate() async {
     if (kIsWeb) {
-      _webWorker.init();
+      _webWorkerManager.init(configs);
     } else {
-      _isolateReady = Completer.sync();
-      _receivePort = ReceivePort();
-      _receivePort.listen((message) {
-        if (message is SendPort) {
-          _sendPort = message;
-          _isolateReady.complete();
-        } else if (message is ResponseFromImageThread) {
-          _uniqueCompleter[message.completerId]!.complete(message.bytes);
+      int processors = getNumberOfProcessors(configs: _processorConfigs, deviceNumberOfProcessors: Platform.numberOfProcessors);
+      for (var i = 0; i < processors; i++) {
+        if (!_destroyed) {
+          var isolate = IsolateModel(
+            processorConfigs: _processorConfigs,
+            coreNumber: i + 1,
+            onMessage: (message) {
+              _uniqueCompleter[message.completerId]!.complete(message.bytes);
+            },
+          );
+          _isolateModels.add(isolate);
+
+          /// Await that isolate is ready before spawn a new one.
+          await isolate.isolateReady.future;
+          isolate.isReady = true;
+          if (_destroyed) {
+            isolate.destroy();
+          }
         }
-      });
-      _isolate =
-          await Isolate.spawn(isolatedImageConverter, _receivePort.sendPort);
+      }
     }
   }
 
   /// Destroys the isolate and closes the receive port if not running on the web.
-  void destroy() {
+  Future<void> destroy() async {
+    _destroyed = true;
     if (!kIsWeb) {
-      _isolate?.kill();
-      _receivePort.close();
+      for (var model in _isolateModels) {
+        model.destroy();
+      }
+    } else {
+      _webWorkerManager.destroy();
     }
   }
 
@@ -95,7 +111,6 @@ class ContentRecorderController {
   /// [pixelRatio] - Optional pixel ratio for image rendering.
   /// [image] - Optional pre-rendered image.
   Future<Uint8List?> capture({
-    required ProImageEditorConfigs configs,
     required double? pixelRatio,
     Function(ui.Image?)? onImageCaptured,
     bool stateHistroyScreenshot = false,
@@ -104,15 +119,13 @@ class ContentRecorderController {
   }) async {
     // If we're just capturing a screenshot for the state history in the web platform,
     // but web worker is not supported, we return null.
-    if (kIsWeb &&
-        stateHistroyScreenshot &&
-        !(await _webWorker.readyState.future)) {
+    if (kIsWeb && stateHistroyScreenshot && !_webWorkerManager.supportWebWorkers) {
       return null;
     }
+
     image ??= await _getRenderedImage(
       pixelRatio: pixelRatio,
-      generateOnlyImageBounds:
-          configs.imageGenerationConfigs.generateOnlyImageBounds,
+      generateOnlyImageBounds: configs.imageGenerationConfigs.generateOnlyImageBounds,
     );
     completerId ??= generateUniqueId();
     onImageCaptured?.call(image);
@@ -122,20 +135,18 @@ class ContentRecorderController {
       try {
         if (!kIsWeb) {
           // Run in dart native the thread isolated.
-          return await _captureNativeIsolated(
-              configs: configs, image: image, completerId: completerId);
+          return await _captureNativeIsolated(image: image, completerId: completerId);
         } else {
           // Run in web worker
-          return await _captureInsideWebWorker(
-              configs: configs, image: image, completerId: completerId);
+          return await _captureInsideWebWorker(image: image, completerId: completerId);
         }
       } catch (e) {
         // Fallback to the main thread.
         debugPrint('Fallback to main thread: $e');
-        return await _captureInsideMainThread(configs: configs, image: image);
+        return await _captureInsideMainThread(image: image);
       }
     } else {
-      return await _captureInsideMainThread(configs: configs, image: image);
+      return await _captureInsideMainThread(image: image);
     }
   }
 
@@ -144,7 +155,6 @@ class ContentRecorderController {
   /// [configs] - The configuration for image capturing.
   /// [image] - The image to be processed.
   Future<Uint8List?> _captureInsideMainThread({
-    required ProImageEditorConfigs configs,
     required ui.Image image,
   }) async {
     if (configs.imageGenerationConfigs.generateOnlyImageBounds) {
@@ -155,8 +165,7 @@ class ContentRecorderController {
     }
 
     // toByteData is a very slow task
-    final croppedByteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
+    final croppedByteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
     image.dispose();
 
@@ -169,18 +178,50 @@ class ContentRecorderController {
   /// [image] - The image to be processed.
   /// [completerId] - The unique identifier for the completer.
   Future<Uint8List?> _captureNativeIsolated({
-    required ProImageEditorConfigs configs,
     required ui.Image image,
     required String completerId,
   }) async {
-    if (!_isolateReady.isCompleted) await _isolateReady.future;
+    var models = _isolateModels.where((model) => model.isReady).toList();
+    if (models.isEmpty) models.add(_isolateModels.first);
+
+    // Find the minimum number of active tasks among the ready models
+    int minActiveTasks = models.map((model) => model.activeTasks).reduce(min);
+    // Filter the models to include only those with the minimum number of active tasks
+    List<IsolateModel> leastActiveTaskModels = models.where((model) => model.activeTasks == minActiveTasks).toList();
+    // Randomly select one model from the list of models with the minimum number of active tasks
+    IsolateModel isolateModel = leastActiveTaskModels[Random().nextInt(leastActiveTaskModels.length)];
+
+    isolateModel.activeTasks++;
+
+    /// Await that isolate is ready and setup new completer
+    if (!isolateModel.isolateReady.isCompleted) {
+      await isolateModel.isolateReady.future;
+    }
     _uniqueCompleter[completerId] = Completer.sync();
 
-    _sendPort.send(
+    /// Kill all active isolates if reach limit
+    if (_processorConfigs.processorMode == ProcessorMode.limit && isolateModel.activeTasks > _processorConfigs.maxConcurrency) {
+      _uniqueCompleter.forEach((key, value) async {
+        value.complete(null);
+        await value.future;
+      });
+
+      await destroy();
+
+      _uniqueCompleter.clear();
+      _isolateModels.clear();
+
+      _initIsolate();
+
+      isolateModel = _isolateModels.first;
+      await isolateModel.isolateReady.future;
+    }
+
+    /// Send to isolate
+    isolateModel.send(
       ImageFromMainThread(
         completerId: completerId,
-        generateOnlyImageBounds:
-            configs.imageGenerationConfigs.generateOnlyImageBounds,
+        generateOnlyImageBounds: configs.imageGenerationConfigs.generateOnlyImageBounds,
         image: await _convertFlutterUiToImage(image),
       ),
     );
@@ -196,20 +237,19 @@ class ContentRecorderController {
   /// [image] - The image to be processed.
   /// [completerId] - The unique identifier for the completer.
   Future<Uint8List?> _captureInsideWebWorker({
-    required ProImageEditorConfigs configs,
     required ui.Image image,
     required String completerId,
   }) async {
-    bool readyAndSupported = await _webWorker.readyState.future;
-    if (!readyAndSupported) {
-      return await _captureInsideMainThread(configs: configs, image: image);
+    if (!_webWorkerManager.supportWebWorkers) {
+      return await _captureInsideMainThread(image: image);
     } else {
-      return await _webWorker.sendImage(ImageFromMainThread(
-        completerId: completerId,
-        generateOnlyImageBounds:
-            configs.imageGenerationConfigs.generateOnlyImageBounds,
-        image: await _convertFlutterUiToImage(image),
-      ));
+      return await _webWorkerManager.sendImage(
+        ImageFromMainThread(
+          completerId: completerId,
+          generateOnlyImageBounds: configs.imageGenerationConfigs.generateOnlyImageBounds,
+          image: await _convertFlutterUiToImage(image),
+        ),
+      );
     }
   }
 
@@ -217,8 +257,7 @@ class ContentRecorderController {
   ///
   /// [uiImage] - The image to be converted.
   Future<img.Image> _convertFlutterUiToImage(ui.Image uiImage) async {
-    final uiBytes =
-        await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final uiBytes = await uiImage.toByteData(format: ui.ImageByteFormat.rawRgba);
 
     final image = img.Image.fromBytes(
       width: uiImage.width,
@@ -249,8 +288,7 @@ class ContentRecorderController {
         retryHelper++;
       }
 
-      RenderRepaintBoundary boundary =
-          findRenderObject as RenderRepaintBoundary;
+      RenderRepaintBoundary boundary = findRenderObject as RenderRepaintBoundary;
       BuildContext? context = containerKey.currentContext;
 
       if (context != null && context.mounted) {
@@ -279,7 +317,6 @@ class ContentRecorderController {
     Function(ui.Image?)? onImageCaptured,
     bool stateHistroyScreenshot = false,
     String? completerId,
-    required ProImageEditorConfigs configs,
   }) async {
     ui.Image image = await _widgetToUiImage(
       widget,
@@ -288,7 +325,6 @@ class ContentRecorderController {
       targetSize: targetSize,
     );
     return capture(
-      configs: configs,
       image: image,
       pixelRatio: pixelRatio,
       completerId: completerId,
@@ -325,20 +361,15 @@ class ContentRecorderController {
     final RenderRepaintBoundary repaintBoundary = RenderRepaintBoundary();
     final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
     final fallBackView = platformDispatcher.views.first;
-    final view =
-        context == null ? fallBackView : View.maybeOf(context) ?? fallBackView;
-    Size logicalSize =
-        targetSize ?? view.physicalSize / view.devicePixelRatio; // Adapted
+    final view = context == null ? fallBackView : View.maybeOf(context) ?? fallBackView;
+    Size logicalSize = targetSize ?? view.physicalSize / view.devicePixelRatio; // Adapted
     Size imageSize = targetSize ?? view.physicalSize; // Adapted
 
-    assert(logicalSize.aspectRatio.toStringAsPrecision(5) ==
-        imageSize.aspectRatio
-            .toStringAsPrecision(5)); // Adapted (toPrecision was not available)
+    assert(logicalSize.aspectRatio.toStringAsPrecision(5) == imageSize.aspectRatio.toStringAsPrecision(5)); // Adapted (toPrecision was not available)
 
     final RenderView renderView = RenderView(
       view: view,
-      child: RenderPositionedBox(
-          alignment: Alignment.center, child: repaintBoundary),
+      child: RenderPositionedBox(alignment: Alignment.center, child: repaintBoundary),
       configuration: ViewConfiguration(
         // size: logicalSize,
         logicalConstraints: BoxConstraints(
@@ -360,13 +391,12 @@ class ContentRecorderController {
     pipelineOwner.rootNode = renderView;
     renderView.prepareInitialFrame();
 
-    final RenderObjectToWidgetElement<RenderBox> rootElement =
-        RenderObjectToWidgetAdapter<RenderBox>(
-            container: repaintBoundary,
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: child,
-            )).attachToRenderTree(
+    final RenderObjectToWidgetElement<RenderBox> rootElement = RenderObjectToWidgetAdapter<RenderBox>(
+        container: repaintBoundary,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: child,
+        )).attachToRenderTree(
       buildOwner,
     );
 
@@ -394,8 +424,7 @@ class ContentRecorderController {
         retryHelper++;
       }
 
-      image = await repaintBoundary.toImage(
-          pixelRatio: pixelRatio ?? (imageSize.width / logicalSize.width));
+      image = await repaintBoundary.toImage(pixelRatio: pixelRatio ?? (imageSize.width / logicalSize.width));
 
       ///Check does this require rebuild
       if (isDirty) {
@@ -434,13 +463,11 @@ class ContentRecorderController {
   /// - `configs`: Configuration for the image editor.
   /// - `pixelRatio`: The pixel ratio to use for capturing the screenshot.
   void isolateCaptureImage({
-    required ProImageEditorConfigs configs,
     required double? pixelRatio,
     required List<IsolateCaptureState> screenshots,
     Widget? widget,
   }) async {
-    if (!configs.imageGenerationConfigs.generateImageInBackground ||
-        !configs.imageGenerationConfigs.generateIsolated) {
+    if (!configs.imageGenerationConfigs.generateImageInBackground || !configs.imageGenerationConfigs.generateIsolated) {
       return;
     }
 
@@ -453,7 +480,6 @@ class ContentRecorderController {
     screenshots.add(isolateCaptureState);
     Uint8List? bytes = widget == null
         ? await capture(
-            configs: configs,
             completerId: isolateCaptureState.id,
             pixelRatio: pixelRatio,
             stateHistroyScreenshot: true,
@@ -463,7 +489,6 @@ class ContentRecorderController {
           )
         : await captureFromWidget(
             widget,
-            configs: configs,
             completerId: isolateCaptureState.id,
             pixelRatio: pixelRatio,
             stateHistroyScreenshot: true,
@@ -487,24 +512,36 @@ class ContentRecorderController {
 
   Future<Uint8List?> getFinalScreenshot({
     required double? pixelRatio,
-    required ProImageEditorConfigs configs,
     required IsolateCaptureState? backgroundScreenshot,
     Widget? widget,
     BuildContext? context,
     Uint8List? originalImageBytes,
   }) async {
     Uint8List? bytes;
+
+    bool activeScreenshotGeneration = backgroundScreenshot != null && !backgroundScreenshot.broken;
+    String completerId = activeScreenshotGeneration ? backgroundScreenshot.id : generateUniqueId();
+
     try {
       if (originalImageBytes == null) {
-        if (backgroundScreenshot != null && !backgroundScreenshot.broken) {
+        if (_isolateModels.isNotEmpty) _destroyed = true;
+
+        if (activeScreenshotGeneration) {
           // Get screenshot from isolated generated thread.
           bytes = await backgroundScreenshot.completer.future;
         } else {
           // Take a new screenshot if the screenshot is broken.
           bytes = widget == null
-              ? await capture(configs: configs, pixelRatio: pixelRatio)
-              : await captureFromWidget(widget,
-                  context: context, configs: configs, pixelRatio: pixelRatio);
+              ? await capture(
+                  pixelRatio: pixelRatio,
+                  completerId: completerId,
+                )
+              : await captureFromWidget(
+                  widget,
+                  context: context,
+                  pixelRatio: pixelRatio,
+                  completerId: completerId,
+                );
         }
       } else {
         // If the user didn't change anything return the original image.
@@ -514,10 +551,42 @@ class ContentRecorderController {
       debugPrint(e.toString());
       // Take a new screenshot when something goes wrong.
       bytes = widget == null
-          ? await capture(configs: configs, pixelRatio: pixelRatio)
-          : await captureFromWidget(widget,
-              context: context, configs: configs, pixelRatio: pixelRatio);
+          ? await capture(
+              pixelRatio: pixelRatio,
+              completerId: completerId,
+            )
+          : await captureFromWidget(
+              widget,
+              context: context,
+              pixelRatio: pixelRatio,
+              completerId: completerId,
+            );
     }
     return bytes;
+  }
+}
+
+int getNumberOfProcessors({
+  required ProcessorConfigs configs,
+  required int deviceNumberOfProcessors,
+}) {
+  switch (configs.processorMode) {
+    case ProcessorMode.auto:
+      if (deviceNumberOfProcessors <= 4) {
+        return deviceNumberOfProcessors - 1;
+      } else if (deviceNumberOfProcessors <= 6) {
+        return 4;
+      } else if (deviceNumberOfProcessors <= 10) {
+        return 6;
+      } else {
+        return 8;
+      }
+    case ProcessorMode.limit:
+      return configs.numberOfBackgroundProcessors;
+    case ProcessorMode.maximum:
+      // One processor for the main-ui
+      return deviceNumberOfProcessors - 1;
+    case ProcessorMode.minimum:
+      return 1;
   }
 }

@@ -180,7 +180,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         ExtendedLoop,
         CropAreaHistory {
   /// Manages the capturing a screenshot of the image.
-  ContentRecorderController screenshotCtrl = ContentRecorderController();
+  late ContentRecorderController screenshotCtrl;
 
   /// A key used to access the state of the CropRotateGestureDetector widget.
   final _gestureKey = GlobalKey<CropRotateGestureDetectorState>();
@@ -316,6 +316,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   @override
   void initState() {
     super.initState();
+    screenshotCtrl = ContentRecorderController(
+        configs: widget.initConfigs.configs,
+        ignore: !initConfigs.convertToUint8List);
     _bottomBarScrollCtrl = ScrollController();
     _fakeHeroTransformConfigs = transformConfigs ?? TransformConfigs.empty();
     _interactiveCornerArea = isDesktop
@@ -586,7 +589,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
         // ignore: use_build_context_synchronously
         context: context,
         widget: _screenshotWidget(transformC),
-        configs: configs,
         backgroundScreenshot: historyPosition > screenshots.length
             ? null
             : screenshots[historyPosition],
@@ -642,7 +644,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
               : activeHistory;
 
       screenshotCtrl.isolateCaptureImage(
-        configs: configs,
         pixelRatio: _pixelRatio,
         screenshots: screenshots,
         widget: _screenshotWidget(transformC),

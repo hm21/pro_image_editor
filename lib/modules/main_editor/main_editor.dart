@@ -327,7 +327,7 @@ class ProImageEditorState extends State<ProImageEditor>
   final StateManager _stateManager = StateManager();
 
   /// Controller instances for managing various aspects of the main editor.
-  final MainEditorControllers _controllers = MainEditorControllers();
+  late final MainEditorControllers _controllers;
 
   /// Helper class for managing WhatsApp filters.
   final WhatsAppHelper _whatsAppHelper = WhatsAppHelper();
@@ -399,6 +399,7 @@ class ProImageEditorState extends State<ProImageEditor>
   @override
   void initState() {
     super.initState();
+    _controllers = MainEditorControllers(configs);
     _desktopInteractionManager = DesktopInteractionManager(
       configs: configs,
       context: context,
@@ -1328,7 +1329,6 @@ class ProImageEditorState extends State<ProImageEditor>
     // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _controllers.screenshot.isolateCaptureImage(
-        configs: configs,
         pixelRatio: _pixelRatio,
         screenshots: _stateManager.screenshots,
       );
@@ -1377,7 +1377,6 @@ class ProImageEditorState extends State<ProImageEditor>
 
       Uint8List? bytes = await _controllers.screenshot.getFinalScreenshot(
         pixelRatio: pixelRatio,
-        configs: configs,
         backgroundScreenshot:
             _stateManager.position > 0 ? _stateManager.activeScreenshot : null,
         originalImageBytes:

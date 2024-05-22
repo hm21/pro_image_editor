@@ -70,5 +70,5 @@ class TextEditorConfigs {
     this.customTextStyles,
     this.initialBackgroundColorMode =
         LayerBackgroundColorModeE.backgroundAndColor,
-  });
+  }) : assert(initFontSize > 0, 'initFontSize must be positive');
 }

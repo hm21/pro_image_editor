@@ -1,7 +1,11 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 
 /// Decode the image being edited.

@@ -154,7 +154,7 @@ class FilterEditorState extends State<FilterEditor>
         ImageEditorConvertedConfigs,
         StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
   /// Manages the capturing a screenshot of the image.
-  ContentRecorderController screenshotCtrl = ContentRecorderController();
+  late ContentRecorderController screenshotCtrl;
 
   /// Update the image with the applied filter and the slider value.
   late final StreamController _uiFilterStream;
@@ -185,6 +185,8 @@ class FilterEditorState extends State<FilterEditor>
   @override
   void initState() {
     _uiFilterStream = StreamController.broadcast();
+    screenshotCtrl = ContentRecorderController(
+        configs: configs, ignore: !initConfigs.convertToUint8List);
     super.initState();
   }
 
@@ -221,7 +223,6 @@ class FilterEditorState extends State<FilterEditor>
       if (_pixelRatio == null) await _setPixelRatio();
       Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
         pixelRatio: _pixelRatio,
-        configs: configs,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
         originalImageBytes: _historyPosition > 0
@@ -264,7 +265,6 @@ class FilterEditorState extends State<FilterEditor>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _historyPosition++;
       screenshotCtrl.isolateCaptureImage(
-        configs: configs,
         pixelRatio: _pixelRatio,
         screenshots: _screenshots,
       );

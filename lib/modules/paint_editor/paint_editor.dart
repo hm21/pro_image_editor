@@ -171,7 +171,7 @@ class PaintingEditorState extends State<PaintingEditor>
   final _imageKey = GlobalKey<PaintingCanvasState>();
 
   /// Manages the capturing a screenshot of the image.
-  ContentRecorderController screenshotCtrl = ContentRecorderController();
+  late ContentRecorderController screenshotCtrl;
 
   /// A global key for accessing the state of the Scaffold widget.
   final _key = GlobalKey<ScaffoldState>();
@@ -271,6 +271,8 @@ class PaintingEditorState extends State<PaintingEditor>
   @override
   void initState() {
     super.initState();
+    screenshotCtrl = ContentRecorderController(
+        configs: configs, ignore: !initConfigs.convertToUint8List);
     _fill = paintEditorConfigs.initialFill;
     _uiPickerStream = StreamController.broadcast();
     _uiAppbarIconsStream = StreamController.broadcast();
@@ -380,7 +382,6 @@ class PaintingEditorState extends State<PaintingEditor>
       if (_pixelRatio == null) await _setPixelRatio();
       Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
         pixelRatio: _pixelRatio,
-        configs: configs,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
         originalImageBytes: _historyPosition > 0
@@ -426,7 +427,6 @@ class PaintingEditorState extends State<PaintingEditor>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _historyPosition++;
       screenshotCtrl.isolateCaptureImage(
-        configs: configs,
         pixelRatio: _pixelRatio,
         screenshots: _screenshots,
       );

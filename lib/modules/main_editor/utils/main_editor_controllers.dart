@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import '../../../utils/content_recorder.dart/content_recorder_controller.dart';
 
 /// A class that manages various controllers used in the main editor interface.
@@ -24,11 +25,11 @@ class MainEditorControllers {
   late final ContentRecorderController screenshot;
 
   /// Constructs a new instance of [MainEditorControllers].
-  MainEditorControllers() {
+  MainEditorControllers(ProImageEditorConfigs configs) {
     mouseMoveStream = StreamController.broadcast();
     uiLayerStream = StreamController.broadcast();
     layerHeroResetCtrl = StreamController.broadcast();
-    screenshot = ContentRecorderController();
+    screenshot = ContentRecorderController(configs: configs);
     bottomBarScroll = ScrollController();
   }
 
