@@ -15,6 +15,10 @@ class LoadingDialog {
   bool _isVisible = false;
   bool _isDisposed = false;
 
+  /// Some packages like "Asuka" require the same context like in the dialog
+  ///  to close the dialog.
+  BuildContext? _dialogContext;
+
   set msg(String message) {
     _msg = message;
     if (state != null) {
@@ -96,6 +100,7 @@ class LoadingDialog {
       context: context,
       barrierDismissible: isDismissible,
       builder: (context) {
+        _dialogContext = context;
         if (_isDisposed && context.mounted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) Navigator.of(context).pop();
@@ -139,7 +144,7 @@ class LoadingDialog {
   /// Hides the loading dialog.
   hide(BuildContext context) {
     if (_isVisible) {
-      Navigator.pop(context);
+      Navigator.pop(_dialogContext ?? context);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isDisposed = true;

@@ -30,6 +30,9 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 - Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
 <br/>
 
+## Version 2.7.10
+- **fix**: fix: resolve loading-dialog issue with Asuka package closes [GitHub issue #48](https://github.com/hm21/pro_image_editor/issues/48).
+
 ## Version 2.7.9
 - **chore**: Update the `screenshot` package so that it's compatible with Flutter 3.22.0. This fix [GitHub issue #45](https://github.com/hm21/pro_image_editor/issues/45).
 
