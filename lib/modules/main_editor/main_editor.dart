@@ -657,7 +657,7 @@ class ProImageEditorState extends State<ProImageEditor>
         await loading?.hide(context);
       });
     }
-    setState(() {});
+    if (mounted) setState(() {});
     onUpdateUI?.call();
   }
 

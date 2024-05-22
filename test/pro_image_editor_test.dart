@@ -18,11 +18,20 @@ import 'package:pro_image_editor/widgets/layer_widget.dart';
 import 'fake/fake_image.dart';
 
 void main() {
+  ProImageEditorConfigs configs = const ProImageEditorConfigs(
+    imageGenerationConfigs: ImageGeneratioConfigs(
+      generateIsolated: false,
+      generateImageInBackground: false,
+      generateOnlyImageBounds: false,
+    ),
+  );
+
   testWidgets('ProImageEditor initializes correctly',
       (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
       home: ProImageEditor.memory(
         fakeMemoryImage,
+        configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
@@ -38,6 +47,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
+        configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
@@ -55,6 +65,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
+        configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
@@ -72,6 +83,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
+        configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
@@ -90,6 +102,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
+        configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
@@ -108,6 +121,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: ProImageEditor.memory(
         fakeMemoryImage,
+        configs: configs,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: (Uint8List bytes) async {},
         ),
@@ -132,6 +146,7 @@ void main() {
         home: ProImageEditor.memory(
       fakeMemoryImage,
       key: key,
+      configs: configs,
       callbacks: ProImageEditorCallbacks(
         onImageEditingComplete: (Uint8List bytes) async {},
       ),
@@ -157,7 +172,6 @@ void main() {
     // Ensure layer is created
     final layers1 = find.byType(LayerWidget);
     expect(layers1, findsOneWidget);
-
     // Press undo button
     final undoBtn = find.byKey(const ValueKey('MainEditorMainUndoButton'));
     expect(undoBtn, findsOneWidget);
