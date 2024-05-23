@@ -388,6 +388,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       setInitHistory(transformConfigs!);
     }
+
     _showFakeHero = initConfigs.enableFakeHero;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
@@ -697,7 +698,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   @override
-  calcFitToScreen() {
+  calcFitToScreen({
+    Curve? curve,
+  }) {
     Size contentSize = Size(
       _contentConstraints.maxWidth - _screenPadding * 2,
       _contentConstraints.maxHeight - _screenPadding * 2,
@@ -718,7 +721,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     scaleAnimation = Tween<double>(begin: oldScaleFactor, end: scale).animate(
       CurvedAnimation(
         parent: scaleCtrl,
-        curve: cropRotateEditorConfigs.rotateAnimationCurve,
+        curve: curve ?? cropRotateEditorConfigs.rotateAnimationCurve,
       ),
     );
     scaleCtrl
@@ -1272,6 +1275,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
           center: _viewRect.center,
           width: _viewRect.width,
           height: _viewRect.height);
+      Duration animationDuration =
+          cropRotateEditorConfigs.cropDragAnimationDuration;
+      Curve animationCurve = cropRotateEditorConfigs.cropDragAnimationCurve;
 
       /// Recalculate crop rect when aspect ratio is set to `free`
       if (_ratio < 0) {
@@ -1279,7 +1285,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
           onlyViewRect: true,
           newRatio: 1 / cropRect.size.aspectRatio,
         );
-        calcFitToScreen();
+        scaleCtrl.duration = animationDuration;
+        calcFitToScreen(curve: animationCurve);
+        scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
       }
 
       Rect startCropRect = cropRect;
@@ -1332,9 +1340,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
           setState(() {});
         },
         mounted: mounted,
-        duration: cropRotateEditorConfigs.cropDragAnimationDuration,
-        transitionFunction:
-            cropRotateEditorConfigs.cropDragAnimationCurve.transform,
+        duration: animationDuration,
+        transitionFunction: animationCurve.transform,
       );
 
       cropRect = targetCropRect;
