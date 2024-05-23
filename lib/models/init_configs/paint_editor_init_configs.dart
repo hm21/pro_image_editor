@@ -8,6 +8,9 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
   /// Determines whether to return the image as a Uint8List when closing the editor.
   final bool convertToUint8List;
 
+  /// Determines whether we draw a "fake" hero widget or not.
+  final bool enableFakeHero;
+
   /// Creates a new instance of [PaintEditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
@@ -27,6 +30,7 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
     super.onImageEditingComplete,
     super.onImageEditingStarted,
     this.convertToUint8List = false,
+    this.enableFakeHero = false,
     required super.theme,
   });
 }

@@ -19,6 +19,8 @@ class RoundCropperExample extends StatefulWidget {
 
 class _RoundCropperExampleState extends State<RoundCropperExample>
     with ExampleHelperState<RoundCropperExample> {
+  final _cropRotateEditorKey = GlobalKey<CropRotateEditorState>();
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -26,11 +28,21 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
         await precacheImage(
             AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
         if (!context.mounted) return;
+
+        bool inited = false;
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
                 LayoutBuilder(builder: (context, constraints) {
+              if (!inited) {
+                inited = true;
+                Future.delayed(const Duration(milliseconds: 1), () {
+                  _cropRotateEditorKey.currentState!.enableFakeHero = true;
+                  setState(() {});
+                });
+              }
               return _buildEditor();
             }),
           ),
@@ -45,6 +57,7 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
   Widget _buildEditor() {
     return CropRotateEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
+      key: _cropRotateEditorKey,
       initConfigs: CropRotateEditorInitConfigs(
         theme: ThemeData.dark(),
         convertToUint8List: true,

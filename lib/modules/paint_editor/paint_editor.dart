@@ -14,6 +14,7 @@ import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.da
 import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
+import 'package:pro_image_editor/widgets/auto_image.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
@@ -257,6 +258,9 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Indicates it create a screenshot or not.
   bool _createScreenshot = false;
 
+  /// The Uint8List from the fake hero image, which is drawed when finish editing.
+  Uint8List? _fakeHeroBytes;
+
   /// The position in the history of screenshots. This is used to track the
   /// current position in the list of screenshots.
   int _historyPosition = 0;
@@ -396,6 +400,12 @@ class PaintingEditorState extends State<PaintingEditor>
 
         await initConfigs.onImageEditingComplete
             ?.call(bytes ?? Uint8List.fromList([]));
+
+        if (initConfigs.enableFakeHero) {
+          setState(() {
+            _fakeHeroBytes = bytes;
+          });
+        }
 
         initConfigs.onCloseEditor?.call();
       }
@@ -627,70 +637,83 @@ class PaintingEditorState extends State<PaintingEditor>
             child: Stack(
               alignment: Alignment.center,
               fit: StackFit.expand,
-              children: [
-                ContentRecorder(
-                  controller: screenshotCtrl,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    fit: StackFit.expand,
-                    children: [
-                      TransformedContentGenerator(
-                        configs: configs,
-                        transformConfigs:
-                            transformConfigs ?? TransformConfigs.empty(),
-                        child: ImageWithFilters(
-                          width: getMinimumSize(mainImageSize, _bodySize).width,
-                          height:
-                              getMinimumSize(mainImageSize, _bodySize).height,
+              children: _fakeHeroBytes != null
+                  ? [
+                      Hero(
+                        tag: configs.heroTag,
+                        child: AutoImage(
+                          EditorImage(byteArray: _fakeHeroBytes),
                           designMode: designMode,
-                          image: editorImage,
-                          filters: appliedFilters,
-                          blurFactor: appliedBlurFactor,
                         ),
                       ),
-                      if (layers != null)
-                        LayerStack(
-                          configs: configs,
-                          layers: layers!,
-                          transformHelper: TransformHelper(
-                            mainBodySize:
-                                getMinimumSize(mainBodySize, _bodySize),
-                            mainImageSize:
-                                getMinimumSize(mainImageSize, _bodySize),
-                            editorBodySize: _bodySize,
-                            transformConfigs: transformConfigs,
-                          ),
+                    ]
+                  : [
+                      ContentRecorder(
+                        controller: screenshotCtrl,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          fit: StackFit.expand,
+                          children: [
+                            TransformedContentGenerator(
+                              configs: configs,
+                              transformConfigs:
+                                  transformConfigs ?? TransformConfigs.empty(),
+                              child: ImageWithFilters(
+                                width: getMinimumSize(mainImageSize, _bodySize)
+                                    .width,
+                                height: getMinimumSize(mainImageSize, _bodySize)
+                                    .height,
+                                designMode: designMode,
+                                image: editorImage,
+                                filters: appliedFilters,
+                                blurFactor: appliedBlurFactor,
+                              ),
+                            ),
+                            if (layers != null)
+                              LayerStack(
+                                configs: configs,
+                                layers: layers!,
+                                transformHelper: TransformHelper(
+                                  mainBodySize:
+                                      getMinimumSize(mainBodySize, _bodySize),
+                                  mainImageSize:
+                                      getMinimumSize(mainImageSize, _bodySize),
+                                  editorBodySize: _bodySize,
+                                  transformConfigs: transformConfigs,
+                                ),
+                              ),
+                            _buildPainter(),
+                          ],
                         ),
-                      _buildPainter(),
-                    ],
-                  ),
-                ),
-                if (paintEditorConfigs.showColorPicker) _buildColorPicker(),
-                if (imageEditorTheme.editorMode ==
-                    ThemeEditorMode.whatsapp) ...[
-                  WhatsAppPaintBottomBar(
-                    configs: configs,
-                    strokeWidth: _imageKey.currentState?.strokeWidth ?? 0.0,
-                    onSetLineWidth: (val) {
-                      setState(() {
-                        _imageKey.currentState!.setStrokeWidth(val);
-                      });
-                    },
-                  ),
-                  StreamBuilder(
-                      stream: _uiPickerStream.stream,
-                      builder: (context, snapshot) {
-                        return WhatsAppPaintAppBar(
+                      ),
+                      if (paintEditorConfigs.showColorPicker)
+                        _buildColorPicker(),
+                      if (imageEditorTheme.editorMode ==
+                          ThemeEditorMode.whatsapp) ...[
+                        WhatsAppPaintBottomBar(
                           configs: configs,
-                          canUndo: canUndo,
-                          onDone: done,
-                          onTapUndo: undoAction,
-                          onClose: close,
-                          activeColor: activeColor,
-                        );
-                      }),
-                ]
-              ],
+                          strokeWidth:
+                              _imageKey.currentState?.strokeWidth ?? 0.0,
+                          onSetLineWidth: (val) {
+                            setState(() {
+                              _imageKey.currentState!.setStrokeWidth(val);
+                            });
+                          },
+                        ),
+                        StreamBuilder(
+                            stream: _uiPickerStream.stream,
+                            builder: (context, snapshot) {
+                              return WhatsAppPaintAppBar(
+                                configs: configs,
+                                canUndo: canUndo,
+                                onDone: done,
+                                onTapUndo: undoAction,
+                                onClose: close,
+                                activeColor: activeColor,
+                              );
+                            }),
+                      ]
+                    ],
             ),
           ),
         );

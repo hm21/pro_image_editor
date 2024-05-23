@@ -22,6 +22,8 @@ class StandaloneExample extends StatefulWidget {
 
 class _StandaloneExampleState extends State<StandaloneExample>
     with ExampleHelperState<StandaloneExample> {
+  final _cropRotateEditorKey = GlobalKey<CropRotateEditorState>();
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -66,9 +68,21 @@ class _StandaloneExampleState extends State<StandaloneExample>
                         AssetImage(ExampleConstants.of(context)!.demoAssetPath),
                         context);
                     if (!context.mounted) return;
+
+                    bool inited = false;
+
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => _buildCropRotateEditor()),
+                      MaterialPageRoute(builder: (context) {
+                        if (!inited) {
+                          inited = true;
+                          Future.delayed(const Duration(milliseconds: 1), () {
+                            _cropRotateEditorKey.currentState!.enableFakeHero =
+                                true;
+                            setState(() {});
+                          });
+                        }
+                        return _buildCropRotateEditor();
+                      }),
                     );
                   },
                 ),
@@ -120,6 +134,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
       ExampleConstants.of(context)!.demoAssetPath,
       initConfigs: PaintEditorInitConfigs(
         theme: ThemeData.dark(),
+        enableFakeHero: true,
         convertToUint8List: true,
         configs: const ProImageEditorConfigs(
           imageGenerationConfigs: ImageGeneratioConfigs(
@@ -138,6 +153,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
   Widget _buildCropRotateEditor() {
     return CropRotateEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
+      key: _cropRotateEditorKey,
       initConfigs: CropRotateEditorInitConfigs(
         theme: ThemeData.dark(),
         convertToUint8List: true,

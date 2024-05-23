@@ -219,6 +219,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Indicates whether the image size has been decoded.
   bool _imageSizeIsDecoded = true;
 
+  bool enableFakeHero = false;
+
   /// The length of the crop corner.
   final double _cropCornerLength = 36;
 
@@ -388,8 +390,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       setInitHistory(transformConfigs!);
     }
-
-    _showFakeHero = initConfigs.enableFakeHero;
+    enableFakeHero = initConfigs.enableFakeHero;
+    _showFakeHero = enableFakeHero;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
       if (transformConfigs != null &&
@@ -402,7 +404,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
       }
 
-      if (!initConfigs.enableFakeHero) hideFakeHero();
+      if (!enableFakeHero) hideFakeHero();
     });
   }
 
@@ -559,10 +561,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
             ? transformConfigs!
             : activeHistory;
 
+    setState(() {
+      _showFakeHero = enableFakeHero;
+      _fakeHeroTransformConfigs = transformC;
+    });
     if (!initConfigs.convertToUint8List) {
       setState(() {
-        _fakeHeroTransformConfigs = transformC;
-        _showFakeHero = true;
         List<Layer> updatedLayers = LayerTransformGenerator(
           layers: initConfigs.layers ?? [],
           activeTransformConfigs:
