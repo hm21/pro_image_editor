@@ -944,34 +944,36 @@ class ProImageEditorState extends State<ProImageEditor>
 
           animation.addStatusListener(animationStatusListener);
           if (imageEditorTheme.subEditorPage.requireReposition) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                Positioned(
-                  top: imageEditorTheme.subEditorPage.positionTop,
-                  left: imageEditorTheme.subEditorPage.positionLeft,
-                  right: imageEditorTheme.subEditorPage.positionRight,
-                  bottom: imageEditorTheme.subEditorPage.positionBottom,
-                  child: Center(
-                    child: Container(
-                      width: imageEditorTheme
-                              .subEditorPage.enforceSizeFromMainEditor
-                          ? _sizesManager.lastScreenSize.width
-                          : null,
-                      height: imageEditorTheme
-                              .subEditorPage.enforceSizeFromMainEditor
-                          ? _sizesManager.lastScreenSize.height
-                          : null,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        borderRadius:
-                            imageEditorTheme.subEditorPage.borderRadius,
+            return SafeArea(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned(
+                    top: imageEditorTheme.subEditorPage.positionTop,
+                    left: imageEditorTheme.subEditorPage.positionLeft,
+                    right: imageEditorTheme.subEditorPage.positionRight,
+                    bottom: imageEditorTheme.subEditorPage.positionBottom,
+                    child: Center(
+                      child: Container(
+                        width: imageEditorTheme
+                                .subEditorPage.enforceSizeFromMainEditor
+                            ? _sizesManager.lastScreenSize.width
+                            : null,
+                        height: imageEditorTheme
+                                .subEditorPage.enforceSizeFromMainEditor
+                            ? _sizesManager.lastScreenSize.height
+                            : null,
+                        clipBehavior: Clip.hardEdge,
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              imageEditorTheme.subEditorPage.borderRadius,
+                        ),
+                        child: page,
                       ),
-                      child: page,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           } else {
             return page;
