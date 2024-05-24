@@ -318,9 +318,28 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The pixel ratio of the image.
   double? _pixelRatio;
 
+  /// Skip the first update because the outside listener needs one frame
+  /// to correctly detect events.
+  bool _scaleAllowUpdateHelper = false;
+
+  /// The number of active pointers (touch points).
+  int _activePointers = 0;
+
+  /// Helper variable to store the initial scale value at the start of a scaling gesture.
+  double _scaleStartZoomHelper = 1;
+
+  /// Debounce object for handling the end of a scaling gesture.
+  late Debounce _onScaleEndDebounce;
+
+  /// Debounce object for allowing updates during a scaling gesture.
+  late Debounce _onScaleAllowUpdateDebounce;
+
   @override
   void initState() {
     super.initState();
+    _onScaleEndDebounce = Debounce(const Duration(milliseconds: 10));
+    _onScaleAllowUpdateDebounce = Debounce(const Duration(milliseconds: 1));
+
     screenshotCtrl = ContentRecorderController(
         configs: widget.initConfigs.configs,
         ignore: !initConfigs.convertToUint8List);
@@ -410,6 +429,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   void dispose() {
+    _onScaleEndDebounce.dispose();
+    _onScaleAllowUpdateDebounce.dispose();
     _bottomBarScrollCtrl.dispose();
     rotateCtrl.dispose();
     scaleCtrl.dispose();
@@ -969,37 +990,48 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   void _onScaleStart(ScaleStartDetails details) {
-    if (_blockInteraction || _scaleStarted) return;
-    _scaleStarted = true;
+    if (_blockInteraction || details.pointerCount > 2) return;
     _blockInteraction = true;
+
     _startingPinchScale = userZoom;
     _startingTranslate = translate;
-
     // Calculate the center offset point from the old zoomed view
     _startingCenterOffset = _startingTranslate +
         _getRealHitPoint(position: details.localFocalPoint, zoom: userZoom) /
             userZoom;
 
-    /// On desktop devices we detect always in `onPointerHover` events.
-    if (!isDesktop) {
-      _currentCropAreaPart = _determineCropAreaPart(details.localFocalPoint);
+    if (!_scaleStarted) {
+      /// On desktop devices we detect always in `onPointerHover` events.
+      if (!isDesktop) {
+        _currentCropAreaPart = _determineCropAreaPart(details.localFocalPoint);
+      }
+
+      loopWithTransitionTiming(
+        (double curveT) {
+          _interactionOpacityProgress = 1 * curveT;
+          setState(() {});
+        },
+        mounted: mounted,
+        transitionFunction: Curves.decelerate.transform,
+        duration: const Duration(milliseconds: 100),
+      );
     }
+
+    _scaleAllowUpdateHelper = false;
+    _onScaleAllowUpdateDebounce(() {
+      _scaleAllowUpdateHelper = true;
+    });
+
     _interactionActive = true;
-    loopWithTransitionTiming(
-      (double curveT) {
-        _interactionOpacityProgress = 1 * curveT;
-        setState(() {});
-      },
-      mounted: mounted,
-      transitionFunction: Curves.decelerate.transform,
-      duration: const Duration(milliseconds: 100),
-    );
+    _scaleStarted = true;
     _blockInteraction = false;
     setState(() {});
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    if (_blockInteraction) return;
+    if (_blockInteraction ||
+        details.pointerCount > 2 ||
+        !_scaleAllowUpdateHelper) return;
     _blockInteraction = true;
     if (details.pointerCount == 2) {
       double newZoom = (_startingPinchScale * details.scale)
@@ -1237,8 +1269,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
         setState(() {});
       } else {
+        double scaleFactor = userZoom / _scaleStartZoomHelper;
         translate +=
-            Offset(details.focalPointDelta.dx, details.focalPointDelta.dy) *
+            Offset(details.focalPointDelta.dx, details.focalPointDelta.dy) /
+                scaleFactor *
                 (cropRotateEditorConfigs.reverseDragDirection ? -1 : 1);
         _setOffsetLimits();
 
@@ -1258,20 +1292,25 @@ class CropRotateEditorState extends State<CropRotateEditor>
       );
     }
 
-    _scaleStarted = false;
-    if (_blockInteraction) return;
+    if (_blockInteraction || details.pointerCount > 2) return;
     _blockInteraction = true;
     _interactionActive = false;
 
-    loopWithTransitionTiming(
-      (double curveT) {
-        _interactionOpacityProgress = 1 - 1 * curveT;
-        setState(() {});
-      },
-      mounted: mounted,
-      transitionFunction: Curves.decelerate.transform,
-      duration: const Duration(milliseconds: 100),
-    );
+    _onScaleEndDebounce(() {
+      if (_activePointers <= 0) {
+        _scaleStarted = false;
+        loopWithTransitionTiming(
+          (double curveT) {
+            _interactionOpacityProgress = 1 - 1 * curveT;
+            setState(() {});
+          },
+          mounted: mounted,
+          transitionFunction: Curves.decelerate.transform,
+          duration: const Duration(milliseconds: 100),
+        );
+      }
+    });
+
     setState(() {});
 
     if (cropRect != _viewRect) {
@@ -1357,6 +1396,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
     _activeScaleOut = false;
     _blockInteraction = false;
+
     addHistory();
     setState(() {});
   }
@@ -1847,6 +1887,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             _contentConstraints.maxWidth - _screenPadding * 2,
             _contentConstraints.maxHeight - _screenPadding * 2,
           ).aspectRatio;
+
           if (_imageNeedDecode) _decodeImage();
         },
         onResizeEnd: (event) {},
@@ -1867,7 +1908,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                               child: _buildUserScaleTransform(
                                 child: _buildTranslate(
                                   child: DeferPointer(
-                                    child: _buildMouseListener(
+                                    child: _buildEventListener(
                                       child: _buildGestureDetector(
                                         child: _buildImage(),
                                       ),
@@ -1897,13 +1938,18 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
   }
 
-  Widget _buildMouseListener({required Widget child}) {
+  Widget _buildEventListener({required Widget child}) {
     /// Controll the GestureDetector directly from this OutsideListener that both
     /// listeners can't block the events between them
     return OutsideListener(
       behavior: OutsideHitTestBehavior.all,
       onPointerDown: (event) {
         _gestureKey.currentState!.rawKey.currentState!.handlePointerDown(event);
+        if (_activePointers == 0) _scaleStartZoomHelper = userZoom;
+        _activePointers++;
+      },
+      onPointerUp: (event) {
+        _activePointers--;
       },
       onPointerPanZoomStart: (event) {
         _gestureKey.currentState!.rawKey.currentState!

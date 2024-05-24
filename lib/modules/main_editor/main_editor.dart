@@ -1663,7 +1663,9 @@ class ProImageEditorState extends State<ProImageEditor>
               _sizesManager.temporaryDecodedImageSize =
                   _sizesManager.decodedImageSize;
             }
+            //  print('old ratio $_pixelRatio');
             await _decodeImage();
+            //  print('new ratio $_pixelRatio');
             if (_isEditorOpen) {
               _sizesManager.shouldRecalculateLayerPosition = true;
               return;

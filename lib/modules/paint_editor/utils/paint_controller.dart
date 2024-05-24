@@ -22,12 +22,6 @@ class PaintingController extends ChangeNotifier {
   int _strokeMultiplier = 1;
   bool _paintInProgress = false;
 
-  /// Returns a [Paint] object configured with the current color, stroke width, and fill settings.
-  Paint get brush => Paint()
-    ..color = _color
-    ..strokeWidth = _strokeWidth * _strokeMultiplier
-    ..style = needFill ? PaintingStyle.fill : PaintingStyle.stroke;
-
   /// Returns the current painting mode (e.g., line, circle, rectangle).
   PaintModeE get mode => _mode;
 
@@ -166,22 +160,6 @@ class PaintingController extends ChangeNotifier {
   /// Sets whether the current mode should fill the shape and notifies listeners.
   void setFill(bool fill) {
     _fill = fill;
-    notifyListeners();
-  }
-
-  /// Initializes the painting settings with optional parameters and notifies listeners.
-  ///
-  /// - [strokeWidth]: The optional stroke width to set.
-  /// - [color]: The optional color to set.
-  /// - [mode]: The optional painting mode to set.
-  void init({
-    double? strokeWidth,
-    Color? color,
-    PaintModeE? mode,
-  }) {
-    _strokeWidth = strokeWidth ?? _strokeWidth;
-    _color = color ?? _color;
-    _mode = mode ?? _mode;
     notifyListeners();
   }
 

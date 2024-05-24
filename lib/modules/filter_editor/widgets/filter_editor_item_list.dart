@@ -299,22 +299,6 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                 clipBehavior: Clip.hardEdge,
                 children: [
                   _buildPreviewImage(size, filter),
-                  /*  ImageWithFilters(
-                    image: EditorImage(
-                      file: widget.file,
-                      byteArray: widget.byteArray,
-                      networkUrl: widget.networkUrl,
-                      assetPath: widget.assetPath,
-                    ),
-                    designMode: widget.configs.designMode,
-                    blurFactor: widget.blurFactor ?? 0,
-                    width: size.width,
-                    height: size.height,
-                    filters: [
-                      ...(widget.activeFilters ?? []),
-                      FilterStateHistory(filter: filter, opacity: 1),
-                    ],
-                  ), */
                   Align(
                     alignment: Alignment.bottomLeft,
                     child: Container(
