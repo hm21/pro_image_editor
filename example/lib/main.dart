@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/pages/dialog_example.dart';
 import 'package:example/pages/standalone_example.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late final ScrollController _scrollCtrl;
 
   final List<Widget> _examples = [
+    const DialogExample(),
     const DefaultExample(),
     const WhatsAppExample(),
     const StandaloneExample(),
