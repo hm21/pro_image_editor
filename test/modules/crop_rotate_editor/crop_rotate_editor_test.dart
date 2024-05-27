@@ -29,25 +29,25 @@ void main() {
         WidgetTester tester, GlobalKey<CropRotateEditorState> editorKey) async {
       final Offset centerPoint =
           tester.getCenter(find.byType(CropRotateEditor));
-      final TestGesture gesture = await tester.startGesture(centerPoint);
-      await gesture.moveBy(const Offset(10.0, 10.0)); // Simulate pinch zoom
 
-      // Simulate pinch gesture start (two fingers)
-      final TestGesture gestureStart =
-          await tester.startGesture(const Offset(100, 100));
-      await gestureStart
-          .moveBy(const Offset(0.0, -100.0)); // Move fingers apart
+      // Start pinch gesture with two fingers
+      final TestGesture gesture1 = await tester.startGesture(centerPoint);
+      final TestGesture gesture2 =
+          await tester.startGesture(centerPoint.translate(-50.0, -50.0));
 
-      // Simulate pinch gesture update
-      final TestGesture gestureUpdate =
-          await tester.startGesture(const Offset(10, 10));
-      await gestureUpdate
-          .moveBy(const Offset(0.0, -50.0)); // Move fingers further apart
-      // Simulate pinch gesture end
-      await gestureUpdate.up();
-      await gestureStart.up();
+      // Move fingers apart to simulate pinch zoom
+      await gesture1.moveBy(const Offset(30.0, 30.0));
+      await gesture2.moveBy(const Offset(-30.0, -30.0));
 
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 1));
+
+      // Additional movements for further zoom
+      await gesture1.moveBy(const Offset(20.0, 20.0));
+      await gesture2.moveBy(const Offset(-20.0, -20.0));
+
+      // End the gesture
+      await gesture1.up();
+      await gesture2.up();
 
       expect(editorKey.currentState!.userZoom, greaterThan(1));
     }

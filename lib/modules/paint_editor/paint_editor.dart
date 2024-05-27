@@ -385,7 +385,7 @@ class PaintingEditorState extends State<PaintingEditor>
         );
       if (_pixelRatio == null) await _setPixelRatio();
       if (!mounted) return;
-      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
+      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         pixelRatio: _pixelRatio,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,

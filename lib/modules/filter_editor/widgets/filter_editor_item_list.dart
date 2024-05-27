@@ -116,9 +116,9 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   }
 
   /// Builds a horizontal list of filter preview buttons.
-  SizedBox _buildFilterList() {
+  Widget _buildFilterList() {
     return SizedBox(
-      height: 120,
+      height: 104,
       child: Scrollbar(
         controller: _scrollCtrl,
         scrollbarOrientation: ScrollbarOrientation.bottom,
@@ -132,7 +132,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                 BoxConstraints(minWidth: MediaQuery.of(context).size.width),
             child: Padding(
               padding:
-                  EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 8, 8, 10),
+                  EdgeInsets.fromLTRB(8, _isWhatsAppDesign ? 15 : 4, 8, 10),
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.end,
                 alignment: WrapAlignment.spaceAround,

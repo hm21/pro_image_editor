@@ -535,7 +535,7 @@ class ContentRecorderController {
     screenshots.add(isolateCaptureState);
   }
 
-  Future<Uint8List?> getFinalScreenshot({
+  Future<Uint8List?> captureFinalScreenshot({
     required double? pixelRatio,
     required IsolateCaptureState? backgroundScreenshot,
     Widget? widget,

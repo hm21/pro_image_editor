@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:defer_pointer/defer_pointer.dart';
+import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:
@@ -475,11 +476,9 @@ class ProImageEditorState extends State<ProImageEditor>
         }
       },
       onUndoRedo: (undo) {
-        if (undo) {
-          undoAction();
-        } else {
-          redoAction();
-        }
+        if (_openDialog || _isEditorOpen) return;
+
+        undo ? undoAction() : redoAction();
       },
     );
   }
@@ -581,16 +580,17 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method removes a layer from the editor and updates the editing state.
   void removeLayer(int layerPos, {Layer? layer}) {
+    int oldIndex = activeLayers
+        .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
+    if (oldIndex >= 0) {
+      stateHistory[_stateManager.position].layers[oldIndex] =
+          _layerCopyManager.copyLayer(_tempLayer ?? layer!);
+    }
+
     var layers = _layerCopyManager.copyLayerList(activeLayers);
     layers.removeAt(layerPos);
     _addHistory(layers: layers);
 
-    var oldIndex = activeLayers
-        .indexWhere((element) => element.id == (layer?.id ?? _tempLayer!.id));
-    if (oldIndex >= 0) {
-      stateHistory[_stateManager.position].layers[oldIndex] =
-          _layerCopyManager.copyLayer(layer ?? _tempLayer!);
-    }
     callbacks.onRemoveLayer?.call();
   }
 
@@ -648,7 +648,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
       configs: transformConfigs ?? _stateManager.transformConfigs,
     );
-    _sizesManager.decodedImageSize = infos.imageSize;
+    _sizesManager.originalImageSize ??= infos.rawImageSize;
+    _sizesManager.decodedImageSize = infos.renderedImageSize;
     _pixelRatio = infos.pixelRatio;
 
     _inited = true;
@@ -835,7 +836,12 @@ class ProImageEditorState extends State<ProImageEditor>
         heroTag: layerData.id,
         configs: widget.configs,
         theme: _theme,
-        onUpdateUI: onUpdateUI,
+        callbacks: TextEditorCallbacks(
+          onUpdateUI: callbacks.onUpdateUI,
+          onChanged: callbacks.textEditorCallbacks?.onChanged,
+          onSubmitted: callbacks.textEditorCallbacks?.onSubmitted,
+          onEditingComplete: callbacks.textEditorCallbacks?.onEditingComplete,
+        ),
       ),
       duration: const Duration(milliseconds: 50),
     );
@@ -1035,7 +1041,12 @@ class ProImageEditorState extends State<ProImageEditor>
         key: textEditor,
         configs: widget.configs,
         theme: _theme,
-        onUpdateUI: onUpdateUI,
+        callbacks: TextEditorCallbacks(
+          onUpdateUI: callbacks.onUpdateUI,
+          onChanged: callbacks.textEditorCallbacks?.onChanged,
+          onSubmitted: callbacks.textEditorCallbacks?.onSubmitted,
+          onEditingComplete: callbacks.textEditorCallbacks?.onEditingComplete,
+        ),
       ),
       duration: const Duration(milliseconds: 50),
     );
@@ -1411,25 +1422,47 @@ class ProImageEditorState extends State<ProImageEditor>
           message: i18n.doneLoadingMsg,
         );
 
-      double pixelRatio = imageGenerationConfigs.generateOnlyImageBounds
-          ? _pixelRatio
-          : max(_pixelRatio, MediaQuery.of(context).devicePixelRatio);
+      Uint8List? bytes = await captureEditorImage();
 
-      Uint8List? bytes = await _controllers.screenshot.getFinalScreenshot(
-        pixelRatio: pixelRatio,
-        backgroundScreenshot:
-            _stateManager.position > 0 ? _stateManager.activeScreenshot : null,
-        originalImageBytes: _stateManager.position > 0
-            ? null
-            : await _image.safeByteArray(context),
-      );
-
-      await onImageEditingComplete(bytes ?? Uint8List.fromList([]));
+      await onImageEditingComplete(bytes);
 
       if (mounted) loading.hide(context);
 
       onCloseEditor?.call();
     });
+  }
+
+  /// Captures the final editor image.
+  ///
+  /// This method generates the final image of the editor content, taking
+  /// into account the pixel ratio for high-resolution images. If `generateOnlyImageBounds`
+  /// is set in `imageGenerationConfigs`, it uses the base pixel ratio; otherwise, it uses
+  /// the maximum of the base pixel ratio and the device's pixel ratio.
+  ///
+  /// Returns a [Uint8List] representing the final image.
+  ///
+  /// Returns an empty [Uint8List] if the screenshot capture fails.
+  Future<Uint8List> captureEditorImage() async {
+    if (_isEditorOpen) {
+      Navigator.pop(context);
+      if (!_pageOpenCompleter.isCompleted) await _pageOpenCompleter.future;
+      if (!mounted) return Uint8List.fromList([]);
+    }
+
+    double pixelRatio = imageGenerationConfigs.generateOnlyImageBounds
+        ? _pixelRatio
+        : max(_pixelRatio, MediaQuery.of(context).devicePixelRatio);
+
+    return await _controllers.screenshot.captureFinalScreenshot(
+          pixelRatio: pixelRatio,
+          backgroundScreenshot: _stateManager.position > 0
+              ? _stateManager.activeScreenshot
+              : null,
+          originalImageBytes: _stateManager.position > 0
+              ? null
+              : await _image.safeByteArray(context),
+        ) ??
+        Uint8List.fromList([]);
   }
 
   /// Close the image editor.
@@ -1618,54 +1651,14 @@ class ProImageEditorState extends State<ProImageEditor>
         child: ScreenResizeDetector(
           onResizeUpdate: (event) {
             _sizesManager.lastScreenSize = event.newConstraints.biggest;
-/*  TODO: resize croprect*/
-            /*       Size originalSize = _stateManager.transformConfigs.originalSize;
-            Rect cropRect = _stateManager.transformConfigs.cropRect;
-            if (cropRect != Rect.largest) {
-              double bodyW = _sizesManager.bodySize.width;
-
-              double bodyHelperW = bodyW - 40;
-              double bodyHelperH = _sizesManager.bodySize.height - 40;
-
-              bool widthToSmall = cropRect.width > bodyHelperW;
-              bool heightToSmall = cropRect.height > bodyHelperH;
-
-              bool widthToBig = cropRect.width > bodyHelperW;
-              bool heightToBig = cropRect.height > bodyHelperH;
-
-              bool fitToWidth = bodyHelperW == cropRect.width;
-              bool fitToHeight = bodyHelperH == cropRect.height;
-
-              print({
-                'widthToSmall': widthToSmall,
-                'heightToSmall': heightToSmall,
-                'fitToWidth': fitToWidth,
-                'fitToHeight': fitToHeight,
-                'cropRect': cropRect,
-                'cropRectRatio': cropRect.size.aspectRatio,
-                'originalSizeRatio': originalSize.aspectRatio,
-                'margin': _sizesManager.imageMargin,
-              });
-              _stateManager.transformConfigs.cropEditorScreenRatio = _sizesManager.bodySize.aspectRatio;
-              _stateManager.transformConfigs.originalSize = Size(
-                bodyHelperW,
-                bodyHelperW / originalSize.aspectRatio,
-              );
-              _stateManager.transformConfigs.cropRect = Rect.fromCenter(
-                center: cropRect.center,
-                width: bodyHelperW,
-                height: bodyHelperW / cropRect.size.aspectRatio,
-              );
-            } */
           },
           onResizeEnd: (event) async {
             if (!_sizesManager.shouldRecalculateLayerPosition) {
               _sizesManager.temporaryDecodedImageSize =
                   _sizesManager.decodedImageSize;
             }
-            //  print('old ratio $_pixelRatio');
             await _decodeImage();
-            //  print('new ratio $_pixelRatio');
+
             if (_isEditorOpen) {
               _sizesManager.shouldRecalculateLayerPosition = true;
               return;
@@ -2133,7 +2126,11 @@ class ProImageEditorState extends State<ProImageEditor>
                                   onTapUp: () {
                                     if (_layerInteractionManager
                                         .hoverRemoveBtn) {
-                                      removeLayer(_selectedLayerIndex);
+                                      removeLayer(
+                                        activeLayers.indexWhere((element) =>
+                                            element.id == layerItem.id),
+                                        layer: layerItem,
+                                      );
                                     }
                                     _controllers.uiLayerStream.add(null);
                                     onUpdateUI?.call();
@@ -2141,6 +2138,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                   },
                                   onTapDown: () {
                                     _selectedLayerIndex = i;
+                                    _setTempLayer(layerItem);
                                   },
                                   onScaleRotateDown:
                                       (details, layerOriginalSize) {
@@ -2165,9 +2163,10 @@ class ProImageEditorState extends State<ProImageEditor>
                                   onRemoveTap: () {
                                     setState(() {
                                       removeLayer(
-                                          activeLayers.indexWhere((element) =>
-                                              element.id == layerItem.id),
-                                          layer: layerItem);
+                                        activeLayers.indexWhere((element) =>
+                                            element.id == layerItem.id),
+                                        layer: layerItem,
+                                      );
                                     });
                                     onUpdateUI?.call();
                                   },
@@ -2280,7 +2279,7 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildImageWithFilter() {
-    return Padding(
+    return Container(
       padding: _selectedLayerIndex >= 0
           ? EdgeInsets.only(
               top: _sizesManager.appBarHeight,

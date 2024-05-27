@@ -374,16 +374,18 @@ class _LayerWidgetState extends State<LayerWidget>
     return Padding(
       // Better hit detection for mobile devices
       padding: EdgeInsets.all(isDesktop ? 0 : 15),
-      child: CustomPaint(
-        size: layer.size,
-        willChange: true,
-        isComplex: layer.item.mode == PaintModeE.freeStyle,
-        painter: DrawCanvas(
-          item: layer.item,
-          scale: widget.layerData.scale,
-          selected: widget.selected,
-          enabledHitDetection: widget.enableHitDetection,
-          freeStyleHighPerformance: widget.highPerformanceMode,
+      child: RepaintBoundary(
+        child: CustomPaint(
+          size: layer.size,
+          willChange: false,
+          isComplex: layer.item.mode == PaintModeE.freeStyle,
+          painter: DrawCanvas(
+            item: layer.item,
+            scale: widget.layerData.scale,
+            selected: widget.selected,
+            enabledHitDetection: widget.enableHitDetection,
+            freeStyleHighPerformance: widget.highPerformanceMode,
+          ),
         ),
       ),
     );

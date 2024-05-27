@@ -161,11 +161,6 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
-      ),
     );
   }
 
@@ -176,11 +171,6 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
-      ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
       ),
     );
   }
@@ -193,11 +183,6 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
-      ),
     );
   }
 
@@ -208,11 +193,6 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
-      ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
       ),
     );
   }

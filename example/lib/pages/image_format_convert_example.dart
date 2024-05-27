@@ -104,11 +104,6 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
         },
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
-      ),
     );
   }
 }

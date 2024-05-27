@@ -172,11 +172,6 @@ class _PickImageExampleState extends State<PickImageExample>
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
         ),
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
-            allowEmptyEditCompletion: true,
-          ),
-        ),
       );
     } else {
       return ProImageEditor.memory(
@@ -185,11 +180,6 @@ class _PickImageExampleState extends State<PickImageExample>
           onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
-        ),
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
-            allowEmptyEditCompletion: true,
-          ),
         ),
       );
     }

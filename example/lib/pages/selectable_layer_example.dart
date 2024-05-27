@@ -53,7 +53,6 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
           processorConfigs: ProcessorConfigs(
             processorMode: ProcessorMode.auto,
           ),
-          allowEmptyEditCompletion: true,
         ),
         layerInteraction: LayerInteraction(
           /// Choose between `auto`, `enabled` and `disabled`.

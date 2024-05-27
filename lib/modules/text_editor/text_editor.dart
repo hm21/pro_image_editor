@@ -3,6 +3,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 
 // Package imports:
 import 'package:rounded_background_text/rounded_background_text.dart';
@@ -39,7 +40,7 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
   final TextLayerData? layer;
 
   /// A callback function that can be used to update the UI from custom widgets.
-  final Function? onUpdateUI;
+  final TextEditorCallbacks? callbacks;
 
   /// Creates a `TextEditor` widget.
   ///
@@ -48,7 +49,7 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
     super.key,
     this.heroTag,
     this.layer,
-    this.onUpdateUI,
+    this.callbacks,
     this.configs = const ProImageEditorConfigs(),
     required this.theme,
   });
@@ -113,7 +114,7 @@ class TextEditorState extends State<TextEditor>
       setState(() {
         _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       });
-      widget.onUpdateUI?.call();
+      widget.callbacks?.onUpdateUI?.call();
     });
   }
 
@@ -160,7 +161,7 @@ class TextEditorState extends State<TextEditor>
               ? TextAlign.right
               : TextAlign.left;
     });
-    widget.onUpdateUI?.call();
+    widget.callbacks?.onUpdateUI?.call();
   }
 
   /// Toggles the background mode between various color modes.
@@ -175,7 +176,7 @@ class TextEditorState extends State<TextEditor>
                   ? LayerBackgroundColorModeE.backgroundAndColorWithOpacity
                   : LayerBackgroundColorModeE.onlyColor;
     });
-    widget.onUpdateUI?.call();
+    widget.callbacks?.onUpdateUI?.call();
   }
 
   /// Displays a range slider for adjusting the line width of the painting tool.
@@ -254,7 +255,7 @@ class TextEditorState extends State<TextEditor>
   void setTextStyle(TextStyle style) {
     setState(() {
       selectedTextStyle = style;
-      widget.onUpdateUI?.call();
+      widget.callbacks?.onUpdateUI?.call();
     });
   }
 
@@ -467,7 +468,7 @@ class TextEditorState extends State<TextEditor>
                   setState(() {
                     _primaryColor = Color(value);
                   });
-                  widget.onUpdateUI?.call();
+                  widget.callbacks?.onUpdateUI?.call();
                 },
               ),
             ),
@@ -530,6 +531,9 @@ class TextEditorState extends State<TextEditor>
                     child: TextField(
                       controller: _textCtrl,
                       focusNode: _focus,
+                      onChanged: widget.callbacks?.onChanged,
+                      onEditingComplete: widget.callbacks?.onEditingComplete,
+                      onSubmitted: widget.callbacks?.onSubmitted,
                       keyboardType: TextInputType.multiline,
                       textInputAction: TextInputAction.newline,
                       textCapitalization: TextCapitalization.sentences,

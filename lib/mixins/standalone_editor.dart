@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import '../models/crop_rotate_editor/transform_factors.dart';
-import '../models/editor_callbacks/main_editor_callbacks.dart';
+import '../models/editor_callbacks/editor_callbacks_typedef.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';
 import '../models/editor_image.dart';
 import '../models/history/filter_state_history.dart';

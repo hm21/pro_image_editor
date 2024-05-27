@@ -222,7 +222,7 @@ class FilterEditorState extends State<FilterEditor>
         );
       if (_pixelRatio == null) await _setPixelRatio();
       if (!mounted) return;
-      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
+      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         pixelRatio: _pixelRatio,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
@@ -380,29 +380,31 @@ class FilterEditorState extends State<FilterEditor>
           children: [
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
-              child: StreamBuilder(
-                  stream: _uiFilterStream.stream,
-                  builder: (context, snapshot) {
-                    return SizedBox(
-                      height: 40,
-                      child: selectedFilter == PresetFilters.none
-                          ? null
-                          : Slider(
-                              min: 0,
-                              max: 1,
-                              divisions: 100,
-                              value: filterOpacity,
-                              onChanged: (value) {
-                                filterOpacity = value;
-                                _uiFilterStream.add(null);
-                                onUpdateUI?.call();
-                              },
-                              onChangeEnd: (value) {
-                                _takeScreenshot();
-                              },
-                            ),
-                    );
-                  }),
+              child: RepaintBoundary(
+                child: StreamBuilder(
+                    stream: _uiFilterStream.stream,
+                    builder: (context, snapshot) {
+                      return SizedBox(
+                        height: 40,
+                        child: selectedFilter == PresetFilters.none
+                            ? null
+                            : Slider(
+                                min: 0,
+                                max: 1,
+                                divisions: 100,
+                                value: filterOpacity,
+                                onChanged: (value) {
+                                  filterOpacity = value;
+                                  _uiFilterStream.add(null);
+                                  onUpdateUI?.call();
+                                },
+                                onChangeEnd: (value) {
+                                  _takeScreenshot();
+                                },
+                              ),
+                      );
+                    }),
+              ),
             ),
             FilterEditorItemList(
               mainBodySize: getMinimumSize(mainBodySize, _bodySize),

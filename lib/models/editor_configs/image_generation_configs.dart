@@ -30,7 +30,7 @@ class ImageGeneratioConfigs {
 
   /// Whether the callback `onImageEditingComplete` call with empty editing.
   ///
-  /// The default value is false.
+  /// The default value is true.
   ///
   /// This option only affects the main editor and does not work in standalone editors.
   ///
@@ -58,7 +58,7 @@ class ImageGeneratioConfigs {
   /// - The [customPixelRatio] parameter set the pixel ratio of the image relative to the content.
   /// - The [processorConfigs] parameter set the processor configs.
   const ImageGeneratioConfigs({
-    this.allowEmptyEditCompletion = false,
+    this.allowEmptyEditCompletion = true,
     this.generateIsolated = true,
     this.generateImageInBackground = true,
     this.generateOnlyImageBounds = true,

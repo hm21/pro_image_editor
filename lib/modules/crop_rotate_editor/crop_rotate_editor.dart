@@ -337,9 +337,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
   @override
   void initState() {
     super.initState();
+    // Initialize debouncers
     _onScaleEndDebounce = Debounce(const Duration(milliseconds: 10));
     _onScaleAllowUpdateDebounce = Debounce(const Duration(milliseconds: 1));
 
+    // Initialize controllers
     screenshotCtrl = ContentRecorderController(
         configs: widget.initConfigs.configs,
         ignore: !initConfigs.convertToUint8List);
@@ -352,6 +354,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         CropDesktopInteractionManager(context: context);
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
+    // Initialize image and layers
     _imageNeedDecode = mainImageSize == null;
     _layers = initConfigs.layers ?? [];
     _rawLayers = LayerTransformGenerator(
@@ -362,6 +365,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       undoChanges: true,
     ).updatedLayers;
 
+    // Initialize rotate animation
     double initAngle = transformConfigs?.angle ?? 0.0;
     rotateCtrl = AnimationController(
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
@@ -383,19 +387,21 @@ class CropRotateEditorState extends State<CropRotateEditor>
     rotateAnimation =
         Tween<double>(begin: initAngle, end: initAngle).animate(rotateCtrl);
 
+    // Initialize scale animation
     double initScale = (transformConfigs?.scaleRotation ?? 1);
     scaleCtrl = AnimationController(
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     scaleAnimation =
         Tween<double>(begin: initScale, end: initScale).animate(scaleCtrl);
 
+    // Initialize aspect ratio
     aspectRatio =
         cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 
-    if (widget.initConfigs.convertToUint8List) {
-      _setPixelRatio();
-    }
+    // Set pixel ratio if needed
+    if (widget.initConfigs.convertToUint8List) _setPixelRatio();
 
+    // Initialize transform configs if available
     if (transformConfigs != null && !transformConfigs!.isEmpty) {
       rotationCount = (transformConfigs!.angle * 2 / pi).abs().toInt();
       flipX = transformConfigs!.flipX;
@@ -409,8 +415,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       setInitHistory(transformConfigs!);
     }
+
+    // Initialize fake hero settings
     enableFakeHero = initConfigs.enableFakeHero;
     _showFakeHero = enableFakeHero;
+
+    // Perform post-frame initialization
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
       if (transformConfigs != null &&
@@ -424,6 +434,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
       }
 
       if (!enableFakeHero) hideFakeHero();
+
+      /// If the screen size has changed, we need to resize the image to fit the screen.
+      Size? originalSize = transformConfigs?.originalSize;
+      if (originalSize != null && !originalSize.isInfinite) {
+        // TODO:
+        scaleCtrl.duration = Duration.zero;
+        calcFitToScreen();
+        scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
+      }
     });
   }
 
@@ -613,7 +632,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       if (!mounted) return;
 
-      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
+      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         pixelRatio: _pixelRatio,
         // ignore: use_build_context_synchronously
         context: context,
@@ -725,6 +744,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   @override
   calcFitToScreen({
     Curve? curve,
+    Size? imageSize,
   }) {
     Size contentSize = Size(
       _contentConstraints.maxWidth - _screenPadding * 2,
@@ -736,10 +756,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
     double cropSpaceVertical =
         _rotated90deg ? _cropSpaceHorizontal : _cropSpaceVertical;
 
+    Size renderedSize = imageSize ?? _renderedImgSize;
+
     double scaleX =
-        contentSize.width / (_renderedImgSize.width - cropSpaceHorizontal);
+        contentSize.width / (renderedSize.width - cropSpaceHorizontal);
     double scaleY =
-        contentSize.height / (_renderedImgSize.height - cropSpaceVertical);
+        contentSize.height / (renderedSize.height - cropSpaceVertical);
 
     double scale = min(scaleX, scaleY);
 

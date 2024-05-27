@@ -28,6 +28,9 @@ class SizesManager {
   /// Size of the decoded image.
   Size decodedImageSize = const Size(0, 0);
 
+  /// The raw image size.
+  Size? originalImageSize;
+
   /// Represents a temporary decoded image size which is required for screen resizing.
   Size temporaryDecodedImageSize = const Size(0, 0);
 

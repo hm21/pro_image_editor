@@ -31,19 +31,20 @@ Future<DecodedImageInfos> decodeImageInfos({
 
   return DecodedImageInfos(
     rawImageSize: Size(w.toDouble(), h.toDouble()),
-    imageSize: Size(w / pixelRatio, h / pixelRatio),
+    renderedImageSize:
+        Size(w.toDouble() / pixelRatio, h.toDouble() / pixelRatio),
     pixelRatio: pixelRatio,
   );
 }
 
 class DecodedImageInfos {
   final Size rawImageSize;
-  final Size imageSize;
+  final Size renderedImageSize;
   final double pixelRatio;
 
   const DecodedImageInfos({
     required this.rawImageSize,
-    required this.imageSize,
+    required this.renderedImageSize,
     required this.pixelRatio,
   });
 }

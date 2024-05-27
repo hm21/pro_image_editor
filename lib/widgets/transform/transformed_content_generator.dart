@@ -7,6 +7,7 @@ import '../../models/crop_rotate_editor/transform_factors.dart';
 
 class TransformedContentGenerator extends StatefulWidget {
   final Widget child;
+
   final TransformConfigs transformConfigs;
   final ProImageEditorConfigs configs;
 
@@ -31,24 +32,55 @@ class _TransformedContentGeneratorState
         TransformConfigs configs = widget.transformConfigs;
         Size size = constraints.biggest;
 
-        double aspectRatioScaleHelper = 1;
-        if (configs.cropEditorScreenRatio != 0) {
-          // bool beforeOriginalFitToWidth = configs.cropEditorScreenRatio < configs.originalSize.aspectRatio;
-          bool beforeOriginalFitToWidth = size.aspectRatio <=
-              Size(configs.originalSize.width + 40,
-                      configs.originalSize.height + 40)
-                  .aspectRatio;
-          bool beforeFitToWidth = configs.cropEditorScreenRatio <=
-              (configs.is90DegRotated
-                  ? 1 / configs.cropRect.size.aspectRatio
-                  : configs.cropRect.size.aspectRatio);
+        double fitHelper = 1;
 
-          if (!beforeOriginalFitToWidth && beforeFitToWidth) {
-            aspectRatioScaleHelper =
-                size.aspectRatio / configs.cropEditorScreenRatio;
-          } else if (beforeOriginalFitToWidth && !beforeFitToWidth) {
-            aspectRatioScaleHelper =
-                configs.cropEditorScreenRatio / size.aspectRatio;
+        if (configs.cropEditorScreenRatio != 0) {
+          Size originalImageSize = configs.originalSize;
+
+          double originalImageRatio = originalImageSize.aspectRatio;
+          double cropRectRatio = configs.cropRect.size.aspectRatio;
+
+          bool is90DegRotated = configs.is90DegRotated;
+          double convertedCropRectRatio =
+              !is90DegRotated ? cropRectRatio : (1 / cropRectRatio);
+
+          bool originalFitToWidth = size.aspectRatio <= originalImageRatio;
+          bool fitToWidth = size.aspectRatio <= convertedCropRectRatio;
+
+          double w = originalImageSize.width / configs.cropRect.width;
+          double h = originalImageSize.height / configs.cropRect.height;
+
+          double w1 = size.width / originalImageSize.width;
+          double h1 = size.height / originalImageSize.height;
+
+          if (!originalFitToWidth && fitToWidth) {
+            fitHelper = w1 / h1;
+          } else if (originalFitToWidth && !fitToWidth) {
+            fitHelper = h1 / w1;
+          } else if (!fitToWidth && cropRectRatio > originalImageRatio) {
+            fitHelper = h / w;
+          } else if (fitToWidth && cropRectRatio < originalImageRatio) {
+            fitHelper = w / h;
+          }
+
+          if (is90DegRotated) {
+            if (originalFitToWidth && fitToWidth) {
+              fitHelper *= cropRectRatio;
+            } else if (!originalFitToWidth && !fitToWidth) {
+              fitHelper /= cropRectRatio;
+            } else {
+              bool useOriginalImageSize = (originalFitToWidth &&
+                      cropRectRatio > originalImageRatio) ||
+                  (!originalFitToWidth && cropRectRatio < originalImageRatio);
+
+              if (fitToWidth) {
+                fitHelper *=
+                    useOriginalImageSize ? originalImageRatio : cropRectRatio;
+              } else {
+                fitHelper /=
+                    useOriginalImageSize ? originalImageRatio : cropRectRatio;
+              }
+            }
           }
         }
         return FittedBox(
@@ -60,15 +92,13 @@ class _TransformedContentGeneratorState
                 ? null
                 : configs.originalSize.height,
             child: Transform.scale(
-              scale: aspectRatioScaleHelper,
+              scale: fitHelper,
               child: _buildRotationTransform(
                 child: _buildFlipTransform(
-                  child: _buildRotationScaleTransform(
-                    child: _buildCropPainter(
-                      child: _buildUserScaleTransform(
-                        child: _buildTranslate(
-                          child: widget.child,
-                        ),
+                  child: _buildCropPainter(
+                    child: _buildUserScaleTransform(
+                      child: _buildTranslate(
+                        child: widget.child,
                       ),
                     ),
                   ),
@@ -93,14 +123,6 @@ class _TransformedContentGeneratorState
     return Transform.flip(
       flipX: widget.transformConfigs.flipX,
       flipY: widget.transformConfigs.flipY,
-      child: child,
-    );
-  }
-
-  Transform _buildRotationScaleTransform({required Widget child}) {
-    return Transform.scale(
-      scale: widget.transformConfigs.scaleRotation,
-      alignment: Alignment.center,
       child: child,
     );
   }

@@ -218,7 +218,7 @@ class BlurEditorState extends State<BlurEditor>
         );
       if (_pixelRatio == null) await _setPixelRatio();
       if (!mounted) return;
-      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
+      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         pixelRatio: _pixelRatio,
         backgroundScreenshot:
             _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
@@ -372,24 +372,26 @@ class BlurEditorState extends State<BlurEditor>
           alignment: Alignment.center,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
-            child: StreamBuilder(
-                stream: _uiBlurStream.stream,
-                builder: (context, snapshot) {
-                  return Slider(
-                    min: 0,
-                    max: blurEditorConfigs.maxBlur,
-                    divisions: 100,
-                    value: selectedBlur,
-                    onChanged: (value) {
-                      selectedBlur = value;
-                      _uiBlurStream.add(null);
-                      onUpdateUI?.call();
-                    },
-                    onChangeEnd: (value) {
-                      _takeScreenshot();
-                    },
-                  );
-                }),
+            child: RepaintBoundary(
+              child: StreamBuilder(
+                  stream: _uiBlurStream.stream,
+                  builder: (context, snapshot) {
+                    return Slider(
+                      min: 0,
+                      max: blurEditorConfigs.maxBlur,
+                      divisions: 100,
+                      value: selectedBlur,
+                      onChanged: (value) {
+                        selectedBlur = value;
+                        _uiBlurStream.add(null);
+                        onUpdateUI?.call();
+                      },
+                      onChangeEnd: (value) {
+                        _takeScreenshot();
+                      },
+                    );
+                  }),
+            ),
           ),
         ),
       ),

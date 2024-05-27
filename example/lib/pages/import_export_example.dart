@@ -50,9 +50,6 @@ class _ImportExportExampleState extends State<ImportExportExample>
             onCloseEditor: onCloseEditor,
           ),
           configs: ProImageEditorConfigs(
-            imageGenerationConfigs: const ImageGeneratioConfigs(
-              allowEmptyEditCompletion: true,
-            ),
             stateHistoryConfigs: StateHistoryConfigs(
               initStateHistory: ImportStateHistory.fromMap(
                 importHistoryDemoData,
