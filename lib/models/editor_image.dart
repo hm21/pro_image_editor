@@ -2,9 +2,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-// Project imports:
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import '../utils/converters.dart';
 
 /// Flutter EditorImage Class Documentation

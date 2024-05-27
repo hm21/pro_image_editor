@@ -3,11 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
+// Dart imports:
 import 'dart:async' as _i4;
 import 'dart:typed_data' as _i3;
 
+// Flutter imports:
 import 'package:flutter/material.dart' as _i5;
+
+// Package imports:
 import 'package:mockito/mockito.dart' as _i1;
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_image.dart' as _i2;
 
 // ignore_for_file: type=lint

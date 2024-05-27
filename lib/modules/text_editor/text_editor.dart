@@ -3,7 +3,6 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 
 // Package imports:
 import 'package:rounded_background_text/rounded_background_text.dart';
@@ -11,6 +10,7 @@ import 'package:rounded_background_text/rounded_background_text.dart';
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_text_appbar.dart';
 import 'package:pro_image_editor/mixins/converted_configs.dart';
+import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';

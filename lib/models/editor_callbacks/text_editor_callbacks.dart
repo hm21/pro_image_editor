@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import 'editor_callbacks_typedef.dart';
 
 /// A class representing callbacks for the text Editor.

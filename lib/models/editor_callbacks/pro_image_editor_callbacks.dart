@@ -1,11 +1,12 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
-import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 
 // Project imports:
 import 'editor_callbacks_typedef.dart';
+import 'text_editor_callbacks.dart';
 
 export 'editor_callbacks_typedef.dart';
+export 'text_editor_callbacks.dart';
 
 /// A class representing callbacks for the Image Editor.
 class ProImageEditorCallbacks {

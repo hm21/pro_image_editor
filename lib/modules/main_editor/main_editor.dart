@@ -10,13 +10,13 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:defer_pointer/defer_pointer.dart';
-import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
+import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/layer_copy_manager.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/main_editor_controllers.dart';
