@@ -94,40 +94,53 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
                           )
                         : const SizedBox.shrink(),
                   ),
-                  gap,
-                  IconButton(
-                    tooltip: widget
-                        .configs.i18n.cropRotateEditor.bottomNavigationBarText,
-                    onPressed: widget.onTapCropRotateEditor,
-                    icon: Icon(
-                        widget.configs.icons.cropRotateEditor.bottomNavBar),
-                    style: whatsAppButtonStyle,
-                  ),
-                  gap,
-                  IconButton(
-                    tooltip: widget
-                        .configs.i18n.stickerEditor.bottomNavigationBarText,
-                    onPressed: widget.onTapStickerEditor,
-                    icon: Icon(widget.configs.icons.stickerEditor.bottomNavBar),
-                    style: whatsAppButtonStyle,
-                  ),
-                  gap,
-                  IconButton(
-                    tooltip:
-                        widget.configs.i18n.textEditor.bottomNavigationBarText,
-                    onPressed: widget.onTapTextEditor,
-                    icon: Icon(widget.configs.icons.textEditor.bottomNavBar),
-                    style: whatsAppButtonStyle,
-                  ),
-                  gap,
-                  IconButton(
-                    tooltip:
-                        widget.configs.i18n.paintEditor.bottomNavigationBarText,
-                    onPressed: widget.onTapPaintEditor,
-                    icon:
-                        Icon(widget.configs.icons.paintingEditor.bottomNavBar),
-                    style: whatsAppButtonStyle,
-                  ),
+                  if (widget.configs.cropRotateEditorConfigs.enabled) ...[
+                    gap,
+                    IconButton(
+                      tooltip: widget.configs.i18n.cropRotateEditor
+                          .bottomNavigationBarText,
+                      onPressed: widget.onTapCropRotateEditor,
+                      icon: Icon(
+                          widget.configs.icons.cropRotateEditor.bottomNavBar),
+                      style: whatsAppButtonStyle,
+                    ),
+                  ],
+                  if (widget.configs.stickerEditorConfigs?.enabled == true ||
+                      widget.configs.emojiEditorConfigs.enabled) ...[
+                    gap,
+                    IconButton(
+                      tooltip: widget
+                          .configs.i18n.stickerEditor.bottomNavigationBarText,
+                      onPressed: widget.onTapStickerEditor,
+                      icon:
+                          Icon(widget.configs.icons.stickerEditor.bottomNavBar),
+                      style: whatsAppButtonStyle,
+                    ),
+                  ],
+                  if (widget.configs.textEditorConfigs.enabled) ...[
+                    gap,
+                    IconButton(
+                      tooltip: widget
+                          .configs.i18n.textEditor.bottomNavigationBarText,
+                      onPressed: widget.onTapTextEditor,
+                      icon: Icon(widget.configs.icons.textEditor.bottomNavBar),
+                      style: whatsAppButtonStyle,
+                    ),
+                  ],
+                  if (widget.configs.paintEditorConfigs.enabled) ...[
+                    gap,
+                    IconButton(
+                      tooltip: widget
+                          .configs.i18n.paintEditor.bottomNavigationBarText,
+                      onPressed: widget.onTapPaintEditor,
+                      icon: Icon(
+                          widget.configs.icons.paintingEditor.bottomNavBar),
+                      style: whatsAppButtonStyle,
+                    ),
+                  ],
+                  if (widget.configs.customWidgets.whatsAppOwnAppBarIcons !=
+                      null)
+                    widget.configs.customWidgets.whatsAppOwnAppBarIcons!,
                 ],
               );
       }),

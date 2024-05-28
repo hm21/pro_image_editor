@@ -348,6 +348,9 @@ class PaintingEditorState extends State<PaintingEditor>
     if (_imageKey.currentState!.canUndo) _historyPosition--;
     _imageKey.currentState!.undo();
     _uiAppbarIconsStream.add(null);
+    if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+      _uiPickerStream.add(null);
+    }
     onUpdateUI?.call();
   }
 
@@ -815,6 +818,9 @@ class PaintingEditorState extends State<PaintingEditor>
         configs: paintEditorConfigs,
         onUpdateDone: () {
           _uiAppbarIconsStream.add(null);
+          if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+            _uiPickerStream.add(null);
+          }
           onUpdateUI?.call();
           _takeScreenshot();
         },

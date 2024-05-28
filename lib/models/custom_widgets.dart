@@ -88,6 +88,9 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the text editor component.
   final Widget? bottomBarTextEditor;
 
+  /// A custom widget that will be displayed in WhatsApp mode in the app bar on the top right, providing a useful custom "Done" button.
+  final Widget? whatsAppOwnAppBarIcons;
+
   /// Add a custom widget at a specific position in the body.
   /// For example, you can use the Position widget to place a container:
   ///
@@ -153,5 +156,6 @@ class ImageEditorCustomWidgets {
     this.whatsAppBottomWidget,
     this.paintEditorBodyItem,
     this.closeWarningDialog,
+    this.whatsAppOwnAppBarIcons,
   });
 }
