@@ -88,6 +88,18 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the text editor component.
   final Widget? bottomBarTextEditor;
 
+  /// Add a custom widget at a specific position in the body.
+  /// For example, you can use the Position widget to place a container:
+  ///
+  /// ```dart
+  /// Position(
+  ///   left: 0,
+  ///   right: 0,
+  ///   child: Container(),
+  /// )
+  /// ```
+  final Widget? paintEditorBodyItem;
+
   /// Override the close warning dialog when we made changes.
   ///
   /// **Example:**
@@ -139,6 +151,7 @@ class ImageEditorCustomWidgets {
     this.bottomBarCropRotateEditor,
     this.bottomBarTextEditor,
     this.whatsAppBottomWidget,
+    this.paintEditorBodyItem,
     this.closeWarningDialog,
   });
 }

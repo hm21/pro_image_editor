@@ -712,7 +712,9 @@ class PaintingEditorState extends State<PaintingEditor>
                                 activeColor: activeColor,
                               );
                             }),
-                      ]
+                      ],
+                      if (customWidgets.paintEditorBodyItem != null)
+                        customWidgets.paintEditorBodyItem!
                     ],
             ),
           ),
