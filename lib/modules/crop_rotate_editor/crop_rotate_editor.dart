@@ -179,14 +179,23 @@ class CropRotateEditorState extends State<CropRotateEditor>
         StandaloneEditorState<CropRotateEditor, CropRotateEditorInitConfigs>,
         ExtendedLoop,
         CropAreaHistory {
-  /// Manages the capturing a screenshot of the image.
-  late ContentRecorderController screenshotCtrl;
-
   /// A key used to access the state of the CropRotateGestureDetector widget.
   final _gestureKey = GlobalKey<CropRotateGestureDetectorState>();
 
+  /// Manages the capturing a screenshot of the image.
+  late ContentRecorderController screenshotCtrl;
+
   /// A ScrollController for controlling the scrolling behavior of the bottom navigation bar.
   late ScrollController _bottomBarScrollCtrl;
+
+  /// Debounce object for handling the end of a scaling gesture.
+  late final Debounce _onScaleEndDebounce;
+
+  /// Debounce object for allowing updates during a scaling gesture.
+  late final Debounce _onScaleAllowUpdateDebounce;
+
+  /// A debounce object for scroll history actions.
+  late final Debounce _scrollHistoryDebounce;
 
   /// Indicates whether to show the fake hero animation.
   bool _showFakeHero = true;
@@ -218,7 +227,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Indicates whether the image size has been decoded.
   bool _imageSizeIsDecoded = true;
 
+  /// Generate a fake hero widget to animate between screens.
   bool enableFakeHero = false;
+
+  /// Skip the first update because the outside listener needs one frame
+  /// to correctly detect events.
+  bool _scaleAllowUpdateHelper = false;
+
+  /// The number of active pointers (touch points).
+  int _activePointers = 0;
 
   /// The length of the crop corner.
   final double _cropCornerLength = 36;
@@ -260,6 +277,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The starting scale value for pinch gestures.
   double _startingPinchScale = 1;
 
+  /// The pixel ratio of the image.
+  double? _pixelRatio;
+
+  /// Helper variable to store the initial scale value at the start of a scaling gesture.
+  double _scaleStartZoomHelper = 1;
+
   /// The starting translate offset for gestures.
   Offset _startingTranslate = Offset.zero;
 
@@ -292,10 +315,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Details of the tap down event for double-tap gestures.
   late TapDownDetails _doubleTapDetails;
 
-  /// A debounce object for scroll history actions.
-  final Debounce _scrollHistoryDebounce =
-      Debounce(const Duration(milliseconds: 350));
-
   /// The current part of the crop area being interacted with.
   CropAreaPart _currentCropAreaPart = CropAreaPart.none;
 
@@ -314,31 +333,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// List of raw layers without any transformation.
   late List<Layer> _rawLayers;
 
-  /// The pixel ratio of the image.
-  double? _pixelRatio;
-
-  /// Skip the first update because the outside listener needs one frame
-  /// to correctly detect events.
-  bool _scaleAllowUpdateHelper = false;
-
-  /// The number of active pointers (touch points).
-  int _activePointers = 0;
-
-  /// Helper variable to store the initial scale value at the start of a scaling gesture.
-  double _scaleStartZoomHelper = 1;
-
-  /// Debounce object for handling the end of a scaling gesture.
-  late Debounce _onScaleEndDebounce;
-
-  /// Debounce object for allowing updates during a scaling gesture.
-  late Debounce _onScaleAllowUpdateDebounce;
-
   @override
   void initState() {
     super.initState();
     // Initialize debouncers
     _onScaleEndDebounce = Debounce(const Duration(milliseconds: 10));
     _onScaleAllowUpdateDebounce = Debounce(const Duration(milliseconds: 1));
+    _scrollHistoryDebounce = Debounce(const Duration(milliseconds: 350));
 
     // Initialize controllers
     screenshotCtrl = ContentRecorderController(
@@ -433,14 +434,20 @@ class CropRotateEditorState extends State<CropRotateEditor>
       }
 
       if (!enableFakeHero) hideFakeHero();
+      setState(() {});
 
-      /// If the screen size has changed, we need to resize the image to fit the screen.
+      /// Skip one frame to ensure the image is correctly transformed
       Size? originalSize = transformConfigs?.originalSize;
       if (originalSize != null && !originalSize.isInfinite) {
-        // TODO:
-        scaleCtrl.duration = Duration.zero;
-        calcFitToScreen();
-        scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          /// Fit to the screen and set duration to zero
+          double oldScaleAnimationValue = scaleAnimation.value;
+          scaleCtrl.duration = Duration.zero;
+          calcFitToScreen();
+          scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
+
+          _setCropRectBoundings(oldScaleAnimationValue: oldScaleAnimationValue);
+        });
       }
     });
   }
@@ -775,6 +782,56 @@ class CropRotateEditorState extends State<CropRotateEditor>
       ..forward();
 
     oldScaleFactor = scale;
+  }
+
+  void _setCropRectBoundings({
+    double? oldScaleAnimationValue,
+  }) {
+    if (!_renderedImgSize.isInfinite) {
+      bool fitToWidth =
+          (cropRect.width + _cropSpaceHorizontal) > _renderedImgSize.width;
+      bool fitToHeight =
+          (cropRect.height + _cropSpaceVertical) > _renderedImgSize.height;
+      double ratio = cropRect.size.aspectRatio;
+
+      /// If the croprect is to small or it will fit to both sizes we choose from the aspect ratio.
+      if ((fitToWidth && fitToHeight) ||
+          (!fitToHeight &&
+              !fitToWidth &&
+              cropRect.width < _renderedImgSize.width &&
+              cropRect.height < _renderedImgSize.height)) {
+        fitToHeight = ratio < _contentSize.aspectRatio;
+        fitToWidth = !fitToHeight;
+      }
+
+      /// return if the croprect has already the correct size
+      if (!fitToWidth && !fitToHeight) return;
+
+      Size oldSize = cropRect.size;
+
+      calcCropRect(newRatio: 1 / ratio);
+
+      /// Fit to the screen and set duration to zero
+      scaleCtrl.duration = Duration.zero;
+      calcFitToScreen();
+      scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
+
+      double scaleFactor = fitToHeight
+          ? cropRect.height / oldSize.height
+          : cropRect.width / oldSize.width;
+
+      /// Seems like this calculation is not required but it there is an issue
+      /// we should multiply it below with the scaleFactor
+      /// double scaleFitFactor = oldScaleAnimationValue == null || _renderedImgSize.aspectRatio < ratio ?
+      ///     1 :
+      ///     scaleAnimation.value / oldScaleAnimationValue;
+
+      translate = Offset(
+        translate.dx * scaleFactor,
+        translate.dy * scaleFactor,
+      );
+      _setOffsetLimits();
+    }
   }
 
   /// Opens a dialog to select from predefined aspect ratios.
@@ -1394,7 +1451,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
           );
 
           cropRect = interpolatedRect(startCropRect, targetCropRect, curveT);
-
           _setOffsetLimits(
             rect: _ratio < 0
                 ? interpolatedRect(initRect, targetCropRect, curveT)
@@ -1494,8 +1550,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   void _setOffsetLimits({Rect? rect}) {
     Rect r = rect ?? _viewRect;
 
-    double cropWidth = r.right - r.left;
-    double cropHeight = r.bottom - r.top;
+    double cropWidth = r.width;
+    double cropHeight = r.height;
 
     double minX = (_renderedImgConstraints.maxWidth * zoomFactor - cropWidth) /
         2 /
@@ -1505,7 +1561,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             2 /
             zoomFactor;
 
-    var offset = translate;
+    Offset offset = translate;
 
     if (offset.dx > minX) {
       translate = Offset(minX, translate.dy);
@@ -1908,10 +1964,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
             _contentSize.width - _screenPadding * 2,
             _contentSize.height - _screenPadding * 2,
           ).aspectRatio;
-
-          if (_imageNeedDecode) _decodeImage();
         },
-        onResizeEnd: (event) {},
+        onResizeEnd: (event) {
+          if (_imageNeedDecode) _decodeImage();
+          _setCropRectBoundings();
+          setState(() {});
+        },
         child: Stack(
           children: [
             if (_showFakeHero) _buildFakeHero(),
