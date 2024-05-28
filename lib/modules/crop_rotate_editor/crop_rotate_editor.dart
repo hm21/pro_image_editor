@@ -204,8 +204,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   bool _interactionActive = false;
 
   /// Determines if the image sticks to the screen width based on the image width and content constraints.
-  bool get imageSticksToScreenWidth =>
-      _imgWidth >= _contentConstraints.maxWidth;
+  bool get imageSticksToScreenWidth => _imgWidth >= _contentSize.width;
 
   /// Determines if the image is rotated 90 degrees based on the rotation count.
   bool get _rotated90deg => rotationCount % 2 != 0;
@@ -284,8 +283,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Size get _mainImageSize =>
       mainImageSize ?? Size(_decodedImageWidth, _decodedImageHeight);
 
-  /// The constraints for the content.
-  late BoxConstraints _contentConstraints = const BoxConstraints();
+  /// The size of the content.
+  late Size _contentSize = Size.infinite;
 
   /// The constraints for the rendered image.
   late BoxConstraints _renderedImgConstraints = const BoxConstraints();
@@ -468,8 +467,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     var w = decodedImage.width;
     var h = decodedImage.height;
 
-    var widthRatio = w.toDouble() / _contentConstraints.biggest.width;
-    var heightRatio = h.toDouble() / _contentConstraints.biggest.height;
+    var widthRatio = w.toDouble() / _contentSize.width;
+    var heightRatio = h.toDouble() / _contentSize.height;
     var pixelRatio = max(heightRatio, widthRatio);
 
     _decodedImageWidth = w / pixelRatio;
@@ -612,7 +611,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           activeTransformConfigs:
               initConfigs.transformConfigs ?? TransformConfigs.empty(),
           newTransformConfigs: transformC,
-          layerDrawAreaSize: mainBodySize ?? _contentConstraints.biggest,
+          layerDrawAreaSize: mainBodySize ?? _contentSize,
           undoChanges: false,
         ).updatedLayers;
         _layers = updatedLayers;
@@ -654,7 +653,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Future<void> _setPixelRatio() async {
     _pixelRatio = (await decodeImageInfos(
       bytes: await widget.editorImage.safeByteArray(context),
-      screenSize: _contentConstraints.biggest,
+      screenSize: _contentSize,
       configs: activeHistory,
     ))
         .pixelRatio;
@@ -747,8 +746,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     Size? imageSize,
   }) {
     Size contentSize = Size(
-      _contentConstraints.maxWidth - _screenPadding * 2,
-      _contentConstraints.maxHeight - _screenPadding * 2,
+      _contentSize.width - _screenPadding * 2,
+      _contentSize.height - _screenPadding * 2,
     );
 
     double cropSpaceHorizontal =
@@ -1151,11 +1150,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
         double zoomOutHitAreaX = max(
             halfScreenPadding,
-            (_contentConstraints.biggest.width - realViewRectSize.width) / 2 -
+            (_contentSize.width - realViewRectSize.width) / 2 -
                 doubleInteractiveArea);
         double zoomOutHitAreaY = max(
             halfScreenPadding,
-            (_contentConstraints.biggest.height - realViewRectSize.height) / 2 -
+            (_contentSize.height - realViewRectSize.height) / 2 -
                 doubleInteractiveArea);
 
         double outsideHitPosY = details.focalPoint.dy -
@@ -1165,11 +1164,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
             MediaQuery.of(context).padding.top;
 
         bool outsideLeft = details.focalPoint.dx < zoomOutHitAreaX;
-        bool outsideRight = details.focalPoint.dx >
-            _contentConstraints.biggest.width - zoomOutHitAreaX;
+        bool outsideRight =
+            details.focalPoint.dx > _contentSize.width - zoomOutHitAreaX;
         bool outsideTop = outsideHitPosY < zoomOutHitAreaY;
-        bool outsideBottom = outsideHitPosY >
-            _contentConstraints.biggest.height - zoomOutHitAreaY;
+        bool outsideBottom =
+            outsideHitPosY > _contentSize.height - zoomOutHitAreaY;
 
         // Scale outside when the user move outside the scale area
         if (!isFreeAspectRatio &&
@@ -1904,10 +1903,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
     return SafeArea(
       child: ScreenResizeDetector(
         onResizeUpdate: (event) {
-          _contentConstraints = event.newConstraints;
+          _contentSize = event.newContentSize;
           cropEditorScreenRatio = Size(
-            _contentConstraints.maxWidth - _screenPadding * 2,
-            _contentConstraints.maxHeight - _screenPadding * 2,
+            _contentSize.width - _screenPadding * 2,
+            _contentSize.height - _screenPadding * 2,
           ).aspectRatio;
 
           if (_imageNeedDecode) _decodeImage();
@@ -2064,8 +2063,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
               rotationScaleFactor: oldScaleFactor,
               interactionOpacity: _interactionOpacityProgress,
               screenSize: Size(
-                _contentConstraints.maxWidth,
-                _contentConstraints.maxHeight,
+                _contentSize.width,
+                _contentSize.height,
               ),
               drawCircle: cropRotateEditorConfigs.roundCropper,
               fadeInOpacity: _painterOpacity,
@@ -2088,12 +2087,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildImage() {
-    double maxWidth = _imgWidth /
-        _imgHeight *
-        (_contentConstraints.maxHeight - _screenPadding * 2);
-    double maxHeight = (_contentConstraints.maxWidth - _screenPadding * 2) *
-        _imgHeight /
-        _imgWidth;
+    double maxWidth =
+        _imgWidth / _imgHeight * (_contentSize.height - _screenPadding * 2);
+    double maxHeight =
+        (_contentSize.width - _screenPadding * 2) * _imgHeight / _imgWidth;
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: maxWidth.isNaN ? _imgWidth : maxWidth,
@@ -2120,8 +2117,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   clipBehavior: Clip.hardEdge,
                   child: LayerStack(
                     transformHelper: TransformHelper(
-                      mainBodySize:
-                          (mainBodySize ?? _contentConstraints.biggest),
+                      mainBodySize: (mainBodySize ?? _contentSize),
                       mainImageSize: _mainImageSize,
                       editorBodySize: _renderedImgConstraints.biggest,
                     ),
@@ -2165,7 +2161,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             if (filterEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
+                  mainBodySize: (mainBodySize ?? _contentSize),
                   mainImageSize: _mainImageSize,
                   editorBodySize: constraints.biggest,
                   transformConfigs: transformConfigs,
@@ -2192,8 +2188,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _screenshotWidget(TransformConfigs transformC) => SizedBox(
-        width: _contentConstraints.maxWidth,
-        height: _contentConstraints.maxHeight,
+        width: _contentSize.width,
+        height: _contentSize.height,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -2212,9 +2208,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
             if (blurEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: (mainBodySize ?? _contentConstraints.biggest),
+                  mainBodySize: (mainBodySize ?? _contentSize),
                   mainImageSize: _mainImageSize,
-                  editorBodySize: _contentConstraints.biggest,
+                  editorBodySize: _contentSize,
                   transformConfigs: transformConfigs,
                 ),
                 configs: configs,

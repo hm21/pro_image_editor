@@ -16,7 +16,6 @@ import 'package:vibration/vibration.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
 import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
-import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
 import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/layer_copy_manager.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/main_editor_controllers.dart';
@@ -650,6 +649,7 @@ class ProImageEditorState extends State<ProImageEditor>
     );
     _sizesManager.originalImageSize ??= infos.rawImageSize;
     _sizesManager.decodedImageSize = infos.renderedImageSize;
+
     _pixelRatio = infos.pixelRatio;
 
     _inited = true;
@@ -934,9 +934,7 @@ class ProImageEditorState extends State<ProImageEditor>
                   _pageOpenCompleter.complete(true);
                 }
                 _layerInteractionManager.freeStyleHighPerformanceHero = false;
-                if (_sizesManager.shouldRecalculateLayerPosition) {
-                  _sizesManager.recalculateLayerPosition(activeLayers);
-                }
+
                 if (_stateManager.heroScreenshotRequired) {
                   _stateManager.heroScreenshotRequired = false;
                   _takeScreenshot();
@@ -1649,22 +1647,25 @@ class ProImageEditorState extends State<ProImageEditor>
           }
         },
         child: ScreenResizeDetector(
+          ignoreSafeArea: true,
           onResizeUpdate: (event) {
-            _sizesManager.lastScreenSize = event.newConstraints.biggest;
+            _sizesManager.recalculateLayerPosition(
+              history: _stateManager.stateHistory,
+              resizeEvent: ResizeEvent(
+                oldContentSize: Size(
+                  event.oldContentSize.width,
+                  event.oldContentSize.height - _sizesManager.allToolbarHeight,
+                ),
+                newContentSize: Size(
+                  event.newContentSize.width,
+                  event.newContentSize.height - _sizesManager.allToolbarHeight,
+                ),
+              ),
+            );
+            _sizesManager.lastScreenSize = event.newContentSize;
           },
           onResizeEnd: (event) async {
-            if (!_sizesManager.shouldRecalculateLayerPosition) {
-              _sizesManager.temporaryDecodedImageSize =
-                  _sizesManager.decodedImageSize;
-            }
             await _decodeImage();
-
-            if (_isEditorOpen) {
-              _sizesManager.shouldRecalculateLayerPosition = true;
-              return;
-            }
-
-            _sizesManager.recalculateLayerPosition(activeLayers);
           },
           child: AnnotatedRegion<SystemUiOverlayStyle>(
             value: imageEditorTheme.uiOverlayStyle,
