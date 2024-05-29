@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Configuration settings for image generation.
 ///
 /// [ImageGeneratioConfigs] holds various configuration options
@@ -18,6 +20,8 @@ class ImageGeneratioConfigs {
   ///
   /// On Dart native platforms (all platforms except web), this runs on an isolate thread.
   /// On Dart web, it runs on a web worker.
+  ///
+  /// This option is enabled by default unless we are in debug mode or the platform is web.
   final bool generateImageInBackground;
 
   /// Allows image generation to run in an isolated thread, preventing any impact on the UI.
@@ -64,7 +68,7 @@ class ImageGeneratioConfigs {
   const ImageGeneratioConfigs({
     this.allowEmptyEditCompletion = true,
     this.generateIsolated = true,
-    this.generateImageInBackground = true,
+    this.generateImageInBackground = !kIsWeb || !kDebugMode,
     this.generateOnlyImageBounds = true,
     this.awaitLoadingDialogContext = false,
     this.customPixelRatio,

@@ -120,24 +120,28 @@ class EditorImage {
   /// A future that retrieves the image data as a `Uint8List` from the appropriate source
   /// based on the `EditorImageType`.
   Future<Uint8List> safeByteArray(BuildContext context) async {
+    Uint8List bytes;
     switch (type) {
       case EditorImageType.memory:
-        return byteArray!;
+        bytes = byteArray!;
       case EditorImageType.asset:
-        byteArray = await loadAssetImageAsUint8List(assetPath!);
-        if (!context.mounted) return byteArray!;
+        bytes = await loadAssetImageAsUint8List(assetPath!);
         break;
       case EditorImageType.file:
-        byteArray = await readFileAsUint8List(file!);
-        if (!context.mounted) return byteArray!;
+        bytes = await readFileAsUint8List(file!);
         break;
       case EditorImageType.network:
-        byteArray = await fetchImageAsUint8List(networkUrl!);
-        if (!context.mounted) return byteArray!;
+        bytes = await fetchImageAsUint8List(networkUrl!);
         break;
     }
-    await precacheImage(MemoryImage(byteArray!), context);
-    return byteArray!;
+
+    if (!context.mounted) return bytes;
+
+    await precacheImage(MemoryImage(bytes), context);
+
+    byteArray = bytes;
+
+    return bytes;
   }
 
   /// Returns the type of the image source, determined by the available properties.
