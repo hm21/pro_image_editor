@@ -123,7 +123,7 @@ class EditorImage {
     Uint8List bytes;
     switch (type) {
       case EditorImageType.memory:
-        bytes = byteArray!;
+        return byteArray!;
       case EditorImageType.asset:
         bytes = await loadAssetImageAsUint8List(assetPath!);
         break;
