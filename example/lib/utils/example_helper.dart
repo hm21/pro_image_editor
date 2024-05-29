@@ -14,7 +14,6 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
   final editorKey = GlobalKey<ProImageEditorState>();
   Uint8List? editedBytes;
   double? _generationTime;
-  String? contentType;
   DateTime? startEditingTime;
 
   Future<void> onImageEditingStarted() async {
@@ -46,7 +45,6 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
             return PreviewImgPage(
               imgBytes: editedBytes!,
               generationTime: _generationTime,
-              contentType: contentType,
             );
           },
         ),
@@ -54,7 +52,6 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
         editedBytes = null;
         _generationTime = null;
         startEditingTime = null;
-        contentType = null;
       });
     }
     if (mounted) Navigator.pop(context);

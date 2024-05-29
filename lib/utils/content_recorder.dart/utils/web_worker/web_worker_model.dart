@@ -52,11 +52,20 @@ class WebWorkerModel {
     }
   }
 
-  void send(ImageFromMainThread data) {
+  void send(RawFromMainThread data) {
     activeTasks++;
+
     worker.postMessage({
+      'mode': data is ImageFromMainThread ? 'convert' : 'encode',
       'completerId': data.completerId,
-      'generateOnlyImageBounds': data.generateOnlyImageBounds,
+      'generateOnlyImageBounds':
+          data is ImageFromMainThread ? data.generateOnlyImageBounds : null,
+      'outputFormat': data.outputFormat.name,
+      'jpegChroma': data.jpegChroma.name,
+      'pngFilter': data.pngFilter.name,
+      'jpegQuality': data.jpegQuality,
+      'pngLevel': data.pngLevel,
+      'singleFrame': data.singleFrame,
       'image': {
         'buffer': data.image.buffer,
         'width': data.image.width,
@@ -77,7 +86,7 @@ class WebWorkerModel {
   }
 
   void destroy() {
-    worker.postMessage({'kill': true});
+    worker.postMessage({'mode': 'kill'});
     worker.terminate();
   }
 }

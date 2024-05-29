@@ -138,10 +138,11 @@ class _StandaloneExampleState extends State<StandaloneExample>
         convertToUint8List: true,
         configs: const ProImageEditorConfigs(
           imageGenerationConfigs: ImageGeneratioConfigs(
-            /// If your users paint a lot in a short time, you should disable this
-            /// flag because it will overload the isolated thread which delay the final result
-            generateImageInBackground: true,
-          ),
+
+              /// If your users paint a lot in a short time, you should disable this
+              /// flag because it will overload the isolated thread which delay the final result
+              /// generateImageInBackground: true,
+              ),
         ),
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
@@ -159,10 +160,11 @@ class _StandaloneExampleState extends State<StandaloneExample>
         convertToUint8List: true,
         configs: const ProImageEditorConfigs(
           imageGenerationConfigs: ImageGeneratioConfigs(
-            /// If your users change a lot stuff in a short time, you should disable this
-            /// flag because it will overload the isolated thread which delay the final result.
-            generateImageInBackground: true,
-          ),
+
+              /// If your users change a lot stuff in a short time, you should disable this
+              /// flag because it will overload the isolated thread which delay the final result.
+              /// generateImageInBackground: true,
+              ),
         ),
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,

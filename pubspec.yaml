@@ -1,6 +1,6 @@
 name: pro_image_editor
 description: "A Flutter image editor: Seamlessly enhance your images with user-friendly editing features."
-version: 3.0.0-dev.22
+version: 3.0.0-dev.23
 homepage: https://github.com/hm21/pro_image_editor/
 repository: https://github.com/hm21/pro_image_editor/
 issue_tracker: https://github.com/hm21/pro_image_editor/issues/
@@ -43,6 +43,7 @@ dependencies:
   image: ^4.1.7
   rounded_background_text: ^0.5.0
   vibration: ^1.8.4
+  mime: ^1.0.5
 
 dev_dependencies:
   flutter_test:

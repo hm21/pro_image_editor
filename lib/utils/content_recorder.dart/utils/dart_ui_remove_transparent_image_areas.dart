@@ -1,6 +1,5 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:isolate';
 import 'dart:ui' as ui;
 
 // Flutter imports:
@@ -11,10 +10,8 @@ import 'content_recorder_models.dart';
 
 /// Function to remove transparent areas from the image using dart:ui
 Future<ui.Image?> dartUiRemoveTransparentImgAreas(
-  ui.Image image, {
-  SendPort? sendport,
-  Completer<RemoveHelper>? completer,
-}) async {
+  ui.Image image,
+) async {
   // Convert the Image to access pixels
   final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
@@ -23,7 +20,80 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
   int width = image.width;
   int height = image.height;
 
-  sendport?.send(
+  RemoveHelper res = await compute(
+    (RemoveHelper helper) async {
+      int originalWidth = helper.width;
+      int originalHeight = helper.height;
+
+      final pixels = helper.bytes.buffer.asUint32List();
+      bool found = false;
+      // Find top boundary
+      for (int y = 0; y < originalHeight && !found; y++) {
+        for (int x = 0; x < originalWidth; x++) {
+          int index = x + y * helper.width;
+          int pixel = pixels[index];
+          int alpha = (pixel >> 24) & 0xFF;
+
+          if (alpha != 0) {
+            helper.minY = y;
+            found = true;
+            break;
+          }
+        }
+      }
+
+      found = false;
+      // Find bottom boundary
+      for (int y = originalHeight - 1; y >= helper.minY && !found; y--) {
+        for (int x = 0; x < originalWidth; x++) {
+          int index = x + y * helper.width;
+          int pixel = pixels[index];
+          int alpha = (pixel >> 24) & 0xFF;
+
+          if (alpha != 0) {
+            helper.maxY = y;
+            found = true;
+          }
+        }
+      }
+      helper.maxY = helper.maxY.clamp(helper.minY, originalHeight);
+
+      found = false;
+      // Find left boundary
+      for (int x = 0; x < originalWidth && !found; x++) {
+        for (int y = helper.minY; y <= helper.maxY; y++) {
+          int index = x + y * helper.width;
+          int pixel = pixels[index];
+          int alpha = (pixel >> 24) & 0xFF;
+
+          if (alpha != 0) {
+            helper.minX = x;
+            found = true;
+            break;
+          }
+        }
+      }
+      helper.minX = helper.minX.clamp(0, originalWidth);
+
+      found = false;
+      // Find right boundary
+      for (int x = originalWidth - 1; x >= helper.minX && !found; x--) {
+        for (int y = helper.minY; y <= helper.maxY; y++) {
+          int index = x + y * helper.width;
+          int pixel = pixels[index];
+          int alpha = (pixel >> 24) & 0xFF;
+
+          if (alpha != 0) {
+            helper.maxX = x;
+            found = true;
+            break;
+          }
+        }
+      }
+      helper.maxX = helper.maxX.clamp(helper.minX, originalWidth);
+
+      return helper;
+    },
     RemoveHelper(
       bytes: byteData,
       minX: width,
@@ -35,46 +105,12 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
     ),
   );
 
-  RemoveHelper? res = await completer?.future;
-
-  res ??= await compute((RemoveHelper helper) async {
-    final pixels = helper.bytes.buffer.asUint32List();
-
-    // Determine the bounding box of non-transparent pixels
-    for (int y = 0; y < helper.height; y++) {
-      for (int x = 0; x < helper.width; x++) {
-        int index = x + y * helper.width;
-        int pixel = pixels[index];
-        int alpha = (pixel >> 24) & 0xFF;
-
-        // Check if the pixel is not fully transparent
-        if (alpha != 0) {
-          if (x < helper.minX) helper.minX = x;
-          if (y < helper.minY) helper.minY = y;
-          if (x > helper.maxX) helper.maxX = x;
-          if (y > helper.maxY) helper.maxY = y;
-        }
-      }
-    }
-    return helper;
-  },
-      RemoveHelper(
-        bytes: byteData,
-        minX: width,
-        minY: height,
-        maxX: 0,
-        maxY: 0,
-        width: width,
-        height: height,
-      ));
-
-  int minX = res!.minX;
+  int minX = res.minX;
   int minY = res.minY;
   int maxX = res.maxX;
   int maxY = res.maxY;
 
   if (maxX < minX || maxY < minY) return image;
-
   // Crop the image to the bounding box safely
   final pictureRecorder = ui.PictureRecorder();
   final canvas = ui.Canvas(pictureRecorder);
@@ -91,6 +127,5 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
       .endRecording()
       .toImage((maxX - minX + 1).toInt(), (maxY - minY + 1).toInt());
 
-  // Encode the cropped image to PNG
   return croppedImage;
 }

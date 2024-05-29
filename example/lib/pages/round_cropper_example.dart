@@ -65,6 +65,10 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
         configs: const ProImageEditorConfigs(
+          imageGenerationConfigs: ImageGeneratioConfigs(
+            outputFormat: OutputFormat.png,
+            pngFilter: PngFilter.average,
+          ),
           cropRotateEditorConfigs: CropRotateEditorConfigs(
             roundCropper: true,
             canChangeAspectRatio: false,

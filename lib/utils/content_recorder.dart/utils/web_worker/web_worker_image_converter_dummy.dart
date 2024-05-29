@@ -6,10 +6,8 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
-
-// Project imports:
-import '../../../../pro_image_editor.dart';
-import '../content_recorder_models.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/content_recorder_models.dart';
 
 class ProImageEditorWebWorker {
   final List<dynamic> _webWorkers = [];
@@ -23,7 +21,7 @@ class ProImageEditorWebWorker {
 
   void destroy() {}
 
-  Future<Uint8List?> sendImage(ImageFromMainThread data) async {
+  Future<Uint8List?> send(RawFromMainThread data) async {
     return null;
   }
 }

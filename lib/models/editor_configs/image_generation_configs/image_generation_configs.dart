@@ -1,5 +1,13 @@
 import 'package:flutter/foundation.dart';
 
+import 'output_formats.dart';
+import 'processor_configs.dart';
+import 'package:image/image.dart' show JpegChroma, PngFilter;
+
+export 'output_formats.dart';
+export 'processor_configs.dart';
+export 'package:image/image.dart' show JpegChroma, PngFilter;
+
 /// Configuration settings for image generation.
 ///
 /// [ImageGeneratioConfigs] holds various configuration options
@@ -54,8 +62,33 @@ class ImageGeneratioConfigs {
   /// Configuration settings for the processor.
   ///
   /// Use this property to customize various processing options.
-  /// Refer to the `ProcessorConfigs` class for detailed information on available configuration settings.
+  /// Refer to the `ProcessorConfigs` class for detailed information on
+  /// available configuration settings.
   final ProcessorConfigs processorConfigs;
+
+  /// Specifies the output format for the generated image.
+  final OutputFormat outputFormat;
+
+  /// Specifies whether single frame generation is enabled for the output
+  /// formats PNG, TIFF, CUR, PVR, and ICO.
+  /// The default value is `false`.
+  final bool singleFrame;
+
+  /// Specifies the compression level for PNG images. It ranges from 0 to 9,
+  /// where 0 indicates no compression and 9 indicates maximum compression.
+  final int pngLevel;
+
+  /// Specifies the filter method for optimizing PNG compression. It determines
+  /// how scanline filtering is applied.
+  final PngFilter pngFilter;
+
+  /// Specifies the quality level for JPEG images. It ranges from 1 to 100,
+  /// where 1 indicates the lowest quality and 100 indicates the highest quality.
+  final int jpegQuality;
+
+  /// Specifies the chroma subsampling method for JPEG images. It defines the
+  /// compression ratio for chrominance components.
+  final JpegChroma jpegChroma;
 
   /// Creates a new instance of [ImageGeneratioConfigs].
   ///
@@ -71,74 +104,14 @@ class ImageGeneratioConfigs {
     this.generateImageInBackground = !kIsWeb || !kDebugMode,
     this.generateOnlyImageBounds = true,
     this.awaitLoadingDialogContext = false,
+    this.singleFrame = false,
     this.customPixelRatio,
+    this.pngLevel = 6,
+    this.pngFilter = PngFilter.none,
+    this.jpegQuality = 100,
+    this.jpegChroma = JpegChroma.yuv444,
+    this.outputFormat = OutputFormat.jpg,
     this.processorConfigs = const ProcessorConfigs(),
-  });
-}
-
-/// Configuration class for managing processor settings.
-class ProcessorConfigs {
-  /// The number of background processors to use.
-  ///
-  /// Must be a positive integer. Defaults to 2.
-  ///
-  /// Ignored if [processorMode] is [ProcessorMode.auto], [ProcessorMode.maximum], or [ProcessorMode.minimum].
-  final int numberOfBackgroundProcessors;
-
-  /// The maximum concurrency level.
-  ///
-  /// Must be a positive integer. Defaults to 2.
-  ///
-  /// Ignored if [processorMode] is [ProcessorMode.minimum] or if the platform is `Web`.
-  final int maxConcurrency;
-
-  /// The mode in which processors will operate.
-  ///
-  /// Defaults to [ProcessorMode.auto].
-  final ProcessorMode processorMode;
-
-  /// Creates a new instance of [ProcessorConfigs] with the given settings.
-  ///
-  /// The [numberOfBackgroundProcessors] must be a positive integer.
-  /// The [maxBackgroundProcessors] must be greater than or equal to [numberOfBackgroundProcessors].
-  /// The [maxConcurrency] must be a positive integer.
-  /// The [processorMode] defaults to [ProcessorMode.auto].
-  const ProcessorConfigs({
-    this.numberOfBackgroundProcessors = 2,
-    this.maxConcurrency = 2,
-    this.processorMode = ProcessorMode.auto,
-  })  : assert(numberOfBackgroundProcessors > 0,
-            'minBackgroundProcessors must be positive'),
-        assert(maxConcurrency > 0, 'maxConcurrency must be positive');
-}
-
-enum ProcessorMode {
-  /// Automatically utilizes an optimal number of background processors.
-  ///
-  /// The [numberOfBackgroundProcessors] setting will be ignored.
-  ///
-  /// In Dart native, if there are too many tasks, it will automatically spawn new isolates.
-  ///
-  /// In Dart web, it ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
-  auto,
-
-  /// Uses the specified [numberOfBackgroundProcessors].
-  ///
-  /// In Dart native, if the limit specified by [maxConcurrency] is reached, it will terminate all active processors
-  /// and respawn them.
-  ///
-  /// In Dart web, it ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
-  limit,
-
-  /// Utilizes all available processors.
-  ///
-  /// Be cautious, as this can negatively affect performance.
-  ///
-  /// It ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
-  maximum,
-
-  /// Uses only one processor.
-  ///
-  /// It ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
-  minimum,
+  }) : assert(jpegQuality > 0 && jpegQuality <= 100,
+            'Jpeg quality must be between 1 and 100');
 }

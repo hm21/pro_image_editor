@@ -218,14 +218,16 @@ class FilterEditorState extends State<FilterEditor>
         context,
         configs: configs,
         theme: theme,
-        message: i18n.filterEditor.applyFilterDialogMsg,
+        message: i18n.doneLoadingMsg,
       );
       if (_pixelRatio == null) await _setPixelRatio();
       if (!mounted) return;
+      bool screenshotIsCaptured =
+          _historyPosition > 0 && _historyPosition <= _screenshots.length;
       Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         pixelRatio: _pixelRatio,
         backgroundScreenshot:
-            _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
+            screenshotIsCaptured ? _screenshots[_historyPosition - 1] : null,
         originalImageBytes: _historyPosition > 0
             ? null
             : await widget.editorImage.safeByteArray(context),

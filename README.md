@@ -271,7 +271,7 @@ void _openEditor() {
             /*
               Your code to handle the edited image. Upload it to your server as an example.
               You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-              The returned image format is `png`.
+              By default, the bytes are in `jpg` format.
             */
             Navigator.pop(context);
           },
@@ -295,7 +295,7 @@ Widget build(BuildContext context) {
                /*
                  Your code to handle the edited image. Upload it to your server as an example.
                  You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-                 The returned image format is `png`.
+                 By default, the bytes are in `jpg` format.
                 */
                Navigator.pop(context);
              },
@@ -329,7 +329,7 @@ Navigator.of(context).push(
         /*
           Your code to handle the edited image. Upload it to your server as an example.
           You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-          The returned image format is `png`.
+          By default, the bytes are in `jpg` format.
         */
           Navigator.pop(context);
         },
@@ -560,7 +560,7 @@ return Scaffold(
                 /*
                   Your code to handle the edited image. Upload it to your server as an example.
                   You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-                  The returned image format is `png`.
+                  By default, the bytes are in `jpg` format.
                 */
                 Navigator.pop(context);
               },
@@ -732,7 +732,7 @@ class DemoState extends State<Demo> {
           /*
             Your code to handle the edited image. Upload it to your server as an example.
             You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-            The returned image format is `png`.
+            By default, the bytes are in `jpg` format.
           */
           Navigator.pop(context);
         },
@@ -1079,8 +1079,8 @@ ProImageEditor.asset(
         Reference ref = FirebaseStorage.instance.ref(path);
 
         /// In some special cases detect firebase the contentType wrong,
-        /// so we make sure the contentType is set to png.
-        await ref.putData(bytes, SettableMetadata(contentType: 'image/png'));
+        /// so we make sure the contentType is set to jpg.
+        await ref.putData(bytes, SettableMetadata(contentType: 'image/jpg'));
       } on FirebaseException catch (e) {
         debugPrint(e.message);
       }
@@ -1182,7 +1182,7 @@ ProImageEditor.memory(
       /*
         Your code to handle the edited image. Upload it to your server as an example.
         You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-        The returned image format is `png`.
+        By default, the bytes are in `jpg` format.
       */
       Navigator.pop(context);
     },
@@ -1266,7 +1266,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 ### ProImageEditorCallbacks
 | Property Name                | Description                                                                                                                        | Default Value |
 |------------------------------|------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `onImageEditingComplete`     | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `png`. | `required`    |
+| `onImageEditingComplete`     | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `jpg`. | `required`    |
 | `onImageEditingStarted`      | A callback function that is triggered when the image generation is started.                                                        | `null`        |
 | `onCloseEditor`              | A callback function that will be called before the image editor closes.                                                            | `null`        |
 | `onUpdateUI`                 | A callback function that can be used to update the UI from custom widgets.                                                         | `null`        |

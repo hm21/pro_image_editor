@@ -52,7 +52,6 @@ class I18nPaintingEditor {
   ///
   /// ```dart
   /// I18nPaintingEditor(
-  ///   applyPaintingDialogMsg: 'Applying painting changes...',
   ///   bottomNavigationBarText: 'Paint',
   ///   freestyle: 'Freestyle',
   ///   arrow: 'Arrow',

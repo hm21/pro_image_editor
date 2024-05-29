@@ -6,19 +6,18 @@ import 'dart:ui';
 // Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/utils/decode_image.dart';
+import 'package:mime/mime.dart';
 
 import '../utils/pixel_transparent_painter.dart';
 
 class PreviewImgPage extends StatefulWidget {
   final Uint8List imgBytes;
   final double? generationTime;
-  final String? contentType;
 
   const PreviewImgPage({
     super.key,
     required this.imgBytes,
     this.generationTime,
-    this.contentType,
   });
 
   @override
@@ -31,9 +30,11 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
   );
 
   Future<DecodedImageInfos>? decodedImageInfos;
+  String _contentType = 'Unkown';
 
   @override
   void initState() {
+    _contentType = lookupMimeType('', headerBytes: widget.imgBytes) ?? 'Unkown';
     super.initState();
   }
 
@@ -132,7 +133,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
                                         padding:
                                             const EdgeInsets.only(left: 8.0),
                                         child: Text(
-                                          widget.contentType ?? 'image/png',
+                                          _contentType,
                                           style: _valueStyle,
                                           textAlign: TextAlign.right,
                                         ),

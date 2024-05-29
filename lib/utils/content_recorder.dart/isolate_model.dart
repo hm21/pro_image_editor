@@ -2,13 +2,9 @@
 import 'dart:async';
 import 'dart:isolate';
 
-// Flutter imports:
-import 'package:flutter/foundation.dart';
-
 // Project imports:
-import '../../models/editor_configs/image_generation_configs.dart';
+import '../../models/editor_configs/image_generation_configs/image_generation_configs.dart';
 import 'utils/content_recorder_models.dart';
-import 'utils/convert_image_to_png.dart';
 import 'utils/isolate_image_converter.dart';
 
 class IsolateModel {
@@ -70,16 +66,19 @@ class IsolateModel {
     );
   }
 
-  void send(ImageFromMainThread data) async {
+  void send(RawFromMainThread data) async {
     if (activeTasks >= processorConfigs.maxConcurrency &&
         processorConfigs.processorMode == ProcessorMode.auto) {
-      // Spawn new isolate if concurrency limit reached and mode is auto.
-      onMessage(await compute(convertImageToPng, data,
-          debugLabel: 'Temporary-Isolate-$coreNumber'));
-    } else {
-      sendPort.send(data);
-      activeTaskIds.add(data.completerId);
+      killActiveTasks(data.completerId);
     }
+
+    sendPort.send(data);
+    activeTaskIds.add(data.completerId);
+  }
+
+  void killActiveTasks(String ignoreTaskId) async {
+    await isolateReady.future;
+    sendPort.send({'kill': ignoreTaskId});
   }
 
   void destroy() async {

@@ -1,8 +1,5 @@
 /// Internationalization (i18n) settings for the Filter Editor component.
 class I18nFilterEditor {
-  /// Text to display when a filter is being applied.
-  final String applyFilterDialogMsg;
-
   /// Text for the bottom navigation bar item that opens the Filter Editor.
   final String bottomNavigationBarText;
 
@@ -26,7 +23,6 @@ class I18nFilterEditor {
   ///
   /// ```dart
   /// I18nFilterEditor(
-  ///   applyFilterDialogMsg: 'Applying Filter...',
   ///   bottomNavigationBarText: 'Filter Effects',
   ///   done: 'Apply',
   ///   back: 'Cancel',
@@ -38,7 +34,6 @@ class I18nFilterEditor {
   /// )
   /// ```
   const I18nFilterEditor({
-    this.applyFilterDialogMsg = 'Filter is being applied.',
     this.bottomNavigationBarText = 'Filter',
     this.back = 'Back',
     this.done = 'Done',

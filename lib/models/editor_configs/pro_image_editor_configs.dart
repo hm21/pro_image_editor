@@ -12,14 +12,14 @@ import 'crop_rotate_editor_configs.dart';
 import 'emoji_editor_configs.dart';
 import 'filter_editor_configs.dart';
 import 'helper_lines_configs.dart';
-import 'image_generation_configs.dart';
+import 'image_generation_configs/image_generation_configs.dart';
 import 'layer_interaction_configs.dart';
 import 'paint_editor_configs.dart';
 import 'state_history_configs.dart';
 import 'sticker_editor_configs.dart';
 import 'text_editor_configs.dart';
 
-export 'image_generation_configs.dart';
+export 'image_generation_configs/image_generation_configs.dart';
 export 'state_history_configs.dart';
 export 'helper_lines_configs.dart';
 export 'paint_editor_configs.dart';

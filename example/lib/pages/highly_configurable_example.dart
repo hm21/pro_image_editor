@@ -101,7 +101,6 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             smallScreenMoreTooltip: 'More',
           ),
           filterEditor: I18nFilterEditor(
-            applyFilterDialogMsg: 'Filter is being applied.',
             bottomNavigationBarText: 'Filter',
             back: 'Back',
             done: 'Done',
@@ -152,7 +151,6 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             ),
           ),
           blurEditor: I18nBlurEditor(
-            applyBlurDialogMsg: 'Blur is being applied.',
             bottomNavigationBarText: 'Blur',
             back: 'Back',
             done: 'Done',

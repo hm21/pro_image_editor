@@ -39,7 +39,7 @@ abstract class EditorInitConfigs {
   final List<Layer>? layers;
 
   /// A callback function that will be called when the editing is done,
-  /// and it returns the edited image as a `Uint8List` with the format `png`.
+  /// and it returns the edited image as a `Uint8List` with the format `jpg`.
   ///
   /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
   /// when the editing is completed.

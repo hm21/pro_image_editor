@@ -1,4 +1,3 @@
-// Dart imports:
 // ignore_for_file: use_build_context_synchronously
 
 // Dart imports:
@@ -15,10 +14,12 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:image/image.dart' as img;
+import 'package:mime/mime.dart';
 
 // Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/encode_image.dart';
 import 'package:pro_image_editor/utils/unique_id_generator.dart';
 import '../../models/isolate_models/isolate_capture_model.dart';
 import 'isolate_model.dart';
@@ -173,13 +174,15 @@ class ContentRecorderController {
           image;
     }
 
-    // toByteData is a very slow task
-    final croppedByteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
-
-    image.dispose();
-
-    return croppedByteData?.buffer.asUint8List();
+    return await encodeImage(
+      image: await _convertFlutterUiToImage(image),
+      outputFormat: configs.imageGenerationConfigs.outputFormat,
+      singleFrame: configs.imageGenerationConfigs.singleFrame,
+      jpegQuality: configs.imageGenerationConfigs.jpegQuality,
+      jpegChroma: configs.imageGenerationConfigs.jpegChroma,
+      pngFilter: configs.imageGenerationConfigs.pngFilter,
+      pngLevel: configs.imageGenerationConfigs.pngLevel,
+    );
   }
 
   /// Captures an image using an isolated thread and processes it according to the provided configuration.
@@ -191,18 +194,7 @@ class ContentRecorderController {
     required ui.Image image,
     required String completerId,
   }) async {
-    var models = _isolateModels.where((model) => model.isReady).toList();
-    if (models.isEmpty) models.add(_isolateModels.first);
-
-    // Find the minimum number of active tasks among the ready models
-    int minActiveTasks = models.map((model) => model.activeTasks).reduce(min);
-    // Filter the models to include only those with the minimum number of active tasks
-    List<IsolateModel> leastActiveTaskModels =
-        models.where((model) => model.activeTasks == minActiveTasks).toList();
-    // Randomly select one model from the list of models with the minimum number of active tasks
-    IsolateModel isolateModel =
-        leastActiveTaskModels[Random().nextInt(leastActiveTaskModels.length)];
-
+    IsolateModel isolateModel = _leastBusyIsolateModel;
     isolateModel.activeTasks++;
 
     /// Await that isolate is ready and setup new completer
@@ -214,20 +206,9 @@ class ContentRecorderController {
     /// Kill all active isolates if reach limit
     if (_processorConfigs.processorMode == ProcessorMode.limit &&
         isolateModel.activeTasks > _processorConfigs.maxConcurrency) {
-      _uniqueCompleter.forEach((key, value) async {
-        value.complete(null);
-        await value.future;
-      });
-
-      await destroy();
-
-      _uniqueCompleter.clear();
-      _isolateModels.clear();
-
-      _initIsolate();
-
-      isolateModel = _isolateModels.first;
-      await isolateModel.isolateReady.future;
+      for (var isolate in _isolateModels) {
+        isolate.killActiveTasks(completerId);
+      }
     }
 
     /// Send to isolate
@@ -236,6 +217,12 @@ class ContentRecorderController {
         completerId: completerId,
         generateOnlyImageBounds:
             configs.imageGenerationConfigs.generateOnlyImageBounds,
+        outputFormat: configs.imageGenerationConfigs.outputFormat,
+        jpegChroma: configs.imageGenerationConfigs.jpegChroma,
+        jpegQuality: configs.imageGenerationConfigs.jpegQuality,
+        pngFilter: configs.imageGenerationConfigs.pngFilter,
+        pngLevel: configs.imageGenerationConfigs.pngLevel,
+        singleFrame: configs.imageGenerationConfigs.singleFrame,
         image: await _convertFlutterUiToImage(image),
       ),
     );
@@ -257,11 +244,17 @@ class ContentRecorderController {
     if (!_webWorkerManager.supportWebWorkers) {
       return await _captureInsideMainThread(image: image);
     } else {
-      return await _webWorkerManager.sendImage(
+      return await _webWorkerManager.send(
         ImageFromMainThread(
           completerId: completerId,
           generateOnlyImageBounds:
               configs.imageGenerationConfigs.generateOnlyImageBounds,
+          outputFormat: configs.imageGenerationConfigs.outputFormat,
+          jpegChroma: configs.imageGenerationConfigs.jpegChroma,
+          jpegQuality: configs.imageGenerationConfigs.jpegQuality,
+          pngFilter: configs.imageGenerationConfigs.pngFilter,
+          pngLevel: configs.imageGenerationConfigs.pngLevel,
+          singleFrame: configs.imageGenerationConfigs.singleFrame,
           image: await _convertFlutterUiToImage(image),
         ),
       );
@@ -478,6 +471,20 @@ class ContentRecorderController {
     return image; // Adapted to directly return the image and not the Uint8List
   }
 
+  IsolateModel get _leastBusyIsolateModel {
+    var models = _isolateModels.where((model) => model.isReady).toList();
+    if (models.isEmpty) models.add(_isolateModels.first);
+
+    // Find the minimum number of active tasks among the ready models
+    int minActiveTasks = models.map((model) => model.activeTasks).reduce(min);
+    // Filter the models to include only those with the minimum number of active tasks
+    List<IsolateModel> leastActiveTaskModels =
+        models.where((model) => model.activeTasks == minActiveTasks).toList();
+    // Randomly select one model from the list of models with the minimum number of active tasks
+    return leastActiveTaskModels[
+        Random().nextInt(leastActiveTaskModels.length)];
+  }
+
   /// Capture an image of the current editor state in an isolate.
   ///
   /// This method captures the current state of the image editor as a screenshot.
@@ -551,6 +558,10 @@ class ContentRecorderController {
         : generateUniqueId();
 
     try {
+      for (var isolate in _isolateModels) {
+        isolate.killActiveTasks(completerId);
+      }
+
       if (originalImageBytes == null) {
         if (_isolateModels.isNotEmpty) _destroyed = true;
 
@@ -572,11 +583,69 @@ class ContentRecorderController {
                 );
         }
       } else {
-        // If the user didn't change anything return the original image.
+        // If the user didn't change anything just ensure the outputformat is correct
         bytes = originalImageBytes;
+
+        String contentType = lookupMimeType('', headerBytes: bytes) ?? 'Unkown';
+        List<String> sp = contentType.split('/');
+        bool formatIsCorrect = sp.length > 1 &&
+            (configs.imageGenerationConfigs.outputFormat.name == sp[1] ||
+                (sp[1] == 'jpeg' &&
+                    configs.imageGenerationConfigs.outputFormat ==
+                        OutputFormat.jpg));
+
+        if (!formatIsCorrect) {
+          _uniqueCompleter[completerId] = Completer();
+
+          final ui.Image image = await decodeImageFromList(originalImageBytes);
+
+          if (configs.imageGenerationConfigs.generateIsolated) {
+            if (kIsWeb) {
+              /// currently in the web flutter decode the image wrong so we need
+              /// to recapture it.
+              // bytes = await _webWorkerManager.send(encodeModel);
+              bytes = widget == null
+                  ? await capture(
+                      pixelRatio: pixelRatio,
+                      completerId: completerId,
+                    )
+                  : await captureFromWidget(
+                      widget,
+                      context: context,
+                      pixelRatio: pixelRatio,
+                      completerId: completerId,
+                    );
+            } else {
+              RawFromMainThread encodeModel = RawFromMainThread(
+                completerId: completerId,
+                image: await _convertFlutterUiToImage(image),
+                outputFormat: configs.imageGenerationConfigs.outputFormat,
+                singleFrame: configs.imageGenerationConfigs.singleFrame,
+                jpegQuality: configs.imageGenerationConfigs.jpegQuality,
+                jpegChroma: configs.imageGenerationConfigs.jpegChroma,
+                pngFilter: configs.imageGenerationConfigs.pngFilter,
+                pngLevel: configs.imageGenerationConfigs.pngLevel,
+              );
+              _leastBusyIsolateModel.send(encodeModel);
+              bytes = await _uniqueCompleter[completerId]!.future;
+              _uniqueCompleter.remove(completerId);
+            }
+          } else {
+            bytes = await encodeImage(
+              image: await _convertFlutterUiToImage(image),
+              outputFormat: configs.imageGenerationConfigs.outputFormat,
+              singleFrame: configs.imageGenerationConfigs.singleFrame,
+              jpegQuality: configs.imageGenerationConfigs.jpegQuality,
+              jpegChroma: configs.imageGenerationConfigs.jpegChroma,
+              pngFilter: configs.imageGenerationConfigs.pngFilter,
+              pngLevel: configs.imageGenerationConfigs.pngLevel,
+            );
+          }
+        }
       }
     } catch (e) {
       debugPrint(e.toString());
+
       // Take a new screenshot when something goes wrong.
       bytes = widget == null
           ? await capture(

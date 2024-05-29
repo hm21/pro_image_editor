@@ -12,8 +12,8 @@ import 'package:flutter/foundation.dart';
 // Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder_controller.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/content_recorder_models.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/web_worker/web_worker_model.dart';
-import '../content_recorder_models.dart';
 
 class ProImageEditorWebWorker {
   final List<WebWorkerModel> _webWorkers = [];
@@ -43,9 +43,20 @@ class ProImageEditorWebWorker {
     }
   }
 
-  Future<Uint8List?> sendImage(ImageFromMainThread data) async {
+  Future<Uint8List?> send(RawFromMainThread data) async {
     _uniqueCompleter[data.completerId] = Completer.sync();
 
+    WebWorkerModel webWorker = _leastBusyWorker;
+
+    webWorker.send(data);
+
+    Uint8List? bytes = await _uniqueCompleter[data.completerId]!.future;
+    _uniqueCompleter.remove(data.completerId);
+
+    return bytes;
+  }
+
+  WebWorkerModel get _leastBusyWorker {
     var models = _webWorkers.where((model) => model.isReady).toList();
     if (models.isEmpty) models.add(_webWorkers.first);
 
@@ -55,15 +66,8 @@ class ProImageEditorWebWorker {
     List<WebWorkerModel> leastActiveTaskModels =
         models.where((model) => model.activeTasks == minActiveTasks).toList();
     // Randomly select one model from the list of models with the minimum number of active tasks
-    WebWorkerModel webWorker =
-        leastActiveTaskModels[Random().nextInt(leastActiveTaskModels.length)];
-
-    webWorker.send(data);
-
-    Uint8List? bytes = await _uniqueCompleter[data.completerId]!.future;
-    _uniqueCompleter.remove(data.completerId);
-
-    return bytes;
+    return leastActiveTaskModels[
+        Random().nextInt(leastActiveTaskModels.length)];
   }
 
   int _deviceNumberOfProcessors() {

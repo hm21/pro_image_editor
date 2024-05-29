@@ -22,6 +22,7 @@ dependencies:
   firebase_storage: ^11.7.5
   supabase_flutter: ^2.5.3
   image_picker: ^1.1.1
+  mime: ^1.0.5
 
 dev_dependencies:
   flutter_test:

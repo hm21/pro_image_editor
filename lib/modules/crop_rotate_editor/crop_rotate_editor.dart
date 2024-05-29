@@ -643,7 +643,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         // ignore: use_build_context_synchronously
         context: context,
         widget: _screenshotWidget(transformC),
-        backgroundScreenshot: historyPosition > screenshots.length
+        backgroundScreenshot: historyPosition >= screenshots.length
             ? null
             : screenshots[historyPosition],
       );
