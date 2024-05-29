@@ -631,14 +631,15 @@ class ProImageEditorState extends State<ProImageEditor>
     _imageNeedDecode = false;
     LoadingDialog? loading;
     if (shouldImportStateHistory && i18n.importStateHistoryMsg.isNotEmpty) {
-      loading = LoadingDialog()
-        ..show(
-          context,
-          theme: _theme,
-          configs: configs,
-          message: i18n.importStateHistoryMsg,
-        );
+      loading = LoadingDialog();
+      await loading.show(
+        context,
+        theme: _theme,
+        configs: configs,
+        message: i18n.importStateHistoryMsg,
+      );
     }
+    if (!mounted) return;
     DecodedImageInfos infos = await decodeImageInfos(
       bytes: await _image.safeByteArray(context),
       screenSize: Size(
@@ -1412,13 +1413,13 @@ class ProImageEditorState extends State<ProImageEditor>
     if (_isEditorOpen) await _pageOpenCompleter.future;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      LoadingDialog loading = LoadingDialog()
-        ..show(
-          context,
-          theme: _theme,
-          configs: configs,
-          message: i18n.doneLoadingMsg,
-        );
+      LoadingDialog loading = LoadingDialog();
+      await loading.show(
+        context,
+        theme: _theme,
+        configs: configs,
+        message: i18n.doneLoadingMsg,
+      );
 
       Uint8List? bytes = await captureEditorImage();
 

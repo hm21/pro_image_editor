@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +17,10 @@ class LoadingDialog {
   bool _isVisible = false;
   bool _isDisposed = false;
 
+  Completer? _completer;
+
   /// Some packages like "Asuka" require the same context like in the dialog
-  ///  to close the dialog.
+  /// to close the dialog.
   BuildContext? _dialogContext;
 
   set msg(String message) {
@@ -43,6 +47,8 @@ class LoadingDialog {
     ThemeData? theme,
     required ProImageEditorConfigs configs,
   }) async {
+    if (_isDisposed) throw ErrorHint('Loading-Dialog is already disposed!');
+
     theme ??= configs.theme ?? Theme.of(context);
 
     if (message == null) {
@@ -51,6 +57,8 @@ class LoadingDialog {
       msg = message;
     }
     _isVisible = true;
+
+    _completer = Completer();
 
     final content = PopScope(
       canPop: isDismissible,
@@ -96,11 +104,17 @@ class LoadingDialog {
         }),
       ),
     );
-    return showAdaptiveDialog(
+
+    showAdaptiveDialog(
       context: context,
       barrierDismissible: isDismissible,
       builder: (context) {
         _dialogContext = context;
+
+        if (_completer != null && !_completer!.isCompleted) {
+          _completer?.complete();
+        }
+
         if (_isDisposed && context.mounted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) Navigator.of(context).pop();
@@ -139,13 +153,18 @@ class LoadingDialog {
               );
       },
     );
+
+    if (configs.imageGenerationConfigs.awaitLoadingDialogContext) {
+      await _completer!.future;
+    }
   }
 
   /// Hides the loading dialog.
   hide(BuildContext context) {
-    if (_isVisible) {
-      Navigator.pop(_dialogContext ?? context);
-    }
+    if (_completer != null && !_completer!.isCompleted) _completer?.complete();
+
+    if (_isVisible) Navigator.pop(_dialogContext ?? context);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isDisposed = true;
     });

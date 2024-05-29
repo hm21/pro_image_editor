@@ -26,12 +26,13 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
+        if (!context.mounted) return;
         await precacheImage(NetworkImage(_url), context);
         if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
@@ -339,12 +340,14 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
               // Important make sure the image is completly loaded
               // cuz the editor will directly take a screenshot
               // inside of a background isolated thread.
-              LoadingDialog loading = LoadingDialog()
-                ..show(
-                  context,
-                  configs: const ProImageEditorConfigs(),
-                  theme: ThemeData.dark(),
-                );
+              LoadingDialog loading = LoadingDialog();
+              await loading.show(
+                context,
+                configs: const ProImageEditorConfigs(),
+                theme: ThemeData.dark(),
+              );
+
+              if (!context.mounted) return;
               await precacheImage(NetworkImage(url), context);
               if (context.mounted) await loading.hide(context);
               setLayer(widget);

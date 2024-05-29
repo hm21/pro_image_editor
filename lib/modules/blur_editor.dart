@@ -209,13 +209,13 @@ class BlurEditorState extends State<BlurEditor>
 
     if (initConfigs.convertToUint8List) {
       _createScreenshot = true;
-      LoadingDialog loading = LoadingDialog()
-        ..show(
-          context,
-          configs: configs,
-          theme: theme,
-          message: i18n.filterEditor.applyFilterDialogMsg,
-        );
+      LoadingDialog loading = LoadingDialog();
+      await loading.show(
+        context,
+        configs: configs,
+        theme: theme,
+        message: i18n.filterEditor.applyFilterDialogMsg,
+      );
       if (_pixelRatio == null) await _setPixelRatio();
       if (!mounted) return;
       Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(

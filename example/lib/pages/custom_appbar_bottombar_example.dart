@@ -103,14 +103,19 @@ class _CustomAppbarBottombarExampleState
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
+        if (!context.mounted) return;
+
         await precacheImage(NetworkImage(_url), context);
-        if (context.mounted) await loading.hide(context);
+
+        if (!context.mounted) return;
+        await loading.hide(context);
+
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => _buildEditor()),

@@ -23,12 +23,13 @@ class _StickersExampleState extends State<StickersExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
+        if (!context.mounted) return;
         await precacheImage(NetworkImage(_url), context);
         if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
@@ -77,12 +78,13 @@ class _StickersExampleState extends State<StickersExample>
                         // Important make sure the image is completly loaded
                         // cuz the editor will directly take a screenshot
                         // inside of a background isolated thread.
-                        LoadingDialog loading = LoadingDialog()
-                          ..show(
-                            context,
-                            configs: const ProImageEditorConfigs(),
-                            theme: ThemeData.dark(),
-                          );
+                        LoadingDialog loading = LoadingDialog();
+                        await loading.show(
+                          context,
+                          configs: const ProImageEditorConfigs(),
+                          theme: ThemeData.dark(),
+                        );
+                        if (!context.mounted) return;
                         await precacheImage(
                             NetworkImage(
                                 'https://picsum.photos/id/${(index + 3) * 3}/2000'),

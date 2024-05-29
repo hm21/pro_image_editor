@@ -25,12 +25,13 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
+        if (!context.mounted) return;
         await precacheImage(
             NetworkImage(ExampleConstants.of(context)!.demoNetworkUrl),
             context);

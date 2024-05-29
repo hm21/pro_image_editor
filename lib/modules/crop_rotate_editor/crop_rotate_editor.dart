@@ -626,13 +626,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
       await initConfigs.onDone?.call(transformC);
       if (mounted) Navigator.pop(context, transformC);
     } else {
-      LoadingDialog loading = LoadingDialog()
-        ..show(
-          context,
-          configs: configs,
-          theme: theme,
-          message: i18n.doneLoadingMsg,
-        );
+      LoadingDialog loading = LoadingDialog();
+      await loading.show(
+        context,
+        configs: configs,
+        theme: theme,
+        message: i18n.doneLoadingMsg,
+      );
 
       if (_pixelRatio == null) await _setPixelRatio();
 

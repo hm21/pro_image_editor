@@ -224,12 +224,12 @@ class _MoveableBackgroundImageExampleState
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
 
         double imgRatio = 1; // set the aspect ratio from your image.
 

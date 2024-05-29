@@ -37,6 +37,10 @@ class ImageGeneratioConfigs {
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
   final bool allowEmptyEditCompletion;
 
+  /// This option is only required when using packages such as Asuka that display dialogs without context.
+  /// When enabled, it ensures that the loading dialog's context is generated properly to prevent internal issues.
+  final bool awaitLoadingDialogContext;
+
   /// The pixel ratio of the image relative to the content.
   ///
   /// Normally, you do not need to set any value here as the editor detects the pixel ratio automatically from the image.
@@ -62,6 +66,7 @@ class ImageGeneratioConfigs {
     this.generateIsolated = true,
     this.generateImageInBackground = true,
     this.generateOnlyImageBounds = true,
+    this.awaitLoadingDialogContext = false,
     this.customPixelRatio,
     this.processorConfigs = const ProcessorConfigs(),
   });
