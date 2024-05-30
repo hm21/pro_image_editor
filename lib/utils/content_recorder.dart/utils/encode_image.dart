@@ -17,7 +17,7 @@ Future<Uint8List> encodeImage({
   required img.JpegChroma jpegChroma,
   required img.PngFilter pngFilter,
   required int pngLevel,
-  Completer? killCompleter,
+  Completer? destroy$,
 }) async {
   Uint8List bytes;
   switch (outputFormat) {
@@ -25,7 +25,7 @@ Future<Uint8List> encodeImage({
       bytes = await JpegHealthyEncoder(quality: jpegQuality).encode(
         image,
         chroma: jpegChroma,
-        killCompleter: killCompleter,
+        destroy$: destroy$,
       );
       break;
     case OutputFormat.png:

@@ -4,10 +4,9 @@ import 'dart:typed_data';
 
 // Package imports:
 import 'package:image/image.dart' as img;
-
-// Project imports:
+import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
+import 'package:pro_image_editor/models/multi_threading/thread_response_model.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/encode_image.dart';
-import 'content_recorder_models.dart';
 
 /// Converts an image to PNG format and finds the bounding box of non-transparent areas.
 ///
@@ -15,14 +14,14 @@ import 'content_recorder_models.dart';
 /// the non-transparent area in the image, crops the image to this bounding box,
 /// and encodes it to PNG format.
 ///
-/// Returns a [ResponseFromImageThread] containing the PNG byte data.
+/// Returns a [ResponseFromThread] containing the PNG byte data.
 @pragma('vm:entry-point')
-Future<ResponseFromImageThread> convertRawImage(ImageFromMainThread res,
-    {Completer? killCompleter}) async {
+Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
+    {Completer? destroy$}) async {
   try {
     Future healthCheck() async {
       await Future.delayed(const Duration(microseconds: 10));
-      if (killCompleter?.isCompleted == true) {
+      if (destroy$?.isCompleted == true) {
         throw ArgumentError('Kill thread');
       }
     }
@@ -30,7 +29,7 @@ Future<ResponseFromImageThread> convertRawImage(ImageFromMainThread res,
     /// Finds the bounding box of the non-transparent area in the given [image].
     ///
     /// Returns a [BoundingBox] object representing the coordinates and dimensions of the bounding box.
-    Future<BoundingBox> findBoundingBox(img.Image image) async {
+    Future<_BoundingBox> findBoundingBox(img.Image image) async {
       int left = image.width;
       int right = 0;
       int top = image.height;
@@ -105,7 +104,7 @@ Future<ResponseFromImageThread> convertRawImage(ImageFromMainThread res,
       final width = right - left + 1;
       final height = bottom - top + 1;
 
-      return BoundingBox(left, top, width, height);
+      return _BoundingBox(left, top, width, height);
     }
 
     // Crop the image to the bounding box
@@ -178,16 +177,35 @@ Future<ResponseFromImageThread> convertRawImage(ImageFromMainThread res,
       jpegChroma: res.jpegChroma,
       pngFilter: res.pngFilter,
       pngLevel: res.pngLevel,
+      destroy$: destroy$,
     );
 
-    return ResponseFromImageThread(
+    return ThreadResponse(
       bytes: bytes,
-      completerId: res.completerId,
+      id: res.id,
     );
   } catch (e) {
-    return ResponseFromImageThread(
+    return ThreadResponse(
       bytes: null,
-      completerId: res.completerId,
+      id: res.id,
     );
   }
+}
+
+/// Represents a bounding box in terms of its position (left and top) and size (width and height).
+class _BoundingBox {
+  /// The x-coordinate of the top-left corner of the bounding box.
+  final int left;
+
+  /// The y-coordinate of the top-left corner of the bounding box.
+  final int top;
+
+  /// The width of the bounding box.
+  final int width;
+
+  /// The height of the bounding box.
+  final int height;
+
+  /// Constructs a [_BoundingBox] instance.
+  _BoundingBox(this.left, this.top, this.width, this.height);
 }

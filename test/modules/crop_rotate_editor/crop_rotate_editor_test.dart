@@ -15,15 +15,20 @@ import '../../fake/fake_image.dart';
 
 void main() {
   final CropRotateEditorInitConfigs initConfigs = CropRotateEditorInitConfigs(
-      theme: ThemeData.light(),
-      enableFakeHero: false,
-      configs: const ProImageEditorConfigs(
-        cropRotateEditorConfigs: CropRotateEditorConfigs(
-          animationDuration: Duration.zero,
-          cropDragAnimationDuration: Duration.zero,
-          fadeInOutsideCropAreaAnimationDuration: Duration.zero,
-        ),
-      ));
+    theme: ThemeData.light(),
+    enableFakeHero: false,
+    configs: const ProImageEditorConfigs(
+      cropRotateEditorConfigs: CropRotateEditorConfigs(
+        animationDuration: Duration.zero,
+        cropDragAnimationDuration: Duration.zero,
+        fadeInOutsideCropAreaAnimationDuration: Duration.zero,
+      ),
+      imageGenerationConfigs: ImageGeneratioConfigs(
+        generateImageInBackground: false,
+        generateIsolated: false,
+      ),
+    ),
+  );
   group('CropRotateEditor Tests', () {
     Future<void> zoom(
         WidgetTester tester, GlobalKey<CropRotateEditorState> editorKey) async {
@@ -54,9 +59,11 @@ void main() {
 
     testWidgets('CropRotateEditor should build without error',
         (WidgetTester tester) async {
+      final editorKey = GlobalKey<CropRotateEditorState>();
       await tester.pumpWidget(
         MaterialApp(
           home: CropRotateEditor.memory(
+            key: editorKey,
             fakeMemoryImage,
             initConfigs: initConfigs,
           ),
@@ -114,6 +121,7 @@ void main() {
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-reset-btn')));
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
     });
 
     testWidgets('Handles reset correctly', (WidgetTester tester) async {
@@ -125,6 +133,7 @@ void main() {
           initConfigs: initConfigs,
         ),
       ));
+      await zoom(tester, editorKey);
 
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-flip-btn')));
@@ -135,8 +144,6 @@ void main() {
           .tap(find.byKey(const ValueKey('crop-rotate-editor-rotate-btn')));
       await tester.pumpAndSettle();
       expect(editorKey.currentState!.rotationCount == 1, isTrue);
-
-      await zoom(tester, editorKey);
 
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-reset-btn')));

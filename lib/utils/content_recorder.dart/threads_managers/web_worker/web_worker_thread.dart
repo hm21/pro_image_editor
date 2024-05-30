@@ -6,35 +6,32 @@ import 'dart:html' as html;
 
 // Flutter imports:
 import 'package:flutter/rendering.dart';
+import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
+import 'package:pro_image_editor/models/multi_threading/thread_response_model.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread.dart';
 
-// Project imports:
-import '../content_recorder_models.dart';
-
-class WebWorkerModel {
+class WebWorkerThread extends Thread {
   final String _workerUrl =
       'assets/packages/pro_image_editor/lib/web/web_worker.dart.js';
 
-  Completer readyState = Completer.sync();
-
   late final html.Worker worker;
 
-  bool isReady = false;
-  int activeTasks = 0;
-  final Function(ResponseFromImageThread) onMessage;
+  WebWorkerThread({
+    required super.onMessage,
+  });
 
-  WebWorkerModel({
-    required this.onMessage,
-  }) {
+  @override
+  void init() {
     try {
       if (html.Worker.supported) {
         worker = html.Worker(_workerUrl);
         worker.onMessage.listen((event) {
           var data = event.data;
-          if (data?['completerId'] != null) {
+          if (data?['id'] != null) {
             activeTasks--;
-            onMessage(ResponseFromImageThread(
+            onMessage(ThreadResponse(
               bytes: data['bytes'],
-              completerId: data['completerId'],
+              id: data['id'],
             ));
           }
         });
@@ -45,21 +42,21 @@ class WebWorkerModel {
         readyState.complete(false);
       }
     } catch (e) {
-      if (readyState.isCompleted) {
-        readyState = Completer.sync();
-      }
+      if (readyState.isCompleted) readyState = Completer();
       readyState.complete(false);
     }
   }
 
-  void send(RawFromMainThread data) {
+  @override
+  void send(ThreadRequest data) {
     activeTasks++;
 
     worker.postMessage({
-      'mode': data is ImageFromMainThread ? 'convert' : 'encode',
-      'completerId': data.completerId,
-      'generateOnlyImageBounds':
-          data is ImageFromMainThread ? data.generateOnlyImageBounds : null,
+      'mode': data is ImageConvertThreadRequest ? 'convert' : 'encode',
+      'id': data.id,
+      'generateOnlyImageBounds': data is ImageConvertThreadRequest
+          ? data.generateOnlyImageBounds
+          : null,
       'outputFormat': data.outputFormat.name,
       'jpegChroma': data.jpegChroma.name,
       'pngFilter': data.pngFilter.name,
@@ -85,6 +82,15 @@ class WebWorkerModel {
     });
   }
 
+  @override
+  void destroyActiveTasks(String ignoreTaskId) async {
+    worker.postMessage({
+      'mode': 'destroyActiveTasks',
+      'ignoreTaskId': ignoreTaskId,
+    });
+  }
+
+  @override
   void destroy() {
     worker.postMessage({'mode': 'kill'});
     worker.terminate();

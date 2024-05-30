@@ -3,9 +3,6 @@ import '../crop_rotate_editor/transform_factors.dart';
 import 'editor_init_configs.dart';
 
 class CropRotateEditorInitConfigs extends EditorInitConfigs {
-  /// Determines whether to return the image as a Uint8List when closing the editor.
-  final bool convertToUint8List;
-
   /// A callback function called when editing is completed.
   final Function(TransformConfigs)? onDone;
 
@@ -55,9 +52,9 @@ class CropRotateEditorInitConfigs extends EditorInitConfigs {
     super.onCloseEditor,
     super.onImageEditingComplete,
     super.onImageEditingStarted,
+    super.convertToUint8List,
     required super.theme,
     this.onDone,
-    this.convertToUint8List = false,
     this.enableFakeHero = false,
   });
 }

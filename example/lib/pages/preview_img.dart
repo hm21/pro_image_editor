@@ -29,7 +29,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
     fontStyle: FontStyle.italic,
   );
 
-  Future<DecodedImageInfos>? decodedImageInfos;
+  Future<ImageInfos>? decodedImageInfos;
   String _contentType = 'Unkown';
 
   @override
@@ -94,7 +94,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
                           ),
                           padding: const EdgeInsets.symmetric(
                               vertical: 8, horizontal: 12),
-                          child: FutureBuilder<DecodedImageInfos>(
+                          child: FutureBuilder<ImageInfos>(
                               future: decodedImageInfos,
                               builder: (context, snapshot) {
                                 return Table(
@@ -148,7 +148,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
                                         child: Text(
                                           snapshot.connectionState ==
                                                   ConnectionState.done
-                                              ? '${snapshot.data!.rawImageSize.width.round()} x ${snapshot.data!.rawImageSize.height.round()}'
+                                              ? '${snapshot.data!.rawSize.width.round()} x ${snapshot.data!.rawSize.height.round()}'
                                               : 'Loading...',
                                           style: _valueStyle,
                                           textAlign: TextAlign.right,

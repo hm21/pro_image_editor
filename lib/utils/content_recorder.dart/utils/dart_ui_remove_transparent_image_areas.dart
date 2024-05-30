@@ -5,9 +5,6 @@ import 'dart:ui' as ui;
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 
-// Project imports:
-import 'content_recorder_models.dart';
-
 /// Function to remove transparent areas from the image using dart:ui
 Future<ui.Image?> dartUiRemoveTransparentImgAreas(
   ui.Image image,
@@ -20,8 +17,8 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
   int width = image.width;
   int height = image.height;
 
-  RemoveHelper res = await compute(
-    (RemoveHelper helper) async {
+  _RemoveHelper res = await compute(
+    (_RemoveHelper helper) async {
       int originalWidth = helper.width;
       int originalHeight = helper.height;
 
@@ -94,7 +91,7 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
 
       return helper;
     },
-    RemoveHelper(
+    _RemoveHelper(
       bytes: byteData,
       minX: width,
       minY: height,
@@ -128,4 +125,41 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
       .toImage((maxX - minX + 1).toInt(), (maxY - minY + 1).toInt());
 
   return croppedImage;
+}
+
+/// Helper class to manage image metadata and pixel data.
+class _RemoveHelper {
+  /// The width of the image.
+  final int width;
+
+  /// The height of the image.
+  final int height;
+
+  /// The minimum x-coordinate of the bounding box.
+  int minX;
+
+  /// The minimum y-coordinate of the bounding box.
+  int minY;
+
+  /// The maximum x-coordinate of the bounding box.
+  int maxX;
+
+  /// The maximum y-coordinate of the bounding box.
+  int maxY;
+
+  /// The byte data of the image.
+  final ByteData bytes;
+
+  /// Constructs a [_RemoveHelper] instance.
+  ///
+  /// All parameters are required.
+  _RemoveHelper({
+    required this.width,
+    required this.height,
+    required this.minX,
+    required this.minY,
+    required this.maxX,
+    required this.maxY,
+    required this.bytes,
+  });
 }

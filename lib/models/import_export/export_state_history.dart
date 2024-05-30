@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 // Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
+import 'package:pro_image_editor/utils/decode_image.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../history/state_history.dart';
 import '../layer.dart';
@@ -26,6 +27,7 @@ class ExportStateHistory {
   final List<EditorStateHistory> stateHistory;
   late ContentRecorderController _contentRecorderCtrl;
   final ExportEditorConfigs _configs;
+  final ImageInfos imageInfos;
 
   /// Constructs an [ExportStateHistory] object with the given parameters.
   ///
@@ -34,6 +36,7 @@ class ExportStateHistory {
   /// defaults to [ExportEditorConfigs()].
   ExportStateHistory(
     this.stateHistory,
+    this.imageInfos,
     this._imgSize,
     this._editorPosition, {
     ExportEditorConfigs configs = const ExportEditorConfigs(),
@@ -77,6 +80,7 @@ class ExportStateHistory {
         element: element,
         layers: layers,
         stickers: stickers,
+        imageInfos: imageInfos,
       );
 
       if (_configs.exportFilter) {
@@ -144,6 +148,7 @@ class ExportStateHistory {
     required EditorStateHistory element,
     required List layers,
     required List stickers,
+    required ImageInfos imageInfos,
   }) async {
     for (var layer in element.layers) {
       if ((_configs.exportPainting && layer.runtimeType == PaintingLayerData) ||
@@ -156,6 +161,7 @@ class ExportStateHistory {
         stickers.add(
           await _contentRecorderCtrl.captureFromWidget(
             layer.sticker,
+            imageInfos: imageInfos,
           ),
         );
       }

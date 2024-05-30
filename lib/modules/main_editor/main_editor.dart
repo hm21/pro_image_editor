@@ -351,7 +351,7 @@ class ProImageEditorState extends State<ProImageEditor>
   bool _doneEditing = false;
 
   /// The pixel ratio of the device's screen.
-  double _pixelRatio = 1;
+  ImageInfos? _imageInfos;
 
   /// Whether an editor is currently open.
   bool _isEditorOpen = false;
@@ -539,7 +539,7 @@ class ProImageEditorState extends State<ProImageEditor>
       }
     } else {
       _controllers.screenshot
-          .isolateAddEmptyScreenshot(screenshots: _stateManager.screenshots);
+          .addEmptyScreenshot(screenshots: _stateManager.screenshots);
     }
     _stateManager.position++;
 
@@ -640,7 +640,7 @@ class ProImageEditorState extends State<ProImageEditor>
       );
     }
     if (!mounted) return;
-    DecodedImageInfos infos = await decodeImageInfos(
+    _imageInfos = await decodeImageInfos(
       bytes: await _image.safeByteArray(context),
       screenSize: Size(
         _sizesManager.lastScreenSize.width,
@@ -648,10 +648,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
       configs: transformConfigs ?? _stateManager.transformConfigs,
     );
-    _sizesManager.originalImageSize ??= infos.rawImageSize;
-    _sizesManager.decodedImageSize = infos.renderedImageSize;
-
-    _pixelRatio = infos.pixelRatio;
+    _sizesManager.originalImageSize ??= _imageInfos!.rawSize;
+    _sizesManager.decodedImageSize = _imageInfos!.renderedSize;
 
     _inited = true;
     if (!_decodeImageCompleter.isCompleted) {
@@ -906,7 +904,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     setState(() {});
     callbacks.onOpenSubEditor?.call();
-    _pageOpenCompleter = Completer.sync();
+    _pageOpenCompleter = Completer();
     return Navigator.push<T?>(
       context,
       PageRouteBuilder(
@@ -1414,8 +1412,12 @@ class ProImageEditorState extends State<ProImageEditor>
 
     // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _controllers.screenshot.isolateCaptureImage(
-        pixelRatio: _pixelRatio,
+      if (_imageInfos == null) await _decodeImage();
+
+      if (!mounted) return;
+
+      _controllers.screenshot.captureImage(
+        imageInfos: _imageInfos!,
         screenshots: _stateManager.screenshots,
       );
     });
@@ -1484,12 +1486,12 @@ class ProImageEditorState extends State<ProImageEditor>
       if (!mounted) return Uint8List.fromList([]);
     }
 
-    double pixelRatio = imageGenerationConfigs.generateOnlyImageBounds
-        ? _pixelRatio
-        : max(_pixelRatio, MediaQuery.of(context).devicePixelRatio);
+    if (_imageInfos == null) await _decodeImage();
+
+    if (!mounted) return Uint8List.fromList([]);
 
     return await _controllers.screenshot.captureFinalScreenshot(
-          pixelRatio: pixelRatio,
+          imageInfos: _imageInfos!,
           backgroundScreenshot: _stateManager.position > 0
               ? _stateManager.activeScreenshot
               : null,
@@ -1619,8 +1621,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ];
       for (var i = 0; i < import.stateHistory.length; i++) {
         if (i < import.stateHistory.length - 1) {
-          _controllers.screenshot.isolateAddEmptyScreenshot(
-              screenshots: _stateManager.screenshots);
+          _controllers.screenshot
+              .addEmptyScreenshot(screenshots: _stateManager.screenshots);
         } else {
           _takeScreenshot();
         }
@@ -1636,8 +1638,8 @@ class ProImageEditorState extends State<ProImageEditor>
       for (var i = 0; i < import.stateHistory.length; i++) {
         stateHistory.add(import.stateHistory[i]);
         if (i < import.stateHistory.length - 1) {
-          _controllers.screenshot.isolateAddEmptyScreenshot(
-              screenshots: _stateManager.screenshots);
+          _controllers.screenshot
+              .addEmptyScreenshot(screenshots: _stateManager.screenshots);
         } else {
           _takeScreenshot();
         }
@@ -1654,10 +1656,13 @@ class ProImageEditorState extends State<ProImageEditor>
   /// `configs` specifies the export configurations, such as whether to include filters or layers.
   ///
   /// Returns an [ExportStateHistory] object containing the exported state history, image state history, image size, edit position, and export configurations.
-  ExportStateHistory exportStateHistory(
-      {ExportEditorConfigs configs = const ExportEditorConfigs()}) {
+  Future<ExportStateHistory> exportStateHistory(
+      {ExportEditorConfigs configs = const ExportEditorConfigs()}) async {
+    if (_imageInfos == null) await _decodeImage();
+
     return ExportStateHistory(
       _stateManager.stateHistory,
+      _imageInfos!,
       _sizesManager.decodedImageSize,
       _stateManager.position,
       configs: configs,
@@ -1903,10 +1908,7 @@ class ProImageEditorState extends State<ProImageEditor>
               transformConfigs: _stateManager.transformConfigs,
               itemScaleFactor:
                   max(0, min(1, 1 / 120 * _whatsAppHelper.filterShowHelper)),
-              byteArray: widget.byteArray,
-              file: widget.file,
-              assetPath: widget.assetPath,
-              networkUrl: widget.networkUrl,
+              editorImage: _image,
               blurFactor: _stateManager.activeBlur.blur,
               activeFilters: _stateManager.activeFilters,
               configs: widget.configs,

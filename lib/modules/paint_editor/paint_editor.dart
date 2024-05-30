@@ -22,17 +22,13 @@ import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/init_configs/paint_editor_init_configs.dart';
-import '../../models/isolate_models/isolate_capture_model.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
 import '../../models/transform_helper.dart';
-import '../../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../../utils/decode_image.dart';
 import '../../utils/design_mode.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/flat_icon_text_button.dart';
-import '../../widgets/loading_dialog.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
@@ -171,9 +167,6 @@ class PaintingEditorState extends State<PaintingEditor>
   /// A global key for accessing the state of the PaintingCanvas widget.
   final _imageKey = GlobalKey<PaintingCanvasState>();
 
-  /// Manages the capturing a screenshot of the image.
-  late ContentRecorderController screenshotCtrl;
-
   /// A global key for accessing the state of the Scaffold widget.
   final _key = GlobalKey<ScaffoldState>();
 
@@ -210,9 +203,6 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Get the active selected color.
   Color get activeColor =>
       _imageKey.currentState?.activeColor ?? Colors.black38;
-
-  /// Represents the dimensions of the body.
-  Size _bodySize = Size.zero;
 
   /// A list of [PaintModeBottomBarItem] representing the available drawing modes in the painting editor.
   /// The list is dynamically generated based on the configuration settings in the [PaintEditorConfigs] object.
@@ -255,28 +245,12 @@ class PaintingEditorState extends State<PaintingEditor>
           ),
       ];
 
-  /// Indicates it create a screenshot or not.
-  bool _createScreenshot = false;
-
   /// The Uint8List from the fake hero image, which is drawed when finish editing.
   Uint8List? _fakeHeroBytes;
-
-  /// The position in the history of screenshots. This is used to track the
-  /// current position in the list of screenshots.
-  int _historyPosition = 0;
-
-  /// The pixel ratio of the image.
-  double? _pixelRatio;
-
-  /// A list of captured screenshots. Each element in the list represents the
-  /// state of a screenshot captured by the isolate.
-  final List<IsolateCaptureState> _screenshots = [];
 
   @override
   void initState() {
     super.initState();
-    screenshotCtrl = ContentRecorderController(
-        configs: configs, ignore: !initConfigs.convertToUint8List);
     _fill = paintEditorConfigs.initialFill;
     _uiPickerStream = StreamController.broadcast();
     _uiAppbarIconsStream = StreamController.broadcast();
@@ -297,7 +271,6 @@ class PaintingEditorState extends State<PaintingEditor>
     _bottomBarScrollCtrl.dispose();
     _uiPickerStream.close();
     _uiAppbarIconsStream.close();
-    screenshotCtrl.destroy();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
   }
@@ -345,7 +318,7 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
-    if (_imageKey.currentState!.canUndo) _historyPosition--;
+    if (_imageKey.currentState!.canUndo) historyPosition--;
     _imageKey.currentState!.undo();
     _uiAppbarIconsStream.add(null);
     if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
@@ -356,98 +329,30 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Redoes the previously undone action in the painting editor.
   void redoAction() {
-    if (_imageKey.currentState!.canRedo) _historyPosition++;
+    if (_imageKey.currentState!.canRedo) historyPosition++;
     _imageKey.currentState!.redo();
     _uiAppbarIconsStream.add(null);
     onUpdateUI?.call();
   }
 
-  /// Closes the editor without applying changes.
-  void close() {
-    if (initConfigs.onCloseEditor == null) {
-      Navigator.pop(context);
-    } else {
-      initConfigs.onCloseEditor!.call();
-    }
-  }
-
   /// Finishes editing in the painting editor and returns the painted items as a result.
   /// If no changes have been made, it closes the editor without returning any changes.
   void done() async {
-    if (_createScreenshot) return;
-    initConfigs.onImageEditingStarted?.call();
-
-    if (initConfigs.convertToUint8List) {
-      _createScreenshot = true;
-      LoadingDialog loading = LoadingDialog();
-      await loading.show(
-        context,
-        configs: configs,
-        theme: theme,
-        message: i18n.doneLoadingMsg,
-      );
-      if (_pixelRatio == null) await _setPixelRatio();
-      if (!mounted) return;
-      bool screenshotIsCaptured =
-          _historyPosition > 0 && _historyPosition <= _screenshots.length;
-      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
-        pixelRatio: _pixelRatio,
-        backgroundScreenshot:
-            screenshotIsCaptured ? _screenshots[_historyPosition - 1] : null,
-        originalImageBytes: _historyPosition > 0
-            ? null
-            : await widget.editorImage.safeByteArray(context),
-      );
-
-      _createScreenshot = false;
-      if (mounted) {
-        loading.hide(context);
-
-        await initConfigs.onImageEditingComplete
-            ?.call(bytes ?? Uint8List.fromList([]));
-
-        if (initConfigs.enableFakeHero) {
-          setState(() {
-            _fakeHeroBytes = bytes;
-          });
-        }
-
-        initConfigs.onCloseEditor?.call();
-      }
-    } else {
-      if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
-      Navigator.of(context)
-          .pop(_imageKey.currentState?.exportPaintedItems(_bodySize));
-    }
-  }
-
-  Future<void> _setPixelRatio() async {
-    _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray(context),
-      screenSize: _bodySize,
-    ))
-        .pixelRatio;
-  }
-
-  /// Takes a screenshot of the current editor state.
-  void _takeScreenshot() async {
-    if (!widget.initConfigs.convertToUint8List) return;
-
-    await _setPixelRatio();
-    if (!mounted) return;
-    _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray(context),
-      screenSize: _bodySize,
-    ))
-        .pixelRatio;
-    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _historyPosition++;
-      screenshotCtrl.isolateCaptureImage(
-        pixelRatio: _pixelRatio,
-        screenshots: _screenshots,
-      );
-    });
+    doneEditing(
+        editorImage: widget.editorImage,
+        onSetFakeHero: (bytes) {
+          if (initConfigs.enableFakeHero) {
+            setState(() {
+              _fakeHeroBytes = bytes;
+            });
+          }
+        },
+        onCloseWithValue: () {
+          if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
+          Navigator.of(context).pop(
+            _imageKey.currentState?.exportPaintedItems(editorBodySize),
+          );
+        });
   }
 
   @override
@@ -633,7 +538,7 @@ class PaintingEditorState extends State<PaintingEditor>
   Widget _buildBody() {
     return SafeArea(
       child: LayoutBuilder(builder: (context, constraints) {
-        _bodySize = constraints.biggest;
+        editorBodySize = constraints.biggest;
         return Theme(
           data: theme,
           child: Material(
@@ -664,9 +569,11 @@ class PaintingEditorState extends State<PaintingEditor>
                               transformConfigs:
                                   transformConfigs ?? TransformConfigs.empty(),
                               child: ImageWithFilters(
-                                width: getMinimumSize(mainImageSize, _bodySize)
+                                width: getMinimumSize(
+                                        mainImageSize, editorBodySize)
                                     .width,
-                                height: getMinimumSize(mainImageSize, _bodySize)
+                                height: getMinimumSize(
+                                        mainImageSize, editorBodySize)
                                     .height,
                                 designMode: designMode,
                                 image: editorImage,
@@ -679,11 +586,11 @@ class PaintingEditorState extends State<PaintingEditor>
                                 configs: configs,
                                 layers: layers!,
                                 transformHelper: TransformHelper(
-                                  mainBodySize:
-                                      getMinimumSize(mainBodySize, _bodySize),
-                                  mainImageSize:
-                                      getMinimumSize(mainImageSize, _bodySize),
-                                  editorBodySize: _bodySize,
+                                  mainBodySize: getMinimumSize(
+                                      mainBodySize, editorBodySize),
+                                  mainImageSize: getMinimumSize(
+                                      mainImageSize, editorBodySize),
+                                  editorBodySize: editorBodySize,
                                   transformConfigs: transformConfigs,
                                 ),
                               ),
@@ -815,7 +722,7 @@ class PaintingEditorState extends State<PaintingEditor>
         icons: icons,
         theme: theme,
         designMode: designMode,
-        drawAreaSize: mainBodySize ?? _bodySize,
+        drawAreaSize: mainBodySize ?? editorBodySize,
         imageEditorTheme: imageEditorTheme,
         configs: paintEditorConfigs,
         onUpdateDone: () {
@@ -824,7 +731,9 @@ class PaintingEditorState extends State<PaintingEditor>
             _uiPickerStream.add(null);
           }
           onUpdateUI?.call();
-          _takeScreenshot();
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            takeScreenshot();
+          });
         },
       ),
     );

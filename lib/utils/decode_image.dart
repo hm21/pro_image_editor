@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 
 /// Decode the image being edited.
-Future<DecodedImageInfos> decodeImageInfos({
+Future<ImageInfos> decodeImageInfos({
   required Uint8List bytes,
   required Size screenSize,
   TransformConfigs? configs,
@@ -29,22 +29,33 @@ Future<DecodedImageInfos> decodeImageInfos({
   double heightRatio = (rotated ? w : h).toDouble() / screenSize.height;
   double pixelRatio = max(heightRatio, widthRatio);
 
-  return DecodedImageInfos(
-    rawImageSize: Size(w.toDouble(), h.toDouble()),
-    renderedImageSize:
-        Size(w.toDouble() / pixelRatio, h.toDouble() / pixelRatio),
+  return ImageInfos(
+    rawSize: Size(w.toDouble(), h.toDouble()),
+    renderedSize: Size(w.toDouble() / pixelRatio, h.toDouble() / pixelRatio),
     pixelRatio: pixelRatio,
   );
 }
 
-class DecodedImageInfos {
-  final Size rawImageSize;
-  final Size renderedImageSize;
+class ImageInfos {
+  final Size rawSize;
+  final Size renderedSize;
   final double pixelRatio;
 
-  const DecodedImageInfos({
-    required this.rawImageSize,
-    required this.renderedImageSize,
+  const ImageInfos({
+    required this.rawSize,
+    required this.renderedSize,
     required this.pixelRatio,
   });
+
+  ImageInfos copyWith({
+    Size? rawSize,
+    Size? renderedSize,
+    double? pixelRatio,
+  }) {
+    return ImageInfos(
+      rawSize: rawSize ?? this.rawSize,
+      renderedSize: renderedSize ?? this.renderedSize,
+      pixelRatio: pixelRatio ?? this.pixelRatio,
+    );
+  }
 }

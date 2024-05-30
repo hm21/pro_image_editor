@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/isolate_models/isolate_capture_model.dart';
 import '../../../mixins/standalone_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/init_configs/crop_rotate_editor_init_configs.dart';
@@ -25,7 +24,6 @@ mixin CropAreaHistory
   @protected
   late Animation<double> scaleAnimation;
 
-  int historyPosition = 0;
   @protected
   int rotationCount = 0;
   @protected
@@ -57,9 +55,6 @@ mixin CropAreaHistory
 
   /// Retrieves the active transformation history.
   TransformConfigs get activeHistory => history[historyPosition];
-
-  /// List of captured screenshots for each state in the history.
-  List<IsolateCaptureState> screenshots = [];
 
   /// Determines whether undo actions can be performed on the current state.
   bool get canUndo => historyPosition > 0;
@@ -213,6 +208,4 @@ mixin CropAreaHistory
   void calcCropRect() {}
   @protected
   calcFitToScreen() {}
-  @protected
-  takeScreenshot() {}
 }

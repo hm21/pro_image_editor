@@ -10,7 +10,7 @@ import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/history/blur_state_history.dart';
 import '../../../models/history/filter_state_history.dart';
 import '../../../models/history/state_history.dart';
-import '../../../models/isolate_models/isolate_capture_model.dart';
+import '../../../models/multi_threading/thread_capture_model.dart';
 import '../../../models/layer.dart';
 
 /// A class for managing the state and history of image editing changes.
@@ -38,9 +38,9 @@ class StateManager {
   bool heroScreenshotRequired = false;
 
   /// List of captured screenshots for each state in the history.
-  List<IsolateCaptureState> screenshots = [];
+  List<ThreadCaptureState> screenshots = [];
 
-  IsolateCaptureState? get activeScreenshot {
+  ThreadCaptureState? get activeScreenshot {
     return screenshots.length > position - 1 ? screenshots[position - 1] : null;
   }
 

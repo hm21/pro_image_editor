@@ -5,9 +5,6 @@ import 'editor_init_configs.dart';
 ///
 /// This class extends [EditorInitConfigs] and adds specific parameters related to painting functionality.
 class PaintEditorInitConfigs extends EditorInitConfigs {
-  /// Determines whether to return the image as a Uint8List when closing the editor.
-  final bool convertToUint8List;
-
   /// Determines whether we draw a "fake" hero widget or not.
   final bool enableFakeHero;
 
@@ -29,7 +26,7 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
     super.onCloseEditor,
     super.onImageEditingComplete,
     super.onImageEditingStarted,
-    this.convertToUint8List = false,
+    super.convertToUint8List,
     this.enableFakeHero = false,
     required super.theme,
   });

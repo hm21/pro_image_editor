@@ -13,13 +13,9 @@ import '../mixins/standalone_editor.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/editor_image.dart';
 import '../models/init_configs/blur_editor_init_configs.dart';
-import '../models/isolate_models/isolate_capture_model.dart';
 import '../models/transform_helper.dart';
 import '../utils/content_recorder.dart/content_recorder.dart';
-import '../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../utils/decode_image.dart';
 import '../widgets/layer_stack.dart';
-import '../widgets/loading_dialog.dart';
 import '../widgets/transform/transformed_content_generator.dart';
 import 'filter_editor/widgets/image_with_filters.dart';
 
@@ -151,36 +147,14 @@ class BlurEditorState extends State<BlurEditor>
     with
         ImageEditorConvertedConfigs,
         StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
-  /// Manages the capturing a screenshot of the image.
-  late ContentRecorderController screenshotCtrl;
-
   /// Update the image with the applied blur and the slider value.
   late final StreamController _uiBlurStream;
 
   /// Represents the selected blur state.
   late double selectedBlur;
 
-  /// Represents the dimensions of the body.
-  Size _bodySize = Size.zero;
-
-  /// Indicates it create a screenshot or not.
-  bool _createScreenshot = false;
-
-  /// The position in the history of screenshots. This is used to track the
-  /// current position in the list of screenshots.
-  int _historyPosition = 0;
-
-  /// The pixel ratio of the image.
-  double? _pixelRatio;
-
-  /// A list of captured screenshots. Each element in the list represents the
-  /// state of a screenshot captured by the isolate.
-  final List<IsolateCaptureState> _screenshots = [];
-
   @override
   void initState() {
-    screenshotCtrl = ContentRecorderController(
-        configs: configs, ignore: !initConfigs.convertToUint8List);
     selectedBlur = appliedBlurFactor;
     _uiBlurStream = StreamController.broadcast();
     super.initState();
@@ -193,83 +167,12 @@ class BlurEditorState extends State<BlurEditor>
     super.dispose();
   }
 
-  /// Closes the editor without applying changes.
-  void close() {
-    if (initConfigs.onCloseEditor == null) {
-      Navigator.pop(context);
-    } else {
-      initConfigs.onCloseEditor!.call();
-    }
-  }
-
   /// Handles the "Done" action, either by applying changes or closing the editor.
   void done() async {
-    if (_createScreenshot) return;
-    initConfigs.onImageEditingStarted?.call();
-
-    if (initConfigs.convertToUint8List) {
-      _createScreenshot = true;
-      LoadingDialog loading = LoadingDialog();
-      await loading.show(
-        context,
-        configs: configs,
-        theme: theme,
-        message: i18n.doneLoadingMsg,
-      );
-      if (_pixelRatio == null) await _setPixelRatio();
-      if (!mounted) return;
-      bool screenshotIsCaptured =
-          _historyPosition > 0 && _historyPosition <= _screenshots.length;
-      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
-        pixelRatio: _pixelRatio,
-        backgroundScreenshot:
-            screenshotIsCaptured ? _screenshots[_historyPosition - 1] : null,
-        originalImageBytes: _historyPosition > 0
-            ? null
-            : await widget.editorImage.safeByteArray(context),
-      );
-
-      _createScreenshot = false;
-      if (mounted) {
-        loading.hide(context);
-
-        await initConfigs.onImageEditingComplete
-            ?.call(bytes ?? Uint8List.fromList([]));
-
-        initConfigs.onCloseEditor?.call();
-      }
-    } else {
-      Navigator.pop(context, selectedBlur);
-    }
-  }
-
-  Future<void> _setPixelRatio() async {
-    _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray(context),
-      screenSize: _bodySize,
-    ))
-        .pixelRatio;
-  }
-
-  /// Takes a screenshot of the current editor state.
-  void _takeScreenshot() async {
-    if (!widget.initConfigs.convertToUint8List) return;
-
-    await _setPixelRatio();
-    if (!mounted) return;
-    _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray(context),
-      screenSize: _bodySize,
-    ))
-        .pixelRatio;
-    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _historyPosition++;
-      screenshotCtrl.isolateCaptureImage(
-        pixelRatio: _pixelRatio,
-        screenshots: _screenshots,
-      );
-    });
+    doneEditing(
+      returnValue: selectedBlur,
+      editorImage: widget.editorImage,
+    );
   }
 
   @override
@@ -318,7 +221,7 @@ class BlurEditorState extends State<BlurEditor>
   /// Builds the main content area of the editor.
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
-      _bodySize = constraints.biggest;
+      editorBodySize = constraints.biggest;
       return ContentRecorder(
         controller: screenshotCtrl,
         child: Stack(
@@ -336,8 +239,10 @@ class BlurEditorState extends State<BlurEditor>
                     stream: _uiBlurStream.stream,
                     builder: (context, snapshot) {
                       return ImageWithFilters(
-                        width: getMinimumSize(mainImageSize, _bodySize).width,
-                        height: getMinimumSize(mainImageSize, _bodySize).height,
+                        width:
+                            getMinimumSize(mainImageSize, editorBodySize).width,
+                        height: getMinimumSize(mainImageSize, editorBodySize)
+                            .height,
                         designMode: designMode,
                         image: editorImage,
                         filters: appliedFilters,
@@ -349,10 +254,10 @@ class BlurEditorState extends State<BlurEditor>
             if (blurEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-                  mainImageSize: getMinimumSize(mainImageSize, _bodySize),
+                  mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
+                  mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
                   transformConfigs: transformConfigs,
-                  editorBodySize: _bodySize,
+                  editorBodySize: editorBodySize,
                 ),
                 configs: configs,
                 layers: layers!,
@@ -389,7 +294,9 @@ class BlurEditorState extends State<BlurEditor>
                         onUpdateUI?.call();
                       },
                       onChangeEnd: (value) {
-                        _takeScreenshot();
+                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          takeScreenshot();
+                        });
                       },
                     );
                   }),

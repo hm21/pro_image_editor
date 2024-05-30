@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 
 // Package imports:
@@ -90,6 +92,8 @@ class ImageGeneratioConfigs {
   /// where 1 indicates the lowest quality and 100 indicates the highest quality.
   final int jpegQuality;
 
+  final Size maxOutputDimension;
+
   /// Specifies the chroma subsampling method for JPEG images. It defines the
   /// compression ratio for chrominance components.
   final JpegChroma jpegChroma;
@@ -116,6 +120,7 @@ class ImageGeneratioConfigs {
     this.jpegChroma = JpegChroma.yuv444,
     this.outputFormat = OutputFormat.jpg,
     this.processorConfigs = const ProcessorConfigs(),
+    this.maxOutputDimension = const Size(2000, 2000),
   }) : assert(jpegQuality > 0 && jpegQuality <= 100,
             'Jpeg quality must be between 1 and 100');
 }

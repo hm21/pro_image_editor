@@ -73,7 +73,7 @@ class _ImportExportExampleState extends State<ImportExportExample>
             ),
             child: IconButton(
               onPressed: () async {
-                var history = editorKey.currentState!.exportStateHistory(
+                var history = await editorKey.currentState!.exportStateHistory(
                   configs: const ExportEditorConfigs(
                       // configs...
                       ),

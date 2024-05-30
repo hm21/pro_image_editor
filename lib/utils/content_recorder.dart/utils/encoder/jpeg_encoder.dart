@@ -44,13 +44,13 @@ class JpegHealthyEncoder {
     Image image, {
     JpegChroma chroma = JpegChroma.yuv444,
     bool singleFrame = false,
-    Completer? killCompleter,
+    Completer? destroy$,
   }) async {
     final fp = OutputBuffer(bigEndian: true);
 
     Future healthCheck() async {
       await Future.delayed(const Duration(microseconds: 10));
-      if (killCompleter?.isCompleted == true) {
+      if (destroy$?.isCompleted == true) {
         throw ArgumentError('Kill encode jpg');
       }
     }

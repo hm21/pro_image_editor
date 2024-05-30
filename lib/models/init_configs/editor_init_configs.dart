@@ -38,6 +38,9 @@ abstract class EditorInitConfigs {
   /// The layers in the editor.
   final List<Layer>? layers;
 
+  /// Determines whether to return the image as a Uint8List when closing the editor.
+  final bool convertToUint8List;
+
   /// A callback function that will be called when the editing is done,
   /// and it returns the edited image as a `Uint8List` with the format `jpg`.
   ///
@@ -79,5 +82,6 @@ abstract class EditorInitConfigs {
     this.onCloseEditor,
     this.onImageEditingComplete,
     this.onImageEditingStarted,
+    this.convertToUint8List = false,
   });
 }

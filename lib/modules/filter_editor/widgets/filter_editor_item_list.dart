@@ -1,7 +1,5 @@
 // Dart imports:
-import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -20,17 +18,9 @@ import '../../../models/editor_image.dart';
 import '../../../models/history/filter_state_history.dart';
 
 class FilterEditorItemList extends StatefulWidget {
-  /// A byte array representing the image data.
-  final Uint8List? byteArray;
-
-  /// The file representing the image.
-  final File? file;
-
-  /// The asset path of the image.
-  final String? assetPath;
-
-  /// The network URL of the image.
-  final String? networkUrl;
+  /// The EditorImage class represents an image with multiple sources,
+  /// including bytes, file, network URL, and asset path.
+  final EditorImage editorImage;
 
   /// The image editor configs.
   final ProImageEditorConfigs configs;
@@ -69,10 +59,7 @@ class FilterEditorItemList extends StatefulWidget {
 
   const FilterEditorItemList({
     super.key,
-    this.byteArray,
-    this.file,
-    this.assetPath,
-    this.networkUrl,
+    required this.editorImage,
     this.activeFilters,
     this.blurFactor,
     this.itemScaleFactor,
@@ -223,7 +210,10 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
       max(imageSize.aspectRatio, 1 / imageSize.aspectRatio),
     );
 
+    Offset offset = transformConfigs.offset / offsetFactor;
     double scale = fitCoverScale * transformConfigs.scaleUser;
+    if (scale.isInfinite || scale.isNaN) scale = 1;
+    if (offset.isInfinite) offset = Offset.zero;
 
     return Container(
       height: size.height,
@@ -241,14 +231,9 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             child: Transform.scale(
               scale: scale,
               child: Transform.translate(
-                offset: transformConfigs.offset / offsetFactor,
+                offset: offset,
                 child: ImageWithFilters(
-                  image: EditorImage(
-                    file: widget.file,
-                    byteArray: widget.byteArray,
-                    networkUrl: widget.networkUrl,
-                    assetPath: widget.assetPath,
-                  ),
+                  image: widget.editorImage,
                   fit:
                       !transformConfigs.isEmpty ? BoxFit.contain : BoxFit.cover,
                   width: size.width,
