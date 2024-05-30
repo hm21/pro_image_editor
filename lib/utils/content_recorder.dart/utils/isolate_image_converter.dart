@@ -4,7 +4,6 @@ import 'dart:isolate';
 
 // Project imports:
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/encode_image.dart';
-
 import 'content_recorder_models.dart';
 import 'convert_raw_image.dart';
 

@@ -1,8 +1,12 @@
+// Flutter imports:
 import 'package:flutter/foundation.dart';
 
+// Package imports:
+import 'package:image/image.dart' show JpegChroma, PngFilter;
+
+// Project imports:
 import 'output_formats.dart';
 import 'processor_configs.dart';
-import 'package:image/image.dart' show JpegChroma, PngFilter;
 
 export 'output_formats.dart';
 export 'processor_configs.dart';

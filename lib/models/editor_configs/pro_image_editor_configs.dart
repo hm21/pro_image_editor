@@ -24,12 +24,21 @@ export 'state_history_configs.dart';
 export 'helper_lines_configs.dart';
 export 'paint_editor_configs.dart';
 export 'text_editor_configs.dart';
-export 'crop_rotate_editor_configs.dart';
-export 'filter_editor_configs.dart';
-export 'emoji_editor_configs.dart';
+export 'layer_interaction_configs.dart';
 export 'sticker_editor_configs.dart';
 export 'blur_editor_configs.dart';
-export 'layer_interaction_configs.dart';
+export 'crop_rotate_editor_configs.dart';
+export 'emoji_editor_configs.dart';
+export 'filter_editor_configs.dart';
+
+///
+/// Creates custom [BoxConstraints] to use when displaying
+/// editors in modal bottom sheets.
+///
+typedef EditorBoxConstraintsBuilder = BoxConstraints? Function(
+  BuildContext context,
+  ProImageEditorConfigs configs,
+);
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -87,6 +96,11 @@ class ProImageEditorConfigs {
   /// Holds the configurations related to image generation.
   final ImageGeneratioConfigs imageGenerationConfigs;
 
+  /// Use this to build custom [BoxConstraints] that will be applied
+  /// globally to the modal bottom sheet when opening various editors
+  /// from this library.
+  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
   /// Creates an instance of [ProImageEditorConfigs].
   ///
   /// - The `theme` specifies the theme for the Image Editor.
@@ -107,6 +121,7 @@ class ProImageEditorConfigs {
   /// - The `designMode` specifies the design mode for the Image Editor. By default, it is `ImageEditorDesignModeE.material`.
   /// - The `stateHistoryConfigs` holds the configurations related to state history management. By default, it uses an empty `StateHistoryConfigs` instance.
   /// - The `imageGenerationConfigs` holds the configurations related to image generation. By default, it uses an empty `ImageGeneratioConfigs` instance.
+  /// - The `editorBoxConstraintsBuilder` configures global [BoxConstraints] to use when opening editors in modal bottom sheets.
   const ProImageEditorConfigs({
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
@@ -126,5 +141,6 @@ class ProImageEditorConfigs {
     this.emojiEditorConfigs = const EmojiEditorConfigs(),
     this.stickerEditorConfigs,
     this.designMode = ImageEditorDesignModeE.material,
+    this.editorBoxConstraintsBuilder,
   });
 }

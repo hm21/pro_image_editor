@@ -1,5 +1,5 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
-    show CategoryEmoji, defaultEmojiSet;
+// Project imports:
+import '../../pro_image_editor.dart';
 
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
     show CategoryEmoji, defaultEmojiSet;
@@ -33,6 +33,13 @@ class EmojiEditorConfigs {
   /// Custom emojis; if set, overrides default emojis provided by the library.
   final List<CategoryEmoji> emojiSet;
 
+  /// Use this to build custom [BoxConstraints] that will be applied to
+  /// the modal bottom sheet displaying the [EmojiEditor].
+  ///
+  /// Otherwise, it falls back to
+  /// [ProImageEditorConfigs.editorBoxConstraintsBuilder].
+  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
   /// Creates an instance of EmojiEditorConfigs with optional settings.
   ///
   /// By default, the editor is enabled, and other properties are set to
@@ -42,5 +49,6 @@ class EmojiEditorConfigs {
     this.initScale = 5.0,
     this.checkPlatformCompatibility = true,
     this.emojiSet = defaultEmojiSet,
+    this.editorBoxConstraintsBuilder,
   }) : assert(initScale > 0, 'initScale must be positive');
 }

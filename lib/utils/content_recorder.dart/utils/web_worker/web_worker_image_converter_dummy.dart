@@ -6,6 +6,8 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/content_recorder_models.dart';
 

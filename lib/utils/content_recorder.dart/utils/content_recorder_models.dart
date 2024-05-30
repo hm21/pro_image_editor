@@ -1,9 +1,11 @@
 // Dart imports:
 import 'dart:typed_data';
-import 'package:image/image.dart' show JpegChroma, PngFilter;
 
 // Package imports:
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart' show JpegChroma, PngFilter;
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/image_generation_configs/output_formats.dart';
 
 /// Helper class to manage image metadata and pixel data.

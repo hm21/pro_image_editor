@@ -109,6 +109,7 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
                       widget.configs.emojiEditorConfigs.enabled) ...[
                     gap,
                     IconButton(
+                      key: const ValueKey('whatsapp-open-sticker-editor-btn'),
                       tooltip: widget
                           .configs.i18n.stickerEditor.bottomNavigationBarText,
                       onPressed: widget.onTapStickerEditor,
