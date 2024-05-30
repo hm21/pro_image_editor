@@ -1,30 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history.dart';
 
+import '../../utils/design_mode.dart';
 import '../custom_widgets.dart';
-import 'crop_rotate_editor_configs.dart';
-import 'emoji_editor_configs.dart';
-import 'filter_editor_configs.dart';
-import 'blur_editor_configs.dart';
-import 'layer_interaction_configs.dart';
-import 'paint_editor_configs.dart';
-import 'text_editor_configs.dart';
-import 'helper_lines_configs.dart';
-import 'sticker_editor_configs.dart';
 import '../i18n/i18n.dart';
 import '../icons/icons.dart';
 import '../theme/theme.dart';
-import '../../utils/design_mode.dart';
+import 'blur_editor_configs.dart';
+import 'crop_rotate_editor_configs.dart';
+import 'emoji_editor_configs.dart';
+import 'filter_editor_configs.dart';
+import 'helper_lines_configs.dart';
+import 'layer_interaction_configs.dart';
+import 'paint_editor_configs.dart';
+import 'sticker_editor_configs.dart';
+import 'text_editor_configs.dart';
 
-export 'helper_lines_configs.dart';
-export 'paint_editor_configs.dart';
-export 'text_editor_configs.dart';
-export 'crop_rotate_editor_configs.dart';
-export 'filter_editor_configs.dart';
-export 'emoji_editor_configs.dart';
-export 'sticker_editor_configs.dart';
 export 'blur_editor_configs.dart';
+export 'crop_rotate_editor_configs.dart';
+export 'emoji_editor_configs.dart';
+export 'filter_editor_configs.dart';
+export 'helper_lines_configs.dart';
 export 'layer_interaction_configs.dart';
+export 'paint_editor_configs.dart';
+export 'sticker_editor_configs.dart';
+export 'text_editor_configs.dart';
+
+///
+/// Creates custom [BoxConstraints] to use when displaying
+/// editors in modal bottom sheets.
+///
+typedef EditorBoxConstraintsBuilder = BoxConstraints? Function(
+  BuildContext context,
+  ProImageEditorConfigs configs,
+);
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -82,6 +91,11 @@ class ProImageEditorConfigs {
   /// Holds the initial state history of the Image Editor.
   final ImportStateHistory? initStateHistory;
 
+  /// Use this to build custom [BoxConstraints] that will be applied
+  /// globally to the modal bottom sheet when opening various editors
+  /// from this library.
+  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
   /// Creates an instance of [ProImageEditorConfigs].
   /// - The `theme` specifies the theme for the Image Editor.
   /// - The `heroTag` is a unique tag for the Image Editor widget. By default, it is 'Pro-Image-Editor-Hero'.
@@ -100,6 +114,7 @@ class ProImageEditorConfigs {
   /// - The `stickerEditorConfigs` configures the Sticker Editor. By default, it uses an empty `stickerEditorConfigs` instance.
   /// - The `designMode` specifies the design mode for the Image Editor. By default, it is `ImageEditorDesignMode.material`.
   /// - The `initStateHistory` holds the initial state history of the Image Editor.
+  /// - The `editorBoxConstraintsBuilder` configures global [BoxConstraints] to use when opening editors in modal bottom sheets.
   const ProImageEditorConfigs({
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
@@ -119,5 +134,6 @@ class ProImageEditorConfigs {
     this.stickerEditorConfigs,
     this.designMode = ImageEditorDesignModeE.material,
     this.initStateHistory,
+    this.editorBoxConstraintsBuilder,
   });
 }

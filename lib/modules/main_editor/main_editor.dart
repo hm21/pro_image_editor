@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:colorfilter_generator/presets.dart';
 import 'package:defer_pointer/defer_pointer.dart';
@@ -8,59 +8,59 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_appbar.dart';
+import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
 import 'package:pro_image_editor/models/init_configs/blur_editor_init_configs.dart';
 import 'package:pro_image_editor/models/init_configs/filter_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/main_editor/utils/layer_manager.dart';
 import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
+import 'package:pro_image_editor/modules/main_editor/utils/layer_manager.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/main_editor_controllers.dart';
 import 'package:pro_image_editor/modules/main_editor/utils/state_manager.dart';
 import 'package:pro_image_editor/modules/sticker_editor.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/utils/swipe_mode.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../designs/whatsapp/whatsapp_filter_button.dart';
 import '../../designs/whatsapp/whatsapp_sticker_editor.dart';
+import '../../mixins/converted_configs.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
-import '../../utils/constants.dart';
-import '../../utils/image_helpers.dart';
-import '../filter_editor/widgets/image_with_multiple_filters.dart';
-import '../text_editor/text_editor.dart';
-import 'utils/desktop_interaction_manager.dart';
-import 'utils/main_editor_callbacks.dart';
-import 'utils/screen_size_helper.dart';
-import 'utils/whatsapp_helper.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
-import '../../models/history/filter_state_history.dart';
-import '../../models/history/state_history.dart';
-import '../../models/history/last_position.dart';
 import '../../models/crop_rotate_editor_response.dart';
+import '../../models/editor_configs/pro_image_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/history/blur_state_history.dart';
+import '../../models/history/filter_state_history.dart';
+import '../../models/history/last_position.dart';
+import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/import_export/export_state_history_configs.dart';
 import '../../models/import_export/import_state_history.dart';
-import '../../models/layer.dart';
 import '../../models/init_configs/paint_editor_init_configs.dart';
-import 'utils/layer_interaction_helper.dart';
-import '../crop_rotate_editor/crop_rotate_editor.dart';
-import '../emoji_editor/emoji_editor.dart';
-import '../filter_editor/filter_editor.dart';
-import '../filter_editor/widgets/filter_editor_item_list.dart';
-import '../blur_editor.dart';
-import '../paint_editor/paint_editor.dart';
+import '../../models/layer.dart';
+import '../../utils/constants.dart';
 import '../../utils/debounce.dart';
-import '../../models/editor_configs/pro_image_editor_configs.dart';
-import '../../mixins/converted_configs.dart';
+import '../../utils/image_helpers.dart';
 import '../../widgets/adaptive_dialog.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/loading_dialog.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transformed_content_generator.dart';
+import '../blur_editor.dart';
+import '../crop_rotate_editor/crop_rotate_editor.dart';
+import '../emoji_editor/emoji_editor.dart';
+import '../filter_editor/filter_editor.dart';
+import '../filter_editor/widgets/filter_editor_item_list.dart';
+import '../filter_editor/widgets/image_with_multiple_filters.dart';
+import '../paint_editor/paint_editor.dart';
+import '../text_editor/text_editor.dart';
+import 'utils/desktop_interaction_manager.dart';
+import 'utils/layer_interaction_helper.dart';
+import 'utils/main_editor_callbacks.dart';
+import 'utils/screen_size_helper.dart';
+import 'utils/whatsapp_helper.dart';
 
 /// A widget for image editing using ProImageEditor.
 ///
@@ -1172,9 +1172,19 @@ class ProImageEditorState extends State<ProImageEditor>
   void openEmojiEditor() async {
     setState(() => _layerInteraction.selectedLayerId = '');
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
+    final effectiveBoxConstraints =
+        widget.configs.emojiEditorConfigs.editorBoxConstraintsBuilder?.call(
+              context,
+              widget.configs,
+            ) ??
+            widget.configs.editorBoxConstraintsBuilder?.call(
+              context,
+              widget.configs,
+            );
     EmojiLayerData? layer = await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
+      constraints: effectiveBoxConstraints,
       builder: (BuildContext context) => EmojiEditor(configs: widget.configs),
     );
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
@@ -1192,9 +1202,19 @@ class ProImageEditorState extends State<ProImageEditor>
   void openStickerEditor() async {
     setState(() => _layerInteraction.selectedLayerId = '');
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
+    final effectiveBoxConstraints =
+        widget.configs.stickerEditorConfigs?.editorBoxConstraintsBuilder?.call(
+              context,
+              widget.configs,
+            ) ??
+            widget.configs.editorBoxConstraintsBuilder?.call(
+              context,
+              widget.configs,
+            );
     StickerLayerData? layer = await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
+      constraints: effectiveBoxConstraints,
       builder: (BuildContext context) => StickerEditor(
         configs: widget.configs,
       ),
@@ -1229,10 +1249,26 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: widget.configs,
       ));
     } else {
+      final effectiveBoxConstraints = widget
+              .configs.stickerEditorConfigs?.whatsAppEditorBoxConstraintsBuilder
+              ?.call(
+            context,
+            widget.configs,
+          ) ??
+          widget.configs.stickerEditorConfigs?.editorBoxConstraintsBuilder
+              ?.call(
+            context,
+            widget.configs,
+          ) ??
+          widget.configs.editorBoxConstraintsBuilder?.call(
+            context,
+            widget.configs,
+          );
       layer = await showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
         barrierColor: Colors.black12,
+        constraints: effectiveBoxConstraints,
         showDragHandle: false,
         isScrollControlled: true,
         useSafeArea: true,
