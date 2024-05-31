@@ -1,14 +1,12 @@
 // Dart imports:
+// ignore_for_file: implementation_imports
+
 import 'dart:async';
 import 'dart:typed_data';
 
 // Package imports:
 import 'package:image/image.dart';
 import 'package:image/src/formats/jpeg/jpeg_marker.dart';
-
-// ignore: implementation_imports
-
-// ignore: implementation_imports
 
 /// Encode an image to the JPEG format.
 ///
