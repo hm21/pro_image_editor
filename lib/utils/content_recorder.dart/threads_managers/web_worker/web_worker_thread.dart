@@ -6,6 +6,8 @@ import 'dart:html' as html;
 
 // Flutter imports:
 import 'package:flutter/rendering.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
 import 'package:pro_image_editor/models/multi_threading/thread_response_model.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread.dart';

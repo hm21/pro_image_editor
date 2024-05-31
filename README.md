@@ -27,6 +27,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - **[✨ Features](#features)**
 - **[🔧 Getting started](#getting-started)**
   - [Android](#android)
+  - [OpenHarmony](#OpenHarmony)
   - [Web](#web)
 - **[❓ Usage](#usage)**
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
@@ -166,6 +167,8 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 
 
 #### Planned features
+- ✨ Better Emoji-Editor => Maybe a complete own solution
+- ✨ Better Filter-Editor which supports also the html-renderer => Maybe a complete own solution
 - ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
 
 
@@ -178,6 +181,17 @@ To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE
 ``` xml
 <uses-permission android:name="android.permission.VIBRATE"/>
 ```
+
+### OpenHarmony 
+
+To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE` permission to your project's module.json5 file.
+
+```json
+"requestPermissions": [
+    {"name" :  "ohos.permission.VIBRATE"},                
+]
+```
+
 
 ### Web
 

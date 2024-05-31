@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -26,21 +25,23 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
   // ignore: unused_element
   Future<void> _convertImage(Uint8List bytes) async {
     try {
-      /// FlutterImageCompress is not supported for windows and linux,
-      /// so we use the package `image` to convert the bytes.
+      /// Install first `flutter_image_compress: any` and import it
+      /// import 'package:flutter_image_compress/flutter_image_compress.dart';
+      ///
+      /// FlutterImageCompress is not supported for windows and linux
       if (!kIsWeb && (Platform.isLinux || Platform.isWindows)) {
         throw ArgumentError(
             'This platform didn\'t support the package "FlutterImageCompress"');
       } else {
         /// Supports only Android, iOS, Web, MacOS
-        final result = await FlutterImageCompress.compressWithList(
-          bytes,
-          format: CompressFormat
-              .webp, // For web follow this url => https://pub.dev/packages/flutter_image_compress#web
-          // format: CompressFormat.heic,
-        );
-        editedBytes = result;
-        debugPrint('Converted image size: ${result.length}');
+        /// final result = await FlutterImageCompress.compressWithList(
+        ///   bytes,
+        ///   format: CompressFormat
+        ///       .webp, // For web follow this url => https://pub.dev/packages/flutter_image_compress#web
+        ///   // format: CompressFormat.heic,
+        /// );
+        /// editedBytes = result;
+        /// debugPrint('Converted image size: ${result.length}');
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -76,7 +77,8 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
         onImageEditingComplete: (bytes) async {
           editedBytes = bytes;
 
-          /// For special formats like webp, you can uncomment the line below.
+          /// For special formats like webp, you can uncomment the line below,
+          /// and follow the instructions there.
           /// await _convertImage(bytes);
 
           setGenerationTime();

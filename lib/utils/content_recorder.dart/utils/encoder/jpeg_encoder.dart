@@ -4,8 +4,9 @@ import 'dart:typed_data';
 
 // Package imports:
 import 'package:image/image.dart';
-// ignore: implementation_imports
 import 'package:image/src/formats/jpeg/jpeg_marker.dart';
+
+// ignore: implementation_imports
 
 // ignore: implementation_imports
 

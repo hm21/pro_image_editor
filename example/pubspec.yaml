@@ -19,12 +19,12 @@ dependencies:
   file_picker: ^8.0.0+1
   google_fonts: ^6.2.0
   image: ^4.2.0
-  flutter_image_compress: ^2.3.0
   firebase_core: ^2.31.0
   firebase_storage: ^11.7.5
   supabase_flutter: ^2.5.3
   image_picker: ^1.1.1
   mime: ^1.0.5
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_test:

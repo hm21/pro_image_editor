@@ -1,7 +1,11 @@
+// Dart imports:
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder_controller.dart';
 import 'package:pro_image_editor/utils/unique_id_generator.dart';

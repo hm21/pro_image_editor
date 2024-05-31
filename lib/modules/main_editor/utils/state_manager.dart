@@ -10,8 +10,8 @@ import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/history/blur_state_history.dart';
 import '../../../models/history/filter_state_history.dart';
 import '../../../models/history/state_history.dart';
-import '../../../models/multi_threading/thread_capture_model.dart';
 import '../../../models/layer.dart';
+import '../../../models/multi_threading/thread_capture_model.dart';
 
 /// A class for managing the state and history of image editing changes.
 class StateManager {

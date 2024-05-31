@@ -2,8 +2,10 @@
 import 'dart:async';
 import 'dart:math';
 
-// Project imports:
+// Flutter imports:
 import 'package:flutter/foundation.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
 import 'package:pro_image_editor/models/multi_threading/thread_task_model.dart';

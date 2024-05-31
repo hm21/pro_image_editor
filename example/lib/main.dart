@@ -1,8 +1,9 @@
 // Flutter imports:
 import 'package:example/pages/generation_configs_example.dart';
 import 'package:example/pages/standalone_example.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +14,7 @@ import 'package:example/pages/import_export_example.dart';
 import 'package:example/pages/pick_image_example.dart';
 import 'package:example/pages/selectable_layer_example.dart';
 import 'package:example/utils/example_constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'pages/custom_appbar_bottombar_example.dart';
 import 'pages/default_example.dart';
 import 'pages/google_font_example.dart';
@@ -98,8 +100,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return ExampleConstants(
-      child: Scaffold(
-        body: SafeArea(child: _buildCard()),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: Scaffold(
+          body: SafeArea(child: _buildCard()),
+        ),
       ),
     );
   }
@@ -127,27 +132,39 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Examples',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              if (kIsWeb)
-                Text(
-                  'The "web" platform has slower performance compared to the other platforms because the "web" platform doesn\'t support isolates.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+              RichText(
+                  text: TextSpan(
+                style: const TextStyle(color: Colors.black87),
+                children: [
+                  const TextSpan(text: 'Check out the example code '),
+                  TextSpan(
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () async {
+                        String path =
+                            'https://github.com/hm21/pro_image_editor/tree/stable/example/lib/pages';
+                        Uri url = Uri.parse(path);
+                        if (!await launchUrl(url)) {
+                          throw Exception('Could not launch $url');
+                        }
+                      },
+                    text: 'here',
+                    style: const TextStyle(color: Colors.blue),
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  const TextSpan(text: '.'),
+                ],
+              )),
             ],
           ),
         ),

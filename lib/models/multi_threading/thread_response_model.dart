@@ -1,3 +1,4 @@
+// Dart imports:
 import 'dart:typed_data';
 
 /// Represents a response containing image data from the image processing thread.
