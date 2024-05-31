@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/pages/generation_configs_example.dart';
 import 'package:example/pages/standalone_example.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const RoundCropperExample(),
     const HighlyConfigurableExample(),
     const SelectableLayerExample(),
+    const GenerationConfigsExample(),
     const PickImageExample(),
     const GoogleFontExample(),
     const CustomAppbarBottombarExample(),
@@ -149,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
+        const Divider(height: 1),
         Flexible(
           child: Scrollbar(
             controller: _scrollCtrl,
@@ -159,22 +162,16 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: _buildExampleList(),
+                children: ListTile.divideTiles(
+                  context: context,
+                  tiles: _examples,
+                ).toList(),
               ),
             ),
           ),
         ),
       ],
     );
-  }
-
-  List<Widget> _buildExampleList() {
-    List<Widget> list = [];
-    for (var example in _examples) {
-      list.add(const Divider(height: 1));
-      list.add(example);
-    }
-    return list;
   }
 }
 

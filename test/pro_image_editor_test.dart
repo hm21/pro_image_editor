@@ -20,9 +20,9 @@ import 'fake/fake_image.dart';
 void main() {
   ProImageEditorConfigs configs = const ProImageEditorConfigs(
     imageGenerationConfigs: ImageGeneratioConfigs(
-      generateIsolated: false,
+      generateInsideSeparateThread: false,
       generateImageInBackground: false,
-      generateOnlyImageBounds: false,
+      generateOnlyDrawingBounds: false,
     ),
   );
 

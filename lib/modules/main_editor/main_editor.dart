@@ -401,6 +401,8 @@ class ProImageEditorState extends State<ProImageEditor>
   void initState() {
     super.initState();
     _controllers = MainEditorControllers(configs);
+    _controllers.screenshot.generateOnlyThumbnail =
+        callbacks.onThumbnailGenerated != null;
     _desktopInteractionManager = DesktopInteractionManager(
       configs: configs,
       context: context,
@@ -1459,9 +1461,19 @@ class ProImageEditorState extends State<ProImageEditor>
         message: i18n.doneLoadingMsg,
       );
 
-      Uint8List? bytes = await captureEditorImage();
+      if (callbacks.onThumbnailGenerated != null) {
+        if (_imageInfos == null) await _decodeImage();
 
-      await onImageEditingComplete(bytes);
+        final List<dynamic> results = await Future.wait([
+          captureEditorImage(),
+          _controllers.screenshot.getOriginalImage(imageInfos: _imageInfos!),
+        ]);
+
+        await callbacks.onThumbnailGenerated!(results[0], results[1]);
+      } else {
+        Uint8List? bytes = await captureEditorImage();
+        await onImageEditingComplete(bytes);
+      }
 
       if (mounted) loading.hide(context);
 

@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -34,7 +35,11 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
     }
   }
 
-  void onCloseEditor() async {
+  void onCloseEditor({
+    bool showThumbnail = false,
+    ui.Image? rawOriginalImage,
+    final ImageGeneratioConfigs? generatioConfigs,
+  }) async {
     if (editedBytes != null) {
       await precacheImage(MemoryImage(editedBytes!), context);
       if (!mounted) return;
@@ -45,6 +50,9 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
             return PreviewImgPage(
               imgBytes: editedBytes!,
               generationTime: _generationTime,
+              showThumbnail: showThumbnail,
+              rawOriginalImage: rawOriginalImage,
+              generatioConfigs: generatioConfigs,
             );
           },
         ),

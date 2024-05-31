@@ -11,7 +11,7 @@ class ProcessorConfigs {
   ///
   /// Must be a positive integer. Defaults to 1.
   ///
-  /// Ignored if [processorMode] is [ProcessorMode.minimum] or if the platform is `Web`.
+  /// Ignored if [processorMode] is [ProcessorMode.minimum].
   final int maxConcurrency;
 
   /// The mode in which processors will operate.
@@ -32,6 +32,23 @@ class ProcessorConfigs {
   })  : assert(numberOfBackgroundProcessors > 0,
             'minBackgroundProcessors must be positive'),
         assert(maxConcurrency > 0, 'maxConcurrency must be positive');
+
+  /// Creates a copy of this object with the given fields replaced with the new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of [ProcessorConfigs]
+  /// with some properties updated while keeping the others unchanged.
+  ProcessorConfigs copyWith({
+    int? numberOfBackgroundProcessors,
+    int? maxConcurrency,
+    ProcessorMode? processorMode,
+  }) {
+    return ProcessorConfigs(
+      numberOfBackgroundProcessors:
+          numberOfBackgroundProcessors ?? this.numberOfBackgroundProcessors,
+      maxConcurrency: maxConcurrency ?? this.maxConcurrency,
+      processorMode: processorMode ?? this.processorMode,
+    );
+  }
 }
 
 enum ProcessorMode {
@@ -39,28 +56,27 @@ enum ProcessorMode {
   ///
   /// The [numberOfBackgroundProcessors] setting will be ignored.
   ///
-  /// In Dart native, if there are too many tasks, it will destroy active tasks.
-  ///
-  /// In Dart web, it ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
+  /// If the limit specified by [maxConcurrency] is reached, it will terminate
+  /// all active tasks and create new one.
   auto,
 
   /// Uses the specified [numberOfBackgroundProcessors].
   ///
-  /// In Dart native, if the limit specified by [maxConcurrency] is reached, it will terminate all active processors
-  /// and respawn them.
-  ///
-  /// In Dart web, it ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
+  /// If the limit specified by [maxConcurrency] is reached, it will terminate
+  /// all active tasks and create new one.
   limit,
 
   /// Utilizes all available processors.
   ///
   /// Be cautious, as this can negatively affect performance.
   ///
-  /// It ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
+  /// It ignores [maxConcurrency] and may overload the processor if too many
+  /// tasks are incoming.
   maximum,
 
   /// Uses only one processor.
   ///
-  /// It ignores [maxConcurrency] and may overload the processor if too many tasks are incoming.
+  /// It ignores [maxConcurrency] and may overload the processor if too many
+  /// tasks are incoming.
   minimum,
 }

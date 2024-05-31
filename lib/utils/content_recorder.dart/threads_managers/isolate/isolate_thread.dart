@@ -41,7 +41,7 @@ class IsolateThread extends Thread {
     isolate = await Isolate.spawn(
       isolatedImageConverter,
       receivePort.sendPort,
-      debugName: 'Background-Task-$coreNumber',
+      debugName: 'PIE-Thread-$coreNumber',
     );
   }
 

@@ -31,6 +31,7 @@ class ContentRecorderController {
   late final GlobalKey containerKey;
 
   final ProImageEditorConfigs _configs;
+  bool generateOnlyThumbnail = false;
 
   /// Instance of ProImageEditorWebWorker used for web worker communication.
   final WebWorkerManager _webWorkerManager = WebWorkerManager();
@@ -88,16 +89,26 @@ class ContentRecorderController {
       return null;
     }
 
-    image ??= await _getRenderedImage(
-      imageInfos: imageInfos,
-      generateOnlyImageBounds:
-          _configs.imageGenerationConfigs.generateOnlyImageBounds,
-    );
+    image ??= await _getRenderedImage(imageInfos: imageInfos);
     id ??= generateUniqueId();
     onImageCaptured?.call(image);
     if (image == null) return null;
 
-    if (_configs.imageGenerationConfigs.generateIsolated) {
+    return await chooseCaptureMode(image: image, id: id);
+  }
+
+  /// Selects the appropriate capture mode based on the platform and configuration.
+  ///
+  /// This function determines the capture mode based on the platform and
+  /// configuration settings specified in [_configs]. If the configuration
+  /// allows, the image generation may be offloaded to a separate thread or
+  /// web worker for better performance. If an error occurs, it falls back
+  /// to the main thread.
+  Future<Uint8List?> chooseCaptureMode({
+    required ui.Image image,
+    required String id,
+  }) async {
+    if (_configs.imageGenerationConfigs.generateInsideSeparateThread) {
       try {
         if (!kIsWeb) {
           // Run in dart native the thread isolated.
@@ -158,7 +169,7 @@ class ContentRecorderController {
   Future<Uint8List?> _captureWithMainThread({
     required ui.Image image,
   }) async {
-    if (_configs.imageGenerationConfigs.generateOnlyImageBounds) {
+    if (_configs.imageGenerationConfigs.generateOnlyDrawingBounds) {
       image = await dartUiRemoveTransparentImgAreas(image) ?? image;
     }
 
@@ -183,10 +194,8 @@ class ContentRecorderController {
   }
 
   /// Get the rendered image from the widget tree using the specified pixel ratio.
-  Future<ui.Image?> _getRenderedImage({
-    required ImageInfos imageInfos,
-    required bool generateOnlyImageBounds,
-  }) async {
+  Future<ui.Image?> _getRenderedImage(
+      {required ImageInfos imageInfos, bool? useThumbnailSize}) async {
     try {
       var findRenderObject = containerKey.currentContext?.findRenderObject();
       if (findRenderObject == null) return null;
@@ -204,19 +213,31 @@ class ContentRecorderController {
       BuildContext? context = containerKey.currentContext;
 
       double outputRatio = imageInfos.pixelRatio;
-      if (!generateOnlyImageBounds && context != null && context.mounted) {
+      if (!_configs.imageGenerationConfigs.generateOnlyDrawingBounds &&
+          context != null &&
+          context.mounted) {
         outputRatio =
             max(imageInfos.pixelRatio, MediaQuery.of(context).devicePixelRatio);
       }
 
-      if (_isOutputSizeTooLarge(imageInfos.renderedSize, outputRatio)) {
+      useThumbnailSize ??= generateOnlyThumbnail;
+      bool isOutputSizeTooLarge = _isOutputSizeTooLarge(
+        imageInfos.renderedSize,
+        outputRatio,
+        useThumbnailSize,
+      );
+      if (isOutputSizeTooLarge) {
         outputRatio = min(
-          _maxOutputDimension.width / imageInfos.renderedSize.width,
-          _maxOutputDimension.height / imageInfos.renderedSize.height,
+          _maxOutputDimension(useThumbnailSize).width /
+              imageInfos.renderedSize.width,
+          _maxOutputDimension(useThumbnailSize).height /
+              imageInfos.renderedSize.height,
         );
       }
 
-      ui.Image image = await boundary.toImage(pixelRatio: outputRatio);
+      ui.Image image = await boundary.toImage(
+          pixelRatio:
+              _configs.imageGenerationConfigs.customPixelRatio ?? outputRatio);
 
       return image;
     } catch (e) {
@@ -224,16 +245,32 @@ class ContentRecorderController {
     }
   }
 
+  /// Retrieves the original image based on the provided image information.
+  ///
+  /// This method asynchronously fetches the original image without using the thumbnail size.
+  /// It calls the `_getRenderedImage` method with the `useThumbnailSize` parameter set to false.
+  Future<ui.Image> getOriginalImage({required ImageInfos imageInfos}) async {
+    return (await _getRenderedImage(
+      imageInfos: imageInfos,
+      useThumbnailSize: false,
+    ))!;
+  }
+
   /// Retrieves the maximum output dimension for image generation from the configuration.
-  Size get _maxOutputDimension =>
-      _configs.imageGenerationConfigs.maxOutputDimension;
+  Size _maxOutputDimension(bool useThumbnailSize) => !useThumbnailSize
+      ? _configs.imageGenerationConfigs.maxOutputSize
+      : _configs.imageGenerationConfigs.maxThumbnailSize;
 
   /// Checks if the output size exceeds the maximum allowable dimensions.
-  bool _isOutputSizeTooLarge(Size renderedSize, double outputRatio) {
+  bool _isOutputSizeTooLarge(
+    Size renderedSize,
+    double outputRatio,
+    bool useThumbnailSize,
+  ) {
     Size outputSize = renderedSize * outputRatio;
 
-    return outputSize.width > _maxOutputDimension.width ||
-        outputSize.height > _maxOutputDimension.height;
+    return outputSize.width > _maxOutputDimension(useThumbnailSize).width ||
+        outputSize.height > _maxOutputDimension(useThumbnailSize).height;
   }
 
   /// Value for [delay] should increase with widget tree size. Prefered value is 1 seconds
@@ -361,7 +398,8 @@ class ContentRecorderController {
       }
 
       image = await repaintBoundary.toImage(
-        pixelRatio: imageSize.width / logicalSize.width,
+        pixelRatio: _configs.imageGenerationConfigs.customPixelRatio ??
+            imageSize.width / logicalSize.width,
       );
 
       ///Check does this require rebuild
@@ -407,7 +445,7 @@ class ContentRecorderController {
     Widget? widget,
   }) async {
     if (!_configs.imageGenerationConfigs.generateImageInBackground ||
-        !_configs.imageGenerationConfigs.generateIsolated) {
+        !_configs.imageGenerationConfigs.generateInsideSeparateThread) {
       return;
     }
 
@@ -515,19 +553,21 @@ class ContentRecorderController {
                         OutputFormat.jpg));
 
         double outputRatio = imageInfos.pixelRatio;
-        if (!_configs.imageGenerationConfigs.generateOnlyImageBounds &&
+        if (!_configs.imageGenerationConfigs.generateOnlyDrawingBounds &&
             context != null &&
             context.mounted) {
           outputRatio = max(
               imageInfos.pixelRatio, MediaQuery.of(context).devicePixelRatio);
         }
-
-        if (!formatIsCorrect ||
-            _isOutputSizeTooLarge(imageInfos.renderedSize, outputRatio)) {
+        bool isOutputSizeTooLarge = _isOutputSizeTooLarge(
+          imageInfos.renderedSize,
+          outputRatio,
+          generateOnlyThumbnail,
+        );
+        if (!formatIsCorrect || isOutputSizeTooLarge) {
           final ui.Image image = await decodeImageFromList(originalImageBytes);
-          if (_configs.imageGenerationConfigs.generateIsolated) {
-            if (kIsWeb ||
-                _isOutputSizeTooLarge(imageInfos.renderedSize, outputRatio)) {
+          if (_configs.imageGenerationConfigs.generateInsideSeparateThread) {
+            if (kIsWeb || isOutputSizeTooLarge) {
               /// currently in the web flutter decode the image wrong so we need
               /// to recapture it.
               /// bytes = await _webWorkerManager.send(
@@ -638,7 +678,7 @@ class ContentRecorderController {
     return ImageConvertThreadRequest(
       id: id,
       generateOnlyImageBounds:
-          _configs.imageGenerationConfigs.generateOnlyImageBounds,
+          _configs.imageGenerationConfigs.generateOnlyDrawingBounds,
       outputFormat: _configs.imageGenerationConfigs.outputFormat,
       jpegChroma: _configs.imageGenerationConfigs.jpegChroma,
       jpegQuality: _configs.imageGenerationConfigs.jpegQuality,

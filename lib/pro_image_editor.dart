@@ -26,6 +26,8 @@ export 'utils/design_mode.dart';
 export 'modules/paint_editor/utils/paint_editor_enum.dart';
 export 'widgets/layer_widget.dart' show LayerBackgroundColorModeE;
 
+export 'utils/content_recorder.dart/utils/generate_high_quality_image.dart';
+
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
     show Emoji, RecentTabBehavior, CategoryIcons, Category, CategoryEmoji;
 export 'package:colorfilter_generator/presets.dart'

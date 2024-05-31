@@ -25,7 +25,7 @@ void main() {
       ),
       imageGenerationConfigs: ImageGeneratioConfigs(
         generateImageInBackground: false,
-        generateIsolated: false,
+        generateInsideSeparateThread: false,
       ),
     ),
   );
