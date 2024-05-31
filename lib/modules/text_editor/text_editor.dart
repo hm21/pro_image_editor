@@ -227,15 +227,21 @@ class TextEditorState extends State<TextEditor>
                         const SizedBox(width: 8),
                         IconTheme(
                           data: Theme.of(context).primaryIconTheme,
-                          child: IconButton(
-                            onPressed: fontScale != presetFontScale
-                                ? () {
-                                    updateFontScaleScale(presetFontScale);
-                                  }
-                                : null,
-                            icon: Icon(
-                              icons.textEditor.resetFontScale,
-                            ),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 150),
+                            child: fontScale != presetFontScale
+                                ? IconButton(
+                                    onPressed: () {
+                                      updateFontScaleScale(presetFontScale);
+                                    },
+                                    icon: Icon(icons.textEditor.resetFontScale),
+                                  )
+                                : IconButton(
+                                    key: UniqueKey(),
+                                    color: Colors.transparent,
+                                    onPressed: null,
+                                    icon: Icon(icons.textEditor.resetFontScale),
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 2),

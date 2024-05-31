@@ -7,7 +7,7 @@
 /// ```dart
 /// BlurEditorConfigs(
 ///   enabled: true,
-///   maxBlur: 2.0,
+///   maxBlur: 5.0,
 /// );
 /// ```
 class BlurEditorConfigs {
@@ -22,10 +22,10 @@ class BlurEditorConfigs {
 
   /// Creates an instance of BlurEditorConfigs with optional settings.
   ///
-  /// By default, the editor is enabled, and max blur is 2.0.
+  /// By default, the editor is enabled, and max blur is 5.0.
   const BlurEditorConfigs({
     this.enabled = true,
     this.showLayers = true,
-    this.maxBlur = 2.0,
+    this.maxBlur = 5.0,
   }) : assert(maxBlur > 0, 'maxBlur must be positive');
 }

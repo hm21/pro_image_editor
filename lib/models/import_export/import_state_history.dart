@@ -9,8 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history_configs.dart';
 import 'package:pro_image_editor/models/layer.dart';
-import '../history/blur_state_history.dart';
-import '../history/filter_state_history.dart';
 import '../history/state_history.dart';
 
 /// This class represents the state history of an imported editor session.
@@ -47,25 +45,21 @@ class ImportStateHistory {
     }
 
     for (var el in List.from(map['history'] ?? [])) {
-      BlurStateHistory blur = BlurStateHistory();
+      double blur = 0;
       List<Layer> layers = [];
-      List<FilterStateHistory> filters = [];
 
       if (el['blur'] != null) {
-        blur = BlurStateHistory.fromMap(el['blur']);
+        blur = double.tryParse((el['blur'] ?? '0').toString()) ?? 0;
       }
       for (var layer in List.from(el['layers'] ?? [])) {
         layers.add(Layer.fromMap(layer, stickers));
-      }
-      for (var filter in List.from(el['filters'] ?? [])) {
-        filters.add(FilterStateHistory.fromMap(filter));
       }
 
       stateHistory.add(
         EditorStateHistory(
           blur: blur,
           layers: layers,
-          filters: filters,
+          filters: List.from(el['filters'] ?? []),
           transformConfigs: el['transformConfigs'] ?? TransformConfigs.empty(),
         ),
       );

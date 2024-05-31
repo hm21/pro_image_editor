@@ -2,7 +2,7 @@
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import '../../modules/blur_editor.dart';
+import '../../modules/blur_editor/blur_editor.dart';
 import '../../modules/crop_rotate_editor/crop_rotate_editor.dart';
 import '../../modules/emoji_editor/emoji_editor.dart';
 import '../../modules/filter_editor/filter_editor.dart';

@@ -1,10 +1,10 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 
 // Project imports:
 import '../../pro_image_editor.dart';
 import '../crop_rotate_editor/transform_factors.dart';
-import '../history/filter_state_history.dart';
 import '../layer.dart';
 
 /// Configuration class for initializing the image editor.
@@ -23,8 +23,8 @@ abstract class EditorInitConfigs {
   /// The size of the body with layers applied.
   final Size? mainBodySize;
 
-  /// The list of applied filter history.
-  final List<FilterStateHistory> appliedFilters;
+  /// The list of applied filters.
+  final FilterMatrix appliedFilters;
 
   /// The applied blur factor.
   final double appliedBlurFactor;
@@ -65,7 +65,7 @@ abstract class EditorInitConfigs {
   /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
   /// The [mainImageSize] parameter specifies the size of the image with layers applied.
   /// The [mainBodySize] parameter specifies the size of the body with layers applied.
-  /// The [appliedFilters] parameter specifies the list of applied filter history.
+  /// The [appliedFilters] parameter specifies the list of applied filters.
   /// The [appliedBlurFactor] parameter specifies the applied blur factor.
   /// The [transformConfigs] parameter specifies the transformation configurations for the editor.
   /// The [layers] parameter specifies the layers in the editor.

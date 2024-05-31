@@ -8,16 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Project imports:
-import '../mixins/converted_configs.dart';
-import '../mixins/standalone_editor.dart';
-import '../models/crop_rotate_editor/transform_factors.dart';
-import '../models/editor_image.dart';
-import '../models/init_configs/blur_editor_init_configs.dart';
-import '../models/transform_helper.dart';
-import '../utils/content_recorder.dart/content_recorder.dart';
-import '../widgets/layer_stack.dart';
-import '../widgets/transform/transformed_content_generator.dart';
-import 'filter_editor/widgets/image_with_filters.dart';
+import '../../mixins/converted_configs.dart';
+import '../../mixins/standalone_editor.dart';
+import '../../models/crop_rotate_editor/transform_factors.dart';
+import '../../models/editor_image.dart';
+import '../../models/init_configs/blur_editor_init_configs.dart';
+import '../../models/transform_helper.dart';
+import '../../utils/content_recorder.dart/content_recorder.dart';
+import '../../widgets/layer_stack.dart';
+import '../../widgets/transform/transformed_content_generator.dart';
+import '../filter_editor/widgets/filtered_image.dart';
 
 /// The `BlurEditor` widget allows users to apply blur to images.
 ///
@@ -238,7 +238,7 @@ class BlurEditorState extends State<BlurEditor>
                 child: StreamBuilder(
                     stream: _uiBlurStream.stream,
                     builder: (context, snapshot) {
-                      return ImageWithFilters(
+                      return FilteredImage(
                         width:
                             getMinimumSize(mainImageSize, editorBodySize).width,
                         height: getMinimumSize(mainImageSize, editorBodySize)

@@ -1,5 +1,4 @@
-// Package imports:
-import 'package:colorfilter_generator/colorfilter_generator.dart';
+import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_model.dart';
 
 /// Configuration options for a filter editor.
 ///
@@ -27,7 +26,7 @@ class FilterEditorConfigs {
   final double whatsAppFilterTextOffsetY;
 
   /// A list of color filter generators to apply to an image.
-  final List<ColorFilterGenerator>? filterList;
+  final List<FilterModel>? filterList;
 
   /// Creates an instance of FilterEditorConfigs with optional settings.
   ///

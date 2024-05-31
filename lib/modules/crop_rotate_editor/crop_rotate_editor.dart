@@ -37,7 +37,7 @@ import '../../widgets/layer_stack.dart';
 import '../../widgets/outside_gestures/outside_gesture_behavior.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/image_with_filters.dart';
+import '../filter_editor/widgets/filtered_image.dart';
 import 'utils/crop_area_part.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/crop_desktop_interaction_manager.dart';
@@ -2153,7 +2153,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
-              ImageWithFilters(
+              FilteredImage(
                 filters: appliedFilters,
                 blurFactor: appliedBlurFactor,
                 designMode: designMode,
@@ -2197,7 +2197,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
               child: TransformedContentGenerator(
                 transformConfigs: _fakeHeroTransformConfigs,
                 configs: configs,
-                child: ImageWithFilters(
+                child: FilteredImage(
                   width: _mainImageSize.width,
                   height: _mainImageSize.height,
                   designMode: designMode,
@@ -2248,7 +2248,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       child: TransformedContentGenerator(
         transformConfigs: transformC,
         configs: configs,
-        child: ImageWithFilters(
+        child: FilteredImage(
           width: w,
           height: h,
           designMode: designMode,

@@ -22,9 +22,7 @@ import '../../mixins/editor_configs_mixin.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
-import '../../models/history/blur_state_history.dart';
-import '../../models/history/filter_state_history.dart';
-import '../../models/history/last_position.dart';
+import '../../models/history/last_layer_interaction_position.dart';
 import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
@@ -44,14 +42,15 @@ import '../../widgets/loading_dialog.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/screen_resize_detector.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../blur_editor.dart';
+import '../blur_editor/blur_editor.dart';
 import '../crop_rotate_editor/crop_rotate_editor.dart';
 import '../emoji_editor/emoji_editor.dart';
 import '../filter_editor/filter_editor.dart';
+import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_editor_item_list.dart';
-import '../filter_editor/widgets/image_with_filters.dart';
+import '../filter_editor/widgets/filtered_image.dart';
 import '../paint_editor/paint_editor.dart';
-import '../sticker_editor.dart';
+import '../sticker_editor/sticker_editor.dart';
 import '../text_editor/text_editor.dart';
 import 'utils/desktop_interaction_manager.dart';
 import 'utils/layer_copy_manager.dart';
@@ -422,7 +421,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     _stateManager.stateHistory.add(EditorStateHistory(
       transformConfigs: TransformConfigs.empty(),
-      blur: BlurStateHistory(),
+      blur: 0,
       layers: [],
       filters: [],
     ));
@@ -513,8 +512,8 @@ class ProImageEditorState extends State<ProImageEditor>
     List<Layer>? layers,
     Layer? newLayer,
     TransformConfigs? transformConfigs,
-    List<FilterStateHistory>? filters,
-    BlurStateHistory? blur,
+    FilterMatrix? filters,
+    double? blur,
     bool heroScreenshotRequired = false,
     bool blockCaptureScreenshot = false,
   }) {
@@ -1009,7 +1008,7 @@ class ProImageEditorState extends State<ProImageEditor>
           configs: widget.configs,
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: onUpdateUI,
-          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedBlurFactor: _stateManager.activeBlur,
           appliedFilters: _stateManager.activeFilters,
         ),
       ),
@@ -1083,7 +1082,7 @@ class ProImageEditorState extends State<ProImageEditor>
           mainImageSize: _sizesManager.decodedImageSize,
           mainBodySize: _sizesManager.bodySize,
           enableFakeHero: true,
-          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedBlurFactor: _stateManager.activeBlur,
           appliedFilters: _stateManager.activeFilters,
           onDone: (transformConfigs) async {
             List<Layer> updatedLayers = LayerTransformGenerator(
@@ -1130,7 +1129,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// `Uint8List`. If no filter is applied or the operation is canceled, the original image is retained.
   void openFilterEditor() async {
     if (!mounted) return;
-    FilterStateHistory? filterAppliedImage = await _openPage(
+    FilterMatrix? filters = await _openPage(
       FilterEditor.autoSource(
         key: filterEditor,
         file: _image.file,
@@ -1146,19 +1145,16 @@ class ProImageEditorState extends State<ProImageEditor>
           mainImageSize: _sizesManager.decodedImageSize,
           mainBodySize: _sizesManager.bodySize,
           convertToUint8List: false,
-          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedBlurFactor: _stateManager.activeBlur,
           appliedFilters: _stateManager.activeFilters,
         ),
       ),
     );
 
-    if (filterAppliedImage == null) return;
+    if (filters == null) return;
 
     _addHistory(
-      filters: [
-        filterAppliedImage,
-        ..._stateManager.activeFilters,
-      ],
+      filters: filters,
       heroScreenshotRequired: true,
     );
 
@@ -1185,7 +1181,7 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: _stateManager.transformConfigs,
           onUpdateUI: onUpdateUI,
           convertToUint8List: false,
-          appliedBlurFactor: _stateManager.activeBlur.blur,
+          appliedBlurFactor: _stateManager.activeBlur,
           appliedFilters: _stateManager.activeFilters,
         ),
       ),
@@ -1194,7 +1190,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (blur == null) return;
 
     _addHistory(
-      blur: BlurStateHistory(blur: blur),
+      blur: blur,
       heroScreenshotRequired: true,
     );
 
@@ -1625,7 +1621,7 @@ class ProImageEditorState extends State<ProImageEditor>
       _stateManager.stateHistory = [
         EditorStateHistory(
           transformConfigs: TransformConfigs.empty(),
-          blur: BlurStateHistory(),
+          blur: 0,
           filters: [],
           layers: [],
         ),
@@ -1921,19 +1917,13 @@ class ProImageEditorState extends State<ProImageEditor>
               itemScaleFactor:
                   max(0, min(1, 1 / 120 * _whatsAppHelper.filterShowHelper)),
               editorImage: _image,
-              blurFactor: _stateManager.activeBlur.blur,
-              activeFilters: _stateManager.activeFilters,
+              blurFactor: _stateManager.activeBlur,
               configs: widget.configs,
               selectedFilter: _stateManager.activeFilters.isNotEmpty
-                  ? _stateManager.activeFilters.first.filter
-                  : PresetFilters.none,
+                  ? _stateManager.activeFilters
+                  : PresetFilters.none.filters,
               onSelectFilter: (filter) {
-                _addHistory(filters: [
-                  FilterStateHistory(
-                    filter: filter,
-                    opacity: 1,
-                  ),
-                ]);
+                _addHistory(filters: filter.filters);
 
                 setState(() {});
                 onUpdateUI?.call();
@@ -2351,13 +2341,13 @@ class ProImageEditorState extends State<ProImageEditor>
             : TransformedContentGenerator(
                 transformConfigs: _stateManager.transformConfigs,
                 configs: configs,
-                child: ImageWithFilters(
+                child: FilteredImage(
                   width: _sizesManager.decodedImageSize.width,
                   height: _sizesManager.decodedImageSize.height,
                   designMode: designMode,
                   image: _image,
                   filters: _stateManager.activeFilters,
-                  blurFactor: _stateManager.activeBlur.blur,
+                  blurFactor: _stateManager.activeBlur,
                 ),
               ),
       ),

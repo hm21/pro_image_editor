@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 // Project imports:
 import 'package:pro_image_editor/models/init_configs/filter_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
-import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_filters.dart';
+import 'package:pro_image_editor/modules/filter_editor/widgets/filtered_image.dart';
 import '../fake/fake_image.dart';
 
 void main() {
@@ -45,7 +45,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(ImageWithFilters), findsWidgets);
+      expect(find.byType(FilteredImage), findsWidgets);
     });
   });
 }

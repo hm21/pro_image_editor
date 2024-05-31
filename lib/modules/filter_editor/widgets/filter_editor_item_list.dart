@@ -4,18 +4,16 @@ import 'dart:math';
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Package imports:
-import 'package:colorfilter_generator/colorfilter_generator.dart';
-import 'package:colorfilter_generator/presets.dart';
-
 // Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
-import 'package:pro_image_editor/modules/filter_editor/widgets/image_with_filters.dart';
+import 'package:pro_image_editor/modules/filter_editor/widgets/filtered_image.dart';
 import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/editor_image.dart';
-import '../../../models/history/filter_state_history.dart';
+import '../types/filter_matrix.dart';
+import '../utils/filter_generator/filter_model.dart';
+import '../utils/filter_generator/filter_presets.dart';
 
 class FilterEditorItemList extends StatefulWidget {
   /// The EditorImage class represents an image with multiple sources,
@@ -33,7 +31,7 @@ class FilterEditorItemList extends StatefulWidget {
   /// Specifies the list of active filter state histories.
   ///
   /// If provided, this list contains the history of active filters applied to the image.
-  final List<FilterStateHistory>? activeFilters;
+  final FilterMatrix? activeFilters;
 
   /// Specifies the blur factor.
   final double? blurFactor;
@@ -41,15 +39,15 @@ class FilterEditorItemList extends StatefulWidget {
   /// Specifies the selected filter.
   ///
   /// This property represents the currently selected filter for the image editor.
-  final ColorFilterGenerator selectedFilter;
+  final FilterMatrix selectedFilter;
 
   /// The transform configurations how the image should be initialized.
   final TransformConfigs? transformConfigs;
 
   /// Callback function for selecting a filter.
   ///
-  /// This function is called when a filter is selected in the editor. It takes a [ColorFilterGenerator] as a parameter, representing the selected filter.
-  final Function(ColorFilterGenerator filter) onSelectFilter;
+  /// This function is called when a filter is selected in the editor. It takes a [FilterModel] as a parameter, representing the selected filter.
+  final Function(FilterModel filter) onSelectFilter;
 
   /// The size of the image with layers applied.
   final Size mainImageSize;
@@ -79,7 +77,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   late ScrollController _scrollCtrl;
 
   /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
-  List<ColorFilterGenerator> get _filters =>
+  List<FilterModel> get _filters =>
       widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
 
   @override
@@ -143,17 +141,16 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
 
   /// Create a button for filter preview.
   Widget buildFilterButton({
-    required ColorFilterGenerator filter,
+    required FilterModel filter,
     required String name,
     required int index,
-    List<FilterStateHistory>? activeFilters,
+    FilterMatrix? activeFilters,
   }) {
     if (_isWhatsAppDesign) {
       return _buildWhatsAppFilterButton(
         filter: filter,
         name: name,
         index: index,
-        activeFilters: activeFilters,
       );
     }
     return GestureDetector(
@@ -191,7 +188,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
 
   Widget _buildPreviewImage(
     Size size,
-    ColorFilterGenerator filter, {
+    FilterModel filter, {
     EdgeInsets? margin,
     Decoration? decoration,
     BorderRadius borderRadius = BorderRadius.zero,
@@ -199,16 +196,21 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     TransformConfigs transformConfigs =
         widget.transformConfigs ?? TransformConfigs.empty();
 
-    Size imageSize = transformConfigs.cropRect == Rect.largest
+    bool emptyConfigs = transformConfigs.isEmpty;
+
+    Size imageSize = emptyConfigs || transformConfigs.cropRect == Rect.largest
         ? widget.mainImageSize
         : transformConfigs.cropRect.size;
 
-    double offsetFactor = widget.mainImageSize.longestSide / size.shortestSide;
-    double fitCoverScale = max(
-      max(widget.mainImageSize.aspectRatio,
-          1 / widget.mainImageSize.aspectRatio),
-      max(imageSize.aspectRatio, 1 / imageSize.aspectRatio),
-    );
+    double offsetFactor =
+        emptyConfigs ? 1 : widget.mainImageSize.longestSide / size.shortestSide;
+    double fitCoverScale = emptyConfigs
+        ? 1
+        : max(
+            max(widget.mainImageSize.aspectRatio,
+                1 / widget.mainImageSize.aspectRatio),
+            max(imageSize.aspectRatio, 1 / imageSize.aspectRatio),
+          );
 
     Offset offset = transformConfigs.offset / offsetFactor;
     double scale = fitCoverScale * transformConfigs.scaleUser;
@@ -232,7 +234,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
               scale: scale,
               child: Transform.translate(
                 offset: offset,
-                child: ImageWithFilters(
+                child: FilteredImage(
                   image: widget.editorImage,
                   fit:
                       !transformConfigs.isEmpty ? BoxFit.contain : BoxFit.cover,
@@ -240,7 +242,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                   height: size.height,
                   filters: [
                     ...(widget.activeFilters ?? []),
-                    FilterStateHistory(filter: filter, opacity: 1),
+                    ...filter.filters,
                   ],
                   designMode: widget.configs.designMode,
                   blurFactor: widget.blurFactor ?? 0,
@@ -254,13 +256,12 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
   }
 
   Widget _buildWhatsAppFilterButton({
-    required ColorFilterGenerator filter,
+    required FilterModel filter,
     required String name,
     required int index,
-    List<FilterStateHistory>? activeFilters,
   }) {
     bool isSelected = widget.selectedFilter.hashCode == filter.hashCode ||
-        (widget.selectedFilter.filters.isEmpty && filter.filters.isEmpty);
+        (widget.selectedFilter.isEmpty && filter.filters.isEmpty);
     var size = const Size(58, 88);
 
     return Transform.scale(

@@ -82,11 +82,11 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
         filterEditorConfigs: FilterEditorConfigs(
           whatsAppFilterTextOffsetY: 90,
           filterList: [
-            ColorFilterGenerator(
+            const FilterModel(
               name: "None",
               filters: [],
             ),
-            ColorFilterGenerator(
+            FilterModel(
               name: "Pop",
               filters: [
                 ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
@@ -94,7 +94,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                 ColorFilterAddons.contrast(0.05),
               ],
             ),
-            ColorFilterGenerator(
+            FilterModel(
               name: "B&W",
               filters: [
                 ColorFilterAddons.grayscale(),
@@ -102,20 +102,20 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                 ColorFilterAddons.brightness(0.1),
               ],
             ),
-            ColorFilterGenerator(
+            FilterModel(
               name: "Cool",
               filters: [
                 ColorFilterAddons.addictiveColor(0, 0, 20),
               ],
             ),
-            ColorFilterGenerator(
+            FilterModel(
               name: "Chrome",
               filters: [
                 ColorFilterAddons.contrast(0.15),
                 ColorFilterAddons.saturation(0.2),
               ],
             ),
-            ColorFilterGenerator(
+            FilterModel(
               name: "Film",
               filters: [
                 ColorFilterAddons.brightness(.05),

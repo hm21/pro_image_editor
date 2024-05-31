@@ -36,7 +36,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  colorfilter_generator: ^0.0.8
   defer_pointer: ^0.0.2
   emoji_picker_flutter: ^2.2.0
   http: ^1.2.1

@@ -74,7 +74,6 @@ class ExportStateHistory {
     /// Build Layers and filters
     for (EditorStateHistory element in changes) {
       List layers = [];
-      List filters = [];
 
       await _convertLayers(
         element: element,
@@ -83,16 +82,11 @@ class ExportStateHistory {
         imageInfos: imageInfos,
       );
 
-      if (_configs.exportFilter) {
-        for (var filter in element.filters) {
-          filters.add(filter.toMap());
-        }
-      }
-
       history.add({
         if (layers.isNotEmpty) 'layers': layers,
-        if (filters.isNotEmpty) 'filters': filters,
-        'blur': element.blur.toMap(),
+        if (_configs.exportFilter && element.filters.isNotEmpty)
+          'filters': element.filters,
+        'blur': element.blur,
         'transform': element.transformConfigs.toMap(),
       });
     }

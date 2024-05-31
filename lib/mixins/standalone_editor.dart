@@ -9,10 +9,10 @@ import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/editor_callbacks/editor_callbacks_typedef.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';
 import '../models/editor_image.dart';
-import '../models/history/filter_state_history.dart';
 import '../models/init_configs/editor_init_configs.dart';
 import '../models/layer.dart';
 import '../models/multi_threading/thread_capture_model.dart';
+import '../modules/filter_editor/types/filter_matrix.dart';
 import '../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../utils/decode_image.dart';
 import '../widgets/loading_dialog.dart';
@@ -55,7 +55,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   double get appliedBlurFactor => initConfigs.appliedBlurFactor;
 
   /// Returns the applied filters.
-  List<FilterStateHistory> get appliedFilters => initConfigs.appliedFilters;
+  FilterMatrix get appliedFilters => initConfigs.appliedFilters;
 
   /// Returns the body size with layers.
   Size? get mainBodySize => initConfigs.mainBodySize;

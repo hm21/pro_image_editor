@@ -23,11 +23,15 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 #### **perf:**
 - Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
 - Image generation is now isolated from the main thread, speeding up the process significantly. On the web, it runs inside separate web workers.
+- Filters recalculate matrix only when they change and not after every state refresh.
 
 #### **Breaking Changes:**
 - Change the layer initial offset position to the center of the screen, not the top left. When we import from old state history we must add the half of the editor size to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the editor size.
 - Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
 - Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
+- Rename `ColorFilterGenerator` to `FilterModel`.
+- Changed the logic of overlaying multiple layers, which may produce different results than before.
+- Default `maxBlur` configuration is now 5.0 instead of 2.0.
 
 <br/>
 

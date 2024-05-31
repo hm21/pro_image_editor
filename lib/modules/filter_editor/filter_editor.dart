@@ -14,12 +14,12 @@ import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_image.dart';
-import '../../models/history/filter_state_history.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
+import 'types/filter_matrix.dart';
 import 'widgets/filter_editor_item_list.dart';
-import 'widgets/image_with_filters.dart';
+import 'widgets/filtered_image.dart';
 
 /// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
@@ -153,7 +153,7 @@ class FilterEditorState extends State<FilterEditor>
   late final StreamController _uiFilterStream;
 
   /// The selected filter.
-  ColorFilterGenerator selectedFilter = PresetFilters.none;
+  FilterModel selectedFilter = PresetFilters.none;
 
   /// The opacity of the selected filter.
   double filterOpacity = 1;
@@ -174,11 +174,16 @@ class FilterEditorState extends State<FilterEditor>
   void done() async {
     doneEditing(
       editorImage: widget.editorImage,
-      returnValue: FilterStateHistory(
-        filter: selectedFilter,
-        opacity: filterOpacity,
-      ),
+      returnValue: _getActiveFilters(),
     );
+  }
+
+  FilterMatrix _getActiveFilters() {
+    return [
+      ...appliedFilters,
+      ...selectedFilter.filters,
+      ColorFilterAddons.opacity(filterOpacity),
+    ];
   }
 
   @override
@@ -244,20 +249,14 @@ class FilterEditorState extends State<FilterEditor>
                 child: StreamBuilder(
                     stream: _uiFilterStream.stream,
                     builder: (context, snapshot) {
-                      return ImageWithFilters(
+                      return FilteredImage(
                         width:
                             getMinimumSize(mainImageSize, editorBodySize).width,
                         height: getMinimumSize(mainImageSize, editorBodySize)
                             .height,
                         designMode: designMode,
                         image: editorImage,
-                        filters: [
-                          ...appliedFilters,
-                          FilterStateHistory(
-                            filter: selectedFilter,
-                            opacity: filterOpacity,
-                          ),
-                        ],
+                        filters: _getActiveFilters(),
                         blurFactor: appliedBlurFactor,
                       );
                     }),
@@ -328,7 +327,7 @@ class FilterEditorState extends State<FilterEditor>
               blurFactor: appliedBlurFactor,
               configs: configs,
               transformConfigs: transformConfigs,
-              selectedFilter: selectedFilter,
+              selectedFilter: selectedFilter.filters,
               onSelectFilter: (filter) {
                 selectedFilter = filter;
                 _uiFilterStream.add(null);
