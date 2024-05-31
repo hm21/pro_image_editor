@@ -69,7 +69,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 -----------------------------------------------------------------------------
 
-vibration (1.8.4):
+vibration (1.9.0):
 
 BSD 2-Clause License
 
@@ -159,7 +159,7 @@ SOFTWARE.
 
 -----------------------------------------------------------------------------
 
-image (4.1.7):
+image (4.2.0):
 
 The MIT License
 
