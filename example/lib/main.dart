@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:example/pages/generation_configs_example.dart';
+import 'package:example/pages/signature_drawing_example.dart';
 import 'package:example/pages/standalone_example.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const DefaultExample(),
     const WhatsAppExample(),
     const StandaloneExample(),
+    const SignatureDrawingExample(),
     const StickersExample(),
     const FirebaseSupabaseExample(),
     const ReorderLayerExample(),

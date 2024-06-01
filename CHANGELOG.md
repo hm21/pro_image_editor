@@ -24,14 +24,17 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
   - Keyboard shortcut support
   - More theme and configuration options
   - Hero animation for image and layers
-  - Useable as a standalone editor
   - Round "cropper" for profile pictures
+- Painting-Editor
+  - Standalone drawing of signatures or paintings
 - Emoji-Editor
   - Infinite scrolling through all categories
   - Optional as `DraggableScrollableSheet` 
 - Sticker-Editor
   - Optional as `DraggableScrollableSheet` 
+- Standalone editors "Painting, Crop-Rotate, Filter, Blur"
 - Option to generate thumbnails first and the final image later for faster results with high-resolution images
+- Generate configs to change things like the output format 
  
 
 #### **fix:**

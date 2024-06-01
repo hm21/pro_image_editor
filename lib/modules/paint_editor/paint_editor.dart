@@ -36,6 +36,7 @@ import '../filter_editor/widgets/filtered_image.dart';
 import 'painting_canvas.dart';
 import 'utils/paint_desktop_interaction_manager.dart';
 import 'utils/paint_editor_enum.dart';
+import 'utils/transparent_image_bytes.dart';
 
 /// The `PaintingEditor` widget allows users to editing images with painting tools.
 ///
@@ -52,6 +53,8 @@ class PaintingEditor extends StatefulWidget
   @override
   final EditorImage editorImage;
 
+  final bool paintingOnly;
+
   /// Constructs a `PaintingEditor` widget.
   ///
   /// The [key] parameter is used to provide a key for the widget.
@@ -61,6 +64,7 @@ class PaintingEditor extends StatefulWidget
     super.key,
     required this.editorImage,
     required this.initConfigs,
+    this.paintingOnly = false,
   });
 
   /// Constructs a `PaintingEditor` widget with image data loaded from memory.
@@ -112,6 +116,18 @@ class PaintingEditor extends StatefulWidget
       key: key,
       editorImage: EditorImage(networkUrl: networkUrl),
       initConfigs: initConfigs,
+    );
+  }
+
+  factory PaintingEditor.drawing({
+    Key? key,
+    required PaintEditorInitConfigs initConfigs,
+  }) {
+    return PaintingEditor._(
+      key: key,
+      editorImage: EditorImage(byteArray: transparentBytes),
+      initConfigs: initConfigs,
+      paintingOnly: true,
     );
   }
 
@@ -542,7 +558,9 @@ class PaintingEditorState extends State<PaintingEditor>
         return Theme(
           data: theme,
           child: Material(
-            color: Colors.transparent,
+            color: initConfigs.convertToUint8List
+                ? imageEditorTheme.background
+                : Colors.transparent,
             textStyle: platformTextStyle(context, designMode),
             child: Stack(
               alignment: Alignment.center,
@@ -564,23 +582,31 @@ class PaintingEditorState extends State<PaintingEditor>
                           alignment: Alignment.center,
                           fit: StackFit.expand,
                           children: [
-                            TransformedContentGenerator(
-                              configs: configs,
-                              transformConfigs:
-                                  transformConfigs ?? TransformConfigs.empty(),
-                              child: FilteredImage(
-                                width: getMinimumSize(
-                                        mainImageSize, editorBodySize)
-                                    .width,
-                                height: getMinimumSize(
-                                        mainImageSize, editorBodySize)
-                                    .height,
-                                designMode: designMode,
-                                image: editorImage,
-                                filters: appliedFilters,
-                                blurFactor: appliedBlurFactor,
+                            if (!widget.paintingOnly)
+                              TransformedContentGenerator(
+                                configs: configs,
+                                transformConfigs: transformConfigs ??
+                                    TransformConfigs.empty(),
+                                child: FilteredImage(
+                                  width: getMinimumSize(
+                                          mainImageSize, editorBodySize)
+                                      .width,
+                                  height: getMinimumSize(
+                                          mainImageSize, editorBodySize)
+                                      .height,
+                                  designMode: designMode,
+                                  image: editorImage,
+                                  filters: appliedFilters,
+                                  blurFactor: appliedBlurFactor,
+                                ),
+                              )
+                            else
+                              SizedBox(
+                                width: configs
+                                    .imageGenerationConfigs.maxOutputSize.width,
+                                height: configs.imageGenerationConfigs
+                                    .maxOutputSize.height,
                               ),
-                            ),
                             if (layers != null)
                               LayerStack(
                                 configs: configs,
