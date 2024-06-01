@@ -1281,19 +1281,20 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 
 ### ProImageEditorCallbacks
-| Property Name                | Description                                                                                                                        | Default Value |
-|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `onImageEditingComplete`     | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `jpg`. | `required`    |
-| `onImageEditingStarted`      | A callback function that is triggered when the image generation is started.                                                        | `null`        |
-| `onCloseEditor`              | A callback function that will be called before the image editor closes.                                                            | `null`        |
-| `onUpdateUI`                 | A callback function that can be used to update the UI from custom widgets.                                                         | `null`        |
-| `onAddLayer`                 | A callback function that is triggered when a layer is added.                                                                       | `null`        |
-| `onRemoveLayer`              | A callback function that is triggered when a layer is removed.                                                                     | `null`        |
-| `onOpenSubEditor`            | A callback function that is triggered when a sub-editor is opened.                                                                 | `null`        |
-| `onCloseSubEditor`           | A callback function that is triggered when a sub-editor is closed.                                                                 | `null`        |
-| `onScaleStart`               | A callback function that is triggered when a scaling gesture starts. Provides information via `ScaleStartDetails`.                 | `null`        |
-| `onScaleUpdate`              | A callback function that is triggered when a scaling gesture is updated. Provides information via `ScaleUpdateDetails`.            | `null`        |
-| `onScaleEnd`                 | A callback function that is triggered when a scaling gesture ends. Provides information via `ScaleEndDetails`.                     | `null`        |
+
+| Property Name                  | Description                                                                                                                        | Default Value |
+|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------- |---------------|
+| `onImageEditingStarted`        | A callback function that is triggered when the image generation is started.                                                        | `null`        |
+| `onImageEditingComplete`       | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `jpg`. | `required`    |
+| `onThumbnailGenerated`         | A callback function that is called when the editing is complete and the thumbnail image is generated, along with capturing the original image as a raw `ui.Image`. If used, it will disable the `onImageEditingComplete` callback.   | `null`        |
+| `onCloseEditor`                | A callback function that will be called before the image editor closes.                                                            | `null`        |
+| `mainEditorCallbacks`          | Callbacks from the main editor.                                                                                                    | `null`        |
+| `paintEditorCallbacks`         | Callbacks from the paint editor.                                                                                                   | `null`        |
+| `textEditorCallbacks`          | Callbacks from the text editor.                                                                                                    | `null`        |
+| `cropRotateEditorCallbacks`    | Callbacks from the crop-rotate editor.                                                                                             | `null`        |
+| `filterEditorCallbacks`        | Callbacks from the filter editor.                                                                                                  | `null`        |
+| `blurEditorCallbacks`          | Callbacks from the blur editor.                                                                                                    | `null`        |
+
 
 
 <details>
