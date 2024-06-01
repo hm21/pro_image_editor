@@ -57,48 +57,46 @@ class _StickersExampleState extends State<StickersExample>
         blurEditorConfigs: const BlurEditorConfigs(enabled: false),
         stickerEditorConfigs: StickerEditorConfigs(
           enabled: true,
-          buildStickers: (setLayer) {
+          buildStickers: (setLayer, scrollController) {
             return ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
-              child: Container(
-                color: const Color.fromARGB(255, 224, 239, 251),
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 150,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: 21,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () async {
-                        // Important make sure the image is completly loaded
-                        // cuz the editor will directly take a screenshot
-                        // inside of a background isolated thread.
-                        LoadingDialog loading = LoadingDialog();
-                        await loading.show(
-                          context,
-                          configs: const ProImageEditorConfigs(),
-                          theme: ThemeData.dark(),
-                        );
-                        if (!context.mounted) return;
-                        await precacheImage(
-                            NetworkImage(
-                                'https://picsum.photos/id/${(index + 3) * 3}/2000'),
-                            context);
-                        if (context.mounted) await loading.hide(context);
-                        setLayer(Sticker(index: index));
-                      },
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Sticker(index: index),
-                      ),
-                    );
-                  },
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 150,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
                 ),
+                controller: scrollController,
+                itemCount: 21,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () async {
+                      // Important make sure the image is completly loaded
+                      // cuz the editor will directly take a screenshot
+                      // inside of a background isolated thread.
+                      LoadingDialog loading = LoadingDialog();
+                      await loading.show(
+                        context,
+                        configs: const ProImageEditorConfigs(),
+                        theme: ThemeData.dark(),
+                      );
+                      if (!context.mounted) return;
+                      await precacheImage(
+                          NetworkImage(
+                              'https://picsum.photos/id/${(index + 3) * 3}/2000'),
+                          context);
+                      if (context.mounted) await loading.hide(context);
+                      setLayer(Sticker(index: index));
+                    },
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Sticker(index: index),
+                    ),
+                  );
+                },
               ),
             );
           },

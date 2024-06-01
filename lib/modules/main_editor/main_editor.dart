@@ -27,6 +27,7 @@ import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/layer.dart';
+import '../../models/theme/theme_dragable_sheet.dart';
 import '../../pro_image_editor.dart';
 import '../../utils/constants.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
@@ -1210,22 +1211,52 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() => _layerInteractionManager.selectedLayerId = '');
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints =
-        widget.configs.emojiEditorConfigs.editorBoxConstraintsBuilder?.call(
+        imageEditorTheme.emojiEditor.editorBoxConstraintsBuilder?.call(
               context,
               widget.configs,
             ) ??
-            widget.configs.editorBoxConstraintsBuilder?.call(
+            imageEditorTheme.editorBoxConstraintsBuilder?.call(
               context,
               widget.configs,
             );
+
+    ThemeDraggableSheet sheetTheme =
+        imageEditorTheme.emojiEditor.themeDraggableSheet;
+    bool useDraggableSheet = sheetTheme.maxChildSize != sheetTheme.minChildSize;
     EmojiLayerData? layer = await showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.black,
-      builder: (BuildContext context) => EmojiEditor(
-        configs: widget.configs,
-      ),
-      constraints: effectiveBoxConstraints,
-    );
+        context: context,
+        backgroundColor: imageEditorTheme.emojiEditor.backgroundColor,
+        constraints: effectiveBoxConstraints,
+        showDragHandle: imageEditorTheme.emojiEditor.showDragHandle,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (BuildContext context) {
+          if (!useDraggableSheet) {
+            return ConstrainedBox(
+              constraints: effectiveBoxConstraints ??
+                  BoxConstraints(
+                      maxHeight:
+                          300 + MediaQuery.of(context).viewInsets.bottom),
+              child: EmojiEditor(configs: widget.configs),
+            );
+          }
+
+          return DraggableScrollableSheet(
+              expand: sheetTheme.expand,
+              initialChildSize: sheetTheme.initialChildSize,
+              maxChildSize: sheetTheme.maxChildSize,
+              minChildSize: sheetTheme.minChildSize,
+              shouldCloseOnMinExtent: sheetTheme.shouldCloseOnMinExtent,
+              snap: sheetTheme.snap,
+              snapAnimationDuration: sheetTheme.snapAnimationDuration,
+              snapSizes: sheetTheme.snapSizes,
+              builder: (_, controller) {
+                return EmojiEditor(
+                  configs: widget.configs,
+                  scrollController: controller,
+                );
+              });
+        });
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
     if (layer == null || !mounted) return;
     layer.scale = emojiEditorConfigs.initScale;
@@ -1242,22 +1273,41 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() => _layerInteractionManager.selectedLayerId = '');
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints =
-        widget.configs.stickerEditorConfigs?.editorBoxConstraintsBuilder?.call(
+        imageEditorTheme.stickerEditor.editorBoxConstraintsBuilder?.call(
               context,
               widget.configs,
             ) ??
-            widget.configs.editorBoxConstraintsBuilder?.call(
+            imageEditorTheme.editorBoxConstraintsBuilder?.call(
               context,
               widget.configs,
             );
+    var sheetTheme = imageEditorTheme.stickerEditor.themeDraggableSheet;
     StickerLayerData? layer = await showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.black,
-      constraints: effectiveBoxConstraints,
-      builder: (BuildContext context) => StickerEditor(
-        configs: widget.configs,
-      ),
-    );
+        context: context,
+        backgroundColor:
+            imageEditorTheme.stickerEditor.bottomSheetBackgroundColor,
+        constraints: effectiveBoxConstraints,
+        showDragHandle: imageEditorTheme.stickerEditor.showDragHandle,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) {
+          return DraggableScrollableSheet(
+            expand: sheetTheme.expand,
+            initialChildSize: sheetTheme.initialChildSize,
+            maxChildSize: sheetTheme.maxChildSize,
+            minChildSize: sheetTheme.minChildSize,
+            shouldCloseOnMinExtent: sheetTheme.shouldCloseOnMinExtent,
+            snap: sheetTheme.snap,
+            snapAnimationDuration: sheetTheme.snapAnimationDuration,
+            snapSizes: sheetTheme.snapSizes,
+            builder: (_, controller) {
+              return StickerEditor(
+                configs: widget.configs,
+                scrollController: controller,
+              );
+            },
+          );
+        });
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
     if (layer == null || !mounted) return;
     layer.offset = newLayerOffsetPosition;
@@ -1288,18 +1338,17 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: widget.configs,
       ));
     } else {
-      final effectiveBoxConstraints = widget
-              .configs.stickerEditorConfigs?.whatsAppEditorBoxConstraintsBuilder
+      final effectiveBoxConstraints = imageEditorTheme
+              .stickerEditor.whatsAppEditorBoxConstraintsBuilder
               ?.call(
             context,
             widget.configs,
           ) ??
-          widget.configs.stickerEditorConfigs?.editorBoxConstraintsBuilder
-              ?.call(
+          imageEditorTheme.stickerEditor.editorBoxConstraintsBuilder?.call(
             context,
             widget.configs,
           ) ??
-          widget.configs.editorBoxConstraintsBuilder?.call(
+          imageEditorTheme.editorBoxConstraintsBuilder?.call(
             context,
             widget.configs,
           );

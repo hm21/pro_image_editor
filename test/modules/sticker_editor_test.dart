@@ -14,10 +14,11 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: StickerEditor(
+          scrollController: ScrollController(),
           configs: ProImageEditorConfigs(
             stickerEditorConfigs: StickerEditorConfigs(
               enabled: true,
-              buildStickers: (setLayer) {
+              buildStickers: (setLayer, scrollController) {
                 return Container();
               },
             ),

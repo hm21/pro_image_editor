@@ -70,12 +70,14 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
           ],
         ),
         imageEditorTheme: const ImageEditorTheme(
-          editorMode: ThemeEditorMode.whatsapp,
-          helperLine: HelperLineTheme(
-            horizontalColor: Color.fromARGB(255, 129, 218, 88),
-            verticalColor: Color.fromARGB(255, 129, 218, 88),
-          ),
-        ),
+            editorMode: ThemeEditorMode.whatsapp,
+            helperLine: HelperLineTheme(
+              horizontalColor: Color.fromARGB(255, 129, 218, 88),
+              verticalColor: Color.fromARGB(255, 129, 218, 88),
+            ),
+            emojiEditor: EmojiEditorTheme(
+              backgroundColor: Colors.transparent,
+            )),
         paintEditorConfigs: const PaintEditorConfigs(
           initialStrokeWidth: 5,
         ),
@@ -130,7 +132,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
             /// Filter your stickers
             debugPrint(value);
           },
-          buildStickers: (setLayer) {
+          buildStickers: (setLayer, scrollController) {
             List<String> demoTitels = [
               'Recent',
               'Favorites',
@@ -158,6 +160,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
                     child: CustomScrollView(
+                      controller: scrollController,
                       slivers: slivers,
                     ),
                   ),

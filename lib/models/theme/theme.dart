@@ -16,6 +16,7 @@ import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
 import 'theme_sub_editor_page.dart';
 import 'theme_text_editor.dart';
+import 'types/theme_types.dart';
 
 export 'theme_emoji_editor.dart';
 export 'theme_painting_editor.dart';
@@ -148,8 +149,14 @@ class ImageEditorTheme {
   /// Theme for the layer interaction settings.
   final ThemeLayerInteraction layerInteraction;
 
+  /// Use this to build custom [BoxConstraints] that will be applied
+  /// globally to the modal bottom sheet when opening various editors
+  /// from this library.
+  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
   /// Creates an instance of the `ImageEditorTheme` class with the specified theme properties.
   const ImageEditorTheme({
+    this.editorBoxConstraintsBuilder,
     this.editorMode = ThemeEditorMode.simple,
     this.layerInteraction = const ThemeLayerInteraction(),
     this.helperLine = const HelperLineTheme(),

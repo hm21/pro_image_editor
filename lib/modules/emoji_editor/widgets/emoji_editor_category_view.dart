@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_editor_bottom_bar.dart';
+import 'package:pro_image_editor/modules/emoji_editor/widgets/emoji_editor_bottom_bar.dart';
 
 class EmojiEditorCategoryView extends CategoryView {
   const EmojiEditorCategoryView(
@@ -32,7 +32,6 @@ class WhatsAppCategoryViewState extends State<EmojiEditorCategoryView>
             child: EmojiEditorBottomBar(
               widget.config,
               widget.tabController,
-              widget.pageController,
               widget.state.categoryEmoji,
               closeSkinToneOverlay,
             ),

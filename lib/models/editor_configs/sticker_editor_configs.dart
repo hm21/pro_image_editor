@@ -1,9 +1,6 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
 
-// Project imports:
-import '../../pro_image_editor.dart';
-
 /// Configuration options for a sticker editor.
 ///
 /// `StickerEditorConfigs` allows you to define various settings for a sticker
@@ -46,20 +43,6 @@ class StickerEditorConfigs {
   /// This callback is activated exclusively when the editor mode is set to 'WhatsApp'.
   final Function(String value)? onSearchChanged;
 
-  /// Use this to build custom [BoxConstraints] that will be applied to
-  /// the modal bottom sheet displaying the [StickerEditor].
-  ///
-  /// Otherwise, it falls back to
-  /// [ProImageEditorConfigs.editorBoxConstraintsBuilder].
-  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
-
-  /// Use this to build custom [BoxConstraints] that will be applied to
-  /// the modal bottom sheet displaying the [WhatsAppStickerPage].
-  ///
-  /// Otherwise, it falls back to either [editorBoxConstraintsBuilder] or
-  /// [ProImageEditorConfigs.editorBoxConstraintsBuilder] in that order.
-  final EditorBoxConstraintsBuilder? whatsAppEditorBoxConstraintsBuilder;
-
   /// Creates an instance of StickerEditorConfigs with optional settings.
   ///
   /// By default, the editor is disabled (if not specified), and other properties
@@ -69,9 +52,8 @@ class StickerEditorConfigs {
     this.onSearchChanged,
     this.initWidth = 100,
     this.enabled = false,
-    this.editorBoxConstraintsBuilder,
-    this.whatsAppEditorBoxConstraintsBuilder,
   }) : assert(initWidth > 0, 'initWidth must be positive');
 }
 
-typedef BuildStickers = Widget Function(Function(Widget) setLayer);
+typedef BuildStickers = Widget Function(
+    Function(Widget) setLayer, ScrollController scrollController);

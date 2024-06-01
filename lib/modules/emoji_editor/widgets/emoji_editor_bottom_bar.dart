@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_state_manager.dart';
 
 /// Represents the bottom bar for the emoji editor.
 class EmojiEditorBottomBar extends StatelessWidget {
@@ -11,9 +12,6 @@ class EmojiEditorBottomBar extends StatelessWidget {
 
   /// The tab controller for navigating between emoji categories.
   final TabController tabController;
-
-  /// The page controller for navigating between emoji pages.
-  final PageController pageController;
 
   /// The list of emoji categories.
   final List<CategoryEmoji> categoryEmojis;
@@ -24,11 +22,14 @@ class EmojiEditorBottomBar extends StatelessWidget {
   const EmojiEditorBottomBar(
     this.config,
     this.tabController,
-    this.pageController,
     this.categoryEmojis,
     this.closeSkinToneOverlay, {
     super.key,
   });
+
+  List<CategoryEmoji> get _categories {
+    return categoryEmojis.where((el) => el.emoji.isNotEmpty).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +45,14 @@ class EmojiEditorBottomBar extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.label,
         indicator: const BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.black12,
+          color: Colors.white24,
         ),
         onTap: (index) {
           closeSkinToneOverlay();
-          pageController.jumpToPage(index);
+          EmojiStateManager.of(context)
+              ?.setActiveCategory(_categories[index].category);
         },
-        tabs: categoryEmojis
+        tabs: _categories
             .asMap()
             .entries
             .map<Widget>(

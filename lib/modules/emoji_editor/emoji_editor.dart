@@ -11,14 +11,15 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 // Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
-import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_editor_category_view.dart';
+import 'package:pro_image_editor/modules/emoji_editor/widgets/emoji_editor_category_view.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../models/layer.dart';
 import '../../models/theme/theme_shared_values.dart';
 import '../../utils/design_mode.dart';
-import 'utils/emoji_editor_full_screen_search.dart';
-import 'utils/emoji_editor_header_search.dart';
+import 'widgets/emoji_editor_full_screen_search.dart';
+import 'widgets/emoji_editor_header_search.dart';
+import 'widgets/emoji_picker_view.dart';
 
 /// The `EmojiEditor` class is responsible for creating a widget that allows users to select emojis.
 ///
@@ -27,10 +28,12 @@ import 'utils/emoji_editor_header_search.dart';
 class EmojiEditor extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
+  final ScrollController? scrollController;
 
   /// Creates an `EmojiEditor` widget.
   const EmojiEditor({
     super.key,
+    this.scrollController,
     this.configs = const ProImageEditorConfigs(),
   });
 
@@ -88,99 +91,24 @@ class EmojiEditorState extends State<EmojiEditor>
   bool get _isWhatsApp =>
       imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 
-  @override
-  Widget build(BuildContext context) {
-    var content = LayoutBuilder(
-      builder: (context, constraints) {
-        return _buildEmojiPickerSizedBox(constraints, context);
-      },
-    );
-
-    if (_isWhatsApp) {
-      return content;
-    }
-    return SafeArea(
-      top: false,
-      child: SingleChildScrollView(
-        child: content,
-      ),
-    );
-  }
-
-  /// Builds a SizedBox containing the EmojiPicker with dynamic sizing.
-  Widget _buildEmojiPickerSizedBox(
-      BoxConstraints constraints, BuildContext context) {
-    if (_showExternalSearchPage) {
-      return EmojiEditorFullScreenSearchView(
-        key: _emojiSearchPageKey,
-        config: _getEditorConfig(constraints),
-        state: EmojiViewState(
-          emojiEditorConfigs.emojiSet,
-          (category, emoji) {
-            Navigator.pop(
-              context,
-              EmojiLayerData(emoji: emoji.emoji),
-            );
-          },
-          () {},
-          () {},
-        ),
-      );
-    }
-    return ClipRRect(
-      borderRadius: _isWhatsApp
-          ? BorderRadius.zero
-          : const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ),
-      child: Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: EmojiPicker(
-          key: _emojiPickerKey,
-          onEmojiSelected: (category, emoji) => {
-            Navigator.pop(
-              context,
-              EmojiLayerData(emoji: emoji.emoji),
-            ),
-          },
-          textEditingController: _controller,
-          config: _getEditorConfig(constraints),
-        ),
-      ),
-    );
-  }
-
   Config _getEditorConfig(BoxConstraints constraints) {
     return Config(
-      height: _isWhatsApp
-          ? double.infinity
-          : max(
-              50,
-              min(320, constraints.maxHeight) -
-                  MediaQuery.of(context).padding.bottom,
-            ),
+      height: double.infinity,
       emojiSet: emojiEditorConfigs.emojiSet,
       checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
       emojiTextStyle: _textStyle.copyWith(
           fontSize:
               _isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
                   ? 48
-                  : null),
+                  : 30),
       emojiViewConfig: imageEditorTheme.emojiEditor.emojiViewConfig ??
           EmojiViewConfig(
             gridPadding: EdgeInsets.zero,
             horizontalSpacing: 0,
             verticalSpacing: 0,
-            recentsLimit: _isWhatsApp ? 100 : 28,
+            recentsLimit: _isWhatsApp ? 40 : 28,
             backgroundColor:
                 _isWhatsApp ? Colors.transparent : imageEditorBackgroundColor,
-            noRecents: Text(
-              i18n.emojiEditor.noRecents,
-              style: const TextStyle(fontSize: 20, color: Colors.white),
-              textAlign: TextAlign.center,
-            ),
             buttonMode: designMode == ImageEditorDesignModeE.cupertino
                 ? ButtonMode.CUPERTINO
                 : ButtonMode.MATERIAL,
@@ -198,9 +126,9 @@ class EmojiEditorState extends State<EmojiEditor>
       categoryViewConfig: imageEditorTheme.emojiEditor.categoryViewConfig ??
           CategoryViewConfig(
             initCategory: Category.RECENT,
-            backgroundColor: imageEditorBackgroundColor,
+            backgroundColor: imageEditorTheme.emojiEditor.backgroundColor,
             indicatorColor: imageEditorPrimaryColor,
-            iconColorSelected: imageEditorPrimaryColor,
+            iconColorSelected: Colors.white,
             iconColor: const Color(0xFF9E9E9E),
             tabIndicatorAnimDuration: kTabScrollDuration,
             dividerColor: Colors.black,
@@ -234,7 +162,7 @@ class EmojiEditorState extends State<EmojiEditor>
           : imageEditorTheme.emojiEditor.bottomActionBarConfig,
       searchViewConfig: imageEditorTheme.emojiEditor.searchViewConfig ??
           SearchViewConfig(
-            backgroundColor: imageEditorBackgroundColor,
+            backgroundColor: imageEditorTheme.emojiEditor.backgroundColor,
             buttonIconColor: imageEditorTextColor,
             customSearchView: (
               config,
@@ -262,4 +190,54 @@ class EmojiEditorState extends State<EmojiEditor>
                   constraints.maxWidth -
               1)
       .floor();
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildEmojiPicker();
+  }
+
+  /// Builds a SizedBox containing the EmojiPicker with dynamic sizing.
+  Widget _buildEmojiPicker() {
+    return LayoutBuilder(builder: (context, constraints) {
+      if (_showExternalSearchPage) {
+        return EmojiEditorFullScreenSearchView(
+          key: _emojiSearchPageKey,
+          config: _getEditorConfig(constraints),
+          state: EmojiViewState(
+            emojiEditorConfigs.emojiSet,
+            (category, emoji) {
+              Navigator.pop(
+                context,
+                EmojiLayerData(emoji: emoji.emoji),
+              );
+            },
+            () {},
+            () {},
+          ),
+        );
+      }
+      return Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: EmojiPicker(
+          key: _emojiPickerKey,
+          onEmojiSelected: (category, emoji) => {
+            Navigator.pop(context, EmojiLayerData(emoji: emoji.emoji)),
+          },
+          textEditingController: _controller,
+          config: _getEditorConfig(constraints),
+          customWidget: (config, state, showSearchBar) {
+            return ProEmojiPickerView(
+              config: config,
+              state: state,
+              showSearchBar: showSearchBar,
+              scrollController: widget.scrollController,
+              i18nEmojiEditor: widget.configs.i18n.emojiEditor,
+              themeEmojiEditor: widget.configs.imageEditorTheme.emojiEditor,
+            );
+          },
+        ),
+      );
+    });
+  }
 }

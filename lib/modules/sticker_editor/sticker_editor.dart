@@ -15,10 +15,13 @@ class StickerEditor extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
 
+  final ScrollController scrollController;
+
   /// Creates an `StickerEditor` widget.
   const StickerEditor({
     super.key,
     required this.configs,
+    required this.scrollController,
   });
 
   @override
@@ -35,7 +38,8 @@ class StickerEditorState extends State<StickerEditor>
 
   @override
   Widget build(BuildContext context) {
-    return widget.configs.stickerEditorConfigs!.buildStickers(setLayer);
+    return widget.configs.stickerEditorConfigs!
+        .buildStickers(setLayer, widget.scrollController);
   }
 
   void setLayer(Widget sticker) {

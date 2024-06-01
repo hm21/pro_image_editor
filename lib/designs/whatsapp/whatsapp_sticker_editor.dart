@@ -32,6 +32,7 @@ class WhatsAppStickerPage extends StatefulWidget {
 
 class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   final _emojiEditorKey = GlobalKey<EmojiEditorState>();
+  final _stickerScrollController = ScrollController();
   bool _activeSearch = false;
   late TextEditingController _searchCtrl;
   late FocusNode _searchFocus;
@@ -50,6 +51,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   void dispose() {
     _searchCtrl.dispose();
     _searchFocus.dispose();
+    _stickerScrollController.dispose();
     super.dispose();
   }
 
@@ -84,6 +86,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                             WhatsAppStickerMode.sticker,
                         child: StickerEditor(
                           configs: widget.configs,
+                          scrollController: _stickerScrollController,
                         ),
                       ),
                   ],

@@ -31,15 +31,6 @@ export 'crop_rotate_editor_configs.dart';
 export 'emoji_editor_configs.dart';
 export 'filter_editor_configs.dart';
 
-///
-/// Creates custom [BoxConstraints] to use when displaying
-/// editors in modal bottom sheets.
-///
-typedef EditorBoxConstraintsBuilder = BoxConstraints? Function(
-  BuildContext context,
-  ProImageEditorConfigs configs,
-);
-
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
   /// The theme to be used for the Image Editor.
@@ -96,11 +87,6 @@ class ProImageEditorConfigs {
   /// Holds the configurations related to image generation.
   final ImageGeneratioConfigs imageGenerationConfigs;
 
-  /// Use this to build custom [BoxConstraints] that will be applied
-  /// globally to the modal bottom sheet when opening various editors
-  /// from this library.
-  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
-
   /// Creates an instance of [ProImageEditorConfigs].
   ///
   /// - The `theme` specifies the theme for the Image Editor.
@@ -141,6 +127,5 @@ class ProImageEditorConfigs {
     this.emojiEditorConfigs = const EmojiEditorConfigs(),
     this.stickerEditorConfigs,
     this.designMode = ImageEditorDesignModeE.material,
-    this.editorBoxConstraintsBuilder,
   });
 }
