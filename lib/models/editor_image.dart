@@ -137,7 +137,11 @@ class EditorImage {
 
     if (!context.mounted) return bytes;
 
-    await precacheImage(MemoryImage(bytes), context);
+    await precacheImage(
+      MemoryImage(bytes),
+      context,
+      size: MediaQuery.of(context).size,
+    );
 
     byteArray = bytes;
 

@@ -265,65 +265,69 @@ class _MoveableBackgroundImageExampleState
                         onImageEditingStarted: onImageEditingStarted,
                         onImageEditingComplete: onImageEditingComplete,
                         onCloseEditor: onCloseEditor,
-                        onOpenSubEditor: () => _openEditorStreamCtrl.add(true),
-                        onCloseSubEditor: () =>
-                            _openEditorStreamCtrl.add(false),
-                        onUpdateUI: () {
-                          _updateUIStreamCtrl.add(null);
-                          if (!inited) {
-                            inited = true;
+                        mainEditorCallbacks: MainEditorCallbacks(
+                          onOpenSubEditor: (editor) =>
+                              _openEditorStreamCtrl.add(true),
+                          onCloseSubEditor: (editor) =>
+                              _openEditorStreamCtrl.add(false),
+                          onUpdateUI: () {
+                            _updateUIStreamCtrl.add(null);
+                            if (!inited) {
+                              inited = true;
 
-                            editorKey.currentState?.addLayer(
-                              StickerLayerData(
-                                offset: Offset.zero,
-                                scale: _initScale,
-                                sticker: Image.network(
-                                  imageUrl,
-                                  width: _editorSize.width,
-                                  height: _editorSize.height,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    return AnimatedSwitcher(
-                                      layoutBuilder:
-                                          (currentChild, previousChildren) {
-                                        return SizedBox(
-                                          width: 120,
-                                          height: 120,
-                                          child: Stack(
-                                            fit: StackFit.expand,
-                                            alignment: Alignment.center,
-                                            children: <Widget>[
-                                              ...previousChildren,
-                                              if (currentChild != null)
-                                                currentChild,
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      duration:
-                                          const Duration(milliseconds: 200),
-                                      child: loadingProgress == null
-                                          ? child
-                                          : Center(
-                                              child: CircularProgressIndicator(
-                                                value: loadingProgress
-                                                            .expectedTotalBytes !=
-                                                        null
-                                                    ? loadingProgress
-                                                            .cumulativeBytesLoaded /
-                                                        loadingProgress
-                                                            .expectedTotalBytes!
-                                                    : null,
-                                              ),
+                              editorKey.currentState?.addLayer(
+                                StickerLayerData(
+                                  offset: Offset.zero,
+                                  scale: _initScale,
+                                  sticker: Image.network(
+                                    imageUrl,
+                                    width: _editorSize.width,
+                                    height: _editorSize.height,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      return AnimatedSwitcher(
+                                        layoutBuilder:
+                                            (currentChild, previousChildren) {
+                                          return SizedBox(
+                                            width: 120,
+                                            height: 120,
+                                            child: Stack(
+                                              fit: StackFit.expand,
+                                              alignment: Alignment.center,
+                                              children: <Widget>[
+                                                ...previousChildren,
+                                                if (currentChild != null)
+                                                  currentChild,
+                                              ],
                                             ),
-                                    );
-                                  },
+                                          );
+                                        },
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        child: loadingProgress == null
+                                            ? child
+                                            : Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  value: loadingProgress
+                                                              .expectedTotalBytes !=
+                                                          null
+                                                      ? loadingProgress
+                                                              .cumulativeBytesLoaded /
+                                                          loadingProgress
+                                                              .expectedTotalBytes!
+                                                      : null,
+                                                ),
+                                              ),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-                        },
+                              );
+                            }
+                          },
+                        ),
                       ),
                       configs: ProImageEditorConfigs(
                           imageGenerationConfigs: ImageGeneratioConfigs(

@@ -14,6 +14,7 @@ import 'package:defer_pointer/defer_pointer.dart';
 
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_area_history.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -176,6 +177,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     with
         TickerProviderStateMixin,
         ImageEditorConvertedConfigs,
+        ImageEditorConvertedCallbacks,
         StandaloneEditorState<CropRotateEditor, CropRotateEditorInitConfigs>,
         ExtendedLoop,
         CropAreaHistory {
@@ -364,6 +366,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           addHistory();
         }
         _blockInteraction = false;
+        cropRotateEditorCallbacks?.handleRotateEnd(rotateAnimation.value);
         setState(() {});
       }
     });
@@ -476,7 +479,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       calcFitToScreen();
       _imageSizeIsDecoded = true;
       setState(() {});
-      onUpdateUI?.call();
+      cropRotateEditorCallbacks?.handleUpdateUI();
     });
   }
 
@@ -574,6 +577,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Handles the crop image operation.
   Future<void> done() async {
     if (_interactionActive) return;
+    _interactionActive = true;
     initConfigs.onImageEditingStarted?.call();
 
     TransformConfigs transformC =
@@ -632,6 +636,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       initConfigs.onCloseEditor?.call();
     }
+    cropRotateEditorCallbacks?.handleDone();
   }
 
   /// Takes a screenshot of the current editor state.
@@ -686,6 +691,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       } else {
         flipX = !flipX;
       }
+      cropRotateEditorCallbacks?.handleFlip(flipX, flipY);
       addHistory();
     });
   }
@@ -714,6 +720,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       ..forward();
     calcFitToScreen();
 
+    cropRotateEditorCallbacks?.handleRotateStart(rotateAnimation.value);
     setState(() {});
   }
 
@@ -822,6 +829,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         setState(() {
           reset(skipAddHistory: true);
           aspectRatio = value;
+          cropRotateEditorCallbacks?.handleRatioSelected(value);
 
           calcCropRect();
           calcFitToScreen();
@@ -1095,6 +1103,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       // Set offset limits and trigger widget rebuild
       _setOffsetLimits();
+      cropRotateEditorCallbacks?.handleScale();
       setState(() {});
     } else {
       if (_currentCropAreaPart != CropAreaPart.none &&
@@ -1323,7 +1332,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 scaleFactor *
                 (cropRotateEditorConfigs.reverseDragDirection ? -1 : 1);
         _setOffsetLimits();
-
+        cropRotateEditorCallbacks?.handleMove();
         setState(() {});
       }
     }
@@ -1443,6 +1452,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       _setOffsetLimits();
       calcFitToScreen();
+      cropRotateEditorCallbacks?.handleResize();
     }
     _activeScaleOut = false;
     _blockInteraction = false;
@@ -1468,6 +1478,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     if (!cropRotateEditorConfigs.enableDoubleTap || _blockInteraction) return;
     _blockInteraction = true;
+
+    cropRotateEditorCallbacks?.handleDoubleTap();
 
     bool zoomInside = userZoom <= 1;
     double startZoom = userZoom;
@@ -1589,6 +1601,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _setMouseCursor();
       _scrollHistoryDebounce(() {
         addHistory();
+        cropRotateEditorCallbacks?.handleScale();
         setState(() {});
       });
       setState(() {});

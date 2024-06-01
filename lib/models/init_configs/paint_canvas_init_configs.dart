@@ -21,6 +21,9 @@ class PaintCanvasInitConfigs {
   /// Callback function to save the canvas.
   final Function? save;
 
+  /// A class representing callbacks for the Image Editor.
+  final ProImageEditorCallbacks? callbacks;
+
   /// Callback function to update the canvas.
   final VoidCallback? onUpdateDone;
 
@@ -67,6 +70,7 @@ class PaintCanvasInitConfigs {
     this.colors,
     this.save,
     this.onUpdateDone,
+    this.callbacks,
     this.undoIcon,
     this.colorIcon,
     required this.drawAreaSize,

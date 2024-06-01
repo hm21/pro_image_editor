@@ -1,11 +1,16 @@
+// Dart imports:
 import 'dart:math';
 
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+
+// Project imports:
 import 'package:pro_image_editor/models/i18n/i18n_emoji_editor.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_state_manager.dart';
-
 import '../../../widgets/pro_image_editor_desktop_mode.dart';
 import 'emoji_cell_extended.dart';
 

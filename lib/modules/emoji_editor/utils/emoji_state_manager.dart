@@ -1,6 +1,8 @@
 // Flutter imports:
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class EmojiStateManager extends InheritedWidget {
   final Category activeCategory;

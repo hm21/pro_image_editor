@@ -1,3 +1,4 @@
+// Project imports:
 import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_model.dart';
 
 /// Configuration options for a filter editor.

@@ -13,7 +13,7 @@ class FilterEditorInitConfigs extends EditorInitConfigs {
   const FilterEditorInitConfigs({
     super.transformConfigs,
     super.configs,
-    super.onUpdateUI,
+    super.callbacks,
     super.mainImageSize,
     super.mainBodySize,
     super.layers,

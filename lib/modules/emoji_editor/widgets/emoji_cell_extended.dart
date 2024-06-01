@@ -1,6 +1,9 @@
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 /// A widget that represents an individual clickable emoji cell.
 /// Can have a long pressed listener [onSkinToneDialogRequested] that

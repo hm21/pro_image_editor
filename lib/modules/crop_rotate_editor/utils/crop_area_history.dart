@@ -88,7 +88,6 @@ mixin CropAreaHistory
     );
     historyPosition++;
     takeScreenshot();
-    onUpdateUI?.call();
   }
 
   /// Clears forward changes from the history.
@@ -114,6 +113,7 @@ mixin CropAreaHistory
         } else {
           _setParametersFromHistory();
         }
+        cropRotateEditorCallbacks?.handleUndo();
       });
     }
   }
@@ -124,6 +124,7 @@ mixin CropAreaHistory
       setState(() {
         historyPosition++;
         _setParametersFromHistory();
+        cropRotateEditorCallbacks?.handleRedo();
       });
     }
   }
@@ -159,7 +160,6 @@ mixin CropAreaHistory
     if (activeHistory.aspectRatio < 0) {
       aspectRatio = -1;
     }
-    onUpdateUI?.call();
   }
 
   void reset({
@@ -201,6 +201,7 @@ mixin CropAreaHistory
       );
     }
 
+    cropRotateEditorCallbacks?.handleReset();
     setState(() {});
   }
 

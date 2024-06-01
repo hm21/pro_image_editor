@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 
 class ColorFilterGenerator extends StatefulWidget {

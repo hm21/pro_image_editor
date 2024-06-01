@@ -1,8 +1,8 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 
 // Project imports:
+import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 import '../../pro_image_editor.dart';
 import '../crop_rotate_editor/transform_factors.dart';
 import '../layer.dart';
@@ -14,8 +14,8 @@ abstract class EditorInitConfigs {
   /// The configuration options for the image editor.
   final ProImageEditorConfigs configs;
 
-  /// A callback function that can be used to update the UI from custom widgets.
-  final UpdateUiCallback? onUpdateUI;
+  /// The callbacks for the image editor.
+  final ProImageEditorCallbacks callbacks;
 
   /// The size of the image in the main editor.
   final Size? mainImageSize;
@@ -62,7 +62,7 @@ abstract class EditorInitConfigs {
   ///
   /// The [theme] parameter specifies the theme data for the editor.
   /// The [configs] parameter specifies the configuration options for the image editor.
-  /// The [onUpdateUI] parameter is a callback function that can be used to update the UI from custom widgets.
+  /// The [callbacks] parameter specifies the callback options for the image editor.
   /// The [mainImageSize] parameter specifies the size of the image with layers applied.
   /// The [mainBodySize] parameter specifies the size of the body with layers applied.
   /// The [appliedFilters] parameter specifies the list of applied filters.
@@ -72,7 +72,7 @@ abstract class EditorInitConfigs {
   const EditorInitConfigs({
     required this.theme,
     this.configs = const ProImageEditorConfigs(),
-    this.onUpdateUI,
+    this.callbacks = const ProImageEditorCallbacks(),
     this.mainImageSize,
     this.mainBodySize,
     this.transformConfigs,

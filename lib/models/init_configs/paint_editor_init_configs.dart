@@ -16,7 +16,7 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
   /// The other parameters are inherited from [EditorInitConfigs].
   const PaintEditorInitConfigs({
     super.configs,
-    super.onUpdateUI,
+    super.callbacks,
     super.transformConfigs,
     super.layers,
     super.mainImageSize,

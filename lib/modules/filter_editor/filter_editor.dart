@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Project imports:
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/models/transform_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/converted_configs.dart';
@@ -148,6 +149,7 @@ class FilterEditor extends StatefulWidget
 class FilterEditorState extends State<FilterEditor>
     with
         ImageEditorConvertedConfigs,
+        ImageEditorConvertedCallbacks,
         StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
   /// Update the image with the applied filter and the slider value.
   late final StreamController _uiFilterStream;
@@ -176,6 +178,7 @@ class FilterEditorState extends State<FilterEditor>
       editorImage: widget.editorImage,
       returnValue: _getActiveFilters(),
     );
+    filterEditorCallbacks?.handleDone();
   }
 
   FilterMatrix _getActiveFilters() {
@@ -306,9 +309,12 @@ class FilterEditorState extends State<FilterEditor>
                                 onChanged: (value) {
                                   filterOpacity = value;
                                   _uiFilterStream.add(null);
-                                  onUpdateUI?.call();
+                                  filterEditorCallbacks
+                                      ?.handleFilterFactorChange(value);
                                 },
                                 onChangeEnd: (value) {
+                                  filterEditorCallbacks
+                                      ?.handleFilterFactorChangeEnd(value);
                                   WidgetsBinding.instance
                                       .addPostFrameCallback((_) async {
                                     takeScreenshot();
@@ -331,7 +337,7 @@ class FilterEditorState extends State<FilterEditor>
               onSelectFilter: (filter) {
                 selectedFilter = filter;
                 _uiFilterStream.add(null);
-                onUpdateUI?.call();
+                filterEditorCallbacks?.handleFilterChanged(filter);
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   takeScreenshot();
                 });

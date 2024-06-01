@@ -27,3 +27,9 @@ typedef ImageEditingEmptyCallback = void Function();
 
 /// A typedef representing a callback function invoked when the ui should update.
 typedef UpdateUiCallback = void Function();
+
+/// A typedef representing a callback function invoked when a flip action is performed.
+///
+/// The [flipX] parameter indicates whether the image is flipped horizontally.
+/// The [flipY] parameter indicates whether the image is flipped vertically.
+typedef FlipCallback = Function(bool flipX, bool flipY);

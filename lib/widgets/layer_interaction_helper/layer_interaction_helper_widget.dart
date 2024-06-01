@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../models/layer.dart';
@@ -16,6 +16,9 @@ class LayerInteractionHelperWidget extends StatefulWidget
     with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
+
+  @override
+  final ProImageEditorCallbacks callbacks;
   final Widget child;
 
   final Function()? onEditLayer;
@@ -40,6 +43,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.onScaleRotateUp,
     this.selected = false,
     this.isInteractive = false,
+    this.callbacks = const ProImageEditorCallbacks(),
   });
 
   @override

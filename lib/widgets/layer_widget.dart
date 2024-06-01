@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/theme_functions.dart';
 import '../mixins/converted_configs.dart';
@@ -23,6 +24,9 @@ import 'pro_image_editor_desktop_mode.dart';
 class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
+
+  @override
+  final ProImageEditorCallbacks callbacks;
 
   final Size editorBodySize;
 
@@ -77,6 +81,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.enableHitDetection = false,
     this.selected = false,
     this.isInteractive = false,
+    this.callbacks = const ProImageEditorCallbacks(),
   });
 
   @override

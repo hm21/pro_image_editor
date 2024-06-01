@@ -15,12 +15,16 @@ class StickerEditor extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
 
+  @override
+  final ProImageEditorCallbacks callbacks;
+
   final ScrollController scrollController;
 
   /// Creates an `StickerEditor` widget.
   const StickerEditor({
     super.key,
     required this.configs,
+    this.callbacks = const ProImageEditorCallbacks(),
     required this.scrollController,
   });
 

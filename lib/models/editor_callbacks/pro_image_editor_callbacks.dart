@@ -1,15 +1,28 @@
 // Flutter imports:
-import 'package:flutter/widgets.dart';
 
 // Project imports:
+import 'main_editor_callbacks.dart';
+import 'blur_editor_callbacks.dart';
+import 'crop_rotate_editor_callbacks.dart';
 import 'editor_callbacks_typedef.dart';
+import 'filter_editor_callbacks.dart';
+import 'paint_editor_callbacks.dart';
 import 'text_editor_callbacks.dart';
 
 export 'editor_callbacks_typedef.dart';
+export 'main_editor_callbacks.dart';
+export 'paint_editor_callbacks.dart';
 export 'text_editor_callbacks.dart';
+export 'crop_rotate_editor_callbacks.dart';
+export 'filter_editor_callbacks.dart';
+export 'blur_editor_callbacks.dart';
+export 'utils/sub_editors_name.dart';
 
 /// A class representing callbacks for the Image Editor.
 class ProImageEditorCallbacks {
+  /// A callback function that is triggered when the image generation is started.
+  final Function()? onImageEditingStarted;
+
   /// A callback function that will be called when the editing is done,
   /// and it returns the edited image as a `Uint8List` with the format `jpg`.
   ///
@@ -17,7 +30,7 @@ class ProImageEditorCallbacks {
   /// when the editing is completed.
   ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px"/>
-  final ImageEditingCompleteCallback onImageEditingComplete;
+  final ImageEditingCompleteCallback? onImageEditingComplete;
 
   /// A callback function that is called when the editing is complete and the
   /// thumbnail image is generated, along with capturing the original image as a raw `ui.Image`.
@@ -38,60 +51,40 @@ class ProImageEditorCallbacks {
   /// ```
   final ThumbnailGeneratedCallback? onThumbnailGenerated;
 
-  /// A callback function that is triggered when the image generation is started.
-  final Function()? onImageEditingStarted;
-
   /// A callback function that will be called before the image editor will close.
   ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
   final ImageEditingEmptyCallback? onCloseEditor;
 
-  /// A callback function that can be used to update the UI from custom widgets.
-  final UpdateUiCallback? onUpdateUI;
+  /// Callbacks from the main editor.
+  final MainEditorCallbacks? mainEditorCallbacks;
 
-  /// A callback function that is triggered when a layer is added.
-  final Function()? onAddLayer;
-
-  /// A callback function that is triggered when a layer is removed.
-  final Function()? onRemoveLayer;
-
-  /// A callback function that is triggered when a sub-editor is opened.
-  final Function()? onOpenSubEditor;
-
-  /// A callback function that is triggered when a sub-editor is closed.
-  final Function()? onCloseSubEditor;
-
-  /// A callback function that is triggered when a scaling gesture starts.
-  ///
-  /// The [ScaleStartDetails] parameter provides information about the scaling gesture.
-  final Function(ScaleStartDetails)? onScaleStart;
-
-  /// A callback function that is triggered when a scaling gesture is updated.
-  ///
-  /// The [ScaleUpdateDetails] parameter provides information about the scaling gesture.
-  final Function(ScaleUpdateDetails)? onScaleUpdate;
-
-  /// A callback function that is triggered when a scaling gesture ends.
-  ///
-  /// The [ScaleEndDetails] parameter provides information about the scaling gesture.
-  final Function(ScaleEndDetails)? onScaleEnd;
+  /// Callbacks from the paint editor.
+  final PaintEditorCallbacks? paintEditorCallbacks;
 
   /// Callbacks from the text editor.
   final TextEditorCallbacks? textEditorCallbacks;
 
+  /// Callbacks from the crop-rotate editor.
+  final CropRotateEditorCallbacks? cropRotateEditorCallbacks;
+
+  /// Callbacks from the filter editor.
+  final FilterEditorCallbacks? filterEditorCallbacks;
+
+  /// Callbacks from the blur editor.
+  final BlurEditorCallbacks? blurEditorCallbacks;
+
+  /// Creates a new instance of [ProImageEditorCallbacks].
   const ProImageEditorCallbacks({
-    required this.onImageEditingComplete,
+    this.onImageEditingComplete,
     this.onThumbnailGenerated,
     this.onImageEditingStarted,
     this.onCloseEditor,
-    this.onUpdateUI,
-    this.onAddLayer,
-    this.onRemoveLayer,
-    this.onOpenSubEditor,
-    this.onCloseSubEditor,
-    this.onScaleStart,
-    this.onScaleUpdate,
-    this.onScaleEnd,
+    this.mainEditorCallbacks,
+    this.paintEditorCallbacks,
     this.textEditorCallbacks,
+    this.cropRotateEditorCallbacks,
+    this.filterEditorCallbacks,
+    this.blurEditorCallbacks,
   });
 }

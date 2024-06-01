@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_appbar.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.dart';
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
@@ -179,6 +180,7 @@ class PaintingEditor extends StatefulWidget
 class PaintingEditorState extends State<PaintingEditor>
     with
         ImageEditorConvertedConfigs,
+        ImageEditorConvertedCallbacks,
         StandaloneEditorState<PaintingEditor, PaintEditorInitConfigs> {
   /// A global key for accessing the state of the PaintingCanvas widget.
   final _imageKey = GlobalKey<PaintingCanvasState>();
@@ -278,7 +280,7 @@ class PaintingEditorState extends State<PaintingEditor>
     /// Important to set state after view init to set action icons
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {});
-      onUpdateUI?.call();
+      paintEditorCallbacks?.handleUpdateUI();
     });
   }
 
@@ -315,7 +317,7 @@ class PaintingEditorState extends State<PaintingEditor>
   void setFill(bool fill) {
     _imageKey.currentState?.setFill(fill);
     _uiAppbarIconsStream.add(null);
-    onUpdateUI?.call();
+    paintEditorCallbacks?.handleToggleFill(fill);
   }
 
   /// Toggles the fill mode.
@@ -329,7 +331,7 @@ class PaintingEditorState extends State<PaintingEditor>
     if (_imageKey.currentState != null) {
       _imageKey.currentState!.mode = mode;
     }
-    onUpdateUI?.call();
+    paintEditorCallbacks?.handlePaintModeChanged(mode);
   }
 
   /// Undoes the last action performed in the painting editor.
@@ -340,7 +342,7 @@ class PaintingEditorState extends State<PaintingEditor>
     if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
       _uiPickerStream.add(null);
     }
-    onUpdateUI?.call();
+    paintEditorCallbacks?.handleUndo();
   }
 
   /// Redoes the previously undone action in the painting editor.
@@ -348,7 +350,7 @@ class PaintingEditorState extends State<PaintingEditor>
     if (_imageKey.currentState!.canRedo) historyPosition++;
     _imageKey.currentState!.redo();
     _uiAppbarIconsStream.add(null);
-    onUpdateUI?.call();
+    paintEditorCallbacks?.handleRedo();
   }
 
   /// Finishes editing in the painting editor and returns the painted items as a result.
@@ -369,6 +371,7 @@ class PaintingEditorState extends State<PaintingEditor>
             _imageKey.currentState?.exportPaintedItems(editorBodySize),
           );
         });
+    paintEditorCallbacks?.handleDone();
   }
 
   @override
@@ -716,7 +719,6 @@ class PaintingEditorState extends State<PaintingEditor>
                                         onPressed: () {
                                           setMode(item.mode);
                                           setStateBottomBar(() {});
-                                          onUpdateUI?.call();
                                         },
                                       );
                                     },
@@ -756,7 +758,7 @@ class PaintingEditorState extends State<PaintingEditor>
           if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
             _uiPickerStream.add(null);
           }
-          onUpdateUI?.call();
+          paintEditorCallbacks?.handleDrawingDone();
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             takeScreenshot();
           });
@@ -795,6 +797,7 @@ class PaintingEditorState extends State<PaintingEditor>
               colorListener: (int value) {
                 _imageKey.currentState?.setColor(value);
                 _uiPickerStream.add(null);
+                paintEditorCallbacks?.handleColorChanged();
               },
             );
           }),

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Project imports:
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
@@ -146,6 +147,7 @@ class BlurEditor extends StatefulWidget
 class BlurEditorState extends State<BlurEditor>
     with
         ImageEditorConvertedConfigs,
+        ImageEditorConvertedCallbacks,
         StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
   /// Update the image with the applied blur and the slider value.
   late final StreamController _uiBlurStream;
@@ -173,6 +175,7 @@ class BlurEditorState extends State<BlurEditor>
       returnValue: selectedBlur,
       editorImage: widget.editorImage,
     );
+    blurEditorCallbacks?.handleDone();
   }
 
   @override
@@ -291,9 +294,10 @@ class BlurEditorState extends State<BlurEditor>
                       onChanged: (value) {
                         selectedBlur = value;
                         _uiBlurStream.add(null);
-                        onUpdateUI?.call();
+                        blurEditorCallbacks?.handleBlurFactorChange(value);
                       },
                       onChangeEnd: (value) {
+                        blurEditorCallbacks?.handleBlurFactorChangeEnd(value);
                         WidgetsBinding.instance.addPostFrameCallback((_) async {
                           takeScreenshot();
                         });

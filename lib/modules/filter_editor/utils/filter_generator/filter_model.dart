@@ -1,3 +1,4 @@
+// Project imports:
 import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 
 /// A model class that represents a filter with a name and associated filter matrix.

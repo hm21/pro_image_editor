@@ -5,9 +5,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 // Project imports:
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
+import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
-import '../models/editor_callbacks/editor_callbacks_typedef.dart';
-import '../models/editor_configs/pro_image_editor_configs.dart';
 import '../models/editor_image.dart';
 import '../models/init_configs/editor_init_configs.dart';
 import '../models/layer.dart';
@@ -29,7 +30,8 @@ mixin StandaloneEditor<T extends EditorInitConfigs> {
 
 /// A mixin providing access to standalone editor configurations and image within a state.
 mixin StandaloneEditorState<T extends StatefulWidget,
-    I extends EditorInitConfigs> on State<T>, ImageEditorConvertedConfigs {
+        I extends EditorInitConfigs>
+    on State<T>, ImageEditorConvertedConfigs, ImageEditorConvertedCallbacks {
   /// Returns the initialization configurations for the editor.
   I get initConfigs => (widget as StandaloneEditor<I>).initConfigs;
 
@@ -39,6 +41,9 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   @override
   ProImageEditorConfigs get configs => initConfigs.configs;
 
+  @override
+  ProImageEditorCallbacks get callbacks => initConfigs.callbacks;
+
   /// Returns the theme data for the editor.
   ThemeData get theme => initConfigs.theme;
 
@@ -47,9 +52,6 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
   /// Returns the layers in the editor.
   List<Layer>? get layers => initConfigs.layers;
-
-  /// Returns the callback function to update the UI.
-  UpdateUiCallback? get onUpdateUI => initConfigs.onUpdateUI;
 
   /// Returns the applied blur factor.
   double get appliedBlurFactor => initConfigs.appliedBlurFactor;
@@ -161,6 +163,15 @@ mixin StandaloneEditorState<T extends StatefulWidget,
       Navigator.pop(context);
     } else {
       initConfigs.onCloseEditor!.call();
+    }
+    if (I is PaintEditorInitConfigs) {
+      paintEditorCallbacks?.handleCloseEditor();
+    } else if (I is CropRotateEditorInitConfigs) {
+      cropRotateEditorCallbacks?.handleCloseEditor();
+    } else if (I is FilterEditorInitConfigs) {
+      filterEditorCallbacks?.handleCloseEditor();
+    } else if (I is BlurEditorInitConfigs) {
+      blurEditorCallbacks?.handleCloseEditor();
     }
   }
 

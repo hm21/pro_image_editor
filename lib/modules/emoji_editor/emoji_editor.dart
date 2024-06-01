@@ -9,14 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/theme/theme.dart';
+import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import 'package:pro_image_editor/modules/emoji_editor/widgets/emoji_editor_category_view.dart';
+import 'package:pro_image_editor/utils/design_mode.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../models/layer.dart';
 import '../../models/theme/theme_shared_values.dart';
-import '../../utils/design_mode.dart';
 import 'widgets/emoji_editor_full_screen_search.dart';
 import 'widgets/emoji_editor_header_search.dart';
 import 'widgets/emoji_picker_view.dart';
@@ -28,6 +29,10 @@ import 'widgets/emoji_picker_view.dart';
 class EmojiEditor extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
+
+  @override
+  final ProImageEditorCallbacks callbacks;
+
   final ScrollController? scrollController;
 
   /// Creates an `EmojiEditor` widget.
@@ -35,6 +40,7 @@ class EmojiEditor extends StatefulWidget with SimpleConfigsAccess {
     super.key,
     this.scrollController,
     this.configs = const ProImageEditorConfigs(),
+    this.callbacks = const ProImageEditorCallbacks(),
   });
 
   @override

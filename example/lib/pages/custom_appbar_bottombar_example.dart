@@ -136,7 +136,24 @@ class _CustomAppbarBottombarExampleState
           onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
-          onUpdateUI: () => _updateUIStream.add(null),
+          mainEditorCallbacks: MainEditorCallbacks(
+            onUpdateUI: () => _updateUIStream.add(null),
+          ),
+          paintEditorCallbacks: PaintEditorCallbacks(
+            onUpdateUI: () => _updateUIStream.add(null),
+          ),
+          textEditorCallbacks: TextEditorCallbacks(
+            onUpdateUI: () => _updateUIStream.add(null),
+          ),
+          cropRotateEditorCallbacks: CropRotateEditorCallbacks(
+            onUpdateUI: () => _updateUIStream.add(null),
+          ),
+          filterEditorCallbacks: FilterEditorCallbacks(
+            onUpdateUI: () => _updateUIStream.add(null),
+          ),
+          blurEditorCallbacks: BlurEditorCallbacks(
+            onUpdateUI: () => _updateUIStream.add(null),
+          ),
         ),
         configs: ProImageEditorConfigs(
             customWidgets: ImageEditorCustomWidgets(

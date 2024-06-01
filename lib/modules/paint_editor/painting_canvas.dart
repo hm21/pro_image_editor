@@ -274,10 +274,9 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   /// Set the stroke width.
   void setStrokeWidth(double value) {
     _paintCtrl.setStrokeWidth(value);
+    widget.initConfigs.callbacks?.paintEditorCallbacks
+        ?.handleLineWidthChanged(value);
     setState(() {});
-    if (configs.strokeWidthOnChanged != null) {
-      configs.strokeWidthOnChanged!(value);
-    }
   }
 
   /// Displays a range slider for adjusting the line width of the painting tool.

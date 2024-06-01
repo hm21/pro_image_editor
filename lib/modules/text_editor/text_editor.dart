@@ -9,18 +9,15 @@ import 'package:rounded_background_text/rounded_background_text.dart';
 
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_text_appbar.dart';
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/models/editor_callbacks/text_editor_callbacks.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/theme/theme.dart';
-import 'package:pro_image_editor/utils/design_mode.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../models/layer.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/bottom_sheets_header_row.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
-import '../../widgets/layer_widget.dart';
 import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'widgets/text_editor_bottom_bar.dart';
@@ -29,6 +26,9 @@ import 'widgets/text_editor_bottom_bar.dart';
 class TextEditor extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
+
+  @override
+  final ProImageEditorCallbacks callbacks;
 
   /// A unique hero tag for the image.
   final String? heroTag;
@@ -39,9 +39,6 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
   /// The text layer data to be edited, if any.
   final TextLayerData? layer;
 
-  /// A callback function that can be used to update the UI from custom widgets.
-  final TextEditorCallbacks? callbacks;
-
   /// Creates a `TextEditor` widget.
   ///
   /// The [heroTag], [layer], [i18n], [customWidgets], and [imageEditorTheme] parameters are required.
@@ -49,7 +46,7 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
     super.key,
     this.heroTag,
     this.layer,
-    this.callbacks,
+    this.callbacks = const ProImageEditorCallbacks(),
     this.configs = const ProImageEditorConfigs(),
     required this.theme,
   });
@@ -60,7 +57,10 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
 
 /// The state class for the `TextEditor` widget.
 class TextEditorState extends State<TextEditor>
-    with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
+    with
+        ImageEditorConvertedConfigs,
+        ImageEditorConvertedCallbacks,
+        SimpleConfigsAccessState {
   final TextEditingController _textCtrl = TextEditingController();
   final FocusNode _focus = FocusNode();
   Color _primaryColor = Colors.black;
@@ -113,8 +113,8 @@ class TextEditorState extends State<TextEditor>
     _textCtrl.addListener(() {
       setState(() {
         _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
+        textEditorCallbacks?.handleUpdateUI();
       });
-      widget.callbacks?.onUpdateUI?.call();
     });
   }
 
@@ -161,7 +161,7 @@ class TextEditorState extends State<TextEditor>
               ? TextAlign.right
               : TextAlign.left;
     });
-    widget.callbacks?.onUpdateUI?.call();
+    textEditorCallbacks?.handleTextAlignChanged(align);
   }
 
   /// Toggles the background mode between various color modes.
@@ -176,7 +176,7 @@ class TextEditorState extends State<TextEditor>
                   ? LayerBackgroundColorModeE.backgroundAndColorWithOpacity
                   : LayerBackgroundColorModeE.onlyColor;
     });
-    widget.callbacks?.onUpdateUI?.call();
+    textEditorCallbacks?.handleBackgroundModeChanged(backgroundColorMode);
   }
 
   /// Displays a range slider for adjusting the line width of the painting tool.
@@ -200,6 +200,7 @@ class TextEditorState extends State<TextEditor>
                 void updateFontScaleScale(double value) {
                   fontScale = (value * 10).ceilToDouble() / 10;
                   setState(() {});
+                  textEditorCallbacks?.handleFontScaleChanged(value);
                   this.setState(() {});
                 }
 
@@ -261,13 +262,14 @@ class TextEditorState extends State<TextEditor>
   void setTextStyle(TextStyle style) {
     setState(() {
       selectedTextStyle = style;
-      widget.callbacks?.onUpdateUI?.call();
+      textEditorCallbacks?.handleUpdateUI();
     });
   }
 
   /// Closes the editor without applying changes.
   void close() {
     Navigator.pop(context);
+    textEditorCallbacks?.handleCloseEditor();
   }
 
   /// Handles the "Done" action, either by applying changes or closing the editor.
@@ -289,6 +291,7 @@ class TextEditorState extends State<TextEditor>
     } else {
       Navigator.of(context).pop();
     }
+    textEditorCallbacks?.handleDone();
   }
 
   @override
@@ -474,7 +477,7 @@ class TextEditorState extends State<TextEditor>
                   setState(() {
                     _primaryColor = Color(value);
                   });
-                  widget.callbacks?.onUpdateUI?.call();
+                  textEditorCallbacks?.handleColorChanged(value);
                 },
               ),
             ),
@@ -537,9 +540,10 @@ class TextEditorState extends State<TextEditor>
                     child: TextField(
                       controller: _textCtrl,
                       focusNode: _focus,
-                      onChanged: widget.callbacks?.onChanged,
-                      onEditingComplete: widget.callbacks?.onEditingComplete,
-                      onSubmitted: widget.callbacks?.onSubmitted,
+                      onChanged: textEditorCallbacks?.handleChanged,
+                      onEditingComplete:
+                          textEditorCallbacks?.handleEditingComplete,
+                      onSubmitted: textEditorCallbacks?.handleSubmitted,
                       keyboardType: TextInputType.multiline,
                       textInputAction: TextInputAction.newline,
                       textCapitalization: TextCapitalization.sentences,

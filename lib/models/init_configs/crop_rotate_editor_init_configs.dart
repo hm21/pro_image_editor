@@ -44,7 +44,7 @@ class CropRotateEditorInitConfigs extends EditorInitConfigs {
     super.configs,
     super.transformConfigs,
     super.layers,
-    super.onUpdateUI,
+    super.callbacks,
     super.mainImageSize,
     super.mainBodySize,
     super.appliedFilters,
