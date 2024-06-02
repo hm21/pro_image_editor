@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
-import 'package:defer_pointer/defer_pointer.dart';
 import 'package:pro_image_editor/models/import_export/utils/export_import_version.dart';
+import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:

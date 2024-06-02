@@ -1,8 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:defer_pointer/defer_pointer.dart';
+import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';

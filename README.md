@@ -1815,12 +1815,15 @@ git clone https://github.com/hm21/pro_image_editor.git
 
 This package uses several Flutter packages to provide a seamless editing experience. Here's a list of the packages used in this project:
 
-- [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
-- [defer_pointer](https://pub.dev/packages/defer_pointer)
 - [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
 - [http](https://pub.dev/packages/http)
 - [image](https://pub.dev/packages/image)
 - [rounded_background_text](https://pub.dev/packages/rounded_background_text)
 - [vibration](https://pub.dev/packages/vibration)
+
+From these packages, only a small part of the code is used, with some code changes that better fit this package.
+- [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
+- [defer_pointer](https://pub.dev/packages/defer_pointer)
+- [screenshot](https://pub.dev/packages/screenshot)
 
 These packages play a crucial role in enabling various features and functionalities in this package.

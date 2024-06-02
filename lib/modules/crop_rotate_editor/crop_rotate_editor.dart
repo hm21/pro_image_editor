@@ -9,14 +9,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 
-// Package imports:
-import 'package:defer_pointer/defer_pointer.dart';
-
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_crop_rotate_toolbar.dart';
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_area_history.dart';
+import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/utils/decode_image.dart';

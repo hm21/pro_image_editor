@@ -1,7 +1,7 @@
 
 The files in the filter_generator folder are from the 
 [colorfilter_generator](https://pub.dev/packages/colorfilter_generator) package, 
-created by hsbijarniya. I have optimized some code to better fit the 
+created by hsbijarniya. I have optimized some code which fit better to
 pro_image_editor, but these changes are not suitable for a pull request. 
 Nonetheless, special thanks for this great package.
 
