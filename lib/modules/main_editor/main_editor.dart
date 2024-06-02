@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:defer_pointer/defer_pointer.dart';
+import 'package:pro_image_editor/models/import_export/utils/export_import_version.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:
@@ -1626,30 +1627,41 @@ class ProImageEditorState extends State<ProImageEditor>
   /// After importing, it updates the UI by calling [setState()] and the optional [onUpdateUI] callback.
   void importStateHistory(ImportStateHistory import) {
     /// Recalculate position and size
-    if (import.configs.recalculateSizeAndPosition) {
-      var imgSize = import.imgSize;
-      for (var el in import.stateHistory) {
-        for (var layer in el.layers) {
-          // Calculate scaling factors for width and height
-          double scaleWidth =
-              _sizesManager.decodedImageSize.width / imgSize.width;
-          double scaleHeight =
-              _sizesManager.decodedImageSize.height / imgSize.height;
+    if (import.configs.recalculateSizeAndPosition ||
+        import.version == ExportImportVersion.version_1_0_0) {
+      Size imgSize = import.imgSize;
+      for (EditorStateHistory el in import.stateHistory) {
+        for (Layer layer in el.layers) {
+          if (import.configs.recalculateSizeAndPosition) {
+            // Calculate scaling factors for width and height
+            double scaleWidth =
+                _sizesManager.decodedImageSize.width / imgSize.width;
+            double scaleHeight =
+                _sizesManager.decodedImageSize.height / imgSize.height;
 
-          if (scaleWidth == 0 || scaleWidth.isInfinite) scaleWidth = 1;
-          if (scaleHeight == 0 || scaleHeight.isInfinite) scaleHeight = 1;
+            if (scaleWidth == 0 || scaleWidth.isInfinite) scaleWidth = 1;
+            if (scaleHeight == 0 || scaleHeight.isInfinite) scaleHeight = 1;
 
-          // Choose the middle value between scaleWidth and scaleHeight
-          double scale = (scaleWidth + scaleHeight) / 2;
+            // Choose the middle value between scaleWidth and scaleHeight
+            double scale = (scaleWidth + scaleHeight) / 2;
 
-          // Adjust the scale
-          layer.scale *= scale;
+            // Adjust the scale
+            layer.scale *= scale;
 
-          // Adjust the offset
-          layer.offset = Offset(
-            layer.offset.dx * scaleWidth,
-            layer.offset.dy * scaleHeight,
-          );
+            // Adjust the offset
+            layer.offset = Offset(
+              layer.offset.dx * scaleWidth,
+              layer.offset.dy * scaleHeight,
+            );
+          }
+          if (import.version == ExportImportVersion.version_1_0_0) {
+            layer.offset -= Offset(
+              _sizesManager.bodySize.width / 2 -
+                  _sizesManager.imageScreenGaps.left,
+              _sizesManager.bodySize.height / 2 -
+                  _sizesManager.imageScreenGaps.top,
+            );
+          }
         }
       }
     }

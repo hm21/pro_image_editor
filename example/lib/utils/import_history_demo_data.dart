@@ -1,5 +1,5 @@
 Map importHistoryDemoData = {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "position": 8,
   "history": [
     {

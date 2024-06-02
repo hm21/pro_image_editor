@@ -5,7 +5,7 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 
 
 #### **Breaking Changes:**
-- Change the layer initial offset position to the center of the screen, not the top left. When we import from old state history we must add the half of the editor size to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the editor size.
+- Change the layer initial offset position to the center of the screen, not the top left.
 - Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
 - Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
 - Rename `ColorFilterGenerator` to `FilterModel`.

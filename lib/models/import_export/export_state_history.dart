@@ -99,7 +99,7 @@ class ExportStateHistory {
     await _contentRecorderCtrl.destroy();
 
     return {
-      'version': ExportImportVersion.version_1_0_0,
+      'version': ExportImportVersion.version_2_0_0,
       'position': _configs.historySpan == ExportHistorySpan.current ||
               _configs.historySpan == ExportHistorySpan.currentAndForward
           ? 0

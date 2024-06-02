@@ -9,7 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history_configs.dart';
 import 'package:pro_image_editor/models/layer.dart';
+import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_addons.dart';
 import '../history/state_history.dart';
+import 'utils/export_import_version.dart';
 
 /// This class represents the state history of an imported editor session.
 class ImportStateHistory {
@@ -25,12 +27,16 @@ class ImportStateHistory {
   /// The configurations for importing the editor state history.
   final ImportEditorConfigs configs;
 
+  /// Version from import/export history for backward compatibility.
+  final String version;
+
   /// Constructs an [ImportStateHistory] instance.
   ImportStateHistory._({
     required this.editorPosition,
     required this.imgSize,
     required this.stateHistory,
     required this.configs,
+    required this.version,
   });
 
   /// Creates an [ImportStateHistory] instance from a map representation.
@@ -40,6 +46,9 @@ class ImportStateHistory {
   }) {
     List<EditorStateHistory> stateHistory = [];
     List<Uint8List> stickers = [];
+
+    String version = map['version'] ?? ExportImportVersion.version_1_0_0;
+
     for (var sticker in List.from(map['stickers'] ?? [])) {
       stickers.add(Uint8List.fromList(List.from(sticker)));
     }
@@ -55,11 +64,27 @@ class ImportStateHistory {
         layers.add(Layer.fromMap(layer, stickers));
       }
 
+      List<List<double>> filters = [];
+      if (version == ExportImportVersion.version_1_0_0) {
+        for (var el in List.from(el['filters'] ?? [])) {
+          List<List<double>> filterMatrix = List.from(el['filters'] ?? []);
+          double opacity =
+              double.tryParse((el['opacity'] ?? '1').toString()) ?? 1;
+          if (opacity != 1) {
+            filterMatrix.add(ColorFilterAddons.opacity(opacity));
+          }
+
+          filters.addAll(filterMatrix);
+        }
+      } else {
+        filters = List.from(el['filters'] ?? []);
+      }
+
       stateHistory.add(
         EditorStateHistory(
           blur: blur,
           layers: layers,
-          filters: List.from(el['filters'] ?? []),
+          filters: filters,
           transformConfigs: el['transformConfigs'] ?? TransformConfigs.empty(),
         ),
       );
@@ -71,6 +96,7 @@ class ImportStateHistory {
           Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
       stateHistory: stateHistory,
       configs: configs,
+      version: version,
     );
   }
 
