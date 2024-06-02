@@ -9,6 +9,8 @@ import 'paint_editor/painted_model.dart';
 
 /// Represents a layer with common properties for widgets.
 class Layer {
+  late GlobalKey key;
+
   /// The position offset of the widget.
   late Offset offset;
 
@@ -37,6 +39,7 @@ class Layer {
     bool? flipX,
     bool? flipY,
   }) {
+    key = GlobalKey();
     // Initialize properties with provided values or defaults.
     this.id = id ?? generateUniqueId();
     this.offset = offset ?? const Offset(64, 64);

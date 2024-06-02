@@ -176,6 +176,7 @@ class LayerInteractionManager {
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
     required bool configEnabledHitVibration,
+    required Function(bool) onHoveredRemoveBtn,
   }) {
     if (_activeScale) return;
 
@@ -184,9 +185,13 @@ class LayerInteractionManager {
       activeLayer.offset.dy + detail.focalPointDelta.dy,
     );
 
-    hoverRemoveBtn = detail.focalPoint.dx <= kToolbarHeight &&
+    bool hoveredRemoveBtn = detail.focalPoint.dx <= kToolbarHeight &&
         detail.focalPoint.dy <=
             kToolbarHeight + MediaQuery.of(context).viewPadding.top;
+    if (hoverRemoveBtn != hoveredRemoveBtn) {
+      hoverRemoveBtn = hoveredRemoveBtn;
+      onHoveredRemoveBtn.call(hoverRemoveBtn);
+    }
 
     bool vibarate = false;
     double posX = activeLayer.offset.dx;

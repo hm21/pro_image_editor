@@ -10,35 +10,46 @@ import '../../../utils/content_recorder.dart/content_recorder_controller.dart';
 
 /// A class that manages various controllers used in the main editor interface.
 class MainEditorControllers {
-  /// Stream controller for tracking mouse movement within the editor.
-  late final StreamController<bool> mouseMoveStream;
+  /// Scroll controller for the bottom bar in the editor interface.
+  late final ScrollController bottomBarScrollCtrl;
 
+  /// Stream controller for tracking mouse movement within the editor.
+  late final StreamController helperLineCtrl;
+
+  /// Stream controller for resetting layer hero animations.
   late final StreamController<bool> layerHeroResetCtrl;
 
-  /// Controller which update only the ui from the layers.
-  late final StreamController uiLayerStream;
+  /// Stream controller for tracking mouse movement within the editor.
+  late final StreamController<bool> mouseMoveCtrl;
 
-  /// Scroll controller for the bottom bar in the editor interface.
-  late final ScrollController bottomBarScroll;
+  /// Stream controller for the remove button.
+  late final StreamController removeBtnCtrl;
+
+  /// Controller which updates only the UI from the layers.
+  late final StreamController uiLayerCtrl;
 
   /// Controller for capturing screenshots of the editor content.
   late final ContentRecorderController screenshot;
 
   /// Constructs a new instance of [MainEditorControllers].
   MainEditorControllers(ProImageEditorConfigs configs) {
-    mouseMoveStream = StreamController.broadcast();
-    uiLayerStream = StreamController.broadcast();
+    bottomBarScrollCtrl = ScrollController();
+    helperLineCtrl = StreamController.broadcast();
     layerHeroResetCtrl = StreamController.broadcast();
+    mouseMoveCtrl = StreamController.broadcast();
+    removeBtnCtrl = StreamController.broadcast();
+    uiLayerCtrl = StreamController.broadcast();
     screenshot = ContentRecorderController(configs: configs);
-    bottomBarScroll = ScrollController();
   }
 
   /// Disposes of resources held by the controllers.
   void dispose() {
-    mouseMoveStream.close();
-    uiLayerStream.close();
+    bottomBarScrollCtrl.dispose();
+    helperLineCtrl.close();
     layerHeroResetCtrl.close();
-    bottomBarScroll.dispose();
+    mouseMoveCtrl.close();
+    removeBtnCtrl.close();
     screenshot.destroy();
+    uiLayerCtrl.close();
   }
 }

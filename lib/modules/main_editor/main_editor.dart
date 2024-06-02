@@ -571,10 +571,9 @@ class ProImageEditorState extends State<ProImageEditor>
       /// Skip one frame to ensure captured image in seperate thread will not capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         _layerInteractionManager.selectedLayerId = layer.id;
-        _controllers.uiLayerStream.add(null);
+        _controllers.uiLayerCtrl.add(null);
       });
     }
-    setState(() {});
     mainEditorCallbacks?.handleAddLayer(layer);
   }
 
@@ -603,7 +602,8 @@ class ProImageEditorState extends State<ProImageEditor>
   void _updateTempLayer() {
     _addHistory();
     _layerInteractionManager.selectedLayerId = '';
-    _controllers.uiLayerStream.add(null);
+    _controllers.uiLayerCtrl.add(null);
+
     /* 
     String selectedLayerId = _layerInteractionManager.selectedLayerId;
     _layerInteractionManager.selectedLayerId = '';
@@ -744,6 +744,24 @@ class ProImageEditorState extends State<ProImageEditor>
       return;
     }
 
+    bool beforeShowHorizontalHelperLine =
+        _layerInteractionManager.showHorizontalHelperLine;
+    bool beforeShowVerticalHelperLine =
+        _layerInteractionManager.showVerticalHelperLine;
+    bool beforeShowRotationHelperLine =
+        _layerInteractionManager.showRotationHelperLine;
+
+    checkUpdateHelperLineUI() {
+      if (beforeShowHorizontalHelperLine !=
+              _layerInteractionManager.showHorizontalHelperLine ||
+          beforeShowVerticalHelperLine !=
+              _layerInteractionManager.showVerticalHelperLine ||
+          beforeShowRotationHelperLine !=
+              _layerInteractionManager.showRotationHelperLine) {
+        _controllers.helperLineCtrl.add(null);
+      }
+    }
+
     if (_whatsAppHelper.filterShowHelper > 0 || _activeLayer == null) return;
 
     mainEditorCallbacks?.handleScaleUpdate(details);
@@ -758,7 +776,8 @@ class ProImageEditorState extends State<ProImageEditor>
         editorSize: _sizesManager.editorSize,
         layerTheme: imageEditorTheme.layerInteraction,
       );
-      _controllers.uiLayerStream.add(null);
+      _activeLayer!.key.currentState!.setState(() {});
+      checkUpdateHelperLineUI();
       return;
     }
 
@@ -771,6 +790,7 @@ class ProImageEditorState extends State<ProImageEditor>
         context: context,
         detail: details,
         configEnabledHitVibration: helperLines.hitVibration,
+        onHoveredRemoveBtn: _controllers.removeBtnCtrl.add,
       );
     } else if (details.pointerCount == 2) {
       _layerInteractionManager.freeStyleHighPerformanceScaling =
@@ -783,8 +803,9 @@ class ProImageEditorState extends State<ProImageEditor>
         configEnabledHitVibration: helperLines.hitVibration,
       );
     }
-    _controllers.uiLayerStream.add(null);
     mainEditorCallbacks?.handleUpdateLayer(_activeLayer!);
+    _activeLayer!.key.currentState!.setState(() {});
+    checkUpdateHelperLineUI();
   }
 
   /// Handle the end of a scaling operation.
@@ -1997,7 +2018,7 @@ class ProImageEditorState extends State<ProImageEditor>
                     return Theme(
                       data: _theme,
                       child: Scrollbar(
-                        controller: _controllers.bottomBarScroll,
+                        controller: _controllers.bottomBarScrollCtrl,
                         scrollbarOrientation: ScrollbarOrientation.top,
                         thickness: isDesktop ? null : 0,
                         child: BottomAppBar(
@@ -2006,7 +2027,7 @@ class ProImageEditorState extends State<ProImageEditor>
                           padding: EdgeInsets.zero,
                           child: Center(
                             child: SingleChildScrollView(
-                              controller: _controllers.bottomBarScroll,
+                              controller: _controllers.bottomBarScrollCtrl,
                               scrollDirection: Axis.horizontal,
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
@@ -2153,7 +2174,7 @@ class ProImageEditorState extends State<ProImageEditor>
             if (resetLayerSnapshot.data!) return Container();
 
             return StreamBuilder<Object>(
-                stream: _controllers.mouseMoveStream.stream,
+                stream: _controllers.mouseMoveCtrl.stream,
                 initialData: false,
                 builder: (context, snapshot) {
                   return MouseRegion(
@@ -2162,18 +2183,18 @@ class ProImageEditorState extends State<ProImageEditor>
                         : imageEditorTheme.layerInteraction.hoverCursor,
                     onHover: isDesktop
                         ? (event) {
-                            var hasHit = activeLayers.indexWhere((element) =>
+                            bool hasHit = activeLayers.indexWhere((element) =>
                                     element is PaintingLayerData &&
                                     element.item.hit) >=
                                 0;
                             if (hasHit != snapshot.data) {
-                              _controllers.mouseMoveStream.add(hasHit);
+                              _controllers.mouseMoveCtrl.add(hasHit);
                             }
                           }
                         : null,
                     child: DeferredPointerHandler(
                       child: StreamBuilder(
-                          stream: _controllers.uiLayerStream.stream,
+                          stream: _controllers.uiLayerCtrl.stream,
                           builder: (context, snapshot) {
                             return Stack(
                               children:
@@ -2181,7 +2202,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                 final int i = entry.key;
                                 final Layer layerItem = entry.value;
                                 return LayerWidget(
-                                  key: ValueKey('${layerItem.id}-$i'),
+                                  key: layerItem.key,
                                   configs: configs,
                                   editorBodySize: _sizesManager.bodySize,
                                   layerData: layerItem,
@@ -2224,7 +2245,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                         layer: layerItem,
                                       );
                                     }
-                                    _controllers.uiLayerStream.add(null);
+                                    _controllers.uiLayerCtrl.add(null);
                                     mainEditorCallbacks?.handleUpdateUI();
                                     _selectedLayerIndex = -1;
                                   },
@@ -2282,7 +2303,7 @@ class ProImageEditorState extends State<ProImageEditor>
       return const SizedBox.shrink();
     }
     return StreamBuilder(
-        stream: _controllers.uiLayerStream.stream,
+        stream: _controllers.helperLineCtrl.stream,
         builder: (context, snapshot) {
           return Stack(
             children: [
@@ -2342,7 +2363,7 @@ class ProImageEditorState extends State<ProImageEditor>
           child: SafeArea(
             bottom: false,
             child: StreamBuilder(
-                stream: _controllers.uiLayerStream.stream,
+                stream: _controllers.removeBtnCtrl.stream,
                 builder: (context, snapshot) {
                   return Container(
                     height: kToolbarHeight,
