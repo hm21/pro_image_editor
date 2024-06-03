@@ -54,13 +54,13 @@ mixin CropAreaHistory
   final List<TransformConfigs> history = [TransformConfigs.empty()];
 
   /// Retrieves the active transformation history.
-  TransformConfigs get activeHistory => history[historyPosition];
+  TransformConfigs get activeHistory => history[screenshotHistoryPosition];
 
   /// Determines whether undo actions can be performed on the current state.
-  bool get canUndo => historyPosition > 0;
+  bool get canUndo => screenshotHistoryPosition > 0;
 
   /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => historyPosition < history.length - 1;
+  bool get canRedo => screenshotHistoryPosition < history.length - 1;
 
   @protected
   void setInitHistory(TransformConfigs configs) {
@@ -86,29 +86,29 @@ mixin CropAreaHistory
         offset: translate,
       ),
     );
-    historyPosition++;
+    screenshotHistoryPosition++;
     takeScreenshot();
   }
 
   /// Clears forward changes from the history.
   void cleanForwardChanges() {
     if (history.length > 1) {
-      while (historyPosition < history.length - 1) {
+      while (screenshotHistoryPosition < history.length - 1) {
         history.removeLast();
       }
-      while (historyPosition < screenshots.length - 1) {
-        screenshots.removeLast();
+      while (screenshotHistoryPosition < screenshotHistory.length - 1) {
+        screenshotHistory.removeLast();
       }
     }
-    historyPosition = history.length - 1;
+    screenshotHistoryPosition = history.length - 1;
   }
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
     if (canUndo) {
       setState(() {
-        historyPosition--;
-        if (historyPosition == 0) {
+        screenshotHistoryPosition--;
+        if (screenshotHistoryPosition == 0) {
           reset(skipAddHistory: true);
         } else {
           _setParametersFromHistory();
@@ -122,7 +122,7 @@ mixin CropAreaHistory
   void redoAction() {
     if (canRedo) {
       setState(() {
-        historyPosition++;
+        screenshotHistoryPosition++;
         _setParametersFromHistory();
         cropRotateEditorCallbacks?.handleRedo();
       });

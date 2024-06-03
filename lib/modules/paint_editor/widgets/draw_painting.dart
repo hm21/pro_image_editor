@@ -6,14 +6,16 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
-import '../../../../models/paint_editor/painted_model.dart';
-import '../../../../widgets/pro_image_editor_desktop_mode.dart';
-import 'drawers/draw_element.dart';
+import '../../../models/paint_editor/painted_model.dart';
+import '../../../widgets/pro_image_editor_desktop_mode.dart';
+import '../utils/paint_mode.dart';
 
 /// Handles the painting ongoing on the canvas.
-class DrawCanvas extends CustomPainter {
+class DrawPainting extends CustomPainter {
   /// The model containing information about the painting.
   final PaintedModel item;
+
+  final PaintModeHelper _paintModeHelper = PaintModeHelper();
 
   /// The scaling factor applied to the canvas.
   final double scale;
@@ -29,17 +31,17 @@ class DrawCanvas extends CustomPainter {
   bool selected = true;
 
   /// Constructor for the canvas.
-  DrawCanvas({
+  DrawPainting({
     this.selected = false,
     required this.item,
-    required this.scale,
-    required this.enabledHitDetection,
-    required this.freeStyleHighPerformance,
+    this.scale = 1,
+    this.enabledHitDetection = false,
+    this.freeStyleHighPerformance = false,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    drawElement(
+    _paintModeHelper.drawElement(
       canvas: canvas,
       size: size,
       item: item,
@@ -49,7 +51,7 @@ class DrawCanvas extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(DrawCanvas oldDelegate) {
+  bool shouldRepaint(DrawPainting oldDelegate) {
     return oldDelegate.item != item;
   }
 

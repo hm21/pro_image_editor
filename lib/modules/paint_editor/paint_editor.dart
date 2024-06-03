@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_appbar.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_painting_bottombar.dart';
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
-import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
 import 'package:pro_image_editor/widgets/auto_image.dart';
@@ -23,10 +22,13 @@ import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/editor_configs/paint_editor_configs.dart';
 import '../../models/editor_image.dart';
 import '../../models/init_configs/paint_editor_init_configs.dart';
+import '../../models/layer.dart';
 import '../../models/paint_editor/paint_bottom_bar_item.dart';
+import '../../models/paint_editor/painted_model.dart';
 import '../../models/transform_helper.dart';
 import '../../utils/design_mode.dart';
 import '../../utils/theme_functions.dart';
+import '../../widgets/bottom_sheets_header_row.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/flat_icon_text_button.dart';
@@ -34,19 +36,22 @@ import '../../widgets/platform_popup_menu.dart';
 import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_image.dart';
-import 'painting_canvas.dart';
+import 'utils/paint_controller.dart';
+import 'widgets/painting_canvas.dart';
 import 'utils/paint_desktop_interaction_manager.dart';
 import 'utils/paint_editor_enum.dart';
-import 'utils/transparent_image_bytes.dart';
+import '../../utils/transparent_image_bytes.dart';
 
-/// The `PaintingEditor` widget allows users to editing images with painting tools.
+/// The `PaintingEditor` widget allows users to editing images with painting
+/// tools.
 ///
 /// You can create a `PaintingEditor` using one of the factory methods provided:
 /// - `PaintingEditor.file`: Loads an image from a file.
 /// - `PaintingEditor.asset`: Loads an image from an asset.
 /// - `PaintingEditor.network`: Loads an image from a network URL.
 /// - `PaintingEditor.memory`: Loads an image from memory as a `Uint8List`.
-/// - `PaintingEditor.autoSource`: Automatically selects the source based on provided parameters.
+/// - `PaintingEditor.autoSource`: Automatically selects the source based on
+/// provided parameters.
 class PaintingEditor extends StatefulWidget
     with StandaloneEditor<PaintEditorInitConfigs> {
   @override
@@ -54,6 +59,7 @@ class PaintingEditor extends StatefulWidget
   @override
   final EditorImage editorImage;
 
+  /// A flag indicating whether only painting operations are allowed.
   final bool paintingOnly;
 
   /// Constructs a `PaintingEditor` widget.
@@ -120,6 +126,7 @@ class PaintingEditor extends StatefulWidget
     );
   }
 
+  /// Constructs a `PaintingEditor` widget optimized for drawing purposes.
   factory PaintingEditor.drawing({
     Key? key,
     required PaintEditorInitConfigs initConfigs,
@@ -182,11 +189,8 @@ class PaintingEditorState extends State<PaintingEditor>
         ImageEditorConvertedConfigs,
         ImageEditorConvertedCallbacks,
         StandaloneEditorState<PaintingEditor, PaintEditorInitConfigs> {
-  /// A global key for accessing the state of the PaintingCanvas widget.
-  final _imageKey = GlobalKey<PaintingCanvasState>();
-
-  /// A global key for accessing the state of the Scaffold widget.
-  final _key = GlobalKey<ScaffoldState>();
+  /// Controller for managing painting operations within the widget's context.
+  late final PaintingController _paintCtrl;
 
   /// Update the color picker.
   late final StreamController _uiPickerStream;
@@ -204,26 +208,24 @@ class PaintingEditorState extends State<PaintingEditor>
   bool get fillBackground => _fill;
 
   /// Determines whether undo actions can be performed on the current state.
-  bool get canUndo => _imageKey.currentState?.canUndo == true;
+  bool get canUndo => _paintCtrl.canUndo;
 
   /// Determines whether redo actions can be performed on the current state.
-  bool get canRedo => _imageKey.currentState?.canRedo == true;
+  bool get canRedo => _paintCtrl.canRedo;
 
   /// Manager class for handling desktop interactions.
   late final PaintDesktopInteractionManager _desktopInteractionManager;
 
-  /// Get the current PaintMode from the ImageKey's currentState.
-  PaintModeE? get paintMode => _imageKey.currentState?.mode;
-
   /// Get the current PaintMode.
-  PaintModeE? get mode => _imageKey.currentState?.mode;
+  PaintModeE? get paintMode => _paintCtrl.mode;
 
   /// Get the active selected color.
-  Color get activeColor =>
-      _imageKey.currentState?.activeColor ?? Colors.black38;
+  Color get activeColor => _paintCtrl.color;
 
-  /// A list of [PaintModeBottomBarItem] representing the available drawing modes in the painting editor.
-  /// The list is dynamically generated based on the configuration settings in the [PaintEditorConfigs] object.
+  /// A list of [PaintModeBottomBarItem] representing the available drawing
+  /// modes in the painting editor.
+  /// The list is dynamically generated based on the configuration settings in
+  /// the [PaintEditorConfigs] object.
   List<PaintModeBottomBarItem> get paintModes => [
         if (paintEditorConfigs.hasOptionFreeStyle)
           PaintModeBottomBarItem(
@@ -269,6 +271,14 @@ class PaintingEditorState extends State<PaintingEditor>
   @override
   void initState() {
     super.initState();
+    _paintCtrl = PaintingController(
+      fill: paintEditorConfigs.initialFill,
+      mode: paintEditorConfigs.initialPaintMode,
+      strokeWidth: paintEditorConfigs.initialStrokeWidth,
+      color: paintEditorConfigs.initialColor,
+      strokeMultiplier: 1,
+    );
+
     _fill = paintEditorConfigs.initialFill;
     _uiPickerStream = StreamController.broadcast();
     _uiAppbarIconsStream = StreamController.broadcast();
@@ -286,6 +296,7 @@ class PaintingEditorState extends State<PaintingEditor>
 
   @override
   void dispose() {
+    _paintCtrl.dispose();
     _bottomBarScrollCtrl.dispose();
     _uiPickerStream.close();
     _uiAppbarIconsStream.close();
@@ -309,13 +320,53 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Opens a bottom sheet to adjust the line weight when drawing.
   void openLineWeightBottomSheet() {
-    _imageKey.currentState!.showRangeSlider();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor:
+          imageEditorTheme.paintingEditor.lineWidthBottomSheetColor,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return Material(
+            color: Colors.transparent,
+            textStyle: platformTextStyle(context, designMode),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    BottomSheetHeaderRow(
+                      title: i18n.paintEditor.lineWidth,
+                      theme: widget.initConfigs.theme,
+                    ),
+                    StatefulBuilder(builder: (context, setState) {
+                      return Slider.adaptive(
+                        max: 40,
+                        min: 2,
+                        divisions: 19,
+                        value: _paintCtrl.strokeWidth,
+                        onChanged: (value) {
+                          setStrokeWidth(value);
+                          setState(() {});
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
   }
 
   /// Sets the fill mode for drawing elements.
   /// When the `fill` parameter is `true`, drawing elements will be filled; otherwise, they will be outlined.
   void setFill(bool fill) {
-    _imageKey.currentState?.setFill(fill);
+    _paintCtrl.setFill(fill);
     _uiAppbarIconsStream.add(null);
     paintEditorCallbacks?.handleToggleFill(fill);
   }
@@ -328,28 +379,28 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Set the PaintMode for the current state and trigger an update if provided.
   void setMode(PaintModeE mode) {
-    if (_imageKey.currentState != null) {
-      _imageKey.currentState!.mode = mode;
-    }
+    _paintCtrl.setMode(mode);
     paintEditorCallbacks?.handlePaintModeChanged(mode);
   }
 
   /// Undoes the last action performed in the painting editor.
   void undoAction() {
-    if (_imageKey.currentState!.canUndo) historyPosition--;
-    _imageKey.currentState!.undo();
+    if (canUndo) screenshotHistoryPosition--;
+    _paintCtrl.undo();
     _uiAppbarIconsStream.add(null);
     if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
       _uiPickerStream.add(null);
     }
+    setState(() {});
     paintEditorCallbacks?.handleUndo();
   }
 
   /// Redoes the previously undone action in the painting editor.
   void redoAction() {
-    if (_imageKey.currentState!.canRedo) historyPosition++;
-    _imageKey.currentState!.redo();
+    if (canRedo) screenshotHistoryPosition++;
+    _paintCtrl.redo();
     _uiAppbarIconsStream.add(null);
+    setState(() {});
     paintEditorCallbacks?.handleRedo();
   }
 
@@ -366,12 +417,119 @@ class PaintingEditorState extends State<PaintingEditor>
           }
         },
         onCloseWithValue: () {
-          if (!_imageKey.currentState!.canUndo) return Navigator.pop(context);
+          if (!canUndo) return Navigator.pop(context);
           Navigator.of(context).pop(
-            _imageKey.currentState?.exportPaintedItems(editorBodySize),
+            _exportPaintedItems(editorBodySize),
           );
         });
     paintEditorCallbacks?.handleDone();
+  }
+
+  /// Exports the painted items as a list of [PaintingLayerData].
+  ///
+  /// This method converts the painting history into a list of [PaintingLayerData] representing the painted items.
+  ///
+  /// Example:
+  /// ```dart
+  /// List<PaintingLayerData> layers = exportPaintedItems();
+  /// ```
+  List<PaintingLayerData> _exportPaintedItems(Size editorSize) {
+    Rect findRenderedLayerRect(List<Offset?> points) {
+      if (points.isEmpty) return Rect.zero;
+
+      double leftmostX = double.infinity;
+      double topmostY = double.infinity;
+      double rightmostX = double.negativeInfinity;
+      double bottommostY = double.negativeInfinity;
+
+      for (final point in points) {
+        if (point != null) {
+          if (point.dx < leftmostX) {
+            leftmostX = point.dx;
+          }
+          if (point.dy < topmostY) {
+            topmostY = point.dy;
+          }
+          if (point.dx > rightmostX) {
+            rightmostX = point.dx;
+          }
+          if (point.dy > bottommostY) {
+            bottommostY = point.dy;
+          }
+        }
+      }
+
+      return Rect.fromPoints(
+        Offset(leftmostX, topmostY),
+        Offset(rightmostX, bottommostY),
+      );
+    }
+
+    // Convert to free positions
+    return _paintCtrl.activePaintings.map((e) {
+      PaintedModel layer = PaintedModel(
+        mode: e.mode,
+        offsets: [...e.offsets],
+        color: e.color,
+        strokeWidth: e.strokeWidth,
+        fill: e.fill,
+      );
+
+      // Find extreme points of the painting layer
+      Rect? layerRect = findRenderedLayerRect(e.offsets);
+
+      Size size = layerRect.size;
+
+      bool onlyStrokeMode = e.mode == PaintModeE.freeStyle ||
+          e.mode == PaintModeE.line ||
+          e.mode == PaintModeE.dashLine ||
+          e.mode == PaintModeE.arrow ||
+          ((e.mode == PaintModeE.rect || e.mode == PaintModeE.circle) &&
+              !e.fill);
+
+      // Scale and offset the offsets of the painting layer
+      double strokeHelperWidth = onlyStrokeMode ? e.strokeWidth : 0;
+
+      for (int i = 0; i < layer.offsets.length; i++) {
+        Offset? point = layer.offsets[i];
+        if (point != null) {
+          layer.offsets[i] = Offset(
+            point.dx - layerRect.left + strokeHelperWidth / 2,
+            point.dy - layerRect.top + strokeHelperWidth / 2,
+          );
+        }
+      }
+
+      // Calculate the final offset of the painting layer
+      Offset finalOffset = Offset(
+        layerRect.center.dx - editorSize.width / 2,
+        layerRect.center.dy - editorSize.height / 2,
+      );
+
+      if (onlyStrokeMode) {
+        size = Size(
+          size.width + strokeHelperWidth,
+          size.height + strokeHelperWidth,
+        );
+      }
+
+      // Create and return a PaintingLayerData instance for the exported layer
+      return PaintingLayerData(
+        item: layer.copy(),
+        rawSize: Size(
+          max(size.width, layer.strokeWidth),
+          max(size.height, layer.strokeWidth),
+        ),
+        offset: finalOffset,
+      );
+    }).toList();
+  }
+
+  /// Set the stroke width.
+  void setStrokeWidth(double value) {
+    _paintCtrl.setStrokeWidth(value);
+    callbacks.paintEditorCallbacks?.handleLineWidthChanged(value);
+    setState(() {});
   }
 
   @override
@@ -385,7 +543,6 @@ class PaintingEditorState extends State<PaintingEditor>
           return Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: imageEditorTheme.paintingEditor.background,
-            key: _key,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
             bottomNavigationBar: _buildBottomBar(),
@@ -413,7 +570,7 @@ class PaintingEditorState extends State<PaintingEditor>
                     icon: Icon(icons.backButton),
                     onPressed: close,
                   ),
-                  if (_imageKey.currentState != null) ...[
+                  ...[
                     if (constraints.maxWidth >= 300) ...[
                       if (constraints.maxWidth >= 380)
                         const SizedBox(width: 80),
@@ -516,7 +673,7 @@ class PaintingEditorState extends State<PaintingEditor>
                                 }
                               },
                             ),
-                          if (_imageKey.currentState!.canUndo)
+                          if (canUndo)
                             PopupMenuOption(
                               label: i18n.paintEditor.undo,
                               icon: Icon(
@@ -524,7 +681,7 @@ class PaintingEditorState extends State<PaintingEditor>
                               ),
                               onTap: undoAction,
                             ),
-                          if (_imageKey.currentState!.canRedo)
+                          if (canRedo)
                             PopupMenuOption(
                               label: i18n.paintEditor.redo,
                               icon: Icon(
@@ -633,12 +790,9 @@ class PaintingEditorState extends State<PaintingEditor>
                           ThemeEditorMode.whatsapp) ...[
                         WhatsAppPaintBottomBar(
                           configs: configs,
-                          strokeWidth:
-                              _imageKey.currentState?.strokeWidth ?? 0.0,
+                          strokeWidth: _paintCtrl.strokeWidth,
                           onSetLineWidth: (val) {
-                            setState(() {
-                              _imageKey.currentState!.setStrokeWidth(val);
-                            });
+                            setStrokeWidth(val);
                           },
                         ),
                         StreamBuilder(
@@ -700,14 +854,13 @@ class PaintingEditorState extends State<PaintingEditor>
                                   paintModes.length,
                                   (index) => Builder(
                                     builder: (_) {
-                                      var item = paintModes[index];
-                                      var color =
-                                          _imageKey.currentState?.mode ==
-                                                  item.mode
-                                              ? imageEditorTheme.paintingEditor
-                                                  .bottomBarActiveItemColor
-                                              : imageEditorTheme.paintingEditor
-                                                  .bottomBarInactiveItemColor;
+                                      PaintModeBottomBarItem item =
+                                          paintModes[index];
+                                      Color color = paintMode == item.mode
+                                          ? imageEditorTheme.paintingEditor
+                                              .bottomBarActiveItemColor
+                                          : imageEditorTheme.paintingEditor
+                                              .bottomBarInactiveItemColor;
 
                                       return FlatIconTextButton(
                                         label: Text(
@@ -739,31 +892,19 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Builds the painting canvas for the editor.
   /// Returns a [Widget] representing the painting canvas.
   Widget _buildPainter() {
-    return PaintingCanvas.autoSource(
-      key: _imageKey,
-      file: widget.editorImage.file,
-      networkUrl: widget.editorImage.networkUrl,
-      byteArray: widget.editorImage.byteArray,
-      assetPath: widget.editorImage.assetPath,
-      initConfigs: PaintCanvasInitConfigs(
-        i18n: i18n,
-        icons: icons,
-        theme: theme,
-        designMode: designMode,
-        drawAreaSize: mainBodySize ?? editorBodySize,
-        imageEditorTheme: imageEditorTheme,
-        configs: paintEditorConfigs,
-        onUpdateDone: () {
-          _uiAppbarIconsStream.add(null);
-          if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
-            _uiPickerStream.add(null);
-          }
-          paintEditorCallbacks?.handleDrawingDone();
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            takeScreenshot();
-          });
-        },
-      ),
+    return PaintingCanvas(
+      paintCtrl: _paintCtrl,
+      drawAreaSize: mainBodySize ?? editorBodySize,
+      onCreatedPainting: () {
+        _uiAppbarIconsStream.add(null);
+        if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+          _uiPickerStream.add(null);
+        }
+        paintEditorCallbacks?.handleDrawingDone();
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          takeScreenshot();
+        });
+      },
     );
   }
 
@@ -795,7 +936,7 @@ class PaintingEditorState extends State<PaintingEditor>
               pickMode: PickMode.color,
               initialColor: paintEditorConfigs.initialColor,
               colorListener: (int value) {
-                _imageKey.currentState?.setColor(value);
+                _paintCtrl.setColor(Color(value));
                 _uiPickerStream.add(null);
                 paintEditorCallbacks?.handleColorChanged();
               },

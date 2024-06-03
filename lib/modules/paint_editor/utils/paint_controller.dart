@@ -5,22 +5,52 @@ import 'package:flutter/material.dart';
 import '../../../models/paint_editor/painted_model.dart';
 import 'paint_editor_enum.dart';
 
-/// The `PaintingController` class is responsible for managing and controlling the painting state in a Flutter application.
+/// The `PaintingController` class is responsible for managing and controlling
+/// the painting state.
 class PaintingController extends ChangeNotifier {
+  /// The width of the stroke for painting operations.
   late double _strokeWidth;
+
+  /// The color used for painting operations.
   late Color _color;
+
+  /// The mode of painting, specifying the type of painting operation.
   late PaintModeE _mode;
+
+  /// A flag indicating whether painting operations should fill shapes.
   late bool _fill;
 
+  /// List of offsets representing points on the canvas during painting.
   final List<Offset?> _offsets = [];
 
-  final List<PaintedModel> _paintHistory = [];
-  final List<PaintedModel> _paintRedoHistory = [];
+  /// History of painted models representing previous painting operations.
+  final List<List<PaintedModel>> paintHistory = [];
 
-  Offset? _start, _end;
+  /// The current position in the painting history.
+  int historyPosition = 0;
 
+  /// The starting point of the current painting operation.
+  Offset? _start;
+
+  /// The ending point of the current painting operation.
+  Offset? _end;
+
+  /// Multiplier for stroke width, used in scaling the stroke.
   int _strokeMultiplier = 1;
+
+  /// Flag indicating whether a painting operation is in progress.
   bool _paintInProgress = false;
+
+  /// Getter for the current state of the painted model.
+  ///
+  /// Returns a [PaintedModel] instance representing the current state of the painting.
+  PaintedModel get paintedModel => PaintedModel(
+        mode: mode,
+        offsets: mode == PaintModeE.freeStyle ? offsets : [start, end],
+        color: color,
+        strokeWidth: strokeWidth,
+        fill: fill,
+      );
 
   /// Returns the current painting mode (e.g., line, circle, rectangle).
   PaintModeE get mode => _mode;
@@ -41,10 +71,10 @@ class PaintingController extends ChangeNotifier {
   Color get color => _color;
 
   /// Returns the list of painted models representing the painting history.
-  List<PaintedModel> get paintHistory => _paintHistory;
-
-  /// Returns the list of painted models representing the redo history.
-  List<PaintedModel> get paintRedoHistory => _paintRedoHistory;
+  List<PaintedModel> get activePaintings =>
+      historyPosition <= 0 || paintHistory.length < historyPosition
+          ? []
+          : paintHistory[historyPosition - 1];
 
   /// Returns the list of recorded painting offsets.
   List<Offset?> get offsets => _offsets;
@@ -54,6 +84,12 @@ class PaintingController extends ChangeNotifier {
 
   /// Returns the ending point of a painting action.
   Offset? get end => _end;
+
+  /// Determines whether undo actions can be performed on the current state.
+  bool get canUndo => historyPosition > 0;
+
+  /// Determines whether redo actions can be performed on the current state.
+  bool get canRedo => historyPosition < paintHistory.length;
 
   /// Creates an instance of the `PaintingController` with initial settings.
   ///
@@ -76,34 +112,42 @@ class PaintingController extends ChangeNotifier {
     _strokeMultiplier = strokeMultiplier;
   }
 
-  /// Adds a painted model to the painting history and notifies listeners of the change.
+  /// Adds a painted model to the painting history and notifies listeners of
+  /// the change.
   void addPaintInfo(PaintedModel paintInfo) {
-    _paintHistory.add(paintInfo);
-    _paintRedoHistory.clear();
-    notifyListeners();
+    _cleanForwardChanges();
+    paintHistory.add([...activePaintings, paintInfo]);
+    historyPosition++;
   }
 
-  /// Undoes the last painting action by moving it from the history to the redo history and notifies listeners.
+  /// Clean forward changes in the history.
+  ///
+  /// This method removes any changes made after the current edit position in the history.
+  /// It ensures that the state history and screenshots are consistent with the current
+  /// position. This is useful when performing an undo operation, and new edits are made,
+  /// effectively discarding the "redo" history.
+  void _cleanForwardChanges() {
+    if (paintHistory.isNotEmpty) {
+      while (paintHistory.length > historyPosition) {
+        paintHistory.removeLast();
+      }
+    }
+    historyPosition = paintHistory.length;
+  }
+
+  /// Undoes the last painting action by moving it from the history to the
+  /// redo history and notifies listeners.
   void undo() {
-    if (_paintHistory.isNotEmpty) {
-      _paintRedoHistory.add(_paintHistory.removeLast());
-      notifyListeners();
+    if (historyPosition > 0) {
+      historyPosition--;
     }
   }
 
-  /// Redoes the last undone painting action by moving it from the redo history to the history and notifies listeners.
+  /// Redoes the last undone painting action by moving it from the redo history
+  /// to the history and notifies listeners.
   void redo() {
-    if (_paintRedoHistory.isNotEmpty) {
-      _paintHistory.add(_paintRedoHistory.removeLast());
-      notifyListeners();
-    }
-  }
-
-  /// Clears the painting history and notifies listeners.
-  void clear() {
-    if (_paintHistory.isNotEmpty) {
-      _paintHistory.clear();
-      notifyListeners();
+    if (historyPosition < paintHistory.length) {
+      historyPosition++;
     }
   }
 
@@ -149,8 +193,9 @@ class PaintingController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Resets the starting and ending points and clears the offsets list, then notifies listeners.
-  void resetStartAndEnd() {
+  /// Resets the starting and ending points and clears the offsets list, then
+  /// notifies listeners.
+  void reset() {
     _start = null;
     _end = null;
     offsets.clear();
@@ -170,8 +215,4 @@ class PaintingController extends ChangeNotifier {
     _paintInProgress = val;
     notifyListeners();
   }
-
-  /// Indicates whether the current mode requires filling (e.g., circle or rectangle).
-  bool get needFill =>
-      mode == PaintModeE.circle || mode == PaintModeE.rect ? fill : false;
 }

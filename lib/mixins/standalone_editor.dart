@@ -79,11 +79,11 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
   /// The position in the history of screenshots. This is used to track the
   /// current position in the list of screenshots.
-  int historyPosition = 0;
+  int screenshotHistoryPosition = 0;
 
   /// A list of captured screenshots. Each element in the list represents the
   /// state of a screenshot captured by the isolate.
-  final List<ThreadCaptureState> screenshots = [];
+  final List<ThreadCaptureState> screenshotHistory = [];
 
   Future<void> setImageInfos({
     TransformConfigs? activeHistory,
@@ -121,13 +121,14 @@ mixin StandaloneEditorState<T extends StatefulWidget,
       );
       if (imageInfos == null) await setImageInfos();
       if (!mounted) return;
-      bool screenshotIsCaptured =
-          historyPosition > 0 && historyPosition <= screenshots.length;
+      bool screenshotIsCaptured = screenshotHistoryPosition > 0 &&
+          screenshotHistoryPosition <= screenshotHistory.length;
       Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         imageInfos: imageInfos!,
-        backgroundScreenshot:
-            screenshotIsCaptured ? screenshots[historyPosition - 1] : null,
-        originalImageBytes: historyPosition > 0
+        backgroundScreenshot: screenshotIsCaptured
+            ? screenshotHistory[screenshotHistoryPosition - 1]
+            : null,
+        originalImageBytes: screenshotHistoryPosition > 0
             ? null
             : await editorImage.safeByteArray(context),
       );
@@ -180,10 +181,10 @@ mixin StandaloneEditorState<T extends StatefulWidget,
     if (!initConfigs.convertToUint8List) return;
 
     await setImageInfos();
-    historyPosition++;
+    screenshotHistoryPosition++;
     screenshotCtrl.captureImage(
       imageInfos: imageInfos!,
-      screenshots: screenshots,
+      screenshots: screenshotHistory,
     );
   }
 

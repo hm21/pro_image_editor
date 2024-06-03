@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:pro_image_editor/models/layer.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -145,7 +145,7 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
                               willChange: true,
                               isComplex:
                                   layer.item.mode == PaintModeE.freeStyle,
-                              painter: DrawCanvas(
+                              painter: DrawPainting(
                                 item: layer.item,
                                 scale: layer.scale,
                                 enabledHitDetection: false,

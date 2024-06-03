@@ -15,7 +15,7 @@ import 'package:pro_image_editor/utils/theme_functions.dart';
 import '../mixins/converted_configs.dart';
 import '../mixins/editor_configs_mixin.dart';
 import '../models/layer.dart';
-import '../modules/paint_editor/utils/draw/draw_canvas.dart';
+import '../modules/paint_editor/widgets/draw_painting.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
 import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
 import 'pro_image_editor_desktop_mode.dart';
@@ -384,7 +384,7 @@ class _LayerWidgetState extends State<LayerWidget>
           size: layer.size,
           willChange: false,
           isComplex: layer.item.mode == PaintModeE.freeStyle,
-          painter: DrawCanvas(
+          painter: DrawPainting(
             item: layer.item,
             scale: widget.layerData.scale,
             selected: widget.selected,

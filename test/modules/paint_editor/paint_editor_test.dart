@@ -8,7 +8,7 @@ import 'package:network_image_mock/network_image_mock.dart';
 // Project imports:
 import 'package:pro_image_editor/models/init_configs/paint_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
-import 'package:pro_image_editor/modules/paint_editor/painting_canvas.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/painting_canvas.dart';
 import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart';
 import '../../fake/fake_image.dart';
 

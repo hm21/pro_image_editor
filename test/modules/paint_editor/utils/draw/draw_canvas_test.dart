@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
 import 'package:pro_image_editor/models/paint_editor/painted_model.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
 
 void main() {
@@ -37,7 +37,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: CustomPaint(
-              painter: DrawCanvas(
+              painter: DrawPainting(
                 item: paintedModel,
                 scale: 1.0,
                 enabledHitDetection: true,
