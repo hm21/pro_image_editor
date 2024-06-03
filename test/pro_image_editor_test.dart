@@ -9,9 +9,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
 import 'package:pro_image_editor/modules/blur_editor/blur_editor.dart';
+import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
 import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
 import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
+import 'package:pro_image_editor/modules/sticker_editor/sticker_editor.dart';
 import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/layer_widget.dart';
@@ -133,24 +135,6 @@ void main() {
       expect(find.byType(TextEditor), findsOneWidget);
     });
 
-    testWidgets('ProImageEditor opens BlurEditor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-          home: ProImageEditor.memory(
-        fakeMemoryImage,
-        configs: configs,
-        callbacks: ProImageEditorCallbacks(
-          onImageEditingComplete: (Uint8List bytes) async {},
-        ),
-      )));
-
-      final openBtn = find.byKey(const ValueKey('open-blur-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      await tester.pumpAndSettle();
-      expect(find.byType(BlurEditor), findsOneWidget);
-    });
-
     testWidgets('ProImageEditor opens FilterEditor',
         (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
@@ -168,6 +152,24 @@ void main() {
 
       await tester.pumpAndSettle();
       expect(find.byType(FilterEditor), findsOneWidget);
+    });
+
+    testWidgets('ProImageEditor opens BlurEditor', (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+          home: ProImageEditor.memory(
+        fakeMemoryImage,
+        configs: configs,
+        callbacks: ProImageEditorCallbacks(
+          onImageEditingComplete: (Uint8List bytes) async {},
+        ),
+      )));
+
+      final openBtn = find.byKey(const ValueKey('open-blur-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(BlurEditor), findsOneWidget);
     });
 
     testWidgets('ProImageEditor opens EmojiEditor',

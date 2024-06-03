@@ -153,11 +153,11 @@ class BlurEditorState extends State<BlurEditor>
   late final StreamController _uiBlurStream;
 
   /// Represents the selected blur state.
-  late double selectedBlur;
+  late double blurFactor;
 
   @override
   void initState() {
-    selectedBlur = appliedBlurFactor;
+    blurFactor = appliedBlurFactor;
     _uiBlurStream = StreamController.broadcast();
     super.initState();
   }
@@ -172,7 +172,7 @@ class BlurEditorState extends State<BlurEditor>
   /// Handles the "Done" action, either by applying changes or closing the editor.
   void done() async {
     doneEditing(
-      returnValue: selectedBlur,
+      returnValue: blurFactor,
       editorImage: widget.editorImage,
     );
     blurEditorCallbacks?.handleDone();
@@ -249,7 +249,7 @@ class BlurEditorState extends State<BlurEditor>
                         designMode: designMode,
                         image: editorImage,
                         filters: appliedFilters,
-                        blurFactor: selectedBlur,
+                        blurFactor: blurFactor,
                       );
                     }),
               ),
@@ -290,9 +290,9 @@ class BlurEditorState extends State<BlurEditor>
                       min: 0,
                       max: blurEditorConfigs.maxBlur,
                       divisions: 100,
-                      value: selectedBlur,
+                      value: blurFactor,
                       onChanged: (value) {
-                        selectedBlur = value;
+                        blurFactor = value;
                         _uiBlurStream.add(null);
                         blurEditorCallbacks?.handleBlurFactorChange(value);
                       },

@@ -217,7 +217,10 @@ class PaintingEditorState extends State<PaintingEditor>
   late final PaintDesktopInteractionManager _desktopInteractionManager;
 
   /// Get the current PaintMode.
-  PaintModeE? get paintMode => _paintCtrl.mode;
+  PaintModeE get paintMode => _paintCtrl.mode;
+
+  /// Get the current strokeWidth.
+  double get strokeWidth => _paintCtrl.strokeWidth;
 
   /// Get the active selected color.
   Color get activeColor => _paintCtrl.color;

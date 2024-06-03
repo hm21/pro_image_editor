@@ -9,8 +9,7 @@ import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
 
 void main() {
   group('TextEditor Tests', () {
-    testWidgets('TextEditor should build without error',
-        (WidgetTester tester) async {
+    testWidgets('should build without error', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -23,7 +22,7 @@ void main() {
 
       expect(find.byType(TextEditor), findsOneWidget);
     });
-    testWidgets('TextEditor set text correctly', (WidgetTester tester) async {
+    testWidgets('set text correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

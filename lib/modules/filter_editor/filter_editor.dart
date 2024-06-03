@@ -189,6 +189,11 @@ class FilterEditorState extends State<FilterEditor>
     ];
   }
 
+  void setFilter(FilterModel filter) {
+    selectedFilter = filter;
+    _uiFilterStream.add(null);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(

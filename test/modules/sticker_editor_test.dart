@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -10,8 +12,7 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 
 void main() {
   group('StickerEditor Tests', () {
-    testWidgets('StickerEditor widget should be created',
-        (WidgetTester tester) async {
+    testWidgets('widget should be created', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         home: StickerEditor(
           scrollController: ScrollController(),

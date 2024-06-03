@@ -57,8 +57,7 @@ void main() {
       expect(editorKey.currentState!.userZoom, greaterThan(1));
     }
 
-    testWidgets('CropRotateEditor should build without error',
-        (WidgetTester tester) async {
+    testWidgets('should build without error', (WidgetTester tester) async {
       final editorKey = GlobalKey<CropRotateEditorState>();
       await tester.pumpWidget(
         MaterialApp(
@@ -74,7 +73,7 @@ void main() {
       expect(find.byType(CropRotateEditor), findsOneWidget);
     });
 
-    testWidgets('Handles rotation correctly', (WidgetTester tester) async {
+    testWidgets('handles rotation correctly', (WidgetTester tester) async {
       final editorKey = GlobalKey<CropRotateEditorState>();
       await tester.pumpWidget(MaterialApp(
         home: CropRotateEditor.memory(
@@ -90,7 +89,7 @@ void main() {
       expect(editorKey.currentState!.rotationCount == 1, isTrue);
     });
 
-    testWidgets('Handles flip correctly', (WidgetTester tester) async {
+    testWidgets('handles flip correctly', (WidgetTester tester) async {
       final editorKey = GlobalKey<CropRotateEditorState>();
       await tester.pumpWidget(MaterialApp(
         home: CropRotateEditor.memory(
@@ -105,7 +104,7 @@ void main() {
       expect(editorKey.currentState!.flipX, isTrue);
     });
 
-    testWidgets('Handles zoom correctly', (WidgetTester tester) async {
+    testWidgets('handles zoom correctly', (WidgetTester tester) async {
       final editorKey = GlobalKey<CropRotateEditorState>();
       await tester.pumpWidget(MaterialApp(
         home: CropRotateEditor.memory(
@@ -124,7 +123,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('Handles reset correctly', (WidgetTester tester) async {
+    testWidgets('handles reset correctly', (WidgetTester tester) async {
       final editorKey = GlobalKey<CropRotateEditorState>();
       await tester.pumpWidget(MaterialApp(
         home: CropRotateEditor.memory(
