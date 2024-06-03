@@ -285,8 +285,32 @@ class CropCornerPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return oldDelegate is! CropCornerPainter ||
+        oldDelegate.drawCircle != drawCircle ||
+        oldDelegate.offset != offset ||
         oldDelegate.cropRect != cropRect ||
+        oldDelegate.fadeInOpacity != fadeInOpacity ||
+        oldDelegate.interactionOpacity != interactionOpacity ||
         oldDelegate.viewRect != viewRect ||
+        oldDelegate.screenSize != screenSize ||
+        oldDelegate.scaleFactor != scaleFactor ||
+        oldDelegate.imageEditorTheme != imageEditorTheme ||
+        oldDelegate.cornerLength != cornerLength ||
         oldDelegate.rotationScaleFactor != rotationScaleFactor;
+  }
+
+  CropCornerPainter copy() {
+    return CropCornerPainter(
+      drawCircle: drawCircle,
+      offset: offset,
+      cropRect: cropRect,
+      fadeInOpacity: fadeInOpacity,
+      interactionOpacity: interactionOpacity,
+      viewRect: viewRect,
+      screenSize: screenSize,
+      scaleFactor: scaleFactor,
+      imageEditorTheme: imageEditorTheme,
+      cornerLength: cornerLength,
+      rotationScaleFactor: rotationScaleFactor,
+    );
   }
 }

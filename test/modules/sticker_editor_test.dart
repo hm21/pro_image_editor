@@ -1,6 +1,4 @@
 // Flutter imports:
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 // Package imports:

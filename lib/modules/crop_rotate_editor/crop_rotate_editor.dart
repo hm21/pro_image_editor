@@ -18,6 +18,7 @@ import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/utils/decode_image.dart';
+import 'package:pro_image_editor/widgets/extended/extended_transform_scale.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
@@ -31,6 +32,9 @@ import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/layer.dart';
 import '../../models/transform_helper.dart';
 import '../../utils/layer_transform_generator.dart';
+import '../../widgets/extended/extended_custom_paint.dart';
+import '../../widgets/extended/extended_mouse_cursor.dart';
+import '../../widgets/extended/extended_transform_translate.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/outside_gestures/outside_gesture_behavior.dart';
@@ -179,6 +183,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
         StandaloneEditorState<CropRotateEditor, CropRotateEditorInitConfigs>,
         ExtendedLoop,
         CropAreaHistory {
+  final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
+
   /// A key used to access the state of the CropRotateGestureDetector widget.
   final _gestureKey = GlobalKey<CropRotateGestureDetectorState>();
 
@@ -196,9 +202,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Indicates whether to show the fake hero animation.
   bool _showFakeHero = true;
-
-  /// Indicates whether to show additional widgets.
-  bool _showWidgets = false;
 
   /// Indicates whether interaction is currently blocked.
   bool _blockInteraction = false;
@@ -303,9 +306,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The current part of the crop area being interacted with.
   CropAreaPart _currentCropAreaPart = CropAreaPart.none;
 
-  /// The current cursor style.
-  MouseCursor _cursor = SystemMouseCursors.basic;
-
   /// Manager class for handling desktop interactions.
   late final CropDesktopInteractionManager _desktopInteractionManager;
 
@@ -317,6 +317,40 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// List of raw layers without any transformation.
   late List<Layer> _rawLayers;
+
+  /// The current cursor style.
+  MouseCursor _mouseCursor = SystemMouseCursors.basic;
+
+  /// Sets the current mouse cursor and updates the widget that manages the cursor.
+  set _cursor(MouseCursor cursor) {
+    _mouseCursor = cursor;
+    _mouseCursorsKey.currentState?.setCursor(cursor);
+  }
+
+  @override
+  CropCornerPainter? get cropPainter {
+    return showWidgets
+        ? CropCornerPainter(
+            offset: translate,
+            cropRect: cropRect,
+            viewRect: _viewRect,
+            scaleFactor: userScaleFactor,
+            rotationScaleFactor: oldScaleFactor,
+            interactionOpacity: _interactionOpacityProgress,
+            screenSize: Size(
+              editorBodySize.width,
+              editorBodySize.height,
+            ),
+            fadeInOpacity: _painterOpacity,
+            cornerLength: _cropCornerLength,
+            imageEditorTheme: imageEditorTheme,
+            drawCircle: cropRotateEditorConfigs.roundCropper,
+          )
+        : null;
+  }
+
+  /// Returns the current mouse cursor style.
+  MouseCursor get _cursor => _mouseCursor;
 
   @override
   void initState() {
@@ -365,7 +399,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
         }
         _blockInteraction = false;
         cropRotateEditorCallbacks?.handleRotateEnd(rotateAnimation.value);
-        setState(() {});
       }
     });
     rotateAnimation =
@@ -393,7 +426,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       flipX = transformConfigs!.flipX;
       flipY = transformConfigs!.flipY;
       translate = transformConfigs!.offset;
-      userZoom = transformConfigs!.scaleUser;
+      userScaleFactor = transformConfigs!.scaleUser;
       aspectRatio = transformConfigs!.aspectRatio;
       cropRect = transformConfigs!.cropRect;
       _viewRect = transformConfigs!.cropRect;
@@ -420,7 +453,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       }
 
       if (!enableFakeHero) hideFakeHero();
-      setState(() {});
+      _updateAllStates();
 
       /// Skip one frame to ensure the image is correctly transformed
       Size? originalSize = transformConfigs?.originalSize;
@@ -449,6 +482,18 @@ class CropRotateEditorState extends State<CropRotateEditor>
     super.dispose();
   }
 
+  void _updateAllStates() {
+    userScaleKey.currentState?.setScale(userScaleFactor);
+    cropPainterKey.currentState?.update(
+      foregroundPainter: cropPainter,
+      isComplex: showWidgets,
+      willChange: showWidgets,
+    );
+    translateKey.currentState?.setOffset(translate);
+
+    setState(() {});
+  }
+
   void _decodeImage() async {
     _imageSizeIsDecoded = false;
     _imageNeedDecode = false;
@@ -470,35 +515,39 @@ class CropRotateEditorState extends State<CropRotateEditor>
         pixelRatio: pixelRatio);
 
     calcCropRect();
-    setState(() {});
+    _updateAllStates();
     // Skip a few frames to ensure image constraints are set correctly
     Future.delayed(const Duration(milliseconds: 60)).whenComplete(() {
       calcCropRect();
       calcFitToScreen();
       _imageSizeIsDecoded = true;
-      setState(() {});
+      _updateAllStates();
       cropRotateEditorCallbacks?.handleUpdateUI();
     });
   }
 
   void hideFakeHero() {
-    setState(() {
-      _showFakeHero = false;
-      _showWidgets = true;
+    _showFakeHero = false;
+    showWidgets = true;
+    cropPainterKey.currentState?.update(
+      isComplex: showWidgets,
+      willChange: showWidgets,
+    );
 
-      loopWithTransitionTiming(
-        (double curveT) {
-          _painterOpacity = 1 * curveT;
-          setState(() {});
-        },
-        mounted: mounted,
-        transitionFunction: cropRotateEditorConfigs
-            .fadeInOutsideCropAreaAnimationCurve.transform,
-        duration:
-            cropRotateEditorConfigs.fadeInOutsideCropAreaAnimationDuration,
-        onDone: takeScreenshot,
-      );
-    });
+    loopWithTransitionTiming(
+      (double curveT) {
+        _painterOpacity = 1 * curveT;
+
+        cropPainterKey.currentState?.update(foregroundPainter: cropPainter);
+      },
+      mounted: mounted,
+      transitionFunction:
+          cropRotateEditorConfigs.fadeInOutsideCropAreaAnimationCurve.transform,
+      duration: cropRotateEditorConfigs.fadeInOutsideCropAreaAnimationDuration,
+      onDone: takeScreenshot,
+    );
+
+    _updateAllStates();
   }
 
   bool _onKeyEvent(KeyEvent event) {
@@ -528,7 +577,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
               lerpDouble(startOffset.dy, targetOffset.dy, curveT)!,
             );
             _setOffsetLimits();
-            setState(() {});
           },
           mounted: mounted,
           duration: cropRotateEditorConfigs.animationDuration,
@@ -537,20 +585,18 @@ class CropRotateEditorState extends State<CropRotateEditor>
         );
         startOffset = targetOffset;
         _setOffsetLimits();
-        setState(() {});
         addHistory();
       },
       onScale: (scale) async {
-        double startZoom = userZoom;
-        double targetZoom =
-            (userZoom + scale).clamp(1, cropRotateEditorConfigs.maxScale);
+        double startZoom = userScaleFactor;
+        double targetZoom = (userScaleFactor + scale)
+            .clamp(1, cropRotateEditorConfigs.maxScale);
 
         await loopWithTransitionTiming(
           (double curveT) {
-            userZoom = startZoom + (targetZoom - startZoom) * curveT;
+            userScaleFactor = startZoom + (targetZoom - startZoom) * curveT;
 
             _setOffsetLimits();
-            setState(() {});
           },
           mounted: mounted,
           duration: cropRotateEditorConfigs.animationDuration,
@@ -559,7 +605,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
         );
         startZoom = targetZoom;
         _setOffsetLimits();
-        setState(() {});
         addHistory();
       },
       onUndoRedo: (undo) {
@@ -583,22 +628,20 @@ class CropRotateEditorState extends State<CropRotateEditor>
             ? transformConfigs!
             : activeHistory;
 
-    setState(() {
-      _showFakeHero = enableFakeHero;
-      _fakeHeroTransformConfigs = transformC;
-    });
+    _showFakeHero = enableFakeHero;
+    _fakeHeroTransformConfigs = transformC;
+    _updateAllStates();
     if (!initConfigs.convertToUint8List) {
-      setState(() {
-        List<Layer> updatedLayers = LayerTransformGenerator(
-          layers: initConfigs.layers ?? [],
-          activeTransformConfigs:
-              initConfigs.transformConfigs ?? TransformConfigs.empty(),
-          newTransformConfigs: transformC,
-          layerDrawAreaSize: mainBodySize ?? editorBodySize,
-          undoChanges: false,
-        ).updatedLayers;
-        _layers = updatedLayers;
-      });
+      List<Layer> updatedLayers = LayerTransformGenerator(
+        layers: initConfigs.layers ?? [],
+        activeTransformConfigs:
+            initConfigs.transformConfigs ?? TransformConfigs.empty(),
+        newTransformConfigs: transformC,
+        layerDrawAreaSize: mainBodySize ?? editorBodySize,
+        undoChanges: false,
+      ).updatedLayers;
+      _layers = updatedLayers;
+      _updateAllStates();
       await initConfigs.onDone?.call(transformC);
       if (mounted) Navigator.pop(context, transformC);
     } else {
@@ -655,7 +698,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             cropRect: cropRect,
             originalSize: originalSize,
             cropEditorScreenRatio: cropEditorScreenRatio,
-            scaleUser: userZoom,
+            scaleUser: userScaleFactor,
             scaleRotation: scaleAnimation.value,
             aspectRatio: aspectRatio,
             flipX: flipX,
@@ -684,15 +727,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
   void flip() {
     if (!cropRotateEditorConfigs.canFlip) return;
 
-    setState(() {
-      if (rotationCount % 2 != 0) {
-        flipY = !flipY;
-      } else {
-        flipX = !flipX;
-      }
-      cropRotateEditorCallbacks?.handleFlip(flipX, flipY);
-      addHistory();
-    });
+    if (rotationCount % 2 != 0) {
+      flipY = !flipY;
+    } else {
+      flipX = !flipX;
+    }
+    cropRotateEditorCallbacks?.handleFlip(flipX, flipY);
+    addHistory();
+    _updateAllStates();
   }
 
   /// Rotates the image clockwise.
@@ -720,7 +762,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     calcFitToScreen();
 
     cropRotateEditorCallbacks?.handleRotateStart(rotateAnimation.value);
-    setState(() {});
   }
 
   @override
@@ -758,6 +799,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       ..forward();
 
     oldScaleFactor = scale;
+    cropPainterKey.currentState?.setForegroundPainter(cropPainter);
   }
 
   void _setCropRectBoundings({
@@ -825,15 +867,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
           );
         }).then((value) {
       if (value != null) {
-        setState(() {
-          reset(skipAddHistory: true);
-          aspectRatio = value;
-          cropRotateEditorCallbacks?.handleRatioSelected(value);
+        reset(skipAddHistory: true);
+        aspectRatio = value;
+        cropRotateEditorCallbacks?.handleRatioSelected(value);
 
-          calcCropRect();
-          calcFitToScreen();
-          addHistory(scale: oldScaleFactor, angle: 0);
-        });
+        calcCropRect();
+        calcFitToScreen();
+        addHistory(scale: oldScaleFactor, angle: 0);
+        _updateAllStates();
       }
     });
   }
@@ -876,11 +917,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
       cropRect = Rect.fromLTWH(left, top, realImgW, realImgH);
     }
     _viewRect = Rect.fromLTWH(left, top, realImgW, realImgH);
+    cropPainterKey.currentState?.setForegroundPainter(cropPainter);
   }
 
   CropAreaPart _determineCropAreaPart(Offset localPosition) {
-    Offset offset = _getRealHitPoint(zoom: userZoom, position: localPosition) +
-        translate * userZoom;
+    Offset offset =
+        _getRealHitPoint(zoom: userScaleFactor, position: localPosition) +
+            translate * userScaleFactor;
     double dx = offset.dx;
     double dy = offset.dy;
 
@@ -988,15 +1031,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   void _zoomOutside() async {
     const int frameHelper = 1000 ~/ 60;
-    while (userZoom > 1 && _activeScaleOut) {
-      double oldZoom = userZoom;
+    while (userScaleFactor > 1 && _activeScaleOut) {
+      double oldZoom = userScaleFactor;
 
       double zoomFactor = 0.025;
-      userZoom -= zoomFactor;
-      userZoom = max(1, userZoom);
+      userScaleFactor -= zoomFactor;
+      userScaleFactor = max(1, userScaleFactor);
 
-      var zoomOutsideWidth = _viewRect.width / oldZoom * userZoom;
-      var zoomOutsideHeight = _viewRect.height / oldZoom * userZoom;
+      var zoomOutsideWidth = _viewRect.width / oldZoom * userScaleFactor;
+      var zoomOutsideHeight = _viewRect.height / oldZoom * userScaleFactor;
 
       double offsetHelperX = 0;
       double offsetHelperY = 0;
@@ -1033,11 +1076,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       Offset offsetHelper = Offset(offsetHelperX, offsetHelperY);
 
-      translate -= offsetHelper / userZoom / 2;
+      translate -= offsetHelper / userScaleFactor / 2;
 
       calcCropRect();
       _setOffsetLimits();
-      setState(() {});
 
       await Future.delayed(const Duration(milliseconds: frameHelper));
     }
@@ -1048,12 +1090,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
     if (_blockInteraction || details.pointerCount > 2) return;
     _blockInteraction = true;
 
-    _startingPinchScale = userZoom;
+    _startingPinchScale = userScaleFactor;
     _startingTranslate = translate;
     // Calculate the center offset point from the old zoomed view
     _startingCenterOffset = _startingTranslate +
-        _getRealHitPoint(position: details.localFocalPoint, zoom: userZoom) /
-            userZoom;
+        _getRealHitPoint(
+                position: details.localFocalPoint, zoom: userScaleFactor) /
+            userScaleFactor;
 
     if (!_scaleStarted) {
       /// On desktop devices we detect always in `onPointerHover` events.
@@ -1064,11 +1107,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
       loopWithTransitionTiming(
         (double curveT) {
           _interactionOpacityProgress = 1 * curveT;
-          setState(() {});
+          cropPainterKey.currentState!.setForegroundPainter(cropPainter);
         },
         mounted: mounted,
         transitionFunction: Curves.decelerate.transform,
-        duration: const Duration(milliseconds: 100),
+        duration: cropRotateEditorConfigs.opacityOutsideCropAreaDuration,
       );
     }
 
@@ -1080,7 +1123,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _interactionActive = true;
     _scaleStarted = true;
     _blockInteraction = false;
-    setState(() {});
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
@@ -1098,12 +1140,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       // Update translation and zoom values
       translate = _startingTranslate - _startingCenterOffset + centerZoomOffset;
-      userZoom = newZoom;
+      userScaleFactor = newZoom;
 
       // Set offset limits and trigger widget rebuild
       _setOffsetLimits();
       cropRotateEditorCallbacks?.handleScale();
-      setState(() {});
     } else {
       if (_currentCropAreaPart != CropAreaPart.none &&
           _currentCropAreaPart != CropAreaPart.inside) {
@@ -1154,24 +1195,24 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
         bool isFreeAspectRatio = _ratio < 0;
         if (isFreeAspectRatio) {
-          minLeft = -(imgW * zoomFactor / 2 -
+          minLeft = -(imgW * userScaleFactor / 2 -
               _viewRect.width / 2 -
               halfSpaceHorizontal -
-              translate.dx * zoomFactor);
+              translate.dx * userScaleFactor);
           minRight = imgW +
-              (imgW * zoomFactor / 2 -
+              (imgW * userScaleFactor / 2 -
                   _viewRect.width / 2 -
                   halfSpaceHorizontal +
-                  translate.dx * zoomFactor);
-          minTop = -(imgH * zoomFactor / 2 -
+                  translate.dx * userScaleFactor);
+          minTop = -(imgH * userScaleFactor / 2 -
               _viewRect.height / 2 -
               halfSpaceVertical -
-              translate.dy * zoomFactor);
+              translate.dy * userScaleFactor);
           minBottom = imgH +
-              (imgH * zoomFactor / 2 -
+              (imgH * userScaleFactor / 2 -
                   _viewRect.height / 2 -
                   halfSpaceVertical +
-                  translate.dy * zoomFactor);
+                  translate.dy * userScaleFactor);
         }
 
         Size realViewRectSize = _viewRect.size * scaleAnimation.value;
@@ -1323,16 +1364,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
           }
         }
 
-        setState(() {});
+        cropPainterKey.currentState!.update(foregroundPainter: cropPainter);
       } else {
-        double scaleFactor = userZoom / _scaleStartZoomHelper;
+        double scaleFactor = userScaleFactor / _scaleStartZoomHelper;
         translate +=
             Offset(details.focalPointDelta.dx, details.focalPointDelta.dy) /
                 scaleFactor *
                 (cropRotateEditorConfigs.reverseDragDirection ? -1 : 1);
         _setOffsetLimits();
         cropRotateEditorCallbacks?.handleMove();
-        setState(() {});
+
+        cropPainterKey.currentState!.update(foregroundPainter: cropPainter);
       }
     }
     _blockInteraction = false;
@@ -1358,16 +1400,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
         loopWithTransitionTiming(
           (double curveT) {
             _interactionOpacityProgress = 1 - 1 * curveT;
-            setState(() {});
+            cropPainterKey.currentState!.setForegroundPainter(cropPainter);
           },
           mounted: mounted,
           transitionFunction: Curves.decelerate.transform,
-          duration: const Duration(milliseconds: 100),
+          duration: cropRotateEditorConfigs.opacityOutsideCropAreaDuration,
         );
       }
     });
-
-    setState(() {});
 
     if (cropRect != _viewRect) {
       /// Return is important for tests
@@ -1395,9 +1435,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
       Rect startCropRect = cropRect;
       Rect targetCropRect = _viewRect;
 
-      double startZoom = userZoom;
+      double startZoom = userScaleFactor;
       double targetZoom = min(
-        userZoom *
+        userScaleFactor *
             targetCropRect.size.longestSide /
             startCropRect.size.longestSide,
         cropRotateEditorConfigs.maxScale,
@@ -1418,7 +1458,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       await loopWithTransitionTiming(
         (double curveT) {
-          userZoom = lerpDouble(startZoom, targetZoom, curveT)!;
+          userScaleFactor = lerpDouble(startZoom, targetZoom, curveT)!;
 
           translate = Offset(
             startOffset.dx +
@@ -1437,8 +1477,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ? interpolatedRect(initRect, targetCropRect, curveT)
                 : null,
           );
-
-          setState(() {});
         },
         mounted: mounted,
         duration: animationDuration,
@@ -1447,7 +1485,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       cropRect = targetCropRect;
       translate = targetOffset;
-      userZoom = targetZoom;
+      userScaleFactor = targetZoom;
 
       _setOffsetLimits();
       calcFitToScreen();
@@ -1457,7 +1495,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _blockInteraction = false;
 
     addHistory();
-    setState(() {});
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
@@ -1480,8 +1517,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     cropRotateEditorCallbacks?.handleDoubleTap();
 
-    bool zoomInside = userZoom <= 1;
-    double startZoom = userZoom;
+    bool zoomInside = userScaleFactor <= 1;
+    double startZoom = userScaleFactor;
     double targetZoom =
         zoomInside ? cropRotateEditorConfigs.doubleTapScaleFactor : 1;
     Offset startOffset = translate;
@@ -1513,21 +1550,22 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     await loopWithTransitionTiming(
       (double curveT) {
-        userZoom = startZoom + (targetZoom - startZoom) * curveT;
+        userScaleFactor = startZoom + (targetZoom - startZoom) * curveT;
         translate = startOffset +
-            (targetOffset - startOffset) * targetZoom / userZoom * curveT;
-        setState(() {});
+            (targetOffset - startOffset) *
+                targetZoom /
+                userScaleFactor *
+                curveT;
       },
       mounted: mounted,
       duration: cropRotateEditorConfigs.animationDuration,
       transitionFunction: Curves.decelerate.transform,
     );
 
-    userZoom = targetZoom;
+    userScaleFactor = targetZoom;
     translate = targetOffset;
     _setOffsetLimits();
     addHistory();
-    setState(() {});
     _blockInteraction = false;
   }
 
@@ -1537,13 +1575,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
     double cropWidth = r.width;
     double cropHeight = r.height;
 
-    double minX = (_renderedImgConstraints.maxWidth * zoomFactor - cropWidth) /
-        2 /
-        zoomFactor;
-    double minY =
-        (_renderedImgConstraints.maxHeight * zoomFactor - cropHeight) /
+    double minX =
+        (_renderedImgConstraints.maxWidth * userScaleFactor - cropWidth) /
             2 /
-            zoomFactor;
+            userScaleFactor;
+    double minY =
+        (_renderedImgConstraints.maxHeight * userScaleFactor - cropHeight) /
+            2 /
+            userScaleFactor;
 
     Offset offset = translate;
 
@@ -1573,8 +1612,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       double deltaY = event.scrollDelta.dy *
           (cropRotateEditorConfigs.reverseMouseScroll ? -1 : 1);
 
-      double startZoom = userZoom;
-      double newZoom = userZoom;
+      double startZoom = userScaleFactor;
+      double newZoom = userScaleFactor;
       // Adjust zoom based on scroll direction
       if (deltaY > 0) {
         newZoom -= factor;
@@ -1593,7 +1632,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       // Update translation and zoom values
       translate -= centerOffset - centerZoomOffset;
-      userZoom = newZoom;
+      userScaleFactor = newZoom;
 
       // Set offset limits and trigger widget rebuild
       _setOffsetLimits();
@@ -1601,9 +1640,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _scrollHistoryDebounce(() {
         addHistory();
         cropRotateEditorCallbacks?.handleScale();
-        setState(() {});
+        cropPainterKey.currentState!.setForegroundPainter(cropPainter);
       });
-      setState(() {});
     }
   }
 
@@ -1715,7 +1753,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         break;
       case CropAreaPart.inside:
       case CropAreaPart.none:
-        if (userZoom > 1 ||
+        if (userScaleFactor > 1 ||
             cropRect.size.aspectRatio.toStringAsFixed(3) !=
                 (_rotated90deg
                         ? 1 / _renderedImgSize.aspectRatio
@@ -1759,7 +1797,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvoked: (didPop) {
-        setState(() => _showFakeHero = true);
+        _showFakeHero = true;
+        _updateAllStates();
       },
       child: LayoutBuilder(builder: (context, constraints) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -1944,7 +1983,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
     return SafeArea(
       child: ScreenResizeDetector(
         onResizeUpdate: (event) {
-          editorBodySize = event.newContentSize;
+          if (editorBodySize != event.newContentSize) {
+            editorBodySize = event.newContentSize;
+            cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+          }
           cropEditorScreenRatio = Size(
             editorBodySize.width - _screenPadding * 2,
             editorBodySize.height - _screenPadding * 2,
@@ -1953,7 +1995,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         onResizeEnd: (event) {
           if (_imageNeedDecode) _decodeImage();
           _setCropRectBoundings();
-          setState(() {});
+          _updateAllStates();
         },
         child: Stack(
           children: [
@@ -2013,8 +2055,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildMouseCursor({required Widget child}) {
-    return MouseRegion(
-      cursor: _cursor,
+    return ExtendedMouseRegion(
+      key: _mouseCursorsKey,
+      initCursor: _cursor,
       child: child,
     );
   }
@@ -2026,7 +2069,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       behavior: OutsideHitTestBehavior.all,
       onPointerDown: (event) {
         _gestureKey.currentState!.rawKey.currentState!.handlePointerDown(event);
-        if (_activePointers == 0) _scaleStartZoomHelper = userZoom;
+        if (_activePointers == 0) _scaleStartZoomHelper = userScaleFactor;
         _activePointers++;
       },
       onPointerUp: (event) {
@@ -2043,7 +2086,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
               if (area != _currentCropAreaPart) {
                 _currentCropAreaPart = area;
                 _setMouseCursor();
-                setState(() {});
               }
             }
           : null,
@@ -2084,16 +2126,18 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildUserScaleTransform({required Widget child}) {
-    return Transform.scale(
-      scale: zoomFactor,
+    return ExtendedTransformScale(
+      key: userScaleKey,
+      initScale: userScaleFactor,
       alignment: Alignment.center,
       child: child,
     );
   }
 
-  Transform _buildTranslate({required Widget child}) {
-    return Transform.translate(
-      offset: translate,
+  Widget _buildTranslate({required Widget child}) {
+    return ExtendedTransformTranslate(
+      key: translateKey,
+      initOffset: translate,
       child: child,
     );
   }
@@ -2111,27 +2155,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildCropPainter({required Widget child}) {
-    return CustomPaint(
-      isComplex: _showWidgets,
-      willChange: _showWidgets,
-      foregroundPainter: _showWidgets
-          ? CropCornerPainter(
-              offset: translate,
-              cropRect: cropRect,
-              viewRect: _viewRect,
-              scaleFactor: zoomFactor,
-              rotationScaleFactor: oldScaleFactor,
-              interactionOpacity: _interactionOpacityProgress,
-              screenSize: Size(
-                editorBodySize.width,
-                editorBodySize.height,
-              ),
-              drawCircle: cropRotateEditorConfigs.roundCropper,
-              fadeInOpacity: _painterOpacity,
-              imageEditorTheme: imageEditorTheme,
-              cornerLength: _cropCornerLength,
-            )
-          : null,
+    return ExtendedCustomPaint(
+      key: cropPainterKey,
+      initIsComplex: showWidgets,
+      initWillChange: showWidgets,
+      initForegroundPainter: cropPainter?.copy(),
       child: child,
     );
   }
@@ -2151,7 +2179,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
         _imgWidth / _imgHeight * (editorBodySize.height - _screenPadding * 2);
     double maxHeight =
         (editorBodySize.width - _screenPadding * 2) * _imgHeight / _imgWidth;
-
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: maxWidth.isNaN ? _imgWidth : maxWidth,

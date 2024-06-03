@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/import_export/utils/export_import_version.dart';
-import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:
@@ -26,9 +24,11 @@ import '../../models/editor_image.dart';
 import '../../models/history/last_layer_interaction_position.dart';
 import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
+import '../../models/import_export/utils/export_import_version.dart';
 import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
 import '../../models/layer.dart';
 import '../../models/theme/theme_dragable_sheet.dart';
+import '../../plugins/defer_pointer/defer_pointer.dart';
 import '../../pro_image_editor.dart';
 import '../../utils/constants.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
@@ -38,6 +38,7 @@ import '../../utils/layer_transform_generator.dart';
 import '../../utils/swipe_mode.dart';
 import '../../widgets/adaptive_dialog.dart';
 import '../../widgets/auto_image.dart';
+import '../../widgets/extended/extended_mouse_cursor.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/loading_dialog.dart';
@@ -311,6 +312,8 @@ class ProImageEditorState extends State<ProImageEditor>
         SimpleConfigsAccessState,
         SimpleCallbacksAccessState,
         MainEditorGlobalKeys {
+  final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
+
   /// Helper class for managing sizes and layout calculations.
   late final SizesManager _sizesManager;
 
@@ -392,10 +395,21 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Get the current image being edited from the change list.
   late EditorImage _image;
 
+  /// Returns the new layer offset position.
+  ///
+  /// If the `newLayerOffsetPosition` in `layerInteraction` is `null`, it returns `Offset.zero`.
+  /// This ensures that the offset is never `null` and always has a valid value.
   Offset get newLayerOffsetPosition =>
       layerInteraction.newLayerOffsetPosition ?? Offset.zero;
 
+  /// A [Completer] used to track the completion of a page open operation.
+  ///
+  /// The completer is initialized and can be used to await the page open operation.
   Completer _pageOpenCompleter = Completer();
+
+  /// A [Completer] used to track the completion of an image decoding operation.
+  ///
+  /// The completer is initialized and can be used to await the image decoding operation.
   final Completer _decodeImageCompleter = Completer();
 
   @override
@@ -2173,123 +2187,122 @@ class ProImageEditorState extends State<ProImageEditor>
           builder: (context, resetLayerSnapshot) {
             if (resetLayerSnapshot.data!) return Container();
 
-            return StreamBuilder<Object>(
-                stream: _controllers.mouseMoveCtrl.stream,
-                initialData: false,
-                builder: (context, snapshot) {
-                  return MouseRegion(
-                    cursor: snapshot.data != true
-                        ? SystemMouseCursors.basic
-                        : imageEditorTheme.layerInteraction.hoverCursor,
-                    onHover: isDesktop
-                        ? (event) {
-                            bool hasHit = activeLayers.indexWhere((element) =>
-                                    element is PaintingLayerData &&
-                                    element.item.hit) >=
-                                0;
-                            if (hasHit != snapshot.data) {
-                              _controllers.mouseMoveCtrl.add(hasHit);
-                            }
-                          }
-                        : null,
-                    child: DeferredPointerHandler(
-                      child: StreamBuilder(
-                          stream: _controllers.uiLayerCtrl.stream,
-                          builder: (context, snapshot) {
-                            return Stack(
-                              children:
-                                  activeLayers.asMap().entries.map((entry) {
-                                final int i = entry.key;
-                                final Layer layerItem = entry.value;
-                                return LayerWidget(
-                                  key: layerItem.key,
-                                  configs: configs,
-                                  editorBodySize: _sizesManager.bodySize,
-                                  layerData: layerItem,
-                                  enableHitDetection: _layerInteractionManager
-                                      .enabledHitDetection,
-                                  selected: _layerInteractionManager
-                                          .selectedLayerId ==
-                                      layerItem.id,
-                                  isInteractive: !_isEditorOpen,
-                                  highPerformanceMode: _layerInteractionManager
-                                          .freeStyleHighPerformanceScaling ||
-                                      _layerInteractionManager
-                                          .freeStyleHighPerformanceMoving ||
-                                      _layerInteractionManager
-                                          .freeStyleHighPerformanceHero,
-                                  onEditTap: () {
-                                    if (layerItem is TextLayerData) {
-                                      _onTextLayerTap(layerItem);
-                                    }
-                                  },
-                                  onTap: (layer) async {
-                                    if (_layerInteractionManager
-                                        .layersAreSelectable(configs)) {
-                                      _layerInteractionManager.selectedLayerId =
-                                          layer.id ==
-                                                  _layerInteractionManager
-                                                      .selectedLayerId
-                                              ? ''
-                                              : layer.id;
-                                    } else if (layer is TextLayerData) {
-                                      _onTextLayerTap(layer);
-                                    }
-                                  },
-                                  onTapUp: () {
-                                    if (_layerInteractionManager
-                                        .hoverRemoveBtn) {
-                                      removeLayer(
-                                        activeLayers.indexWhere((element) =>
-                                            element.id == layerItem.id),
-                                        layer: layerItem,
-                                      );
-                                    }
-                                    _controllers.uiLayerCtrl.add(null);
-                                    mainEditorCallbacks?.handleUpdateUI();
-                                    _selectedLayerIndex = -1;
-                                  },
-                                  onTapDown: () {
-                                    _selectedLayerIndex = i;
-                                    _setTempLayer(layerItem);
-                                  },
-                                  onScaleRotateDown:
-                                      (details, layerOriginalSize) {
-                                    _selectedLayerIndex = i;
-                                    _layerInteractionManager
-                                            .rotateScaleLayerSizeHelper =
-                                        layerOriginalSize;
-                                    _layerInteractionManager
-                                            .rotateScaleLayerScaleHelper =
-                                        layerItem.scale;
-                                  },
-                                  onScaleRotateUp: (details) {
-                                    _layerInteractionManager
-                                        .rotateScaleLayerSizeHelper = null;
-                                    _layerInteractionManager
-                                        .rotateScaleLayerScaleHelper = null;
-                                    setState(() {
-                                      _selectedLayerIndex = -1;
-                                    });
-                                    mainEditorCallbacks?.handleUpdateUI();
-                                  },
-                                  onRemoveTap: () {
-                                    setState(() {
-                                      removeLayer(
-                                        activeLayers.indexWhere((element) =>
-                                            element.id == layerItem.id),
-                                        layer: layerItem,
-                                      );
-                                    });
-                                    mainEditorCallbacks?.handleUpdateUI();
-                                  },
+            return ExtendedMouseRegion(
+              key: _mouseCursorsKey,
+              onHover: isDesktop
+                  ? (event) {
+                      bool hasHit = activeLayers.indexWhere((element) =>
+                              element is PaintingLayerData &&
+                              element.item.hit) >=
+                          0;
+
+                      MouseCursor activeCursor =
+                          _mouseCursorsKey.currentState!.currentCursor;
+                      MouseCursor moveCursor =
+                          imageEditorTheme.layerInteraction.hoverCursor;
+
+                      if (hasHit && activeCursor != moveCursor) {
+                        _mouseCursorsKey.currentState!.setCursor(moveCursor);
+                      } else if (!hasHit &&
+                          activeCursor != SystemMouseCursors.basic) {
+                        _mouseCursorsKey.currentState!
+                            .setCursor(SystemMouseCursors.basic);
+                      }
+                    }
+                  : null,
+              child: DeferredPointerHandler(
+                child: StreamBuilder(
+                    stream: _controllers.uiLayerCtrl.stream,
+                    builder: (context, snapshot) {
+                      return Stack(
+                        children: activeLayers.asMap().entries.map((entry) {
+                          final int i = entry.key;
+                          final Layer layerItem = entry.value;
+                          return LayerWidget(
+                            key: layerItem.key,
+                            configs: configs,
+                            editorBodySize: _sizesManager.bodySize,
+                            layerData: layerItem,
+                            enableHitDetection:
+                                _layerInteractionManager.enabledHitDetection,
+                            selected:
+                                _layerInteractionManager.selectedLayerId ==
+                                    layerItem.id,
+                            isInteractive: !_isEditorOpen,
+                            highPerformanceMode: _layerInteractionManager
+                                    .freeStyleHighPerformanceScaling ||
+                                _layerInteractionManager
+                                    .freeStyleHighPerformanceMoving ||
+                                _layerInteractionManager
+                                    .freeStyleHighPerformanceHero,
+                            onEditTap: () {
+                              if (layerItem is TextLayerData) {
+                                _onTextLayerTap(layerItem);
+                              }
+                            },
+                            onTap: (layer) async {
+                              if (_layerInteractionManager
+                                  .layersAreSelectable(configs)) {
+                                _layerInteractionManager.selectedLayerId = layer
+                                            .id ==
+                                        _layerInteractionManager.selectedLayerId
+                                    ? ''
+                                    : layer.id;
+                              } else if (layer is TextLayerData) {
+                                _onTextLayerTap(layer);
+                              }
+                            },
+                            onTapUp: () {
+                              if (_layerInteractionManager.hoverRemoveBtn) {
+                                removeLayer(
+                                  activeLayers.indexWhere(
+                                      (element) => element.id == layerItem.id),
+                                  layer: layerItem,
                                 );
-                              }).toList(),
-                            );
-                          }),
-                    ),
-                  );
-                });
+                              }
+                              _controllers.uiLayerCtrl.add(null);
+                              mainEditorCallbacks?.handleUpdateUI();
+                              _selectedLayerIndex = -1;
+                            },
+                            onTapDown: () {
+                              _selectedLayerIndex = i;
+                              _setTempLayer(layerItem);
+                            },
+                            onScaleRotateDown: (details, layerOriginalSize) {
+                              _selectedLayerIndex = i;
+                              _layerInteractionManager
+                                      .rotateScaleLayerSizeHelper =
+                                  layerOriginalSize;
+                              _layerInteractionManager
+                                      .rotateScaleLayerScaleHelper =
+                                  layerItem.scale;
+                            },
+                            onScaleRotateUp: (details) {
+                              _layerInteractionManager
+                                  .rotateScaleLayerSizeHelper = null;
+                              _layerInteractionManager
+                                  .rotateScaleLayerScaleHelper = null;
+                              setState(() {
+                                _selectedLayerIndex = -1;
+                              });
+                              mainEditorCallbacks?.handleUpdateUI();
+                            },
+                            onRemoveTap: () {
+                              setState(() {
+                                removeLayer(
+                                  activeLayers.indexWhere(
+                                      (element) => element.id == layerItem.id),
+                                  layer: layerItem,
+                                );
+                              });
+                              mainEditorCallbacks?.handleUpdateUI();
+                            },
+                          );
+                        }).toList(),
+                      );
+                    }),
+              ),
+            );
           }),
     );
   }

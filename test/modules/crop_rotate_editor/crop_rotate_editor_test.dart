@@ -22,6 +22,7 @@ void main() {
         animationDuration: Duration.zero,
         cropDragAnimationDuration: Duration.zero,
         fadeInOutsideCropAreaAnimationDuration: Duration.zero,
+        opacityOutsideCropAreaDuration: Duration.zero,
       ),
       imageGenerationConfigs: ImageGeneratioConfigs(
         generateImageInBackground: false,
@@ -54,7 +55,10 @@ void main() {
       await gesture1.up();
       await gesture2.up();
 
-      expect(editorKey.currentState!.userZoom, greaterThan(1));
+      expect(editorKey.currentState!.userScaleFactor, greaterThan(1));
+
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
     }
 
     testWidgets('should build without error', (WidgetTester tester) async {
@@ -119,8 +123,6 @@ void main() {
       /// Fake tap that widget will stay alive until loop finish
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-reset-btn')));
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(milliseconds: 500));
     });
 
     testWidgets('handles reset correctly', (WidgetTester tester) async {
@@ -150,7 +152,9 @@ void main() {
 
       expect(editorKey.currentState!.rotationCount == 0, isTrue);
       expect(editorKey.currentState!.flipX, isFalse);
-      expect(editorKey.currentState!.userZoom, equals(1));
+      expect(editorKey.currentState!.userScaleFactor, equals(1));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
     });
   });
 

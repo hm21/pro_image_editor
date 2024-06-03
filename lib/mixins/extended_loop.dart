@@ -14,12 +14,15 @@ mixin ExtendedLoop {
     double startTime = DateTime.now().millisecondsSinceEpoch.toDouble();
     double endTime = startTime + fullTime;
 
-    while (DateTime.now().millisecondsSinceEpoch < endTime && mounted) {
-      double t = (DateTime.now().millisecondsSinceEpoch - startTime) / fullTime;
+    if (duration.inMilliseconds != 0) {
+      while (DateTime.now().millisecondsSinceEpoch < endTime && mounted) {
+        double t =
+            (DateTime.now().millisecondsSinceEpoch - startTime) / fullTime;
 
-      function(transitionFunction(t));
+        function(transitionFunction(t));
 
-      await Future.delayed(Duration(milliseconds: frameRate));
+        await Future.delayed(Duration(milliseconds: frameRate));
+      }
     }
     function(1.0);
     onDone?.call();

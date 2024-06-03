@@ -84,6 +84,9 @@ class CropRotateEditorConfigs {
   /// Fade in animation from content outside the crop area.
   final Duration fadeInOutsideCropAreaAnimationDuration;
 
+  /// The duration of the outside crop area opacity.
+  final Duration opacityOutsideCropAreaDuration;
+
   /// The curve used for the rotation animation.
   final Curve rotateAnimationCurve;
 
@@ -128,6 +131,7 @@ class CropRotateEditorConfigs {
     this.cropDragAnimationCurve = Curves.decelerate,
     this.fadeInOutsideCropAreaAnimationCurve = Curves.decelerate,
     this.rotateDirection = RotateDirection.left,
+    this.opacityOutsideCropAreaDuration = const Duration(milliseconds: 100),
     this.animationDuration = const Duration(milliseconds: 250),
     this.fadeInOutsideCropAreaAnimationDuration =
         const Duration(milliseconds: 350),

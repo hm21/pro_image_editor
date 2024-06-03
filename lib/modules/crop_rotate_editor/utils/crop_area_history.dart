@@ -8,13 +8,22 @@ import 'package:flutter/material.dart';
 import '../../../mixins/standalone_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/init_configs/crop_rotate_editor_init_configs.dart';
+import '../../../widgets/extended/extended_custom_paint.dart';
+import '../../../widgets/extended/extended_transform_scale.dart';
+import '../../../widgets/extended/extended_transform_translate.dart';
 import '../crop_rotate_editor.dart';
+import '../widgets/crop_corner_painter.dart';
 import 'crop_aspect_ratios.dart';
 
 mixin CropAreaHistory
     on
         StandaloneEditorState<CropRotateEditor, CropRotateEditorInitConfigs>,
         State<CropRotateEditor> {
+  @protected
+  final translateKey = GlobalKey<ExtendedTransformTranslateState>();
+  final userScaleKey = GlobalKey<ExtendedTransformScaleState>();
+  final cropPainterKey = GlobalKey<ExtendedCustomPaintState>();
+
   @protected
   late AnimationController rotateCtrl;
   @protected
@@ -28,12 +37,40 @@ mixin CropAreaHistory
   int rotationCount = 0;
   @protected
   double oldScaleFactor = 1;
+
+  double _userScaleFactor = 1;
   @protected
-  double get zoomFactor => userZoom;
+  double get userScaleFactor => _userScaleFactor;
+  @protected
+  set userScaleFactor(double value) {
+    _userScaleFactor = value;
+    userScaleKey.currentState?.setScale(userScaleFactor);
+    cropPainterKey.currentState?.update(
+      foregroundPainter: cropPainter,
+      isComplex: showWidgets,
+      willChange: showWidgets,
+    );
+  }
+
+  Offset _translate = const Offset(0, 0);
+  @protected
+  Offset get translate => _translate;
+  @protected
+  set translate(Offset value) {
+    _translate = value;
+    translateKey.currentState?.setOffset(translate);
+    cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+  }
+
+  @protected
+  CropCornerPainter? get cropPainter => null;
+
+  /// Indicates whether to show additional widgets.
+  @protected
+  bool showWidgets = false;
+
   @protected
   late double aspectRatio;
-  @protected
-  double userZoom = 1;
   @protected
   double cropEditorScreenRatio = 1;
 
@@ -45,9 +82,14 @@ mixin CropAreaHistory
   bool initialized = false;
 
   @protected
-  Offset translate = const Offset(0, 0);
-  @protected
-  Rect cropRect = Rect.zero;
+  Rect get cropRect => _cropRect;
+  set cropRect(Rect value) {
+    _cropRect = value;
+    cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+  }
+
+  Rect _cropRect = Rect.zero;
+
   @protected
   Size originalSize = Size.zero;
 
@@ -78,7 +120,7 @@ mixin CropAreaHistory
         angle: angle ?? rotateAnimation.value,
         cropRect: cropRect,
         originalSize: originalSize,
-        scaleUser: userZoom,
+        scaleUser: userScaleFactor,
         scaleRotation: scale ?? scaleAnimation.value,
         aspectRatio: aspectRatio,
         flipX: flipX,
@@ -134,7 +176,7 @@ mixin CropAreaHistory
     flipX = activeHistory.flipX;
     flipY = activeHistory.flipY;
     translate = activeHistory.offset;
-    userZoom = activeHistory.scaleUser;
+    userScaleFactor = activeHistory.scaleUser;
     cropRect = activeHistory.cropRect;
     aspectRatio = activeHistory.aspectRatio < 0
         ? cropRect.size.aspectRatio
@@ -179,14 +221,15 @@ mixin CropAreaHistory
       ..forward();
     rotationCount = 0;
 
-    scaleAnimation = Tween<double>(begin: oldScaleFactor * zoomFactor, end: 1)
-        .animate(scaleCtrl);
+    scaleAnimation =
+        Tween<double>(begin: oldScaleFactor * userScaleFactor, end: 1)
+            .animate(scaleCtrl);
     scaleCtrl
       ..reset()
       ..forward();
     oldScaleFactor = 1;
 
-    userZoom = 1;
+    userScaleFactor = 1;
     aspectRatio =
         cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 

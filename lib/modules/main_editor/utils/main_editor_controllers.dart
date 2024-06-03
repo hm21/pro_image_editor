@@ -19,9 +19,6 @@ class MainEditorControllers {
   /// Stream controller for resetting layer hero animations.
   late final StreamController<bool> layerHeroResetCtrl;
 
-  /// Stream controller for tracking mouse movement within the editor.
-  late final StreamController<bool> mouseMoveCtrl;
-
   /// Stream controller for the remove button.
   late final StreamController removeBtnCtrl;
 
@@ -36,7 +33,6 @@ class MainEditorControllers {
     bottomBarScrollCtrl = ScrollController();
     helperLineCtrl = StreamController.broadcast();
     layerHeroResetCtrl = StreamController.broadcast();
-    mouseMoveCtrl = StreamController.broadcast();
     removeBtnCtrl = StreamController.broadcast();
     uiLayerCtrl = StreamController.broadcast();
     screenshot = ContentRecorderController(configs: configs);
@@ -47,7 +43,6 @@ class MainEditorControllers {
     bottomBarScrollCtrl.dispose();
     helperLineCtrl.close();
     layerHeroResetCtrl.close();
-    mouseMoveCtrl.close();
     removeBtnCtrl.close();
     screenshot.destroy();
     uiLayerCtrl.close();
