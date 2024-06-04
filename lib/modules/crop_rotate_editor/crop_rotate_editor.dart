@@ -1691,13 +1691,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       switch (no % 4) {
         case 0:
-          return SystemMouseCursors.resizeUpLeft;
-        case 1:
-          return SystemMouseCursors.resizeUpRight;
-        case 2:
           return SystemMouseCursors.resizeDownRight;
-        case 3:
+        case 1:
           return SystemMouseCursors.resizeDownLeft;
+        case 2:
+          return SystemMouseCursors.resizeUpLeft;
+        case 3:
+          return SystemMouseCursors.resizeUpRight;
         default:
           if (kDebugMode) {
             throw ErrorDescription('Invalid cursor number!');
@@ -1730,13 +1730,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       switch (no % 4) {
         case 0:
-          return SystemMouseCursors.resizeLeft;
-        case 1:
-          return SystemMouseCursors.resizeUp;
-        case 2:
           return SystemMouseCursors.resizeRight;
-        case 3:
+        case 1:
           return SystemMouseCursors.resizeDown;
+        case 2:
+          return SystemMouseCursors.resizeLeft;
+        case 3:
+          return SystemMouseCursors.resizeUp;
         default:
           if (kDebugMode) {
             throw ErrorDescription('Invalid cursor number!');

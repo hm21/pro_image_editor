@@ -172,6 +172,8 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - Freestyle Painter with improved performance and hitbox
 - ✨ Text-Editor
   - Text-layer with an improved hit-box and ensure it's vertically centered on all devices
+- ✨ Emoji-Editor
+  - Preload emojis in web platforms
 - ✨ AI Futures => Perhaps integrating Adobe Firefly
 
 
