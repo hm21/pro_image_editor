@@ -507,72 +507,74 @@ class TextEditorState extends State<TextEditor>
                         onFontChange: setTextStyle,
                       ),
                     )),
-          if (isWhatsAppDesign && isMaterial)
-            Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                margin: const EdgeInsets.only(right: 16),
-                width: 16,
-                height: min(
-                    280,
-                    MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).viewInsets.bottom -
-                        kToolbarHeight -
-                        kBottomNavigationBarHeight -
-                        MediaQuery.of(context).padding.top),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'A',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+          if (isWhatsAppDesign) ...[
+            if (isMaterial)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  width: 16,
+                  height: min(
+                      280,
+                      MediaQuery.of(context).size.height -
+                          MediaQuery.of(context).viewInsets.bottom -
+                          kToolbarHeight -
+                          kBottomNavigationBarHeight -
+                          MediaQuery.of(context).padding.top),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'A',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Flexible(
-                      child: RotatedBox(
-                        quarterTurns: 1,
-                        child: SliderTheme(
-                          data: SliderThemeData(
-                            overlayShape: SliderComponentShape.noThumb,
-                          ),
-                          child: Slider(
-                            onChanged: (value) {
-                              fontScale = 4.5 - value;
-                              setState(() {});
-                            },
-                            min: 0.5,
-                            max: 4,
-                            value: max(0.5, min(4.5 - fontScale, 4)),
-                            thumbColor: Colors.white,
-                            inactiveColor: Colors.white60,
-                            activeColor: Colors.white60,
+                      Flexible(
+                        child: RotatedBox(
+                          quarterTurns: 1,
+                          child: SliderTheme(
+                            data: SliderThemeData(
+                              overlayShape: SliderComponentShape.noThumb,
+                            ),
+                            child: Slider(
+                              onChanged: (value) {
+                                fontScale = 4.5 - value;
+                                setState(() {});
+                              },
+                              min: 0.5,
+                              max: 4,
+                              value: max(0.5, min(4.5 - fontScale, 4)),
+                              thumbColor: Colors.white,
+                              inactiveColor: Colors.white60,
+                              activeColor: Colors.white60,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const Text(
-                      'A',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                      const Text(
+                        'A',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+            WhatsAppTextAppBar(
+              configs: widget.configs,
+              align: align,
+              onDone: done,
+              onAlignChange: toggleTextAlign,
+              onBackgroundModeChange: toggleBackgroundMode,
             ),
-          WhatsAppTextAppBar(
-            configs: widget.configs,
-            align: align,
-            onDone: done,
-            onAlignChange: toggleTextAlign,
-            onBackgroundModeChange: toggleBackgroundMode,
-          ),
+          ],
         ],
       ),
     );
