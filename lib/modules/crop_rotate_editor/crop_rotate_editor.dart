@@ -806,17 +806,24 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     cropPainterKey.currentState?.setForegroundPainter(cropPainter);
 
-    loopWithTransitionTiming(
-      (double curveT) {
-        _rotationScaleFactor =
-            lerpDouble(startRotateFactor, targetRotateFactor, curveT)!;
-        cropPainterKey.currentState?.setForegroundPainter(cropPainter);
-      },
-      mounted: mounted,
-      duration: cropRotateEditorConfigs.animationDuration,
-      transitionFunction:
-          (curve ?? cropRotateEditorConfigs.rotateAnimationCurve).transform,
-    );
+    if (!startRotateFactor.isInfinite &&
+        !startRotateFactor.isNaN &&
+        !targetRotateFactor.isInfinite &&
+        !targetRotateFactor.isNaN) {
+      loopWithTransitionTiming(
+        (double curveT) {
+          _rotationScaleFactor =
+              lerpDouble(startRotateFactor, targetRotateFactor, curveT)!;
+          cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+        },
+        mounted: mounted,
+        duration: cropRotateEditorConfigs.animationDuration,
+        transitionFunction:
+            (curve ?? cropRotateEditorConfigs.rotateAnimationCurve).transform,
+      );
+    } else {
+      _rotationScaleFactor = 1;
+    }
   }
 
   void _setCropRectBoundings({
