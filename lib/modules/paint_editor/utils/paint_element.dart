@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../../models/paint_editor/painted_model.dart';
 import 'paint_editor_enum.dart';
 
-class PaintModeHelper {
+class PaintElement {
   /// Draws an element on a canvas based on the specified mode and parameters.
   ///
   /// This function is used to draw various elements such as freehand lines, straight

@@ -58,6 +58,7 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
         i18n: const I18n(
           various: I18nVarious(
             loadingDialogMsg: 'Please wait...',
@@ -368,7 +369,6 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
           initScale: 2.0,
           checkPlatformCompatibility: true,
         ),
-        designMode: ImageEditorDesignModeE.material,
         heroTag: 'hero',
         theme: ThemeData(
           useMaterial3: true,

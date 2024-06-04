@@ -12,6 +12,7 @@ import 'package:pro_image_editor/designs/whatsapp/whatsapp_text_appbar.dart';
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/mixins/converted_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import '../../designs/whatsapp/whatsapp_text_bottombar.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../models/layer.dart';
 import '../../utils/theme_functions.dart';
@@ -19,7 +20,6 @@ import '../../widgets/bottom_sheets_header_row.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/platform_popup_menu.dart';
-import '../../widgets/pro_image_editor_desktop_mode.dart';
 import 'widgets/text_editor_bottom_bar.dart';
 
 /// A StatefulWidget that provides a text editing interface for adding and editing text layers.
@@ -310,7 +310,7 @@ class TextEditorState extends State<TextEditor>
                     widget.configs.textEditorConfigs.customTextStyles
                             ?.isNotEmpty ==
                         false &&
-                    imageEditorTheme.editorMode == ThemeEditorMode.simple
+                    !isWhatsAppDesign
                 ? const SizedBox(
                     height: kBottomNavigationBarHeight,
                   )
@@ -324,7 +324,7 @@ class TextEditorState extends State<TextEditor>
   /// Builds the app bar for the text editor.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
     return customWidgets.appBarTextEditor ??
-        (imageEditorTheme.editorMode == ThemeEditorMode.simple
+        (!isWhatsAppDesign
             ? AppBar(
                 automaticallyImplyLeading: false,
                 backgroundColor:
@@ -436,8 +436,7 @@ class TextEditorState extends State<TextEditor>
 
   /// Builds the body of the text editor.
   Widget _buildBody() {
-    double barPickerPadding =
-        imageEditorTheme.editorMode == ThemeEditorMode.simple ? 10 : 60;
+    double barPickerPadding = isWhatsAppDesign || !isMaterial ? 60 : 10;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -445,57 +444,135 @@ class TextEditorState extends State<TextEditor>
       child: Stack(
         children: [
           _buildTextField(),
-          Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: barPickerPadding,
-              ),
-              child: BarColorPicker(
-                configs: widget.configs,
-                length: min(
-                  imageEditorTheme.editorMode == ThemeEditorMode.simple
-                      ? 350
-                      : 200,
-                  MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).viewInsets.bottom -
-                      kToolbarHeight -
-                      kBottomNavigationBarHeight -
-                      barPickerPadding * 2 -
-                      MediaQuery.of(context).padding.top,
+          if (!isWhatsAppDesign || !isMaterial)
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                margin:
+                    isWhatsAppDesign ? const EdgeInsets.only(right: 16) : null,
+                padding: EdgeInsets.symmetric(
+                  vertical: barPickerPadding,
                 ),
-                onPositionChange: (value) {
-                  _colorPosition = value;
-                },
-                initPosition: _colorPosition,
-                initialColor: _primaryColor,
-                horizontal: false,
-                thumbColor: Colors.white,
-                cornerRadius: 10,
-                pickMode: PickMode.color,
-                colorListener: (int value) {
-                  setState(() {
-                    _primaryColor = Color(value);
-                  });
-                  textEditorCallbacks?.handleColorChanged(value);
-                },
+                child: BarColorPicker(
+                  configs: widget.configs,
+                  length: min(
+                    isWhatsAppDesign ? 200 : 350,
+                    MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).viewInsets.bottom -
+                        kToolbarHeight -
+                        kBottomNavigationBarHeight -
+                        barPickerPadding * 2 -
+                        MediaQuery.of(context).padding.top,
+                  ),
+                  onPositionChange: (value) {
+                    _colorPosition = value;
+                  },
+                  initPosition: _colorPosition,
+                  initialColor: _primaryColor,
+                  horizontal: false,
+                  thumbColor: Colors.white,
+                  cornerRadius: 10,
+                  pickMode: PickMode.color,
+                  colorListener: (int value) {
+                    setState(() {
+                      _primaryColor = Color(value);
+                    });
+                    textEditorCallbacks?.handleColorChanged(value);
+                  },
+                ),
               ),
             ),
-          ),
           customWidgets.bottomBarTextEditor ??
-              TextEditorBottomBar(
-                configs: widget.configs,
-                selectedStyle: selectedTextStyle,
-                onFontChange: setTextStyle,
+              (isWhatsAppDesign
+                  ? WhatsTextBottomBar(
+                      configs: configs,
+                      initColor: _primaryColor,
+                      onColorChanged: (value) {
+                        setState(() {
+                          _primaryColor = value;
+                        });
+                        textEditorCallbacks?.handleColorChanged(value.value);
+                      },
+                      selectedStyle: selectedTextStyle,
+                      onFontChange: setTextStyle,
+                    )
+                  : Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: kBottomNavigationBarHeight,
+                      child: TextEditorBottomBar(
+                        configs: widget.configs,
+                        selectedStyle: selectedTextStyle,
+                        onFontChange: setTextStyle,
+                      ),
+                    )),
+          if (isWhatsAppDesign && isMaterial)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                width: 16,
+                height: min(
+                    280,
+                    MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).viewInsets.bottom -
+                        kToolbarHeight -
+                        kBottomNavigationBarHeight -
+                        MediaQuery.of(context).padding.top),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'A',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Flexible(
+                      child: RotatedBox(
+                        quarterTurns: 1,
+                        child: SliderTheme(
+                          data: SliderThemeData(
+                            overlayShape: SliderComponentShape.noThumb,
+                          ),
+                          child: Slider(
+                            onChanged: (value) {
+                              fontScale = 4.5 - value;
+                              setState(() {});
+                            },
+                            min: 0.5,
+                            max: 4,
+                            value: max(0.5, min(4.5 - fontScale, 4)),
+                            thumbColor: Colors.white,
+                            inactiveColor: Colors.white60,
+                            activeColor: Colors.white60,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'A',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-          if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp)
-            WhatsAppTextAppBar(
-              configs: widget.configs,
-              align: align,
-              onDone: done,
-              onAlignChange: toggleTextAlign,
-              onBackgroundModeChange: toggleBackgroundMode,
             ),
+          WhatsAppTextAppBar(
+            configs: widget.configs,
+            align: align,
+            onDone: done,
+            onAlignChange: toggleTextAlign,
+            onBackgroundModeChange: toggleBackgroundMode,
+          ),
         ],
       ),
     );
@@ -507,10 +584,10 @@ class TextEditorState extends State<TextEditor>
       alignment: Alignment.center,
       child: Padding(
         padding: EdgeInsets.only(
-            bottom: imageEditorTheme.editorMode == ThemeEditorMode.simple &&
-                    textEditorConfigs.customTextStyles != null
-                ? kBottomNavigationBarHeight
-                : 0),
+            bottom:
+                !isWhatsAppDesign && textEditorConfigs.customTextStyles != null
+                    ? kBottomNavigationBarHeight
+                    : 0),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),

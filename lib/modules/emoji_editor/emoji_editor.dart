@@ -11,7 +11,6 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 // Project imports:
 import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/theme/theme_editor_mode.dart';
 import 'package:pro_image_editor/modules/emoji_editor/widgets/emoji_editor_category_view.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
 import '../../mixins/converted_configs.dart';
@@ -93,10 +92,6 @@ class EmojiEditorState extends State<EmojiEditor>
     });
   }
 
-  /// Is `true` if the editor use the `WhatsApp` design.
-  bool get _isWhatsApp =>
-      imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
-
   Config _getEditorConfig(BoxConstraints constraints) {
     return Config(
       height: double.infinity,
@@ -104,7 +99,7 @@ class EmojiEditorState extends State<EmojiEditor>
       checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
       emojiTextStyle: _textStyle.copyWith(
           fontSize:
-              _isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
+              isWhatsAppDesign && designMode != ImageEditorDesignModeE.cupertino
                   ? 48
                   : 30),
       emojiViewConfig: imageEditorTheme.emojiEditor.emojiViewConfig ??
@@ -112,18 +107,19 @@ class EmojiEditorState extends State<EmojiEditor>
             gridPadding: EdgeInsets.zero,
             horizontalSpacing: 0,
             verticalSpacing: 0,
-            recentsLimit: _isWhatsApp ? 40 : 28,
-            backgroundColor:
-                _isWhatsApp ? Colors.transparent : imageEditorBackgroundColor,
+            recentsLimit: isWhatsAppDesign ? 40 : 28,
+            backgroundColor: isWhatsAppDesign
+                ? Colors.transparent
+                : imageEditorBackgroundColor,
             buttonMode: designMode == ImageEditorDesignModeE.cupertino
                 ? ButtonMode.CUPERTINO
                 : ButtonMode.MATERIAL,
             loadingIndicator: const Center(child: CircularProgressIndicator()),
             columns: _calculateColumns(constraints),
-            emojiSizeMax:
-                !_isWhatsApp || designMode == ImageEditorDesignModeE.cupertino
-                    ? 32
-                    : 64,
+            emojiSizeMax: !isWhatsAppDesign ||
+                    designMode == ImageEditorDesignModeE.cupertino
+                ? 32
+                : 64,
             replaceEmojiOnLimitExceed: false,
           ),
       swapCategoryAndBottomBar:
@@ -163,7 +159,7 @@ class EmojiEditorState extends State<EmojiEditor>
               flagIcon: Icons.flag_outlined,
             ),
           ),
-      bottomActionBarConfig: _isWhatsApp
+      bottomActionBarConfig: isWhatsAppDesign
           ? const BottomActionBarConfig(enabled: false)
           : imageEditorTheme.emojiEditor.bottomActionBarConfig,
       searchViewConfig: imageEditorTheme.emojiEditor.searchViewConfig ??
@@ -189,7 +185,7 @@ class EmojiEditorState extends State<EmojiEditor>
   /// Calculates the number of columns for the EmojiPicker.
   int _calculateColumns(BoxConstraints constraints) => max(
           1,
-          (_isWhatsApp && designMode != ImageEditorDesignModeE.cupertino
+          (isWhatsAppDesign && designMode != ImageEditorDesignModeE.cupertino
                       ? 6
                       : 10) /
                   400 *

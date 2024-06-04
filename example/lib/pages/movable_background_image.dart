@@ -17,7 +17,6 @@ import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/flat_icon_text_button.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 // Project imports:
 import '../utils/example_helper.dart';
@@ -330,6 +329,7 @@ class _MoveableBackgroundImageExampleState
                         ),
                       ),
                       configs: ProImageEditorConfigs(
+                          designMode: platformDesignMode,
                           imageGenerationConfigs: ImageGeneratioConfigs(
                             generateOnlyDrawingBounds: true,
 

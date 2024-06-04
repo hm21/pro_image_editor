@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'utils/whatsapp_appbar_button_style.dart';
 import 'whatsapp_done_btn.dart';
 
@@ -51,15 +51,6 @@ class _WhatsAppTextAppBarState extends State<WhatsAppTextAppBar> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: WhatsAppDoneBtn(
-                foregroundColor: widget.configs.imageEditorTheme.paintingEditor
-                    .appBarForegroundColor,
-                configs: widget.configs,
-                onPressed: widget.onDone,
-              ),
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -82,6 +73,18 @@ class _WhatsAppTextAppBarState extends State<WhatsAppTextAppBar> {
                   icon: Icon(widget.configs.icons.textEditor.backgroundMode),
                 ),
               ],
+            ),
+            Align(
+              alignment:
+                  widget.configs.designMode == ImageEditorDesignModeE.cupertino
+                      ? Alignment.centerLeft
+                      : Alignment.centerRight,
+              child: WhatsAppDoneBtn(
+                foregroundColor: widget.configs.imageEditorTheme.paintingEditor
+                    .appBarForegroundColor,
+                configs: widget.configs,
+                onPressed: widget.onDone,
+              ),
             ),
           ],
         ),

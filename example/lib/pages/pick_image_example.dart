@@ -172,6 +172,9 @@ class _PickImageExampleState extends State<PickImageExample>
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
         ),
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+        ),
       );
     } else {
       return ProImageEditor.memory(
@@ -180,6 +183,9 @@ class _PickImageExampleState extends State<PickImageExample>
           onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
+        ),
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
         ),
       );
     }

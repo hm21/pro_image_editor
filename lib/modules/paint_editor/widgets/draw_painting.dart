@@ -7,15 +7,15 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
 import '../../../models/paint_editor/painted_model.dart';
-import '../../../widgets/pro_image_editor_desktop_mode.dart';
-import '../utils/paint_mode.dart';
+import '../../../utils/pro_image_editor_mode.dart';
+import '../utils/paint_element.dart';
 
 /// Handles the painting ongoing on the canvas.
 class DrawPainting extends CustomPainter {
   /// The model containing information about the painting.
   final PaintedModel item;
 
-  final PaintModeHelper _paintModeHelper = PaintModeHelper();
+  final PaintElement _paintModeHelper = PaintElement();
 
   /// The scaling factor applied to the canvas.
   final double scale;

@@ -490,6 +490,7 @@ class _GenerationConfigState extends State<GenerationConfig>
             : null,
       ),
       configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
         imageGenerationConfigs: generationConfigs,
       ),
     );

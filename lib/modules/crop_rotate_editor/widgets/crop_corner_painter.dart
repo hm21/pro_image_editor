@@ -18,7 +18,7 @@ class CropCornerPainter extends CustomPainter {
   final double interactionOpacity;
 
   final double cornerLength;
-  double cornerWidth = 6;
+  final double cornerThickness;
 
   double helperLineWidth = 0.5;
 
@@ -41,6 +41,7 @@ class CropCornerPainter extends CustomPainter {
     required this.scaleFactor,
     required this.imageEditorTheme,
     required this.cornerLength,
+    required this.cornerThickness,
     required this.rotationScaleFactor,
   });
 
@@ -132,7 +133,7 @@ class CropCornerPainter extends CustomPainter {
   }) {
     Path path = Path();
 
-    double width = cornerWidth / rotationScaleFactor;
+    double width = cornerThickness / rotationScaleFactor;
     if (!drawCircle) {
       double length = cornerLength / rotationScaleFactor;
 
@@ -310,6 +311,7 @@ class CropCornerPainter extends CustomPainter {
       scaleFactor: scaleFactor,
       imageEditorTheme: imageEditorTheme,
       cornerLength: cornerLength,
+      cornerThickness: cornerThickness,
       rotationScaleFactor: rotationScaleFactor,
     );
   }

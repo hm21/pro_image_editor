@@ -87,8 +87,9 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
         },
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        i18n: I18n(doneLoadingMsg: 'Uploading image...'),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+        i18n: const I18n(doneLoadingMsg: 'Uploading image...'),
       ),
     );
   }

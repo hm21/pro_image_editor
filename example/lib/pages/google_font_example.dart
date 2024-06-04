@@ -55,6 +55,7 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
         textEditorConfigs: TextEditorConfigs(
           customTextStyles: [
             GoogleFonts.roboto(),

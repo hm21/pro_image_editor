@@ -33,7 +33,7 @@ import '../../widgets/color_picker/bar_color_picker.dart';
 import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/platform_popup_menu.dart';
-import '../../widgets/pro_image_editor_desktop_mode.dart';
+import '../../utils/pro_image_editor_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_image.dart';
 import 'utils/paint_controller.dart';
@@ -391,7 +391,7 @@ class PaintingEditorState extends State<PaintingEditor>
     if (canUndo) screenshotHistoryPosition--;
     _paintCtrl.undo();
     _uiAppbarIconsStream.add(null);
-    if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+    if (isWhatsAppDesign) {
       _uiPickerStream.add(null);
     }
     setState(() {});
@@ -559,7 +559,7 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Returns a [PreferredSizeWidget] representing the app bar.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
     return customWidgets.appBarPaintingEditor ??
-        (imageEditorTheme.editorMode == ThemeEditorMode.simple
+        (!isWhatsAppDesign
             ? AppBar(
                 automaticallyImplyLeading: false,
                 backgroundColor:
@@ -787,13 +787,22 @@ class PaintingEditorState extends State<PaintingEditor>
                           ],
                         ),
                       ),
-                      if (paintEditorConfigs.showColorPicker)
+                      if (paintEditorConfigs.showColorPicker &&
+                          (!isMaterial ||
+                              imageEditorTheme.editorMode ==
+                                  ThemeEditorMode.simple))
                         _buildColorPicker(),
                       if (imageEditorTheme.editorMode ==
                           ThemeEditorMode.whatsapp) ...[
                         WhatsAppPaintBottomBar(
                           configs: configs,
                           strokeWidth: _paintCtrl.strokeWidth,
+                          initColor: _paintCtrl.color,
+                          onColorChanged: (color) {
+                            _paintCtrl.setColor(color);
+                            _uiPickerStream.add(null);
+                            paintEditorCallbacks?.handleColorChanged();
+                          },
                           onSetLineWidth: (val) {
                             setStrokeWidth(val);
                           },
@@ -826,7 +835,7 @@ class PaintingEditorState extends State<PaintingEditor>
   Widget? _buildBottomBar() {
     if (paintModes.length <= 1) return const SizedBox.shrink();
     return customWidgets.bottomBarPaintingEditor ??
-        (imageEditorTheme.editorMode == ThemeEditorMode.simple
+        (!isWhatsAppDesign
             ? Theme(
                 data: theme,
                 child: Scrollbar(
@@ -900,7 +909,7 @@ class PaintingEditorState extends State<PaintingEditor>
       drawAreaSize: mainBodySize ?? editorBodySize,
       onCreatedPainting: () {
         _uiAppbarIconsStream.add(null);
-        if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+        if (isWhatsAppDesign) {
           _uiPickerStream.add(null);
         }
         paintEditorCallbacks?.handleDrawingDone();
@@ -915,17 +924,15 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Returns a [Widget] representing the color picker.
   Widget _buildColorPicker() {
     return Positioned(
-      top: imageEditorTheme.editorMode == ThemeEditorMode.simple ? 10 : 60,
-      right: 0,
+      top: isWhatsAppDesign ? 60 : 10,
+      right: isWhatsAppDesign ? 16 : 0,
       child: StreamBuilder(
           stream: _uiPickerStream.stream,
           builder: (context, snapshot) {
             return BarColorPicker(
               configs: configs,
               length: min(
-                imageEditorTheme.editorMode == ThemeEditorMode.simple
-                    ? 350
-                    : 200,
+                !isWhatsAppDesign ? 350 : 200,
                 MediaQuery.of(context).size.height -
                     MediaQuery.of(context).viewInsets.bottom -
                     kToolbarHeight -

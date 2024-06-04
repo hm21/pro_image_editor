@@ -54,6 +54,7 @@ class _StickersExampleState extends State<StickersExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
         blurEditorConfigs: const BlurEditorConfigs(enabled: false),
         stickerEditorConfigs: StickerEditorConfigs(
           enabled: true,

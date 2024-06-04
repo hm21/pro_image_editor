@@ -38,7 +38,6 @@ import '../../widgets/extended/extended_transform_translate.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/outside_gestures/outside_gesture_behavior.dart';
-import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_image.dart';
 import 'utils/crop_area_part.dart';
@@ -237,9 +236,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The number of active pointers (touch points).
   int _activePointers = 0;
 
-  /// The length of the crop corner.
-  final double _cropCornerLength = 36;
-
   /// The area considered for interactive corner gestures.
   late final double _interactiveCornerArea;
 
@@ -327,6 +323,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _mouseCursorsKey.currentState?.setCursor(cursor);
   }
 
+  double _rotationScaleFactor = 1;
+
   @override
   CropCornerPainter? get cropPainter {
     return showWidgets
@@ -335,14 +333,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
             cropRect: cropRect,
             viewRect: _viewRect,
             scaleFactor: userScaleFactor,
-            rotationScaleFactor: oldScaleFactor,
+            rotationScaleFactor: _rotationScaleFactor,
             interactionOpacity: _interactionOpacityProgress,
             screenSize: Size(
               editorBodySize.width,
               editorBodySize.height,
             ),
             fadeInOpacity: _painterOpacity,
-            cornerLength: _cropCornerLength,
+            cornerThickness:
+                imageEditorTheme.cropRotateEditor.cropCornerThickness,
+            cornerLength: imageEditorTheme.cropRotateEditor.cropCornerLength,
             imageEditorTheme: imageEditorTheme,
             drawCircle: cropRotateEditorConfigs.roundCropper,
           )
@@ -431,6 +431,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       cropRect = transformConfigs!.cropRect;
       _viewRect = transformConfigs!.cropRect;
       oldScaleFactor = transformConfigs!.scaleRotation;
+      _rotationScaleFactor = oldScaleFactor;
 
       setInitHistory(transformConfigs!);
     }
@@ -798,8 +799,24 @@ class CropRotateEditorState extends State<CropRotateEditor>
       ..reset()
       ..forward();
 
+    double startRotateFactor = oldScaleFactor;
+    double targetRotateFactor = scale;
+
     oldScaleFactor = scale;
+
     cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+
+    loopWithTransitionTiming(
+      (double curveT) {
+        _rotationScaleFactor =
+            lerpDouble(startRotateFactor, targetRotateFactor, curveT)!;
+        cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+      },
+      mounted: mounted,
+      duration: cropRotateEditorConfigs.animationDuration,
+      transitionFunction:
+          (curve ?? cropRotateEditorConfigs.rotateAnimationCurve).transform,
+    );
   }
 
   void _setCropRectBoundings({
@@ -1160,7 +1177,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
         double halfSpaceVertical = _cropSpaceVertical / 2;
 
         double outsidePadding = _screenPadding * 2;
-        double cornerGap = _cropCornerLength * 2.25;
+        double cornerGap =
+            imageEditorTheme.cropRotateEditor.cropCornerLength * 2.25;
         double minCornerDistance = outsidePadding + cornerGap;
 
         double halfViewRectW = _viewRect.width / 2;
@@ -1234,9 +1252,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 doubleInteractiveArea);
 
         double outsideHitPosY = details.focalPoint.dy -
-            (imageEditorTheme.editorMode == ThemeEditorMode.simple
-                ? kToolbarHeight
-                : 0) -
+            (!isWhatsAppDesign ? kToolbarHeight : 0) -
             MediaQuery.of(context).padding.top;
 
         bool outsideLeft = details.focalPoint.dx < zoomOutHitAreaX;
@@ -1822,7 +1838,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Builds the app bar for the editor, including buttons for actions such as back, rotate, aspect ratio, and done.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
     return customWidgets.appBarCropRotateEditor ??
-        (imageEditorTheme.editorMode == ThemeEditorMode.simple
+        (!isWhatsAppDesign
             ? AppBar(
                 automaticallyImplyLeading: false,
                 backgroundColor:
@@ -1865,7 +1881,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   Widget? _buildBottomAppBar() {
     return customWidgets.bottomBarCropRotateEditor ??
-        (imageEditorTheme.editorMode == ThemeEditorMode.simple
+        (!isWhatsAppDesign
             ? (cropRotateEditorConfigs.canRotate ||
                     cropRotateEditorConfigs.canFlip ||
                     cropRotateEditorConfigs.canChangeAspectRatio ||
@@ -1967,7 +1983,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                     ),
                   )
                 : null)
-            : imageEditorTheme.editorMode == ThemeEditorMode.whatsapp
+            : isWhatsAppDesign
                 ? WhatsAppCropRotateToolbar(
                     configs: configs,
                     onCancel: close,

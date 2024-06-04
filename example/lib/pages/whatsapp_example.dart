@@ -69,17 +69,29 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
             GoogleFonts.nabla(),
           ],
         ),
+        designMode: platformDesignMode,
         imageEditorTheme: const ImageEditorTheme(
-            editorMode: ThemeEditorMode.whatsapp,
-            helperLine: HelperLineTheme(
-              horizontalColor: Color.fromARGB(255, 129, 218, 88),
-              verticalColor: Color.fromARGB(255, 129, 218, 88),
-            ),
-            emojiEditor: EmojiEditorTheme(
-              backgroundColor: Colors.transparent,
-            )),
+          editorMode: ThemeEditorMode.whatsapp,
+          helperLine: HelperLineTheme(
+            horizontalColor: Color.fromARGB(255, 129, 218, 88),
+            verticalColor: Color.fromARGB(255, 129, 218, 88),
+          ),
+          emojiEditor: EmojiEditorTheme(
+            backgroundColor: Colors.transparent,
+          ),
+          cropRotateEditor: CropRotateEditorTheme(
+            cropCornerColor: Colors.white,
+            helperLineColor: Colors.white,
+            cropCornerLength: 28,
+            cropCornerThickness: 3,
+          ),
+        ),
         paintEditorConfigs: const PaintEditorConfigs(
+          initialColor: Color.fromARGB(255, 129, 218, 88),
           initialStrokeWidth: 5,
+        ),
+        cropRotateEditorConfigs: const CropRotateEditorConfigs(
+          enableDoubleTap: false,
         ),
         filterEditorConfigs: FilterEditorConfigs(
           whatsAppFilterTextOffsetY: 90,

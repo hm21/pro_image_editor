@@ -48,13 +48,14 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+        imageGenerationConfigs: const ImageGeneratioConfigs(
           processorConfigs: ProcessorConfigs(
             processorMode: ProcessorMode.auto,
           ),
         ),
-        layerInteraction: LayerInteraction(
+        layerInteraction: const LayerInteraction(
           /// Choose between `auto`, `enabled` and `disabled`.
           ///
           /// Mode `auto`:
@@ -63,7 +64,7 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
           selectable: LayerInteractionSelectable.enabled,
           initialSelected: true,
         ),
-        imageEditorTheme: ImageEditorTheme(
+        imageEditorTheme: const ImageEditorTheme(
           layerInteraction: ThemeLayerInteraction(
             buttonRadius: 10,
             strokeWidth: 1.2,
@@ -78,14 +79,14 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
             showTooltips: false,
           ),
         ),
-        icons: ImageEditorIcons(
+        icons: const ImageEditorIcons(
           layerInteraction: IconsLayerInteraction(
             remove: Icons.clear,
             edit: Icons.edit_outlined,
             rotateScale: Icons.sync,
           ),
         ),
-        i18n: I18n(
+        i18n: const I18n(
           layerInteraction: I18nLayerInteraction(
             remove: 'Remove',
             edit: 'Edit',

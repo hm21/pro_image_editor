@@ -54,6 +54,7 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                             onImageEditingComplete: onImageEditingComplete,
                             onCloseEditor: onCloseEditor,
                             configs: ProImageEditorConfigs(
+                              designMode: platformDesignMode,
                               imageEditorTheme: const ImageEditorTheme(
                                 background: Colors.white,
                               ),
@@ -102,6 +103,7 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                             onImageEditingComplete: onImageEditingComplete,
                             onCloseEditor: onCloseEditor,
                             configs: ProImageEditorConfigs(
+                              designMode: platformDesignMode,
                               imageEditorTheme: const ImageEditorTheme(
                                 background: Colors.white,
                               ),

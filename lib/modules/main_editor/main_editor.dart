@@ -42,7 +42,6 @@ import '../../widgets/extended/extended_mouse_cursor.dart';
 import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/loading_dialog.dart';
-import '../../widgets/pro_image_editor_desktop_mode.dart';
 import '../../widgets/screen_resize_detector.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import '../blur_editor/blur_editor.dart';
@@ -740,7 +739,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method is called during a scaling operation and updates the selected layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (_selectedLayerIndex < 0) {
-      if (imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+      if (isWhatsAppDesign) {
         _whatsAppHelper.filterShowHelper -= details.focalPointDelta.dy;
         _whatsAppHelper.filterShowHelper =
             max(0, min(120, _whatsAppHelper.filterShowHelper));
@@ -826,8 +825,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method is called when a scaling operation ends and resets helper lines and flags.
   void _onScaleEnd(ScaleEndDetails details) async {
-    if (_selectedLayerIndex < 0 &&
-        imageEditorTheme.editorMode == ThemeEditorMode.whatsapp) {
+    if (_selectedLayerIndex < 0 && isWhatsAppDesign) {
       _layerInteractionManager.showHelperLines = false;
 
       if (_swipeDirection != SwipeMode.none &&
@@ -1366,7 +1364,7 @@ class ProImageEditorState extends State<ProImageEditor>
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
 
     Layer? layer;
-    if (designMode == ImageEditorDesignModeE.material) {
+    if (isMaterial) {
       layer = await _openPage(WhatsAppStickerPage(
         configs: configs,
       ));
@@ -1829,7 +1827,7 @@ class ProImageEditorState extends State<ProImageEditor>
     return _selectedLayerIndex >= 0
         ? null
         : customWidgets.appBar ??
-            (imageEditorTheme.editorMode == ThemeEditorMode.simple
+            (!isWhatsAppDesign
                 ? AppBar(
                     automaticallyImplyLeading: false,
                     foregroundColor: imageEditorTheme.appBarForegroundColor,
@@ -1908,7 +1906,7 @@ class ProImageEditorState extends State<ProImageEditor>
           onScaleStart: _onScaleStart,
           onScaleUpdate: _onScaleUpdate,
           onScaleEnd: _onScaleEnd,
-          child: imageEditorTheme.editorMode == ThemeEditorMode.simple
+          child: !isWhatsAppDesign
               ? _buildInteractiveContent()
               : Stack(
                   alignment: Alignment.center,
@@ -1971,7 +1969,7 @@ class ProImageEditorState extends State<ProImageEditor>
         canUndo: canUndo,
         openEditor: _isEditorOpen,
       ),
-      if (designMode == ImageEditorDesignModeE.material)
+      if (isMaterial)
         WhatsAppFilterBtn(
           configs: configs,
           opacity: opacity,
@@ -2027,7 +2025,7 @@ class ProImageEditorState extends State<ProImageEditor>
     return _selectedLayerIndex >= 0
         ? null
         : customWidgets.bottomNavigationBar ??
-            (imageEditorTheme.editorMode == ThemeEditorMode.simple
+            (!isWhatsAppDesign
                 ? LayoutBuilder(builder: (context, constraints) {
                     return Theme(
                       data: _theme,

@@ -11,7 +11,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:pro_image_editor/models/i18n/i18n_emoji_editor.dart';
 import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_state_manager.dart';
-import '../../../widgets/pro_image_editor_desktop_mode.dart';
+import '../../../utils/pro_image_editor_mode.dart';
 import 'emoji_cell_extended.dart';
 
 class ProEmojiPickerView extends EmojiPickerView {

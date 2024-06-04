@@ -83,6 +83,12 @@ class CropRotateEditorTheme {
   /// and the designMode is set to Cupertino
   final Color whatsappCupertinoBottomBarColor;
 
+  /// The length of the crop corner.
+  final double cropCornerLength;
+
+  /// The thickness of the crop corner.
+  final double cropCornerThickness;
+
   /// Creates an instance of the `CropRotateEditorTheme` class with the specified theme properties.
   const CropRotateEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
@@ -96,5 +102,7 @@ class CropRotateEditorTheme {
     this.whatsappCupertinoBottomBarColor = const Color(0xFF303030),
     this.aspectRatioSheetBackgroundColor = const Color(0xFF303030),
     this.aspectRatioSheetForegroundColor = const Color(0xFFFAFAFA),
+    this.cropCornerLength = 36,
+    this.cropCornerThickness = 6,
   });
 }

@@ -18,7 +18,7 @@ import '../models/layer.dart';
 import '../modules/paint_editor/widgets/draw_painting.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
 import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
-import 'pro_image_editor_desktop_mode.dart';
+import '../utils/pro_image_editor_mode.dart';
 
 /// A widget representing a layer within a design canvas.
 class LayerWidget extends StatefulWidget with SimpleConfigsAccess {

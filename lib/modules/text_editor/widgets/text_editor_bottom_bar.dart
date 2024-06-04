@@ -38,25 +38,23 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
       return const SizedBox.shrink();
     }
 
-    return Positioned(
-      bottom: _isSimpleEditor ? 0 : _space,
-      left: 0,
-      right: 0,
-      height: _isSimpleEditor ? kBottomNavigationBarHeight : null,
-      child: Container(
-        color: _isSimpleEditor
-            ? widget
-                .configs.imageEditorTheme.textEditor.bottomBarBackgroundColor
-            : null,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints:
-                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: _buildIconBtns(),
-            ),
+    return Container(
+      color: _isSimpleEditor
+          ? widget.configs.imageEditorTheme.textEditor.bottomBarBackgroundColor
+          : null,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints:
+              BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+          child: Row(
+            mainAxisAlignment: widget.configs.imageEditorTheme.editorMode ==
+                        ThemeEditorMode.simple ||
+                    widget.configs.designMode ==
+                        ImageEditorDesignModeE.cupertino
+                ? MainAxisAlignment.spaceEvenly
+                : MainAxisAlignment.start,
+            children: _buildIconBtns(),
           ),
         ),
       ),
@@ -72,7 +70,7 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
         bool isSelected = selected.hashCode == items[index].hashCode;
 
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: _space / 2),
+          padding: EdgeInsets.symmetric(horizontal: _space),
           child: IconButton(
             onPressed: () => widget.onFontChange(items[index]),
             icon: Text(

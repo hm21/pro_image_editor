@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/utils/design_mode.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
+import 'package:pro_image_editor/utils/pro_image_editor_mode.dart';
 
 /// Represents the "Done" button for the WhatsApp theme.
 class WhatsAppDoneBtn extends StatefulWidget {
@@ -31,9 +31,12 @@ class WhatsAppDoneBtn extends StatefulWidget {
 }
 
 class _WhatsAppDoneBtnState extends State<WhatsAppDoneBtn> {
+  bool get isMaterial =>
+      widget.configs.designMode == ImageEditorDesignModeE.material;
+
   @override
   Widget build(BuildContext context) {
-    if (widget.configs.designMode == ImageEditorDesignModeE.material) {
+    if (isMaterial) {
       return _buildMaterialBtn();
     } else {
       return _buildCupertinoBtn();
@@ -48,10 +51,13 @@ class _WhatsAppDoneBtnState extends State<WhatsAppDoneBtn> {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         minimumSize: Size(0, isDesktop ? 40 : 33),
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        side: BorderSide(
-          width: 1,
-          color: widget.foregroundColor,
-        ),
+        side: isMaterial
+            ? const BorderSide(width: 0, color: Colors.transparent)
+            : BorderSide(
+                width: 1,
+                color: widget.foregroundColor,
+              ),
+        backgroundColor: isMaterial ? Colors.black38 : null,
       ),
       child: Text(widget.configs.i18n.done),
     );

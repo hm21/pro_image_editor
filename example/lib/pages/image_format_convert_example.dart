@@ -85,8 +85,9 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
         },
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+        imageGenerationConfigs: const ImageGeneratioConfigs(
           /// Choose the output format below
           outputFormat: OutputFormat.tiff,
           pngFilter: PngFilter.none,

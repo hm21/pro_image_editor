@@ -51,6 +51,9 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
             onImageEditingComplete: onImageEditingComplete,
             onCloseEditor: onCloseEditor,
           ),
+          configs: ProImageEditorConfigs(
+            designMode: platformDesignMode,
+          ),
         ),
         Positioned(
           bottom: 2 * kBottomNavigationBarHeight,

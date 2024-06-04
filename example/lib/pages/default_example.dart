@@ -164,6 +164,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+      ),
     );
   }
 
@@ -174,6 +177,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
+      ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
       ),
     );
   }
@@ -186,6 +192,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+      ),
     );
   }
 
@@ -196,6 +205,9 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
+      ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
       ),
     );
   }

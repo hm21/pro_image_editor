@@ -23,6 +23,7 @@ export 'models/import_export/utils/export_import_enum.dart';
 
 export 'models/aspect_ratio_item.dart';
 export 'utils/design_mode.dart';
+export 'utils/pro_image_editor_mode.dart';
 export 'modules/paint_editor/utils/paint_editor_enum.dart';
 export 'widgets/layer_widget.dart' show LayerBackgroundColorModeE;
 

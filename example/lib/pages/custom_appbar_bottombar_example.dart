@@ -14,7 +14,6 @@ import 'package:pro_image_editor/models/theme/theme_shared_values.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/flat_icon_text_button.dart';
 import 'package:pro_image_editor/widgets/loading_dialog.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 // Project imports:
 import '../utils/example_helper.dart';
@@ -156,21 +155,23 @@ class _CustomAppbarBottombarExampleState
           ),
         ),
         configs: ProImageEditorConfigs(
-            customWidgets: ImageEditorCustomWidgets(
-              appBar: _buildAppBar(),
-              appBarPaintingEditor: _appBarPaintingEditor(),
-              appBarTextEditor: _appBarTextEditor(),
-              appBarCropRotateEditor: _appBarCropRotateEditor(),
-              appBarFilterEditor: _appBarFilterEditor(),
-              appBarBlurEditor: _appBarBlurEditor(),
-              bottomNavigationBar: _bottomNavigationBar(constraints),
-              bottomBarPaintingEditor: _bottomBarPaintingEditor(constraints),
-              bottomBarTextEditor: _bottomBarTextEditor(constraints),
-              bottomBarCropRotateEditor: _bottomBarCropEditor(constraints),
-            ),
-            textEditorConfigs: TextEditorConfigs(
-              customTextStyles: _customTextStyles,
-            )),
+          designMode: platformDesignMode,
+          customWidgets: ImageEditorCustomWidgets(
+            appBar: _buildAppBar(),
+            appBarPaintingEditor: _appBarPaintingEditor(),
+            appBarTextEditor: _appBarTextEditor(),
+            appBarCropRotateEditor: _appBarCropRotateEditor(),
+            appBarFilterEditor: _appBarFilterEditor(),
+            appBarBlurEditor: _appBarBlurEditor(),
+            bottomNavigationBar: _bottomNavigationBar(constraints),
+            bottomBarPaintingEditor: _bottomBarPaintingEditor(constraints),
+            bottomBarTextEditor: _bottomBarTextEditor(constraints),
+            bottomBarCropRotateEditor: _bottomBarCropEditor(constraints),
+          ),
+          textEditorConfigs: TextEditorConfigs(
+            customTextStyles: _customTextStyles,
+          ),
+        ),
       );
     });
   }

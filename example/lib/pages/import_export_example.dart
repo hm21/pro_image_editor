@@ -50,6 +50,7 @@ class _ImportExportExampleState extends State<ImportExportExample>
             onCloseEditor: onCloseEditor,
           ),
           configs: ProImageEditorConfigs(
+            designMode: platformDesignMode,
             stateHistoryConfigs: StateHistoryConfigs(
               initStateHistory: ImportStateHistory.fromMap(
                 importHistoryDemoData,

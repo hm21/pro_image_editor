@@ -136,8 +136,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
         theme: ThemeData.dark(),
         enableFakeHero: true,
         convertToUint8List: true,
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+          imageGenerationConfigs: const ImageGeneratioConfigs(
 
               /// If your users paint a lot in a short time, you should disable this
               /// flag because it will overload the isolated thread which delay the final result
@@ -158,8 +159,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
       initConfigs: CropRotateEditorInitConfigs(
         theme: ThemeData.dark(),
         convertToUint8List: true,
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+          imageGenerationConfigs: const ImageGeneratioConfigs(
 
               /// If your users change a lot stuff in a short time, you should disable this
               /// flag because it will overload the isolated thread which delay the final result.
@@ -182,6 +184,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+        ),
       ),
     );
   }
@@ -195,6 +200,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+        ),
       ),
     );
   }
