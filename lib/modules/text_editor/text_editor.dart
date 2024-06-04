@@ -436,7 +436,7 @@ class TextEditorState extends State<TextEditor>
 
   /// Builds the body of the text editor.
   Widget _buildBody() {
-    double barPickerPadding = isWhatsAppDesign || !isMaterial ? 60 : 10;
+    double barPickerPadding = isWhatsAppDesign ? 60 : 10;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -448,8 +448,13 @@ class TextEditorState extends State<TextEditor>
             Align(
               alignment: Alignment.topRight,
               child: Container(
-                margin:
-                    isWhatsAppDesign ? const EdgeInsets.only(right: 16) : null,
+                margin: isWhatsAppDesign
+                    ? EdgeInsets.only(
+                        right: 16,
+                        top: barPickerPadding,
+                        bottom: barPickerPadding,
+                      )
+                    : null,
                 padding: EdgeInsets.symmetric(
                   vertical: barPickerPadding,
                 ),

@@ -41,7 +41,7 @@ class _WhatsTextBottomBarState extends State<WhatsTextBottomBar> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: _space,
+      bottom: _space + MediaQuery.of(context).viewPadding.bottom,
       left: _space,
       right: 0,
       height: 40,

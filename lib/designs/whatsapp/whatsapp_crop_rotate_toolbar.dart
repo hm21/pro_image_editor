@@ -135,27 +135,29 @@ class _WhatsAppAppbarState extends State<WhatsAppCropRotateToolbar> {
         Container(
           color: widget.configs.imageEditorTheme.cropRotateEditor
               .whatsappCupertinoBottomBarColor,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              CupertinoButton(
-                onPressed: widget.onCancel,
-                padding: padding,
-                child: Text(
-                  widget.configs.i18n.cropRotateEditor.cancel,
-                  style: style,
+          child: SafeArea(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CupertinoButton(
+                  onPressed: widget.onCancel,
+                  padding: padding,
+                  child: Text(
+                    widget.configs.i18n.cropRotateEditor.cancel,
+                    style: style,
+                  ),
                 ),
-              ),
-              CupertinoButton(
-                onPressed: widget.onDone,
-                padding: padding,
-                child: Text(
-                  widget.configs.i18n.cropRotateEditor.done,
-                  style: style.copyWith(fontWeight: FontWeight.w500),
+                CupertinoButton(
+                  onPressed: widget.onDone,
+                  padding: padding,
+                  child: Text(
+                    widget.configs.i18n.cropRotateEditor.done,
+                    style: style.copyWith(fontWeight: FontWeight.w500),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
