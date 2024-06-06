@@ -5,9 +5,9 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 
 
 #### **Breaking Changes:**
-- Change the layer initial offset position to the center of the screen, not the top left.
-- Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
 - Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
+- Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
+- Change the layer initial offset position to the center of the screen, not the top left.
 - Rename `ColorFilterGenerator` to `FilterModel`.
 - Changed the logic of overlaying multiple layers, which may produce different results than before.
 - Default `maxBlur` configuration is now 5.0 instead of 2.0.
