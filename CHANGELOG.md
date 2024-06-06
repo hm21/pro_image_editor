@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.2
+- **chore(example)**: also release example in pub.dev for pubpoints
+
 ## Version 3.0.1
 - **docs(preview-videos)**: update preview videos to version 3.0.0
 
