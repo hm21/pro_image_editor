@@ -1126,13 +1126,14 @@ class ProImageEditorState extends State<ProImageEditor>
           enableFakeHero: true,
           appliedBlurFactor: _stateManager.activeBlur,
           appliedFilters: _stateManager.activeFilters,
-          onDone: (transformConfigs) async {
+          onDone: (transformConfigs, fitToScreenFactor) async {
             List<Layer> updatedLayers = LayerTransformGenerator(
               layers: _stateManager.activeLayers,
               activeTransformConfigs: _stateManager.transformConfigs,
               newTransformConfigs: transformConfigs,
               layerDrawAreaSize: _sizesManager.bodySize,
               undoChanges: false,
+              fitToScreenFactor: fitToScreenFactor,
             ).updatedLayers;
 
             await _decodeImage(transformConfigs);
@@ -1938,7 +1939,7 @@ class ProImageEditorState extends State<ProImageEditor>
           fit: StackFit.expand,
           children: [
             /// Build Image
-            _buildImageWithFilter(),
+            _buildImage(),
 
             /// Build layer stack
             _buildLayers(),
@@ -2402,7 +2403,7 @@ class ProImageEditorState extends State<ProImageEditor>
         );
   }
 
-  Widget _buildImageWithFilter() {
+  Widget _buildImage() {
     return Container(
       padding: _selectedLayerIndex >= 0
           ? EdgeInsets.only(

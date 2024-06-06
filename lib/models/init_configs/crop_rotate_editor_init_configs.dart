@@ -2,9 +2,12 @@
 import '../crop_rotate_editor/transform_factors.dart';
 import 'editor_init_configs.dart';
 
+typedef CropRotateEditorDone = Function(
+    TransformConfigs transformations, double fitToScreenFactor);
+
 class CropRotateEditorInitConfigs extends EditorInitConfigs {
   /// A callback function called when editing is completed.
-  final Function(TransformConfigs)? onDone;
+  final CropRotateEditorDone? onDone;
 
   /// Determines whether we draw a "fake" hero widget or not.
   /// If this is set to `true` we need to hide the fake hero by ourself like below

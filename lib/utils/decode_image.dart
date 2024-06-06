@@ -20,7 +20,7 @@ Future<ImageInfos> decodeImageInfos({
   int w = decodedImage.width;
   int h = decodedImage.height;
 
-  if (configs != null && !configs.isEmpty) {
+  if (configs != null && configs.isNotEmpty) {
     w = w ~/ configs.scaleUser;
     h = h ~/ configs.scaleUser;
   }

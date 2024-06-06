@@ -236,8 +236,9 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                 offset: offset,
                 child: FilteredImage(
                   image: widget.editorImage,
-                  fit:
-                      !transformConfigs.isEmpty ? BoxFit.contain : BoxFit.cover,
+                  fit: transformConfigs.isNotEmpty
+                      ? BoxFit.contain
+                      : BoxFit.cover,
                   width: size.width,
                   height: size.height,
                   filters: [

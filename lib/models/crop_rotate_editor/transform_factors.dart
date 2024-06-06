@@ -81,6 +81,8 @@ class TransformConfigs {
         offset == const Offset(0, 0);
   }
 
+  bool get isNotEmpty => !isEmpty;
+
   double get scale => scaleUser * scaleRotation;
   bool get is90DegRotated {
     RotateAngleSide factor = getRotateAngleSide(angle);

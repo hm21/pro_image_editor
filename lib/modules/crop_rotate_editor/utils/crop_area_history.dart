@@ -111,7 +111,7 @@ mixin CropAreaHistory
   }
 
   /// Adds the current transformation to the history.
-  void addHistory({double? scale, double? angle}) {
+  void addHistory({double? scaleRotation, double? angle}) {
     if (!initialized) return;
     cleanForwardChanges();
     history.add(
@@ -121,7 +121,7 @@ mixin CropAreaHistory
         cropRect: cropRect,
         originalSize: originalSize,
         scaleUser: userScaleFactor,
-        scaleRotation: scale ?? scaleAnimation.value,
+        scaleRotation: scaleRotation ?? scaleAnimation.value,
         aspectRatio: aspectRatio,
         flipX: flipX,
         flipY: flipY,
@@ -129,6 +129,7 @@ mixin CropAreaHistory
       ),
     );
     screenshotHistoryPosition++;
+    setState(() {});
     takeScreenshot();
   }
 
@@ -239,7 +240,7 @@ mixin CropAreaHistory
     initialized = true;
     if (!skipAddHistory) {
       addHistory(
-        scale: 1,
+        scaleRotation: 1,
         angle: 0,
       );
     }

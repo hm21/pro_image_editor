@@ -24,7 +24,7 @@ class TransformHelper {
         ? mainImageSize.flipped
         : mainImageSize;
     double? cropRectRatio =
-        transformConfigs != null && !transformConfigs!.isEmpty
+        transformConfigs != null && transformConfigs!.isNotEmpty
             ? transformConfigs?.cropRect.size.aspectRatio
             : null;
     if (transformConfigs?.is90DegRotated == true) {

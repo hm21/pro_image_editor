@@ -355,6 +355,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   @override
   void initState() {
     super.initState();
+
     // Initialize debouncers
     _onScaleEndDebounce = Debounce(const Duration(milliseconds: 10));
     _onScaleAllowUpdateDebounce = Debounce(const Duration(milliseconds: 1));
@@ -374,13 +375,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _imageNeedDecode = mainImageSize == null;
     _imageSizeIsDecoded = !_imageNeedDecode;
     _layers = initConfigs.layers ?? [];
-    _rawLayers = LayerTransformGenerator(
-      layers: _layers,
-      activeTransformConfigs: _fakeHeroTransformConfigs,
-      newTransformConfigs: TransformConfigs.empty(),
-      layerDrawAreaSize: mainBodySize ?? Size.zero,
-      undoChanges: true,
-    ).updatedLayers;
+    _setRawLayers();
 
     // Initialize rotate animation
     double initAngle = transformConfigs?.angle ?? 0.0;
@@ -388,14 +383,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     rotateCtrl.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        /* var tempZoom = aspectRatioZoomHelper;
-        calcAspectRatioZoomHelper();
-        if (tempZoom != aspectRatioZoomHelper) {
-          userZoom *= tempZoom / aspectRatioZoomHelper;
-          _setOffsetLimits();
-        } */
         if (_blockInteraction) {
-          addHistory();
+          addHistory(scaleRotation: oldScaleFactor);
         }
         _blockInteraction = false;
         cropRotateEditorCallbacks?.handleRotateEnd(rotateAnimation.value);
@@ -421,7 +410,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
 
     // Initialize transform configs if available
-    if (transformConfigs != null && !transformConfigs!.isEmpty) {
+    if (transformConfigs != null && transformConfigs!.isNotEmpty) {
       rotationCount = (transformConfigs!.angle * 2 / pi).abs().toInt();
       flipX = transformConfigs!.flipX;
       flipY = transformConfigs!.flipY;
@@ -444,7 +433,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initialized = true;
       if (transformConfigs != null &&
-          !transformConfigs!.isEmpty &&
+          transformConfigs!.isNotEmpty &&
           transformConfigs!.aspectRatio < 0) {
         aspectRatio = transformConfigs!.cropRect.size.aspectRatio;
         calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
@@ -455,6 +444,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       if (!enableFakeHero) hideFakeHero();
       _updateAllStates();
+      _setRawLayers();
 
       /// Skip one frame to ensure the image is correctly transformed
       Size? originalSize = transformConfigs?.originalSize;
@@ -482,6 +472,29 @@ class CropRotateEditorState extends State<CropRotateEditor>
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
   }
+
+  void _setRawLayers({bool refit = false}) {
+    if (refit) calcFitToScreen(animated: false);
+    _rawLayers = LayerTransformGenerator(
+      layers: _layers,
+      activeTransformConfigs: _fakeHeroTransformConfigs,
+      newTransformConfigs: TransformConfigs.empty(),
+      layerDrawAreaSize: originalSize.isInfinite || originalSize.isEmpty
+          ? mainBodySize ?? Size.zero
+          : originalSize,
+      undoChanges: true,
+      fitToScreenFactor: _transformHelperScale,
+      transformHelperScale: _transformHelperScale,
+    ).updatedLayers;
+  }
+
+  double get _transformHelperScale => originalSize.isEmpty
+      ? 1
+      : TransformHelper(
+          mainBodySize: (mainBodySize ?? editorBodySize),
+          mainImageSize: _mainImageSize,
+          editorBodySize: originalSize,
+        ).scale;
 
   void _updateAllStates() {
     userScaleKey.currentState?.setScale(userScaleFactor);
@@ -638,12 +651,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
         activeTransformConfigs:
             initConfigs.transformConfigs ?? TransformConfigs.empty(),
         newTransformConfigs: transformC,
-        layerDrawAreaSize: mainBodySize ?? editorBodySize,
+        layerDrawAreaSize: originalSize,
+        fitToScreenFactor: _transformHelperScale,
         undoChanges: false,
       ).updatedLayers;
       _layers = updatedLayers;
       _updateAllStates();
-      await initConfigs.onDone?.call(transformC);
+      await initConfigs.onDone?.call(transformC, _transformHelperScale);
       if (mounted) Navigator.pop(context, transformC);
     } else {
       LoadingDialog loading = LoadingDialog();
@@ -769,7 +783,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
   calcFitToScreen({
     Curve? curve,
     Size? imageSize,
+    bool animated = true,
   }) {
+    if (!animated) scaleCtrl.duration = Duration.zero;
     Size contentSize = Size(
       editorBodySize.width - _screenPadding * 2,
       editorBodySize.height - _screenPadding * 2,
@@ -824,6 +840,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
     } else {
       _rotationScaleFactor = 1;
     }
+
+    if (!animated) {
+      scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
+    }
   }
 
   void _setCropRectBoundings({
@@ -854,9 +874,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       calcCropRect(newRatio: 1 / ratio);
 
       /// Fit to the screen and set duration to zero
-      scaleCtrl.duration = Duration.zero;
-      calcFitToScreen();
-      scaleCtrl.duration = cropRotateEditorConfigs.animationDuration;
+      calcFitToScreen(animated: false);
 
       double scaleFactor = fitToHeight
           ? cropRect.height / oldSize.height
@@ -897,7 +915,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
         calcCropRect();
         calcFitToScreen();
-        addHistory(scale: oldScaleFactor, angle: 0);
+        addHistory(scaleRotation: oldScaleFactor, angle: 0);
         _updateAllStates();
       }
     });
@@ -2228,9 +2246,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   clipBehavior: Clip.hardEdge,
                   child: LayerStack(
                     transformHelper: TransformHelper(
-                      mainBodySize: (mainBodySize ?? editorBodySize),
-                      mainImageSize: _mainImageSize,
-                      editorBodySize: _renderedImgConstraints.biggest,
+                      /// set size to zero that no scale factor will be applied
+                      mainBodySize: Size.zero,
+                      mainImageSize: Size.zero,
+                      editorBodySize: originalSize,
                     ),
                     configs: configs,
                     layers: _rawLayers,
