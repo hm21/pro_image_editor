@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
 
-      - name: Install dependencies
+      - name: Install Package Dependencies
         run: flutter pub get
 
       - name: format code
