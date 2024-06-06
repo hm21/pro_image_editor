@@ -1,5 +1,3 @@
-<h1>pro_image_editor</h1>
-
 <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/logo.jpg?raw=true" alt="Logo" />
 
 <p>

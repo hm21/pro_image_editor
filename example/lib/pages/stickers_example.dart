@@ -65,7 +65,7 @@ class _StickersExampleState extends State<StickersExample>
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 150,
+                  maxCrossAxisExtent: 80,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
                 ),
@@ -126,15 +126,15 @@ class StickerState extends State<Sticker> {
       borderRadius: BorderRadius.circular(7),
       child: Image.network(
         'https://picsum.photos/id/${(widget.index + 3) * 3}/2000',
-        width: 120,
-        height: 120,
+        width: 80,
+        height: 80,
         fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           return AnimatedSwitcher(
             layoutBuilder: (currentChild, previousChildren) {
               return SizedBox(
-                width: 120,
-                height: 120,
+                width: 80,
+                height: 80,
                 child: Stack(
                   fit: StackFit.expand,
                   alignment: Alignment.center,

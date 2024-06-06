@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.1
+- **docs(preview-videos)**: update preview videos to version 3.0.0
+
 ## Version 3.0.0 New Crop-Rotate-Editor
 Replace the existing crop-rotate editor, which depended on the `extended_image` and `image_editor` package, with a new solution that doesn't depend on this packages.
 
