@@ -54,10 +54,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/blur-editor.gif?raw=true" alt="Blur-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/blur-editor.gif?raw=true" alt="Blur-Editor" />
       </td>
     </tr>
   </tbody>
@@ -72,10 +72,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/paint-editor.gif?raw=true" alt="Paint-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/text-editor.gif?raw=true" alt="Text-Editor" />
       </td>
     </tr>
   </tbody>
@@ -90,10 +90,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
    <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true" alt="Filter-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/filter-editor.gif?raw=true" alt="Filter-Editor" />
       </td>
     </tr>
   </tbody>
@@ -109,10 +109,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
       </td>
     </tr>
   </tbody>

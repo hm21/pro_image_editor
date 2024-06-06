@@ -16,9 +16,9 @@ topics:
 
 screenshots:
   - description: "Showcase from the image editor with the Whatsapp design"
-    path: assets/showcase-whatsapp.png
+    path: assets/showcase-whatsapp.jpg
   - description: "Showcase from the image editor with simple design"
-    path: assets/showcase.png
+    path: assets/showcase.jpg
 
 platforms:
   android:
