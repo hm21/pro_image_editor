@@ -5,15 +5,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/theme/theme.dart';
-import 'package:pro_image_editor/modules/filter_editor/widgets/filtered_image.dart';
-import 'package:pro_image_editor/utils/pro_image_editor_mode.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
+import '../../../models/editor_configs/pro_image_editor_configs.dart';
 import '../../../models/editor_image.dart';
 import '../types/filter_matrix.dart';
 import '../utils/filter_generator/filter_model.dart';
 import '../utils/filter_generator/filter_presets.dart';
+import 'filtered_image.dart';
 
 class FilterEditorItemList extends StatefulWidget {
   /// The EditorImage class represents an image with multiple sources,

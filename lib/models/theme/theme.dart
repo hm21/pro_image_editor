@@ -31,6 +31,7 @@ export 'theme_adaptive_dialog.dart';
 export 'theme_editor_mode.dart';
 export 'theme_sub_editor_page.dart';
 export 'theme_layer_interaction.dart';
+export 'theme_shared_values.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor components

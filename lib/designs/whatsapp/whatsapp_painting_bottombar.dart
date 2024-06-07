@@ -1,8 +1,8 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/whatsapp/whatsapp_color_picker.dart';
 
 // Project imports:
+import 'package:pro_image_editor/designs/whatsapp/whatsapp_color_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 /// Represents the bottom bar for the paint functionality in the WhatsApp theme.

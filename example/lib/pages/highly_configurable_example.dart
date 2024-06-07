@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 // Package imports:
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 // Project imports:
 import '../utils/example_constants.dart';
@@ -327,7 +326,7 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
           canToggleBackgroundMode: true,
           initFontSize: 24.0,
           initialTextAlign: TextAlign.center,
-          initialBackgroundColorMode: LayerBackgroundColorModeE.background,
+          initialBackgroundColorMode: LayerBackgroundMode.background,
           customTextStyles: [
             GoogleFonts.roboto(),
             GoogleFonts.averiaLibre(),

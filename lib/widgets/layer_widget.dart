@@ -14,11 +14,10 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 import 'package:pro_image_editor/utils/theme_functions.dart';
 import '../mixins/converted_configs.dart';
 import '../mixins/editor_configs_mixin.dart';
-import '../models/layer.dart';
-import '../modules/paint_editor/widgets/draw_painting.dart';
+import '../models/layer/layer.dart';
 import '../modules/paint_editor/utils/paint_editor_enum.dart';
+import '../modules/paint_editor/widgets/draw_painting.dart';
 import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
-import '../utils/pro_image_editor_mode.dart';
 
 /// A widget representing a layer within a design canvas.
 class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
@@ -399,11 +398,3 @@ class _LayerWidgetState extends State<LayerWidget>
 
 // ignore: camel_case_types
 enum _LayerType { emoji, text, sticker, canvas, unknown }
-
-/// Enumeration for controlling the background color mode of the text layer.
-enum LayerBackgroundColorModeE {
-  background,
-  backgroundAndColor,
-  backgroundAndColorWithOpacity,
-  onlyColor,
-}

@@ -6,17 +6,13 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
-import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/editor_image.dart';
 import '../models/init_configs/editor_init_configs.dart';
-import '../models/layer.dart';
 import '../models/multi_threading/thread_capture_model.dart';
 import '../modules/filter_editor/types/filter_matrix.dart';
 import '../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../utils/decode_image.dart';
-import '../widgets/loading_dialog.dart';
 import 'converted_configs.dart';
 
 /// A mixin providing access to standalone editor configurations and image.

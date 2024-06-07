@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
 import 'package:pro_image_editor/modules/filter_editor/widgets/filtered_image.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../fake/fake_image.dart';

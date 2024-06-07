@@ -17,25 +17,19 @@ import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_area_hist
 import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/debounce.dart';
-import 'package:pro_image_editor/utils/decode_image.dart';
 import 'package:pro_image_editor/widgets/extended/extended_transform_scale.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
-import 'package:pro_image_editor/widgets/platform_circular_progress_indicator.dart';
 import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../models/editor_image.dart';
-import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
-import '../../models/layer.dart';
 import '../../models/transform_helper.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../widgets/extended/extended_custom_paint.dart';
 import '../../widgets/extended/extended_mouse_cursor.dart';
 import '../../widgets/extended/extended_transform_translate.dart';
-import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/outside_gestures/outside_gesture_behavior.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
@@ -44,8 +38,9 @@ import 'utils/crop_area_part.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/crop_desktop_interaction_manager.dart';
 import 'utils/rotate_angle.dart';
-import 'widgets/crop_aspect_ratio_options.dart';
 import 'widgets/crop_corner_painter.dart';
+
+export 'widgets/crop_aspect_ratio_options.dart';
 
 /// The `CropRotateEditor` widget allows users to editing images with crop, flip and rotate tools.
 ///

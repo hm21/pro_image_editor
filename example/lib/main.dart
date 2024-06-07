@@ -1,29 +1,29 @@
 // Flutter imports:
-import 'package:example/pages/generation_configs_example.dart';
-import 'package:example/pages/signature_drawing_example.dart';
-import 'package:example/pages/standalone_example.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Project imports:
-import 'package:example/pages/firebase_supabase_example.dart';
-import 'package:example/pages/import_export_example.dart';
-import 'package:example/pages/pick_image_example.dart';
-import 'package:example/pages/selectable_layer_example.dart';
-import 'package:example/utils/example_constants.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '/utils/example_constants.dart';
+import '/pages/firebase_supabase_example.dart';
+import '/pages/import_export_example.dart';
+import '/pages/pick_image_example.dart';
+import '/pages/selectable_layer_example.dart';
 import 'pages/custom_appbar_bottombar_example.dart';
 import 'pages/default_example.dart';
+import 'pages/generation_configs_example.dart';
 import 'pages/google_font_example.dart';
 import 'pages/highly_configurable_example.dart';
 import 'pages/image_format_convert_example.dart';
 import 'pages/movable_background_image.dart';
 import 'pages/reorder_layer_example.dart';
 import 'pages/round_cropper_example.dart';
+import 'pages/signature_drawing_example.dart';
+import 'pages/standalone_example.dart';
 import 'pages/stickers_example.dart';
 import 'pages/whatsapp_example.dart';
 

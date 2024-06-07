@@ -3,8 +3,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/layer.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:

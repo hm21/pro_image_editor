@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:

@@ -1,11 +1,11 @@
 // Flutter imports:
 
 // Project imports:
-import 'main_editor_callbacks.dart';
 import 'blur_editor_callbacks.dart';
 import 'crop_rotate_editor_callbacks.dart';
 import 'editor_callbacks_typedef.dart';
 import 'filter_editor_callbacks.dart';
+import 'main_editor_callbacks.dart';
 import 'paint_editor_callbacks.dart';
 import 'text_editor_callbacks.dart';
 

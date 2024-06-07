@@ -2,7 +2,7 @@
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import '../../widgets/layer_widget.dart';
+import '../layer/layer_background_mode.dart';
 
 /// Configuration options for a text editor.
 ///
@@ -48,7 +48,7 @@ class TextEditorConfigs {
   final double minFontScale;
 
   /// The initial background color mode for the layer.
-  final LayerBackgroundColorModeE initialBackgroundColorMode;
+  final LayerBackgroundMode initialBackgroundColorMode;
 
   /// Allow users to select a different font style
   final List<TextStyle>? customTextStyles;
@@ -68,7 +68,6 @@ class TextEditorConfigs {
     this.maxFontScale = 3.0,
     this.minFontScale = 0.3,
     this.customTextStyles,
-    this.initialBackgroundColorMode =
-        LayerBackgroundColorModeE.backgroundAndColor,
+    this.initialBackgroundColorMode = LayerBackgroundMode.backgroundAndColor,
   }) : assert(initFontSize > 0, 'initFontSize must be positive');
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import '../models/editor_configs/pro_image_editor_configs.dart';
-import '../models/layer.dart';
+import '../models/layer/layer.dart';
 import '../models/transform_helper.dart';
 import '../widgets/layer_widget.dart';
 

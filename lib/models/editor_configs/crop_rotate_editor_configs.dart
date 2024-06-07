@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Project imports:
-import '../aspect_ratio_item.dart';
+import '../crop_rotate_editor/aspect_ratio_item.dart';
 import '../crop_rotate_editor/rotate_direction.dart';
 
 export '../crop_rotate_editor/rotate_direction.dart';

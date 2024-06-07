@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
-import '../../models/layer.dart';
 
 /// The `StickerEditor` class is responsible for creating a widget that allows users to select emojis.
 ///

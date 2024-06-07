@@ -1,12 +1,11 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 
 // Project imports:
+import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
-import '../../models/layer.dart';
 import 'layer_interaction_border_painter.dart';
 import 'layer_interaction_button.dart';
 

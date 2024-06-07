@@ -8,10 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/blur_editor/blur_editor.dart';
 import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
-import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
-import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
 import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/layer_widget.dart';

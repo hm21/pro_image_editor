@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/theme_functions.dart';
-import 'platform_circular_progress_indicator.dart';
 
 class LoadingDialog {
   String _msg = '';

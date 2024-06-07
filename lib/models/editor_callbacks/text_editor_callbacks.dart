@@ -2,7 +2,7 @@
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import 'package:pro_image_editor/widgets/layer_widget.dart';
+import '../layer/layer_background_mode.dart';
 import 'standalone_editor_callbacks.dart';
 
 /// A class representing callbacks for the text editor.
@@ -49,7 +49,7 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// This field holds a function that will be called when the background mode is changed.
   /// The function takes a single parameter of type [LayerBackgroundColorModeE], which represents the new background mode.
-  final ValueChanged<LayerBackgroundColorModeE>? onBackgroundModeChanged;
+  final ValueChanged<LayerBackgroundMode>? onBackgroundModeChanged;
 
   /// Creates a new instance of [TextEditorCallbacks].
   const TextEditorCallbacks({
@@ -122,7 +122,7 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// This method calls the [onBackgroundModeChanged] callback with the provided [newMode]
   /// and then calls [handleUpdateUI].
-  void handleBackgroundModeChanged(LayerBackgroundColorModeE newMode) {
+  void handleBackgroundModeChanged(LayerBackgroundMode newMode) {
     onBackgroundModeChanged?.call(newMode);
     handleUpdateUI();
   }

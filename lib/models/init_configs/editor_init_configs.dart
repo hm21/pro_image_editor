@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 import '../../pro_image_editor.dart';
 import '../crop_rotate_editor/transform_factors.dart';
-import '../layer.dart';
 
 /// Configuration class for initializing the image editor.
 ///

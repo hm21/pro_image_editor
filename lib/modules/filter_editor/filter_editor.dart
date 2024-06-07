@@ -22,6 +22,10 @@ import 'types/filter_matrix.dart';
 import 'widgets/filter_editor_item_list.dart';
 import 'widgets/filtered_image.dart';
 
+export 'utils/filter_generator/filter_presets.dart';
+export 'utils/filter_generator/filter_model.dart';
+export 'utils/filter_generator/filter_addons.dart';
+
 /// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
 /// You can create a `FilterEditor` using one of the factory methods provided:

@@ -4,6 +4,7 @@ import 'dart:io';
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 
+// Project imports:
 import 'design_mode.dart';
 
 /// Checks if the app is running on a desktop platform.

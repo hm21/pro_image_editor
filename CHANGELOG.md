@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.3
+- **fix(done-editing)**: allow users to continue editing after pressing done if the image-editor doesn't close
+
 ## Version 3.0.2
 - **chore(example)**: also release example in pub.dev for pubpoints
 

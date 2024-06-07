@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 // Project imports:
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/history/state_history.dart';
-import '../../../models/layer.dart';
+import '../../../models/layer/layer.dart';
 import '../../../models/multi_threading/thread_capture_model.dart';
 import '../../filter_editor/types/filter_matrix.dart';
 

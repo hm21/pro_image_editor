@@ -30,6 +30,14 @@ export 'blur_editor_configs.dart';
 export 'crop_rotate_editor_configs.dart';
 export 'emoji_editor_configs.dart';
 export 'filter_editor_configs.dart';
+export '../i18n/i18n.dart';
+export '../icons/icons.dart';
+export '../theme/theme.dart';
+export '../custom_widgets.dart';
+export '../crop_rotate_editor/aspect_ratio_item.dart';
+export '../../utils/design_mode.dart';
+export '../../utils/pro_image_editor_mode.dart';
+export '../layer/layer_background_mode.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {

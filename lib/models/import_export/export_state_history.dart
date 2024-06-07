@@ -13,7 +13,7 @@ import 'package:pro_image_editor/models/import_export/utils/export_import_enum.d
 import 'package:pro_image_editor/utils/decode_image.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../history/state_history.dart';
-import '../layer.dart';
+import '../layer/layer.dart';
 import 'export_state_history_configs.dart';
 import 'utils/export_import_version.dart';
 

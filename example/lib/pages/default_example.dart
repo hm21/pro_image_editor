@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:file_picker/file_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 // Project imports:
 import '../utils/example_constants.dart';

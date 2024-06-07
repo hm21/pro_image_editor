@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import '../utils/unique_id_generator.dart';
-import '../widgets/layer_widget.dart';
-import 'paint_editor/painted_model.dart';
+import '../../utils/unique_id_generator.dart';
+import '../paint_editor/painted_model.dart';
+import 'layer_background_mode.dart';
 
 /// Represents a layer with common properties for widgets.
 class Layer {
@@ -70,7 +70,7 @@ class Layer {
           rotation: layer.rotation,
           scale: layer.scale,
           text: map['text'] ?? '-',
-          colorMode: LayerBackgroundColorModeE.values
+          colorMode: LayerBackgroundMode.values
               .firstWhere((element) => element.name == map['colorMode']),
           color: Color(map['color']),
           background: Color(map['background']),
@@ -153,7 +153,7 @@ class TextLayerData extends Layer {
   String text;
 
   /// The color mode for the text.
-  LayerBackgroundColorModeE? colorMode;
+  LayerBackgroundMode? colorMode;
 
   /// The text color.
   Color color;
@@ -206,7 +206,7 @@ class TextLayerData extends Layer {
     return {
       ...super.toMap(),
       'text': text,
-      'colorMode': LayerBackgroundColorModeE.values[colorMode?.index ?? 0].name,
+      'colorMode': LayerBackgroundMode.values[colorMode?.index ?? 0].name,
       'color': color.value,
       'background': background.value,
       'colorPickerPosition': colorPickerPosition ?? 0,

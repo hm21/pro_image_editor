@@ -1,5 +1,6 @@
-import 'package:flutter/widgets.dart';
+// Flutter imports:
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 /// [ExtendedMouseRegion] is a stateful widget that allows you to handle
 /// mouse events and update the mouse cursor without rebuilding the child widget.

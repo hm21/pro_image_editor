@@ -3,9 +3,9 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
 
 // Project imports:
+import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
 import '../../../models/paint_editor/painted_model.dart';
 import '../utils/paint_controller.dart';
 import '../utils/paint_editor_enum.dart';

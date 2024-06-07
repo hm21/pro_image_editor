@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 // Project imports:
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 import 'package:pro_image_editor/models/import_export/import_state_history_configs.dart';
-import 'package:pro_image_editor/models/layer.dart';
+import 'package:pro_image_editor/models/layer/layer.dart';
 import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_addons.dart';
 import '../history/state_history.dart';
 import 'utils/export_import_version.dart';

@@ -5,11 +5,11 @@ import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:intl/intl.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/utils/decode_image.dart';
 import 'package:mime/mime.dart';
-import 'package:pro_image_editor/widgets/platform_circular_progress_indicator.dart';
 
 import '../utils/pixel_transparent_painter.dart';
 

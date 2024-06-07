@@ -13,10 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/flat_icon_text_button.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 // Project imports:
 import '../utils/example_helper.dart';

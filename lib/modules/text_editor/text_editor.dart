@@ -14,7 +14,6 @@ import 'package:pro_image_editor/mixins/converted_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../designs/whatsapp/whatsapp_text_bottombar.dart';
 import '../../mixins/editor_configs_mixin.dart';
-import '../../models/layer.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/bottom_sheets_header_row.dart';
 import '../../widgets/color_picker/bar_color_picker.dart';
@@ -65,7 +64,7 @@ class TextEditorState extends State<TextEditor>
   final FocusNode _focus = FocusNode();
   Color _primaryColor = Colors.black;
   late TextAlign align;
-  late LayerBackgroundColorModeE backgroundColorMode;
+  late LayerBackgroundMode backgroundColorMode;
   late double fontScale;
   late TextStyle selectedTextStyle;
   int _numLines = 0;
@@ -99,10 +98,9 @@ class TextEditorState extends State<TextEditor>
       align = widget.layer!.align;
       fontScale = widget.layer!.fontScale;
       backgroundColorMode = widget.layer!.colorMode!;
-      _primaryColor =
-          backgroundColorMode == LayerBackgroundColorModeE.background
-              ? widget.layer!.background
-              : widget.layer!.color;
+      _primaryColor = backgroundColorMode == LayerBackgroundMode.background
+          ? widget.layer!.background
+          : widget.layer!.color;
       _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       _colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
@@ -127,22 +125,22 @@ class TextEditorState extends State<TextEditor>
 
   /// Gets the text color based on the selected color mode.
   Color get _getTextColor {
-    return backgroundColorMode == LayerBackgroundColorModeE.onlyColor
+    return backgroundColorMode == LayerBackgroundMode.onlyColor
         ? _primaryColor
-        : backgroundColorMode == LayerBackgroundColorModeE.backgroundAndColor
+        : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
             ? _primaryColor
-            : backgroundColorMode == LayerBackgroundColorModeE.background
+            : backgroundColorMode == LayerBackgroundMode.background
                 ? _getContrastColor(_primaryColor)
                 : _primaryColor;
   }
 
   /// Gets the background color based on the selected color mode.
   Color get _getBackgroundColor {
-    return backgroundColorMode == LayerBackgroundColorModeE.onlyColor
+    return backgroundColorMode == LayerBackgroundMode.onlyColor
         ? Colors.transparent
-        : backgroundColorMode == LayerBackgroundColorModeE.backgroundAndColor
+        : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
             ? _getContrastColor(_primaryColor)
-            : backgroundColorMode == LayerBackgroundColorModeE.background
+            : backgroundColorMode == LayerBackgroundMode.background
                 ? _primaryColor
                 : _getContrastColor(_primaryColor).withOpacity(0.5);
   }
@@ -167,14 +165,13 @@ class TextEditorState extends State<TextEditor>
   /// Toggles the background mode between various color modes.
   void toggleBackgroundMode() {
     setState(() {
-      backgroundColorMode = backgroundColorMode ==
-              LayerBackgroundColorModeE.onlyColor
-          ? LayerBackgroundColorModeE.backgroundAndColor
-          : backgroundColorMode == LayerBackgroundColorModeE.backgroundAndColor
-              ? LayerBackgroundColorModeE.background
-              : backgroundColorMode == LayerBackgroundColorModeE.background
-                  ? LayerBackgroundColorModeE.backgroundAndColorWithOpacity
-                  : LayerBackgroundColorModeE.onlyColor;
+      backgroundColorMode = backgroundColorMode == LayerBackgroundMode.onlyColor
+          ? LayerBackgroundMode.backgroundAndColor
+          : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
+              ? LayerBackgroundMode.background
+              : backgroundColorMode == LayerBackgroundMode.background
+                  ? LayerBackgroundMode.backgroundAndColorWithOpacity
+                  : LayerBackgroundMode.onlyColor;
     });
     textEditorCallbacks?.handleBackgroundModeChanged(backgroundColorMode);
   }

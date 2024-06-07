@@ -2,7 +2,7 @@
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import '../layer.dart';
+import '../layer/layer.dart';
 import 'standalone_editor_callbacks.dart';
 import 'utils/sub_editors_name.dart';
 

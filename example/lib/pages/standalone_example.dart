@@ -2,11 +2,6 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/blur_editor/blur_editor.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
-import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
-import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
