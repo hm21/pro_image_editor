@@ -25,33 +25,24 @@ import '../../models/history/last_layer_interaction_position.dart';
 import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/import_export/utils/export_import_version.dart';
-import '../../models/init_configs/crop_rotate_editor_init_configs.dart';
-import '../../models/layer.dart';
 import '../../models/theme/theme_dragable_sheet.dart';
 import '../../plugins/defer_pointer/defer_pointer.dart';
 import '../../pro_image_editor.dart';
 import '../../utils/constants.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
 import '../../utils/debounce.dart';
-import '../../utils/decode_image.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../utils/swipe_mode.dart';
 import '../../widgets/adaptive_dialog.dart';
 import '../../widgets/auto_image.dart';
 import '../../widgets/extended/extended_mouse_cursor.dart';
-import '../../widgets/flat_icon_text_button.dart';
 import '../../widgets/layer_widget.dart';
-import '../../widgets/loading_dialog.dart';
 import '../../widgets/screen_resize_detector.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import '../blur_editor/blur_editor.dart';
-import '../crop_rotate_editor/crop_rotate_editor.dart';
 import '../emoji_editor/emoji_editor.dart';
-import '../filter_editor/filter_editor.dart';
 import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_editor_item_list.dart';
 import '../filter_editor/widgets/filtered_image.dart';
-import '../paint_editor/paint_editor.dart';
 import '../sticker_editor/sticker_editor.dart';
 import '../text_editor/text_editor.dart';
 import 'utils/desktop_interaction_manager.dart';
@@ -351,7 +342,7 @@ class ProImageEditorState extends State<ProImageEditor>
   bool _imageNeedDecode = true;
 
   /// Flag to track if editing is completed.
-  bool _doneEditing = false;
+  bool _processFinalImage = false;
 
   /// The pixel ratio of the device's screen.
   ImageInfos? _imageInfos;
@@ -1503,7 +1494,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Before returning the edited image, a loading dialog is displayed to indicate that the operation
   /// is in progress.
   void doneEditing() async {
-    if (_doneEditing) return;
+    if (_processFinalImage) return;
     if (_stateManager.position <= 0 && activeLayers.isEmpty) {
       if (!imageGenerationConfigs.allowEmptyEditCompletion) {
         return closeEditor();
@@ -1513,7 +1504,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     /// Hide every unnessacary element that Screenshot Controller will capture a correct image.
     setState(() {
-      _doneEditing = true;
+      _processFinalImage = true;
       _layerInteractionManager.selectedLayerId = '';
     });
 
@@ -1546,6 +1537,9 @@ class ProImageEditorState extends State<ProImageEditor>
       if (mounted) loading.hide(context);
 
       onCloseEditor?.call();
+
+      /// Allow users to continue editing if they didn't close the editor.
+      setState(() => _processFinalImage = false);
     });
   }
 
@@ -1773,9 +1767,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
     return Constants(
       child: PopScope(
-        canPop: _stateManager.position <= 0 || _doneEditing,
+        canPop: _stateManager.position <= 0 || _processFinalImage,
         onPopInvoked: (didPop) {
-          if (_stateManager.position > 0 && !_doneEditing) {
+          if (_stateManager.position > 0 && !_processFinalImage) {
             closeWarning();
           }
         },
@@ -1944,7 +1938,7 @@ class ProImageEditorState extends State<ProImageEditor>
             _buildLayers(),
 
             /// Build helper stuff
-            if (!_doneEditing) ...[
+            if (!_processFinalImage) ...[
               _buildHelperLines(),
               if (_selectedLayerIndex >= 0) _buildRemoveIcon(),
             ],
