@@ -13,12 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: 3.22.0
 
       - name: Install Package Dependencies
         run: flutter pub get
-
-      - name: format code
-        run: flutter format .
 
       - name: analyze code
         run: flutter analyze .

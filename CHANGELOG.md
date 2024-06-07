@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.4
+- **feat(hero)**: enable hero animation when opening the editor
+
 ## Version 3.0.3
 - **fix(done-editing)**: allow users to continue editing after pressing done if the image-editor doesn't close
 

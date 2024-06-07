@@ -2404,7 +2404,7 @@ class ProImageEditorState extends State<ProImageEditor>
               bottom: _sizesManager.bottomBarHeight)
           : EdgeInsets.zero,
       child: Hero(
-        tag: !_inited ? '--' : heroTag,
+        tag: heroTag,
         createRectTween: (begin, end) => RectTween(begin: begin, end: end),
         child: !_inited
             ? AutoImage(
