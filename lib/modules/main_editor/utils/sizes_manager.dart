@@ -21,7 +21,24 @@ class SizesManager {
   SizesManager({
     required this.context,
     required this.configs,
-  });
+  }) {
+    appBarHeight = configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+        ? kToolbarHeight
+        : 0;
+    bottomBarHeight =
+        configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
+            ? kBottomNavigationBarHeight
+            : 0;
+  }
+
+  /// Returns the height of the app bar.
+  double appBarHeight = kToolbarHeight;
+
+  /// Returns the height of the bottom bar.
+  double bottomBarHeight = kBottomNavigationBarHeight;
+
+  /// Returns the total height of all toolbars.
+  double get allToolbarHeight => appBarHeight + bottomBarHeight;
 
   /// Getter for the screen size of the device.
   Size get screen => MediaQuery.of(context).size;
@@ -41,21 +58,6 @@ class SizesManager {
       screenPadding.top -
       screenPadding.bottom -
       allToolbarHeight;
-
-  /// Returns the total height of all toolbars.
-  double get allToolbarHeight => appBarHeight + bottomBarHeight;
-
-  /// Returns the height of the app bar.
-  double get appBarHeight =>
-      configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
-          ? kToolbarHeight
-          : 0;
-
-  /// Returns the height of the bottom bar.
-  double get bottomBarHeight =>
-      configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
-          ? kBottomNavigationBarHeight
-          : 0;
 
   /// Getter for the screen padding, accounting for safe area insets.
   EdgeInsets get screenPadding => MediaQuery.of(context).padding;

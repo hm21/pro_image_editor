@@ -44,7 +44,8 @@ class _LayerStackState extends State<LayerStack> {
             children: widget.layers.map((layerItem) {
               return LayerWidget(
                 configs: widget.configs,
-                editorBodySize: widget.transformHelper.editorBodySize,
+                editorCenterX: widget.transformHelper.editorBodySize.width / 2,
+                editorCenterY: widget.transformHelper.editorBodySize.height / 2,
                 layerData: layerItem,
               );
             }).toList()),

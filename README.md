@@ -25,7 +25,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - **[✨ Features](#features)**
 - **[🔧 Getting started](#getting-started)**
   - [Android](#android)
-  - [OpenHarmony](#OpenHarmony)
+  - [OpenHarmony](#openharmony)
   - [Web](#web)
 - **[❓ Usage](#usage)**
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
@@ -147,20 +147,19 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - ✅ Use web-workers for background tasks on Dart web devices
   - ✅ Automatically set the number of active background processors based on the device
   - ✅ Manually set the number of active background processors
-- ✅ Move and scalable layers
-- ✅ Helper lines for better positioning
 - ✅ Undo and redo function
 - ✅ Use your image directly from memory, asset, file or network
 - ✅ Each icon can be changed
-- ✅ Any text can be translated
+- ✅ Any text can be translated "i18n"
 - ✅ Many custom configurations for each subeditor
 - ✅ Custom theme for each editor
 - ✅ Selectable design mode between Material and Cupertino
-- ✅ Interactive layers
-- ✅ Hit detection for painted layers
 - ✅ Reorder layer level
-- ✅ WhatsApp Theme
 - ✅ Movable background image
+- ✅ WhatsApp Theme
+- ✅ Interactive layers
+- ✅ Helper lines for better positioning
+- ✅ Hit detection for painted layers
 - ✅ Improved layer movement and scaling functionality for desktop devices
 
 
@@ -1092,7 +1091,7 @@ ProImageEditor.asset(
   callbacks: ProImageEditorCallbacks(
     onImageEditingComplete: (bytes) async {
       try {
-        String path = 'your-storage-path/my-image-name.png';
+        String path = 'your-storage-path/my-image-name.jpg';
         Reference ref = FirebaseStorage.instance.ref(path);
 
         /// In some special cases detect firebase the contentType wrong,
@@ -1121,7 +1120,7 @@ ProImageEditor.asset(
   callbacks: ProImageEditorCallbacks(
     onImageEditingComplete: (bytes) async {
       try {
-        String path = 'your-storage-path/my-image-name.png';
+        String path = 'your-storage-path/my-image-name.jpg';
         await _supabase.storage.from('my_bucket').uploadBinary(
               path,
               bytes,
@@ -1285,7 +1284,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | Property Name                  | Description                                                                                                                        | Default Value |
 |--------------------------------|----------------------------------------------------------------------------------------------------------------------------------- |---------------|
 | `onImageEditingStarted`        | A callback function that is triggered when the image generation is started.                                                        | `null`        |
-| `onImageEditingComplete`       | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `jpg`. | `required`    |
+| `onImageEditingComplete`       | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `jpg`. | `null`    |
 | `onThumbnailGenerated`         | A callback function that is called when the editing is complete and the thumbnail image is generated, along with capturing the original image as a raw `ui.Image`. If used, it will disable the `onImageEditingComplete` callback.   | `null`        |
 | `onCloseEditor`                | A callback function that will be called before the image editor closes.                                                            | `null`        |
 | `mainEditorCallbacks`          | Callbacks from the main editor.                                                                                                    | `null`        |
@@ -1821,9 +1820,8 @@ This package uses several Flutter packages to provide a seamless editing experie
 - [rounded_background_text](https://pub.dev/packages/rounded_background_text)
 - [vibration](https://pub.dev/packages/vibration)
 
-From these packages, only a small part of the code is used, with some code changes that better fit this package.
+From these packages, only a small part of the code is used, with some code changes that better fit to the image editor.
 - [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
 - [defer_pointer](https://pub.dev/packages/defer_pointer)
 - [screenshot](https://pub.dev/packages/screenshot)
 
-These packages play a crucial role in enabling various features and functionalities in this package.

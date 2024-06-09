@@ -595,7 +595,6 @@ class _CustomAppbarBottombarExampleState
           scrollbarOrientation: ScrollbarOrientation.top,
           thickness: isDesktop ? null : 0,
           child: BottomAppBar(
-            /// kBottomNavigationBarHeight is important that helperlines will work
             height: kBottomNavigationBarHeight,
             color: Colors.black,
             padding: EdgeInsets.zero,
