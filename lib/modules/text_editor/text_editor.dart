@@ -291,6 +291,14 @@ class TextEditorState extends State<TextEditor>
     textEditorCallbacks?.handleDone();
   }
 
+  /// Handles changes in the selected color.
+  void _colorChanged(Color color) {
+    setState(() {
+      _primaryColor = color;
+      textEditorCallbacks?.handleColorChanged(color.value);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -455,33 +463,32 @@ class TextEditorState extends State<TextEditor>
                 padding: EdgeInsets.symmetric(
                   vertical: barPickerPadding,
                 ),
-                child: BarColorPicker(
-                  configs: widget.configs,
-                  length: min(
-                    isWhatsAppDesign ? 200 : 350,
-                    MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).viewInsets.bottom -
-                        kToolbarHeight -
-                        kBottomNavigationBarHeight -
-                        barPickerPadding * 2 -
-                        MediaQuery.of(context).padding.top,
-                  ),
-                  onPositionChange: (value) {
-                    _colorPosition = value;
-                  },
-                  initPosition: _colorPosition,
-                  initialColor: _primaryColor,
-                  horizontal: false,
-                  thumbColor: Colors.white,
-                  cornerRadius: 10,
-                  pickMode: PickMode.color,
-                  colorListener: (int value) {
-                    setState(() {
-                      _primaryColor = Color(value);
-                    });
-                    textEditorCallbacks?.handleColorChanged(value);
-                  },
-                ),
+                child:
+                    customWidgets.colorPickerTextEditor?.call(_colorChanged) ??
+                        BarColorPicker(
+                          configs: widget.configs,
+                          length: min(
+                            isWhatsAppDesign ? 200 : 350,
+                            MediaQuery.of(context).size.height -
+                                MediaQuery.of(context).viewInsets.bottom -
+                                kToolbarHeight -
+                                kBottomNavigationBarHeight -
+                                barPickerPadding * 2 -
+                                MediaQuery.of(context).padding.top,
+                          ),
+                          onPositionChange: (value) {
+                            _colorPosition = value;
+                          },
+                          initPosition: _colorPosition,
+                          initialColor: _primaryColor,
+                          horizontal: false,
+                          thumbColor: Colors.white,
+                          cornerRadius: 10,
+                          pickMode: PickMode.color,
+                          colorListener: (int value) {
+                            _colorChanged(Color(value));
+                          },
+                        ),
               ),
             ),
           customWidgets.bottomBarTextEditor ??

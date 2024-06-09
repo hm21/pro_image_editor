@@ -178,6 +178,21 @@ class BlurEditorState extends State<BlurEditor>
     blurEditorCallbacks?.handleDone();
   }
 
+  /// Handles changes in the blur factor value.
+  void _onChanged(double value) {
+    blurFactor = value;
+    _uiBlurStream.add(null);
+    blurEditorCallbacks?.handleBlurFactorChange(value);
+  }
+
+  /// Handles the end of changes in the blur factor value.
+  void _onChangedEnd(double value) {
+    blurEditorCallbacks?.handleBlurFactorChangeEnd(value);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      takeScreenshot();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -286,23 +301,16 @@ class BlurEditorState extends State<BlurEditor>
               child: StreamBuilder(
                   stream: _uiBlurStream.stream,
                   builder: (context, snapshot) {
-                    return Slider(
-                      min: 0,
-                      max: blurEditorConfigs.maxBlur,
-                      divisions: 100,
-                      value: blurFactor,
-                      onChanged: (value) {
-                        blurFactor = value;
-                        _uiBlurStream.add(null);
-                        blurEditorCallbacks?.handleBlurFactorChange(value);
-                      },
-                      onChangeEnd: (value) {
-                        blurEditorCallbacks?.handleBlurFactorChangeEnd(value);
-                        WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          takeScreenshot();
-                        });
-                      },
-                    );
+                    return customWidgets.sliderBlurEditor
+                            ?.call(blurFactor, _onChanged, _onChangedEnd) ??
+                        Slider(
+                          min: 0,
+                          max: blurEditorConfigs.maxBlur,
+                          divisions: 100,
+                          value: blurFactor,
+                          onChanged: _onChanged,
+                          onChangeEnd: _onChangedEnd,
+                        );
                   }),
             ),
           ),

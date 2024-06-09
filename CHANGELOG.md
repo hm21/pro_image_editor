@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 3.0.5
+- **feat(custom-slider)**: add a custom widget to replace the slider in the filter and blur editor.
+- **feat(custom-color-picker)**: add a custom widget to replace the color picker in the text and paint editor.
+- **feat(custom-crop-aspect-ratio)**: add a custom widget to replace the aspect ratio picker.
+- **fix(main-editor)**: correct image and layer display when bottombar or appbar is not visible.
+
 ## Version 3.0.4
 - **feat(hero)**: enable hero animation when opening the editor
 

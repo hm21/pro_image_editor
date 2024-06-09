@@ -539,6 +539,13 @@ class PaintingEditorState extends State<PaintingEditor>
     setState(() {});
   }
 
+  /// Handles changes in the selected color.
+  void _colorChanged(Color color) {
+    _paintCtrl.setColor(color);
+    _uiPickerStream.add(null);
+    paintEditorCallbacks?.handleColorChanged();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -933,28 +940,27 @@ class PaintingEditorState extends State<PaintingEditor>
       child: StreamBuilder(
           stream: _uiPickerStream.stream,
           builder: (context, snapshot) {
-            return BarColorPicker(
-              configs: configs,
-              length: min(
-                !isWhatsAppDesign ? 350 : 200,
-                MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).viewInsets.bottom -
-                    kToolbarHeight -
-                    kBottomNavigationBarHeight -
-                    MediaQuery.of(context).padding.top -
-                    30,
-              ),
-              horizontal: false,
-              thumbColor: Colors.white,
-              cornerRadius: 10,
-              pickMode: PickMode.color,
-              initialColor: paintEditorConfigs.initialColor,
-              colorListener: (int value) {
-                _paintCtrl.setColor(Color(value));
-                _uiPickerStream.add(null);
-                paintEditorCallbacks?.handleColorChanged();
-              },
-            );
+            return customWidgets.colorPickerPaintEditor?.call(_colorChanged) ??
+                BarColorPicker(
+                  configs: configs,
+                  length: min(
+                    !isWhatsAppDesign ? 350 : 200,
+                    MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).viewInsets.bottom -
+                        kToolbarHeight -
+                        kBottomNavigationBarHeight -
+                        MediaQuery.of(context).padding.top -
+                        30,
+                  ),
+                  horizontal: false,
+                  thumbColor: Colors.white,
+                  cornerRadius: 10,
+                  pickMode: PickMode.color,
+                  initialColor: paintEditorConfigs.initialColor,
+                  colorListener: (int value) {
+                    _colorChanged(Color(value));
+                  },
+                );
           }),
     );
   }

@@ -88,6 +88,33 @@ class ImageEditorCustomWidgets {
   /// A custom bottom bar widget for the text editor component.
   final Widget? bottomBarTextEditor;
 
+  /// A custom color picker widget for the paint editor.
+  ///
+  /// This widget allows users to pick a color for the paint editor.
+  final CustomColorPicker? colorPickerPaintEditor;
+
+  /// A custom color picker widget for the text editor.
+  ///
+  /// This widget allows users to pick a color for the text editor.
+  final CustomColorPicker? colorPickerTextEditor;
+
+  /// A custom slider widget for the filter editor.
+  ///
+  /// This widget allows users to adjust values using a slider in the filter editor.
+  final CustomSlider? sliderFilterEditor;
+
+  /// A custom slider widget for the blur editor.
+  ///
+  /// This widget allows users to adjust the blur factor using a slider in the blur
+  /// editor.
+  final CustomSlider? sliderBlurEditor;
+
+  /// A widget for selecting aspect ratio options in the crop editor.
+  ///
+  /// This widget allows users to select different aspect ratio options for the crop
+  /// editor.
+  final CropEditorAspectRatioOptions? cropEditorAspectRatioOptions;
+
   /// A custom widget that will be displayed in WhatsApp mode in the app bar on the top right, providing a useful custom "Done" button.
   final Widget? whatsAppOwnAppBarIcons;
 
@@ -142,6 +169,11 @@ class ImageEditorCustomWidgets {
 
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
   const ImageEditorCustomWidgets({
+    this.cropEditorAspectRatioOptions,
+    this.sliderFilterEditor,
+    this.sliderBlurEditor,
+    this.colorPickerPaintEditor,
+    this.colorPickerTextEditor,
     this.removeLayer,
     this.appBar,
     this.appBarPaintingEditor,
@@ -159,3 +191,37 @@ class ImageEditorCustomWidgets {
     this.whatsAppOwnAppBarIcons,
   });
 }
+
+/// A function type that defines a widget for selecting aspect ratio options
+/// in a crop editor.
+///
+/// The function takes two parameters:
+/// - `aspectRatio`: The selected aspect ratio.
+/// - `originalAspectRatio`: The original aspect ratio of the image.
+///
+/// Returns a [Widget] that allows the user to select the given aspect ratio.
+typedef CropEditorAspectRatioOptions = Widget Function(
+  double aspectRatio,
+  double originalAspectRatio,
+);
+
+/// A function type that defines a custom color picker widget.
+///
+/// The function takes one parameter:
+/// - `color`: A function that will be called with the selected [Color].
+///
+/// Returns a [Widget] that allows the user to pick a color.
+typedef CustomColorPicker = Widget Function(Function(Color color) setColor);
+
+/// A function type that defines a custom slider widget.
+///
+/// - `value`: The current active value.
+/// - `onChanged`: A function that will be called when the slider value changes.
+/// - `onChangeEnd`: A function that will be called when the slider value change ends.
+///
+/// Returns a [Widget] that allows the user to adjust a value using a slider.
+typedef CustomSlider = Widget Function(
+  double value,
+  Function(double value) onChanged,
+  Function(double value) onChangeEnd,
+);

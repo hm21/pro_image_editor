@@ -198,6 +198,21 @@ class FilterEditorState extends State<FilterEditor>
     _uiFilterStream.add(null);
   }
 
+  /// Handles changes in the filter factor value.
+  void _onChanged(double value) {
+    filterOpacity = value;
+    _uiFilterStream.add(null);
+    filterEditorCallbacks?.handleFilterFactorChange(value);
+  }
+
+  /// Handles the end of changes in the filter factor value.
+  void _onChangedEnd(double value) {
+    filterEditorCallbacks?.handleFilterFactorChangeEnd(value);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      takeScreenshot();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -310,26 +325,16 @@ class FilterEditorState extends State<FilterEditor>
                         height: 40,
                         child: selectedFilter == PresetFilters.none
                             ? null
-                            : Slider(
-                                min: 0,
-                                max: 1,
-                                divisions: 100,
-                                value: filterOpacity,
-                                onChanged: (value) {
-                                  filterOpacity = value;
-                                  _uiFilterStream.add(null);
-                                  filterEditorCallbacks
-                                      ?.handleFilterFactorChange(value);
-                                },
-                                onChangeEnd: (value) {
-                                  filterEditorCallbacks
-                                      ?.handleFilterFactorChangeEnd(value);
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) async {
-                                    takeScreenshot();
-                                  });
-                                },
-                              ),
+                            : customWidgets.sliderFilterEditor?.call(
+                                    filterOpacity, _onChanged, _onChangedEnd) ??
+                                Slider(
+                                  min: 0,
+                                  max: 1,
+                                  divisions: 100,
+                                  value: filterOpacity,
+                                  onChanged: _onChanged,
+                                  onChangeEnd: _onChangedEnd,
+                                ),
                       );
                     }),
               ),

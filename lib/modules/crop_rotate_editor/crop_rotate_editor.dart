@@ -897,11 +897,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
             imageEditorTheme.cropRotateEditor.aspectRatioSheetBackgroundColor,
         isScrollControlled: true,
         builder: (BuildContext context) {
-          return CropAspectRatioOptions(
-            aspectRatio: aspectRatio,
-            configs: configs,
-            originalAspectRatio: _mainImageSize.aspectRatio,
-          );
+          return customWidgets.cropEditorAspectRatioOptions?.call(
+                aspectRatio,
+                _mainImageSize.aspectRatio,
+              ) ??
+              CropAspectRatioOptions(
+                aspectRatio: aspectRatio,
+                configs: configs,
+                originalAspectRatio: _mainImageSize.aspectRatio,
+              );
         }).then((value) {
       if (value != null) {
         reset(skipAddHistory: true);
