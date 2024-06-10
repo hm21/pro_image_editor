@@ -3,9 +3,12 @@ import 'dart:ui';
 
 // Project imports:
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
+import '../../utils/unique_id_generator.dart';
 
 /// Represents a unit of shape or drawing information used in painting.
 class PaintedModel {
+  late final String id;
+
   /// The mode of the paint method, indicating the type of shape or drawing.
   final PaintModeE mode;
 
@@ -56,7 +59,9 @@ class PaintedModel {
     required this.strokeWidth,
     this.fill = false,
     this.hit = false,
-  });
+  }) {
+    id = generateUniqueId();
+  }
 
   factory PaintedModel.fromMap(Map map) {
     List<Offset> offsets = [];
