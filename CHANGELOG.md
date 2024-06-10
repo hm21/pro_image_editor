@@ -2,6 +2,7 @@
 
 ## Version 3.0.6
 - **fix(layer)**: call setState when adding a new layer from external source
+- **fix(web_worker)**: remove web_worker.dart from web build to resolve lint errors
 
 ## Version 3.0.5
 - **feat(custom-slider)**: add a custom widget to replace the slider in the filter and blur editor.

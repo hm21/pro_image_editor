@@ -55,7 +55,9 @@ dev_dependencies:
 
 flutter:
   assets:
-    - lib/web/
+    - lib/web/web_worker.dart.js
+    - lib/web/web_worker.dart.js.deps
+    - lib/web/web_worker.dart.js.map
   fonts:
    - family: ProImageEditorIcons
      fonts:
