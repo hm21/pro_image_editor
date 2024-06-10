@@ -120,6 +120,14 @@ class ImageEditorTheme {
   /// Theme for the sticker editor.
   final StickerEditorTheme stickerEditor;
 
+  /// If this opacity is greater than 0, it will paint a transparent overlay over all
+  /// layers that are drawn outside the background image area. The overlay will
+  /// have the specified opacity level.
+  ///
+  /// Note: This opacity only takes effect if the `captureOnlyBackgroundImageArea`
+  /// flag in the generation configuration is set to `true`.
+  final double outsideCaptureAreaLayerOpacity;
+
   /// The theme configuration for the sub-editor page.
   final SubEditorPageTheme subEditorPage;
 
@@ -158,6 +166,7 @@ class ImageEditorTheme {
   /// Creates an instance of the `ImageEditorTheme` class with the specified theme properties.
   const ImageEditorTheme({
     this.editorBoxConstraintsBuilder,
+    this.outsideCaptureAreaLayerOpacity = 0.5,
     this.editorMode = ThemeEditorMode.simple,
     this.layerInteraction = const ThemeLayerInteraction(),
     this.helperLine = const HelperLineTheme(),

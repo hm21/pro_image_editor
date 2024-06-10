@@ -2247,6 +2247,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 ClipRRect(
                   clipBehavior: Clip.hardEdge,
                   child: LayerStack(
+                    cutOutsideImageArea: false,
                     transformHelper: TransformHelper(
                       /// set size to zero that no scale factor will be applied
                       mainBodySize: Size.zero,
