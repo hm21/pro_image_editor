@@ -207,11 +207,13 @@ typedef CropEditorAspectRatioOptions = Widget Function(
 
 /// A function type that defines a custom color picker widget.
 ///
-/// The function takes one parameter:
+/// The function takes two parameters:
+/// - `currentColor`: The currently selected [Color].
 /// - `color`: A function that will be called with the selected [Color].
 ///
 /// Returns a [Widget] that allows the user to pick a color.
-typedef CustomColorPicker = Widget Function(Function(Color color) setColor);
+typedef CustomColorPicker = Widget Function(
+    Color currentColor, void Function(Color color) setColor);
 
 /// A function type that defines a custom slider widget.
 ///

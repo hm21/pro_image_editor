@@ -463,32 +463,33 @@ class TextEditorState extends State<TextEditor>
                 padding: EdgeInsets.symmetric(
                   vertical: barPickerPadding,
                 ),
-                child:
-                    customWidgets.colorPickerTextEditor?.call(_colorChanged) ??
-                        BarColorPicker(
-                          configs: widget.configs,
-                          length: min(
-                            isWhatsAppDesign ? 200 : 350,
-                            MediaQuery.of(context).size.height -
-                                MediaQuery.of(context).viewInsets.bottom -
-                                kToolbarHeight -
-                                kBottomNavigationBarHeight -
-                                barPickerPadding * 2 -
-                                MediaQuery.of(context).padding.top,
-                          ),
-                          onPositionChange: (value) {
-                            _colorPosition = value;
-                          },
-                          initPosition: _colorPosition,
-                          initialColor: _primaryColor,
-                          horizontal: false,
-                          thumbColor: Colors.white,
-                          cornerRadius: 10,
-                          pickMode: PickMode.color,
-                          colorListener: (int value) {
-                            _colorChanged(Color(value));
-                          },
-                        ),
+                child: customWidgets.colorPickerTextEditor?.call(
+                        selectedTextStyle.color ?? _primaryColor,
+                        _colorChanged) ??
+                    BarColorPicker(
+                      configs: widget.configs,
+                      length: min(
+                        isWhatsAppDesign ? 200 : 350,
+                        MediaQuery.of(context).size.height -
+                            MediaQuery.of(context).viewInsets.bottom -
+                            kToolbarHeight -
+                            kBottomNavigationBarHeight -
+                            barPickerPadding * 2 -
+                            MediaQuery.of(context).padding.top,
+                      ),
+                      onPositionChange: (value) {
+                        _colorPosition = value;
+                      },
+                      initPosition: _colorPosition,
+                      initialColor: _primaryColor,
+                      horizontal: false,
+                      thumbColor: Colors.white,
+                      cornerRadius: 10,
+                      pickMode: PickMode.color,
+                      colorListener: (int value) {
+                        _colorChanged(Color(value));
+                      },
+                    ),
               ),
             ),
           customWidgets.bottomBarTextEditor ??
