@@ -445,7 +445,7 @@ class _GenerationConfigState extends State<GenerationConfig>
     }
 
     var generationConfigs = ImageGeneratioConfigs(
-      generateOnlyDrawingBounds: _generateOnlyDrawingBounds,
+      captureOnlyDrawingBounds: _generateOnlyDrawingBounds,
       generateImageInBackground: _generateImageInBackground,
       generateInsideSeparateThread: _generateInsideSeparateThread,
       singleFrame: _singleFrame,

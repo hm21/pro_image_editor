@@ -1,8 +1,23 @@
 # Changelog
 
 ## Version 3.0.6
-- **fix(layer)**: call setState when adding a new layer from external source
-- **fix(web_worker)**: remove web_worker.dart from web build to resolve lint errors
+
+#### **Breaking Changes:**
+- The property `generateOnlyDrawingBounds` has been renamed to `captureOnlyDrawingBounds`.
+
+#### **fix:**
+- Ensure `setState` is called when adding a new layer from an external source.
+- Remove `web_worker.dart` from the web build to resolve lint errors.
+
+#### **feat:**
+- The editor will now capture by default only the area from the background image and cut all layers outside. To disable this behavior, you can set the flag `captureOnlyBackgroundImageArea` to `false` in the configurations, like below:
+```dart
+configs: ProImageEditorConfigs(
+  imageGenerationConfigs: const ImageGeneratioConfigs(
+    captureOnlyBackgroundImageArea: false,
+  ),
+),
+```
 
 ## Version 3.0.5
 - **feat(custom-slider)**: add a custom widget to replace the slider in the filter and blur editor.

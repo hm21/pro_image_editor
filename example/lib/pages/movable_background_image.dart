@@ -328,7 +328,9 @@ class _MoveableBackgroundImageExampleState
                       configs: ProImageEditorConfigs(
                           designMode: platformDesignMode,
                           imageGenerationConfigs: ImageGeneratioConfigs(
-                            generateOnlyDrawingBounds: true,
+                            captureOnlyDrawingBounds: true,
+                            captureOnlyBackgroundImageArea: false,
+                            outputFormat: OutputFormat.png,
 
                             /// Set the pixel ratio manually. You can also set this value higher than the device pixel ratio for higher quality.
                             customPixelRatio: max(

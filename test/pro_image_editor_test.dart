@@ -19,7 +19,6 @@ void main() {
     imageGenerationConfigs: ImageGeneratioConfigs(
       generateInsideSeparateThread: false,
       generateImageInBackground: false,
-      generateOnlyDrawingBounds: false,
     ),
   );
 

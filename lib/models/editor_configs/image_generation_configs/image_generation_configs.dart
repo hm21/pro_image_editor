@@ -21,8 +21,22 @@ export 'package:image/image.dart' show JpegChroma, PngFilter;
 /// [ImageGeneratioConfigs] holds various configuration options
 /// that affect how images are generated.
 class ImageGeneratioConfigs {
+  /// Indicates if it should only capture the background image area and cut all
+  /// stuff outside, such as when a layer overlaps the image.
+  ///
+  /// When set to `true`, this flag ensures that the capture process focuses solely
+  /// on the background image area, ignoring any other elements that might be present.
+  ///
+  /// If set to `false`, the capture will include all elements within the image area,
+  /// not just the background.
+  ///
+  /// **Note:** If you disable this flag, it may require more performance to
+  /// generate the image, especially on high resolution images in a large screen,
+  /// cuz the editor need to find the bounding box by itself.
+  final bool captureOnlyBackgroundImageArea;
+
   /// Determines whether to capture only the content within the boundaries of
-  /// the image when editing is complete.
+  /// the painting when editing is complete.
   ///
   /// If set to `true`, editing completion will result in cropping all content
   /// outside the image boundaries.
@@ -33,7 +47,7 @@ class ImageGeneratioConfigs {
   /// full content.
   ///
   /// By default, this property is set to `true`.
-  final bool generateOnlyDrawingBounds;
+  final bool captureOnlyDrawingBounds;
 
   /// Captures the final image after each change, such as adding a layer.
   /// This significantly speeds up the editor because in most cases, the image
@@ -131,14 +145,15 @@ class ImageGeneratioConfigs {
   /// - The [allowEmptyEditCompletion] parameter controls if empty edit completions are allowed.
   /// - The [generateInsideSeparateThread] parameter controls if image generation occurs inside an isolate.
   /// - The [generateImageInBackground] parameter controls if image generation runs in the background.
-  /// - The [generateOnlyDrawingBounds] parameter controls if only image bounds are generated.
+  /// - The [captureOnlyDrawingBounds] parameter controls if only image bounds are generated.
   /// - The [customPixelRatio] parameter set the pixel ratio of the image relative to the content.
   /// - The [processorConfigs] parameter set the processor configs.
   const ImageGeneratioConfigs({
+    this.captureOnlyBackgroundImageArea = true,
     this.allowEmptyEditCompletion = true,
     this.generateInsideSeparateThread = true,
     this.generateImageInBackground = !kIsWeb || !kDebugMode,
-    this.generateOnlyDrawingBounds = true,
+    this.captureOnlyDrawingBounds = true,
     this.awaitLoadingDialogContext = false,
     this.customPixelRatio,
     this.pngLevel = 6,
@@ -152,6 +167,8 @@ class ImageGeneratioConfigs {
     this.maxThumbnailSize = const Size(100, 100),
   })  : assert(jpegQuality > 0 && jpegQuality <= 100,
             'jpegQuality must be between 1 and 100'),
+        assert(captureOnlyDrawingBounds || !captureOnlyBackgroundImageArea,
+            'When [captureOnlyDrawingBounds] is true must [captureOnlyBackgroundImageArea] be false'),
         assert(
             pngLevel >= 0 && pngLevel <= 9, 'pngLevel must be between 0 and 9'),
         assert(customPixelRatio == null || customPixelRatio > 0,
@@ -162,10 +179,11 @@ class ImageGeneratioConfigs {
   /// The [copyWith] method allows you to create a new instance of [ImageGeneratioConfigs]
   /// with some properties updated while keeping the others unchanged.
   ImageGeneratioConfigs copyWith({
+    bool? captureOnlyBackgroundImageArea,
     bool? allowEmptyEditCompletion,
     bool? generateInsideSeparateThread,
     bool? generateImageInBackground,
-    bool? generateOnlyDrawingBounds,
+    bool? captureOnlyDrawingBounds,
     bool? awaitLoadingDialogContext,
     double? customPixelRatio,
     ProcessorConfigs? processorConfigs,
@@ -179,14 +197,16 @@ class ImageGeneratioConfigs {
     JpegChroma? jpegChroma,
   }) {
     return ImageGeneratioConfigs(
+      captureOnlyBackgroundImageArea:
+          captureOnlyBackgroundImageArea ?? this.captureOnlyBackgroundImageArea,
       allowEmptyEditCompletion:
           allowEmptyEditCompletion ?? this.allowEmptyEditCompletion,
       generateInsideSeparateThread:
           generateInsideSeparateThread ?? this.generateInsideSeparateThread,
       generateImageInBackground:
           generateImageInBackground ?? this.generateImageInBackground,
-      generateOnlyDrawingBounds:
-          generateOnlyDrawingBounds ?? this.generateOnlyDrawingBounds,
+      captureOnlyDrawingBounds:
+          captureOnlyDrawingBounds ?? this.captureOnlyDrawingBounds,
       awaitLoadingDialogContext:
           awaitLoadingDialogContext ?? this.awaitLoadingDialogContext,
       customPixelRatio: customPixelRatio ?? this.customPixelRatio,

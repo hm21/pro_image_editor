@@ -120,8 +120,8 @@ Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
       bool antialias = true,
     }) async {
       // Make sure crop rectangle is within the range of the src image.
-      left = left.clamp(0, src.width - 1).toInt();
-      top = top.clamp(0, src.height - 1).toInt();
+      left = left.clamp(0, src.width - 1).ceil();
+      top = top.clamp(0, src.height - 1).ceil();
       if (left + width > src.width) {
         width = src.width - left;
       }

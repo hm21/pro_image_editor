@@ -519,9 +519,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
     var pixelRatio = max(heightRatio, widthRatio);
 
     imageInfos = ImageInfos(
-        rawSize: Size(w.toDouble(), h.toDouble()),
-        renderedSize: Size(w / pixelRatio, h / pixelRatio),
-        pixelRatio: pixelRatio);
+      rawSize: Size(w.toDouble(), h.toDouble()),
+      renderedSize: Size(w / pixelRatio, h / pixelRatio),
+      cropRectSize: cropRect.size,
+      isRotated: _rotated90deg,
+      pixelRatio: pixelRatio,
+    );
 
     calcCropRect();
     _updateAllStates();

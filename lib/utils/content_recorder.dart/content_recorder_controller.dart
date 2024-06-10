@@ -171,7 +171,7 @@ class ContentRecorderController {
   Future<Uint8List?> _captureWithMainThread({
     required ui.Image image,
   }) async {
-    if (_configs.imageGenerationConfigs.generateOnlyDrawingBounds) {
+    if (_configs.imageGenerationConfigs.captureOnlyDrawingBounds) {
       image = await dartUiRemoveTransparentImgAreas(image) ?? image;
     }
 
@@ -199,7 +199,8 @@ class ContentRecorderController {
   Future<ui.Image?> _getRenderedImage(
       {required ImageInfos imageInfos, bool? useThumbnailSize}) async {
     try {
-      var findRenderObject = containerKey.currentContext?.findRenderObject();
+      RenderObject? findRenderObject =
+          containerKey.currentContext?.findRenderObject();
       if (findRenderObject == null) return null;
 
       // If the render object's paint information is dirty we waiting until it's painted
@@ -215,7 +216,7 @@ class ContentRecorderController {
       BuildContext? context = containerKey.currentContext;
 
       double outputRatio = imageInfos.pixelRatio;
-      if (!_configs.imageGenerationConfigs.generateOnlyDrawingBounds &&
+      if (!_configs.imageGenerationConfigs.captureOnlyDrawingBounds &&
           context != null &&
           context.mounted) {
         outputRatio =
@@ -237,9 +238,61 @@ class ContentRecorderController {
         );
       }
 
-      ui.Image image = await boundary.toImage(
-          pixelRatio:
-              _configs.imageGenerationConfigs.customPixelRatio ?? outputRatio);
+      double pixelRatio =
+          _configs.imageGenerationConfigs.customPixelRatio ?? outputRatio;
+
+      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+
+      if (_configs.imageGenerationConfigs.captureOnlyBackgroundImageArea) {
+        double cropRectRatio = !imageInfos.isRotated
+            ? imageInfos.cropRectSize.aspectRatio
+            : 1 / imageInfos.cropRectSize.aspectRatio;
+
+        Size convertedImgSize =
+            Size(image.width.toDouble(), image.height.toDouble());
+
+        double convertedImgWidth = convertedImgSize.width;
+        double convertedImgHeight = convertedImgSize.height;
+
+        if (convertedImgSize.aspectRatio > cropRectRatio) {
+          // Fit to height
+          convertedImgSize =
+              Size(convertedImgHeight * cropRectRatio, convertedImgHeight);
+        } else {
+          // Fit to width
+          convertedImgSize =
+              Size(convertedImgWidth, convertedImgWidth / cropRectRatio);
+        }
+
+        double cropWidth = convertedImgSize.width;
+        double cropHeight = convertedImgSize.height;
+        double cropX = max(0, image.width.toDouble() - cropWidth) / 2;
+        double cropY = max(0, image.height.toDouble() - cropHeight) / 2;
+
+        ui.PictureRecorder recorder = ui.PictureRecorder();
+        Canvas canvas = Canvas(recorder);
+
+        canvas.drawImageRect(
+          image,
+          Rect.fromLTWH(
+            cropX.toDouble(),
+            cropY.toDouble(),
+            cropWidth.toDouble(),
+            cropHeight.toDouble(),
+          ),
+          Rect.fromLTWH(
+            0,
+            0,
+            cropWidth.toDouble(),
+            cropHeight.toDouble(),
+          ),
+          Paint(),
+        );
+
+        image = await recorder
+            .endRecording()
+            .toImage(cropWidth.ceil(), cropHeight.ceil());
+      }
 
       return image;
     } catch (e) {
@@ -555,7 +608,7 @@ class ContentRecorderController {
                         OutputFormat.jpg));
 
         double outputRatio = imageInfos.pixelRatio;
-        if (!_configs.imageGenerationConfigs.generateOnlyDrawingBounds &&
+        if (!_configs.imageGenerationConfigs.captureOnlyDrawingBounds &&
             context != null &&
             context.mounted) {
           outputRatio = max(
@@ -680,7 +733,7 @@ class ContentRecorderController {
     return ImageConvertThreadRequest(
       id: id,
       generateOnlyImageBounds:
-          _configs.imageGenerationConfigs.generateOnlyDrawingBounds,
+          _configs.imageGenerationConfigs.captureOnlyDrawingBounds,
       outputFormat: _configs.imageGenerationConfigs.outputFormat,
       jpegChroma: _configs.imageGenerationConfigs.jpegChroma,
       jpegQuality: _configs.imageGenerationConfigs.jpegQuality,
