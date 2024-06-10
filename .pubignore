@@ -8,3 +8,4 @@ build/
 .pub/
 .git/
 .gitignore
+pub_login.sh
