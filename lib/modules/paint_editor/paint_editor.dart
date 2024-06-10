@@ -270,6 +270,12 @@ class PaintingEditorState extends State<PaintingEditor>
             icon: icons.paintingEditor.dashLine,
             label: i18n.paintEditor.dashLine,
           ),
+        if (paintEditorConfigs.hasOptionEraser)
+          PaintModeBottomBarItem(
+            mode: PaintModeE.eraser,
+            icon: icons.paintingEditor.eraser,
+            label: i18n.paintEditor.eraser,
+          ),
       ];
 
   /// The Uint8List from the fake hero image, which is drawed when finish editing.
@@ -918,6 +924,13 @@ class PaintingEditorState extends State<PaintingEditor>
     return PaintingCanvas(
       paintCtrl: _paintCtrl,
       drawAreaSize: mainBodySize ?? editorBodySize,
+      onRemoveLayer: (idList) {
+        _paintCtrl.removeLayers(idList);
+        setState(() {});
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          takeScreenshot();
+        });
+      },
       onCreatedPainting: () {
         _uiAppbarIconsStream.add(null);
         if (isWhatsAppDesign) {

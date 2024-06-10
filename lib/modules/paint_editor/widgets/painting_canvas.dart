@@ -18,6 +18,8 @@ class PaintingCanvas extends StatefulWidget {
   /// Callback function when the active painting is done.
   final VoidCallback? onCreatedPainting;
 
+  final ValueChanged<List<String>>? onRemoveLayer;
+
   /// Size of the image.
   final Size drawAreaSize;
 
@@ -29,6 +31,7 @@ class PaintingCanvas extends StatefulWidget {
   const PaintingCanvas({
     super.key,
     this.onCreatedPainting,
+    this.onRemoveLayer,
     required this.drawAreaSize,
     required this.paintCtrl,
   });
@@ -61,6 +64,11 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   ///
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleStart(ScaleStartDetails details) {
+    if (widget.paintCtrl.mode == PaintModeE.eraser) {
+      setState(() {});
+      return;
+    }
+
     final offset = details.localFocalPoint;
     _paintCtrl.setStart(offset);
     _paintCtrl.addOffsets(offset);
@@ -73,20 +81,28 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   ///
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    final offset = details.localFocalPoint;
-    _paintCtrl.setInProgress(true);
+    if (widget.paintCtrl.mode == PaintModeE.eraser) {
+      List<String> removeIds = [];
+      for (var item in _paintCtrl.activePaintings) {
+        if (item.hit) removeIds.add(item.id);
+      }
+      if (removeIds.isNotEmpty) widget.onRemoveLayer?.call(removeIds);
+    } else {
+      final offset = details.localFocalPoint;
+      _paintCtrl.setInProgress(true);
 
-    if (_paintCtrl.start == null) {
-      _paintCtrl.setStart(offset);
+      if (_paintCtrl.start == null) {
+        _paintCtrl.setStart(offset);
+      }
+
+      if (_paintCtrl.mode == PaintModeE.freeStyle) {
+        _paintCtrl.addOffsets(offset);
+      }
+
+      _paintCtrl.setEnd(offset);
+
+      _activePaintingStreamCtrl.add(null);
     }
-
-    if (_paintCtrl.mode == PaintModeE.freeStyle) {
-      _paintCtrl.addOffsets(offset);
-    }
-
-    _paintCtrl.setEnd(offset);
-
-    _activePaintingStreamCtrl.add(null);
   }
 
   /// Fires when the user stops interacting with the screen.
@@ -95,6 +111,8 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   ///
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleEnd(ScaleEndDetails details) {
+    if (widget.paintCtrl.mode == PaintModeE.eraser) return;
+
     _paintCtrl.setInProgress(false);
 
     List<Offset?>? offsets;
@@ -132,7 +150,10 @@ class PaintingCanvasState extends State<PaintingCanvas> {
           CustomPaint(
             willChange: false,
             isComplex: item.mode == PaintModeE.freeStyle,
-            painter: DrawPainting(item: item),
+            painter: DrawPainting(
+              item: item,
+              enabledHitDetection: _paintCtrl.mode == PaintModeE.eraser,
+            ),
           ),
         StreamBuilder(
             stream: _activePaintingStreamCtrl.stream,

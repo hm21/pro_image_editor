@@ -51,6 +51,9 @@ class PaintEditorConfigs {
   /// Indicating whether the dash line drawing option is available.
   final bool hasOptionDashLine;
 
+  /// Indicating whether the eraser option is available.
+  final bool hasOptionEraser;
+
   /// Indicating whether the color picker is visible.
   final bool showColorPicker;
 
@@ -102,6 +105,7 @@ class PaintEditorConfigs {
     this.hasOptionRect = true,
     this.hasOptionCircle = true,
     this.hasOptionDashLine = true,
+    this.hasOptionEraser = true,
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
     this.initialFill = false,

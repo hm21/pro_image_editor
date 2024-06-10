@@ -108,15 +108,31 @@ class DrawPainting extends CustomPainter {
         if (item.fill) {
           item.hit = rect.contains(position);
         } else {
-          final left = strokeW;
-          final top = strokeW;
-          final right = rect.right - strokeHalfW;
-          final bottom = rect.bottom - strokeHalfW;
+          final path = Path();
+          final insideStrokePath = Path();
 
-          item.hit = position.dx < left ||
-              position.dx > right ||
-              position.dy < top ||
-              position.dy > bottom;
+          var strokeRect = Rect.fromPoints(
+              item.offsets[0]! * scale, item.offsets[1]! * scale);
+          double centerX = (strokeRect.left + strokeRect.right) / 2;
+          double centerY = (strokeRect.top + strokeRect.bottom) / 2;
+
+          path.addRect(
+            Rect.fromCenter(
+              center: Offset(centerX, centerY),
+              width: strokeRect.width + strokeW,
+              height: strokeRect.height + strokeW,
+            ),
+          );
+
+          insideStrokePath.addRect(
+            Rect.fromCenter(
+              center: Offset(centerX, centerY),
+              width: strokeRect.width - strokeW,
+              height: strokeRect.height - strokeW,
+            ),
+          );
+          item.hit =
+              path.contains(position) && !insideStrokePath.contains(position);
         }
         break;
       case PaintModeE.circle:

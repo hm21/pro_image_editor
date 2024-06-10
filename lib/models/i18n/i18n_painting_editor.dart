@@ -21,6 +21,9 @@ class I18nPaintingEditor {
   /// Text for the "Dash line" painting mode.
   final String dashLine;
 
+  /// Text for the "Eraser" painting mode.
+  final String eraser;
+
   /// Text for the "Line width" tooltip.
   final String lineWidth;
 
@@ -61,6 +64,7 @@ class I18nPaintingEditor {
   ///   dashLine: 'Dash Line',
   ///   lineWidth: 'Line Width',
   ///   toggleFill: 'Toggle fill',
+  ///   eraser: 'Eraser',
   ///   undo: 'Undo',
   ///   redo: 'Redo',
   ///   done: 'Done',
@@ -76,6 +80,7 @@ class I18nPaintingEditor {
     this.circle = 'Circle',
     this.dashLine = 'Dash line',
     this.lineWidth = 'Line width',
+    this.eraser = 'Eraser',
     this.toggleFill = 'Toggle fill',
     this.undo = 'Undo',
     this.redo = 'Redo',

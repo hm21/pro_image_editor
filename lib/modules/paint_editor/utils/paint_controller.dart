@@ -120,6 +120,15 @@ class PaintingController extends ChangeNotifier {
     historyPosition++;
   }
 
+  /// Adds a painted model to the painting history and notifies listeners of
+  /// the change.
+  void removeLayers(List<String> idList) {
+    _cleanForwardChanges();
+    paintHistory.add([...activePaintings]);
+    historyPosition++;
+    activePaintings.removeWhere((el) => idList.contains(el.id));
+  }
+
   /// Clean forward changes in the history.
   ///
   /// This method removes any changes made after the current edit position in the history.

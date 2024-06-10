@@ -17,4 +17,7 @@ enum PaintModeE {
 
   /// Draws a dashed line between two points.
   dashLine,
+
+  /// Remove paintings when hit.
+  eraser,
 }

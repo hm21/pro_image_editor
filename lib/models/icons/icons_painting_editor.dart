@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -35,6 +36,9 @@ class IconsPaintingEditor {
 
   /// The icon for the dashed line drawing tool.
   final IconData dashLine;
+
+  /// The icon for the eraser tool.
+  final IconData eraser;
 
   /// The icon for the thin stroke width when the theme is set to `Whatsapp`.
   final IconData whatsAppStrokeWidthThin;
@@ -79,6 +83,7 @@ class IconsPaintingEditor {
   /// )
   /// ```
   const IconsPaintingEditor({
+    this.eraser = Icons.delete_forever_outlined,
     this.bottomNavBar = Icons.edit_outlined,
     this.lineWeight = Icons.line_weight_rounded,
     this.freeStyle = Icons.edit,
