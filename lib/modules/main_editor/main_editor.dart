@@ -580,6 +580,7 @@ class ProImageEditorState extends State<ProImageEditor>
       });
     }
     mainEditorCallbacks?.handleAddLayer(layer);
+    setState(() {});
   }
 
   /// Remove a layer from the editor.
@@ -599,6 +600,7 @@ class ProImageEditorState extends State<ProImageEditor>
     var layers = _layerCopyManager.copyLayerList(activeLayers);
     layers.removeAt(layerPos);
     _addHistory(layers: layers);
+    setState(() {});
   }
 
   /// Update the temporary layer in the editor.

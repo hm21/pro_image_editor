@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.6
+- **fix(layer)**: call setState when adding a new layer from external source
+
 ## Version 3.0.5
 - **feat(custom-slider)**: add a custom widget to replace the slider in the filter and blur editor.
 - **feat(custom-color-picker)**: add a custom widget to replace the color picker in the text and paint editor.
