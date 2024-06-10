@@ -1,7 +1,9 @@
 # Changelog
 
-## Version 3.0.7
+## Version 3.0.8
+- **feat(custom-color-picker)**: Add currently selected color to custom color picker widget.
 
+## Version 3.0.7
 #### **Breaking Changes:**
 - The property `generateOnlyDrawingBounds` has been renamed to `captureOnlyDrawingBounds`.
 
