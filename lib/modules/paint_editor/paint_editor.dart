@@ -953,7 +953,8 @@ class PaintingEditorState extends State<PaintingEditor>
       child: StreamBuilder(
           stream: _uiPickerStream.stream,
           builder: (context, snapshot) {
-            return customWidgets.colorPickerPaintEditor?.call(_colorChanged) ??
+            return customWidgets.colorPickerPaintEditor
+                    ?.call(_paintCtrl.color, _colorChanged) ??
                 BarColorPicker(
                   configs: configs,
                   length: min(
