@@ -7,10 +7,10 @@ body:
     attributes:
       value: |
        Please use the [discuss](https://github.com/hm21/pro_image_editor/discussions) tab to ask a question.
-  - type: textarea
+  - type: input
     id: placeholder
     attributes:
-      label: Placeholder
-      description: "Placeholder"
+      label: Please use the discuss tab to ask a question.
+      description: "Please use the discuss tab to ask a question."
     validations:
       required: false
