@@ -183,9 +183,10 @@ class LayerInteractionManager {
       activeLayer.offset.dy + detail.focalPointDelta.dy,
     );
 
-    bool hoveredRemoveBtn = detail.focalPoint.dx <= kToolbarHeight &&
+    bool hoveredRemoveBtn = detail.focalPoint.dx <=
+            kToolbarHeight + MediaQuery.of(context).padding.left &&
         detail.focalPoint.dy <=
-            kToolbarHeight + MediaQuery.of(context).viewPadding.top;
+            kToolbarHeight + MediaQuery.of(context).padding.top;
     if (hoverRemoveBtn != hoveredRemoveBtn) {
       hoverRemoveBtn = hoveredRemoveBtn;
       onHoveredRemoveBtn.call(hoverRemoveBtn);
