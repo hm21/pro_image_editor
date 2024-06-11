@@ -1,6 +1,7 @@
 // Dart imports:
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
@@ -183,9 +184,13 @@ class LayerInteractionManager {
       activeLayer.offset.dy + detail.focalPointDelta.dy,
     );
 
-    bool hoveredRemoveBtn = detail.focalPoint.dx <= kToolbarHeight &&
-        detail.focalPoint.dy <=
-            kToolbarHeight + MediaQuery.of(context).viewPadding.top;
+    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
+    EdgeInsets safeArea = MediaQueryData.fromView(view).padding;
+
+    bool hoveredRemoveBtn =
+        detail.focalPoint.dx <= kToolbarHeight + safeArea.left &&
+            detail.focalPoint.dy <= kToolbarHeight + safeArea.top;
+
     if (hoverRemoveBtn != hoveredRemoveBtn) {
       hoverRemoveBtn = hoveredRemoveBtn;
       onHoveredRemoveBtn.call(hoverRemoveBtn);
