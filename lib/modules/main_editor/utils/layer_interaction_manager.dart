@@ -1,7 +1,6 @@
 // Dart imports:
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
@@ -175,26 +174,31 @@ class LayerInteractionManager {
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
     required bool configEnabledHitVibration,
-    required Function(bool) onHoveredRemoveBtn,
+    required GlobalKey removeAreaKey,
+    required Function(bool) onHoveredRemoveChanged,
   }) {
     if (_activeScale) return;
+
+    RenderBox? box =
+        removeAreaKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box != null) {
+      Offset position = box.localToGlobal(Offset.zero);
+      bool hit = Rect.fromLTWH(
+        position.dx,
+        position.dy,
+        box.size.width,
+        box.size.height,
+      ).contains(detail.focalPoint);
+      if (hoverRemoveBtn != hit) {
+        hoverRemoveBtn = hit;
+        onHoveredRemoveChanged.call(hoverRemoveBtn);
+      }
+    }
 
     activeLayer.offset = Offset(
       activeLayer.offset.dx + detail.focalPointDelta.dx,
       activeLayer.offset.dy + detail.focalPointDelta.dy,
     );
-
-    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
-    EdgeInsets safeArea = MediaQueryData.fromView(view).padding;
-
-    bool hoveredRemoveBtn =
-        detail.focalPoint.dx <= kToolbarHeight + safeArea.left &&
-            detail.focalPoint.dy <= kToolbarHeight + safeArea.top;
-
-    if (hoverRemoveBtn != hoveredRemoveBtn) {
-      hoverRemoveBtn = hoveredRemoveBtn;
-      onHoveredRemoveBtn.call(hoverRemoveBtn);
-    }
 
     bool vibarate = false;
     double posX = activeLayer.offset.dx;

@@ -55,8 +55,47 @@ export 'whatsapp/whatsapp_custom_text_styles.dart';
 ///
 /// Please refer to the documentation of individual properties and methods for more details.
 class ImageEditorCustomWidgets {
-  /// A custom widget for removing a layer or element from the editor interface.
-  final Widget? removeLayer;
+  /// A custom widget for removing a layer or element from the editor interface,
+  /// when hover the layer over the area.
+  ///
+  /// **Example:**
+  /// ```dart
+  /// configs: ProImageEditorConfigs(
+  ///   customWidgets: ImageEditorCustomWidgets(
+  ///     removeLayer: (key, stream) {
+  ///       return Positioned(
+  ///         key: key, // Important add the key
+  ///         top: 0,
+  ///         left: 0,
+  ///         child: SafeArea(
+  ///           bottom: false,
+  ///           child: StreamBuilder(
+  ///               stream: stream, // Important add the stream
+  ///               initialData: false,
+  ///               builder: (context, snapshot) {
+  ///                 return Container(
+  ///                   height: 56,
+  ///                   width: 56,
+  ///                   decoration: BoxDecoration(
+  ///                     color:
+  ///                         snapshot.data ? Colors.red : Colors.grey.shade800,
+  ///                     borderRadius: const BorderRadius.only(
+  ///                         bottomRight: Radius.circular(100)),
+  ///                   ),
+  ///                   padding: const EdgeInsets.only(right: 12, bottom: 7),
+  ///                   child: const Center(
+  ///                     child: Icon(Icons.delete_outline, size: 28),
+  ///                   ),
+  ///                 );
+  ///               },
+  ///            ),
+  ///         ),
+  ///       );
+  ///     },
+  ///   ),
+  /// );
+  /// ```
+  final RemoveButton? removeLayer;
 
   /// A custom app bar widget for the top navigation bar.
   final PreferredSizeWidget? appBar;
@@ -191,6 +230,9 @@ class ImageEditorCustomWidgets {
     this.whatsAppOwnAppBarIcons,
   });
 }
+
+/// A function type that defines a widget for removing layers.
+typedef RemoveButton = Widget Function(GlobalKey key, Stream stream);
 
 /// A function type that defines a widget for selecting aspect ratio options
 /// in a crop editor.

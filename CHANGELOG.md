@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.10
+- **feat(hover-remove-btn)**: Extend the remove area so that it always detects the layer hovering correctly, even if the user creates a custom widget with a different position for it.
+
 ## Version 3.0.9
 - **fix(hover-remove-btn)**: Ensure remove area works correctly on iOS rotated devices. This fix [GitHub issue #75](https://github.com/hm21/pro_image_editor/issues/75).
 

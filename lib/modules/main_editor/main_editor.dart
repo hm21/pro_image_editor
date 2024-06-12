@@ -305,6 +305,7 @@ class ProImageEditorState extends State<ProImageEditor>
         MainEditorGlobalKeys {
   final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
   final _bottomBarKey = GlobalKey();
+  final _removeAreaKey = GlobalKey();
 
   /// Helper class for managing sizes and layout calculations.
   late final SizesManager _sizesManager;
@@ -803,11 +804,12 @@ class ProImageEditorState extends State<ProImageEditor>
       _layerInteractionManager.freeStyleHighPerformanceMoving =
           paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
       _layerInteractionManager.calculateMovement(
+        removeAreaKey: _removeAreaKey,
         activeLayer: _activeLayer!,
         context: context,
         detail: details,
         configEnabledHitVibration: helperLines.hitVibration,
-        onHoveredRemoveBtn: _controllers.removeBtnCtrl.add,
+        onHoveredRemoveChanged: _controllers.removeBtnCtrl.add,
       );
     } else if (details.pointerCount == 2) {
       _layerInteractionManager.freeStyleHighPerformanceScaling =
@@ -2422,8 +2424,10 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildRemoveIcon() {
-    return customWidgets.removeLayer ??
+    return customWidgets.removeLayer
+            ?.call(_removeAreaKey, _controllers.removeBtnCtrl.stream) ??
         Positioned(
+          key: _removeAreaKey,
           top: 0,
           left: 0,
           child: SafeArea(
