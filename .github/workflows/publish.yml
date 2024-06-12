@@ -27,14 +27,9 @@ jobs:
         run: flutter test
 
       - name: Setup Pub Credentials
-        shell: bash
-        env:
-          PUB_DEV_PUBLISH_ACCESS_TOKEN: ${{ secrets.PUB_DEV_PUBLISH_ACCESS_TOKEN }}
-          PUB_DEV_PUBLISH_REFRESH_TOKEN: ${{ secrets.PUB_DEV_PUBLISH_REFRESH_TOKEN }}
-          PUB_DEV_PUBLISH_TOKEN_ENDPOINT: ${{ secrets.PUB_DEV_PUBLISH_TOKEN_ENDPOINT }}
-          PUB_DEV_PUBLISH_EXPIRATION: ${{ secrets.PUB_DEV_PUBLISH_EXPIRATION }}
         run: |
-          sh ./pub_login.sh
+          echo "export PUB_DEV_PUBLISH_ACCESS_TOKEN=$PUB_DEV_PUBLISH_ACCESS_TOKEN" >> $GITHUB_ENV
+          echo "export PUB_DEV_PUBLISH_REFRESH_TOKEN=$PUB_DEV_PUBLISH_REFRESH_TOKEN" >> $GITHUB_ENV (optional, if using refresh token)
 
       - name: Check Publish Warnings
         run: dart pub publish --dry-run

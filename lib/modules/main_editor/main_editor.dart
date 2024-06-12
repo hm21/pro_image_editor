@@ -605,6 +605,14 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
   }
 
+  /// Remove all layers from the editor.
+  ///
+  /// This method removes all layers from the editor and updates the editing state.
+  void removeAllLayers() {
+    _addHistory(layers: []);
+    setState(() {});
+  }
+
   /// Update the temporary layer in the editor.
   ///
   /// This method updates the temporary layer in the editor and updates the editing state.

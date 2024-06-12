@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.11
+- **feat(remove-all-layers)**: Add method to remove all layers as requested in [#80](https://github.com/hm21/pro_image_editor/issues/80)
+
 ## Version 3.0.10
 - **feat(hover-remove-btn)**: Extend the remove area so that it always detects the layer hovering correctly, even if the user creates a custom widget with a different position for it.
 
