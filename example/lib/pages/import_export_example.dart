@@ -1,5 +1,7 @@
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -50,7 +52,22 @@ class _ImportExportExampleState extends State<ImportExportExample>
             onCloseEditor: onCloseEditor,
           ),
           configs: ProImageEditorConfigs(
+            imageGenerationConfigs: const ImageGeneratioConfigs(
+              generateImageInBackground: false,
+            ),
             designMode: platformDesignMode,
+            imageEditorTheme: ImageEditorTheme(
+              emojiEditor: kIsWeb
+                  ? EmojiEditorTheme(
+                      textStyle: DefaultEmojiTextStyle.copyWith(
+                        fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
+                      ),
+                    )
+                  : const EmojiEditorTheme(),
+            ),
+            emojiEditorConfigs: const EmojiEditorConfigs(
+              checkPlatformCompatibility: false,
+            ),
             stateHistoryConfigs: StateHistoryConfigs(
               initStateHistory: ImportStateHistory.fromMap(
                 importHistoryDemoData,

@@ -99,16 +99,16 @@ class TransformConfigs {
         'right': cropRect.right,
         'bottom': cropRect.bottom,
       },
-      'originalRect': {
+      'originalSize': {
         'width': originalSize.width,
         'height': originalSize.height,
       },
       'cropEditorScreenRatio': cropEditorScreenRatio,
       'scaleUser': scaleUser,
       'scaleRotation': scaleRotation,
+      'aspectRatio': aspectRatio,
       'flipX': flipX,
       'flipY': flipY,
-      'aspectRatio': aspectRatio,
       'offset': {
         'dx': offset.dx,
         'dy': offset.dy,

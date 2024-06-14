@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.13
+- **fix(state-history)**: Resolve incorrect import/export from transform-configs. This resolve issue [#102](https://github.com/hm21/pro_image_editor/discussions/102)
+
 ## Version 3.0.12
 - **fix(import-history)**: Resolve incorrect import of fontfamily and fontscale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83)
 

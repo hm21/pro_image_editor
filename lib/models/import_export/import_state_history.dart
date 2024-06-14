@@ -85,11 +85,13 @@ class ImportStateHistory {
           blur: blur,
           layers: layers,
           filters: filters,
-          transformConfigs: el['transformConfigs'] ?? TransformConfigs.empty(),
+          transformConfigs:
+              el['transform'] != null && Map.from(el['transform']).isNotEmpty
+                  ? TransformConfigs.fromMap(el['transform'])
+                  : TransformConfigs.empty(),
         ),
       );
     }
-
     return ImportStateHistory._(
       editorPosition: map['position'],
       imgSize:

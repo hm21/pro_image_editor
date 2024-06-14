@@ -88,12 +88,13 @@ class ExportStateHistory {
         imageInfos: imageInfos,
       );
 
+      Map transformConfigsMap = element.transformConfigs.toMap();
       history.add({
         if (layers.isNotEmpty) 'layers': layers,
         if (_configs.exportFilter && element.filters.isNotEmpty)
           'filters': element.filters,
         'blur': element.blur,
-        'transform': element.transformConfigs.toMap(),
+        if (transformConfigsMap.isNotEmpty) 'transform': transformConfigsMap,
       });
     }
     await _contentRecorderCtrl.destroy();
