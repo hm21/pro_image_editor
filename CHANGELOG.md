@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.12
+- **fix(import-history)**: Resolve incorrect import of fontfamily and fontscale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83)
+
 ## Version 3.0.11
 - **feat(remove-all-layers)**: Add method to remove all layers as requested in [#80](https://github.com/hm21/pro_image_editor/issues/80)
 

@@ -70,6 +70,12 @@ class Layer {
           rotation: layer.rotation,
           scale: layer.scale,
           text: map['text'] ?? '-',
+          fontScale: map['fontScale'] ?? 1.0,
+          textStyle: map['fontFamily'] != null
+              ? TextStyle(
+                  fontFamily: map['fontFamily'],
+                )
+              : null,
           colorMode: LayerBackgroundMode.values
               .firstWhere((element) => element.name == map['colorMode']),
           color: Color(map['color']),

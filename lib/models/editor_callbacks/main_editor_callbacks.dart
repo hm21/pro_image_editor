@@ -11,42 +11,42 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// A callback function that is triggered when a layer is added.
   ///
   /// The [Layer] parameter provides information about the added layer.
-  final Function(Layer)? onAddLayer;
+  final ValueChanged<Layer>? onAddLayer;
 
   /// A callback function that is triggered when a layer is updated.
   ///
   /// The [Layer] parameter provides information about the updated layer.
-  final Function(Layer)? onUpdateLayer;
+  final ValueChanged<Layer>? onUpdateLayer;
 
   /// A callback function that is triggered when a layer is removed.
   ///
   /// The [Layer] parameter provides information about the removed layer.
-  final Function(Layer)? onRemoveLayer;
+  final ValueChanged<Layer>? onRemoveLayer;
 
   /// A callback function that is triggered when a sub-editor is opened.
   ///
   /// The [SubEditor] parameter provides information about the opened sub-editor.
-  final Function(SubEditor)? onOpenSubEditor;
+  final ValueChanged<SubEditor>? onOpenSubEditor;
 
   /// A callback function that is triggered when a sub-editor is closed.
   ///
   /// The [SubEditor] parameter provides information about the closed sub-editor.
-  final Function(SubEditor)? onCloseSubEditor;
+  final ValueChanged<SubEditor>? onCloseSubEditor;
 
   /// A callback function that is triggered when a scaling gesture starts.
   ///
   /// The [ScaleStartDetails] parameter provides information about the scaling gesture.
-  final Function(ScaleStartDetails)? onScaleStart;
+  final ValueChanged<ScaleStartDetails>? onScaleStart;
 
   /// A callback function that is triggered when a scaling gesture is updated.
   ///
   /// The [ScaleUpdateDetails] parameter provides information about the scaling gesture.
-  final Function(ScaleUpdateDetails)? onScaleUpdate;
+  final ValueChanged<ScaleUpdateDetails>? onScaleUpdate;
 
   /// A callback function that is triggered when a scaling gesture ends.
   ///
   /// The [ScaleEndDetails] parameter provides information about the scaling gesture.
-  final Function(ScaleEndDetails)? onScaleEnd;
+  final ValueChanged<ScaleEndDetails>? onScaleEnd;
 
   /// Creates a new instance of [MainEditorCallbacks].
   const MainEditorCallbacks({
