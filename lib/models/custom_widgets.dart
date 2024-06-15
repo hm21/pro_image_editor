@@ -148,6 +148,12 @@ class ImageEditorCustomWidgets {
   /// editor.
   final CustomSlider? sliderBlurEditor;
 
+  /// A custom slider widget for the line width in the paint editor.
+  ///
+  /// This widget allows users to adjust the line width using a slider in the paint
+  /// editor bottom sheet.
+  final CustomSlider? sliderPaintEditorLineWidth;
+
   /// A widget for selecting aspect ratio options in the crop editor.
   ///
   /// This widget allows users to select different aspect ratio options for the crop
@@ -206,11 +212,26 @@ class ImageEditorCustomWidgets {
   /// Available in the WhatsApp theme only.
   final Widget? whatsAppBottomWidget;
 
+  /// Custom close button in the paint-editor to close the line-width bottom sheet.
+  ///
+  /// **Example:**
+  /// ```dart
+  /// paintEditorLineWidthCloseButton: (tap) {
+  ///   return IconButton(
+  ///     onPressed: tap,
+  ///     icon: const Icon(Icons.close),
+  ///   );
+  /// },
+  /// ```
+  final CloseBtn? paintEditorLineWidthCloseButton;
+
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
   const ImageEditorCustomWidgets({
     this.cropEditorAspectRatioOptions,
     this.sliderFilterEditor,
     this.sliderBlurEditor,
+    this.sliderPaintEditorLineWidth,
+    this.paintEditorLineWidthCloseButton,
     this.colorPickerPaintEditor,
     this.colorPickerTextEditor,
     this.removeLayer,
@@ -269,3 +290,5 @@ typedef CustomSlider = Widget Function(
   Function(double value) onChanged,
   Function(double value) onChangeEnd,
 );
+
+typedef CloseBtn = Widget Function(Function() tap);

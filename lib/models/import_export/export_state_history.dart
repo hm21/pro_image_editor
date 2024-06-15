@@ -26,8 +26,10 @@ class ExportStateHistory {
   final Size _imgSize;
   final List<EditorStateHistory> stateHistory;
   late ContentRecorderController _contentRecorderCtrl;
+  final ProImageEditorConfigs _editorConfigs;
   final ExportEditorConfigs _configs;
   final ImageInfos imageInfos;
+  final BuildContext context;
 
   /// Constructs an [ExportStateHistory] object with the given parameters.
   ///
@@ -35,10 +37,12 @@ class ExportStateHistory {
   /// parameters are required, while the [configs] parameter is optional and
   /// defaults to [ExportEditorConfigs()].
   ExportStateHistory(
+    this._editorConfigs,
     this.stateHistory,
     this.imageInfos,
     this._imgSize,
     this._editorPosition, {
+    required this.context,
     ExportEditorConfigs configs = const ExportEditorConfigs(),
   }) : _configs = configs;
 
@@ -160,10 +164,22 @@ class ExportStateHistory {
       } else if (_configs.exportSticker &&
           layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
+
+        double imageWidth =
+            (_editorConfigs.stickerEditorConfigs?.initWidth ?? 100) *
+                layer.scale;
+        Size targetSize = Size(
+            imageWidth,
+            MediaQuery.of(context).size.height /
+                MediaQuery.of(context).size.width *
+                imageWidth);
+
         stickers.add(
           await _contentRecorderCtrl.captureFromWidget(
             layer.sticker,
             imageInfos: imageInfos,
+            context: context,
+            targetSize: targetSize * MediaQuery.of(context).devicePixelRatio,
           ),
         );
       }

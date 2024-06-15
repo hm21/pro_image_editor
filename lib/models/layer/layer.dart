@@ -115,10 +115,11 @@ class Layer {
               )
             : const SizedBox.shrink();
         if (stickers.isNotEmpty && stickers.length > stickerPosition) {
-          sticker = Image.memory(
-            stickers[stickerPosition],
-            width: 100,
-            height: 100,
+          sticker = ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 1, minHeight: 1),
+            child: Image.memory(
+              stickers[stickerPosition],
+            ),
           );
         }
 

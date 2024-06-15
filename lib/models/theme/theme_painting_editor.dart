@@ -74,8 +74,12 @@ class PaintingEditorTheme {
   /// Color of the bottom sheet used to select line width.
   final Color lineWidthBottomSheetColor;
 
+  /// Title of the bottom sheet used to select line width.
+  final TextStyle? lineWidthBottomSheetTitle;
+
   /// Creates an instance of the `PaintingEditorTheme` class with the specified theme properties.
   const PaintingEditorTheme({
+    this.lineWidthBottomSheetTitle,
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.lineWidthBottomSheetColor = const Color(0xFF252728),
     this.appBarForegroundColor = const Color(0xFFE1E1E1),

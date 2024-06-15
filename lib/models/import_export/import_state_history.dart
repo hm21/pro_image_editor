@@ -77,7 +77,18 @@ class ImportStateHistory {
           filters.addAll(filterMatrix);
         }
       } else {
-        filters = List.from(el['filters'] ?? []);
+        List<List<double>> filterList = [];
+        for (var el in List.from(el['filters'] ?? [])) {
+          List<double> filtersRaw = [];
+
+          for (var raw in List.from(el)) {
+            filtersRaw.add(raw);
+          }
+
+          filterList.add(filtersRaw);
+        }
+
+        filters = filterList;
       }
 
       stateHistory.add(

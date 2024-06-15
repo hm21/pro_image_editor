@@ -352,9 +352,21 @@ class PaintingEditorState extends State<PaintingEditor>
                   children: [
                     BottomSheetHeaderRow(
                       title: i18n.paintEditor.lineWidth,
-                      theme: widget.initConfigs.theme,
+                      theme: initConfigs.theme,
+                      textStyle: imageEditorTheme
+                          .paintingEditor.lineWidthBottomSheetTitle,
+                      closeButton:
+                          customWidgets.paintEditorLineWidthCloseButton,
                     ),
                     StatefulBuilder(builder: (context, setState) {
+                      if (customWidgets.sliderPaintEditorLineWidth != null) {
+                        return customWidgets.sliderPaintEditorLineWidth!(
+                            _paintCtrl.strokeWidth, (value) {
+                          setStrokeWidth(value);
+                          setState(() {});
+                        }, (onChangedEnd) {});
+                      }
+
                       return Slider.adaptive(
                         max: 40,
                         min: 2,

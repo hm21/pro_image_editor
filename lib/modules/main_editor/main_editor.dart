@@ -1769,11 +1769,14 @@ class ProImageEditorState extends State<ProImageEditor>
     if (_imageInfos == null) await _decodeImage();
 
     return ExportStateHistory(
+      this.configs,
       _stateManager.stateHistory,
       _imageInfos!,
       _sizesManager.decodedImageSize,
       _stateManager.position,
       configs: configs,
+      // ignore: use_build_context_synchronously
+      context: context,
     );
   }
 

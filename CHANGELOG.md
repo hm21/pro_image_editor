@@ -1,13 +1,17 @@
 # Changelog
 
+## Version 3.0.14
+- **feat(custom-widget)**: Add custom widgets to the line-width bottomsheet in the Paint Editor, which was requested in [#103](https://github.com/hm21/pro_image_editor/discussions/103).
+- **fix(sticker-export-import)** Fix the issue that the sticker size change after export/import them. This resolve issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).
+
 ## Version 3.0.13
-- **fix(state-history)**: Resolve incorrect import/export from transform-configs. This resolve issue [#102](https://github.com/hm21/pro_image_editor/discussions/102)
+- **fix(state-history)**: Resolve incorrect import/export from transform-configs. This resolve issue [#102](https://github.com/hm21/pro_image_editor/discussions/102).
 
 ## Version 3.0.12
-- **fix(import-history)**: Resolve incorrect import of fontfamily and fontscale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83)
+- **fix(import-history)**: Resolve incorrect import of fontfamily and fontscale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83).
 
 ## Version 3.0.11
-- **feat(remove-all-layers)**: Add method to remove all layers as requested in [#80](https://github.com/hm21/pro_image_editor/issues/80)
+- **feat(remove-all-layers)**: Add method to remove all layers as requested in [#80](https://github.com/hm21/pro_image_editor/issues/80).
 
 ## Version 3.0.10
 - **feat(hover-remove-btn)**: Extend the remove area so that it always detects the layer hovering correctly, even if the user creates a custom widget with a different position for it.
