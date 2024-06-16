@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 3.0.15
+- **feat(callbacks)**: Add to the main-editor callbacks `onTap`, `onDoubleTap` and `onLongPress` which was requested in [#104](https://github.com/hm21/pro_image_editor/issues/104).
+
 ## Version 3.0.14
 - **feat(custom-widget)**: Add custom widgets to the line-width bottomsheet in the Paint Editor, which was requested in [#103](https://github.com/hm21/pro_image_editor/discussions/103).
 - **fix(sticker-export-import)** Fix the issue that the sticker size change after export/import them. This resolve issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).

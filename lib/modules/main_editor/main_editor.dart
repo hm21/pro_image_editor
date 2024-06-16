@@ -1922,7 +1922,10 @@ class ProImageEditorState extends State<ProImageEditor>
               _layerInteractionManager.selectedLayerId = '';
               setState(() {});
             }
+            mainEditorCallbacks?.onTap?.call();
           },
+          onDoubleTap: mainEditorCallbacks?.onDoubleTap,
+          onLongPress: mainEditorCallbacks?.onLongPress,
           onScaleStart: _onScaleStart,
           onScaleUpdate: _onScaleUpdate,
           onScaleEnd: _onScaleEnd,

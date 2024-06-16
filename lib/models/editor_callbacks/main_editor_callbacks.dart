@@ -33,6 +33,15 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// The [SubEditor] parameter provides information about the closed sub-editor.
   final ValueChanged<SubEditor>? onCloseSubEditor;
 
+  /// A callback function that is triggered when the user `tap` on the body.
+  final Function()? onTap;
+
+  /// A callback function that is triggered when the user `doubleTap` on the body.
+  final Function()? onDoubleTap;
+
+  /// A callback function that is triggered when the user `longPress` on the body.
+  final Function()? onLongPress;
+
   /// A callback function that is triggered when a scaling gesture starts.
   ///
   /// The [ScaleStartDetails] parameter provides information about the scaling gesture.
@@ -50,6 +59,9 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Creates a new instance of [MainEditorCallbacks].
   const MainEditorCallbacks({
+    this.onTap,
+    this.onDoubleTap,
+    this.onLongPress,
     this.onAddLayer,
     this.onUpdateLayer,
     this.onRemoveLayer,
