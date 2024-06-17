@@ -371,8 +371,8 @@ class ProImageEditorState extends State<ProImageEditor>
   bool get canRedo =>
       stateManager.position < stateManager.stateHistory.length - 1;
 
-  /// Get the current image being edited from the change list.
-  late EditorImage _image;
+  /// Get the current background image.
+  late EditorImage editorImage;
 
   /// A [Completer] used to track the completion of a page open operation.
   ///
@@ -401,7 +401,7 @@ class ProImageEditorState extends State<ProImageEditor>
     layerInteractionManager.scaleDebounce =
         Debounce(const Duration(milliseconds: 100));
 
-    _image = EditorImage(
+    editorImage = EditorImage(
       assetPath: widget.assetPath,
       byteArray: widget.byteArray,
       file: widget.file,
@@ -650,7 +650,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
     if (!mounted) return;
     _imageInfos = await decodeImageInfos(
-      bytes: await _image.safeByteArray(context),
+      bytes: await editorImage.safeByteArray(context),
       screenSize: Size(
         sizesManager.lastScreenSize.width,
         sizesManager.bodySize.height,
@@ -1017,10 +1017,10 @@ class ProImageEditorState extends State<ProImageEditor>
         await openPage<List<PaintingLayerData>>(
       PaintingEditor.autoSource(
         key: paintingEditor,
-        file: _image.file,
-        byteArray: _image.byteArray,
-        assetPath: _image.assetPath,
-        networkUrl: _image.networkUrl,
+        file: editorImage.file,
+        byteArray: editorImage.byteArray,
+        assetPath: editorImage.assetPath,
+        networkUrl: editorImage.networkUrl,
         initConfigs: PaintEditorInitConfigs(
           configs: configs,
           callbacks: callbacks,
@@ -1085,10 +1085,10 @@ class ProImageEditorState extends State<ProImageEditor>
     openPage<TransformConfigs?>(
       CropRotateEditor.autoSource(
         key: cropRotateEditor,
-        file: _image.file,
-        byteArray: _image.byteArray,
-        assetPath: _image.assetPath,
-        networkUrl: _image.networkUrl,
+        file: editorImage.file,
+        byteArray: editorImage.byteArray,
+        assetPath: editorImage.assetPath,
+        networkUrl: editorImage.networkUrl,
         initConfigs: CropRotateEditorInitConfigs(
           configs: configs,
           callbacks: callbacks,
@@ -1149,10 +1149,10 @@ class ProImageEditorState extends State<ProImageEditor>
     FilterMatrix? filters = await openPage(
       FilterEditor.autoSource(
         key: filterEditor,
-        file: _image.file,
-        byteArray: _image.byteArray,
-        assetPath: _image.assetPath,
-        networkUrl: _image.networkUrl,
+        file: editorImage.file,
+        byteArray: editorImage.byteArray,
+        assetPath: editorImage.assetPath,
+        networkUrl: editorImage.networkUrl,
         initConfigs: FilterEditorInitConfigs(
           theme: _theme,
           configs: configs,
@@ -1185,10 +1185,10 @@ class ProImageEditorState extends State<ProImageEditor>
     double? blur = await openPage(
       BlurEditor.autoSource(
         key: blurEditor,
-        file: _image.file,
-        byteArray: _image.byteArray,
-        assetPath: _image.assetPath,
-        networkUrl: _image.networkUrl,
+        file: editorImage.file,
+        byteArray: editorImage.byteArray,
+        assetPath: editorImage.assetPath,
+        networkUrl: editorImage.networkUrl,
         initConfigs: BlurEditorInitConfigs(
           theme: _theme,
           mainImageSize: sizesManager.decodedImageSize,
@@ -1483,7 +1483,7 @@ class ProImageEditorState extends State<ProImageEditor>
               stateManager.position > 0 ? stateManager.activeScreenshot : null,
           originalImageBytes: stateManager.position > 0
               ? null
-              : await _image.safeByteArray(context),
+              : await editorImage.safeByteArray(context),
         ) ??
         Uint8List.fromList([]);
   }
@@ -2305,7 +2305,7 @@ class ProImageEditorState extends State<ProImageEditor>
         createRectTween: (begin, end) => RectTween(begin: begin, end: end),
         child: !_inited
             ? AutoImage(
-                _image,
+                editorImage,
                 fit: BoxFit.contain,
                 width: sizesManager.decodedImageSize.width,
                 height: sizesManager.decodedImageSize.height,
@@ -2318,7 +2318,7 @@ class ProImageEditorState extends State<ProImageEditor>
                   width: sizesManager.decodedImageSize.width,
                   height: sizesManager.decodedImageSize.height,
                   designMode: designMode,
-                  image: _image,
+                  image: editorImage,
                   filters: stateManager.activeFilters,
                   blurFactor: stateManager.activeBlur,
                 ),

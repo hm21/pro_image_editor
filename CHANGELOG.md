@@ -1,10 +1,14 @@
 # Changelog
 
+## Version 4.0.2
+- **refactor(designs)**: Made the "Frosted-Glass" and "WhatsApp" designs more compact, making them easier to implement with less code.
 
 ## Version 4.0.1
 - **fix(import-history)**: Resolve incorrect multiple importing from state history. This resolve issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
 
 ## Version 4.0.0
+Detailed information about this release and why these breaking-changes are necessary can be found [here](https://github.com/hm21/pro_image_editor/discussions/109).
+
 #### **Breaking Changes:**
 - Remove hardcoded `WhatsApp-Design`.
 - Rewrite the entire logic of `customWidgets`.

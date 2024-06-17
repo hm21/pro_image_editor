@@ -41,17 +41,6 @@ class _DesignExampleState extends State<DesignExample>
                 ),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.chat_outlined),
-                  title: const Text('WhatsApp'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    _openExample(
-                      WhatsAppExample(url: _urlWhatsApp),
-                      _urlWhatsApp,
-                    );
-                  },
-                ),
-                ListTile(
                   leading: const Icon(Icons.auto_awesome),
                   title: const Text('Frosted-Glass'),
                   trailing: const Icon(Icons.chevron_right),
@@ -59,6 +48,17 @@ class _DesignExampleState extends State<DesignExample>
                     _openExample(
                       FrostedGlassExample(url: _urlFrostedGlass),
                       _urlFrostedGlass,
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.chat_outlined),
+                  title: const Text('WhatsApp'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    _openExample(
+                      WhatsAppExample(url: _urlWhatsApp),
+                      _urlWhatsApp,
                     );
                   },
                 ),
