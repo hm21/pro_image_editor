@@ -349,7 +349,11 @@ class _MoveableBackgroundImageExampleState
                               mainEditor: CustomWidgetsMainEditor(
                             bottomBar: (editor, rebuildStream, key) =>
                                 editor.selectedLayerIndex < 0
-                                    ? _bottomNavigationBar(key, constraints)
+                                    ? ReactiveCustomWidget(
+                                        stream: rebuildStream,
+                                        builder: (_) => _bottomNavigationBar(
+                                            key, constraints),
+                                      )
                                     : null,
                           )),
                           imageEditorTheme: const ImageEditorTheme(

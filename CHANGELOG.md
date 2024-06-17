@@ -1,5 +1,9 @@
 # Changelog
 
+
+## Version 4.0.1
+- **fix(import-history)**: Resolve incorrect multiple importing from state history. This resolve issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
+
 ## Version 4.0.0
 #### **Breaking Changes:**
 - Remove hardcoded `WhatsApp-Design`.

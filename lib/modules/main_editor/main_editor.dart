@@ -1606,6 +1606,8 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     if (import.configs.mergeMode == ImportEditorMergeMode.replace) {
+      stateManager.screenshots = [];
+
       stateManager.position = import.editorPosition + 1;
       stateManager.stateHistory = [
         EditorStateHistory(
@@ -1625,6 +1627,10 @@ class ProImageEditorState extends State<ProImageEditor>
         }
       }
     } else {
+      for (var el in stateManager.screenshots) {
+        el.broken = true;
+      }
+
       for (var el in import.stateHistory) {
         if (import.configs.mergeMode == ImportEditorMergeMode.merge) {
           el.layers.insertAll(0, stateHistory.last.layers);

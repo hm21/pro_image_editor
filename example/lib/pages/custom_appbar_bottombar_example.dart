@@ -132,11 +132,17 @@ class _CustomAppbarBottombarExampleState
           designMode: platformDesignMode,
           customWidgets: ImageEditorCustomWidgets(
             mainEditor: CustomWidgetsMainEditor(
-              appBar: (editor, rebuildStream) =>
-                  editor.selectedLayerIndex < 0 ? _buildAppBar(editor) : null,
+              appBar: (editor, rebuildStream) => editor.selectedLayerIndex < 0
+                  ? ReactiveCustomAppbar(
+                      stream: rebuildStream,
+                      builder: (_) => _buildAppBar(editor))
+                  : null,
               bottomBar: (editor, rebuildStream, key) =>
                   editor.selectedLayerIndex < 0
-                      ? _bottomNavigationBar(editor, key, constraints)
+                      ? ReactiveCustomWidget(
+                          stream: rebuildStream,
+                          builder: (_) =>
+                              _bottomNavigationBar(editor, key, constraints))
                       : null,
             ),
             paintEditor: CustomWidgetsPaintEditor(

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:pro_image_editor/modules/main_editor/main_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 import 'utils/custom_widgets_typedef.dart';
@@ -94,7 +93,7 @@ class CustomWidgetsMainEditor {
   ///     title: const Text('Title'),
   ///   ),
   /// ),
-  final PreferredSizeWidget? Function(
+  final ReactiveCustomAppbar? Function(
     ProImageEditorState editor,
     Stream rebuildStream,
   )? appBar;
@@ -113,7 +112,7 @@ class CustomWidgetsMainEditor {
   ///   );
   /// },
   /// ```
-  final Widget? Function(
+  final ReactiveCustomWidget? Function(
     ProImageEditorState editor,
     Stream rebuildStream,
     Key key,
@@ -134,7 +133,7 @@ class CustomWidgetsMainEditor {
   ///   ),
   /// ],
   /// ```
-  final List<Widget> Function(
+  final List<ReactiveCustomWidget> Function(
     ProImageEditorState editor,
     Stream rebuildStream,
   )? bodyItems;
