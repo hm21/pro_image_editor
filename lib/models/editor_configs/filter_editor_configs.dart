@@ -23,9 +23,6 @@ class FilterEditorConfigs {
   /// Show also layers in the editor.
   final bool showLayers;
 
-  /// Offset for the filter text, helpful if the user has an input field that overlays in a stack widget.
-  final double whatsAppFilterTextOffsetY;
-
   /// A list of color filter generators to apply to an image.
   final List<FilterModel>? filterList;
 
@@ -35,7 +32,6 @@ class FilterEditorConfigs {
   const FilterEditorConfigs({
     this.enabled = true,
     this.showLayers = true,
-    this.whatsAppFilterTextOffsetY = 0,
     this.filterList,
   });
 }

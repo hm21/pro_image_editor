@@ -1,4 +1,5 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:math';
 
 // Flutter imports:
@@ -8,16 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
 // Project imports:
-import 'package:pro_image_editor/designs/whatsapp/whatsapp_text_appbar.dart';
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/mixins/converted_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import '../../designs/whatsapp/whatsapp_text_bottombar.dart';
 import '../../mixins/editor_configs_mixin.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/bottom_sheets_header_row.dart';
-import '../../widgets/color_picker/bar_color_picker.dart';
-import '../../widgets/color_picker/color_picker_configs.dart';
 import '../../widgets/platform_popup_menu.dart';
 import 'widgets/text_editor_bottom_bar.dart';
 
@@ -60,21 +57,23 @@ class TextEditorState extends State<TextEditor>
         ImageEditorConvertedConfigs,
         ImageEditorConvertedCallbacks,
         SimpleConfigsAccessState {
+  late final StreamController _rebuildController;
   final TextEditingController _textCtrl = TextEditingController();
   final FocusNode _focus = FocusNode();
-  Color _primaryColor = Colors.black;
+  Color primaryColor = Colors.black;
   late TextAlign align;
   late LayerBackgroundMode backgroundColorMode;
-  late double fontScale;
+  late double _fontScale;
   late TextStyle selectedTextStyle;
   int _numLines = 0;
-  double _colorPosition = 0;
+  double colorPosition = 0;
 
   @override
   void initState() {
     super.initState();
+    _rebuildController = StreamController.broadcast();
     align = textEditorConfigs.initialTextAlign;
-    fontScale = textEditorConfigs.initFontScale;
+    _fontScale = textEditorConfigs.initFontScale;
     backgroundColorMode = textEditorConfigs.initialBackgroundColorMode;
 
     selectedTextStyle = widget.layer?.textStyle ??
@@ -86,9 +85,16 @@ class TextEditorState extends State<TextEditor>
 
   @override
   void dispose() {
+    _rebuildController.close();
     _textCtrl.dispose();
     _focus.dispose();
     super.dispose();
+  }
+
+  @override
+  void setState(void Function() fn) {
+    _rebuildController.add(null);
+    super.setState(fn);
   }
 
   /// Initializes the text editor from the provided text layer data.
@@ -96,13 +102,13 @@ class TextEditorState extends State<TextEditor>
     if (widget.layer != null) {
       _textCtrl.text = widget.layer!.text;
       align = widget.layer!.align;
-      fontScale = widget.layer!.fontScale;
+      _fontScale = widget.layer!.fontScale;
       backgroundColorMode = widget.layer!.colorMode!;
-      _primaryColor = backgroundColorMode == LayerBackgroundMode.background
+      primaryColor = backgroundColorMode == LayerBackgroundMode.background
           ? widget.layer!.background
           : widget.layer!.color;
       _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
-      _colorPosition = widget.layer!.colorPickerPosition ?? 0;
+      colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
   }
 
@@ -126,12 +132,12 @@ class TextEditorState extends State<TextEditor>
   /// Gets the text color based on the selected color mode.
   Color get _getTextColor {
     return backgroundColorMode == LayerBackgroundMode.onlyColor
-        ? _primaryColor
+        ? primaryColor
         : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
-            ? _primaryColor
+            ? primaryColor
             : backgroundColorMode == LayerBackgroundMode.background
-                ? _getContrastColor(_primaryColor)
-                : _primaryColor;
+                ? _getContrastColor(primaryColor)
+                : primaryColor;
   }
 
   /// Gets the background color based on the selected color mode.
@@ -139,15 +145,15 @@ class TextEditorState extends State<TextEditor>
     return backgroundColorMode == LayerBackgroundMode.onlyColor
         ? Colors.transparent
         : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
-            ? _getContrastColor(_primaryColor)
+            ? _getContrastColor(primaryColor)
             : backgroundColorMode == LayerBackgroundMode.background
-                ? _primaryColor
-                : _getContrastColor(_primaryColor).withOpacity(0.5);
+                ? primaryColor
+                : _getContrastColor(primaryColor).withOpacity(0.5);
   }
 
   /// Gets the text font size based on the selected font scale.
   double get _getTextFontSize {
-    return textEditorConfigs.initFontSize * fontScale;
+    return textEditorConfigs.initFontSize * _fontScale;
   }
 
   /// Toggles the text alignment between left, center, and right.
@@ -176,11 +182,27 @@ class TextEditorState extends State<TextEditor>
     textEditorCallbacks?.handleBackgroundModeChanged(backgroundColorMode);
   }
 
+  /// Gets the current font scale.
+  double get fontScale => _fontScale;
+
+  /// Sets the font scale to a new value.
+  ///
+  /// The new value is adjusted to one decimal place before being set.
+  /// After setting the new value, the state is updated and the
+  /// [textEditorCallbacks] are notified of the change.
+  ///
+  /// [value] - The new font scale value.
+  set fontScale(double value) {
+    _fontScale = (value * 10).ceilToDouble() / 10;
+    setState(() {});
+    textEditorCallbacks?.handleFontScaleChanged(value);
+  }
+
   /// Displays a range slider for adjusting the line width of the painting tool.
   ///
   /// This method shows a range slider in a modal bottom sheet for adjusting the line width of the painting tool.
   void openFontScaleBottomSheet() {
-    final presetFontScale = fontScale;
+    final presetFontScale = _fontScale;
     showModalBottomSheet(
       context: context,
       backgroundColor:
@@ -195,10 +217,8 @@ class TextEditorState extends State<TextEditor>
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: StatefulBuilder(builder: (context, setState) {
                 void updateFontScaleScale(double value) {
-                  fontScale = (value * 10).ceilToDouble() / 10;
+                  fontScale = value;
                   setState(() {});
-                  textEditorCallbacks?.handleFontScaleChanged(value);
-                  this.setState(() {});
                 }
 
                 return Column(
@@ -206,7 +226,7 @@ class TextEditorState extends State<TextEditor>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     BottomSheetHeaderRow(
-                      title: '${i18n.textEditor.fontScale} ${fontScale}x',
+                      title: '${i18n.textEditor.fontScale} ${_fontScale}x',
                       theme: widget.theme,
                     ),
                     Row(
@@ -218,7 +238,7 @@ class TextEditorState extends State<TextEditor>
                             divisions: (textEditorConfigs.maxFontScale -
                                     textEditorConfigs.minFontScale) ~/
                                 0.1,
-                            value: fontScale,
+                            value: _fontScale,
                             onChanged: updateFontScaleScale,
                           ),
                         ),
@@ -227,7 +247,7 @@ class TextEditorState extends State<TextEditor>
                           data: Theme.of(context).primaryIconTheme,
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 150),
-                            child: fontScale != presetFontScale
+                            child: _fontScale != presetFontScale
                                 ? IconButton(
                                     onPressed: () {
                                       updateFontScaleScale(presetFontScale);
@@ -278,9 +298,9 @@ class TextEditorState extends State<TextEditor>
           background: _getBackgroundColor,
           color: _getTextColor,
           align: align,
-          fontScale: fontScale,
+          fontScale: _fontScale,
           colorMode: backgroundColorMode,
-          colorPickerPosition: _colorPosition,
+          colorPickerPosition: colorPosition,
           textStyle: selectedTextStyle,
           // fontFamily: 'Roboto',
         ),
@@ -292,9 +312,9 @@ class TextEditorState extends State<TextEditor>
   }
 
   /// Handles changes in the selected color.
-  void _colorChanged(Color color) {
+  void colorChanged(Color color) {
     setState(() {
-      _primaryColor = color;
+      primaryColor = color;
       textEditorCallbacks?.handleColorChanged(color.value);
     });
   }
@@ -311,15 +331,7 @@ class TextEditorState extends State<TextEditor>
             backgroundColor: imageEditorTheme.textEditor.background,
             appBar: _buildAppBar(constraints),
             body: _buildBody(),
-            bottomNavigationBar: isDesktop &&
-                    widget.configs.textEditorConfigs.customTextStyles
-                            ?.isNotEmpty ==
-                        false &&
-                    !isWhatsAppDesign
-                ? const SizedBox(
-                    height: kBottomNavigationBarHeight,
-                  )
-                : null,
+            bottomNavigationBar: _buildBottomBar(),
           ),
         );
       },
@@ -328,103 +340,147 @@ class TextEditorState extends State<TextEditor>
 
   /// Builds the app bar for the text editor.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
-    return customWidgets.appBarTextEditor ??
-        (!isWhatsAppDesign
-            ? AppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor:
-                    imageEditorTheme.textEditor.appBarBackgroundColor,
-                foregroundColor:
-                    imageEditorTheme.textEditor.appBarForegroundColor,
-                actions: [
-                  IconButton(
-                    tooltip: i18n.textEditor.back,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(icons.backButton),
-                    onPressed: close,
-                  ),
-                  const Spacer(),
-                  if (constraints.maxWidth >= 300) ...[
-                    if (textEditorConfigs.canToggleTextAlign)
-                      IconButton(
-                        key: const ValueKey('TextAlignIconButton'),
-                        tooltip: i18n.textEditor.textAlign,
-                        onPressed: toggleTextAlign,
-                        icon: Icon(align == TextAlign.left
-                            ? icons.textEditor.alignLeft
-                            : align == TextAlign.right
-                                ? icons.textEditor.alignRight
-                                : icons.textEditor.alignCenter),
-                      ),
-                    if (textEditorConfigs.canChangeFontScale)
-                      IconButton(
-                        key: const ValueKey('BackgroundModeFontScaleButton'),
-                        tooltip: i18n.textEditor.fontScale,
-                        onPressed: openFontScaleBottomSheet,
-                        icon: Icon(icons.textEditor.fontScale),
-                      ),
-                    if (textEditorConfigs.canToggleBackgroundMode)
-                      IconButton(
-                        key: const ValueKey('BackgroundModeColorIconButton'),
-                        tooltip: i18n.textEditor.backgroundMode,
-                        onPressed: toggleBackgroundMode,
-                        icon: Icon(icons.textEditor.backgroundMode),
-                      ),
-                    const Spacer(),
-                    _buildDoneBtn(),
-                  ] else ...[
-                    const Spacer(),
-                    _buildDoneBtn(),
-                    PlatformPopupBtn(
-                      designMode: designMode,
-                      title: i18n.textEditor.smallScreenMoreTooltip,
-                      options: [
-                        if (textEditorConfigs.canToggleTextAlign)
-                          PopupMenuOption(
-                            label: i18n.textEditor.textAlign,
-                            icon: Icon(align == TextAlign.left
-                                ? icons.textEditor.alignLeft
-                                : align == TextAlign.right
-                                    ? icons.textEditor.alignRight
-                                    : icons.textEditor.alignCenter),
-                            onTap: () {
-                              toggleTextAlign();
-                              if (designMode ==
-                                  ImageEditorDesignModeE.cupertino) {
-                                Navigator.pop(context);
-                              }
-                            },
-                          ),
-                        if (textEditorConfigs.canChangeFontScale)
-                          PopupMenuOption(
-                            label: i18n.textEditor.fontScale,
-                            icon: Icon(icons.textEditor.fontScale),
-                            onTap: () {
-                              openFontScaleBottomSheet();
-                              if (designMode ==
-                                  ImageEditorDesignModeE.cupertino) {
-                                Navigator.pop(context);
-                              }
-                            },
-                          ),
-                        if (textEditorConfigs.canToggleBackgroundMode)
-                          PopupMenuOption(
-                            label: i18n.textEditor.backgroundMode,
-                            icon: Icon(icons.textEditor.backgroundMode),
-                            onTap: () {
-                              toggleBackgroundMode();
-                              if (designMode ==
-                                  ImageEditorDesignModeE.cupertino) {
-                                Navigator.pop(context);
-                              }
-                            },
-                          ),
-                      ],
-                    ),
-                  ],
-                ],
-              )
-            : null);
+    if (customWidgets.textEditor.appBar != null) {
+      return customWidgets.textEditor.appBar!
+          .call(this, _rebuildController.stream);
+    }
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: imageEditorTheme.textEditor.appBarBackgroundColor,
+      foregroundColor: imageEditorTheme.textEditor.appBarForegroundColor,
+      actions: [
+        IconButton(
+          tooltip: i18n.textEditor.back,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.backButton),
+          onPressed: close,
+        ),
+        const Spacer(),
+        if (constraints.maxWidth >= 300) ...[
+          if (textEditorConfigs.canToggleTextAlign)
+            IconButton(
+              key: const ValueKey('TextAlignIconButton'),
+              tooltip: i18n.textEditor.textAlign,
+              onPressed: toggleTextAlign,
+              icon: Icon(align == TextAlign.left
+                  ? icons.textEditor.alignLeft
+                  : align == TextAlign.right
+                      ? icons.textEditor.alignRight
+                      : icons.textEditor.alignCenter),
+            ),
+          if (textEditorConfigs.canChangeFontScale)
+            IconButton(
+              key: const ValueKey('BackgroundModeFontScaleButton'),
+              tooltip: i18n.textEditor.fontScale,
+              onPressed: openFontScaleBottomSheet,
+              icon: Icon(icons.textEditor.fontScale),
+            ),
+          if (textEditorConfigs.canToggleBackgroundMode)
+            IconButton(
+              key: const ValueKey('BackgroundModeColorIconButton'),
+              tooltip: i18n.textEditor.backgroundMode,
+              onPressed: toggleBackgroundMode,
+              icon: Icon(icons.textEditor.backgroundMode),
+            ),
+          const Spacer(),
+          _buildDoneBtn(),
+        ] else ...[
+          const Spacer(),
+          _buildDoneBtn(),
+          PlatformPopupBtn(
+            designMode: designMode,
+            title: i18n.textEditor.smallScreenMoreTooltip,
+            options: [
+              if (textEditorConfigs.canToggleTextAlign)
+                PopupMenuOption(
+                  label: i18n.textEditor.textAlign,
+                  icon: Icon(align == TextAlign.left
+                      ? icons.textEditor.alignLeft
+                      : align == TextAlign.right
+                          ? icons.textEditor.alignRight
+                          : icons.textEditor.alignCenter),
+                  onTap: () {
+                    toggleTextAlign();
+                    if (designMode == ImageEditorDesignModeE.cupertino) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+              if (textEditorConfigs.canChangeFontScale)
+                PopupMenuOption(
+                  label: i18n.textEditor.fontScale,
+                  icon: Icon(icons.textEditor.fontScale),
+                  onTap: () {
+                    openFontScaleBottomSheet();
+                    if (designMode == ImageEditorDesignModeE.cupertino) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+              if (textEditorConfigs.canToggleBackgroundMode)
+                PopupMenuOption(
+                  label: i18n.textEditor.backgroundMode,
+                  icon: Icon(icons.textEditor.backgroundMode),
+                  onTap: () {
+                    toggleBackgroundMode();
+                    if (designMode == ImageEditorDesignModeE.cupertino) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Builds the bottom navigation bar of the painting editor.
+  /// Returns a [Widget] representing the bottom navigation bar.
+  Widget? _buildBottomBar() {
+    if (customWidgets.textEditor.bottomBar != null) {
+      return customWidgets.textEditor.bottomBar!
+          .call(this, _rebuildController.stream);
+    }
+
+    if (isDesktop &&
+        widget.configs.textEditorConfigs.customTextStyles?.isNotEmpty ==
+            false) {
+      return const SizedBox(height: kBottomNavigationBarHeight);
+    }
+
+    return null;
+  }
+
+  /// Builds the body of the text editor.
+  Widget _buildBody() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: done,
+      child: Stack(
+        children: [
+          if (customWidgets.textEditor.bodyItems != null)
+            ...customWidgets.textEditor.bodyItems!(
+              this,
+              _rebuildController.stream,
+            ),
+          _buildTextField(),
+          _buildColorPicker(),
+          if (textEditorConfigs.showSelectFontStyleBottomBar)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: kBottomNavigationBarHeight,
+              child: TextEditorBottomBar(
+                configs: widget.configs,
+                selectedStyle: selectedTextStyle,
+                onFontChange: setTextStyle,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   /// Builds and returns an IconButton for applying changes.
@@ -439,153 +495,45 @@ class TextEditorState extends State<TextEditor>
     );
   }
 
-  /// Builds the body of the text editor.
-  Widget _buildBody() {
-    double barPickerPadding = isWhatsAppDesign ? 60 : 10;
-
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: done,
-      child: Stack(
-        children: [
-          _buildTextField(),
-          if (!isWhatsAppDesign || !isMaterial)
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                margin: isWhatsAppDesign
-                    ? EdgeInsets.only(
-                        right: 16,
-                        top: barPickerPadding,
-                        bottom: barPickerPadding,
-                      )
-                    : null,
-                padding: EdgeInsets.symmetric(
-                  vertical: barPickerPadding,
-                ),
-                child: customWidgets.colorPickerTextEditor?.call(
-                        selectedTextStyle.color ?? _primaryColor,
-                        _colorChanged) ??
-                    BarColorPicker(
-                      configs: widget.configs,
-                      length: min(
-                        isWhatsAppDesign ? 200 : 350,
-                        MediaQuery.of(context).size.height -
-                            MediaQuery.of(context).viewInsets.bottom -
-                            kToolbarHeight -
-                            kBottomNavigationBarHeight -
-                            barPickerPadding * 2 -
-                            MediaQuery.of(context).padding.top,
-                      ),
-                      onPositionChange: (value) {
-                        _colorPosition = value;
-                      },
-                      initPosition: _colorPosition,
-                      initialColor: _primaryColor,
-                      horizontal: false,
-                      thumbColor: Colors.white,
-                      cornerRadius: 10,
-                      pickMode: PickMode.color,
-                      colorListener: (int value) {
-                        _colorChanged(Color(value));
-                      },
-                    ),
-              ),
-            ),
-          customWidgets.bottomBarTextEditor ??
-              (isWhatsAppDesign
-                  ? WhatsTextBottomBar(
-                      configs: configs,
-                      initColor: _primaryColor,
-                      onColorChanged: (value) {
-                        setState(() {
-                          _primaryColor = value;
-                        });
-                        textEditorCallbacks?.handleColorChanged(value.value);
-                      },
-                      selectedStyle: selectedTextStyle,
-                      onFontChange: setTextStyle,
-                    )
-                  : Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: kBottomNavigationBarHeight,
-                      child: TextEditorBottomBar(
-                        configs: widget.configs,
-                        selectedStyle: selectedTextStyle,
-                        onFontChange: setTextStyle,
-                      ),
-                    )),
-          if (isWhatsAppDesign) ...[
-            if (isMaterial)
-              Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  width: 16,
-                  height: min(
-                      280,
-                      MediaQuery.of(context).size.height -
-                          MediaQuery.of(context).viewInsets.bottom -
-                          kToolbarHeight -
-                          kBottomNavigationBarHeight -
-                          MediaQuery.of(context).padding.top),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'A',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Flexible(
-                        child: RotatedBox(
-                          quarterTurns: 1,
-                          child: SliderTheme(
-                            data: SliderThemeData(
-                              overlayShape: SliderComponentShape.noThumb,
-                            ),
-                            child: Slider(
-                              onChanged: (value) {
-                                fontScale = 4.5 - value;
-                                setState(() {});
-                              },
-                              min: 0.5,
-                              max: 4,
-                              value: max(0.5, min(4.5 - fontScale, 4)),
-                              thumbColor: Colors.white,
-                              inactiveColor: Colors.white60,
-                              activeColor: Colors.white60,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Text(
-                        'A',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            WhatsAppTextAppBar(
-              configs: widget.configs,
-              align: align,
-              onDone: done,
-              onAlignChange: toggleTextAlign,
-              onBackgroundModeChange: toggleBackgroundMode,
-            ),
-          ],
-        ],
+  Widget _buildColorPicker() {
+    if (customWidgets.textEditor.colorPicker != null) {
+      return customWidgets.textEditor.colorPicker!.call(
+            this,
+            _rebuildController.stream,
+            selectedTextStyle.color ?? primaryColor,
+            colorChanged,
+          ) ??
+          const SizedBox.shrink();
+    }
+    return Align(
+      alignment: Alignment.topRight,
+      child: Container(
+        margin: null,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: BarColorPicker(
+          configs: widget.configs,
+          length: min(
+            350,
+            MediaQuery.of(context).size.height -
+                MediaQuery.of(context).viewInsets.bottom -
+                kToolbarHeight -
+                kBottomNavigationBarHeight -
+                10 * 2 -
+                MediaQuery.of(context).padding.top,
+          ),
+          onPositionChange: (value) {
+            colorPosition = value;
+          },
+          initPosition: colorPosition,
+          initialColor: primaryColor,
+          horizontal: false,
+          thumbColor: Colors.white,
+          cornerRadius: 10,
+          pickMode: PickMode.color,
+          colorListener: (int value) {
+            colorChanged(Color(value));
+          },
+        ),
       ),
     );
   }
@@ -595,11 +543,7 @@ class TextEditorState extends State<TextEditor>
     return Align(
       alignment: Alignment.center,
       child: Padding(
-        padding: EdgeInsets.only(
-            bottom:
-                !isWhatsAppDesign && textEditorConfigs.customTextStyles != null
-                    ? kBottomNavigationBarHeight
-                    : 0),
+        padding: const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),

@@ -59,9 +59,7 @@ class EmojiEditorState extends State<EmojiEditor>
 
   @override
   void initState() {
-    final fontSize = 24 * (isApple ? 1.2 : 1.0);
-    _textStyle =
-        imageEditorTheme.emojiEditor.textStyle.copyWith(fontSize: fontSize);
+    _textStyle = imageEditorTheme.emojiEditor.textStyle;
 
     _controller = EmojiTextEditingController(emojiTextStyle: _textStyle);
     super.initState();
@@ -95,29 +93,20 @@ class EmojiEditorState extends State<EmojiEditor>
       height: double.infinity,
       emojiSet: emojiEditorConfigs.emojiSet,
       checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
-      emojiTextStyle: _textStyle.copyWith(
-          fontSize:
-              isWhatsAppDesign && designMode != ImageEditorDesignModeE.cupertino
-                  ? 48
-                  : 30),
+      emojiTextStyle: _textStyle,
       emojiViewConfig: imageEditorTheme.emojiEditor.emojiViewConfig ??
           EmojiViewConfig(
             gridPadding: EdgeInsets.zero,
             horizontalSpacing: 0,
             verticalSpacing: 0,
-            recentsLimit: isWhatsAppDesign ? 40 : 28,
-            backgroundColor: isWhatsAppDesign
-                ? Colors.transparent
-                : imageEditorBackgroundColor,
+            recentsLimit: 28,
+            backgroundColor: imageEditorBackgroundColor,
             buttonMode: designMode == ImageEditorDesignModeE.cupertino
                 ? ButtonMode.CUPERTINO
                 : ButtonMode.MATERIAL,
             loadingIndicator: const Center(child: CircularProgressIndicator()),
             columns: _calculateColumns(constraints),
-            emojiSizeMax: !isWhatsAppDesign ||
-                    designMode == ImageEditorDesignModeE.cupertino
-                ? 32
-                : 64,
+            emojiSizeMax: 32,
             replaceEmojiOnLimitExceed: false,
           ),
       swapCategoryAndBottomBar:
@@ -157,9 +146,7 @@ class EmojiEditorState extends State<EmojiEditor>
               flagIcon: Icons.flag_outlined,
             ),
           ),
-      bottomActionBarConfig: isWhatsAppDesign
-          ? const BottomActionBarConfig(enabled: false)
-          : imageEditorTheme.emojiEditor.bottomActionBarConfig,
+      bottomActionBarConfig: imageEditorTheme.emojiEditor.bottomActionBarConfig,
       searchViewConfig: imageEditorTheme.emojiEditor.searchViewConfig ??
           SearchViewConfig(
             backgroundColor: imageEditorTheme.emojiEditor.backgroundColor,
@@ -181,15 +168,8 @@ class EmojiEditorState extends State<EmojiEditor>
   }
 
   /// Calculates the number of columns for the EmojiPicker.
-  int _calculateColumns(BoxConstraints constraints) => max(
-          1,
-          (isWhatsAppDesign && designMode != ImageEditorDesignModeE.cupertino
-                      ? 6
-                      : 10) /
-                  400 *
-                  constraints.maxWidth -
-              1)
-      .floor();
+  int _calculateColumns(BoxConstraints constraints) =>
+      max(1, 10 / 400 * constraints.maxWidth - 1).floor();
 
   @override
   Widget build(BuildContext context) {

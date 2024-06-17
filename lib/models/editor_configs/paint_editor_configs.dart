@@ -1,6 +1,3 @@
-// Dart imports:
-import 'dart:ui';
-
 // Project imports:
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
 
@@ -54,9 +51,6 @@ class PaintEditorConfigs {
   /// Indicating whether the eraser option is available.
   final bool hasOptionEraser;
 
-  /// Indicating whether the color picker is visible.
-  final bool showColorPicker;
-
   /// Indicating whether the fill option can be toggled.
   final bool canToggleFill;
 
@@ -84,12 +78,6 @@ class PaintEditorConfigs {
   /// By default, it's set to `false`.
   final bool freeStyleHighPerformanceHero;
 
-  /// Indicates the initial stroke width.
-  final double initialStrokeWidth;
-
-  /// Indicates the initial drawing color.
-  final Color initialColor;
-
   /// Indicates the initial paint mode.
   final PaintModeE initialPaintMode;
 
@@ -109,12 +97,9 @@ class PaintEditorConfigs {
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
     this.initialFill = false,
-    this.showColorPicker = true,
     this.freeStyleHighPerformanceScaling,
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
-    this.initialStrokeWidth = 10.0,
-    this.initialColor = const Color(0xffff0000),
     this.initialPaintMode = PaintModeE.freeStyle,
-  }) : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive');
+  });
 }

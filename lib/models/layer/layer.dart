@@ -42,7 +42,7 @@ class Layer {
     key = GlobalKey();
     // Initialize properties with provided values or defaults.
     this.id = id ?? generateUniqueId();
-    this.offset = offset ?? const Offset(64, 64);
+    this.offset = offset ?? Offset.zero;
     this.rotation = rotation ?? 0;
     this.scale = scale ?? 1;
     this.flipX = flipX ?? false;

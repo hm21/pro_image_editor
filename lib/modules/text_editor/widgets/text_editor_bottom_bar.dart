@@ -29,9 +29,6 @@ class TextEditorBottomBar extends StatefulWidget {
 class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
   final double _space = 10;
 
-  bool get _isSimpleEditor =>
-      widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple;
-
   @override
   Widget build(BuildContext context) {
     if (widget.configs.textEditorConfigs.customTextStyles == null) {
@@ -39,21 +36,17 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
     }
 
     return Container(
-      color: _isSimpleEditor
-          ? widget.configs.imageEditorTheme.textEditor.bottomBarBackgroundColor
-          : null,
+      color:
+          widget.configs.imageEditorTheme.textEditor.bottomBarBackgroundColor,
       child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
           constraints:
               BoxConstraints(minWidth: MediaQuery.of(context).size.width),
           child: Row(
-            mainAxisAlignment: widget.configs.imageEditorTheme.editorMode ==
-                        ThemeEditorMode.simple ||
-                    widget.configs.designMode ==
-                        ImageEditorDesignModeE.cupertino
-                ? MainAxisAlignment.spaceEvenly
-                : MainAxisAlignment.start,
+            mainAxisAlignment: widget
+                .configs.imageEditorTheme.textEditor.bottomBarMainAxisAlignment,
             children: _buildIconBtns(),
           ),
         ),

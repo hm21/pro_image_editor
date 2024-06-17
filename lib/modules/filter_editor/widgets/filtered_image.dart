@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_image.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../widgets/auto_image.dart';
 import '../types/filter_matrix.dart';

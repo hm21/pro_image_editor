@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import '../../utils/design_mode.dart';
-import '../custom_widgets.dart';
+import '../custom_widgets/custom_widgets.dart';
 import '../i18n/i18n.dart';
 import '../icons/icons.dart';
 import '../theme/theme.dart';
@@ -33,7 +33,7 @@ export 'filter_editor_configs.dart';
 export '../i18n/i18n.dart';
 export '../icons/icons.dart';
 export '../theme/theme.dart';
-export '../custom_widgets.dart';
+export '../custom_widgets/custom_widgets.dart';
 export '../crop_rotate_editor/aspect_ratio_item.dart';
 export '../../utils/design_mode.dart';
 export '../../utils/pro_image_editor_mode.dart';

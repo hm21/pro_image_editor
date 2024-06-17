@@ -6,7 +6,6 @@ import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 import 'theme_adaptive_dialog.dart';
 import 'theme_blur_editor.dart';
 import 'theme_crop_rotate_editor.dart';
-import 'theme_editor_mode.dart';
 import 'theme_emoji_editor.dart';
 import 'theme_filter_editor.dart';
 import 'theme_helper_lines.dart';
@@ -28,7 +27,6 @@ export 'theme_helper_lines.dart';
 export 'theme_sticker_editor.dart';
 export 'theme_loading_dialog.dart';
 export 'theme_adaptive_dialog.dart';
-export 'theme_editor_mode.dart';
 export 'theme_sub_editor_page.dart';
 export 'theme_layer_interaction.dart';
 export 'theme_shared_values.dart';
@@ -152,9 +150,6 @@ class ImageEditorTheme {
   /// Defines the system UI overlay style for the image editor.
   final SystemUiOverlayStyle uiOverlayStyle;
 
-  /// The pre designed theme for the editor like `simple` or `whatsapp`.
-  final ThemeEditorMode editorMode;
-
   /// Theme for the layer interaction settings.
   final ThemeLayerInteraction layerInteraction;
 
@@ -167,7 +162,6 @@ class ImageEditorTheme {
   const ImageEditorTheme({
     this.editorBoxConstraintsBuilder,
     this.outsideCaptureAreaLayerOpacity = 0.5,
-    this.editorMode = ThemeEditorMode.simple,
     this.layerInteraction = const ThemeLayerInteraction(),
     this.helperLine = const HelperLineTheme(),
     this.paintingEditor = const PaintingEditorTheme(),

@@ -20,6 +20,7 @@ export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
         BottomActionBarConfig,
         CategoryViewConfig,
         DefaultEmojiTextStyle,
+        ButtonMode,
         EmojiViewConfig,
         SearchViewConfig,
         SkinToneConfig;

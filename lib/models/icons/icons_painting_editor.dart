@@ -1,9 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Project imports:
-import '../../utils/pro_image_editor_icons.dart';
-
 /// Customizable icons for the Painting Editor component.
 class IconsPaintingEditor {
   /// The icon to be displayed in the bottom navigation bar.
@@ -38,15 +35,6 @@ class IconsPaintingEditor {
 
   /// The icon for the eraser tool.
   final IconData eraser;
-
-  /// The icon for the thin stroke width when the theme is set to `Whatsapp`.
-  final IconData whatsAppStrokeWidthThin;
-
-  /// The icon for the medium stroke width when the theme is set to `Whatsapp`.
-  final IconData whatsAppStrokeWidthMedium;
-
-  /// The icon for the bold stroke width when the theme is set to `Whatsapp`.
-  final IconData whatsAppStrokeWidthBold;
 
   /// Creates an instance of [IconsPaintingEditor] with customizable icon settings.
   ///
@@ -93,8 +81,5 @@ class IconsPaintingEditor {
     this.rectangle = Icons.crop_free,
     this.circle = Icons.lens_outlined,
     this.dashLine = Icons.power_input,
-    this.whatsAppStrokeWidthThin = ProImageEditorIcons.penSize1,
-    this.whatsAppStrokeWidthMedium = ProImageEditorIcons.penSize2,
-    this.whatsAppStrokeWidthBold = ProImageEditorIcons.penSize3,
   });
 }

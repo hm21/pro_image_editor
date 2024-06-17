@@ -66,7 +66,7 @@ class _ImportExportExampleState extends State<ImportExportExample>
                   : const EmojiEditorTheme(),
             ),
             emojiEditorConfigs: const EmojiEditorConfigs(
-              checkPlatformCompatibility: false,
+              checkPlatformCompatibility: !kIsWeb,
             ),
             stateHistoryConfigs: StateHistoryConfigs(
               initStateHistory: ImportStateHistory.fromMap(

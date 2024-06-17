@@ -66,6 +66,7 @@ class LoadingDialog {
         constraints: const BoxConstraints(maxWidth: 500),
         child: StatefulBuilder(builder: (context, StateSetter setState) {
           state = setState;
+
           return Padding(
             padding: const EdgeInsets.only(top: 3.0),
             child: Row(
@@ -119,6 +120,9 @@ class LoadingDialog {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) Navigator.of(context).pop();
           });
+        }
+        if (configs.customWidgets.loadingDialog != null) {
+          return configs.customWidgets.loadingDialog!;
         }
         return configs.designMode == ImageEditorDesignModeE.cupertino
             ? CupertinoTheme(

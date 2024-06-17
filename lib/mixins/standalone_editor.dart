@@ -1,4 +1,5 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:typed_data';
 
 // Flutter imports:
@@ -8,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
-import '../models/editor_image.dart';
 import '../models/init_configs/editor_init_configs.dart';
 import '../models/multi_threading/thread_capture_model.dart';
 import '../modules/filter_editor/types/filter_matrix.dart';
@@ -39,6 +39,9 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
   @override
   ProImageEditorCallbacks get callbacks => initConfigs.callbacks;
+
+  @protected
+  late final StreamController rebuildController;
 
   /// Returns the theme data for the editor.
   ThemeData get theme => initConfigs.theme;
@@ -185,15 +188,19 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   }
 
   @override
+  @mustCallSuper
   void initState() {
     screenshotCtrl = ContentRecorderController(
         configs: configs, ignoreGeneration: !initConfigs.convertToUint8List);
+    rebuildController = StreamController.broadcast();
     super.initState();
   }
 
   @override
+  @mustCallSuper
   void dispose() {
     screenshotCtrl.destroy();
+    rebuildController.close();
     super.dispose();
   }
 

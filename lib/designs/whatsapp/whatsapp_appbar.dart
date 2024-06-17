@@ -63,7 +63,6 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
         double screenW = constraints.maxWidth;
         final double space = screenW < 300 ? 5 : 10;
         var gap = SizedBox(width: space);
-
         return widget.openEditor
             ? const SizedBox.shrink()
             : Row(
@@ -139,9 +138,6 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
                       style: whatsAppButtonStyle,
                     ),
                   ],
-                  if (widget.configs.customWidgets.whatsAppOwnAppBarIcons !=
-                      null)
-                    widget.configs.customWidgets.whatsAppOwnAppBarIcons!,
                 ],
               );
       }),

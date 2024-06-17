@@ -1,21 +1,21 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-class WhatsappColorPicker extends StatefulWidget {
+class WhatsAppColorPicker extends StatefulWidget {
   final ValueChanged<Color> onColorChanged;
   final Color initColor;
 
-  const WhatsappColorPicker({
+  const WhatsAppColorPicker({
     super.key,
     required this.onColorChanged,
     required this.initColor,
   });
 
   @override
-  State<WhatsappColorPicker> createState() => _WhatsappColorPickerState();
+  State<WhatsAppColorPicker> createState() => _WhatsAppColorPickerState();
 }
 
-class _WhatsappColorPickerState extends State<WhatsappColorPicker> {
+class _WhatsAppColorPickerState extends State<WhatsAppColorPicker> {
   Color _selectedColor = Colors.black;
 
   final List _colors = [
@@ -53,6 +53,7 @@ class _WhatsappColorPickerState extends State<WhatsappColorPicker> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       scrollDirection: Axis.horizontal,
       primary: false,
       shrinkWrap: true,

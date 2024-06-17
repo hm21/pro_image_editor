@@ -40,19 +40,11 @@ class StickerEditorTheme {
   /// [ProImageEditorConfigs.editorBoxConstraintsBuilder].
   final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
 
-  /// Use this to build custom [BoxConstraints] that will be applied to
-  /// the modal bottom sheet displaying the [WhatsAppStickerPage].
-  ///
-  /// Otherwise, it falls back to either [editorBoxConstraintsBuilder] or
-  /// [ProImageEditorConfigs.editorBoxConstraintsBuilder] in that order.
-  final EditorBoxConstraintsBuilder? whatsAppEditorBoxConstraintsBuilder;
-
   /// Creates an instance of the `StickerEditorTheme` class with the specified theme properties.
   const StickerEditorTheme({
     this.showDragHandle = true,
     this.themeDraggableSheet = const ThemeDraggableSheet(),
     this.bottomSheetBackgroundColor = const Color(0xFFFFFFFF),
     this.editorBoxConstraintsBuilder,
-    this.whatsAppEditorBoxConstraintsBuilder,
   });
 }

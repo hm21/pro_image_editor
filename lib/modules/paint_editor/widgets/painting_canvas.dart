@@ -19,6 +19,7 @@ class PaintingCanvas extends StatefulWidget {
   final VoidCallback? onCreatedPainting;
 
   final ValueChanged<List<String>>? onRemoveLayer;
+  final VoidCallback? onStartPainting;
 
   /// Size of the image.
   final Size drawAreaSize;
@@ -30,6 +31,7 @@ class PaintingCanvas extends StatefulWidget {
   /// Constructs a `PaintingCanvas` widget.
   const PaintingCanvas({
     super.key,
+    this.onStartPainting,
     this.onCreatedPainting,
     this.onRemoveLayer,
     required this.drawAreaSize,
@@ -89,7 +91,10 @@ class PaintingCanvasState extends State<PaintingCanvas> {
       if (removeIds.isNotEmpty) widget.onRemoveLayer?.call(removeIds);
     } else {
       final offset = details.localFocalPoint;
-      _paintCtrl.setInProgress(true);
+      if (!_paintCtrl.busy) {
+        widget.onStartPainting?.call();
+        _paintCtrl.setInProgress(true);
+      }
 
       if (_paintCtrl.start == null) {
         _paintCtrl.setStart(offset);

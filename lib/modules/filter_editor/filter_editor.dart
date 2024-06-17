@@ -14,17 +14,16 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
-import '../../models/editor_image.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
 import '../../widgets/layer_stack.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
 import 'types/filter_matrix.dart';
-import 'widgets/filter_editor_item_list.dart';
 import 'widgets/filtered_image.dart';
 
 export 'utils/filter_generator/filter_presets.dart';
 export 'utils/filter_generator/filter_model.dart';
 export 'utils/filter_generator/filter_addons.dart';
+export 'widgets/filter_editor_item_list.dart';
 
 /// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
@@ -167,6 +166,7 @@ class FilterEditorState extends State<FilterEditor>
   @override
   void initState() {
     _uiFilterStream = StreamController.broadcast();
+    _uiFilterStream.stream.listen((_) => rebuildController.add(null));
     super.initState();
   }
 
@@ -174,6 +174,12 @@ class FilterEditorState extends State<FilterEditor>
   void dispose() {
     _uiFilterStream.close();
     super.dispose();
+  }
+
+  @override
+  void setState(void Function() fn) {
+    rebuildController.add(null);
+    super.setState(fn);
   }
 
   /// Handles the "Done" action, either by applying changes or closing the editor.
@@ -231,29 +237,32 @@ class FilterEditorState extends State<FilterEditor>
   }
 
   /// Builds the app bar for the filter editor.
-  PreferredSizeWidget _buildAppBar() {
-    return customWidgets.appBarFilterEditor ??
-        AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor: imageEditorTheme.filterEditor.appBarForegroundColor,
-          actions: [
-            IconButton(
-              tooltip: i18n.filterEditor.back,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(icons.backButton),
-              onPressed: close,
-            ),
-            const Spacer(),
-            IconButton(
-              tooltip: i18n.filterEditor.done,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(icons.applyChanges),
-              iconSize: 28,
-              onPressed: done,
-            ),
-          ],
-        );
+  PreferredSizeWidget? _buildAppBar() {
+    if (customWidgets.filterEditor.appBar != null) {
+      return customWidgets.filterEditor.appBar!
+          .call(this, rebuildController.stream);
+    }
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: imageEditorTheme.filterEditor.appBarBackgroundColor,
+      foregroundColor: imageEditorTheme.filterEditor.appBarForegroundColor,
+      actions: [
+        IconButton(
+          tooltip: i18n.filterEditor.back,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.backButton),
+          onPressed: close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: i18n.filterEditor.done,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.applyChanges),
+          iconSize: 28,
+          onPressed: done,
+        ),
+      ],
+    );
   }
 
   /// Builds the main content area of the editor.
@@ -301,6 +310,9 @@ class FilterEditorState extends State<FilterEditor>
                 layers: layers!,
                 clipBehavior: Clip.none,
               ),
+            if (customWidgets.filterEditor.bodyItems != null)
+              ...customWidgets.filterEditor.bodyItems!(
+                  this, rebuildController.stream),
           ],
         ),
       );
@@ -308,7 +320,12 @@ class FilterEditorState extends State<FilterEditor>
   }
 
   /// Builds the bottom navigation bar with filter options.
-  Widget _buildBottomNavBar() {
+  Widget? _buildBottomNavBar() {
+    if (customWidgets.filterEditor.bottomBar != null) {
+      return customWidgets.filterEditor.bottomBar!
+          .call(this, rebuildController.stream);
+    }
+
     return SafeArea(
       child: Container(
         color: imageEditorTheme.filterEditor.background,
@@ -325,8 +342,13 @@ class FilterEditorState extends State<FilterEditor>
                         height: 40,
                         child: selectedFilter == PresetFilters.none
                             ? null
-                            : customWidgets.sliderFilterEditor?.call(
-                                    filterOpacity, _onChanged, _onChangedEnd) ??
+                            : customWidgets.filterEditor.slider?.call(
+                                  this,
+                                  rebuildController.stream,
+                                  filterOpacity,
+                                  _onChanged,
+                                  _onChangedEnd,
+                                ) ??
                                 Slider(
                                   min: 0,
                                   max: 1,

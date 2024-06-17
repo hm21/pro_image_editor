@@ -346,9 +346,12 @@ class _MoveableBackgroundImageExampleState
                           blurEditorConfigs:
                               const BlurEditorConfigs(enabled: false),
                           customWidgets: ImageEditorCustomWidgets(
-                            bottomNavigationBar:
-                                _bottomNavigationBar(constraints),
-                          ),
+                              mainEditor: CustomWidgetsMainEditor(
+                            bottomBar: (editor, rebuildStream, key) =>
+                                editor.selectedLayerIndex < 0
+                                    ? _bottomNavigationBar(key, constraints)
+                                    : null,
+                          )),
                           imageEditorTheme: const ImageEditorTheme(
                             uiOverlayStyle: SystemUiOverlayStyle(
                               statusBarColor: Colors.black,
@@ -431,8 +434,9 @@ class _MoveableBackgroundImageExampleState
     );
   }
 
-  Widget _bottomNavigationBar(BoxConstraints constraints) {
+  Widget _bottomNavigationBar(Key key, BoxConstraints constraints) {
     return StreamBuilder(
+      key: key,
       stream: _updateUIStreamCtrl.stream,
       builder: (_, __) {
         return Scrollbar(

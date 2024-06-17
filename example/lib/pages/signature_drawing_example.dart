@@ -56,10 +56,11 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                               designMode: platformDesignMode,
                               imageEditorTheme: const ImageEditorTheme(
                                 background: Colors.white,
+                                paintingEditor: PaintingEditorTheme(
+                                  initialColor: Colors.black,
+                                ),
                               ),
                               paintEditorConfigs: const PaintEditorConfigs(
-                                initialColor: Colors.black,
-                                showColorPicker: false,
                                 hasOptionFreeStyle: false,
                                 hasOptionArrow: false,
                                 hasOptionLine: false,
@@ -76,6 +77,13 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                                 customPixelRatio:
                                     MediaQuery.of(context).devicePixelRatio,
                                 maxOutputSize: const Size(2000, 2000),
+                              ),
+                              customWidgets: ImageEditorCustomWidgets(
+                                paintEditor: CustomWidgetsPaintEditor(
+                                  colorPicker: (paintEditor, rebuildStream,
+                                          currentColor, setColor) =>
+                                      null,
+                                ),
                               ),
                             ),
                           ),
@@ -105,9 +113,9 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                               designMode: platformDesignMode,
                               imageEditorTheme: const ImageEditorTheme(
                                 background: Colors.white,
-                              ),
-                              paintEditorConfigs: const PaintEditorConfigs(
-                                initialColor: Colors.black,
+                                paintingEditor: PaintingEditorTheme(
+                                  initialColor: Colors.black,
+                                ),
                               ),
                               imageGenerationConfigs: ImageGeneratioConfigs(
                                 outputFormat: OutputFormat.png,

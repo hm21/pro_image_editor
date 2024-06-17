@@ -38,18 +38,12 @@ class StickerEditorConfigs {
   /// and behavior of stickers in the editor.
   final BuildStickers buildStickers;
 
-  /// A callback triggered each time the search value changes.
-  ///
-  /// This callback is activated exclusively when the editor mode is set to 'WhatsApp'.
-  final Function(String value)? onSearchChanged;
-
   /// Creates an instance of StickerEditorConfigs with optional settings.
   ///
   /// By default, the editor is disabled (if not specified), and other properties
   /// are set to reasonable defaults.
   const StickerEditorConfigs({
     required this.buildStickers,
-    this.onSearchChanged,
     this.initWidth = 100,
     this.enabled = false,
   }) : assert(initWidth > 0, 'initWidth must be positive');

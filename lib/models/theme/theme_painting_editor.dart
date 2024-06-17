@@ -77,6 +77,12 @@ class PaintingEditorTheme {
   /// Title of the bottom sheet used to select line width.
   final TextStyle? lineWidthBottomSheetTitle;
 
+  /// Indicates the initial stroke width.
+  final double initialStrokeWidth;
+
+  /// Indicates the initial drawing color.
+  final Color initialColor;
+
   /// Creates an instance of the `PaintingEditorTheme` class with the specified theme properties.
   const PaintingEditorTheme({
     this.lineWidthBottomSheetTitle,
@@ -87,5 +93,7 @@ class PaintingEditorTheme {
     this.bottomBarColor = imageEditorAppBarColor,
     this.bottomBarActiveItemColor = imageEditorPrimaryColor,
     this.bottomBarInactiveItemColor = const Color(0xFFEEEEEE),
-  });
+    this.initialStrokeWidth = 10.0,
+    this.initialColor = const Color(0xffff0000),
+  }) : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive');
 }

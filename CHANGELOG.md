@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 4.0.0
+#### **Breaking Changes:**
+- Remove hardcoded `WhatsApp-Design`.
+- Rewrite the entire logic of `customWidgets`.
+- Move `initialColor` and `initialStrokeWidth` from `paintEditorConfigs` to `imageEditorTheme-paintingEditor`.
+
+#### **feat:**
+- Add new design `Frosted-Glass`.
+- The `WhatsApp` theme is now fully editable.
+- Smaller build size and minimal performance boost because the Whatsapp design is no longer hardcoded.
+- Make it easier to use `customWidget`.
+- Editor design is now more customizable.
+
 ## Version 3.0.15
 - **feat(callbacks)**: Add to the main-editor callbacks `onTap`, `onDoubleTap` and `onLongPress` which was requested in [#104](https://github.com/hm21/pro_image_editor/issues/104).
 

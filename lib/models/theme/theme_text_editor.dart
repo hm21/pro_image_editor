@@ -65,12 +65,16 @@ class TextEditorTheme {
   /// Color of the input cursor in the text editor.
   final Color inputCursorColor;
 
+  /// How the children should be placed along the main axis.
+  final MainAxisAlignment bottomBarMainAxisAlignment;
+
   /// Creates an instance of the `TextEditorTheme` class with the specified theme properties.
   const TextEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.background = const Color(0x9B000000),
     this.bottomBarBackgroundColor = const Color(0xFF000000),
+    this.bottomBarMainAxisAlignment = MainAxisAlignment.spaceEvenly,
     this.inputHintColor = const Color(0xFFBDBDBD),
     this.inputCursorColor = imageEditorPrimaryColor,
   });

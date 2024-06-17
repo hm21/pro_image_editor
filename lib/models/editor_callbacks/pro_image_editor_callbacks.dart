@@ -7,6 +7,7 @@ import 'editor_callbacks_typedef.dart';
 import 'filter_editor_callbacks.dart';
 import 'main_editor_callbacks.dart';
 import 'paint_editor_callbacks.dart';
+import 'sticker_editor_callbacks.dart';
 import 'text_editor_callbacks.dart';
 
 export 'editor_callbacks_typedef.dart';
@@ -15,6 +16,7 @@ export 'paint_editor_callbacks.dart';
 export 'text_editor_callbacks.dart';
 export 'crop_rotate_editor_callbacks.dart';
 export 'filter_editor_callbacks.dart';
+export 'sticker_editor_callbacks.dart';
 export 'blur_editor_callbacks.dart';
 export 'utils/sub_editors_name.dart';
 
@@ -74,6 +76,9 @@ class ProImageEditorCallbacks {
   /// Callbacks from the blur editor.
   final BlurEditorCallbacks? blurEditorCallbacks;
 
+  /// Callbacks from the sticker editor.
+  final StickerEditorCallbacks? stickerEditorCallbacks;
+
   /// Creates a new instance of [ProImageEditorCallbacks].
   const ProImageEditorCallbacks({
     this.onImageEditingComplete,
@@ -86,5 +91,6 @@ class ProImageEditorCallbacks {
     this.cropRotateEditorCallbacks,
     this.filterEditorCallbacks,
     this.blurEditorCallbacks,
+    this.stickerEditorCallbacks,
   });
 }

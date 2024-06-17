@@ -159,6 +159,7 @@ class BlurEditorState extends State<BlurEditor>
   void initState() {
     blurFactor = appliedBlurFactor;
     _uiBlurStream = StreamController.broadcast();
+    _uiBlurStream.stream.listen((_) => rebuildController.add(null));
     super.initState();
   }
 
@@ -167,6 +168,12 @@ class BlurEditorState extends State<BlurEditor>
     _uiBlurStream.close();
     screenshotCtrl.destroy();
     super.dispose();
+  }
+
+  @override
+  void setState(void Function() fn) {
+    rebuildController.add(null);
+    super.setState(fn);
   }
 
   /// Handles the "Done" action, either by applying changes or closing the editor.
@@ -211,29 +218,33 @@ class BlurEditorState extends State<BlurEditor>
   }
 
   /// Builds the app bar for the blur editor.
-  PreferredSizeWidget _buildAppBar() {
-    return customWidgets.appBarBlurEditor ??
-        AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: imageEditorTheme.blurEditor.appBarBackgroundColor,
-          foregroundColor: imageEditorTheme.blurEditor.appBarForegroundColor,
-          actions: [
-            IconButton(
-              tooltip: i18n.blurEditor.back,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(icons.backButton),
-              onPressed: close,
-            ),
-            const Spacer(),
-            IconButton(
-              tooltip: i18n.blurEditor.done,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(icons.applyChanges),
-              iconSize: 28,
-              onPressed: done,
-            ),
-          ],
-        );
+  PreferredSizeWidget? _buildAppBar() {
+    if (customWidgets.blurEditor.appBar != null) {
+      return customWidgets.blurEditor.appBar!
+          .call(this, rebuildController.stream);
+    }
+
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: imageEditorTheme.blurEditor.appBarBackgroundColor,
+      foregroundColor: imageEditorTheme.blurEditor.appBarForegroundColor,
+      actions: [
+        IconButton(
+          tooltip: i18n.blurEditor.back,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.backButton),
+          onPressed: close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: i18n.blurEditor.done,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.applyChanges),
+          iconSize: 28,
+          onPressed: done,
+        ),
+      ],
+    );
   }
 
   /// Builds the main content area of the editor.
@@ -281,6 +292,9 @@ class BlurEditorState extends State<BlurEditor>
                 layers: layers!,
                 clipBehavior: Clip.none,
               ),
+            if (customWidgets.blurEditor.bodyItems != null)
+              ...customWidgets.blurEditor.bodyItems!(
+                  this, rebuildController.stream),
           ],
         ),
       );
@@ -288,7 +302,12 @@ class BlurEditorState extends State<BlurEditor>
   }
 
   /// Builds the bottom navigation bar with blur slider.
-  Widget _buildBottomNavBar() {
+  Widget? _buildBottomNavBar() {
+    if (customWidgets.blurEditor.bottomBar != null) {
+      return customWidgets.blurEditor.bottomBar!
+          .call(this, rebuildController.stream);
+    }
+
     return SafeArea(
       child: Container(
         color: imageEditorTheme.blurEditor.background,
@@ -301,8 +320,13 @@ class BlurEditorState extends State<BlurEditor>
               child: StreamBuilder(
                   stream: _uiBlurStream.stream,
                   builder: (context, snapshot) {
-                    return customWidgets.sliderBlurEditor
-                            ?.call(blurFactor, _onChanged, _onChangedEnd) ??
+                    return customWidgets.blurEditor.slider?.call(
+                          this,
+                          rebuildController.stream,
+                          blurFactor,
+                          _onChanged,
+                          _onChangedEnd,
+                        ) ??
                         Slider(
                           min: 0,
                           max: blurEditorConfigs.maxBlur,

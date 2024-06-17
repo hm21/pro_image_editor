@@ -31,6 +31,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
   - [Own stickers or widgets](#own-stickers-or-widgets)
+  - [Frosted-Glass-Design](#frosted-glass-design)
   - [WhatsApp-Design](#whatsapp-design)
   - [Highly configurable](#highly-configurable)
   - [Custom AppBar](#custom-appbar)
@@ -47,17 +48,17 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">Frosted-Glass-Design</th>
       <th align="center">WhatsApp-Design</th>
-      <th align="center">Blur-Editor</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/frosted-glass-design.gif?raw=true" alt="Frosted-Glass-Design" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/blur-editor.gif?raw=true" alt="Blur-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
       </td>
     </tr>
   </tbody>
@@ -118,6 +119,24 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   </tbody>
 </table>
 
+<table>
+  <thead>
+    <tr>
+      <th align="center">Blur-Editor</th>
+      <th align="center">-</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+      </td>
+      <td align="center" width="50%">
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 
 
 ## Features
@@ -157,6 +176,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - ✅ Reorder layer level
 - ✅ Movable background image
 - ✅ WhatsApp Theme
+- ✅ Frosted-Glass Theme
 - ✅ Interactive layers
 - ✅ Helper lines for better positioning
 - ✅ Hit detection for painted layers
@@ -327,234 +347,20 @@ To display stickers or widgets in the ProImageEditor, you have the flexibility t
 
 
 
+#### Frosted-Glass design
+
+To use the "Frosted-Glass-Design" you can follow the example [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/design_examples/frosted_glass_example.dart)
+
+
+
 #### WhatsApp design
 
 The image editor offers a WhatsApp-themed option that mirrors the popular messaging app's design.
 The editor also follows the small changes that exist in the Material (Android) and Cupertino (iOS) version.
 
-<details>
-  <summary>Show code example</summary>
-  
-```dart
-Navigator.of(context).push(
-  MaterialPageRoute(
-    builder: (context) => ProImageEditor.network(
-      'https://picsum.photos/id/176/2000',
-      callbacks: ProImageEditorCallbacks(
-        onImageEditingComplete: (Uint8List bytes) async {
-        /*
-          Your code to handle the edited image. Upload it to your server as an example.
-          You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-          By default, the bytes are in `jpg` format.
-        */
-          Navigator.pop(context);
-        },
-      ),
-      configs: ProImageEditorConfigs(
-        textEditorConfigs: TextEditorConfigs(
-          whatsAppCustomTextStyles: [
-            GoogleFonts.roboto(),
-            GoogleFonts.averiaLibre(),
-            GoogleFonts.lato(),
-            GoogleFonts.comicNeue(),
-            GoogleFonts.actor(),
-            GoogleFonts.odorMeanChey(),
-            GoogleFonts.nabla(),
-          ],
-        ),
-        imageEditorTheme: const ImageEditorTheme(
-          editorMode: ThemeEditorMode.whatsapp,
-          helperLine: HelperLineTheme(
-            horizontalColor: Color.fromARGB(255, 129, 218, 88),
-            verticalColor: Color.fromARGB(255, 129, 218, 88),
-          ),
-        ),
-        paintEditorConfigs: const PaintEditorConfigs(
-          initialStrokeWidth: 5,
-        ),
-        filterEditorConfigs: FilterEditorConfigs(
-          whatsAppFilterTextOffsetY: 90,
-          filterList: [
-            ColorFilterGenerator(
-              name: "None",
-              filters: [],
-            ),
-            ColorFilterGenerator(
-              name: "Pop",
-              filters: [
-                ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
-                ColorFilterAddons.saturation(0.1),
-                ColorFilterAddons.contrast(0.05),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "B&W",
-              filters: [
-                ColorFilterAddons.grayscale(),
-                ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
-                ColorFilterAddons.brightness(0.1),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "Cool",
-              filters: [
-                ColorFilterAddons.addictiveColor(0, 0, 20),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "Chrome",
-              filters: [
-                ColorFilterAddons.contrast(0.15),
-                ColorFilterAddons.saturation(0.2),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "Film",
-              filters: [
-                ColorFilterAddons.brightness(.05),
-                ColorFilterAddons.saturation(-0.03),
-              ],
-            ),
-          ],
-        ),
-        stickerEditorConfigs: StickerEditorConfigs(
-          enabled: true,
-          onSearchChanged: (value) {
-            /// Filter your stickers
-            debugPrint(value);
-          },
-          buildStickers: (setLayer) {
-            List<String> demoTitels = ['Recent', 'Favorites', 'Shapes', 'Funny', 'Boring', 'Frog', 'Snow', 'More'];
-            List<Widget> slivers = [];
-            int offset = 0;
-            for (var element in demoTitels) {
-              slivers.addAll([
-                _buildDemoStickersTitle(element),
-                _buildDemoStickers(offset, setLayer),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              ]);
-              offset += 20;
-            }
+You can see the complete example [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/design_examples/whatsapp_example.dart)
 
-            return Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-                    child: CustomScrollView(
-                      slivers: slivers,
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 50,
-                  color: Colors.grey.shade800,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.watch_later_outlined),
-                        color: Colors.white,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.mood),
-                        color: Colors.white,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.pets),
-                        color: Colors.white,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.coronavirus),
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        customWidgets: ImageEditorCustomWidgets(
-          whatsAppBottomWidget: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.center,
-                    decoration: InputDecoration(
-                      filled: true,
-                      isDense: true,
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 7.0),
-                        child: Icon(
-                          Icons.add_photo_alternate_rounded,
-                          size: 24,
-                          color: Colors.white,
-                        ),
-                      ),
-                      hintText: 'Add a caption...',
-                      hintStyle: const TextStyle(
-                        color: Color.fromARGB(255, 238, 238, 238),
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(40),
-                        borderSide: BorderSide.none,
-                      ),
-                      fillColor: const Color(0xFF202D35),
-                    ),
-                  ),
-                ),
-              ),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
-                  color: Colors.black38,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: const Color(0xFF202D35),
-                        ),
-                        child: const Text(
-                          'Alex Frei',
-                          style: TextStyle(
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.send),
-                        style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF0DA886),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    ),
-  ),
-);
-```
-</details>
+
 
 #### Highly configurable
 
@@ -1363,7 +1169,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `flip`                    | Text for the "Flip" tooltip.                                                      | `Flip`          |
 | `ratio`                   | Text for the "Ratio" tooltip.                                                     | `Ratio`         |
 | `back`                    | Text for the "Back" button.                                                       | `Back`          |
-| `cancel`                  | Text for the "Cancel" button. Only available when the theme is set to `WhatsApp`. | `Cancel`        |
+| `cancel`                  | Text for the "Cancel" button. | `Cancel`        |
 | `done`                    | Text for the "Done" button.                                                       | `Done`          |
 | `reset`                   | Text for the "Reset" button.                                                      | `Reset`         |
 | `undo`                    | Text for the "Undo" button.                                                       | `Undo`          |
@@ -1432,27 +1238,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 
 <details>
-  <summary><b>customWidgets</b></summary>
-
-| Property Name                  | Description                                                                                              | Default Value  |
-|--------------------------------|----------------------------------------------------------------------------------------------------------|----------------|
-| `removeLayer`                  | A custom widget for removing a layer or element from the editor interface.                               | `null`         |
-| `appBar`                       | A custom app bar widget for the top navigation bar.                                                      | `null`         |
-| `appBarPaintingEditor`         | A custom app bar widget for the painting editor component.                                               | `null`         |
-| `appBarTextEditor`             | A custom app bar widget for the text editor component.                                                   | `null`         |
-| `appBarCropRotateEditor`       | A custom app bar widget for the crop and rotate editor component.                                        | `null`         |
-| `appBarFilterEditor`           | A custom app bar widget for the filter editor component.                                                 | `null`         |
-| `appBarBlurEditor`             | A custom app bar widget for the blur editor component.                                                   | `null`         |
-| `bottomNavigationBar`          | A custom widget for the bottom navigation bar.                                                           | `null`         |
-| `bottomBarPaintingEditor`      | A custom bottom bar widget for the painting editor component.                                            | `null`         |
-| `bottomBarCropRotateEditor`    | A custom bottom bar widget for the crop-rotate editor component.                                         | `null`         |
-| `bottomBarTextEditor`          | A custom bottom bar widget for the text editor component.                                                | `null`         |
-| `closeWarningDialog`           | Override the close warning dialog when changes are made.                                                 | `null`         |
-| `whatsAppBottomWidget`         | The widget that is below the `Filter` button in the WhatsApp theme, like a text field and send button.   | `null`         |
-
-</details>
-
-<details>
   <summary><b>imageEditorTheme</b></summary>
 
 | Property Name                | Description                                                         | Default Value                 |
@@ -1472,7 +1257,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `loadingDialogTheme`         | Theme for the loading dialog.                                       | `LoadingDialogTheme()`        |
 | `adaptiveDialogTheme`        | Theme for the adaptive dialog.                                      | `AdaptiveDialogTheme()`       |
 | `uiOverlayStyle`             | Defines the system UI overlay style for the image editor.           | `SystemUiOverlayStyle(...)`   |
-| `editorMode`                 | The pre-designed theme for the editor like `simple` or `whatsapp`.  | `ThemeEditorMode.simple`      |
 | `layerInteraction`           | Theme for the layer interaction settings.                           | `ThemeLayerInteraction()`     |
 
 
@@ -1511,7 +1295,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `cropCornerColor`                      | Color of the crop corners.                                                                       | `imageEditorPrimaryColor`     |
 | `helperLineColor`                      | Color of the helper lines when moving the image.                                                 | `Color(0xFF000000)`           |
 | `cropOverlayColor`                     | Color of the overlay area atop the image when the cropping area is smaller than the image.       | `Color(0xFF000000)`           |
-| `whatsappCupertinoBottomBarColor`      | Background color for the bottom bar when using WhatsApp theme and designMode is set to Cupertino | `Color(0xFF303030)`           |
 
 
 #### Theme filterEditor
@@ -1521,7 +1304,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `appBarForegroundColor`      | Foreground color (text and icons) of the app bar.              | `Color(0xFFE1E1E1)`           |
 | `background`                 | Background color of the filter editor.                         | `imageEditorBackgroundColor`  |
 | `previewTextColor`           | Color of the preview text.                                     | `Color(0xFFE1E1E1)`           |
-| `whatsAppBottomBarColor`     | Color of the background of the bottom bar in WhatsApp theme.   | `Color(0xFF121B22)`           |
 
 
 
@@ -1592,9 +1374,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `rectangle`                  | The icon for the rectangle drawing tool.                                  | `Icons.crop_free`                |
 | `circle`                     | The icon for the circle drawing tool.                                     | `Icons.lens_outlined`            |
 | `dashLine`                   | The icon for the dashed line drawing tool.                                | `Icons.power_input`              |
-| `whatsAppStrokeWidthThin`    | The icon for the thin stroke width when the theme is set to `Whatsapp`.   | `ProImageEditorIcons.penSize1`   |
-| `whatsAppStrokeWidthMedium`  | The icon for the medium stroke width when the theme is set to `Whatsapp`. | `ProImageEditorIcons.penSize2`   |
-| `whatsAppStrokeWidthBold`    | The icon for the bold stroke width when the theme is set to `Whatsapp`.   | `ProImageEditorIcons.penSize3`   |
 
 
 #### icons textEditor
@@ -1661,8 +1440,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `freeStyleHighPerformanceScaling`          | Enables high-performance scaling for free-style drawing.                                                          | `true` on mobile, `false` on desktop |
 | `freeStyleHighPerformanceMoving`           | Enables high-performance moving for free-style drawing.                                                           | `true` on mobile-web                 |
 | `freeStyleHighPerformanceHero`             | Enables high-performance hero-animations for free-style drawing.                                                  | `false`                              |
-| `initialStrokeWidth`                       | Indicates the initial stroke width.                                                                               | `10.0`                               |
-| `initialColor`                             | Indicates the initial drawing color.                                                                              | `Color(0xffff0000)`                  |
 | `initialPaintMode`                         | Indicates the initial paint mode.                                                                                 | `PaintModeE.freeStyle`               |
 | `strokeWidthOnChanged`                     | A callback function that will be called when the stroke width changes.                                            | `null`                               |
 </details>
@@ -1725,7 +1502,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 |----------------------------------|----------------------------------------------------------------------------------------------------------|---------------------------------------|
 | `enabled`                        | Indicates whether the filter editor is enabled.                                                          | `true`                                |
 | `showLayers`                     | Show also layers in the editor.                                                                          | `true`                                |
-| `whatsAppFilterTextOffsetY`      | Offset for the filter text, helpful if the user has an input field that overlays in a stack widget.      | `0`                                   |
 | `filterList`                     | A list of color filter generators to apply to an image.                                                  | `null` (default contains all filters) |
 </details>
 
@@ -1758,7 +1534,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `enabled`              | Indicates whether the sticker editor is enabled.                                                         | `false`                    |
 | `initWidth`            | The initial width of the stickers in the editor.                                                         | `100`                      |
 | `buildStickers`        | A callback that builds the stickers.                                                                     | `required`                 |
-| `onSearchChanged`      | A callback triggered each time the search value changes. Activated exclusively in 'WhatsApp' mode.       | `null`                     |
 </details>
 
 <details>

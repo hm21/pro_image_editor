@@ -6,7 +6,7 @@ import 'package:pro_image_editor/designs/whatsapp/whatsapp_color_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../modules/text_editor/widgets/text_editor_bottom_bar.dart';
 
-class WhatsTextBottomBar extends StatefulWidget {
+class WhatsAppTextBottomBar extends StatefulWidget {
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -19,7 +19,7 @@ class WhatsTextBottomBar extends StatefulWidget {
   /// Callback function for changing the text font style.
   final Function(TextStyle style) onFontChange;
 
-  const WhatsTextBottomBar({
+  const WhatsAppTextBottomBar({
     super.key,
     required this.configs,
     required this.initColor,
@@ -29,10 +29,10 @@ class WhatsTextBottomBar extends StatefulWidget {
   });
 
   @override
-  State<WhatsTextBottomBar> createState() => _WhatsTextBottomBarState();
+  State<WhatsAppTextBottomBar> createState() => _WhatsAppTextBottomBarState();
 }
 
-class _WhatsTextBottomBarState extends State<WhatsTextBottomBar> {
+class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
   final double _space = 10;
 
   bool _showColorPicker = true;
@@ -70,8 +70,7 @@ class _WhatsTextBottomBarState extends State<WhatsTextBottomBar> {
                   style: IconButton.styleFrom(backgroundColor: Colors.black38),
                 ),
                 Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4),
+                  margin: const EdgeInsets.fromLTRB(14.0, 4, 0, 4),
                   width: 1.5,
                   decoration: BoxDecoration(
                     color: Colors.white54,
@@ -80,7 +79,7 @@ class _WhatsTextBottomBarState extends State<WhatsTextBottomBar> {
                 ),
                 _showColorPicker
                     ? Expanded(
-                        child: WhatsappColorPicker(
+                        child: WhatsAppColorPicker(
                           onColorChanged: widget.onColorChanged,
                           initColor: widget.initColor,
                         ),

@@ -21,21 +21,13 @@ class SizesManager {
   SizesManager({
     required this.context,
     required this.configs,
-  }) {
-    appBarHeight = configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
-        ? kToolbarHeight
-        : 0;
-    bottomBarHeight =
-        configs.imageEditorTheme.editorMode == ThemeEditorMode.simple
-            ? kBottomNavigationBarHeight
-            : 0;
-  }
+  });
 
   /// Returns the height of the app bar.
-  double appBarHeight = kToolbarHeight;
+  double appBarHeight = 0;
 
   /// Returns the height of the bottom bar.
-  double bottomBarHeight = kBottomNavigationBarHeight;
+  double bottomBarHeight = 0;
 
   /// Returns the total height of all toolbars.
   double get allToolbarHeight => appBarHeight + bottomBarHeight;

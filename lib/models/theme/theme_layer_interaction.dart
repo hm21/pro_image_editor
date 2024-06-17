@@ -41,6 +41,9 @@ class ThemeLayerInteraction {
   /// Indicates whether tooltips should be displayed for the layer.
   final bool showTooltips;
 
+  final Color removeAreaBackgroundActive;
+  final Color removeAreaBackgroundInactive;
+
   /// Creates a new instance of [ThemeLayerInteraction].
   ///
   /// - The [buttonRadius] defaults to `10.0`.
@@ -54,6 +57,8 @@ class ThemeLayerInteraction {
   /// - The [borderStyle] defaults to [LayerInteractionBorderStyle.solid].
   /// - The [showTooltips] defaults to `false`.
   const ThemeLayerInteraction({
+    this.removeAreaBackgroundActive = const Color(0xFFF44336),
+    this.removeAreaBackgroundInactive = const Color(0xFF424242),
     this.buttonRadius = 10,
     this.strokeWidth = 1.2,
     this.borderElementWidth = 7,

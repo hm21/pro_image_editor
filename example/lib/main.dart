@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/pages/design_examples/design_example.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,6 @@ import 'pages/custom_appbar_bottombar_example.dart';
 import 'pages/default_example.dart';
 import 'pages/generation_configs_example.dart';
 import 'pages/google_font_example.dart';
-import 'pages/highly_configurable_example.dart';
 import 'pages/image_format_convert_example.dart';
 import 'pages/movable_background_image.dart';
 import 'pages/reorder_layer_example.dart';
@@ -25,7 +25,6 @@ import 'pages/round_cropper_example.dart';
 import 'pages/signature_drawing_example.dart';
 import 'pages/standalone_example.dart';
 import 'pages/stickers_example.dart';
-import 'pages/whatsapp_example.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,14 +68,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<Widget> _examples = [
     const DefaultExample(),
-    const WhatsAppExample(),
+    const DesignExample(),
     const StandaloneExample(),
     const SignatureDrawingExample(),
     const StickersExample(),
     const FirebaseSupabaseExample(),
     const ReorderLayerExample(),
     const RoundCropperExample(),
-    const HighlyConfigurableExample(),
     const SelectableLayerExample(),
     const GenerationConfigsExample(),
     const PickImageExample(),

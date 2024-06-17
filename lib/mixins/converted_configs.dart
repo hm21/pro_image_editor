@@ -62,8 +62,4 @@ mixin ImageEditorConvertedConfigs {
 
   /// Indicates if the design mode is material. Otherwise the design mode is cupertino.
   bool get isMaterial => configs.designMode == ImageEditorDesignModeE.material;
-
-  /// Indicates if the editor mode is WhatsApp. Otherwise the editor mode is simple.
-  bool get isWhatsAppDesign =>
-      configs.imageEditorTheme.editorMode == ThemeEditorMode.whatsapp;
 }

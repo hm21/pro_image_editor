@@ -29,6 +29,10 @@ class TextEditorConfigs {
   /// Determines if the font scale can be change.
   final bool canChangeFontScale;
 
+  /// Determines if the editor show a bottom bar where the user can select
+  /// different font styles.
+  final bool showSelectFontStyleBottomBar;
+
   /// Determines if the background mode can be toggled.
   final bool canToggleBackgroundMode;
 
@@ -59,6 +63,7 @@ class TextEditorConfigs {
   /// are enabled. The initial font size is set to 24.0.
   const TextEditorConfigs({
     this.enabled = true,
+    this.showSelectFontStyleBottomBar = false,
     this.canToggleTextAlign = true,
     this.canToggleBackgroundMode = true,
     this.canChangeFontScale = true,

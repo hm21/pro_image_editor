@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_color_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/utils/pro_image_editor_icons.dart';
 
 /// Represents the bottom bar for the paint functionality in the WhatsApp theme.
 class WhatsAppPaintBottomBar extends StatefulWidget {
@@ -18,6 +19,10 @@ class WhatsAppPaintBottomBar extends StatefulWidget {
   final Color initColor;
   final ValueChanged<Color> onColorChanged;
 
+  final IconData iconStrokeWidthThin;
+  final IconData iconStrokeWidthMedium;
+  final IconData iconStrokeWidthBold;
+
   const WhatsAppPaintBottomBar({
     super.key,
     required this.configs,
@@ -25,6 +30,9 @@ class WhatsAppPaintBottomBar extends StatefulWidget {
     required this.onSetLineWidth,
     required this.initColor,
     required this.onColorChanged,
+    this.iconStrokeWidthThin = ProImageEditorIcons.penSize1,
+    this.iconStrokeWidthMedium = ProImageEditorIcons.penSize2,
+    this.iconStrokeWidthBold = ProImageEditorIcons.penSize3,
   });
 
   @override
@@ -47,7 +55,7 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
       right: 0,
       height: 40,
       child: !_isMaterial
-          ? _buildPaintModes()
+          ? _buildLineWidths()
           : Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -64,8 +72,7 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
                   style: IconButton.styleFrom(backgroundColor: Colors.black38),
                 ),
                 Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4),
+                  margin: const EdgeInsets.fromLTRB(14.0, 4, 0, 4),
                   width: 1.5,
                   decoration: BoxDecoration(
                     color: Colors.white54,
@@ -74,18 +81,18 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
                 ),
                 _showColorPicker
                     ? Expanded(
-                        child: WhatsappColorPicker(
+                        child: WhatsAppColorPicker(
                           onColorChanged: widget.onColorChanged,
                           initColor: widget.initColor,
                         ),
                       )
-                    : _buildPaintModes(),
+                    : _buildLineWidths(),
               ],
             ),
     );
   }
 
-  Widget _buildPaintModes() {
+  Widget _buildLineWidths() {
     ButtonStyle buttonStyle = IconButton.styleFrom(
       backgroundColor: Colors.black38,
       foregroundColor: widget
@@ -94,60 +101,60 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
       iconSize: 22,
       minimumSize: const Size.fromRadius(10),
     );
-    return Wrap(
-      alignment: _isMaterial ? WrapAlignment.start : WrapAlignment.spaceEvenly,
-      runAlignment: WrapAlignment.center,
-      spacing: 10,
-      children: [
-        IconButton(
-          onPressed: () {
-            widget.onSetLineWidth(2);
-          },
-          icon:
-              Icon(widget.configs.icons.paintingEditor.whatsAppStrokeWidthThin),
-          style: buttonStyle.copyWith(
-            backgroundColor: widget.strokeWidth != 2
-                ? null
-                : const WidgetStatePropertyAll(Colors.white),
-            foregroundColor: widget.strokeWidth != 2
-                ? null
-                : const WidgetStatePropertyAll(Colors.black),
+    return Padding(
+      padding: const EdgeInsets.only(left: 14),
+      child: Wrap(
+        alignment:
+            _isMaterial ? WrapAlignment.start : WrapAlignment.spaceEvenly,
+        runAlignment: WrapAlignment.center,
+        spacing: 10,
+        children: [
+          IconButton(
+            onPressed: () {
+              widget.onSetLineWidth(2);
+            },
+            icon: Icon(widget.iconStrokeWidthThin),
+            style: buttonStyle.copyWith(
+              backgroundColor: widget.strokeWidth != 2
+                  ? null
+                  : const WidgetStatePropertyAll(Colors.white),
+              foregroundColor: widget.strokeWidth != 2
+                  ? null
+                  : const WidgetStatePropertyAll(Colors.black),
+            ),
           ),
-        ),
-        IconButton(
-          onPressed: () {
-            widget.onSetLineWidth(5);
-          },
-          icon: Icon(
-            widget.configs.icons.paintingEditor.whatsAppStrokeWidthMedium,
+          IconButton(
+            onPressed: () {
+              widget.onSetLineWidth(5);
+            },
+            icon: Icon(widget.iconStrokeWidthMedium),
+            style: buttonStyle.copyWith(
+              backgroundColor: widget.strokeWidth != 5
+                  ? null
+                  : const WidgetStatePropertyAll(Colors.white),
+              foregroundColor: widget.strokeWidth != 5
+                  ? null
+                  : const WidgetStatePropertyAll(Colors.black),
+            ),
           ),
-          style: buttonStyle.copyWith(
-            backgroundColor: widget.strokeWidth != 5
-                ? null
-                : const WidgetStatePropertyAll(Colors.white),
-            foregroundColor: widget.strokeWidth != 5
-                ? null
-                : const WidgetStatePropertyAll(Colors.black),
+          IconButton(
+            onPressed: () {
+              widget.onSetLineWidth(10);
+            },
+            icon: Icon(widget.iconStrokeWidthBold),
+            style: buttonStyle.copyWith(
+              backgroundColor: widget.strokeWidth != 10
+                  ? null
+                  : const WidgetStatePropertyAll(Colors.white),
+              foregroundColor: widget.strokeWidth != 10
+                  ? null
+                  : const WidgetStatePropertyAll(Colors.black),
+            ),
           ),
-        ),
-        IconButton(
-          onPressed: () {
-            widget.onSetLineWidth(10);
-          },
-          icon:
-              Icon(widget.configs.icons.paintingEditor.whatsAppStrokeWidthBold),
-          style: buttonStyle.copyWith(
-            backgroundColor: widget.strokeWidth != 10
-                ? null
-                : const WidgetStatePropertyAll(Colors.white),
-            foregroundColor: widget.strokeWidth != 10
-                ? null
-                : const WidgetStatePropertyAll(Colors.black),
-          ),
-        ),
 
-        /// TODO: Add pixelate button
-      ],
+          /// TODO: Add pixelate button
+        ],
+      ),
     );
   }
 }
