@@ -634,7 +634,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Decode the image being edited.
   ///
   /// This method decodes the image if it hasn't been decoded yet and updates its properties.
-  Future<void> _decodeImage([TransformConfigs? transformConfigs]) async {
+  Future<void> decodeImage([TransformConfigs? transformConfigs]) async {
     bool shouldImportStateHistory =
         _imageNeedDecode && stateHistoryConfigs.initStateHistory != null;
     _imageNeedDecode = false;
@@ -1111,7 +1111,7 @@ class ProImageEditorState extends State<ProImageEditor>
               fitToScreenFactor: fitToScreenFactor,
             ).updatedLayers;
 
-            _decodeImage(transformConfigs);
+            decodeImage(transformConfigs);
             addHistory(
               transformConfigs: transformConfigs,
               layers: updatedLayers,
@@ -1351,7 +1351,7 @@ class ProImageEditorState extends State<ProImageEditor>
       setState(() {
         layerInteractionManager.selectedLayerId = '';
         stateManager.position--;
-        _decodeImage();
+        decodeImage();
       });
       mainEditorCallbacks?.handleUndo();
     }
@@ -1367,7 +1367,7 @@ class ProImageEditorState extends State<ProImageEditor>
       setState(() {
         layerInteractionManager.selectedLayerId = '';
         stateManager.position++;
-        _decodeImage();
+        decodeImage();
       });
       mainEditorCallbacks?.handleRedo();
     }
@@ -1386,7 +1386,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (_imageInfos == null) await _decodeImage();
+      if (_imageInfos == null) await decodeImage();
 
       if (!mounted) return;
 
@@ -1434,7 +1434,7 @@ class ProImageEditorState extends State<ProImageEditor>
       );
 
       if (callbacks.onThumbnailGenerated != null) {
-        if (_imageInfos == null) await _decodeImage();
+        if (_imageInfos == null) await decodeImage();
 
         final List<dynamic> results = await Future.wait([
           captureEditorImage(),
@@ -1473,7 +1473,7 @@ class ProImageEditorState extends State<ProImageEditor>
       if (!mounted) return Uint8List.fromList([]);
     }
 
-    if (_imageInfos == null) await _decodeImage();
+    if (_imageInfos == null) await decodeImage();
 
     if (!mounted) return Uint8List.fromList([]);
 
@@ -1661,7 +1661,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Returns an [ExportStateHistory] object containing the exported state history, image state history, image size, edit position, and export configurations.
   Future<ExportStateHistory> exportStateHistory(
       {ExportEditorConfigs configs = const ExportEditorConfigs()}) async {
-    if (_imageInfos == null) await _decodeImage();
+    if (_imageInfos == null) await decodeImage();
 
     return ExportStateHistory(
       this.configs,
@@ -1713,7 +1713,7 @@ class ProImageEditorState extends State<ProImageEditor>
             sizesManager.lastScreenSize = event.newContentSize;
           },
           onResizeEnd: (event) async {
-            await _decodeImage();
+            await decodeImage();
           },
           child: AnnotatedRegion<SystemUiOverlayStyle>(
             value: imageEditorTheme.uiOverlayStyle,

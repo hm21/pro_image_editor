@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.0.3
+- **feat(decode-image)**: Ability to decode the image from external, allowing to change the background image dynamically, which was requested in [#110](https://github.com/hm21/pro_image_editor/discussions/110). 
+
 ## Version 4.0.2
 - **refactor(designs)**: Made the "Frosted-Glass" and "WhatsApp" designs more compact, making them easier to implement with less code.
 
