@@ -57,6 +57,7 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
         textEditorConfigs: TextEditorConfigs(
+          showSelectFontStyleBottomBar: true,
           customTextStyles: [
             GoogleFonts.roboto(),
             GoogleFonts.averiaLibre(),

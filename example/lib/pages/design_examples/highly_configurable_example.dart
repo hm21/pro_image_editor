@@ -302,6 +302,7 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
           initFontSize: 24.0,
           initialTextAlign: TextAlign.center,
           initialBackgroundColorMode: LayerBackgroundMode.background,
+          showSelectFontStyleBottomBar: true,
           customTextStyles: [
             GoogleFonts.roboto(),
             GoogleFonts.averiaLibre(),

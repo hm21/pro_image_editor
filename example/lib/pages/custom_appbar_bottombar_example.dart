@@ -198,6 +198,7 @@ class _CustomAppbarBottombarExampleState
             ),
           ),
           textEditorConfigs: TextEditorConfigs(
+            showSelectFontStyleBottomBar: true,
             customTextStyles: _customTextStyles,
           ),
         ),
