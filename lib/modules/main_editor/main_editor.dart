@@ -425,7 +425,9 @@ class ProImageEditorState extends State<ProImageEditor>
       _browserContextMenuBeforeEnabled = BrowserContextMenu.enabled;
       BrowserContextMenu.disableContextMenu();
     }
+    mainEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      mainEditorCallbacks?.onAfterViewInit?.call();
       _calcAppBarHeight();
     });
   }

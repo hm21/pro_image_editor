@@ -160,6 +160,11 @@ class BlurEditorState extends State<BlurEditor>
     blurFactor = appliedBlurFactor;
     _uiBlurStream = StreamController.broadcast();
     _uiBlurStream.stream.listen((_) => rebuildController.add(null));
+
+    blurEditorCallbacks?.onInit?.call();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      blurEditorCallbacks?.onAfterViewInit?.call();
+    });
     super.initState();
   }
 

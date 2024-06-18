@@ -425,7 +425,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _showFakeHero = enableFakeHero;
 
     // Perform post-frame initialization
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    cropRotateEditorCallbacks?.onInit?.call();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      cropRotateEditorCallbacks?.onAfterViewInit?.call();
       initialized = true;
       if (transformConfigs != null &&
           transformConfigs!.isNotEmpty &&

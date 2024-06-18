@@ -27,6 +27,8 @@ class FilterEditorCallbacks extends StandaloneEditorCallbacks {
     this.onFilterFactorChange,
     this.onFilterFactorChangeEnd,
     this.onFilterChanged,
+    super.onInit,
+    super.onAfterViewInit,
     super.onUpdateUI,
     super.onDone,
     super.onCloseEditor,

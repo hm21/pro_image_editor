@@ -20,6 +20,8 @@ class BlurEditorCallbacks extends StandaloneEditorCallbacks {
   const BlurEditorCallbacks({
     this.onBlurFactorChange,
     this.onBlurFactorChangeEnd,
+    super.onInit,
+    super.onAfterViewInit,
     super.onUpdateUI,
     super.onDone,
     super.onCloseEditor,

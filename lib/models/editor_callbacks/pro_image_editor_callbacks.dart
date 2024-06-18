@@ -4,6 +4,7 @@
 import 'blur_editor_callbacks.dart';
 import 'crop_rotate_editor_callbacks.dart';
 import 'editor_callbacks_typedef.dart';
+import 'emoji_editor_callbacks.dart';
 import 'filter_editor_callbacks.dart';
 import 'main_editor_callbacks.dart';
 import 'paint_editor_callbacks.dart';
@@ -76,6 +77,9 @@ class ProImageEditorCallbacks {
   /// Callbacks from the blur editor.
   final BlurEditorCallbacks? blurEditorCallbacks;
 
+  /// Callbacks from the emoji editor.
+  final EmojiEditorCallbacks? emojiEditorCallbacks;
+
   /// Callbacks from the sticker editor.
   final StickerEditorCallbacks? stickerEditorCallbacks;
 
@@ -91,6 +95,7 @@ class ProImageEditorCallbacks {
     this.cropRotateEditorCallbacks,
     this.filterEditorCallbacks,
     this.blurEditorCallbacks,
+    this.emojiEditorCallbacks,
     this.stickerEditorCallbacks,
   });
 }

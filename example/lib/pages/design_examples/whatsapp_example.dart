@@ -47,14 +47,14 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
   /// If the returned layer's runtime type is not StickerLayerData, the layer's scale is set to the initial scale specified in [emojiEditorConfigs] of the [configs] parameter. Regardless, the layer's offset is set to the center of the image.
   ///
   /// Finally, the layer is added, the UI is updated, and the widget's [onUpdateUI] callback is called if provided.
-  void openWhatsAppStickerEditor() async {
-    _editor!.removeKeyEventListener();
+  void openWhatsAppStickerEditor(ProImageEditorState editor) async {
+    editor.removeKeyEventListener();
 
     Layer? layer;
     if (_useMaterialDesign) {
-      layer = await _editor!.openPage(WhatsAppStickerPage(
-        configs: _editor!.configs,
-        callbacks: _editor!.callbacks,
+      layer = await editor.openPage(WhatsAppStickerPage(
+        configs: editor.configs,
+        callbacks: editor.callbacks,
       ));
     } else {
       layer = await showModalBottomSheet(
@@ -74,8 +74,8 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
               ),
               clipBehavior: Clip.hardEdge,
               child: WhatsAppStickerPage(
-                configs: _editor!.configs,
-                callbacks: _editor!.callbacks,
+                configs: editor.configs,
+                callbacks: editor.callbacks,
               ),
             ),
           );
@@ -83,14 +83,14 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
       );
     }
 
-    _editor!.initKeyEventListener();
+    editor.initKeyEventListener();
     if (layer == null || !mounted) return;
 
     if (layer.runtimeType != StickerLayerData) {
-      layer.scale = _editor!.configs.emojiEditorConfigs.initScale;
+      layer.scale = editor.configs.emojiEditorConfigs.initScale;
     }
 
-    _editor!.addLayer(layer);
+    editor.addLayer(layer);
   }
 
   /// Calculates the number of columns for the EmojiPicker.
@@ -424,7 +424,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
         configs: editor.configs,
         onClose: editor.closeEditor,
         onTapCropRotateEditor: editor.openCropRotateEditor,
-        onTapStickerEditor: openWhatsAppStickerEditor,
+        onTapStickerEditor: () => openWhatsAppStickerEditor(editor),
         onTapPaintEditor: editor.openPaintingEditor,
         onTapTextEditor: editor.openTextEditor,
         onTapUndo: editor.undoAction,
@@ -519,7 +519,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                         ),
                         IconButton(
                           onPressed: () {
-                            _editor!.doneEditing();
+                            editor.doneEditing();
                           },
                           icon: const Icon(Icons.send),
                           style: IconButton.styleFrom(

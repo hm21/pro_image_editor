@@ -18,6 +18,16 @@ abstract class StandaloneEditorCallbacks {
   /// A callback function that is triggered when the editor is closed.
   final Function()? onCloseEditor;
 
+  /// Called when this object is inserted into the tree.
+  ///
+  /// The framework will call this method exactly once for each [State] object it creates.
+  final Function()? onInit;
+
+  /// Called when this object is inserted into the tree and rendered in the `build`.
+  ///
+  /// The framework will call this method exactly once for each [State] object it creates.
+  final Function()? onAfterViewInit;
+
   /// Creates a new instance of [StandaloneEditorCallbacks].
   const StandaloneEditorCallbacks({
     this.onUpdateUI,
@@ -25,6 +35,8 @@ abstract class StandaloneEditorCallbacks {
     this.onRedo,
     this.onDone,
     this.onCloseEditor,
+    this.onInit,
+    this.onAfterViewInit,
   });
 
   /// Handles the undo action.

@@ -60,6 +60,8 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
     this.onTextAlignChanged,
     this.onFontScaleChanged,
     this.onBackgroundModeChanged,
+    super.onInit,
+    super.onAfterViewInit,
     super.onDone,
     super.onCloseEditor,
     super.onUpdateUI,

@@ -31,22 +31,20 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
   final bool _useMaterialDesign =
       platformDesignMode == ImageEditorDesignModeE.material;
 
-  ProImageEditorState? get _editor => editorKey.currentState;
-
   /// Opens the sticker/emoji editor.
-  void _openStickerEditor() async {
-    Layer? layer = await _editor!.openPage(FrostedGlassStickerPage(
-      configs: _editor!.configs,
-      callbacks: _editor!.callbacks,
+  void _openStickerEditor(ProImageEditorState editor) async {
+    Layer? layer = await editor.openPage(FrostedGlassStickerPage(
+      configs: editor.configs,
+      callbacks: editor.callbacks,
     ));
 
     if (layer == null || !mounted) return;
 
     if (layer.runtimeType != StickerLayerData) {
-      layer.scale = _editor!.configs.emojiEditorConfigs.initScale;
+      layer.scale = editor.configs.emojiEditorConfigs.initScale;
     }
 
-    _editor!.addLayer(layer);
+    editor.addLayer(layer);
   }
 
   /// Calculates the number of columns for the EmojiPicker.
@@ -246,7 +244,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
           stream: rebuildStream,
           builder: (_) => FrostedGlassActionBar(
             editor: editor,
-            openStickerEditor: _openStickerEditor,
+            openStickerEditor: () => _openStickerEditor(editor),
           ),
         ),
     ];

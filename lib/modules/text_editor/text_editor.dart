@@ -108,6 +108,11 @@ class TextEditorState extends State<TextEditor>
         const TextStyle();
     _initializeFromLayer();
     _setupTextControllerListener();
+
+    textEditorCallbacks?.onInit?.call();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      textEditorCallbacks?.onAfterViewInit?.call();
+    });
   }
 
   @override

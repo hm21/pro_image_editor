@@ -70,6 +70,8 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     this.onScaleStart,
     this.onScaleUpdate,
     this.onScaleEnd,
+    super.onInit,
+    super.onAfterViewInit,
     super.onUpdateUI,
     super.onDone,
     super.onRedo,

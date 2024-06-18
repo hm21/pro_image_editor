@@ -62,6 +62,11 @@ class EmojiEditorState extends State<EmojiEditor>
     _textStyle = imageEditorTheme.emojiEditor.textStyle;
 
     _controller = EmojiTextEditingController(emojiTextStyle: _textStyle);
+
+    callbacks.emojiEditorCallbacks?.onInit?.call();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      callbacks.emojiEditorCallbacks?.onAfterViewInit?.call();
+    });
     super.initState();
   }
 

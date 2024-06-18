@@ -40,6 +40,15 @@ class StickerEditorState extends State<StickerEditor>
   }
 
   @override
+  void initState() {
+    callbacks.stickerEditorCallbacks?.onInit?.call();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      callbacks.stickerEditorCallbacks?.onAfterViewInit?.call();
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return widget.configs.stickerEditorConfigs!
         .buildStickers(setLayer, widget.scrollController);

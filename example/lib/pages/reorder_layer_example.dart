@@ -39,57 +39,65 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
   }
 
   Widget _buildEditor() {
-    return Stack(
-      children: [
-        ProImageEditor.asset(
-          ExampleConstants.of(context)!.demoAssetPath,
-          key: editorKey,
-          callbacks: ProImageEditorCallbacks(
-            onImageEditingStarted: onImageEditingStarted,
-            onImageEditingComplete: onImageEditingComplete,
-            onCloseEditor: onCloseEditor,
-          ),
-          configs: ProImageEditorConfigs(
-            designMode: platformDesignMode,
-          ),
-        ),
-        Positioned(
-          bottom: 2 * kBottomNavigationBarHeight,
-          left: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.lightBlue.shade200,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(100),
-                bottomRight: Radius.circular(100),
-              ),
-            ),
-            child: IconButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  showDragHandle: true,
-                  builder: (context) {
-                    return StatefulBuilder(builder: (context, setState) {
-                      return ReorderLayerSheet(
-                        layers: editorKey.currentState!.activeLayers,
-                        onReorder: (oldIndex, newIndex) {
-                          editorKey.currentState!.moveLayerListPosition(
-                            oldIndex: oldIndex,
-                            newIndex: newIndex,
-                          );
-                          setState(() {});
-                        },
-                      );
-                    });
-                  },
-                );
-              },
-              icon: const Icon(Icons.sort),
-            ),
-          ),
-        ),
-      ],
+    return ProImageEditor.asset(
+      ExampleConstants.of(context)!.demoAssetPath,
+      key: editorKey,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
+      configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+          customWidgets:
+              ImageEditorCustomWidgets(mainEditor: CustomWidgetsMainEditor(
+            bodyItems: (editor, rebuildStream) {
+              return [
+                ReactiveCustomWidget(
+                  stream: rebuildStream,
+                  builder: (_) =>
+                      editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
+                          ? const SizedBox.shrink()
+                          : Positioned(
+                              bottom: 20,
+                              left: 0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.lightBlue.shade200,
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(100),
+                                    bottomRight: Radius.circular(100),
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) {
+                                        return ReorderLayerSheet(
+                                          layers: editor.activeLayers,
+                                          onReorder: (oldIndex, newIndex) {
+                                            editor.moveLayerListPosition(
+                                              oldIndex: oldIndex,
+                                              newIndex: newIndex,
+                                            );
+                                            Navigator.pop(context);
+                                          },
+                                        );
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.reorder,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                ),
+              ];
+            },
+          ))),
     );
   }
 }

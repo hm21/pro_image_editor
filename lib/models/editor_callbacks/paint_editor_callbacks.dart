@@ -35,6 +35,8 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
     this.onColorChanged,
     this.onLineWidthChanged,
     this.onToggleFill,
+    super.onInit,
+    super.onAfterViewInit,
     super.onUndo,
     super.onRedo,
     super.onDone,

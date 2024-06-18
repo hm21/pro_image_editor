@@ -301,7 +301,9 @@ class PaintingEditorState extends State<PaintingEditor>
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     /// Important to set state after view init to set action icons
+    paintEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      paintEditorCallbacks?.onAfterViewInit?.call();
       setState(() {});
       paintEditorCallbacks?.handleUpdateUI();
     });

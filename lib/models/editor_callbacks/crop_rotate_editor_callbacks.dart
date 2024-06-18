@@ -53,6 +53,8 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
     this.onDoubleTap,
     this.onResize,
     this.onReset,
+    super.onInit,
+    super.onAfterViewInit,
     super.onUndo,
     super.onRedo,
     super.onDone,
