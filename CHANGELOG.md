@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.0.4
+- **feat(text-editor)**: Added the ability to programmatically set the secondary color next to the primary color.
+
 ## Version 4.0.3
 - **feat(decode-image)**: Ability to decode the image from external, allowing to change the background image dynamically, which was requested in [#110](https://github.com/hm21/pro_image_editor/discussions/110). 
 - **fix(layer-position)**: Ensure layers are rendered from center even without bottombar. This resolves issue [#113](https://github.com/hm21/pro_image_editor/issue/113). 

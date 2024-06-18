@@ -310,7 +310,9 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
         builder: (_) => FrostedGlassTextBottomBar(
           configs: textEditor.configs,
           initColor: textEditor.primaryColor,
-          onColorChanged: textEditor.colorChanged,
+          onColorChanged: (color) {
+            textEditor.primaryColor = color;
+          },
           selectedStyle: textEditor.selectedTextStyle,
           onFontChange: textEditor.setTextStyle,
         ),

@@ -49,7 +49,7 @@ class WhatsappTextColorpicker extends StatelessWidget {
           cornerRadius: 10,
           pickMode: PickMode.color,
           colorListener: (int value) {
-            textEditor.colorChanged(Color(value));
+            textEditor.primaryColor = Color(value);
           },
         ),
       ),

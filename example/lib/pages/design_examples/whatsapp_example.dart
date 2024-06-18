@@ -406,7 +406,9 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
         builder: (_) => WhatsAppTextBottomBar(
           configs: textEditor.configs,
           initColor: textEditor.primaryColor,
-          onColorChanged: textEditor.colorChanged,
+          onColorChanged: (color) {
+            textEditor.primaryColor = color;
+          },
           selectedStyle: textEditor.selectedTextStyle,
           onFontChange: textEditor.setTextStyle,
         ),

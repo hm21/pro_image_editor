@@ -58,15 +58,42 @@ class TextEditorState extends State<TextEditor>
         ImageEditorConvertedCallbacks,
         SimpleConfigsAccessState {
   late final StreamController _rebuildController;
+
   final TextEditingController _textCtrl = TextEditingController();
-  final FocusNode _focus = FocusNode();
-  Color primaryColor = Colors.black;
+  final FocusNode _focusNode = FocusNode();
+
   late TextAlign align;
-  late LayerBackgroundMode backgroundColorMode;
-  late double _fontScale;
   late TextStyle selectedTextStyle;
+  late LayerBackgroundMode backgroundColorMode;
+
   int _numLines = 0;
   double colorPosition = 0;
+  late double _fontScale;
+
+  Color _primaryColor = Colors.black;
+
+  /// Gets the primary color.
+  Color get primaryColor => _primaryColor;
+
+  /// Sets the primary color.
+  set primaryColor(Color color) {
+    setState(() {
+      _primaryColor = color;
+      textEditorCallbacks?.handleColorChanged(color.value);
+    });
+  }
+
+  Color? _secondaryColor;
+
+  /// Gets the secondary color.
+  Color get secondaryColor => _secondaryColor ?? getContrastColor(primaryColor);
+
+  /// Sets the secondary color.
+  set secondaryColor(Color color) {
+    setState(() {
+      _secondaryColor = color;
+    });
+  }
 
   @override
   void initState() {
@@ -87,7 +114,7 @@ class TextEditorState extends State<TextEditor>
   void dispose() {
     _rebuildController.close();
     _textCtrl.dispose();
-    _focus.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -123,7 +150,7 @@ class TextEditorState extends State<TextEditor>
   }
 
   /// Calculates the contrast color for a given color.
-  Color _getContrastColor(Color color) {
+  Color getContrastColor(Color color) {
     int d = color.computeLuminance() > 0.5 ? 0 : 255;
 
     return Color.fromARGB(color.alpha, d, d, d);
@@ -131,24 +158,29 @@ class TextEditorState extends State<TextEditor>
 
   /// Gets the text color based on the selected color mode.
   Color get _getTextColor {
-    return backgroundColorMode == LayerBackgroundMode.onlyColor
-        ? primaryColor
-        : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
-            ? primaryColor
-            : backgroundColorMode == LayerBackgroundMode.background
-                ? _getContrastColor(primaryColor)
-                : primaryColor;
+    switch (backgroundColorMode) {
+      case LayerBackgroundMode.onlyColor:
+      case LayerBackgroundMode.backgroundAndColor:
+        return primaryColor;
+      case LayerBackgroundMode.background:
+        return secondaryColor;
+      default:
+        return primaryColor;
+    }
   }
 
   /// Gets the background color based on the selected color mode.
   Color get _getBackgroundColor {
-    return backgroundColorMode == LayerBackgroundMode.onlyColor
-        ? Colors.transparent
-        : backgroundColorMode == LayerBackgroundMode.backgroundAndColor
-            ? _getContrastColor(primaryColor)
-            : backgroundColorMode == LayerBackgroundMode.background
-                ? primaryColor
-                : _getContrastColor(primaryColor).withOpacity(0.5);
+    switch (backgroundColorMode) {
+      case LayerBackgroundMode.onlyColor:
+        return Colors.transparent;
+      case LayerBackgroundMode.backgroundAndColor:
+        return secondaryColor;
+      case LayerBackgroundMode.background:
+        return primaryColor;
+      default:
+        return secondaryColor.withOpacity(0.5);
+    }
   }
 
   /// Gets the text font size based on the selected font scale.
@@ -309,14 +341,6 @@ class TextEditorState extends State<TextEditor>
       Navigator.of(context).pop();
     }
     textEditorCallbacks?.handleDone();
-  }
-
-  /// Handles changes in the selected color.
-  void colorChanged(Color color) {
-    setState(() {
-      primaryColor = color;
-      textEditorCallbacks?.handleColorChanged(color.value);
-    });
   }
 
   @override
@@ -501,7 +525,9 @@ class TextEditorState extends State<TextEditor>
             this,
             _rebuildController.stream,
             selectedTextStyle.color ?? primaryColor,
-            colorChanged,
+            (color) {
+              primaryColor = color;
+            },
           ) ??
           const SizedBox.shrink();
     }
@@ -531,7 +557,7 @@ class TextEditorState extends State<TextEditor>
           cornerRadius: 10,
           pickMode: PickMode.color,
           colorListener: (int value) {
-            colorChanged(Color(value));
+            primaryColor = Color(value);
           },
         ),
       ),
@@ -572,7 +598,7 @@ class TextEditorState extends State<TextEditor>
                   IntrinsicWidth(
                     child: TextField(
                       controller: _textCtrl,
-                      focusNode: _focus,
+                      focusNode: _focusNode,
                       onChanged: textEditorCallbacks?.handleChanged,
                       onEditingComplete:
                           textEditorCallbacks?.handleEditingComplete,
