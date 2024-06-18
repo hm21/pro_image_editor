@@ -695,7 +695,9 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method is called when a scaling operation begins and initializes the necessary variables.
   void _onScaleStart(ScaleStartDetails details) {
-    _calcAppBarHeight();
+    if (sizesManager.bodySize != sizesManager.editorSize) {
+      _calcAppBarHeight();
+    }
 
     layerInteractionManager.snapStartPosX = details.focalPoint.dx;
     layerInteractionManager.snapStartPosY = details.focalPoint.dy;
@@ -771,7 +773,12 @@ class ProImageEditorState extends State<ProImageEditor>
         activeLayer: _activeLayer!,
         configEnabledHitVibration: helperLines.hitVibration,
         details: details,
-        editorSize: sizesManager.editorSize,
+        editorSize: Size(
+          sizesManager.bodySize.width,
+          sizesManager.editorSize.height +
+              sizesManager.appBarHeight -
+              sizesManager.bottomBarHeight,
+        ),
         layerTheme: imageEditorTheme.layerInteraction,
       );
       _activeLayer!.key.currentState!.setState(() {});
@@ -803,7 +810,7 @@ class ProImageEditorState extends State<ProImageEditor>
       );
     }
     mainEditorCallbacks?.handleUpdateLayer(_activeLayer!);
-    _activeLayer!.key.currentState!.setState(() {});
+    _activeLayer?.key.currentState?.setState(() {});
     checkUpdateHelperLineUI();
   }
 
@@ -1510,6 +1517,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
     bool close = false;
 
+    if (!mounted) return;
+
     if (customWidgets.mainEditor.closeWarningDialog != null) {
       close = await customWidgets.mainEditor.closeWarningDialog!(this);
     } else {
@@ -2100,11 +2109,8 @@ class ProImageEditorState extends State<ProImageEditor>
                               key: layerItem.key,
                               configs: configs,
                               editorCenterX: sizesManager.editorSize.width / 2,
-                              editorCenterY:
-                                  sizesManager.editorSize.height / 2 -
-                                      (selectedLayerIndex >= 0
-                                          ? 0
-                                          : sizesManager.appBarHeight),
+                              editorCenterY: sizesManager
+                                  .editorCenterY(selectedLayerIndex),
                               layerData: layerItem,
                               enableHitDetection:
                                   layerInteractionManager.enabledHitDetection,
@@ -2222,6 +2228,10 @@ class ProImageEditorState extends State<ProImageEditor>
                   Align(
                     alignment: Alignment.center,
                     child: AnimatedContainer(
+                      margin: EdgeInsets.only(
+                        top: sizesManager.appBarHeight,
+                        bottom: sizesManager.bottomBarHeight,
+                      ),
                       duration: Duration(milliseconds: duration),
                       width: screenW,
                       height: layerInteractionManager.showHorizontalHelperLine

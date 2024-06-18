@@ -20,47 +20,60 @@ class FrostedGlassPaintingAppbar extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            FrostedGlassEffect(
-              child: IconButton(
-                tooltip: paintEditor.configs.i18n.cancel,
-                onPressed: paintEditor.close,
-                icon: Icon(paintEditor.configs.icons.closeEditor),
+            Hero(
+              tag: 'frosted-glass-close-btn',
+              child: FrostedGlassEffect(
+                child: IconButton(
+                  tooltip: paintEditor.configs.i18n.cancel,
+                  onPressed: paintEditor.close,
+                  icon: Icon(
+                    paintEditor.configs.icons.closeEditor,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
-            FrostedGlassEffect(
-              padding: const EdgeInsets.symmetric(horizontal: 7),
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: paintEditor.configs.i18n.undo,
-                    onPressed: paintEditor.undoAction,
-                    icon: Icon(
-                      paintEditor.configs.icons.undoAction,
-                      color: paintEditor.canUndo
-                          ? Colors.white
-                          : Colors.white.withAlpha(80),
+            Hero(
+              tag: 'frosted-glass-top-center-bar',
+              child: FrostedGlassEffect(
+                padding: const EdgeInsets.symmetric(horizontal: 7),
+                child: Row(
+                  children: [
+                    IconButton(
+                      tooltip: paintEditor.configs.i18n.undo,
+                      onPressed: paintEditor.undoAction,
+                      icon: Icon(
+                        paintEditor.configs.icons.undoAction,
+                        color: paintEditor.canUndo
+                            ? Colors.white
+                            : Colors.white.withAlpha(80),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 3),
-                  IconButton(
-                    tooltip: paintEditor.configs.i18n.redo,
-                    onPressed: paintEditor.redoAction,
-                    icon: Icon(
-                      paintEditor.configs.icons.redoAction,
-                      color: paintEditor.canRedo
-                          ? Colors.white
-                          : Colors.white.withAlpha(80),
+                    const SizedBox(width: 3),
+                    IconButton(
+                      tooltip: paintEditor.configs.i18n.redo,
+                      onPressed: paintEditor.redoAction,
+                      icon: Icon(
+                        paintEditor.configs.icons.redoAction,
+                        color: paintEditor.canRedo
+                            ? Colors.white
+                            : Colors.white.withAlpha(80),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            FrostedGlassEffect(
-              child: IconButton(
-                tooltip: paintEditor.configs.i18n.done,
-                onPressed: paintEditor.done,
-                icon: Icon(
-                  paintEditor.configs.icons.doneIcon,
+            Hero(
+              tag: 'frosted-glass-done-btn',
+              child: FrostedGlassEffect(
+                child: IconButton(
+                  tooltip: paintEditor.configs.i18n.done,
+                  onPressed: paintEditor.done,
+                  icon: Icon(
+                    paintEditor.configs.icons.doneIcon,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

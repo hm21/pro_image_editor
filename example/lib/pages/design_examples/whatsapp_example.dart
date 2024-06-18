@@ -128,6 +128,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
             designMode: platformDesignMode,
             imageEditorTheme: ImageEditorTheme(
               textEditor: TextEditorTheme(
+                  textFieldMargin: EdgeInsets.zero,
                   bottomBarBackgroundColor: Colors.transparent,
                   bottomBarMainAxisAlignment: !_useMaterialDesign
                       ? MainAxisAlignment.spaceEvenly
@@ -373,12 +374,18 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
       if (_useMaterialDesign)
         ReactiveCustomWidget(
           stream: rebuildStream,
-          builder: (_) => WhatsappTextSizeSlider(textEditor: textEditor),
+          builder: (_) => Padding(
+            padding: const EdgeInsets.only(top: kToolbarHeight),
+            child: WhatsappTextSizeSlider(textEditor: textEditor),
+          ),
         )
       else
         ReactiveCustomWidget(
           stream: rebuildStream,
-          builder: (_) => WhatsappTextColorpicker(textEditor: textEditor),
+          builder: (_) => Padding(
+            padding: const EdgeInsets.only(top: kToolbarHeight),
+            child: WhatsappTextColorpicker(textEditor: textEditor),
+          ),
         ),
 
       /// Appbar

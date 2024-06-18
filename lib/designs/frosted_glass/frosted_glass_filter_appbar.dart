@@ -21,19 +21,29 @@ class FrostedGlassFilterAppbar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              FrostedGlassEffect(
-                child: IconButton(
-                  tooltip: filterEditor.configs.i18n.cancel,
-                  onPressed: filterEditor.close,
-                  icon: Icon(filterEditor.configs.icons.closeEditor),
+              Hero(
+                tag: 'frosted-glass-close-btn',
+                child: FrostedGlassEffect(
+                  child: IconButton(
+                    tooltip: filterEditor.configs.i18n.cancel,
+                    onPressed: filterEditor.close,
+                    icon: Icon(
+                      filterEditor.configs.icons.closeEditor,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
-              FrostedGlassEffect(
-                child: IconButton(
-                  tooltip: filterEditor.configs.i18n.done,
-                  onPressed: filterEditor.done,
-                  icon: Icon(
-                    filterEditor.configs.icons.doneIcon,
+              Hero(
+                tag: 'frosted-glass-done-btn',
+                child: FrostedGlassEffect(
+                  child: IconButton(
+                    tooltip: filterEditor.configs.i18n.done,
+                    onPressed: filterEditor.done,
+                    icon: Icon(
+                      filterEditor.configs.icons.doneIcon,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

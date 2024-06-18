@@ -81,6 +81,11 @@ class SizesManager {
             2,
       );
 
+  double editorCenterY(int selectedLayerIndex) =>
+      (bodySize.height +
+          (selectedLayerIndex >= 0 ? appBarHeight - bottomBarHeight : 0)) /
+      2;
+
   /// Stores the last recorded screen size.
   Size lastScreenSize = const Size(0, 0);
 

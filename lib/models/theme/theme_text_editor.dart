@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 // Project imports:
 import 'theme_shared_values.dart';
@@ -68,8 +68,13 @@ class TextEditorTheme {
   /// How the children should be placed along the main axis.
   final MainAxisAlignment bottomBarMainAxisAlignment;
 
+  /// Margin value around the textField.
+  final EdgeInsets textFieldMargin;
+
   /// Creates an instance of the `TextEditorTheme` class with the specified theme properties.
   const TextEditorTheme({
+    this.textFieldMargin =
+        const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.background = const Color(0x9B000000),

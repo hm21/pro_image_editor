@@ -34,7 +34,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
   ProImageEditorState? get _editor => editorKey.currentState;
 
   /// Opens the sticker/emoji editor.
-  void openStickerEditor() async {
+  void _openStickerEditor() async {
     Layer? layer = await _editor!.openPage(FrostedGlassStickerPage(
       configs: _editor!.configs,
       callbacks: _editor!.callbacks,
@@ -82,6 +82,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
           ),
           imageEditorTheme: ImageEditorTheme(
             textEditor: TextEditorTheme(
+                textFieldMargin: const EdgeInsets.only(top: kToolbarHeight),
                 bottomBarBackgroundColor: Colors.transparent,
                 bottomBarMainAxisAlignment: !_useMaterialDesign
                     ? MainAxisAlignment.spaceEvenly
@@ -244,22 +245,8 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
         ReactiveCustomWidget(
           stream: rebuildStream,
           builder: (_) => FrostedGlassActionBar(
-            configs: editor.configs,
-            onTapDone: editor.doneEditing,
-            onClose: editor.closeEditor,
-            onTapPaintEditor: editor.openPaintingEditor,
-            onTapTextEditor: () => editor.openTextEditor(
-              duration: const Duration(milliseconds: 150),
-            ),
-            onTapCropRotateEditor: editor.openCropRotateEditor,
-            onTapFilterEditor: editor.openFilterEditor,
-            onTapBlurEditor: editor.openBlurEditor,
-            onTapStickerEditor: openStickerEditor,
-            onTapUndo: editor.undoAction,
-            onTapRedo: editor.redoAction,
-            canUndo: editor.canUndo,
-            canRedo: editor.canRedo,
-            openEditor: editor.isSubEditorOpen,
+            editor: editor,
+            openStickerEditor: _openStickerEditor,
           ),
         ),
     ];
@@ -303,7 +290,10 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
       /// Slider Text size
       ReactiveCustomWidget(
         stream: rebuildStream,
-        builder: (_) => FrostedGlassTextSizeSlider(textEditor: textEditor),
+        builder: (_) => Padding(
+          padding: const EdgeInsets.only(top: kToolbarHeight),
+          child: FrostedGlassTextSizeSlider(textEditor: textEditor),
+        ),
       ),
 
       /// Appbar

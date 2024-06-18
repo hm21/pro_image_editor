@@ -21,19 +21,29 @@ class FrostedGlassBlurAppbar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              FrostedGlassEffect(
-                child: IconButton(
-                  tooltip: blurEditor.configs.i18n.cancel,
-                  onPressed: blurEditor.close,
-                  icon: Icon(blurEditor.configs.icons.closeEditor),
+              Hero(
+                tag: 'frosted-glass-close-btn',
+                child: FrostedGlassEffect(
+                  child: IconButton(
+                    tooltip: blurEditor.configs.i18n.cancel,
+                    onPressed: blurEditor.close,
+                    icon: Icon(
+                      blurEditor.configs.icons.closeEditor,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
-              FrostedGlassEffect(
-                child: IconButton(
-                  tooltip: blurEditor.configs.i18n.done,
-                  onPressed: blurEditor.done,
-                  icon: Icon(
-                    blurEditor.configs.icons.doneIcon,
+              Hero(
+                tag: 'frosted-glass-done-btn',
+                child: FrostedGlassEffect(
+                  child: IconButton(
+                    tooltip: blurEditor.configs.i18n.done,
+                    onPressed: blurEditor.done,
+                    icon: Icon(
+                      blurEditor.configs.icons.doneIcon,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

@@ -543,7 +543,7 @@ class TextEditorState extends State<TextEditor>
     return Align(
       alignment: Alignment.center,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
+        padding: imageEditorTheme.textEditor.textFieldMargin,
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
