@@ -336,17 +336,16 @@ class TextEditorState extends State<TextEditor>
     if (_textCtrl.text.trim().isNotEmpty) {
       Navigator.of(context).pop(
         TextLayerData(
-            text: _textCtrl.text.trim(),
-            background: _getBackgroundColor,
-            color: _getTextColor,
-            align: align,
-            fontScale: _fontScale,
-            colorMode: backgroundColorMode,
-            colorPickerPosition: colorPosition,
-            textStyle: selectedTextStyle,
-            customSecondaryColor: _secondaryColor != null
-            // fontFamily: 'Roboto',
-            ),
+          text: _textCtrl.text.trim(),
+          background: _getBackgroundColor,
+          color: _getTextColor,
+          align: align,
+          fontScale: _fontScale,
+          colorMode: backgroundColorMode,
+          colorPickerPosition: colorPosition,
+          textStyle: selectedTextStyle,
+          customSecondaryColor: _secondaryColor != null,
+        ),
       );
     } else {
       Navigator.of(context).pop();
@@ -600,7 +599,6 @@ class TextEditorState extends State<TextEditor>
                       style: selectedTextStyle.copyWith(
                         color: _getTextColor,
                         fontSize: _getTextFontSize,
-                        fontWeight: FontWeight.w400,
                         height: 1.35,
                         letterSpacing: 0,
                       ),
@@ -633,15 +631,14 @@ class TextEditorState extends State<TextEditor>
                           hintStyle: selectedTextStyle.copyWith(
                             color: imageEditorTheme.textEditor.inputHintColor,
                             fontSize: _getTextFontSize,
-                            fontWeight: FontWeight.w400,
                             height: 1.35,
                           )),
                       style: selectedTextStyle.copyWith(
                         color: Colors.transparent,
                         fontSize: _getTextFontSize,
-                        fontWeight: FontWeight.w400,
                         height: 1.35,
                         letterSpacing: 0,
+                        decoration: TextDecoration.none,
                       ),
                       autofocus: true,
                     ),

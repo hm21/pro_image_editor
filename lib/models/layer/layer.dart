@@ -164,11 +164,55 @@ class TextLayerData extends Layer {
       'fontScale': fontScale,
       'type': 'text',
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
-      'fontFamily': textStyle?.fontFamily
+      if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
+      if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
+      if (textStyle?.fontWeight != null)
+        'fontWeight': textStyle?.fontWeight!.value,
+      if (textStyle?.letterSpacing != null)
+        'letterSpacing': textStyle?.letterSpacing,
+      if (textStyle?.height != null) 'height': textStyle?.height,
+      if (textStyle?.wordSpacing != null) 'wordSpacing': textStyle?.wordSpacing,
+      if (textStyle?.decoration != null)
+        'decoration': textStyle?.decoration.toString(),
     };
   }
 
   factory TextLayerData.fromMap(Layer layer, Map map) {
+    TextDecoration getDecoration(String decoration) {
+      if (decoration.contains('combine')) {
+        List<TextDecoration> decorations = [];
+
+        if (decoration.contains('lineThrough')) {
+          decorations.add(TextDecoration.lineThrough);
+        }
+        if (decoration.contains('overline')) {
+          decorations.add(TextDecoration.overline);
+        }
+        if (decoration.contains('underline')) {
+          decorations.add(TextDecoration.underline);
+        }
+
+        return TextDecoration.combine(decorations);
+      } else {
+        if (decoration.contains('lineThrough')) {
+          return TextDecoration.lineThrough;
+        } else if (decoration.contains('overline')) {
+          return TextDecoration.overline;
+        } else if (decoration.contains('underline')) {
+          return TextDecoration.underline;
+        }
+      }
+
+      return TextDecoration.none;
+    }
+
+    String? fontFamily = map['fontFamily'];
+    double? wordSpacing = map['wordSpacing'];
+    double? height = map['height'];
+    double? letterSpacing = map['letterSpacing'];
+    int? fontWeight = map['fontWeight'];
+    String? fontStyle = map['fontStyle'];
+    String? decoration = map['decoration'];
     return TextLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
@@ -179,7 +223,19 @@ class TextLayerData extends Layer {
       fontScale: map['fontScale'] ?? 1.0,
       textStyle: map['fontFamily'] != null
           ? TextStyle(
-              fontFamily: map['fontFamily'],
+              fontFamily: fontFamily,
+              height: height,
+              wordSpacing: wordSpacing,
+              letterSpacing: letterSpacing,
+              decoration: decoration != null ? getDecoration(decoration) : null,
+              fontStyle: fontStyle != null
+                  ? FontStyle.values
+                      .firstWhere((element) => element.name == fontStyle)
+                  : null,
+              fontWeight: fontWeight != null
+                  ? FontWeight.values
+                      .firstWhere((element) => element.value == fontWeight)
+                  : null,
             )
           : null,
       colorMode: LayerBackgroundMode.values

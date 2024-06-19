@@ -2,6 +2,8 @@
 
 ## Version 4.0.5
 - **fix(text-editor)**: Resolve misapplication of secondary color. This resolve issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
+- **fix(text-editor)**: Resolve issue where text styles (bold/italic/underline) are not saved in history. This resolves issue [#118](https://github.com/hm21/pro_image_editor/discussions/118).
+
 
 ## Version 4.0.4
 - **feat(text-editor)**: Added the ability to programmatically set the secondary color next to the primary color.
