@@ -869,6 +869,7 @@ class ProImageEditorState extends State<ProImageEditor>
         ..flipY = layerData.flipY
         ..offset = layerData.offset
         ..scale = layerData.scale
+        ..customSecondaryColor = layer.customSecondaryColor
         ..rotation = layerData.rotation;
 
       _updateTempLayer();

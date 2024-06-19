@@ -63,74 +63,13 @@ class Layer {
 
     switch (map['type']) {
       case 'text':
-        return TextLayerData(
-          flipX: layer.flipX,
-          flipY: layer.flipY,
-          offset: layer.offset,
-          rotation: layer.rotation,
-          scale: layer.scale,
-          text: map['text'] ?? '-',
-          fontScale: map['fontScale'] ?? 1.0,
-          textStyle: map['fontFamily'] != null
-              ? TextStyle(
-                  fontFamily: map['fontFamily'],
-                )
-              : null,
-          colorMode: LayerBackgroundMode.values
-              .firstWhere((element) => element.name == map['colorMode']),
-          color: Color(map['color']),
-          background: Color(map['background']),
-          colorPickerPosition: map['colorPickerPosition'] ?? 0,
-          align: TextAlign.values
-              .firstWhere((element) => element.name == map['align']),
-        );
+        return TextLayerData.fromMap(layer, map);
       case 'emoji':
-        return EmojiLayerData(
-          flipX: layer.flipX,
-          flipY: layer.flipY,
-          offset: layer.offset,
-          rotation: layer.rotation,
-          scale: layer.scale,
-          emoji: map['emoji'],
-        );
+        return EmojiLayerData.fromMap(layer, map);
       case 'painting':
-        return PaintingLayerData(
-          flipX: layer.flipX,
-          flipY: layer.flipY,
-          offset: layer.offset,
-          rotation: layer.rotation,
-          scale: layer.scale,
-          rawSize: Size(
-            map['rawSize']?['w'] ?? 0,
-            map['rawSize']?['h'] ?? 0,
-          ),
-          item: PaintedModel.fromMap(map['item'] ?? {}),
-        );
+        return PaintingLayerData.fromMap(layer, map);
       case 'sticker':
-        int stickerPosition = map['listPosition'] ?? -1;
-        Widget sticker = kDebugMode
-            ? Text(
-                'Sticker $stickerPosition not found',
-                style: const TextStyle(color: Colors.red, fontSize: 24),
-              )
-            : const SizedBox.shrink();
-        if (stickers.isNotEmpty && stickers.length > stickerPosition) {
-          sticker = ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 1, minHeight: 1),
-            child: Image.memory(
-              stickers[stickerPosition],
-            ),
-          );
-        }
-
-        return StickerLayerData(
-          flipX: layer.flipX,
-          flipY: layer.flipY,
-          offset: layer.offset,
-          rotation: layer.rotation,
-          scale: layer.scale,
-          sticker: sticker,
-        );
+        return StickerLayerData.fromMap(layer, map, stickers);
       default:
         return layer;
     }
@@ -168,6 +107,9 @@ class TextLayerData extends Layer {
   /// The background color for the text.
   Color background;
 
+  /// This flag define if the secondary color is manually set.
+  bool customSecondaryColor;
+
   /// The position of the color picker (if applicable).
   double? colorPickerPosition;
 
@@ -193,6 +135,7 @@ class TextLayerData extends Layer {
   /// can be used to customize the position, appearance, and behavior of the text layer.
   TextLayerData({
     required this.text,
+    this.customSecondaryColor = false,
     this.textStyle,
     this.colorMode,
     this.colorPickerPosition,
@@ -220,8 +163,34 @@ class TextLayerData extends Layer {
       'align': align.name,
       'fontScale': fontScale,
       'type': 'text',
+      if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
       'fontFamily': textStyle?.fontFamily
     };
+  }
+
+  factory TextLayerData.fromMap(Layer layer, Map map) {
+    return TextLayerData(
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+      offset: layer.offset,
+      rotation: layer.rotation,
+      scale: layer.scale,
+      text: map['text'] ?? '-',
+      fontScale: map['fontScale'] ?? 1.0,
+      textStyle: map['fontFamily'] != null
+          ? TextStyle(
+              fontFamily: map['fontFamily'],
+            )
+          : null,
+      colorMode: LayerBackgroundMode.values
+          .firstWhere((element) => element.name == map['colorMode']),
+      color: Color(map['color']),
+      background: Color(map['background']),
+      colorPickerPosition: map['colorPickerPosition'] ?? 0,
+      align: TextAlign.values
+          .firstWhere((element) => element.name == map['align']),
+      customSecondaryColor: map['customSecondaryColor'] ?? false,
+    );
   }
 }
 
@@ -264,6 +233,17 @@ class EmojiLayerData extends Layer {
       'emoji': emoji,
       'type': 'emoji',
     };
+  }
+
+  factory EmojiLayerData.fromMap(Layer layer, Map map) {
+    return EmojiLayerData(
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+      offset: layer.offset,
+      rotation: layer.rotation,
+      scale: layer.scale,
+      emoji: map['emoji'],
+    );
   }
 }
 
@@ -321,6 +301,21 @@ class PaintingLayerData extends Layer {
       'type': 'painting',
     };
   }
+
+  factory PaintingLayerData.fromMap(Layer layer, Map map) {
+    return PaintingLayerData(
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+      offset: layer.offset,
+      rotation: layer.rotation,
+      scale: layer.scale,
+      rawSize: Size(
+        map['rawSize']?['w'] ?? 0,
+        map['rawSize']?['h'] ?? 0,
+      ),
+      item: PaintedModel.fromMap(map['item'] ?? {}),
+    );
+  }
 }
 
 /// A class representing a layer with custom sticker content.
@@ -364,5 +359,36 @@ class StickerLayerData extends Layer {
       'listPosition': listPosition,
       'type': 'sticker',
     };
+  }
+
+  factory StickerLayerData.fromMap(
+    Layer layer,
+    Map map,
+    List<Uint8List> stickers,
+  ) {
+    int stickerPosition = map['listPosition'] ?? -1;
+    Widget sticker = kDebugMode
+        ? Text(
+            'Sticker $stickerPosition not found',
+            style: const TextStyle(color: Colors.red, fontSize: 24),
+          )
+        : const SizedBox.shrink();
+    if (stickers.isNotEmpty && stickers.length > stickerPosition) {
+      sticker = ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 1, minHeight: 1),
+        child: Image.memory(
+          stickers[stickerPosition],
+        ),
+      );
+    }
+
+    return StickerLayerData(
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+      offset: layer.offset,
+      rotation: layer.rotation,
+      scale: layer.scale,
+      sticker: sticker,
+    );
   }
 }

@@ -50,6 +50,7 @@ class LayerCopyManager {
       scale: layer.scale,
       flipX: layer.flipX,
       flipY: layer.flipY,
+      customSecondaryColor: layer.customSecondaryColor,
     );
   }
 

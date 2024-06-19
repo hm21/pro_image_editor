@@ -136,9 +136,14 @@ class TextEditorState extends State<TextEditor>
       align = widget.layer!.align;
       _fontScale = widget.layer!.fontScale;
       backgroundColorMode = widget.layer!.colorMode!;
-      primaryColor = backgroundColorMode == LayerBackgroundMode.background
-          ? widget.layer!.background
-          : widget.layer!.color;
+      if (widget.layer!.customSecondaryColor) {
+        _primaryColor = widget.layer!.color;
+        _secondaryColor = widget.layer!.background;
+      } else {
+        _primaryColor = backgroundColorMode == LayerBackgroundMode.background
+            ? widget.layer!.background
+            : widget.layer!.color;
+      }
       _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
@@ -331,16 +336,17 @@ class TextEditorState extends State<TextEditor>
     if (_textCtrl.text.trim().isNotEmpty) {
       Navigator.of(context).pop(
         TextLayerData(
-          text: _textCtrl.text.trim(),
-          background: _getBackgroundColor,
-          color: _getTextColor,
-          align: align,
-          fontScale: _fontScale,
-          colorMode: backgroundColorMode,
-          colorPickerPosition: colorPosition,
-          textStyle: selectedTextStyle,
-          // fontFamily: 'Roboto',
-        ),
+            text: _textCtrl.text.trim(),
+            background: _getBackgroundColor,
+            color: _getTextColor,
+            align: align,
+            fontScale: _fontScale,
+            colorMode: backgroundColorMode,
+            colorPickerPosition: colorPosition,
+            textStyle: selectedTextStyle,
+            customSecondaryColor: _secondaryColor != null
+            // fontFamily: 'Roboto',
+            ),
       );
     } else {
       Navigator.of(context).pop();

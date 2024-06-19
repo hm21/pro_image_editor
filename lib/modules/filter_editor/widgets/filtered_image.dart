@@ -33,26 +33,19 @@ class FilteredImage extends StatelessWidget {
   /// The blur factor
   final double blurFactor;
 
-  const FilteredImage(
-      {super.key,
-      required this.width,
-      required this.height,
-      required this.designMode,
-      required this.filters,
-      required this.image,
-      required this.blurFactor,
-      this.fit = BoxFit.contain});
+  const FilteredImage({
+    super.key,
+    required this.width,
+    required this.height,
+    required this.designMode,
+    required this.filters,
+    required this.image,
+    required this.blurFactor,
+    this.fit = BoxFit.contain,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Widget img = AutoImage(
-      image,
-      fit: fit,
-      width: width,
-      height: height,
-      designMode: designMode,
-    );
-
     return SizedBox(
       width: width,
       height: height,
@@ -61,8 +54,8 @@ class FilteredImage extends StatelessWidget {
         fit: StackFit.expand,
         alignment: Alignment.center,
         children: [
-          img,
-          ColorFilterGenerator(filters: filters, child: img),
+          _buildImage(),
+          ColorFilterGenerator(filters: filters, child: _buildImage()),
           ClipRect(
             clipBehavior: Clip.hardEdge,
             child: BackdropFilter(
@@ -77,6 +70,16 @@ class FilteredImage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    return AutoImage(
+      image,
+      fit: fit,
+      width: width,
+      height: height,
+      designMode: designMode,
     );
   }
 }
