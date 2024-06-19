@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.0.6
+- **feat(layer-scale)**: Add ability to set minimum and maximum scale factor for layers. This was requsted in [#122](https://github.com/hm21/pro_image_editor/issues/122)
+
 ## Version 4.0.5
 - **fix(text-editor)**: Resolve misapplication of secondary color. This resolve issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
 - **fix(text-editor)**: Resolve issue where text styles (bold/italic/underline) are not saved in history. This resolves issue [#118](https://github.com/hm21/pro_image_editor/discussions/118).

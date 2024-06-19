@@ -57,6 +57,12 @@ class TextEditorConfigs {
   /// Allow users to select a different font style
   final List<TextStyle>? customTextStyles;
 
+  /// The minimum scale factor from the layer.
+  final double minScale;
+
+  /// The maximum scale factor from the layer.
+  final double maxScale;
+
   /// Creates an instance of TextEditorConfigs with optional settings.
   ///
   /// By default, the text editor is enabled, and most text formatting options
@@ -72,6 +78,8 @@ class TextEditorConfigs {
     this.initFontScale = 1.0,
     this.maxFontScale = 3.0,
     this.minFontScale = 0.3,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
     this.customTextStyles,
     this.initialBackgroundColorMode = LayerBackgroundMode.backgroundAndColor,
   }) : assert(initFontSize > 0, 'initFontSize must be positive');

@@ -772,6 +772,7 @@ class ProImageEditorState extends State<ProImageEditor>
       layerInteractionManager.freeStyleHighPerformanceScaling =
           paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       layerInteractionManager.calculateInteractiveButtonScaleRotate(
+        configs: configs,
         activeLayer: _activeLayer!,
         configEnabledHitVibration: helperLines.hitVibration,
         details: details,
@@ -804,6 +805,7 @@ class ProImageEditorState extends State<ProImageEditor>
       layerInteractionManager.freeStyleHighPerformanceScaling =
           paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       layerInteractionManager.calculateScaleRotate(
+        configs: configs,
         activeLayer: _activeLayer!,
         detail: details,
         editorSize: sizesManager.editorSize,

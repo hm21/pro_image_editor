@@ -125,6 +125,7 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation based on user interactions.
   calculateInteractiveButtonScaleRotate({
+    required ProImageEditorConfigs configs,
     required ScaleUpdateDetails details,
     required Layer activeLayer,
     required Size editorSize,
@@ -157,7 +158,8 @@ class LayerInteractionManager {
         ) /
         rotateScaleLayerScaleHelper!;
 
-    activeLayer.scale = newDistance / realSize.distance;
+    activeLayer.scale = (newDistance / realSize.distance);
+    _setMinMaxScaleFactor(configs, activeLayer);
     activeLayer.rotation =
         touchPositionFromCenter.direction - atan(1 / activeSize.aspectRatio);
 
@@ -259,6 +261,7 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation of a layer based on user interactions.
   calculateScaleRotate({
+    required ProImageEditorConfigs configs,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
     required Size editorSize,
@@ -268,6 +271,7 @@ class LayerInteractionManager {
     _activeScale = true;
 
     activeLayer.scale = baseScaleFactor * detail.scale;
+    _setMinMaxScaleFactor(configs, activeLayer);
     activeLayer.rotation = baseAngleFactor + detail.rotation;
 
     checkRotationLine(
@@ -473,6 +477,31 @@ class LayerInteractionManager {
       Future.delayed(const Duration(milliseconds: 3)).whenComplete(() {
         Vibration.cancel();
       });
+    }
+  }
+
+  void _setMinMaxScaleFactor(ProImageEditorConfigs configs, Layer layer) {
+    if (layer is PaintingLayerData) {
+      layer.scale = layer.scale.clamp(
+        configs.paintEditorConfigs.minScale,
+        configs.paintEditorConfigs.maxScale,
+      );
+    } else if (layer is TextLayerData) {
+      layer.scale = layer.scale.clamp(
+        configs.textEditorConfigs.minScale,
+        configs.textEditorConfigs.maxScale,
+      );
+    } else if (layer is EmojiLayerData) {
+      layer.scale = layer.scale.clamp(
+        configs.emojiEditorConfigs.minScale,
+        configs.emojiEditorConfigs.maxScale,
+      );
+    } else if (layer is StickerLayerData &&
+        configs.stickerEditorConfigs != null) {
+      layer.scale = layer.scale.clamp(
+        configs.stickerEditorConfigs!.minScale,
+        configs.stickerEditorConfigs!.maxScale,
+      );
     }
   }
 }

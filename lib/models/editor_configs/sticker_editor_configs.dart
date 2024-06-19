@@ -38,6 +38,12 @@ class StickerEditorConfigs {
   /// and behavior of stickers in the editor.
   final BuildStickers buildStickers;
 
+  /// The minimum scale factor from the layer.
+  final double minScale;
+
+  /// The maximum scale factor from the layer.
+  final double maxScale;
+
   /// Creates an instance of StickerEditorConfigs with optional settings.
   ///
   /// By default, the editor is disabled (if not specified), and other properties
@@ -45,6 +51,8 @@ class StickerEditorConfigs {
   const StickerEditorConfigs({
     required this.buildStickers,
     this.initWidth = 100,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
     this.enabled = false,
   }) : assert(initWidth > 0, 'initWidth must be positive');
 }

@@ -33,6 +33,12 @@ class EmojiEditorConfigs {
   /// Custom emojis; if set, overrides default emojis provided by the library.
   final List<CategoryEmoji> emojiSet;
 
+  /// The minimum scale factor from the layer.
+  final double minScale;
+
+  /// The maximum scale factor from the layer.
+  final double maxScale;
+
   /// Creates an instance of EmojiEditorConfigs with optional settings.
   ///
   /// By default, the editor is enabled, and other properties are set to
@@ -40,6 +46,8 @@ class EmojiEditorConfigs {
   const EmojiEditorConfigs({
     this.enabled = true,
     this.initScale = 5.0,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
     this.checkPlatformCompatibility = true,
     this.emojiSet = defaultEmojiSet,
   }) : assert(initScale > 0, 'initScale must be positive');

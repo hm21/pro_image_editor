@@ -81,6 +81,12 @@ class PaintEditorConfigs {
   /// Indicates the initial paint mode.
   final PaintModeE initialPaintMode;
 
+  /// The minimum scale factor from the layer.
+  final double minScale;
+
+  /// The maximum scale factor from the layer.
+  final double maxScale;
+
   /// Creates an instance of PaintEditorConfigs with optional settings.
   ///
   /// By default, the editor is enabled, and most drawing tools are enabled.
@@ -97,6 +103,8 @@ class PaintEditorConfigs {
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
     this.initialFill = false,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
     this.freeStyleHighPerformanceScaling,
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
