@@ -176,14 +176,15 @@ class ExportStateHistory {
                 MediaQuery.of(context).size.width *
                 imageWidth);
 
-        stickers.add(
-          await _contentRecorderCtrl.captureFromWidget(
-            layer.sticker,
-            imageInfos: imageInfos,
-            context: context,
-            targetSize: targetSize * MediaQuery.of(context).devicePixelRatio,
-          ),
+        Uint8List? result = await _contentRecorderCtrl.captureFromWidget(
+          layer.sticker,
+          imageInfos: imageInfos,
+          context: context,
+          targetSize: targetSize * MediaQuery.of(context).devicePixelRatio,
         );
+        if (result == null) return;
+
+        stickers.add(result);
       }
     }
   }

@@ -3,6 +3,7 @@
 ## Version 4.0.8
 - **fix(crop-rotate-editor)**: Resolve incorrect transformation issue in crop editor.
 - **fix(export-import)**: Correct image transformation on history reapply. This resolves issue [#120](https://github.com/hm21/pro_image_editor/discussions/120).
+- **fix(export-import)**: Resolve sticker persistence and transformation issues in history reapply. This resolves issue [#121](https://github.com/hm21/pro_image_editor/discussions/121).
 
 ## Version 4.0.7
 - **fix(sticker-export)**: Resolve incorrect export from sticker images causing lower resolution.
