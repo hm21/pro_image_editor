@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 4.0.7
+- **fix(sticker-export)**: Resolve incorrect export from sticker images causing lower resolution.
+- **feat(custom-widget)**: Add custom widgets for font-size bottom sheet. This was requsted in [#123](https://github.com/hm21/pro_image_editor/issues/123)
+
 ## Version 4.0.6
 - **feat(layer-scale)**: Add ability to set minimum and maximum scale factor for layers. This was requsted in [#122](https://github.com/hm21/pro_image_editor/issues/122)
 

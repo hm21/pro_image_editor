@@ -366,7 +366,13 @@ class ContentRecorderController {
     int retryCounter = 3;
     bool isDirty = false;
 
-    Widget child = widget;
+    Widget child = targetSize != null
+        ? SizedBox(
+            width: targetSize.width,
+            height: targetSize.height,
+            child: FittedBox(child: widget),
+          )
+        : widget;
     if (context != null) {
       child = InheritedTheme.captureAll(
         context,
@@ -396,7 +402,9 @@ class ContentRecorderController {
     final RenderView renderView = RenderView(
       view: view,
       child: RenderPositionedBox(
-          alignment: Alignment.center, child: repaintBoundary),
+        alignment: Alignment.center,
+        child: repaintBoundary,
+      ),
       configuration: ViewConfiguration(
         // size: logicalSize,
         logicalConstraints: BoxConstraints(
@@ -420,11 +428,12 @@ class ContentRecorderController {
 
     final RenderObjectToWidgetElement<RenderBox> rootElement =
         RenderObjectToWidgetAdapter<RenderBox>(
-            container: repaintBoundary,
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: child,
-            )).attachToRenderTree(
+      container: repaintBoundary,
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: child,
+      ),
+    ).attachToRenderTree(
       buildOwner,
     );
 

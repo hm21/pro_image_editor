@@ -69,7 +69,9 @@ class ExportStateHistory {
     /// Choose history span
     switch (_configs.historySpan) {
       case ExportHistorySpan.current:
-        changes = [changes[_editorPosition - 1]];
+        if (_editorPosition > 0) {
+          changes = [changes[_editorPosition - 1]];
+        }
         break;
       case ExportHistorySpan.currentAndBackward:
         changes.removeRange(_editorPosition, changes.length);

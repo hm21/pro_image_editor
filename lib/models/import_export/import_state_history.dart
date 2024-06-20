@@ -103,6 +103,7 @@ class ImportStateHistory {
         ),
       );
     }
+
     return ImportStateHistory._(
       editorPosition: map['position'],
       imgSize:

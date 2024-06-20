@@ -1622,7 +1622,8 @@ class ProImageEditorState extends State<ProImageEditor>
     if (import.configs.mergeMode == ImportEditorMergeMode.replace) {
       stateManager.screenshots = [];
 
-      stateManager.position = import.editorPosition + 1;
+      stateManager.position =
+          import.editorPosition + (import.stateHistory.isEmpty ? 0 : 1);
       stateManager.stateHistory = [
         EditorStateHistory(
           transformConfigs: TransformConfigs.empty(),
