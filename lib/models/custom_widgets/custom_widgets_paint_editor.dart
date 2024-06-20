@@ -33,7 +33,7 @@ class CustomWidgetsPaintEditor
   /// Returns a [ReactiveCustomWidget] that provides a custom slider.
   ///
   /// **Example:**
-  /// slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) {
+  /// sliderLineWidth: (editorState, rebuildStream, value, onChanged, onChangeEnd) {
   ///   return ReactiveCustomWidget(
   ///     stream: rebuildStream,
   ///     builder: (_) => Slider(

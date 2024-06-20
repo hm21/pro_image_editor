@@ -71,8 +71,12 @@ class TextEditorTheme {
   /// Margin value around the textField.
   final EdgeInsets textFieldMargin;
 
+  /// Title of the bottom sheet used to select the font-size.
+  final TextStyle? fontSizeBottomSheetTitle;
+
   /// Creates an instance of the `TextEditorTheme` class with the specified theme properties.
   const TextEditorTheme({
+    this.fontSizeBottomSheetTitle,
     this.textFieldMargin =
         const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
     this.appBarBackgroundColor = imageEditorAppBarColor,

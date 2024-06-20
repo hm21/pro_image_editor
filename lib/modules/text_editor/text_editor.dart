@@ -270,43 +270,59 @@ class TextEditorState extends State<TextEditor>
                     BottomSheetHeaderRow(
                       title: '${i18n.textEditor.fontScale} ${_fontScale}x',
                       theme: widget.theme,
+                      textStyle:
+                          imageEditorTheme.textEditor.fontSizeBottomSheetTitle,
+                      closeButton:
+                          customWidgets.textEditor.fontSizeCloseButton != null
+                              ? (fn) => customWidgets
+                                  .textEditor.fontSizeCloseButton!(this, fn)
+                              : null,
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Slider.adaptive(
-                            max: textEditorConfigs.maxFontScale,
-                            min: textEditorConfigs.minFontScale,
-                            divisions: (textEditorConfigs.maxFontScale -
-                                    textEditorConfigs.minFontScale) ~/
-                                0.1,
-                            value: _fontScale,
-                            onChanged: updateFontScaleScale,
-                          ),
+                    customWidgets.textEditor.sliderFontSize?.call(
+                          this,
+                          _rebuildController.stream,
+                          _fontScale,
+                          updateFontScaleScale,
+                          (onChangedEnd) {},
+                        ) ??
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Slider.adaptive(
+                                max: textEditorConfigs.maxFontScale,
+                                min: textEditorConfigs.minFontScale,
+                                divisions: (textEditorConfigs.maxFontScale -
+                                        textEditorConfigs.minFontScale) ~/
+                                    0.1,
+                                value: _fontScale,
+                                onChanged: updateFontScaleScale,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconTheme(
+                              data: Theme.of(context).primaryIconTheme,
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 150),
+                                child: _fontScale != presetFontScale
+                                    ? IconButton(
+                                        onPressed: () {
+                                          updateFontScaleScale(presetFontScale);
+                                        },
+                                        icon: Icon(
+                                            icons.textEditor.resetFontScale),
+                                      )
+                                    : IconButton(
+                                        key: UniqueKey(),
+                                        color: Colors.transparent,
+                                        onPressed: null,
+                                        icon: Icon(
+                                            icons.textEditor.resetFontScale),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        IconTheme(
-                          data: Theme.of(context).primaryIconTheme,
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 150),
-                            child: _fontScale != presetFontScale
-                                ? IconButton(
-                                    onPressed: () {
-                                      updateFontScaleScale(presetFontScale);
-                                    },
-                                    icon: Icon(icons.textEditor.resetFontScale),
-                                  )
-                                : IconButton(
-                                    key: UniqueKey(),
-                                    color: Colors.transparent,
-                                    onPressed: null,
-                                    icon: Icon(icons.textEditor.resetFontScale),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 2),
-                      ],
-                    ),
                   ],
                 );
               }),
