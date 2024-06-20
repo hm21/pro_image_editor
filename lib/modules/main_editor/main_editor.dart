@@ -1638,7 +1638,8 @@ class ProImageEditorState extends State<ProImageEditor>
           _controllers.screenshot
               .addEmptyScreenshot(screenshots: stateManager.screenshots);
         } else {
-          _takeScreenshot();
+          _controllers.screenshot
+              .addEmptyScreenshot(screenshots: stateManager.screenshots);
         }
       }
     } else {
@@ -1666,6 +1667,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     setState(() {});
+    decodeImage(stateManager.transformConfigs);
     mainEditorCallbacks?.handleUpdateUI();
   }
 

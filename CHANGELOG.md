@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 4.0.8
+- **fix(crop-rotate-editor)**: Resolve incorrect transformation issue in crop editor.
+- **fix(export-import)**: Correct image transformation on history reapply. This resolves issue [#120](https://github.com/hm21/pro_image_editor/discussions/120).
+
 ## Version 4.0.7
 - **fix(sticker-export)**: Resolve incorrect export from sticker images causing lower resolution.
 - **feat(custom-widget)**: Add custom widgets for font-size bottom sheet. This was requsted in [#123](https://github.com/hm21/pro_image_editor/issues/123)
