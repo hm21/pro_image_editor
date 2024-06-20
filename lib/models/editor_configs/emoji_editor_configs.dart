@@ -50,5 +50,7 @@ class EmojiEditorConfigs {
     this.maxScale = double.infinity,
     this.checkPlatformCompatibility = true,
     this.emojiSet = defaultEmojiSet,
-  }) : assert(initScale > 0, 'initScale must be positive');
+  })  : assert(initScale > 0, 'initScale must be positive'),
+        assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
 }

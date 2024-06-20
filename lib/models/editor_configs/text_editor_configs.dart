@@ -82,5 +82,7 @@ class TextEditorConfigs {
     this.maxScale = double.infinity,
     this.customTextStyles,
     this.initialBackgroundColorMode = LayerBackgroundMode.backgroundAndColor,
-  }) : assert(initFontSize > 0, 'initFontSize must be positive');
+  })  : assert(initFontSize > 0, 'initFontSize must be positive'),
+        assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
 }

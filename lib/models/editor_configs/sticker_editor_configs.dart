@@ -54,7 +54,9 @@ class StickerEditorConfigs {
     this.minScale = double.negativeInfinity,
     this.maxScale = double.infinity,
     this.enabled = false,
-  }) : assert(initWidth > 0, 'initWidth must be positive');
+  })  : assert(initWidth > 0, 'initWidth must be positive'),
+        assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
 }
 
 typedef BuildStickers = Widget Function(

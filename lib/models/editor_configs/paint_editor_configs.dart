@@ -109,5 +109,6 @@ class PaintEditorConfigs {
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintModeE.freeStyle,
-  });
+  }) : assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
 }
