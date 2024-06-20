@@ -2032,8 +2032,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
         },
         onResizeEnd: (event) {
           if (_imageNeedDecode) _decodeImage();
-          _setCropRectBoundings();
-          _updateAllStates();
+
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            _setCropRectBoundings();
+            _updateAllStates();
+          });
         },
         child: Stack(
           children: [
