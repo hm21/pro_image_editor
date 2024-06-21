@@ -123,7 +123,7 @@ class EmojiEditorState extends State<EmojiEditor>
             iconColorSelected: Colors.white,
             iconColor: const Color(0xFF9E9E9E),
             tabIndicatorAnimDuration: kTabScrollDuration,
-            dividerColor: Colors.black,
+            dividerColor: Colors.transparent,
             customCategoryView: (
               config,
               state,
@@ -176,7 +176,7 @@ class EmojiEditorState extends State<EmojiEditor>
 
   @override
   Widget build(BuildContext context) {
-    return _buildEmojiPicker();
+    return SafeArea(child: _buildEmojiPicker());
   }
 
   /// Builds a SizedBox containing the EmojiPicker with dynamic sizing.

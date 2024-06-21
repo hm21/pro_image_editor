@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.0.9
+- **fix(emoji-picker)**: Ensure the emoji-picker is rendered inside the safe areas. This resolves issue [#126](https://github.com/hm21/pro_image_editor/issue/126).
+
 ## Version 4.0.8
 - **fix(crop-rotate-editor)**: Resolve incorrect transformation issue in crop editor.
 - **fix(export-import)**: Correct image transformation on history reapply. This resolves issue [#120](https://github.com/hm21/pro_image_editor/discussions/120).

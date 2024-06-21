@@ -151,8 +151,6 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
                   : const WidgetStatePropertyAll(Colors.black),
             ),
           ),
-
-          /// TODO: Add pixelate button
         ],
       ),
     );
