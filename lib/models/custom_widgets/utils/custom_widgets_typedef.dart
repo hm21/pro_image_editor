@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
+
+// Project imports:
 import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_widget.dart';
 
 /// A typedef for creating a remove-area

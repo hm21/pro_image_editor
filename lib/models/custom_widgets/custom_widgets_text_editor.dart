@@ -1,6 +1,8 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
-import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
 
+// Project imports:
+import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
 import 'utils/custom_widgets_standalone_editor.dart';
 import 'utils/custom_widgets_typedef.dart';
 

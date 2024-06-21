@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
 import 'package:pro_image_editor/widgets/auto_image.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
@@ -18,24 +19,14 @@ import '../filter_editor/widgets/filtered_image.dart';
 import '/mixins/converted_configs.dart';
 import '/mixins/standalone_editor.dart';
 import '/models/crop_rotate_editor/transform_factors.dart';
-import '/models/editor_configs/paint_editor_configs.dart';
-import '/models/editor_image.dart';
-import '/models/init_configs/paint_editor_init_configs.dart';
-import '/models/layer/layer.dart';
-import '/models/paint_editor/paint_bottom_bar_item.dart';
 import '/models/paint_editor/painted_model.dart';
 import '/models/transform_helper.dart';
-import '/utils/design_mode.dart';
-import '/utils/pro_image_editor_mode.dart';
 import '/utils/theme_functions.dart';
 import '/widgets/bottom_sheets_header_row.dart';
-import '/widgets/color_picker/bar_color_picker.dart';
-import '/widgets/flat_icon_text_button.dart';
 import '/widgets/platform_popup_menu.dart';
 import '/widgets/transform/transformed_content_generator.dart';
 import 'utils/paint_controller.dart';
 import 'utils/paint_desktop_interaction_manager.dart';
-import 'utils/paint_editor_enum.dart';
 import 'widgets/painting_canvas.dart';
 
 export './utils/paint_editor_enum.dart';

@@ -14,12 +14,11 @@ import 'package:image/image.dart' as img;
 import 'package:mime/mime.dart';
 
 // Project imports:
-import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/isolate/isolate_manager.dart';
-import '../../models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../models/multi_threading/thread_capture_model.dart';
 import '../../models/multi_threading/thread_request_model.dart';
-import '../decode_image.dart';
 import '../unique_id_generator.dart';
+import 'threads_managers/isolate/isolate_manager.dart';
 import 'utils/dart_ui_remove_transparent_image_areas.dart';
 import 'utils/encode_image.dart';
 

@@ -1,14 +1,10 @@
-// ignore_for_file: library_private_types_in_public_api
-
-// Dart imports:
-
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 
 // Project imports:
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/history/state_history.dart';
-import '../../../models/layer/layer.dart';
 import '../../../models/multi_threading/thread_capture_model.dart';
 import '../../filter_editor/types/filter_matrix.dart';
 

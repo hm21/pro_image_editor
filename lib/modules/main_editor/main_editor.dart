@@ -7,12 +7,12 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_layer_painter.dart';
 
 // Package imports:
 import 'package:vibration/vibration.dart';
 
 // Project imports:
+import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_layer_painter.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_callbacks_mixin.dart';
 import '../../mixins/editor_configs_mixin.dart';

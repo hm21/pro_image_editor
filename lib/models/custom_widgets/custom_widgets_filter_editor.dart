@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../../pro_image_editor.dart';
 import 'utils/custom_widgets_standalone_editor.dart';
 import 'utils/custom_widgets_typedef.dart';

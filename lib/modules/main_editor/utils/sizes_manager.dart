@@ -5,10 +5,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import '/models/crop_rotate_editor/transform_factors.dart';
-import '/models/editor_configs/pro_image_editor_configs.dart';
-import '/models/history/state_history.dart';
-import '/widgets/screen_resize_detector.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+import '../../../models/crop_rotate_editor/transform_factors.dart';
+import '../../../models/history/state_history.dart';
+import '../../../widgets/screen_resize_detector.dart';
 
 /// A helper class for managing screen size and padding calculations.
 class SizesManager {

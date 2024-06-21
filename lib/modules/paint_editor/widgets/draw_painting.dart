@@ -5,9 +5,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../models/paint_editor/painted_model.dart';
-import '../../../utils/pro_image_editor_mode.dart';
 import '../utils/paint_element.dart';
 
 /// Handles the painting ongoing on the canvas.

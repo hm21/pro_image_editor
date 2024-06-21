@@ -1,9 +1,9 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_layer_painter.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
+import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_layer_painter.dart';
 import '../models/editor_configs/pro_image_editor_configs.dart';
 import '../models/layer/layer.dart';
 import '../models/transform_helper.dart';

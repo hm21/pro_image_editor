@@ -9,14 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/utils/theme_functions.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../mixins/converted_configs.dart';
 import '../mixins/editor_configs_mixin.dart';
-import '../models/layer/layer.dart';
-import '../modules/paint_editor/utils/paint_editor_enum.dart';
-import '../modules/paint_editor/widgets/draw_painting.dart';
+import '../utils/theme_functions.dart';
 import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
 
 /// A widget representing a layer within a design canvas.

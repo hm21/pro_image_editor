@@ -1,5 +1,5 @@
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/image_generation_configs/processor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 int getNumberOfProcessors({
   required ProcessorConfigs configs,

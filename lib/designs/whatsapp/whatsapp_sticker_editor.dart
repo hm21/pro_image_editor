@@ -4,9 +4,9 @@ import 'dart:ui';
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
 import 'package:pro_image_editor/modules/sticker_editor/sticker_editor.dart';
 import '../../models/editor_configs/pro_image_editor_configs.dart';

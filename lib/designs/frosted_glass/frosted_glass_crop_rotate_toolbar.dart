@@ -1,9 +1,9 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
 
 // Project imports:
+import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
 import '../../pro_image_editor.dart';
 
 /// Represents the toolbar for the crop/rotate functionality in the frosted-glass theme.

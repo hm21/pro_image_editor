@@ -1,11 +1,13 @@
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import 'custom_widgets_blur_editor.dart';
 import 'custom_widgets_crop_rotate_editor.dart';
 import 'custom_widgets_filter_editor.dart';
+import 'custom_widgets_main_editor.dart';
 import 'custom_widgets_paint_editor.dart';
 import 'custom_widgets_text_editor.dart';
-import 'custom_widgets_main_editor.dart';
 
 export 'custom_widgets_blur_editor.dart';
 export 'custom_widgets_crop_rotate_editor.dart';

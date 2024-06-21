@@ -1,6 +1,10 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 class WhatsappTextColorpicker extends StatelessWidget {

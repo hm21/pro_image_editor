@@ -1,7 +1,10 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/widgets.dart';
 
+// Project imports:
 import '../../../utils/swipe_mode.dart';
 import '../main_editor.dart';
 

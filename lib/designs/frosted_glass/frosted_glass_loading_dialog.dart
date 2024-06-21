@@ -1,5 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
 
+// Project imports:
 import 'frosted_glass_effect.dart';
 
 class FrostedGlassLoadingDialog extends StatelessWidget {

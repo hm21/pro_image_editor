@@ -5,10 +5,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../models/paint_editor/painted_model.dart';
 import '../utils/paint_controller.dart';
-import '../utils/paint_editor_enum.dart';
 
 /// A widget for creating a canvas for painting on images.
 ///
