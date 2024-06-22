@@ -63,11 +63,27 @@ class TextEditorConfigs {
   /// The maximum scale factor from the layer.
   final double maxScale;
 
+  /// Whether to show input suggestions as the user types.
+  ///
+  /// This flag only affects Android. On iOS, suggestions are tied directly to
+  /// [autocorrect], so that suggestions are only shown when [autocorrect] is
+  /// true. On Android autocorrection and suggestion are controlled separately.
+  ///
+  /// Defaults to true.
+  final bool enableSuggestions;
+
+  /// Whether to enable autocorrection.
+  ///
+  /// Defaults to true.
+  final bool autocorrect;
+
   /// Creates an instance of TextEditorConfigs with optional settings.
   ///
   /// By default, the text editor is enabled, and most text formatting options
   /// are enabled. The initial font size is set to 24.0.
   const TextEditorConfigs({
+    this.autocorrect = true,
+    this.enableSuggestions = true,
     this.enabled = true,
     this.showSelectFontStyleBottomBar = false,
     this.canToggleTextAlign = true,

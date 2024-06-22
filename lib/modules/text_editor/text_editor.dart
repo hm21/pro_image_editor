@@ -628,6 +628,8 @@ class TextEditorState extends State<TextEditor>
                       onEditingComplete:
                           textEditorCallbacks?.handleEditingComplete,
                       onSubmitted: textEditorCallbacks?.handleSubmitted,
+                      autocorrect: textEditorConfigs.autocorrect,
+                      enableSuggestions: textEditorConfigs.enableSuggestions,
                       keyboardType: TextInputType.multiline,
                       textInputAction: TextInputAction.newline,
                       textCapitalization: TextCapitalization.sentences,

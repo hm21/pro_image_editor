@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.0.10
+- **feat(text-editor)**: Add autocorrect and enableSuggestions configs. This was requsted in [#132](https://github.com/hm21/pro_image_editor/issues/132)
+
 ## Version 4.0.9
 - **fix(emoji-picker)**: Ensure the emoji-picker is rendered inside the safe areas. This resolves issue [#126](https://github.com/hm21/pro_image_editor/issue/126).
 
