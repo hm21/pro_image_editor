@@ -48,9 +48,9 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: ProImageEditorConfigs(
-          designMode: platformDesignMode,
-          customWidgets:
-              ImageEditorCustomWidgets(mainEditor: CustomWidgetsMainEditor(
+        designMode: platformDesignMode,
+        customWidgets: ImageEditorCustomWidgets(
+          mainEditor: CustomWidgetsMainEditor(
             bodyItems: (editor, rebuildStream) {
               return [
                 ReactiveCustomWidget(
@@ -97,7 +97,9 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
                 ),
               ];
             },
-          ))),
+          ),
+        ),
+      ),
     );
   }
 }

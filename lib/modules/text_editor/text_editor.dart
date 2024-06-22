@@ -640,23 +640,26 @@ class TextEditorState extends State<TextEditor>
                       cursorHeight: _getTextFontSize * 1.2,
                       scrollPhysics: const NeverScrollableScrollPhysics(),
                       decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.fromLTRB(
-                              12, _numLines <= 1 ? 4 : 0, 12, 0),
-                          hintText: _textCtrl.text.isEmpty
-                              ? i18n.textEditor.inputHintText
-                              : '',
-                          hintStyle: selectedTextStyle.copyWith(
-                            color: imageEditorTheme.textEditor.inputHintColor,
-                            fontSize: _getTextFontSize,
-                            height: 1.35,
-                          )),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.fromLTRB(
+                            12, _numLines <= 1 ? 4 : 0, 12, 0),
+                        hintText: _textCtrl.text.isEmpty
+                            ? i18n.textEditor.inputHintText
+                            : '',
+                        hintStyle: selectedTextStyle.copyWith(
+                          color: imageEditorTheme.textEditor.inputHintColor,
+                          fontSize: _getTextFontSize,
+                          height: 1.35,
+                          shadows: [],
+                        ),
+                      ),
                       style: selectedTextStyle.copyWith(
                         color: Colors.transparent,
                         fontSize: _getTextFontSize,
                         height: 1.35,
                         letterSpacing: 0,
                         decoration: TextDecoration.none,
+                        shadows: [],
                       ),
                       autofocus: true,
                     ),
