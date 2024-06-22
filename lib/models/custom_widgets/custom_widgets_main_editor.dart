@@ -102,6 +102,9 @@ class CustomWidgetsMainEditor {
 
   /// A custom bottom bar widget.
   ///
+  /// **IMPORTANT:** You must add the `key` to your bottombar widget that the
+  /// editor calculate layer movements correctly.
+  ///
   /// **Example:**
   /// ```dart
   /// bottomBar: (editor, rebuildStream, key) {

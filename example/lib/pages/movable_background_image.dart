@@ -379,8 +379,8 @@ class _MoveableBackgroundImageExampleState
                             editor.selectedLayerIndex < 0
                                 ? ReactiveCustomWidget(
                                     stream: rebuildStream,
+                                    key: key,
                                     builder: (_) => _bottomNavigationBar(
-                                      key,
                                       editor,
                                       constraints,
                                     ),
@@ -425,7 +425,9 @@ class _MoveableBackgroundImageExampleState
   }
 
   Widget _bottomNavigationBar(
-      Key key, ProImageEditorState editor, BoxConstraints constraints) {
+    ProImageEditorState editor,
+    BoxConstraints constraints,
+  ) {
     return Scrollbar(
       controller: _bottomBarScrollCtrl,
       scrollbarOrientation: ScrollbarOrientation.top,
