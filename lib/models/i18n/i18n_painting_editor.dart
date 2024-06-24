@@ -3,6 +3,16 @@ class I18nPaintingEditor {
   /// Text for the bottom navigation bar item that opens the Painting Editor.
   final String bottomNavigationBarText;
 
+  /// The text used for moving and zooming within the editor.
+  ///
+  /// This icon appears in the editor bottombar.
+  ///
+  /// When in the [PaintEditorConfigs] the config [editorIsZoomable] is set to
+  /// `true`, this text will be displayed, allowing users to interact with the
+  /// editor's zoom and move features. If [editorIsZoomable] is set to `false`,
+  /// the text will be hidden.
+  final String moveAndZoom;
+
   /// Text for the "Freestyle" painting mode.
   final String freestyle;
 
@@ -72,6 +82,7 @@ class I18nPaintingEditor {
   /// )
   /// ```
   const I18nPaintingEditor({
+    this.moveAndZoom = 'Zoom',
     this.bottomNavigationBarText = 'Paint',
     this.freestyle = 'Freestyle',
     this.arrow = 'Arrow',

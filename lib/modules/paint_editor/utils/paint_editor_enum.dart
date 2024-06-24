@@ -1,5 +1,8 @@
 /// The `PaintModeE` enum represents different painting modes for a drawing application in Flutter.
 enum PaintModeE {
+  /// Allows to move and zoom the editor
+  moveAndZoom,
+
   /// Allows freehand drawing.
   freeStyle,
 

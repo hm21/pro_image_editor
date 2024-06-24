@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_layer_painter.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_callbacks_mixin.dart';
 import '../../mixins/editor_configs_mixin.dart';
@@ -31,10 +30,12 @@ import '../../utils/debounce.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../widgets/adaptive_dialog.dart';
 import '../../widgets/auto_image.dart';
+import '../../widgets/extended/extended_interactive_viewer.dart';
 import '../../widgets/extended/extended_mouse_cursor.dart';
 import '../../widgets/layer_widget.dart';
 import '../../widgets/screen_resize_detector.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
+import '../crop_rotate_editor/utils/crop_layer_painter.dart';
 import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filtered_image.dart';
 import 'utils/desktop_interaction_manager.dart';
@@ -296,6 +297,7 @@ class ProImageEditorState extends State<ProImageEditor>
   final _mouseCursorsKey = GlobalKey<ExtendedMouseRegionState>();
   final _bottomBarKey = GlobalKey();
   final _removeAreaKey = GlobalKey();
+  final _interactiveViewer = GlobalKey<ExtendedInteractiveViewerState>();
   late final StreamController _rebuildController;
 
   /// Helper class for managing sizes and layout calculations.
@@ -350,6 +352,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Indicates whether the browser's context menu was enabled before any changes.
   bool _browserContextMenuBeforeEnabled = false;
+
+  /// Indicates whether PopScope is disabled.
+  bool disablePopScope = false;
 
   /// Getter for the active layer currently being edited.
   Layer? get _activeLayer =>
@@ -452,6 +457,12 @@ class ProImageEditorState extends State<ProImageEditor>
   void setState(void Function() fn) {
     _rebuildController.add(null);
     super.setState(fn);
+  }
+
+  void _checkInteractiveViewer() {
+    _interactiveViewer.currentState?.setEnableInteraction(
+      selectedLayerIndex < 0 && layerInteractionManager.selectedLayerId.isEmpty,
+    );
   }
 
   /// Handle keyboard events
@@ -569,6 +580,7 @@ class ProImageEditorState extends State<ProImageEditor>
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         layerInteractionManager.selectedLayerId = layer.id;
         _controllers.uiLayerCtrl.add(null);
+        _checkInteractiveViewer();
       });
     }
     mainEditorCallbacks?.handleAddLayer(layer);
@@ -609,6 +621,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void _updateTempLayer() {
     addHistory();
     layerInteractionManager.selectedLayerId = '';
+    _checkInteractiveViewer();
     _controllers.uiLayerCtrl.add(null);
 
     /* 
@@ -710,6 +723,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (layerInteractionManager.selectedLayerId != layer.id) {
       layerInteractionManager.selectedLayerId = '';
+      _checkInteractiveViewer();
     }
 
     _setTempLayer(layer);
@@ -776,24 +790,26 @@ class ProImageEditorState extends State<ProImageEditor>
         activeLayer: _activeLayer!,
         configEnabledHitVibration: helperLines.hitVibration,
         details: details,
-        editorSize: Size(
-          sizesManager.bodySize.width,
-          sizesManager.editorSize.height +
-              sizesManager.appBarHeight -
-              sizesManager.bottomBarHeight,
-        ),
+        editorSize: sizesManager.editorSize,
         layerTheme: imageEditorTheme.layerInteraction,
+        editorScaleFactor: _interactiveViewer.currentState?.scaleFactor ?? 1.0,
+        editorScaleOffset:
+            _interactiveViewer.currentState?.offset ?? Offset.zero,
       );
       _activeLayer!.key.currentState!.setState(() {});
       checkUpdateHelperLineUI();
       return;
     }
 
+    double editorScaleFactor =
+        _interactiveViewer.currentState?.scaleFactor ?? 1.0;
+
     layerInteractionManager.enabledHitDetection = false;
     if (details.pointerCount == 1) {
       layerInteractionManager.freeStyleHighPerformanceMoving =
           paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
       layerInteractionManager.calculateMovement(
+        editorScaleFactor: editorScaleFactor,
         removeAreaKey: _removeAreaKey,
         activeLayer: _activeLayer!,
         context: context,
@@ -805,6 +821,7 @@ class ProImageEditorState extends State<ProImageEditor>
       layerInteractionManager.freeStyleHighPerformanceScaling =
           paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
       layerInteractionManager.calculateScaleRotate(
+        editorScaleFactor: editorScaleFactor,
         configs: configs,
         activeLayer: _activeLayer!,
         detail: details,
@@ -899,6 +916,7 @@ class ProImageEditorState extends State<ProImageEditor>
         if (isSubEditorOpen) await _pageOpenCompleter.future;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           layerInteractionManager.selectedLayerId = id;
+          _checkInteractiveViewer();
           setState(() {});
         });
       });
@@ -913,6 +931,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Duration duration = const Duration(milliseconds: 300),
   }) {
     layerInteractionManager.selectedLayerId = '';
+    _checkInteractiveViewer();
     isSubEditorOpen = true;
 
     if (paintEditorConfigs.freeStyleHighPerformanceHero) {
@@ -1237,6 +1256,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// after its closure.
   void openEmojiEditor() async {
     setState(() => layerInteractionManager.selectedLayerId = '');
+    _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints = imageEditorTheme
             .emojiEditor.editorBoxConstraintsBuilder
@@ -1293,6 +1313,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Opens the sticker editor as a modal bottom sheet.
   void openStickerEditor() async {
     setState(() => layerInteractionManager.selectedLayerId = '');
+    _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     final effectiveBoxConstraints = imageEditorTheme
             .stickerEditor.editorBoxConstraintsBuilder
@@ -1362,6 +1383,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (stateManager.position > 0) {
       setState(() {
         layerInteractionManager.selectedLayerId = '';
+        _checkInteractiveViewer();
         stateManager.position--;
         decodeImage();
       });
@@ -1378,6 +1400,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (stateManager.position < stateHistory.length - 1) {
       setState(() {
         layerInteractionManager.selectedLayerId = '';
+        _checkInteractiveViewer();
         stateManager.position++;
         decodeImage();
       });
@@ -1431,6 +1454,7 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {
       _processFinalImage = true;
       layerInteractionManager.selectedLayerId = '';
+      _checkInteractiveViewer();
     });
 
     /// Ensure hero animations finished
@@ -1518,6 +1542,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Displays a warning dialog before closing the image editor.
   void closeWarning() async {
+    if (disablePopScope) {
+      Navigator.pop(context);
+      return;
+    }
     _openDialog = true;
 
     bool close = false;
@@ -1705,9 +1733,12 @@ class ProImageEditorState extends State<ProImageEditor>
 
     return Constants(
       child: PopScope(
-        canPop: stateManager.position <= 0 || _processFinalImage,
+        canPop:
+            disablePopScope || stateManager.position <= 0 || _processFinalImage,
         onPopInvoked: (didPop) {
-          if (stateManager.position > 0 && !_processFinalImage) {
+          if (!disablePopScope &&
+              stateManager.position > 0 &&
+              !_processFinalImage) {
             closeWarning();
           }
         },
@@ -1831,6 +1862,7 @@ class ProImageEditorState extends State<ProImageEditor>
           onTap: () {
             if (layerInteractionManager.selectedLayerId.isNotEmpty) {
               layerInteractionManager.selectedLayerId = '';
+              _checkInteractiveViewer();
               setState(() {});
             }
             mainEditorCallbacks?.onTap?.call();
@@ -1855,57 +1887,89 @@ class ProImageEditorState extends State<ProImageEditor>
     return Center(
       child: Stack(
         children: [
-          ContentRecorder(
-            controller: _controllers.screenshot,
-            child: Stack(
-              alignment: Alignment.center,
-              fit: StackFit.expand,
-              children: [
-                /// Build Image
-                _buildImage(),
+          Padding(
+            padding: selectedLayerIndex >= 0
+                ? EdgeInsets.only(
+                    top: sizesManager.appBarHeight,
+                    bottom: sizesManager.bottomBarHeight,
+                  )
+                : EdgeInsets.zero,
+            child: ExtendedInteractiveViewer(
+              key: _interactiveViewer,
+              editorIsZoomable: mainEditorConfigs.editorIsZoomable,
+              minScale: mainEditorConfigs.editorMinScale,
+              maxScale: mainEditorConfigs.editorMaxScale,
+              onInteractionStart: (details) {
+                callbacks.mainEditorCallbacks?.onEditorZoomScaleStart
+                    ?.call(details);
+                layerInteractionManager.freeStyleHighPerformanceEditorZoom =
+                    (paintEditorConfigs.freeStyleHighPerformanceMoving ??
+                            !isDesktop) ||
+                        (paintEditorConfigs.freeStyleHighPerformanceScaling ??
+                            !isDesktop);
 
-                /// Build layer stack
-                _buildLayers(),
+                _controllers.uiLayerCtrl.add(null);
+              },
+              onInteractionUpdate:
+                  callbacks.mainEditorCallbacks?.onEditorZoomScaleUpdate,
+              onInteractionEnd: (details) {
+                callbacks.mainEditorCallbacks?.onEditorZoomScaleEnd
+                    ?.call(details);
+                layerInteractionManager.freeStyleHighPerformanceEditorZoom =
+                    false;
+                _controllers.uiLayerCtrl.add(null);
+              },
+              child: ContentRecorder(
+                key: const ValueKey('main-editor-content-recorder'),
+                autoDestroyController: false,
+                controller: _controllers.screenshot,
+                child: Stack(
+                  alignment: Alignment.center,
+                  fit: StackFit.expand,
+                  children: [
+                    /// Build Image
+                    _buildImage(),
 
-                if (widget.configs.imageGenerationConfigs
-                    .captureOnlyBackgroundImageArea)
-                  Hero(
-                    tag: 'crop_layer_painter_hero',
-                    child: CustomPaint(
-                      foregroundPainter: imageGenerationConfigs
-                              .captureOnlyBackgroundImageArea
-                          ? CropLayerPainter(
-                              opacity: imageEditorTheme
-                                  .outsideCaptureAreaLayerOpacity,
-                              backgroundColor: imageEditorTheme.background,
-                              imgRatio: stateManager.transformConfigs.isNotEmpty
-                                  ? stateManager.transformConfigs.cropRect.size
-                                      .aspectRatio
-                                  : sizesManager.decodedImageSize.aspectRatio,
-                              isRoundCropper:
-                                  cropRotateEditorConfigs.roundCropper,
-                              is90DegRotated:
-                                  stateManager.transformConfigs.is90DegRotated,
-                              appbarHeight: selectedLayerIndex >= 0
-                                  ? sizesManager.appBarHeight
-                                  : 0,
-                              bottombarHeight: selectedLayerIndex >= 0
-                                  ? sizesManager.bottomBarHeight
-                                  : 0,
-                            )
-                          : null,
-                      child: const SizedBox.expand(),
-                    ),
-                  ),
+                    /// Build layer stack
+                    _buildLayers(),
 
-                /// Build helper stuff
-                if (!_processFinalImage) ...[
-                  _buildHelperLines(),
-                  if (selectedLayerIndex >= 0) _buildRemoveIcon(),
-                ],
-              ],
+                    if (widget.configs.imageGenerationConfigs
+                        .captureOnlyBackgroundImageArea)
+                      Hero(
+                        tag: 'crop_layer_painter_hero',
+                        child: CustomPaint(
+                          foregroundPainter: imageGenerationConfigs
+                                  .captureOnlyBackgroundImageArea
+                              ? CropLayerPainter(
+                                  opacity: imageEditorTheme
+                                      .outsideCaptureAreaLayerOpacity,
+                                  backgroundColor: imageEditorTheme.background,
+                                  imgRatio:
+                                      stateManager.transformConfigs.isNotEmpty
+                                          ? stateManager.transformConfigs
+                                              .cropRect.size.aspectRatio
+                                          : sizesManager
+                                              .decodedImageSize.aspectRatio,
+                                  isRoundCropper:
+                                      cropRotateEditorConfigs.roundCropper,
+                                  is90DegRotated: stateManager
+                                      .transformConfigs.is90DegRotated,
+                                )
+                              : null,
+                          child: const SizedBox.expand(),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
+
+          /// Build helper stuff
+          if (!_processFinalImage) ...[
+            _buildHelperLines(),
+            if (selectedLayerIndex >= 0) _buildRemoveIcon(),
+          ],
           if (customWidgets.mainEditor.bodyItems != null)
             ...customWidgets.mainEditor.bodyItems!(
                 this, _rebuildController.stream),
@@ -2127,11 +2191,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                       layerItem.id,
                               isInteractive: !isSubEditorOpen,
                               highPerformanceMode: layerInteractionManager
-                                      .freeStyleHighPerformanceScaling ||
-                                  layerInteractionManager
-                                      .freeStyleHighPerformanceMoving ||
-                                  layerInteractionManager
-                                      .freeStyleHighPerformanceHero,
+                                  .freeStyleHighPerformance,
                               onEditTap: () {
                                 if (layerItem is TextLayerData) {
                                   _onTextLayerTap(layerItem);
@@ -2146,6 +2206,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                                   .selectedLayerId
                                           ? ''
                                           : layer.id;
+                                  _checkInteractiveViewer();
                                 } else if (layer is TextLayerData) {
                                   _onTextLayerTap(layer);
                                 }
@@ -2161,10 +2222,13 @@ class ProImageEditorState extends State<ProImageEditor>
                                 _controllers.uiLayerCtrl.add(null);
                                 mainEditorCallbacks?.handleUpdateUI();
                                 selectedLayerIndex = -1;
+
+                                _checkInteractiveViewer();
                               },
                               onTapDown: () {
                                 selectedLayerIndex = i;
                                 _setTempLayer(layerItem);
+                                _checkInteractiveViewer();
                               },
                               onScaleRotateDown: (details, layerOriginalSize) {
                                 selectedLayerIndex = i;
@@ -2174,6 +2238,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                 layerInteractionManager
                                         .rotateScaleLayerScaleHelper =
                                     layerItem.scale;
+                                _checkInteractiveViewer();
                               },
                               onScaleRotateUp: (details) {
                                 layerInteractionManager
@@ -2183,6 +2248,7 @@ class ProImageEditorState extends State<ProImageEditor>
                                 setState(() {
                                   selectedLayerIndex = -1;
                                 });
+                                _checkInteractiveViewer();
                                 mainEditorCallbacks?.handleUpdateUI();
                               },
                               onRemoveTap: () {
@@ -2218,6 +2284,10 @@ class ProImageEditorState extends State<ProImageEditor>
       child: StreamBuilder(
           stream: _controllers.helperLineCtrl.stream,
           builder: (context, snapshot) {
+            if (_interactiveViewer.currentState != null &&
+                _interactiveViewer.currentState!.scaleFactor > 1) {
+              return const SizedBox.shrink();
+            }
             return Stack(
               children: [
                 if (helperLines.showVerticalLine)
@@ -2311,37 +2381,29 @@ class ProImageEditorState extends State<ProImageEditor>
   }
 
   Widget _buildImage() {
-    return Container(
-      padding: selectedLayerIndex >= 0
-          ? EdgeInsets.only(
-              top: sizesManager.appBarHeight,
-              bottom: sizesManager.bottomBarHeight,
+    return Hero(
+      tag: heroTag,
+      createRectTween: (begin, end) => RectTween(begin: begin, end: end),
+      child: !_inited
+          ? AutoImage(
+              editorImage,
+              fit: BoxFit.contain,
+              width: sizesManager.decodedImageSize.width,
+              height: sizesManager.decodedImageSize.height,
+              designMode: designMode,
             )
-          : EdgeInsets.zero,
-      child: Hero(
-        tag: heroTag,
-        createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-        child: !_inited
-            ? AutoImage(
-                editorImage,
-                fit: BoxFit.contain,
+          : TransformedContentGenerator(
+              transformConfigs: stateManager.transformConfigs,
+              configs: configs,
+              child: FilteredImage(
                 width: sizesManager.decodedImageSize.width,
                 height: sizesManager.decodedImageSize.height,
                 designMode: designMode,
-              )
-            : TransformedContentGenerator(
-                transformConfigs: stateManager.transformConfigs,
-                configs: configs,
-                child: FilteredImage(
-                  width: sizesManager.decodedImageSize.width,
-                  height: sizesManager.decodedImageSize.height,
-                  designMode: designMode,
-                  image: editorImage,
-                  filters: stateManager.activeFilters,
-                  blurFactor: stateManager.activeBlur,
-                ),
+                image: editorImage,
+                filters: stateManager.activeFilters,
+                blurFactor: stateManager.activeBlur,
               ),
-      ),
+            ),
     );
   }
 }

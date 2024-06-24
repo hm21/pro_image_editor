@@ -7,8 +7,6 @@ class CropLayerPainter extends CustomPainter {
   final Color backgroundColor;
   final bool isRoundCropper;
   final double opacity;
-  final double appbarHeight;
-  final double bottombarHeight;
 
   CropLayerPainter({
     required this.imgRatio,
@@ -16,8 +14,6 @@ class CropLayerPainter extends CustomPainter {
     required this.is90DegRotated,
     required this.backgroundColor,
     required this.opacity,
-    this.appbarHeight = 0,
-    this.bottombarHeight = 0,
   });
 
   @override
@@ -50,7 +46,7 @@ class CropLayerPainter extends CustomPainter {
 
     size = Size(
       size.width,
-      size.height - appbarHeight - bottombarHeight,
+      size.height,
     );
 
     if (size.aspectRatio > ratio) {
@@ -65,7 +61,7 @@ class CropLayerPainter extends CustomPainter {
       Path rectPath = Path()
         ..addOval(
           Rect.fromCenter(
-            center: Offset(size.width / 2, size.height / 2 + appbarHeight),
+            center: Offset(size.width / 2, size.height / 2),
             width: w,
             height: h,
           ),
@@ -77,7 +73,7 @@ class CropLayerPainter extends CustomPainter {
       Path rectPath = Path()
         ..addRect(
           Rect.fromCenter(
-            center: Offset(size.width / 2, size.height / 2 + appbarHeight),
+            center: Offset(size.width / 2, size.height / 2),
             width: w,
             height: h,
           ),
@@ -103,8 +99,6 @@ class CropLayerPainter extends CustomPainter {
         oldDelegate.is90DegRotated != is90DegRotated ||
         oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.opacity != opacity ||
-        oldDelegate.appbarHeight != appbarHeight ||
-        oldDelegate.bottombarHeight != bottombarHeight ||
         oldDelegate.is90DegRotated != is90DegRotated;
   }
 }

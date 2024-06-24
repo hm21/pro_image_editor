@@ -51,7 +51,8 @@ class DrawPainting extends CustomPainter {
 
   @override
   bool shouldRepaint(DrawPainting oldDelegate) {
-    return oldDelegate.item != item;
+    return oldDelegate.item != item ||
+        oldDelegate.freeStyleHighPerformance != freeStyleHighPerformance;
   }
 
   @override

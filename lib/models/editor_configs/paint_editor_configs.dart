@@ -30,6 +30,16 @@ class PaintEditorConfigs {
   /// Indicates whether the paint editor is enabled.
   final bool enabled;
 
+  /// Indicates whether the editor supports zoom functionality.
+  ///
+  /// When set to `true`, the editor allows users to zoom in and out, providing
+  /// enhanced accessibility and usability, especially on smaller screens or for
+  /// users with visual impairments. If set to `false`, the zoom functionality
+  /// is disabled, and the editor's content remains at a fixed scale.
+  ///
+  /// Default value is `false`.
+  final bool editorIsZoomable;
+
   /// Indicating whether the free-style drawing option is available.
   final bool hasOptionFreeStyle;
 
@@ -81,6 +91,24 @@ class PaintEditorConfigs {
   /// Indicates the initial paint mode.
   final PaintModeE initialPaintMode;
 
+  /// The minimum scale factor for the editor.
+  ///
+  /// This value determines the lowest level of zoom that can be applied to the
+  /// editor content. It only has an effect when [editorIsZoomable] is set to `true`.
+  /// If [editorIsZoomable] is `false`, this value is ignored.
+  ///
+  /// Default value is 1.0.
+  final double editorMinScale;
+
+  /// The maximum scale factor for the editor.
+  ///
+  /// This value determines the highest level of zoom that can be applied to the
+  /// editor content. It only has an effect when [editorIsZoomable] is set to `true`.
+  /// If [editorIsZoomable] is `false`, this value is ignored.
+  ///
+  /// Default value is 5.0.
+  final double editorMaxScale;
+
   /// The minimum scale factor from the layer.
   final double minScale;
 
@@ -93,6 +121,9 @@ class PaintEditorConfigs {
   /// Other properties are set to reasonable defaults.
   const PaintEditorConfigs({
     this.enabled = true,
+    this.editorIsZoomable = false,
+    this.editorMinScale = 1.0,
+    this.editorMaxScale = 5.0,
     this.hasOptionFreeStyle = true,
     this.hasOptionArrow = true,
     this.hasOptionLine = true,
@@ -109,6 +140,8 @@ class PaintEditorConfigs {
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintModeE.freeStyle,
-  }) : assert(maxScale >= minScale,
-            'maxScale must be greater than or equal to minScale');
+  })  : assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale'),
+        assert(editorMaxScale > editorMinScale,
+            'editorMaxScale must be greater than editorMinScale');
 }

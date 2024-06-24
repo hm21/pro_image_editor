@@ -19,11 +19,15 @@ class LayerStack extends StatefulWidget {
 
   final bool? cutOutsideImageArea;
 
+  /// Controls high-performance for free-style drawing.
+  final bool freeStyleHighPerformance;
+
   const LayerStack({
     super.key,
     required this.configs,
     required this.layers,
     this.cutOutsideImageArea,
+    this.freeStyleHighPerformance = false,
     this.transformHelper = const TransformHelper(
       editorBodySize: Size.zero,
       mainBodySize: Size.zero,
@@ -66,6 +70,7 @@ class _LayerStackState extends State<LayerStack> {
                 children: widget.layers.map((layerItem) {
                   return LayerWidget(
                     configs: widget.configs,
+                    highPerformanceMode: widget.freeStyleHighPerformance,
                     editorCenterX:
                         widget.transformHelper.editorBodySize.width / 2,
                     editorCenterY:

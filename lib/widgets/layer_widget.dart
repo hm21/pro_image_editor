@@ -371,7 +371,6 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Build the canvas widget
   Widget _buildCanvas() {
     var layer = _layer as PaintingLayerData;
-
     return Padding(
       // Better hit detection for mobile devices
       padding: EdgeInsets.all(isDesktop ? 0 : 15),

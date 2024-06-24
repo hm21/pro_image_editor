@@ -9,6 +9,16 @@ class IconsPaintingEditor {
   /// The icon for adjusting line weight.
   final IconData lineWeight;
 
+  /// The icon used for moving and zooming within the editor.
+  ///
+  /// This icon appears in the editor bottombar.
+  ///
+  /// When in the [PaintEditorConfigs] the config [editorIsZoomable] is set to
+  /// `true`, this icon will be displayed, allowing users to interact with the
+  /// editor's zoom and move features. If [editorIsZoomable] is set to `false`,
+  /// the icon will be hidden.
+  final IconData moveAndZoom;
+
   /// The icon representing a filled background.
   final IconData fill;
 
@@ -70,6 +80,7 @@ class IconsPaintingEditor {
   /// )
   /// ```
   const IconsPaintingEditor({
+    this.moveAndZoom = Icons.pinch_outlined,
     this.eraser = Icons.delete_forever_outlined,
     this.bottomNavBar = Icons.edit_outlined,
     this.lineWeight = Icons.line_weight_rounded,

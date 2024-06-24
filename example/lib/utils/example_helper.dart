@@ -43,6 +43,7 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
     if (editedBytes != null) {
       await precacheImage(MemoryImage(editedBytes!), context);
       if (!mounted) return;
+      editorKey.currentState?.disablePopScope = true;
       await Navigator.push(
         context,
         MaterialPageRoute(

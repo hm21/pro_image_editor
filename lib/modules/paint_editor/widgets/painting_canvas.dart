@@ -27,12 +27,16 @@ class PaintingCanvas extends StatefulWidget {
   /// the painting state.
   final PaintingController paintCtrl;
 
+  /// Controls high-performance for free-style drawing.
+  final bool freeStyleHighPerformance;
+
   /// Constructs a `PaintingCanvas` widget.
   const PaintingCanvas({
     super.key,
     this.onStartPainting,
     this.onCreatedPainting,
     this.onRemoveLayer,
+    this.freeStyleHighPerformance = false,
     required this.drawAreaSize,
     required this.paintCtrl,
   });
@@ -65,7 +69,9 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   ///
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleStart(ScaleStartDetails details) {
-    if (widget.paintCtrl.mode == PaintModeE.eraser) {
+    if (widget.paintCtrl.mode == PaintModeE.moveAndZoom) {
+      return;
+    } else if (widget.paintCtrl.mode == PaintModeE.eraser) {
       setState(() {});
       return;
     }
@@ -82,7 +88,9 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   ///
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    if (widget.paintCtrl.mode == PaintModeE.eraser) {
+    if (widget.paintCtrl.mode == PaintModeE.moveAndZoom) {
+      return;
+    } else if (widget.paintCtrl.mode == PaintModeE.eraser) {
       List<String> removeIds = [];
       for (var item in _paintCtrl.activePaintings) {
         if (item.hit) removeIds.add(item.id);
@@ -115,7 +123,10 @@ class PaintingCanvasState extends State<PaintingCanvas> {
   ///
   /// It is not meant to be called directly but is an event handler for scaling gestures.
   void _onScaleEnd(ScaleEndDetails details) {
-    if (widget.paintCtrl.mode == PaintModeE.eraser) return;
+    if (widget.paintCtrl.mode == PaintModeE.moveAndZoom ||
+        widget.paintCtrl.mode == PaintModeE.eraser) {
+      return;
+    }
 
     _paintCtrl.setInProgress(false);
 
@@ -147,19 +158,22 @@ class PaintingCanvasState extends State<PaintingCanvas> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        for (final item in _paintCtrl.activePaintings)
-          CustomPaint(
-            willChange: false,
-            isComplex: item.mode == PaintModeE.freeStyle,
-            painter: DrawPainting(
-              item: item,
-              enabledHitDetection: _paintCtrl.mode == PaintModeE.eraser,
+    return AbsorbPointer(
+      absorbing: _paintCtrl.mode == PaintModeE.moveAndZoom,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          for (final item in _paintCtrl.activePaintings)
+            CustomPaint(
+              willChange: false,
+              isComplex: item.mode == PaintModeE.freeStyle,
+              painter: DrawPainting(
+                item: item,
+                freeStyleHighPerformance: widget.freeStyleHighPerformance,
+                enabledHitDetection: _paintCtrl.mode == PaintModeE.eraser,
+              ),
             ),
-          ),
-        StreamBuilder(
+          StreamBuilder(
             stream: _activePaintingStreamCtrl.stream,
             builder: (context, snapshot) {
               return GestureDetector(
@@ -176,8 +190,10 @@ class PaintingCanvasState extends State<PaintingCanvas> {
                       )
                     : const SizedBox.expand(),
               );
-            }),
-      ],
+            },
+          ),
+        ],
+      ),
     );
   }
 }

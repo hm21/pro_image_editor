@@ -13,6 +13,7 @@ import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
 import 'package:pro_image_editor/widgets/auto_image.dart';
+import 'package:pro_image_editor/widgets/extended/extended_interactive_viewer.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
 import '../../utils/transparent_image_bytes.dart';
 import '../filter_editor/widgets/filtered_image.dart';
@@ -180,6 +181,9 @@ class PaintingEditorState extends State<PaintingEditor>
         ImageEditorConvertedConfigs,
         ImageEditorConvertedCallbacks,
         StandaloneEditorState<PaintingEditor, PaintEditorInitConfigs> {
+  final _paintingCanvas = GlobalKey<PaintingCanvasState>();
+  final _interactiveViewer = GlobalKey<ExtendedInteractiveViewerState>();
+
   /// Controller for managing painting operations within the widget's context.
   late final PaintingController paintCtrl;
 
@@ -194,6 +198,9 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// A boolean flag representing whether the fill mode is enabled or disabled.
   bool _fill = false;
+
+  /// Controls high-performance for free-style drawing.
+  bool _freeStyleHighPerformance = false;
 
   /// Get the fillBackground status.
   bool get fillBackground => _fill;
@@ -306,6 +313,7 @@ class PaintingEditorState extends State<PaintingEditor>
     _bottomBarScrollCtrl.dispose();
     uiPickerStream.close();
     _uiAppbarIconsStream.close();
+    screenshotCtrl.destroy();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
   }
@@ -423,6 +431,10 @@ class PaintingEditorState extends State<PaintingEditor>
     paintCtrl.setMode(mode);
     paintEditorCallbacks?.handlePaintModeChanged(mode);
     rebuildController.add(null);
+    _interactiveViewer.currentState?.setEnableInteraction(
+      mode == PaintModeE.moveAndZoom,
+    );
+    _paintingCanvas.currentState?.setState(() {});
   }
 
   /// Undoes the last action performed in the painting editor.
@@ -774,52 +786,80 @@ class PaintingEditorState extends State<PaintingEditor>
                       ),
                     ]
                   : [
-                      ContentRecorder(
-                        controller: screenshotCtrl,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          fit: StackFit.expand,
-                          children: [
-                            if (!widget.paintingOnly)
-                              TransformedContentGenerator(
-                                configs: configs,
-                                transformConfigs: transformConfigs ??
-                                    TransformConfigs.empty(),
-                                child: FilteredImage(
-                                  width: getMinimumSize(
-                                          mainImageSize, editorBodySize)
-                                      .width,
-                                  height: getMinimumSize(
-                                          mainImageSize, editorBodySize)
-                                      .height,
-                                  designMode: designMode,
-                                  image: editorImage,
-                                  filters: appliedFilters,
-                                  blurFactor: appliedBlurFactor,
+                      ExtendedInteractiveViewer(
+                        key: _interactiveViewer,
+                        editorIsZoomable: paintEditorConfigs.editorIsZoomable,
+                        minScale: paintEditorConfigs.editorMinScale,
+                        maxScale: paintEditorConfigs.editorMaxScale,
+                        enableInteraction: paintMode == PaintModeE.moveAndZoom,
+                        onInteractionStart: (details) {
+                          _freeStyleHighPerformance = (paintEditorConfigs
+                                      .freeStyleHighPerformanceMoving ??
+                                  !isDesktop) ||
+                              (paintEditorConfigs
+                                      .freeStyleHighPerformanceScaling ??
+                                  !isDesktop);
+
+                          callbacks.paintEditorCallbacks?.onEditorZoomScaleStart
+                              ?.call(details);
+                          setState(() {});
+                        },
+                        onInteractionUpdate: callbacks
+                            .paintEditorCallbacks?.onEditorZoomScaleUpdate,
+                        onInteractionEnd: (details) {
+                          _freeStyleHighPerformance = false;
+                          callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd
+                              ?.call(details);
+                          setState(() {});
+                        },
+                        child: ContentRecorder(
+                          autoDestroyController: false,
+                          controller: screenshotCtrl,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            fit: StackFit.expand,
+                            children: [
+                              if (!widget.paintingOnly)
+                                TransformedContentGenerator(
+                                  configs: configs,
+                                  transformConfigs: transformConfigs ??
+                                      TransformConfigs.empty(),
+                                  child: FilteredImage(
+                                    width: getMinimumSize(
+                                            mainImageSize, editorBodySize)
+                                        .width,
+                                    height: getMinimumSize(
+                                            mainImageSize, editorBodySize)
+                                        .height,
+                                    designMode: designMode,
+                                    image: editorImage,
+                                    filters: appliedFilters,
+                                    blurFactor: appliedBlurFactor,
+                                  ),
+                                )
+                              else
+                                SizedBox(
+                                  width: configs.imageGenerationConfigs
+                                      .maxOutputSize.width,
+                                  height: configs.imageGenerationConfigs
+                                      .maxOutputSize.height,
                                 ),
-                              )
-                            else
-                              SizedBox(
-                                width: configs
-                                    .imageGenerationConfigs.maxOutputSize.width,
-                                height: configs.imageGenerationConfigs
-                                    .maxOutputSize.height,
-                              ),
-                            if (layers != null)
-                              LayerStack(
-                                configs: configs,
-                                layers: layers!,
-                                transformHelper: TransformHelper(
-                                  mainBodySize: getMinimumSize(
-                                      mainBodySize, editorBodySize),
-                                  mainImageSize: getMinimumSize(
-                                      mainImageSize, editorBodySize),
-                                  editorBodySize: editorBodySize,
-                                  transformConfigs: transformConfigs,
+                              if (layers != null)
+                                LayerStack(
+                                  configs: configs,
+                                  layers: layers!,
+                                  transformHelper: TransformHelper(
+                                    mainBodySize: getMinimumSize(
+                                        mainBodySize, editorBodySize),
+                                    mainImageSize: getMinimumSize(
+                                        mainImageSize, editorBodySize),
+                                    editorBodySize: editorBodySize,
+                                    transformConfigs: transformConfigs,
+                                  ),
                                 ),
-                              ),
-                            _buildPainter(),
-                          ],
+                              _buildPainter(),
+                            ],
+                          ),
                         ),
                       ),
                       _buildColorPicker(),
@@ -864,20 +904,54 @@ class PaintingEditorState extends State<PaintingEditor>
                   maxWidth: 500,
                 ),
                 child: StatefulBuilder(builder: (context, setStateBottomBar) {
+                  Color getColor(PaintModeE mode) {
+                    return paintMode == mode
+                        ? imageEditorTheme
+                            .paintingEditor.bottomBarActiveItemColor
+                        : imageEditorTheme
+                            .paintingEditor.bottomBarInactiveItemColor;
+                  }
+
                   return Wrap(
                     direction: Axis.horizontal,
                     alignment: WrapAlignment.spaceAround,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: <Widget>[
+                      if (paintEditorConfigs.editorIsZoomable) ...[
+                        FlatIconTextButton(
+                          label: Text(
+                            i18n.paintEditor.moveAndZoom,
+                            style: TextStyle(
+                              fontSize: 10.0,
+                              color: getColor(PaintModeE.moveAndZoom),
+                            ),
+                          ),
+                          icon: Icon(
+                            icons.paintingEditor.moveAndZoom,
+                            color: getColor(PaintModeE.moveAndZoom),
+                          ),
+                          onPressed: () {
+                            setMode(PaintModeE.moveAndZoom);
+                            setStateBottomBar(() {});
+                          },
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          height: kBottomNavigationBarHeight - 14,
+                          width: 1,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: imageEditorTheme
+                                .paintingEditor.bottomBarInactiveItemColor,
+                          ),
+                        )
+                      ],
                       ...List.generate(
                         paintModes.length,
                         (index) => Builder(
                           builder: (_) {
                             PaintModeBottomBarItem item = paintModes[index];
-                            Color color = paintMode == item.mode
-                                ? imageEditorTheme
-                                    .paintingEditor.bottomBarActiveItemColor
-                                : imageEditorTheme
-                                    .paintingEditor.bottomBarInactiveItemColor;
+                            Color color = getColor(item.mode);
 
                             return FlatIconTextButton(
                               label: Text(
@@ -908,8 +982,10 @@ class PaintingEditorState extends State<PaintingEditor>
   /// Returns a [Widget] representing the painting canvas.
   Widget _buildPainter() {
     return PaintingCanvas(
+      key: _paintingCanvas,
       paintCtrl: paintCtrl,
       drawAreaSize: mainBodySize ?? editorBodySize,
+      freeStyleHighPerformance: _freeStyleHighPerformance,
       onRemoveLayer: (idList) {
         paintCtrl.removeLayers(idList);
         setState(() {});

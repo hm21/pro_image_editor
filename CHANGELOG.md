@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.1.0
+- **feat(zoom)**: Paint-Editor and Main-Editor are now zoomable. An example of how to enable this can be found [here](https://github.com/hm21/pro_image_editor/blob/74982d6c8e3e3d2d16e8f77821f9bcd839863c23/example/lib/pages/zoom_move_editor_example.dart)
+
 ## Version 4.0.10
 - **feat(text-editor)**: Add autocorrect and enableSuggestions configs. This was requsted in [#132](https://github.com/hm21/pro_image_editor/issues/132)
 - **fix(text-editor)**: Remove duplicate text-shadow from invisible text-field. This resolves issue [#131](https://github.com/hm21/pro_image_editor/issue/131).

@@ -84,6 +84,9 @@ class LayerInteractionManager {
   /// When `true`, enables optimized scaling for improved performance.
   bool freeStyleHighPerformanceScaling = false;
 
+  /// Controls high-performance for layers when editor zoom.
+  bool freeStyleHighPerformanceEditorZoom = false;
+
   /// Controls high-performance moving for free-style drawing.
   /// When `true`, enables optimized moving for improved performance.
   bool freeStyleHighPerformanceMoving = false;
@@ -91,6 +94,12 @@ class LayerInteractionManager {
   /// Controls high-performance hero animation for free-style drawing.
   /// When `true`, enables optimized hero-animation for improved performance.
   bool freeStyleHighPerformanceHero = false;
+
+  bool get freeStyleHighPerformance =>
+      freeStyleHighPerformanceEditorZoom ||
+      freeStyleHighPerformanceScaling ||
+      freeStyleHighPerformanceMoving ||
+      freeStyleHighPerformanceHero;
 
   /// Flag indicating if the scaling tool is active.
   bool _activeScale = false;
@@ -125,6 +134,8 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation based on user interactions.
   calculateInteractiveButtonScaleRotate({
+    required double editorScaleFactor,
+    required Offset editorScaleOffset,
     required ProImageEditorConfigs configs,
     required ScaleUpdateDetails details,
     required Layer activeLayer,
@@ -138,9 +149,15 @@ class LayerInteractionManager {
     );
     Size activeSize = rotateScaleLayerSizeHelper!;
 
+    double realDx =
+        (details.focalPoint.dx - editorScaleOffset.dx) / editorScaleFactor;
+
+    double realDy =
+        (details.focalPoint.dy - editorScaleOffset.dy) / editorScaleFactor;
+
     Offset touchPositionFromCenter = Offset(
-          details.focalPoint.dx - editorSize.width / 2,
-          details.focalPoint.dy - editorSize.height / 2,
+          realDx - editorSize.width / 2,
+          realDy - editorSize.height / 2,
         ) -
         layerOffset;
 
@@ -158,11 +175,12 @@ class LayerInteractionManager {
         ) /
         rotateScaleLayerScaleHelper!;
 
-    activeLayer.scale = (newDistance / realSize.distance);
+    activeLayer.scale = newDistance / realSize.distance;
     _setMinMaxScaleFactor(configs, activeLayer);
     activeLayer.rotation =
         touchPositionFromCenter.direction - atan(1 / activeSize.aspectRatio);
 
+    if (editorScaleFactor > 1) return;
     checkRotationLine(
       activeLayer: activeLayer,
       editorSize: editorSize,
@@ -172,6 +190,7 @@ class LayerInteractionManager {
 
   /// Calculates movement of a layer based on user interactions, considering various conditions such as hit areas and screen boundaries.
   calculateMovement({
+    required double editorScaleFactor,
     required BuildContext context,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
@@ -198,9 +217,11 @@ class LayerInteractionManager {
     }
 
     activeLayer.offset = Offset(
-      activeLayer.offset.dx + detail.focalPointDelta.dx,
-      activeLayer.offset.dy + detail.focalPointDelta.dy,
+      activeLayer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
+      activeLayer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
     );
+
+    if (editorScaleFactor > 1) return;
 
     bool vibarate = false;
     double posX = activeLayer.offset.dx;
@@ -261,6 +282,7 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation of a layer based on user interactions.
   calculateScaleRotate({
+    required double editorScaleFactor,
     required ProImageEditorConfigs configs,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
@@ -274,11 +296,13 @@ class LayerInteractionManager {
     _setMinMaxScaleFactor(configs, activeLayer);
     activeLayer.rotation = baseAngleFactor + detail.rotation;
 
-    checkRotationLine(
-      activeLayer: activeLayer,
-      editorSize: editorSize,
-      configEnabledHitVibration: configEnabledHitVibration,
-    );
+    if (editorScaleFactor == 1) {
+      checkRotationLine(
+        activeLayer: activeLayer,
+        editorSize: editorSize,
+        configEnabledHitVibration: configEnabledHitVibration,
+      );
+    }
 
     scaleDebounce(() => _activeScale = false);
   }
