@@ -91,6 +91,9 @@ class _LayerInteractionHelperWidgetState
                 cursor: imageEditorTheme.layerInteraction.removeCursor,
                 icon: icons.layerInteraction.remove,
                 tooltip: i18n.layerInteraction.remove,
+                color: imageEditorTheme.layerInteraction.buttonRemoveColor,
+                background:
+                    imageEditorTheme.layerInteraction.buttonRemoveBackground,
               ),
             ),
             if (widget.layerData.runtimeType == TextLayerData)
@@ -106,6 +109,9 @@ class _LayerInteractionHelperWidgetState
                   cursor: imageEditorTheme.layerInteraction.editCursor,
                   icon: icons.layerInteraction.edit,
                   tooltip: i18n.layerInteraction.edit,
+                  color: imageEditorTheme.layerInteraction.buttonEditTextColor,
+                  background: imageEditorTheme
+                      .layerInteraction.buttonEditTextBackground,
                 ),
               ),
             Positioned(
@@ -121,6 +127,9 @@ class _LayerInteractionHelperWidgetState
                 cursor: imageEditorTheme.layerInteraction.rotateScaleCursor,
                 icon: icons.layerInteraction.rotateScale,
                 tooltip: i18n.layerInteraction.rotateScale,
+                color: imageEditorTheme.layerInteraction.buttonScaleRotateColor,
+                background: imageEditorTheme
+                    .layerInteraction.buttonScaleRotateBackground,
               ),
             ),
           ],

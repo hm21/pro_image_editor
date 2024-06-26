@@ -11,6 +11,8 @@ class LayerInteractionButton extends StatelessWidget {
   final double buttonRadius;
   final double rotation;
   final String tooltip;
+  final Color background;
+  final Color color;
 
   const LayerInteractionButton({
     super.key,
@@ -23,6 +25,8 @@ class LayerInteractionButton extends StatelessWidget {
     required this.buttonRadius,
     required this.rotation,
     required this.tooltip,
+    required this.color,
+    required this.background,
   });
 
   @override
@@ -42,11 +46,11 @@ class LayerInteractionButton extends StatelessWidget {
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(buttonRadius * 2),
-                  color: Colors.white,
+                  color: background,
                 ),
                 child: Icon(
                   icon,
-                  color: const Color(0xFF000000),
+                  color: color,
                   size: buttonRadius * 2,
                 ),
               ),

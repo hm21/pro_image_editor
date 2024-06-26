@@ -44,6 +44,13 @@ class ThemeLayerInteraction {
   final Color removeAreaBackgroundActive;
   final Color removeAreaBackgroundInactive;
 
+  final Color buttonRemoveColor;
+  final Color buttonRemoveBackground;
+  final Color buttonEditTextColor;
+  final Color buttonEditTextBackground;
+  final Color buttonScaleRotateColor;
+  final Color buttonScaleRotateBackground;
+
   /// Creates a new instance of [ThemeLayerInteraction].
   ///
   /// - The [buttonRadius] defaults to `10.0`.
@@ -70,6 +77,12 @@ class ThemeLayerInteraction {
     this.hoverCursor = SystemMouseCursors.move,
     this.borderStyle = LayerInteractionBorderStyle.solid,
     this.showTooltips = false,
+    this.buttonRemoveColor = Colors.black,
+    this.buttonRemoveBackground = Colors.white,
+    this.buttonEditTextColor = Colors.black,
+    this.buttonEditTextBackground = Colors.white,
+    this.buttonScaleRotateColor = Colors.black,
+    this.buttonScaleRotateBackground = Colors.white,
   });
 }
 
