@@ -15,6 +15,7 @@ import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dar
 import 'package:pro_image_editor/modules/crop_rotate_editor/utils/crop_area_history.dart';
 import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/record_invisible_widget.dart';
 import 'package:pro_image_editor/utils/debounce.dart';
 import 'package:pro_image_editor/widgets/extended/extended_transform_scale.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
@@ -1848,27 +1849,30 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      onPopInvoked: (didPop) {
-        _showFakeHero = true;
-        _updateAllStates();
-      },
-      child: LayoutBuilder(builder: (context, constraints) {
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: imageEditorTheme.uiOverlayStyle,
-          child: Theme(
-            data: theme.copyWith(
-                tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-            child: Scaffold(
-              resizeToAvoidBottomInset: false,
-              backgroundColor: imageEditorTheme.cropRotateEditor.background,
-              appBar: _buildAppBar(constraints),
-              body: _buildBody(),
-              bottomNavigationBar: _buildBottomAppBar(),
+    return RecordInvisibleWidget(
+      controller: screenshotCtrl,
+      child: PopScope(
+        onPopInvoked: (didPop) {
+          _showFakeHero = true;
+          _updateAllStates();
+        },
+        child: LayoutBuilder(builder: (context, constraints) {
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: imageEditorTheme.uiOverlayStyle,
+            child: Theme(
+              data: theme.copyWith(
+                  tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: imageEditorTheme.cropRotateEditor.background,
+                appBar: _buildAppBar(constraints),
+                body: _buildBody(),
+                bottomNavigationBar: _buildBottomAppBar(),
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/record_invisible_widget.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
@@ -212,11 +213,14 @@ class BlurEditorState extends State<BlurEditor>
           tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
-        child: Scaffold(
-          backgroundColor: imageEditorTheme.blurEditor.background,
-          appBar: _buildAppBar(),
-          body: _buildBody(),
-          bottomNavigationBar: _buildBottomNavBar(),
+        child: RecordInvisibleWidget(
+          controller: screenshotCtrl,
+          child: Scaffold(
+            backgroundColor: imageEditorTheme.blurEditor.background,
+            appBar: _buildAppBar(),
+            body: _buildBody(),
+            bottomNavigationBar: _buildBottomNavBar(),
+          ),
         ),
       ),
     );

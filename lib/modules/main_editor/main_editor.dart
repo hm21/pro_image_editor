@@ -24,8 +24,8 @@ import '../../models/import_export/utils/export_import_version.dart';
 import '../../models/theme/theme_dragable_sheet.dart';
 import '../../plugins/defer_pointer/defer_pointer.dart';
 import '../../pro_image_editor.dart';
-import '../../utils/constants.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
+import '../../utils/content_recorder.dart/utils/record_invisible_widget.dart';
 import '../../utils/debounce.dart';
 import '../../utils/layer_transform_generator.dart';
 import '../../widgets/adaptive_dialog.dart';
@@ -1724,6 +1724,7 @@ class ProImageEditorState extends State<ProImageEditor>
       sizesManager.decodedImageSize,
       stateManager.position,
       configs: configs,
+      contentRecorderCtrl: _controllers.screenshot,
       // ignore: use_build_context_synchronously
       context: context,
     );
@@ -1740,7 +1741,8 @@ class ProImageEditorState extends State<ProImageEditor>
           ),
         );
 
-    return Constants(
+    return RecordInvisibleWidget(
+      controller: _controllers.screenshot,
       child: PopScope(
         canPop:
             disablePopScope || stateManager.position <= 0 || _processFinalImage,

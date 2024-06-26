@@ -8,13 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
-import 'package:pro_image_editor/utils/decode_image.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../history/state_history.dart';
-import '../layer/layer.dart';
-import 'export_state_history_configs.dart';
 import 'utils/export_import_version.dart';
 
 /// Class responsible for exporting the state history of the editor.
@@ -25,7 +21,7 @@ class ExportStateHistory {
   final int _editorPosition;
   final Size _imgSize;
   final List<EditorStateHistory> stateHistory;
-  late ContentRecorderController _contentRecorderCtrl;
+  late ContentRecorderController contentRecorderCtrl;
   final ProImageEditorConfigs _editorConfigs;
   final ExportEditorConfigs _configs;
   final ImageInfos imageInfos;
@@ -42,6 +38,7 @@ class ExportStateHistory {
     this.imageInfos,
     this._imgSize,
     this._editorPosition, {
+    required this.contentRecorderCtrl,
     required this.context,
     ExportEditorConfigs configs = const ExportEditorConfigs(),
   }) : _configs = configs;
@@ -51,15 +48,6 @@ class ExportStateHistory {
   /// Returns a Map representing the state history of the editor,
   /// including layers, filters, stickers, and other configurations.
   Future<Map> toMap() async {
-    _contentRecorderCtrl = ContentRecorderController(
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-            outputFormat: OutputFormat.png,
-            processorConfigs:
-                ProcessorConfigs(processorMode: ProcessorMode.minimum)),
-      ),
-    );
-
     List history = [];
     List<Uint8List> stickers = [];
     List<EditorStateHistory> changes = List.from(stateHistory);
@@ -103,7 +91,6 @@ class ExportStateHistory {
         if (transformConfigsMap.isNotEmpty) 'transform': transformConfigsMap,
       });
     }
-    await _contentRecorderCtrl.destroy();
 
     return {
       'version': ExportImportVersion.version_2_0_0,
@@ -176,11 +163,11 @@ class ExportStateHistory {
                 MediaQuery.of(context).size.width *
                 imageWidth);
 
-        Uint8List? result = await _contentRecorderCtrl.captureFromWidget(
+        Uint8List? result = await contentRecorderCtrl.captureFromWidget(
           layer.sticker,
+          format: OutputFormat.png,
           imageInfos: imageInfos,
-          context: context,
-          targetSize: targetSize * MediaQuery.of(context).devicePixelRatio,
+          targetSize: targetSize,
         );
         if (result == null) return;
 

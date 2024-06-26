@@ -1588,7 +1588,7 @@ git clone https://github.com/hm21/pro_image_editor.git
 
 ### Included Packages
 
-This package uses several Flutter packages to provide a seamless editing experience. Here's a list of the packages used in this project:
+This package uses several Flutter packages to provide a seamless editing experience. A big thanks to the authors of these amazing packages. Here’s a list of the packages we used in this project:
 
 - [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
 - [http](https://pub.dev/packages/http)
@@ -1599,5 +1599,4 @@ This package uses several Flutter packages to provide a seamless editing experie
 From these packages, only a small part of the code is used, with some code changes that better fit to the image editor.
 - [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
 - [defer_pointer](https://pub.dev/packages/defer_pointer)
-- [screenshot](https://pub.dev/packages/screenshot)
 

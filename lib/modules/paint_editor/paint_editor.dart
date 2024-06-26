@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/content_recorder.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/record_invisible_widget.dart';
 import 'package:pro_image_editor/widgets/auto_image.dart';
 import 'package:pro_image_editor/widgets/extended/extended_interactive_viewer.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
@@ -598,15 +599,18 @@ class PaintingEditorState extends State<PaintingEditor>
       child: Theme(
         data: theme.copyWith(
             tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-        child: LayoutBuilder(builder: (context, constraints) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: imageEditorTheme.paintingEditor.background,
-            appBar: _buildAppBar(constraints),
-            body: _buildBody(),
-            bottomNavigationBar: _buildBottomBar(),
-          );
-        }),
+        child: RecordInvisibleWidget(
+          controller: screenshotCtrl,
+          child: LayoutBuilder(builder: (context, constraints) {
+            return Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: imageEditorTheme.paintingEditor.background,
+              appBar: _buildAppBar(constraints),
+              body: _buildBody(),
+              bottomNavigationBar: _buildBottomBar(),
+            );
+          }),
+        ),
       ),
     );
   }

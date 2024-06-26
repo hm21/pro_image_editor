@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.0
+- **feat(ContentRecorderController)**: Changed the logic how the `ContentRecorderController` records invisible widgets. This makes the image editor backward compatible to older Flutter versions <= `3.19.x`.
+
 ## Version 4.1.1
 - **fix(vibration)**:  The `Vibration.hasVibrator` check will now only happen if the user has enabled hitVibration in the helperline configs. This resolves issue [#139](https://github.com/hm21/pro_image_editor/issue/139).
 

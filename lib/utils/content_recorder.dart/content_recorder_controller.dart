@@ -31,6 +31,9 @@ class ContentRecorderController {
   /// A key to identify the container widget for rendering the image.
   late final GlobalKey containerKey;
 
+  /// A key to identify the recorder widget for rendering the image.
+  late final GlobalKey recorderKey;
+
   final ProImageEditorConfigs _configs;
   bool generateOnlyThumbnail = false;
 
@@ -40,12 +43,20 @@ class ContentRecorderController {
   /// Instance of ProImageEditorIsolate used for isolate communication.
   final IsolateManager _isolateManager = IsolateManager();
 
+  /// Send widgets to the recorder widget which will draw them.
+  late final StreamController<Widget?> recorderStream;
+
+  /// A helper to ensure the widget is drawed.
+  Completer recordReadyHelper = Completer();
+
   /// Constructor to initialize the controller and set up the isolate if not running on the web.
   ContentRecorderController({
     required ProImageEditorConfigs configs,
     bool ignoreGeneration = false,
   }) : _configs = configs {
     containerKey = GlobalKey();
+    recorderKey = GlobalKey();
+    recorderStream = StreamController();
 
     if (!ignoreGeneration) _initMultiThreading();
   }
@@ -61,6 +72,11 @@ class ContentRecorderController {
 
   /// Destroys the isolate and closes the receive port if not running on the web.
   Future<void> destroy() async {
+    recorderStream.close();
+    if (!recordReadyHelper.isCompleted) {
+      recordReadyHelper.complete(true);
+    }
+
     if (!kIsWeb) {
       _isolateManager.destroy();
     } else {
@@ -81,6 +97,7 @@ class ContentRecorderController {
     bool stateHistroyScreenshot = false,
     String? id,
     ui.Image? image,
+    OutputFormat? outputFormat,
   }) async {
     // If we're just capturing a screenshot for the state history in the web platform,
     // but web worker is not supported, we return null.
@@ -90,12 +107,17 @@ class ContentRecorderController {
       return null;
     }
 
+    outputFormat ??= _configs.imageGenerationConfigs.outputFormat;
     image ??= await _getRenderedImage(imageInfos: imageInfos);
     id ??= generateUniqueId();
     onImageCaptured?.call(image);
     if (image == null) return null;
 
-    return await chooseCaptureMode(image: image, id: id);
+    return await chooseCaptureMode(
+      image: image,
+      id: id,
+      format: outputFormat,
+    );
   }
 
   /// Selects the appropriate capture mode based on the platform and configuration.
@@ -108,7 +130,10 @@ class ContentRecorderController {
   Future<Uint8List?> chooseCaptureMode({
     required ui.Image image,
     required String id,
+    OutputFormat? format,
   }) async {
+    format ??= _configs.imageGenerationConfigs.outputFormat;
+
     if (_configs.imageGenerationConfigs.generateInsideSeparateThread) {
       try {
         if (!kIsWeb) {
@@ -116,12 +141,14 @@ class ContentRecorderController {
           return await _captureWithNativeIsolated(
             image: image,
             id: id,
+            format: format,
           );
         } else {
           // Run in web worker
           return await _captureWithWebWorker(
             image: image,
             id: id,
+            format: format,
           );
         }
       } catch (e) {
@@ -141,9 +168,14 @@ class ContentRecorderController {
   Future<Uint8List?> _captureWithNativeIsolated({
     required ui.Image image,
     required String id,
+    required OutputFormat format,
   }) async {
     return await _isolateManager.send(
-      await _generateSendImageData(id: id, image: image),
+      await _generateSendImageData(
+        id: id,
+        image: image,
+        format: format,
+      ),
     );
   }
 
@@ -154,12 +186,17 @@ class ContentRecorderController {
   Future<Uint8List?> _captureWithWebWorker({
     required ui.Image image,
     required String id,
+    required OutputFormat format,
   }) async {
     if (!_webWorkerManager.supportWebWorkers) {
       return await _captureWithMainThread(image: image);
     } else {
       return await _webWorkerManager.send(
-        await _generateSendImageData(id: id, image: image),
+        await _generateSendImageData(
+          id: id,
+          image: image,
+          format: format,
+        ),
       );
     }
   }
@@ -195,11 +232,16 @@ class ContentRecorderController {
   }
 
   /// Get the rendered image from the widget tree using the specified pixel ratio.
-  Future<ui.Image?> _getRenderedImage(
-      {required ImageInfos imageInfos, bool? useThumbnailSize}) async {
+  Future<ui.Image?> _getRenderedImage({
+    required ImageInfos imageInfos,
+    bool? useThumbnailSize,
+    GlobalKey? widgetKey,
+  }) async {
     try {
+      widgetKey ??= containerKey;
+
       RenderObject? findRenderObject =
-          containerKey.currentContext?.findRenderObject();
+          widgetKey.currentContext?.findRenderObject();
       if (findRenderObject == null) return null;
 
       // If the render object's paint information is dirty we waiting until it's painted
@@ -212,7 +254,7 @@ class ContentRecorderController {
 
       RenderRepaintBoundary boundary =
           findRenderObject as RenderRepaintBoundary;
-      BuildContext? context = containerKey.currentContext;
+      BuildContext? context = widgetKey.currentContext;
 
       double outputRatio = imageInfos.pixelRatio;
       if (!_configs.imageGenerationConfigs.captureOnlyDrawingBounds &&
@@ -327,170 +369,48 @@ class ContentRecorderController {
         outputSize.height > _maxOutputDimension(useThumbnailSize).height;
   }
 
-  /// Value for [delay] should increase with widget tree size. Prefered value is 1 seconds
-  ///
-  /// [context] parameter is used to Inherit App Theme and MediaQuery data.
-  ///
-  /// This function is inspired from the package `screenshot` from the autor SachinGanesh.
-  /// https://pub.dev/packages/screenshot
+  /// Capture an invisible widget.
   Future<Uint8List?> captureFromWidget(
     Widget widget, {
     required ImageInfos imageInfos,
-    BuildContext? context,
     Size? targetSize,
+    OutputFormat? format,
     Function(ui.Image?)? onImageCaptured,
     bool stateHistroyScreenshot = false,
     String? id,
   }) async {
-    ui.Image image = await _widgetToUiImage(
-      widget,
-      context: context,
-      targetSize: targetSize,
+    recordReadyHelper = Completer();
+    recorderStream.add(
+      SizedBox(
+        width: targetSize?.width,
+        height: targetSize?.height,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: widget,
+        ),
+      ),
     );
+
+    /// Ensure the recorder is ready
+    if (!recordReadyHelper.isCompleted) {
+      await recordReadyHelper.future;
+    }
+    ui.Image? image = await _getRenderedImage(
+      imageInfos: imageInfos,
+      useThumbnailSize: false,
+      widgetKey: recorderKey,
+    );
+
+    recorderStream.add(null);
+
     return _capture(
       image: image,
       imageInfos: imageInfos,
       id: id,
       onImageCaptured: onImageCaptured,
       stateHistroyScreenshot: stateHistroyScreenshot,
+      outputFormat: format,
     );
-  }
-
-  /// If you are building a desktop/web application that supports multiple view. Consider passing the [context] so that flutter know which view to capture.
-  Future<ui.Image> _widgetToUiImage(
-    Widget widget, {
-    BuildContext? context,
-    Size? targetSize,
-  }) async {
-    int retryCounter = 3;
-    bool isDirty = false;
-
-    Widget child = targetSize != null
-        ? SizedBox(
-            width: targetSize.width,
-            height: targetSize.height,
-            child: FittedBox(child: widget),
-          )
-        : widget;
-    if (context != null) {
-      child = InheritedTheme.captureAll(
-        context,
-        MediaQuery(
-          data: MediaQuery.of(context),
-          child: Material(
-            color: Colors.transparent,
-            child: child,
-          ),
-        ),
-      );
-    }
-
-    final RenderRepaintBoundary repaintBoundary = RenderRepaintBoundary();
-    final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
-    final fallBackView = platformDispatcher.views.first;
-    final view =
-        context == null ? fallBackView : View.maybeOf(context) ?? fallBackView;
-    Size logicalSize =
-        targetSize ?? view.physicalSize / view.devicePixelRatio; // Adapted
-    Size imageSize = targetSize ?? view.physicalSize; // Adapted
-
-    assert(logicalSize.aspectRatio.toStringAsPrecision(5) ==
-        imageSize.aspectRatio
-            .toStringAsPrecision(5)); // Adapted (toPrecision was not available)
-
-    final RenderView renderView = RenderView(
-      view: view,
-      child: RenderPositionedBox(
-        alignment: Alignment.center,
-        child: repaintBoundary,
-      ),
-      configuration: ViewConfiguration(
-        // size: logicalSize,
-        logicalConstraints: BoxConstraints(
-          maxWidth: logicalSize.width,
-          maxHeight: logicalSize.height,
-        ),
-        devicePixelRatio: 1.0,
-      ),
-    );
-
-    final PipelineOwner pipelineOwner = PipelineOwner();
-    final BuildOwner buildOwner = BuildOwner(
-        focusManager: FocusManager(),
-        onBuildScheduled: () {
-          ///current render is dirty, mark it.
-          isDirty = true;
-        });
-
-    pipelineOwner.rootNode = renderView;
-    renderView.prepareInitialFrame();
-
-    final RenderObjectToWidgetElement<RenderBox> rootElement =
-        RenderObjectToWidgetAdapter<RenderBox>(
-      container: repaintBoundary,
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: child,
-      ),
-    ).attachToRenderTree(
-      buildOwner,
-    );
-
-    ///Render Widget
-    buildOwner.buildScope(
-      rootElement,
-    );
-    buildOwner.finalizeTree();
-
-    pipelineOwner.flushLayout();
-    pipelineOwner.flushCompositingBits();
-    pipelineOwner.flushPaint();
-
-    ui.Image? image;
-
-    do {
-      ///Reset the dirty flag
-      isDirty = false;
-
-      // If the render object's paint information is dirty we waiting until it's painted
-      // or 1000ms are ago.
-      int retryHelper = 0;
-      while (!repaintBoundary.attached && retryHelper < 50) {
-        await Future.delayed(const Duration(milliseconds: 20));
-        retryHelper++;
-      }
-
-      image = await repaintBoundary.toImage(
-        pixelRatio: _configs.imageGenerationConfigs.customPixelRatio ??
-            imageSize.width / logicalSize.width,
-      );
-
-      ///Check does this require rebuild
-      if (isDirty) {
-        ///Previous capture has been updated, re-render again.
-        buildOwner.buildScope(
-          rootElement,
-        );
-        buildOwner.finalizeTree();
-        pipelineOwner.flushLayout();
-        pipelineOwner.flushCompositingBits();
-        pipelineOwner.flushPaint();
-      }
-      retryCounter--;
-
-      ///retry untill capture is successfull
-    } while (isDirty && retryCounter >= 0);
-    try {
-      /// Dispose All widgets
-      // rootElement.visitChildren((Element element) {
-      //   rootElement.deactivateChild(element);
-      // });
-      buildOwner.finalizeTree();
-    } catch (e) {
-      // Handle error
-    }
-
-    return image; // Adapted to directly return the image and not the Uint8List
   }
 
   /// Capture an image of the current editor state in an isolate.
@@ -596,7 +516,6 @@ class ContentRecorderController {
                 )
               : await captureFromWidget(
                   widget,
-                  context: context,
                   id: id,
                   targetSize: targetSize,
                   imageInfos: imageInfos,
@@ -646,8 +565,6 @@ class ContentRecorderController {
                     )
                   : await captureFromWidget(
                       widget,
-                      // ignore: use_build_context_synchronously
-                      context: context,
                       id: id,
                       targetSize: targetSize,
                       imageInfos: imageInfos,
@@ -676,8 +593,6 @@ class ContentRecorderController {
             )
           : await captureFromWidget(
               widget,
-              // ignore: use_build_context_synchronously
-              context: context,
               id: id,
               targetSize: targetSize,
               imageInfos: imageInfos,
@@ -737,12 +652,13 @@ class ContentRecorderController {
   Future<ImageConvertThreadRequest> _generateSendImageData({
     required ui.Image image,
     required String id,
+    required OutputFormat format,
   }) async {
     return ImageConvertThreadRequest(
       id: id,
       generateOnlyImageBounds:
           _configs.imageGenerationConfigs.captureOnlyDrawingBounds,
-      outputFormat: _configs.imageGenerationConfigs.outputFormat,
+      outputFormat: format,
       jpegChroma: _configs.imageGenerationConfigs.jpegChroma,
       jpegQuality: _configs.imageGenerationConfigs.jpegQuality,
       pngFilter: _configs.imageGenerationConfigs.pngFilter,
