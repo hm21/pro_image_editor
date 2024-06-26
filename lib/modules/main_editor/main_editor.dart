@@ -420,10 +420,19 @@ class ProImageEditorState extends State<ProImageEditor>
       filters: [],
     ));
 
-    Vibration.hasVibrator().then(
-        (value) => layerInteractionManager.deviceCanVibrate = value ?? false);
-    Vibration.hasCustomVibrationsSupport().then((value) =>
-        layerInteractionManager.deviceCanCustomVibrate = value ?? false);
+    if (helperLines.hitVibration) {
+      Vibration.hasVibrator().then((hasVibrator) {
+        layerInteractionManager.deviceCanVibrate = hasVibrator ?? false;
+
+        if (layerInteractionManager.deviceCanVibrate) {
+          Vibration.hasCustomVibrationsSupport()
+              .then((hasCustomVibrationsSupport) {
+            layerInteractionManager.deviceCanCustomVibrate =
+                hasCustomVibrationsSupport ?? false;
+          });
+        }
+      });
+    }
 
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
     if (kIsWeb) {

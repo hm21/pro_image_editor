@@ -33,8 +33,8 @@ void main() {
                 editorCenterY: 250,
                 layerData: layer,
                 configs: const ProImageEditorConfigs(),
-                onTap: (Layer layer) {
-                  expect(layer, equals(layer));
+                onTap: (Layer tapLayer) {
+                  expect(layer, equals(tapLayer));
                 },
               ),
             ],
