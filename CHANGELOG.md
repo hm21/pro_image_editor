@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.3
+- **fix(content-recorder)**: Ensure final generated image respects bounds after rotation when `captureOnlyBackgroundImageArea` is `true`. This resolves issue [#145](https://github.com/hm21/pro_image_editor/issue/145).
+
 ## Version 4.2.2
 - **fix(PopScope)**: Check if route already popped in `onPopInvoked` and avoid showing close warning dialog if already popped.
 - **feat(Callbacks)**: Added new callback to `MainEditorCallbacks` which is triggered when `onPopInvoked`.

@@ -315,18 +315,8 @@ class ContentRecorderController {
 
         canvas.drawImageRect(
           image,
-          Rect.fromLTWH(
-            cropX.toDouble(),
-            cropY.toDouble(),
-            cropWidth.toDouble(),
-            cropHeight.toDouble(),
-          ),
-          Rect.fromLTWH(
-            0,
-            0,
-            cropWidth.toDouble(),
-            cropHeight.toDouble(),
-          ),
+          Rect.fromLTWH(cropX, cropY, cropWidth, cropHeight),
+          Rect.fromLTWH(0, 0, cropWidth, cropHeight),
           Paint(),
         );
 

@@ -1151,6 +1151,7 @@ class ProImageEditorState extends State<ProImageEditor>
               fitToScreenFactor: fitToScreenFactor,
             ).updatedLayers;
 
+            _imageInfos = null;
             decodeImage(transformConfigs);
             addHistory(
               transformConfigs: transformConfigs,
