@@ -119,11 +119,30 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   ///  * [onEditorZoomScaleEnd], which handles the end of the same interaction.
   final GestureScaleUpdateCallback? onEditorZoomScaleUpdate;
 
+  /// {@template flutter.widgets.PopScope.onPopInvoked}
+  /// Called after a route pop was handled.
+  /// {@endtemplate}
+  ///
+  /// It's not possible to prevent the pop from happening at the time that this
+  /// method is called; the pop has already happened.
+  ///
+  /// This will still be called even when the pop is canceled. A pop is canceled
+  /// when the relevant [Route.popDisposition] returns false, such as when
+  /// [canPop] is set to false on a [PopScope]. The `didPop` parameter
+  /// indicates whether or not the back navigation actually happened
+  /// successfully.
+  ///
+  /// See also:
+  ///
+  ///  * [Route.onPopInvoked], which is similar.
+  final PopInvokedCallback? onPopInvoked;
+
   /// Creates a new instance of [MainEditorCallbacks].
   const MainEditorCallbacks({
     this.onTap,
     this.onDoubleTap,
     this.onLongPress,
+    this.onPopInvoked,
     this.onAddLayer,
     this.onUpdateLayer,
     this.onRemoveLayer,

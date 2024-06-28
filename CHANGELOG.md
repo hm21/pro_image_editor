@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 4.2.2
+- **fix(PopScope)**: Check if route already popped in `onPopInvoked` and avoid showing close warning dialog if already popped.
+- **feat(Callbacks)**: Added new callback to `MainEditorCallbacks` which is triggered when `onPopInvoked`.
+
 ## Version 4.2.1
 - **feat(theme)**: Added option to change foreground and background color of layer interaction buttons.
 
