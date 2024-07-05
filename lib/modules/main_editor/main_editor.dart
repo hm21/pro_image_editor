@@ -1620,7 +1620,7 @@ class ProImageEditorState extends State<ProImageEditor>
     /// Recalculate position and size
     if (import.configs.recalculateSizeAndPosition ||
         import.version == ExportImportVersion.version_1_0_0) {
-      Size imgSize = import.imgSize;
+      Size imgSize = import.imgSize / (_imageInfos?.pixelRatio ?? 1);
       for (EditorStateHistory el in import.stateHistory) {
         for (Layer layer in el.layers) {
           if (import.configs.recalculateSizeAndPosition) {
@@ -1719,11 +1719,11 @@ class ProImageEditorState extends State<ProImageEditor>
     if (_imageInfos == null) await decodeImage();
 
     return ExportStateHistory(
-      this.configs,
-      stateManager.stateHistory,
-      _imageInfos!,
-      sizesManager.decodedImageSize,
-      stateManager.position,
+      editorConfigs: this.configs,
+      stateHistory: stateManager.stateHistory,
+      imageInfos: _imageInfos!,
+      imgSize: sizesManager.decodedImageSize,
+      editorPosition: stateManager.position,
       configs: configs,
       contentRecorderCtrl: _controllers.screenshot,
       // ignore: use_build_context_synchronously

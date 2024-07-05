@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.4
+- **fix(import)**: Ensure to set correct emoji size after image rotation and history restore. This resolves issue [#151](https://github.com/hm21/pro_image_editor/issues/151).
+
 ## Version 4.2.3
 - **fix(content-recorder)**: Ensure final generated image respects bounds after rotation when `captureOnlyBackgroundImageArea` is `true`. This resolves issue [#145](https://github.com/hm21/pro_image_editor/issue/145).
 

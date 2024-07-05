@@ -18,26 +18,26 @@ import 'utils/export_import_version.dart';
 /// This class allows you to export the state history of the editor,
 /// including layers, filters, stickers, and other configurations.
 class ExportStateHistory {
-  final int _editorPosition;
-  final Size _imgSize;
+  final int editorPosition;
+  final Size imgSize;
   final List<EditorStateHistory> stateHistory;
   late ContentRecorderController contentRecorderCtrl;
-  final ProImageEditorConfigs _editorConfigs;
+  final ProImageEditorConfigs editorConfigs;
   final ExportEditorConfigs _configs;
   final ImageInfos imageInfos;
   final BuildContext context;
 
   /// Constructs an [ExportStateHistory] object with the given parameters.
   ///
-  /// The [stateHistory], [_imgStateHistory], [_imgSize], and [_editorPosition]
+  /// The [stateHistory], [_imgStateHistory], [imgSize], and [editorPosition]
   /// parameters are required, while the [configs] parameter is optional and
   /// defaults to [ExportEditorConfigs()].
-  ExportStateHistory(
-    this._editorConfigs,
-    this.stateHistory,
-    this.imageInfos,
-    this._imgSize,
-    this._editorPosition, {
+  ExportStateHistory({
+    required this.editorConfigs,
+    required this.stateHistory,
+    required this.imageInfos,
+    required this.imgSize,
+    required this.editorPosition,
     required this.contentRecorderCtrl,
     required this.context,
     ExportEditorConfigs configs = const ExportEditorConfigs(),
@@ -57,15 +57,15 @@ class ExportStateHistory {
     /// Choose history span
     switch (_configs.historySpan) {
       case ExportHistorySpan.current:
-        if (_editorPosition > 0) {
-          changes = [changes[_editorPosition - 1]];
+        if (editorPosition > 0) {
+          changes = [changes[editorPosition - 1]];
         }
         break;
       case ExportHistorySpan.currentAndBackward:
-        changes.removeRange(_editorPosition, changes.length);
+        changes.removeRange(editorPosition, changes.length);
         break;
       case ExportHistorySpan.currentAndForward:
-        changes.removeRange(0, _editorPosition - 1);
+        changes.removeRange(0, editorPosition - 1);
         break;
       case ExportHistorySpan.all:
         break;
@@ -97,12 +97,12 @@ class ExportStateHistory {
       'position': _configs.historySpan == ExportHistorySpan.current ||
               _configs.historySpan == ExportHistorySpan.currentAndForward
           ? 0
-          : _editorPosition - 1,
+          : editorPosition - 1,
       if (history.isNotEmpty) 'history': history,
       if (stickers.isNotEmpty) 'stickers': stickers,
       'imgSize': {
-        'width': _imgSize.width,
-        'height': _imgSize.height,
+        'width': imageInfos.rawSize.width,
+        'height': imageInfos.rawSize.height,
       },
     };
   }
@@ -155,7 +155,7 @@ class ExportStateHistory {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
 
         double imageWidth =
-            (_editorConfigs.stickerEditorConfigs?.initWidth ?? 100) *
+            (editorConfigs.stickerEditorConfigs?.initWidth ?? 100) *
                 layer.scale;
         Size targetSize = Size(
             imageWidth,
