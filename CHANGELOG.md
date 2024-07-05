@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.5
+- **fix(zoom-paint-editor)**: Prevent bottombar from wrapping items to a new line. This resolves issue [#152](https://github.com/hm21/pro_image_editor/issues/152).
+
 ## Version 4.2.4
 - **fix(import)**: Ensure to set correct emoji size after image rotation and history restore. This resolves issue [#151](https://github.com/hm21/pro_image_editor/issues/151).
 

@@ -888,6 +888,11 @@ class PaintingEditorState extends State<PaintingEditor>
 
     if (paintModes.length <= 1) return const SizedBox.shrink();
 
+    double minWidth = min(MediaQuery.of(context).size.width, 600);
+    double maxWidth = max(
+        (paintModes.length + (paintEditorConfigs.editorIsZoomable ? 1 : 0)) *
+            80,
+        minWidth);
     return Theme(
       data: theme,
       child: Scrollbar(
@@ -904,8 +909,10 @@ class PaintingEditorState extends State<PaintingEditor>
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minWidth: min(MediaQuery.of(context).size.width, 500),
-                  maxWidth: 500,
+                  minWidth: minWidth,
+                  maxWidth: MediaQuery.of(context).size.width > 660
+                      ? maxWidth
+                      : double.infinity,
                 ),
                 child: StatefulBuilder(builder: (context, setStateBottomBar) {
                   Color getColor(PaintModeE mode) {
@@ -919,6 +926,7 @@ class PaintingEditorState extends State<PaintingEditor>
                   return Wrap(
                     direction: Axis.horizontal,
                     alignment: WrapAlignment.spaceAround,
+                    runAlignment: WrapAlignment.spaceAround,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: <Widget>[
                       if (paintEditorConfigs.editorIsZoomable) ...[
@@ -952,24 +960,21 @@ class PaintingEditorState extends State<PaintingEditor>
                       ],
                       ...List.generate(
                         paintModes.length,
-                        (index) => Builder(
-                          builder: (_) {
-                            PaintModeBottomBarItem item = paintModes[index];
-                            Color color = getColor(item.mode);
-
-                            return FlatIconTextButton(
-                              label: Text(
-                                item.label,
-                                style: TextStyle(fontSize: 10.0, color: color),
-                              ),
-                              icon: Icon(item.icon, color: color),
-                              onPressed: () {
-                                setMode(item.mode);
-                                setStateBottomBar(() {});
-                              },
-                            );
-                          },
-                        ),
+                        (index) {
+                          PaintModeBottomBarItem item = paintModes[index];
+                          Color color = getColor(item.mode);
+                          return FlatIconTextButton(
+                            label: Text(
+                              item.label,
+                              style: TextStyle(fontSize: 10.0, color: color),
+                            ),
+                            icon: Icon(item.icon, color: color),
+                            onPressed: () {
+                              setMode(item.mode);
+                              setStateBottomBar(() {});
+                            },
+                          );
+                        },
                       ),
                     ],
                   );
