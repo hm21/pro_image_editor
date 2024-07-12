@@ -577,6 +577,8 @@ class ProImageEditorState extends State<ProImageEditor>
     bool blockSelectLayer = false,
     bool blockCaptureScreenshot = false,
   }) {
+    layerInteractionManager.selectedLayerId = '';
+
     addHistory(newLayer: layer, blockCaptureScreenshot: blockCaptureScreenshot);
 
     if (removeLayerIndex >= 0) {

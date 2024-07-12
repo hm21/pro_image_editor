@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.6
+- **fix(content-recorder)**: Remove visible border in captured images when user added layers from outside. This resolves issue [#156](https://github.com/hm21/pro_image_editor/issues/156).
+
 ## Version 4.2.5
 - **fix(zoom-paint-editor)**: Prevent bottombar from wrapping items to a new line. This resolves issue [#152](https://github.com/hm21/pro_image_editor/issues/152).
 
