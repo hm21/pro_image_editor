@@ -35,7 +35,7 @@ void main() {
 
       expect(find.byType(TextEditor), findsOneWidget);
 
-      await tester.enterText(find.byType(TextField), 'Hello, World!');
+      await tester.enterText(find.byType(EditableText), 'Hello, World!');
 
       expect(find.text('Hello, World!'), findsOneWidget);
     });

@@ -4,9 +4,7 @@ import 'dart:math';
 // Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:rounded_background_text/rounded_background_text.dart';
+import 'package:pro_image_editor/plugins/rounded_background_text/src/rounded_background_text.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -324,17 +322,20 @@ class _LayerWidgetState extends State<LayerWidget>
         right: height * horizontalPaddingFactor,
         bottom: height * 0.175 / 2,
       ),
-      child: RoundedBackgroundText(
-        layer.text.toString(),
-        backgroundColor: layer.background,
-        textAlign: layer.align,
-        style: layer.textStyle?.copyWith(
-              fontSize: style.fontSize,
-              fontWeight: style.fontWeight,
-              color: style.color,
-              fontFamily: style.fontFamily,
-            ) ??
-            style,
+      child: HeroMode(
+        enabled: false,
+        child: RoundedBackgroundText(
+          layer.text.toString(),
+          backgroundColor: layer.background,
+          textAlign: layer.align,
+          style: layer.textStyle?.copyWith(
+                fontSize: style.fontSize,
+                fontWeight: style.fontWeight,
+                color: style.color,
+                fontFamily: style.fontFamily,
+              ) ??
+              style,
+        ),
       ),
     );
   }

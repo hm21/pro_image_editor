@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.7
+- **fix(text-editor)**: Resolve issue where cursor size change with long text. This resolves issue [#154](https://github.com/hm21/pro_image_editor/issues/154).
+
 ## Version 4.2.6
 - **fix(content-recorder)**: Remove visible border in captured images when user added layers from outside. This resolves issue [#156](https://github.com/hm21/pro_image_editor/issues/156).
 

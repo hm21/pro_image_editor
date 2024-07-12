@@ -876,7 +876,9 @@ class ProImageEditorState extends State<ProImageEditor>
         theme: _theme,
         callbacks: callbacks,
       ),
-      duration: const Duration(milliseconds: 50),
+
+      /// Small Duration is important for a smooth hero animation
+      duration: const Duration(milliseconds: 250),
     );
 
     if (layer == null || !mounted) return;
@@ -1097,7 +1099,8 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method opens the text editor, allowing the user to add or edit text layers on the image.
   void openTextEditor({
-    Duration duration = const Duration(milliseconds: 50),
+    /// Small Duration is important for a smooth hero animation
+    Duration duration = const Duration(milliseconds: 150),
   }) async {
     TextLayerData? layer = await openPage(
       TextEditor(

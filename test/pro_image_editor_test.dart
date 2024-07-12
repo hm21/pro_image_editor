@@ -56,7 +56,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Write text text
-    await tester.enterText(find.byType(TextField), 'Hello, World!');
+    await tester.enterText(find.byType(EditableText), 'Hello, World!');
     expect(find.text('Hello, World!'), findsOneWidget);
 
     // Press done button

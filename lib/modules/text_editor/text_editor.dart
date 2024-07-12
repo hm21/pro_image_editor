@@ -4,9 +4,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:rounded_background_text/rounded_background_text.dart';
+import 'package:pro_image_editor/plugins/rounded_background_text/src/rounded_background_text_field.dart';
 
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
@@ -66,7 +64,6 @@ class TextEditorState extends State<TextEditor>
   late TextStyle selectedTextStyle;
   late LayerBackgroundMode backgroundColorMode;
 
-  int _numLines = 0;
   double colorPosition = 0;
   late double _fontScale;
 
@@ -144,7 +141,6 @@ class TextEditorState extends State<TextEditor>
             ? widget.layer!.background
             : widget.layer!.color;
       }
-      _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
       colorPosition = widget.layer!.colorPickerPosition ?? 0;
     }
   }
@@ -153,7 +149,6 @@ class TextEditorState extends State<TextEditor>
   void _setupTextControllerListener() {
     _textCtrl.addListener(() {
       setState(() {
-        _numLines = '\n'.allMatches(_textCtrl.text).length + 1;
         textEditorCallbacks?.handleUpdateUI();
       });
     });
@@ -167,7 +162,7 @@ class TextEditorState extends State<TextEditor>
   }
 
   /// Gets the text color based on the selected color mode.
-  Color get _getTextColor {
+  Color get _textColor {
     switch (backgroundColorMode) {
       case LayerBackgroundMode.onlyColor:
       case LayerBackgroundMode.backgroundAndColor:
@@ -180,7 +175,7 @@ class TextEditorState extends State<TextEditor>
   }
 
   /// Gets the background color based on the selected color mode.
-  Color get _getBackgroundColor {
+  Color get _backgroundColor {
     switch (backgroundColorMode) {
       case LayerBackgroundMode.onlyColor:
         return Colors.transparent;
@@ -194,7 +189,7 @@ class TextEditorState extends State<TextEditor>
   }
 
   /// Gets the text font size based on the selected font scale.
-  double get _getTextFontSize {
+  double get _textFontSize {
     return textEditorConfigs.initFontSize * _fontScale;
   }
 
@@ -353,8 +348,8 @@ class TextEditorState extends State<TextEditor>
       Navigator.of(context).pop(
         TextLayerData(
           text: _textCtrl.text.trim(),
-          background: _getBackgroundColor,
-          color: _getTextColor,
+          background: _backgroundColor,
+          color: _textColor,
           align: align,
           fontScale: _fontScale,
           colorMode: backgroundColorMode,
@@ -592,79 +587,83 @@ class TextEditorState extends State<TextEditor>
 
   /// Builds the text field for text input.
   Widget _buildTextField() {
-    return Align(
-      alignment: Alignment.center,
-      child: Padding(
-        padding: imageEditorTheme.textEditor.textFieldMargin,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SizedBox(
-              height: _getTextFontSize * _numLines * 1.35 + 15,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Hero(
-                    tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
-                    createRectTween: (begin, end) =>
-                        RectTween(begin: begin, end: end),
-                    child: RoundedBackgroundText(
-                      _textCtrl.text,
-                      backgroundColor: _getBackgroundColor,
-                      textAlign: align,
-                      style: selectedTextStyle.copyWith(
-                        color: _getTextColor,
-                        fontSize: _getTextFontSize,
-                        height: 1.35,
-                        letterSpacing: 0,
-                      ),
-                    ),
+    return Center(
+      // TODO: remove `IntrinsicWidth` after updating `RoundedBackgroundTextField` code
+      child: IntrinsicWidth(
+        child: Padding(
+          padding: imageEditorTheme.textEditor.textFieldMargin,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Hero(
+                flightShuttleBuilder: ((
+                  flightContext,
+                  animation,
+                  flightDirection,
+                  fromHeroContext,
+                  toHeroContext,
+                ) {
+                  if (flightDirection == HeroFlightDirection.pop) {
+                    return fromHeroContext.widget;
+                  }
+
+                  void animationStatusListener(AnimationStatus status) {
+                    if (status == AnimationStatus.completed) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _focusNode.requestFocus();
+                      });
+                      animation.removeStatusListener(animationStatusListener);
+                    }
+                  }
+
+                  animation.addStatusListener(animationStatusListener);
+
+                  return toHeroContext.widget;
+                }),
+                tag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
+                createRectTween: (begin, end) =>
+                    RectTween(begin: begin, end: end),
+                child: RoundedBackgroundTextField(
+                  key: const ValueKey('rounded-background-text-editor-field'),
+                  heroTag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
+                  controller: _textCtrl,
+                  focusNode: _focusNode,
+                  onChanged: textEditorCallbacks?.handleChanged,
+                  onEditingComplete: textEditorCallbacks?.handleEditingComplete,
+                  onSubmitted: textEditorCallbacks?.handleSubmitted,
+                  autocorrect: textEditorConfigs.autocorrect,
+                  enableSuggestions: textEditorConfigs.enableSuggestions,
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
+                  textCapitalization: TextCapitalization.sentences,
+                  textAlign: _textCtrl.text.isEmpty ? TextAlign.center : align,
+                  maxLines: null,
+                  cursorColor: imageEditorTheme.textEditor.inputCursorColor,
+                  cursorHeight: _textFontSize * 1.2,
+                  scrollPhysics: const NeverScrollableScrollPhysics(),
+                  hint: _textCtrl.text.isEmpty
+                      ? i18n.textEditor.inputHintText
+                      : '',
+                  hintStyle: selectedTextStyle.copyWith(
+                    color: imageEditorTheme.textEditor.inputHintColor,
+                    fontSize: _textFontSize,
+                    height: 1.35,
+                    shadows: [],
                   ),
-                  IntrinsicWidth(
-                    child: TextField(
-                      controller: _textCtrl,
-                      focusNode: _focusNode,
-                      onChanged: textEditorCallbacks?.handleChanged,
-                      onEditingComplete:
-                          textEditorCallbacks?.handleEditingComplete,
-                      onSubmitted: textEditorCallbacks?.handleSubmitted,
-                      autocorrect: textEditorConfigs.autocorrect,
-                      enableSuggestions: textEditorConfigs.enableSuggestions,
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.newline,
-                      textCapitalization: TextCapitalization.sentences,
-                      textAlign:
-                          _textCtrl.text.isEmpty ? TextAlign.center : align,
-                      maxLines: null,
-                      cursorColor: imageEditorTheme.textEditor.inputCursorColor,
-                      cursorHeight: _getTextFontSize * 1.2,
-                      scrollPhysics: const NeverScrollableScrollPhysics(),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.fromLTRB(
-                            12, _numLines <= 1 ? 4 : 0, 12, 0),
-                        hintText: _textCtrl.text.isEmpty
-                            ? i18n.textEditor.inputHintText
-                            : '',
-                        hintStyle: selectedTextStyle.copyWith(
-                          color: imageEditorTheme.textEditor.inputHintColor,
-                          fontSize: _getTextFontSize,
-                          height: 1.35,
-                          shadows: [],
-                        ),
-                      ),
-                      style: selectedTextStyle.copyWith(
-                        color: Colors.transparent,
-                        fontSize: _getTextFontSize,
-                        height: 1.35,
-                        letterSpacing: 0,
-                        decoration: TextDecoration.none,
-                        shadows: [],
-                      ),
-                      autofocus: true,
-                    ),
+                  backgroundColor: _backgroundColor,
+                  style: selectedTextStyle.copyWith(
+                    color: _textColor,
+                    fontSize: _textFontSize,
+                    height: 1.35,
+                    letterSpacing: 0,
+                    decoration: TextDecoration.none,
+                    shadows: [],
                   ),
-                ],
+
+                  /// If we edit an layer we focus to the textfield after the hero
+                  /// animation is done
+                  autofocus: widget.layer == null,
+                ),
               ),
             ),
           ),
