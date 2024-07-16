@@ -128,12 +128,6 @@ class SimpleDialogView extends StatelessWidget {
   Widget _getAttachmentPreview(BuildContext context, Uint8List bytes) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        //MediaQuery.of(context).padding.top returns zero here,
-        //calculate myself by subtracting full screen height with image area - footer action bar height and half (top and bottom)
-        final topOffset =
-            (MediaQuery.sizeOf(context).height - constraints.maxHeight - 80) /
-                2;
-
         return ProImageEditor.memory(
           bytes,
           callbacks: ProImageEditorCallbacks(
@@ -152,7 +146,7 @@ class SimpleDialogView extends StatelessWidget {
             imageEditorTheme: ImageEditorTheme(
               subEditorPage: SubEditorPageTheme(
                   enforceSizeFromMainEditor: true,
-                  positionTop: topOffset,
+                  positionTop: 0,
                   positionLeft: 0,
                   barrierDismissible: true,
                   barrierColor: const Color(0x90272727),
