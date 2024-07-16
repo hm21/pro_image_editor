@@ -1,8 +1,5 @@
 /// Internationalization (i18n) settings for the Blur Editor component.
 class I18nBlurEditor {
-  /// Text to display when a blur is being applied.
-  final String applyBlurDialogMsg;
-
   /// Text for the bottom navigation bar item that opens the Blur Editor.
   final String bottomNavigationBarText;
 
@@ -29,7 +26,6 @@ class I18nBlurEditor {
   /// )
   /// ```
   const I18nBlurEditor({
-    this.applyBlurDialogMsg = 'Blur is being applied.',
     this.bottomNavigationBarText = 'Blur',
     this.back = 'Back',
     this.done = 'Done',

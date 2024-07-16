@@ -9,6 +9,9 @@ import 'converted_configs.dart';
 mixin SimpleConfigsAccess on StatefulWidget {
   /// Returns the configuration options for the editor.
   ProImageEditorConfigs get configs;
+
+  /// Returns the callbacks for the editor.
+  ProImageEditorCallbacks get callbacks;
 }
 
 /// A mixin providing access to simple editor configurations within a state.
@@ -18,4 +21,6 @@ mixin SimpleConfigsAccessState<T extends StatefulWidget>
 
   @override
   ProImageEditorConfigs get configs => _widget.configs;
+
+  ProImageEditorCallbacks get callbacks => _widget.callbacks;
 }

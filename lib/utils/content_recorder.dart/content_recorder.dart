@@ -6,10 +6,12 @@ import 'content_recorder_controller.dart';
 
 class ContentRecorder extends StatefulWidget {
   final Widget? child;
+  final bool autoDestroyController;
   final ContentRecorderController controller;
 
   const ContentRecorder({
     super.key,
+    this.autoDestroyController = true,
     required this.child,
     required this.controller,
   });
@@ -29,7 +31,7 @@ class ContentRecorderState extends State<ContentRecorder> {
 
   @override
   void dispose() {
-    _controller.destroy();
+    if (widget.autoDestroyController) _controller.destroy();
     super.dispose();
   }
 

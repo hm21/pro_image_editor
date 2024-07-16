@@ -8,22 +8,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Project imports:
+import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/models/transform_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/utils/content_recorder.dart/utils/record_invisible_widget.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/standalone_editor.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
-import '../../models/editor_image.dart';
-import '../../models/history/filter_state_history.dart';
-import '../../models/isolate_models/isolate_capture_model.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
-import '../../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../../utils/decode_image.dart';
 import '../../widgets/layer_stack.dart';
-import '../../widgets/loading_dialog.dart';
 import '../../widgets/transform/transformed_content_generator.dart';
-import 'widgets/filter_editor_item_list.dart';
-import 'widgets/image_with_filters.dart';
+import 'types/filter_matrix.dart';
+import 'widgets/filtered_image.dart';
+
+export 'utils/filter_generator/filter_presets.dart';
+export 'utils/filter_generator/filter_model.dart';
+export 'utils/filter_generator/filter_addons.dart';
+export 'widgets/filter_editor_item_list.dart';
 
 /// The `FilterEditor` widget allows users to editing images with painting tools.
 ///
@@ -152,123 +153,75 @@ class FilterEditor extends StatefulWidget
 class FilterEditorState extends State<FilterEditor>
     with
         ImageEditorConvertedConfigs,
+        ImageEditorConvertedCallbacks,
         StandaloneEditorState<FilterEditor, FilterEditorInitConfigs> {
-  /// Manages the capturing a screenshot of the image.
-  late ContentRecorderController screenshotCtrl;
-
   /// Update the image with the applied filter and the slider value.
   late final StreamController _uiFilterStream;
 
   /// The selected filter.
-  ColorFilterGenerator selectedFilter = PresetFilters.none;
-
-  /// Represents the dimensions of the body.
-  Size _bodySize = Size.zero;
+  FilterModel selectedFilter = PresetFilters.none;
 
   /// The opacity of the selected filter.
   double filterOpacity = 1;
 
-  /// Indicates it create a screenshot or not.
-  bool _createScreenshot = false;
-
-  /// The position in the history of screenshots. This is used to track the
-  /// current position in the list of screenshots.
-  int _historyPosition = 0;
-
-  /// The pixel ratio of the image.
-  double? _pixelRatio;
-
-  /// A list of captured screenshots. Each element in the list represents the
-  /// state of a screenshot captured by the isolate.
-  final List<IsolateCaptureState> _screenshots = [];
-
   @override
   void initState() {
     _uiFilterStream = StreamController.broadcast();
-    screenshotCtrl = ContentRecorderController(
-        configs: configs, ignore: !initConfigs.convertToUint8List);
+    _uiFilterStream.stream.listen((_) => rebuildController.add(null));
+
+    filterEditorCallbacks?.onInit?.call();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      filterEditorCallbacks?.onAfterViewInit?.call();
+    });
     super.initState();
   }
 
   @override
   void dispose() {
     _uiFilterStream.close();
-    screenshotCtrl.destroy();
     super.dispose();
   }
 
-  /// Closes the editor without applying changes.
-  void close() {
-    if (initConfigs.onCloseEditor == null) {
-      Navigator.pop(context);
-    } else {
-      initConfigs.onCloseEditor!.call();
-    }
+  @override
+  void setState(void Function() fn) {
+    rebuildController.add(null);
+    super.setState(fn);
   }
 
   /// Handles the "Done" action, either by applying changes or closing the editor.
   void done() async {
-    if (_createScreenshot) return;
-    initConfigs.onImageEditingStarted?.call();
-
-    if (widget.initConfigs.convertToUint8List) {
-      _createScreenshot = true;
-      LoadingDialog loading = LoadingDialog()
-        ..show(
-          context,
-          configs: configs,
-          theme: theme,
-          message: i18n.filterEditor.applyFilterDialogMsg,
-        );
-      if (_pixelRatio == null) await _setPixelRatio();
-      if (!mounted) return;
-      Uint8List? bytes = await screenshotCtrl.getFinalScreenshot(
-        pixelRatio: _pixelRatio,
-        backgroundScreenshot:
-            _historyPosition > 0 ? _screenshots[_historyPosition - 1] : null,
-        originalImageBytes: _historyPosition > 0
-            ? null
-            : await widget.editorImage.safeByteArray(context),
-      );
-
-      _createScreenshot = false;
-      if (mounted) {
-        loading.hide(context);
-
-        await initConfigs.onImageEditingComplete
-            ?.call(bytes ?? Uint8List.fromList([]));
-
-        initConfigs.onCloseEditor?.call();
-      }
-    } else {
-      FilterStateHistory filter = FilterStateHistory(
-        filter: selectedFilter,
-        opacity: filterOpacity,
-      );
-      Navigator.pop(context, filter);
-    }
+    doneEditing(
+      editorImage: widget.editorImage,
+      returnValue: _getActiveFilters(),
+    );
+    filterEditorCallbacks?.handleDone();
   }
 
-  Future<void> _setPixelRatio() async {
-    _pixelRatio ??= (await decodeImageInfos(
-      bytes: await widget.editorImage.safeByteArray(context),
-      screenSize: _bodySize,
-    ))
-        .pixelRatio;
+  FilterMatrix _getActiveFilters() {
+    return [
+      ...appliedFilters,
+      ...selectedFilter.filters,
+      ColorFilterAddons.opacity(filterOpacity),
+    ];
   }
 
-  /// Takes a screenshot of the current editor state.
-  void _takeScreenshot() async {
-    if (!widget.initConfigs.convertToUint8List) return;
+  void setFilter(FilterModel filter) {
+    selectedFilter = filter;
+    _uiFilterStream.add(null);
+  }
 
-    await _setPixelRatio();
-    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
+  /// Handles changes in the filter factor value.
+  void _onChanged(double value) {
+    filterOpacity = value;
+    _uiFilterStream.add(null);
+    filterEditorCallbacks?.handleFilterFactorChange(value);
+  }
+
+  /// Handles the end of changes in the filter factor value.
+  void _onChangedEnd(double value) {
+    filterEditorCallbacks?.handleFilterFactorChangeEnd(value);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _historyPosition++;
-      screenshotCtrl.isolateCaptureImage(
-        pixelRatio: _pixelRatio,
-        screenshots: _screenshots,
-      );
+      takeScreenshot();
     });
   }
 
@@ -279,46 +232,52 @@ class FilterEditorState extends State<FilterEditor>
           tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
-        child: Scaffold(
-          backgroundColor: imageEditorTheme.filterEditor.background,
-          appBar: _buildAppBar(),
-          body: _buildBody(),
-          bottomNavigationBar: _buildBottomNavBar(),
+        child: RecordInvisibleWidget(
+          controller: screenshotCtrl,
+          child: Scaffold(
+            backgroundColor: imageEditorTheme.filterEditor.background,
+            appBar: _buildAppBar(),
+            body: _buildBody(),
+            bottomNavigationBar: _buildBottomNavBar(),
+          ),
         ),
       ),
     );
   }
 
   /// Builds the app bar for the filter editor.
-  PreferredSizeWidget _buildAppBar() {
-    return customWidgets.appBarFilterEditor ??
-        AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: imageEditorTheme.filterEditor.appBarBackgroundColor,
-          foregroundColor: imageEditorTheme.filterEditor.appBarForegroundColor,
-          actions: [
-            IconButton(
-              tooltip: i18n.filterEditor.back,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(icons.backButton),
-              onPressed: close,
-            ),
-            const Spacer(),
-            IconButton(
-              tooltip: i18n.filterEditor.done,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(icons.applyChanges),
-              iconSize: 28,
-              onPressed: done,
-            ),
-          ],
-        );
+  PreferredSizeWidget? _buildAppBar() {
+    if (customWidgets.filterEditor.appBar != null) {
+      return customWidgets.filterEditor.appBar!
+          .call(this, rebuildController.stream);
+    }
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: imageEditorTheme.filterEditor.appBarBackgroundColor,
+      foregroundColor: imageEditorTheme.filterEditor.appBarForegroundColor,
+      actions: [
+        IconButton(
+          tooltip: i18n.filterEditor.back,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.backButton),
+          onPressed: close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: i18n.filterEditor.done,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(icons.applyChanges),
+          iconSize: 28,
+          onPressed: done,
+        ),
+      ],
+    );
   }
 
   /// Builds the main content area of the editor.
   Widget _buildBody() {
     return LayoutBuilder(builder: (context, constraints) {
-      _bodySize = constraints.biggest;
+      editorBodySize = constraints.biggest;
       return ContentRecorder(
         controller: screenshotCtrl,
         child: Stack(
@@ -335,18 +294,14 @@ class FilterEditorState extends State<FilterEditor>
                 child: StreamBuilder(
                     stream: _uiFilterStream.stream,
                     builder: (context, snapshot) {
-                      return ImageWithFilters(
-                        width: getMinimumSize(mainImageSize, _bodySize).width,
-                        height: getMinimumSize(mainImageSize, _bodySize).height,
+                      return FilteredImage(
+                        width:
+                            getMinimumSize(mainImageSize, editorBodySize).width,
+                        height: getMinimumSize(mainImageSize, editorBodySize)
+                            .height,
                         designMode: designMode,
                         image: editorImage,
-                        filters: [
-                          ...appliedFilters,
-                          FilterStateHistory(
-                            filter: selectedFilter,
-                            opacity: filterOpacity,
-                          ),
-                        ],
+                        filters: _getActiveFilters(),
                         blurFactor: appliedBlurFactor,
                       );
                     }),
@@ -355,15 +310,18 @@ class FilterEditorState extends State<FilterEditor>
             if (filterEditorConfigs.showLayers && layers != null)
               LayerStack(
                 transformHelper: TransformHelper(
-                  mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-                  mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-                  editorBodySize: _bodySize,
+                  mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
+                  mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
+                  editorBodySize: editorBodySize,
                   transformConfigs: transformConfigs,
                 ),
                 configs: configs,
                 layers: layers!,
                 clipBehavior: Clip.none,
               ),
+            if (customWidgets.filterEditor.bodyItems != null)
+              ...customWidgets.filterEditor.bodyItems!(
+                  this, rebuildController.stream),
           ],
         ),
       );
@@ -371,7 +329,12 @@ class FilterEditorState extends State<FilterEditor>
   }
 
   /// Builds the bottom navigation bar with filter options.
-  Widget _buildBottomNavBar() {
+  Widget? _buildBottomNavBar() {
+    if (customWidgets.filterEditor.bottomBar != null) {
+      return customWidgets.filterEditor.bottomBar!
+          .call(this, rebuildController.stream);
+    }
+
     return SafeArea(
       child: Container(
         color: imageEditorTheme.filterEditor.background,
@@ -380,47 +343,49 @@ class FilterEditorState extends State<FilterEditor>
           children: [
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
-              child: StreamBuilder(
-                  stream: _uiFilterStream.stream,
-                  builder: (context, snapshot) {
-                    return SizedBox(
-                      height: 40,
-                      child: selectedFilter == PresetFilters.none
-                          ? null
-                          : Slider(
-                              min: 0,
-                              max: 1,
-                              divisions: 100,
-                              value: filterOpacity,
-                              onChanged: (value) {
-                                filterOpacity = value;
-                                _uiFilterStream.add(null);
-                                onUpdateUI?.call();
-                              },
-                              onChangeEnd: (value) {
-                                _takeScreenshot();
-                              },
-                            ),
-                    );
-                  }),
+              child: RepaintBoundary(
+                child: StreamBuilder(
+                    stream: _uiFilterStream.stream,
+                    builder: (context, snapshot) {
+                      return SizedBox(
+                        height: 40,
+                        child: selectedFilter == PresetFilters.none
+                            ? null
+                            : customWidgets.filterEditor.slider?.call(
+                                  this,
+                                  rebuildController.stream,
+                                  filterOpacity,
+                                  _onChanged,
+                                  _onChangedEnd,
+                                ) ??
+                                Slider(
+                                  min: 0,
+                                  max: 1,
+                                  divisions: 100,
+                                  value: filterOpacity,
+                                  onChanged: _onChanged,
+                                  onChangeEnd: _onChangedEnd,
+                                ),
+                      );
+                    }),
+              ),
             ),
             FilterEditorItemList(
-              mainBodySize: getMinimumSize(mainBodySize, _bodySize),
-              mainImageSize: getMinimumSize(mainImageSize, _bodySize),
-              byteArray: editorImage.byteArray,
-              file: editorImage.file,
-              assetPath: editorImage.assetPath,
-              networkUrl: editorImage.networkUrl,
+              mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
+              mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
+              editorImage: editorImage,
               activeFilters: appliedFilters,
               blurFactor: appliedBlurFactor,
               configs: configs,
               transformConfigs: transformConfigs,
-              selectedFilter: selectedFilter,
+              selectedFilter: selectedFilter.filters,
               onSelectFilter: (filter) {
                 selectedFilter = filter;
                 _uiFilterStream.add(null);
-                onUpdateUI?.call();
-                _takeScreenshot();
+                filterEditorCallbacks?.handleFilterChanged(filter);
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  takeScreenshot();
+                });
               },
             ),
           ],

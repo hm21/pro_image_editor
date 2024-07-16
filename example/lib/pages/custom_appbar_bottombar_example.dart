@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 // Dart imports:
-import 'dart:async';
 import 'dart:math';
 
 // Flutter imports:
@@ -9,12 +8,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pro_image_editor/models/paint_editor/paint_bottom_bar_item.dart';
-import 'package:pro_image_editor/models/theme/theme_shared_values.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/flat_icon_text_button.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
 
 // Project imports:
 import '../utils/example_helper.dart';
@@ -30,7 +24,6 @@ class CustomAppbarBottombarExample extends StatefulWidget {
 class _CustomAppbarBottombarExampleState
     extends State<CustomAppbarBottombarExample>
     with ExampleHelperState<CustomAppbarBottombarExample> {
-  late StreamController _updateUIStream;
   late ScrollController _bottomBarScrollCtrl;
   late ScrollController _paintingBottomBarScrollCtrl;
   late ScrollController _cropBottomBarScrollCtrl;
@@ -83,7 +76,6 @@ class _CustomAppbarBottombarExampleState
 
   @override
   void initState() {
-    _updateUIStream = StreamController.broadcast();
     _bottomBarScrollCtrl = ScrollController();
     _paintingBottomBarScrollCtrl = ScrollController();
     _cropBottomBarScrollCtrl = ScrollController();
@@ -92,7 +84,6 @@ class _CustomAppbarBottombarExampleState
 
   @override
   void dispose() {
-    _updateUIStream.close();
     _bottomBarScrollCtrl.dispose();
     _paintingBottomBarScrollCtrl.dispose();
     _cropBottomBarScrollCtrl.dispose();
@@ -103,14 +94,19 @@ class _CustomAppbarBottombarExampleState
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
+        if (!context.mounted) return;
+
         await precacheImage(NetworkImage(_url), context);
-        if (context.mounted) await loading.hide(context);
+
+        if (!context.mounted) return;
+        await loading.hide(context);
+
         if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => _buildEditor()),
@@ -131,44 +127,97 @@ class _CustomAppbarBottombarExampleState
           onImageEditingStarted: onImageEditingStarted,
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
-          onUpdateUI: () => _updateUIStream.add(null),
         ),
         configs: ProImageEditorConfigs(
-            customWidgets: ImageEditorCustomWidgets(
-              appBar: _buildAppBar(),
-              appBarPaintingEditor: _appBarPaintingEditor(),
-              appBarTextEditor: _appBarTextEditor(),
-              appBarCropRotateEditor: _appBarCropRotateEditor(),
-              appBarFilterEditor: _appBarFilterEditor(),
-              appBarBlurEditor: _appBarBlurEditor(),
-              bottomNavigationBar: _bottomNavigationBar(constraints),
-              bottomBarPaintingEditor: _bottomBarPaintingEditor(constraints),
-              bottomBarTextEditor: _bottomBarTextEditor(constraints),
-              bottomBarCropRotateEditor: _bottomBarCropEditor(constraints),
+          designMode: platformDesignMode,
+          customWidgets: ImageEditorCustomWidgets(
+            mainEditor: CustomWidgetsMainEditor(
+              appBar: (editor, rebuildStream) => editor.selectedLayerIndex < 0
+                  ? ReactiveCustomAppbar(
+                      stream: rebuildStream,
+                      builder: (_) => _buildAppBar(editor))
+                  : null,
+              bottomBar: (editor, rebuildStream, key) =>
+                  editor.selectedLayerIndex < 0
+                      ? ReactiveCustomWidget(
+                          stream: rebuildStream,
+                          builder: (_) =>
+                              _bottomNavigationBar(editor, key, constraints))
+                      : null,
             ),
-            textEditorConfigs: TextEditorConfigs(
-              customTextStyles: _customTextStyles,
-            )),
+            paintEditor: CustomWidgetsPaintEditor(
+              appBar: (paintEditor, rebuildStream) => ReactiveCustomAppbar(
+                stream: rebuildStream,
+                builder: (_) => _appBarPaintingEditor(paintEditor),
+              ),
+              bottomBar: (paintEditor, rebuildStream) => ReactiveCustomWidget(
+                stream: rebuildStream,
+                builder: (_) =>
+                    _bottomBarPaintingEditor(paintEditor, constraints),
+              ),
+            ),
+            textEditor: CustomWidgetsTextEditor(
+              appBar: (textEditor, rebuildStream) => ReactiveCustomAppbar(
+                stream: rebuildStream,
+                builder: (_) => _appBarTextEditor(textEditor),
+              ),
+              bottomBar: (textEditor, rebuildStream) => null,
+              bodyItems: (textEditor, rebuildStream) {
+                return [
+                  ReactiveCustomWidget(
+                    stream: rebuildStream,
+                    builder: (_) =>
+                        _bottomBarTextEditor(textEditor, constraints),
+                  ),
+                ];
+              },
+            ),
+            cropRotateEditor: CustomWidgetsCropRotateEditor(
+              appBar: (cropRotateEditor, rebuildStream) => ReactiveCustomAppbar(
+                stream: rebuildStream,
+                builder: (_) => _appBarCropRotateEditor(cropRotateEditor),
+              ),
+              bottomBar: (cropRotateEditor, rebuildStream) =>
+                  ReactiveCustomWidget(
+                stream: rebuildStream,
+                builder: (_) =>
+                    _bottomBarCropEditor(cropRotateEditor, constraints),
+              ),
+            ),
+            filterEditor: CustomWidgetsFilterEditor(
+              appBar: (filterEditor, rebuildStream) => ReactiveCustomAppbar(
+                stream: rebuildStream,
+                builder: (_) => _appBarFilterEditor(filterEditor),
+              ),
+            ),
+            blurEditor: CustomWidgetsBlurEditor(
+              appBar: (blurEditor, rebuildStream) => ReactiveCustomAppbar(
+                stream: rebuildStream,
+                builder: (_) => _appBarBlurEditor(blurEditor),
+              ),
+            ),
+          ),
+          textEditorConfigs: TextEditorConfigs(
+            showSelectFontStyleBottomBar: true,
+            customTextStyles: _customTextStyles,
+          ),
+        ),
       );
     });
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(ProImageEditorState editor) {
     return AppBar(
       automaticallyImplyLeading: false,
       foregroundColor: Colors.white,
       backgroundColor: Colors.black,
       actions: [
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Cancel',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.close),
-                onPressed: editorKey.currentState?.closeEditor,
-              );
-            }),
+        IconButton(
+          tooltip: 'Cancel',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.close),
+          onPressed: editor.closeEditor,
+        ),
         const Spacer(),
         IconButton(
           tooltip: 'My Button',
@@ -180,716 +229,574 @@ class _CustomAppbarBottombarExampleState
           ),
           onPressed: () {},
         ),
-        StreamBuilder(
-          stream: _updateUIStream.stream,
-          builder: (_, __) {
-            return IconButton(
-              tooltip: 'Undo',
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(
-                Icons.undo,
-                color: editorKey.currentState?.canUndo == true
-                    ? Colors.white
-                    : Colors.white.withAlpha(80),
-              ),
-              onPressed: editorKey.currentState?.undoAction,
-            );
-          },
+        IconButton(
+          tooltip: 'Undo',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(
+            Icons.undo,
+            color: editor.canUndo == true
+                ? Colors.white
+                : Colors.white.withAlpha(80),
+          ),
+          onPressed: editor.undoAction,
         ),
-        StreamBuilder(
-          stream: _updateUIStream.stream,
-          builder: (_, __) {
-            return IconButton(
-              tooltip: 'Redo',
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: Icon(
-                Icons.redo,
-                color: editorKey.currentState?.canRedo == true
-                    ? Colors.white
-                    : Colors.white.withAlpha(80),
-              ),
-              onPressed: editorKey.currentState?.redoAction,
-            );
-          },
+        IconButton(
+          tooltip: 'Redo',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(
+            Icons.redo,
+            color: editor.canRedo == true
+                ? Colors.white
+                : Colors.white.withAlpha(80),
+          ),
+          onPressed: editor.redoAction,
         ),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Done',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.done),
-                iconSize: 28,
-                onPressed: editorKey.currentState?.doneEditing,
-              );
-            }),
+        IconButton(
+          tooltip: 'Done',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.done),
+          iconSize: 28,
+          onPressed: editor.doneEditing,
+        ),
       ],
     );
   }
 
-  AppBar _appBarPaintingEditor() {
+  AppBar _appBarPaintingEditor(PaintingEditorState paintEditor) {
     return AppBar(
       automaticallyImplyLeading: false,
       foregroundColor: Colors.white,
       backgroundColor: Colors.black,
       actions: [
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.arrow_back),
-                onPressed:
-                    editorKey.currentState?.paintingEditor.currentState?.close,
-              );
-            }),
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: paintEditor.close,
+        ),
         const SizedBox(width: 80),
         const Spacer(),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(
-                  Icons.line_weight_rounded,
-                  color: Colors.white,
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(
+            Icons.line_weight_rounded,
+            color: Colors.white,
+          ),
+          onPressed: paintEditor.openLineWeightBottomSheet,
+        ),
+        IconButton(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            icon: Icon(
+              paintEditor.fillBackground == true
+                  ? Icons.format_color_reset
+                  : Icons.format_color_fill,
+              color: Colors.white,
+            ),
+            onPressed: paintEditor.toggleFill),
+        const Spacer(),
+        IconButton(
+          tooltip: 'My Button',
+          color: Colors.amber,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(
+            Icons.bug_report,
+            color: Colors.amber,
+          ),
+          onPressed: () {},
+        ),
+        IconButton(
+          tooltip: 'Undo',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(
+            Icons.undo,
+            color: paintEditor.canUndo == true
+                ? Colors.white
+                : Colors.white.withAlpha(80),
+          ),
+          onPressed: paintEditor.undoAction,
+        ),
+        IconButton(
+          tooltip: 'Redo',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(
+            Icons.redo,
+            color: paintEditor.canRedo == true
+                ? Colors.white
+                : Colors.white.withAlpha(80),
+          ),
+          onPressed: paintEditor.redoAction,
+        ),
+        IconButton(
+          tooltip: 'Done',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.done),
+          iconSize: 28,
+          onPressed: paintEditor.done,
+        ),
+      ],
+    );
+  }
+
+  AppBar _appBarTextEditor(TextEditorState textEditor) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: textEditor.close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: 'My Button',
+          color: Colors.amber,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(
+            Icons.bug_report,
+            color: Colors.amber,
+          ),
+          onPressed: () {},
+        ),
+        IconButton(
+          onPressed: textEditor.toggleTextAlign,
+          icon: Icon(
+            textEditor.align == TextAlign.left
+                ? Icons.align_horizontal_left_rounded
+                : textEditor.align == TextAlign.right
+                    ? Icons.align_horizontal_right_rounded
+                    : Icons.align_horizontal_center_rounded,
+          ),
+        ),
+        IconButton(
+          onPressed: textEditor.toggleBackgroundMode,
+          icon: const Icon(Icons.layers_rounded),
+        ),
+        const Spacer(),
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.done),
+          iconSize: 28,
+          onPressed: textEditor.done,
+        ),
+      ],
+    );
+  }
+
+  AppBar _appBarCropRotateEditor(CropRotateEditorState cropRotateEditor) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: cropRotateEditor.close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: 'My Button',
+          color: Colors.amber,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(
+            Icons.bug_report,
+            color: Colors.amber,
+          ),
+          onPressed: () {},
+        ),
+        IconButton(
+          tooltip: 'Undo',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(
+            Icons.undo,
+            color: cropRotateEditor.canUndo
+                ? Colors.white
+                : Colors.white.withAlpha(80),
+          ),
+          onPressed: cropRotateEditor.undoAction,
+        ),
+        IconButton(
+          tooltip: 'Redo',
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: Icon(
+            Icons.redo,
+            color: cropRotateEditor.canRedo
+                ? Colors.white
+                : Colors.white.withAlpha(80),
+          ),
+          onPressed: cropRotateEditor.redoAction,
+        ),
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.done),
+          iconSize: 28,
+          onPressed: cropRotateEditor.done,
+        ),
+      ],
+    );
+  }
+
+  AppBar _appBarFilterEditor(FilterEditorState filterEditor) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: filterEditor.close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: 'My Button',
+          color: Colors.amber,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(
+            Icons.bug_report,
+            color: Colors.amber,
+          ),
+          onPressed: () {},
+        ),
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.done),
+          iconSize: 28,
+          onPressed: filterEditor.done,
+        ),
+      ],
+    );
+  }
+
+  AppBar _appBarBlurEditor(BlurEditorState blurEditor) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: blurEditor.close,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: 'My Button',
+          color: Colors.amber,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(
+            Icons.bug_report,
+            color: Colors.amber,
+          ),
+          onPressed: () {},
+        ),
+        IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          icon: const Icon(Icons.done),
+          iconSize: 28,
+          onPressed: blurEditor.done,
+        ),
+      ],
+    );
+  }
+
+  Widget _bottomNavigationBar(
+      ProImageEditorState editor, Key key, BoxConstraints constraints) {
+    return Scrollbar(
+      /// Key is important for correct layer calculations
+      key: key,
+      controller: _bottomBarScrollCtrl,
+      scrollbarOrientation: ScrollbarOrientation.top,
+      thickness: isDesktop ? null : 0,
+      child: BottomAppBar(
+        height: kBottomNavigationBarHeight,
+        color: Colors.black,
+        padding: EdgeInsets.zero,
+        child: Center(
+          child: SingleChildScrollView(
+            controller: _bottomBarScrollCtrl,
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: min(constraints.maxWidth, 500),
+                maxWidth: 500,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FlatIconTextButton(
+                      label: Text('Paint', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.edit_rounded,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openPaintingEditor,
+                    ),
+                    FlatIconTextButton(
+                      label: Text('Text', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.text_fields,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openTextEditor,
+                    ),
+                    FlatIconTextButton(
+                      label: Text('My Button',
+                          style:
+                              _bottomTextStyle.copyWith(color: Colors.amber)),
+                      icon: const Icon(
+                        Icons.new_releases_outlined,
+                        size: 22.0,
+                        color: Colors.amber,
+                      ),
+                      onPressed: () {},
+                    ),
+                    FlatIconTextButton(
+                      label: Text('Crop/ Rotate', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.crop_rotate_rounded,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openCropRotateEditor,
+                    ),
+                    FlatIconTextButton(
+                      label: Text('Filter', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.filter,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openFilterEditor,
+                    ),
+                    FlatIconTextButton(
+                      label: Text('Emoji', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.sentiment_satisfied_alt_rounded,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openEmojiEditor,
+                    ),
+                    /* Be careful with the sticker editor. It's important you add 
+                             your own logic how to load items in `stickerEditorConfigs`.
+                              FlatIconTextButton(
+                                key: const ValueKey('open-sticker-editor-btn'),
+                                label: Text('Sticker', style: bottomTextStyle),
+                                icon: const Icon(
+                                  Icons.layers_outlined,
+                                  size: 22.0,
+                                  color: Colors.white,
+                                ),
+                                onPressed: editor.openStickerEditor,
+                              ), */
+                  ],
                 ),
-                onPressed: editorKey.currentState?.paintingEditor.currentState
-                    ?.openLineWeightBottomSheet,
-              );
-            }),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  icon: Icon(
-                    editorKey.currentState?.paintingEditor.currentState
-                                ?.fillBackground ==
-                            true
-                        ? Icons.format_color_reset
-                        : Icons.format_color_fill,
-                    color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomBarPaintingEditor(
+      PaintingEditorState paintEditor, BoxConstraints constraints) {
+    return Scrollbar(
+      controller: _paintingBottomBarScrollCtrl,
+      scrollbarOrientation: ScrollbarOrientation.top,
+      thickness: isDesktop ? null : 0,
+      child: BottomAppBar(
+        height: kBottomNavigationBarHeight,
+        color: Colors.black,
+        padding: EdgeInsets.zero,
+        child: Center(
+          child: SingleChildScrollView(
+            controller: _paintingBottomBarScrollCtrl,
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: min(constraints.maxWidth, 500),
+                maxWidth: 500,
+              ),
+              child: Wrap(
+                direction: Axis.horizontal,
+                alignment: WrapAlignment.spaceAround,
+                children: <Widget>[
+                  FlatIconTextButton(
+                    label: Text('My Button',
+                        style: _bottomTextStyle.copyWith(color: Colors.amber)),
+                    icon: const Icon(
+                      Icons.new_releases_outlined,
+                      size: 22.0,
+                      color: Colors.amber,
+                    ),
+                    onPressed: () {},
                   ),
-                  onPressed: editorKey
-                      .currentState?.paintingEditor.currentState?.toggleFill);
-            }),
-        const Spacer(),
-        IconButton(
-          tooltip: 'My Button',
-          color: Colors.amber,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          icon: const Icon(
-            Icons.bug_report,
-            color: Colors.amber,
-          ),
-          onPressed: () {},
-        ),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Undo',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: Icon(
-                  Icons.undo,
-                  color: editorKey.currentState?.paintingEditor.currentState
-                              ?.canUndo ==
-                          true
-                      ? Colors.white
-                      : Colors.white.withAlpha(80),
-                ),
-                onPressed: editorKey
-                    .currentState?.paintingEditor.currentState?.undoAction,
-              );
-            }),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Redo',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: Icon(
-                  Icons.redo,
-                  color: editorKey.currentState?.paintingEditor.currentState
-                              ?.canRedo ==
-                          true
-                      ? Colors.white
-                      : Colors.white.withAlpha(80),
-                ),
-                onPressed: editorKey
-                    .currentState?.paintingEditor.currentState?.redoAction,
-              );
-            }),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Done',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.done),
-                iconSize: 28,
-                onPressed:
-                    editorKey.currentState?.paintingEditor.currentState?.done,
-              );
-            }),
-      ],
-    );
-  }
+                  ...List.generate(
+                    paintModes.length,
+                    (index) => Builder(
+                      builder: (_) {
+                        var item = paintModes[index];
+                        var color = paintEditor.paintMode == item.mode
+                            ? imageEditorPrimaryColor
+                            : const Color(0xFFEEEEEE);
 
-  AppBar _appBarTextEditor() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      actions: [
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.arrow_back),
-                onPressed:
-                    editorKey.currentState?.textEditor.currentState?.close,
-              );
-            }),
-        const Spacer(),
-        IconButton(
-          tooltip: 'My Button',
-          color: Colors.amber,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          icon: const Icon(
-            Icons.bug_report,
-            color: Colors.amber,
-          ),
-          onPressed: () {},
-        ),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                onPressed: editorKey
-                    .currentState?.textEditor.currentState?.toggleTextAlign,
-                icon: Icon(
-                  editorKey.currentState?.textEditor.currentState?.align ==
-                          TextAlign.left
-                      ? Icons.align_horizontal_left_rounded
-                      : editorKey.currentState?.textEditor.currentState
-                                  ?.align ==
-                              TextAlign.right
-                          ? Icons.align_horizontal_right_rounded
-                          : Icons.align_horizontal_center_rounded,
-                ),
-              );
-            }),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                onPressed: editorKey.currentState?.textEditor.currentState
-                    ?.toggleBackgroundMode,
-                icon: const Icon(Icons.layers_rounded),
-              );
-            }),
-        const Spacer(),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.done),
-                iconSize: 28,
-                onPressed:
-                    editorKey.currentState?.textEditor.currentState?.done,
-              );
-            }),
-      ],
-    );
-  }
-
-  AppBar _appBarCropRotateEditor() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      actions: [
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.arrow_back),
-                onPressed: editorKey
-                    .currentState?.cropRotateEditor.currentState?.close,
-              );
-            }),
-        const Spacer(),
-        IconButton(
-          tooltip: 'My Button',
-          color: Colors.amber,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          icon: const Icon(
-            Icons.bug_report,
-            color: Colors.amber,
-          ),
-          onPressed: () {},
-        ),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Undo',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: Icon(
-                  Icons.undo,
-                  color: editorKey
-                          .currentState!.cropRotateEditor.currentState!.canUndo
-                      ? Colors.white
-                      : Colors.white.withAlpha(80),
-                ),
-                onPressed: editorKey
-                    .currentState!.cropRotateEditor.currentState!.undoAction,
-              );
-            }),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                tooltip: 'Redo',
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: Icon(
-                  Icons.redo,
-                  color: editorKey
-                          .currentState!.cropRotateEditor.currentState!.canRedo
-                      ? Colors.white
-                      : Colors.white.withAlpha(80),
-                ),
-                onPressed: editorKey
-                    .currentState!.cropRotateEditor.currentState!.redoAction,
-              );
-            }),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.done),
-                iconSize: 28,
-                onPressed:
-                    editorKey.currentState!.cropRotateEditor.currentState!.done,
-              );
-            }),
-      ],
-    );
-  }
-
-  AppBar _appBarFilterEditor() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      actions: [
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.arrow_back),
-                onPressed:
-                    editorKey.currentState?.filterEditor.currentState?.close,
-              );
-            }),
-        const Spacer(),
-        IconButton(
-          tooltip: 'My Button',
-          color: Colors.amber,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          icon: const Icon(
-            Icons.bug_report,
-            color: Colors.amber,
-          ),
-          onPressed: () {},
-        ),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.done),
-                iconSize: 28,
-                onPressed:
-                    editorKey.currentState?.filterEditor.currentState?.done,
-              );
-            }),
-      ],
-    );
-  }
-
-  AppBar _appBarBlurEditor() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      actions: [
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.arrow_back),
-                onPressed:
-                    editorKey.currentState?.filterEditor.currentState?.close,
-              );
-            }),
-        const Spacer(),
-        IconButton(
-          tooltip: 'My Button',
-          color: Colors.amber,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          icon: const Icon(
-            Icons.bug_report,
-            color: Colors.amber,
-          ),
-          onPressed: () {},
-        ),
-        StreamBuilder(
-            stream: _updateUIStream.stream,
-            builder: (_, __) {
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: const Icon(Icons.done),
-                iconSize: 28,
-                onPressed:
-                    editorKey.currentState?.filterEditor.currentState?.done,
-              );
-            }),
-      ],
-    );
-  }
-
-  Widget _bottomNavigationBar(BoxConstraints constraints) {
-    return StreamBuilder(
-      stream: _updateUIStream.stream,
-      builder: (_, __) {
-        return Scrollbar(
-          controller: _bottomBarScrollCtrl,
-          scrollbarOrientation: ScrollbarOrientation.top,
-          thickness: isDesktop ? null : 0,
-          child: BottomAppBar(
-            /// kBottomNavigationBarHeight is important that helperlines will work
-            height: kBottomNavigationBarHeight,
-            color: Colors.black,
-            padding: EdgeInsets.zero,
-            child: Center(
-              child: SingleChildScrollView(
-                controller: _bottomBarScrollCtrl,
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: min(constraints.maxWidth, 500),
-                    maxWidth: 500,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        FlatIconTextButton(
-                          label: Text('Paint', style: _bottomTextStyle),
-                          icon: const Icon(
-                            Icons.edit_rounded,
-                            size: 22.0,
-                            color: Colors.white,
+                        return FlatIconTextButton(
+                          label: Text(
+                            item.label,
+                            style: TextStyle(fontSize: 10.0, color: color),
                           ),
-                          onPressed: editorKey.currentState?.openPaintingEditor,
-                        ),
-                        FlatIconTextButton(
-                          label: Text('Text', style: _bottomTextStyle),
-                          icon: const Icon(
-                            Icons.text_fields,
-                            size: 22.0,
-                            color: Colors.white,
-                          ),
-                          onPressed: editorKey.currentState?.openTextEditor,
-                        ),
-                        FlatIconTextButton(
-                          label: Text('My Button',
-                              style: _bottomTextStyle.copyWith(
-                                  color: Colors.amber)),
-                          icon: const Icon(
-                            Icons.new_releases_outlined,
-                            size: 22.0,
-                            color: Colors.amber,
-                          ),
-                          onPressed: () {},
-                        ),
-                        FlatIconTextButton(
-                          label: Text('Crop/ Rotate', style: _bottomTextStyle),
-                          icon: const Icon(
-                            Icons.crop_rotate_rounded,
-                            size: 22.0,
-                            color: Colors.white,
-                          ),
-                          onPressed:
-                              editorKey.currentState?.openCropRotateEditor,
-                        ),
-                        FlatIconTextButton(
-                          label: Text('Filter', style: _bottomTextStyle),
-                          icon: const Icon(
-                            Icons.filter,
-                            size: 22.0,
-                            color: Colors.white,
-                          ),
-                          onPressed: editorKey.currentState?.openFilterEditor,
-                        ),
-                        FlatIconTextButton(
-                          label: Text('Emoji', style: _bottomTextStyle),
-                          icon: const Icon(
-                            Icons.sentiment_satisfied_alt_rounded,
-                            size: 22.0,
-                            color: Colors.white,
-                          ),
-                          onPressed: editorKey.currentState?.openEmojiEditor,
-                        ),
-                        /* Be careful with the sticker editor. It's important you add 
-                                 your own logic how to load items in `stickerEditorConfigs`.
-                                  FlatIconTextButton(
-                                    key: const ValueKey('open-sticker-editor-btn'),
-                                    label: Text('Sticker', style: bottomTextStyle),
-                                    icon: const Icon(
-                                      Icons.layers_outlined,
-                                      size: 22.0,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: editorKey.currentState?.openStickerEditor,
-                                  ), */
-                      ],
+                          icon: Icon(item.icon, color: color),
+                          onPressed: () {
+                            paintEditor.setMode(item.mode);
+                            setState(() {});
+                          },
+                        );
+                      },
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _bottomBarPaintingEditor(BoxConstraints constraints) {
-    return StreamBuilder(
-      stream: _updateUIStream.stream,
-      builder: (_, __) {
-        return Scrollbar(
-          controller: _paintingBottomBarScrollCtrl,
-          scrollbarOrientation: ScrollbarOrientation.top,
-          thickness: isDesktop ? null : 0,
-          child: BottomAppBar(
-            height: kBottomNavigationBarHeight,
-            color: Colors.black,
-            padding: EdgeInsets.zero,
-            child: Center(
-              child: SingleChildScrollView(
-                controller: _paintingBottomBarScrollCtrl,
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: min(constraints.maxWidth, 500),
-                    maxWidth: 500,
-                  ),
-                  child: Wrap(
-                    direction: Axis.horizontal,
-                    alignment: WrapAlignment.spaceAround,
-                    children: <Widget>[
-                      FlatIconTextButton(
-                        label: Text('My Button',
-                            style:
-                                _bottomTextStyle.copyWith(color: Colors.amber)),
-                        icon: const Icon(
-                          Icons.new_releases_outlined,
-                          size: 22.0,
-                          color: Colors.amber,
-                        ),
-                        onPressed: () {},
-                      ),
-                      ...List.generate(
-                        paintModes.length,
-                        (index) => Builder(
-                          builder: (_) {
-                            var item = paintModes[index];
-                            var color = editorKey.currentState?.paintingEditor
-                                        .currentState?.paintMode ==
-                                    item.mode
-                                ? imageEditorPrimaryColor
-                                : const Color(0xFFEEEEEE);
-
-                            return FlatIconTextButton(
-                              label: Text(
-                                item.label,
-                                style: TextStyle(fontSize: 10.0, color: color),
-                              ),
-                              icon: Icon(item.icon, color: color),
-                              onPressed: () {
-                                editorKey
-                                    .currentState?.paintingEditor.currentState
-                                    ?.setMode(item.mode);
-                                setState(() {});
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _bottomBarTextEditor(BoxConstraints constraints) {
+  Widget _bottomBarTextEditor(
+      TextEditorState textEditor, BoxConstraints constraints) {
     var items = _customTextStyles;
-    return StreamBuilder(
-      stream: _updateUIStream.stream,
-      builder: (_, __) {
-        return Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: kBottomNavigationBarHeight,
-          child: Container(
-            color: Colors.black,
-            height: kBottomNavigationBarHeight,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints:
-                    BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(
-                    items.length,
-                    (index) {
-                      bool isSelected = editorKey.currentState!.textEditor
-                              .currentState!.selectedTextStyle.hashCode ==
-                          items[index].hashCode;
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: kBottomNavigationBarHeight,
+      child: Container(
+        color: Colors.black,
+        height: kBottomNavigationBarHeight,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints:
+                BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                items.length,
+                (index) {
+                  bool isSelected = textEditor.selectedTextStyle.hashCode ==
+                      items[index].hashCode;
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: IconButton(
-                          onPressed: () {
-                            editorKey.currentState!.textEditor.currentState!
-                                .setTextStyle(items[index]);
-                          },
-                          icon: Text(
-                            'Aa',
-                            style: items[index].copyWith(
-                              color: isSelected ? Colors.black : Colors.white,
-                            ),
-                          ),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                isSelected ? Colors.white : Colors.black38,
-                            foregroundColor:
-                                isSelected ? Colors.black : Colors.white,
-                          ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: IconButton(
+                      onPressed: () {
+                        textEditor.setTextStyle(items[index]);
+                      },
+                      icon: Text(
+                        'Aa',
+                        style: items[index].copyWith(
+                          color: isSelected ? Colors.black : Colors.white,
                         ),
-                      );
-                    },
-                  ),
-                ),
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor:
+                            isSelected ? Colors.white : Colors.black38,
+                        foregroundColor:
+                            isSelected ? Colors.black : Colors.white,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _bottomBarCropEditor(BoxConstraints constraints) {
-    return StreamBuilder(
-      stream: _updateUIStream.stream,
-      builder: (_, __) {
-        return Scrollbar(
-          controller: _cropBottomBarScrollCtrl,
-          scrollbarOrientation: ScrollbarOrientation.top,
-          thickness: isDesktop ? null : 0,
-          child: BottomAppBar(
-            height: kBottomNavigationBarHeight,
-            color: Colors.black,
-            padding: EdgeInsets.zero,
-            child: Center(
-              child: SingleChildScrollView(
-                controller: _cropBottomBarScrollCtrl,
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: min(MediaQuery.of(context).size.width, 500),
-                    maxWidth: 500,
-                  ),
-                  child: Builder(builder: (context) {
-                    Color foregroundColor = Colors.white;
-                    return Wrap(
-                      direction: Axis.horizontal,
-                      alignment: WrapAlignment.spaceAround,
-                      children: <Widget>[
-                        FlatIconTextButton(
-                          key: const ValueKey('crop-rotate-editor-rotate-btn'),
-                          label: Text(
-                            'Rotate',
-                            style: TextStyle(
-                                fontSize: 10.0, color: foregroundColor),
-                          ),
-                          icon: Icon(Icons.rotate_90_degrees_ccw_outlined,
-                              color: foregroundColor),
-                          onPressed: editorKey.currentState!.cropRotateEditor
-                              .currentState!.rotate,
-                        ),
-                        FlatIconTextButton(
-                          key: const ValueKey('crop-rotate-editor-flip-btn'),
-                          label: Text(
-                            'Flip',
-                            style: TextStyle(
-                                fontSize: 10.0, color: foregroundColor),
-                          ),
-                          icon: Icon(Icons.flip, color: foregroundColor),
-                          onPressed: editorKey.currentState!.cropRotateEditor
-                              .currentState!.flip,
-                        ),
-                        FlatIconTextButton(
-                          key: const ValueKey('crop-rotate-editor-ratio-btn'),
-                          label: Text(
-                            'Ratio',
-                            style: TextStyle(
-                                fontSize: 10.0, color: foregroundColor),
-                          ),
-                          icon: Icon(Icons.crop, color: foregroundColor),
-                          onPressed: editorKey.currentState!.cropRotateEditor
-                              .currentState!.openAspectRatioOptions,
-                        ),
-                        FlatIconTextButton(
-                          key: const ValueKey('crop-rotate-editor-reset-btn'),
-                          label: Text(
-                            'Reset',
-                            style: TextStyle(
-                                fontSize: 10.0, color: foregroundColor),
-                          ),
-                          icon: Icon(Icons.restore, color: foregroundColor),
-                          onPressed: editorKey.currentState!.cropRotateEditor
-                              .currentState!.reset,
-                        ),
-                      ],
-                    );
-                  }),
-                ),
+  Widget _bottomBarCropEditor(
+      CropRotateEditorState cropRotateEditor, BoxConstraints constraints) {
+    return Scrollbar(
+      controller: _cropBottomBarScrollCtrl,
+      scrollbarOrientation: ScrollbarOrientation.top,
+      thickness: isDesktop ? null : 0,
+      child: BottomAppBar(
+        height: kBottomNavigationBarHeight,
+        color: Colors.black,
+        padding: EdgeInsets.zero,
+        child: Center(
+          child: SingleChildScrollView(
+            controller: _cropBottomBarScrollCtrl,
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: min(MediaQuery.of(context).size.width, 500),
+                maxWidth: 500,
               ),
+              child: Builder(builder: (context) {
+                Color foregroundColor = Colors.white;
+                return Wrap(
+                  direction: Axis.horizontal,
+                  alignment: WrapAlignment.spaceAround,
+                  children: <Widget>[
+                    FlatIconTextButton(
+                      key: const ValueKey('crop-rotate-editor-rotate-btn'),
+                      label: Text(
+                        'Rotate',
+                        style:
+                            TextStyle(fontSize: 10.0, color: foregroundColor),
+                      ),
+                      icon: Icon(Icons.rotate_90_degrees_ccw_outlined,
+                          color: foregroundColor),
+                      onPressed: cropRotateEditor.rotate,
+                    ),
+                    FlatIconTextButton(
+                      key: const ValueKey('crop-rotate-editor-flip-btn'),
+                      label: Text(
+                        'Flip',
+                        style:
+                            TextStyle(fontSize: 10.0, color: foregroundColor),
+                      ),
+                      icon: Icon(Icons.flip, color: foregroundColor),
+                      onPressed: cropRotateEditor.flip,
+                    ),
+                    FlatIconTextButton(
+                      key: const ValueKey('crop-rotate-editor-ratio-btn'),
+                      label: Text(
+                        'Ratio',
+                        style:
+                            TextStyle(fontSize: 10.0, color: foregroundColor),
+                      ),
+                      icon: Icon(Icons.crop, color: foregroundColor),
+                      onPressed: cropRotateEditor.openAspectRatioOptions,
+                    ),
+                    FlatIconTextButton(
+                      key: const ValueKey('crop-rotate-editor-reset-btn'),
+                      label: Text(
+                        'Reset',
+                        style:
+                            TextStyle(fontSize: 10.0, color: foregroundColor),
+                      ),
+                      icon: Icon(Icons.restore, color: foregroundColor),
+                      onPressed: cropRotateEditor.reset,
+                    ),
+                  ],
+                );
+              }),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

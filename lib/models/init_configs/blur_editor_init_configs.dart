@@ -5,9 +5,6 @@ import 'editor_init_configs.dart';
 ///
 /// This class extends [EditorInitConfigs] and adds parameters for the image size and whether to return the image as a Uint8List when closing the editor.
 class BlurEditorInitConfigs extends EditorInitConfigs {
-  /// Determines whether to return the image as a Uint8List when closing the editor.
-  final bool convertToUint8List;
-
   /// Creates a new instance of [BlurEditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
@@ -18,7 +15,7 @@ class BlurEditorInitConfigs extends EditorInitConfigs {
     super.configs,
     super.transformConfigs,
     super.layers,
-    super.onUpdateUI,
+    super.callbacks,
     super.mainImageSize,
     super.mainBodySize,
     super.appliedFilters,
@@ -26,7 +23,7 @@ class BlurEditorInitConfigs extends EditorInitConfigs {
     super.onCloseEditor,
     super.onImageEditingComplete,
     super.onImageEditingStarted,
+    super.convertToUint8List,
     required super.theme,
-    this.convertToUint8List = false,
   });
 }

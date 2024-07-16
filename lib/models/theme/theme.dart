@@ -6,7 +6,6 @@ import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 import 'theme_adaptive_dialog.dart';
 import 'theme_blur_editor.dart';
 import 'theme_crop_rotate_editor.dart';
-import 'theme_editor_mode.dart';
 import 'theme_emoji_editor.dart';
 import 'theme_filter_editor.dart';
 import 'theme_helper_lines.dart';
@@ -16,6 +15,7 @@ import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
 import 'theme_sub_editor_page.dart';
 import 'theme_text_editor.dart';
+import 'types/theme_types.dart';
 
 export 'theme_emoji_editor.dart';
 export 'theme_painting_editor.dart';
@@ -27,9 +27,9 @@ export 'theme_helper_lines.dart';
 export 'theme_sticker_editor.dart';
 export 'theme_loading_dialog.dart';
 export 'theme_adaptive_dialog.dart';
-export 'theme_editor_mode.dart';
 export 'theme_sub_editor_page.dart';
 export 'theme_layer_interaction.dart';
+export 'theme_shared_values.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor components
@@ -118,6 +118,14 @@ class ImageEditorTheme {
   /// Theme for the sticker editor.
   final StickerEditorTheme stickerEditor;
 
+  /// If this opacity is greater than 0, it will paint a transparent overlay over all
+  /// layers that are drawn outside the background image area. The overlay will
+  /// have the specified opacity level.
+  ///
+  /// Note: This opacity only takes effect if the `captureOnlyBackgroundImageArea`
+  /// flag in the generation configuration is set to `true`.
+  final double outsideCaptureAreaLayerOpacity;
+
   /// The theme configuration for the sub-editor page.
   final SubEditorPageTheme subEditorPage;
 
@@ -142,15 +150,18 @@ class ImageEditorTheme {
   /// Defines the system UI overlay style for the image editor.
   final SystemUiOverlayStyle uiOverlayStyle;
 
-  /// The pre designed theme for the editor like `simple` or `whatsapp`.
-  final ThemeEditorMode editorMode;
-
   /// Theme for the layer interaction settings.
   final ThemeLayerInteraction layerInteraction;
 
+  /// Use this to build custom [BoxConstraints] that will be applied
+  /// globally to the modal bottom sheet when opening various editors
+  /// from this library.
+  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
   /// Creates an instance of the `ImageEditorTheme` class with the specified theme properties.
   const ImageEditorTheme({
-    this.editorMode = ThemeEditorMode.simple,
+    this.editorBoxConstraintsBuilder,
+    this.outsideCaptureAreaLayerOpacity = 0.5,
     this.layerInteraction = const ThemeLayerInteraction(),
     this.helperLine = const HelperLineTheme(),
     this.paintingEditor = const PaintingEditorTheme(),

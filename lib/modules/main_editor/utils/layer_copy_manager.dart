@@ -2,7 +2,7 @@
 import 'dart:ui';
 
 // Project imports:
-import 'package:pro_image_editor/models/layer.dart';
+import 'package:pro_image_editor/models/layer/layer.dart';
 
 /// A class responsible for managing layers in an image editing environment.
 ///
@@ -50,6 +50,7 @@ class LayerCopyManager {
       scale: layer.scale,
       flipX: layer.flipX,
       flipY: layer.flipY,
+      customSecondaryColor: layer.customSecondaryColor,
     );
   }
 

@@ -15,7 +15,7 @@ class I18nCropRotateEditor {
   /// Text for the "Back" button.
   final String back;
 
-  /// Text for the "Cancel" button. Only available when the theme is set to `WhatsApp`.
+  /// Text for the "Cancel" button.
   final String cancel;
 
   /// Text for the "Done" button.

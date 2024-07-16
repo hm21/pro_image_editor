@@ -172,10 +172,8 @@ class _PickImageExampleState extends State<PickImageExample>
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
         ),
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
-            allowEmptyEditCompletion: true,
-          ),
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
         ),
       );
     } else {
@@ -186,10 +184,8 @@ class _PickImageExampleState extends State<PickImageExample>
           onImageEditingComplete: onImageEditingComplete,
           onCloseEditor: onCloseEditor,
         ),
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
-            allowEmptyEditCompletion: true,
-          ),
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
         ),
       );
     }

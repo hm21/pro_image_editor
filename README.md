@@ -1,4 +1,4 @@
-<h1>pro_image_editor</h1>
+<img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/logo.jpg?raw=true" alt="Logo" />
 
 <p>
     <a href="https://pub.dartlang.org/packages/pro_image_editor">
@@ -17,12 +17,7 @@
 
 The ProImageEditor is a Flutter widget designed for image editing within your application. It provides a flexible and convenient way to integrate image editing capabilities into your Flutter project. 
 
-
-  <a href="https://hm21.github.io/pro_image_editor">
-    <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/showcase.png?raw=true" width=450 />
-      <br/>
-      Demo Website
-  </a>
+<a href="https://hm21.github.io/pro_image_editor">Demo Website</a>
 
 ## Table of contents
 
@@ -30,11 +25,13 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 - **[✨ Features](#features)**
 - **[🔧 Getting started](#getting-started)**
   - [Android](#android)
+  - [OpenHarmony](#openharmony)
   - [Web](#web)
 - **[❓ Usage](#usage)**
   - [Open the editor in a new page](#open-the-editor-in-a-new-page)
   - [Show the editor inside of a widget](#show-the-editor-inside-of-a-widget)
   - [Own stickers or widgets](#own-stickers-or-widgets)
+  - [Frosted-Glass-Design](#frosted-glass-design)
   - [WhatsApp-Design](#whatsapp-design)
   - [Highly configurable](#highly-configurable)
   - [Custom AppBar](#custom-appbar)
@@ -51,17 +48,17 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">Frosted-Glass-Design</th>
       <th align="center">WhatsApp-Design</th>
-      <th align="center">Blur-Editor</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/frosted-glass-design.gif?raw=true" alt="Frosted-Glass-Design" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/blur-editor.gif?raw=true" alt="Blur-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
       </td>
     </tr>
   </tbody>
@@ -76,10 +73,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/paint-editor.gif?raw=true" alt="Paint-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/paint-editor.gif?raw=true" alt="Paint-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/text-editor.gif?raw=true" alt="Text-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/text-editor.gif?raw=true" alt="Text-Editor" />
       </td>
     </tr>
   </tbody>
@@ -94,10 +91,10 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
    <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/filter-editor.gif?raw=true" alt="Filter-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/filter-editor.gif?raw=true" alt="Filter-Editor" />
       </td>
     </tr>
   </tbody>
@@ -113,10 +110,28 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">Blur-Editor</th>
+      <th align="center">-</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+      </td>
+      <td align="center" width="50%">
       </td>
     </tr>
   </tbody>
@@ -151,25 +166,33 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   - ✅ Use web-workers for background tasks on Dart web devices
   - ✅ Automatically set the number of active background processors based on the device
   - ✅ Manually set the number of active background processors
-- ✅ Move and scalable layers
-- ✅ Helper lines for better positioning
 - ✅ Undo and redo function
 - ✅ Use your image directly from memory, asset, file or network
 - ✅ Each icon can be changed
-- ✅ Any text can be translated
+- ✅ Any text can be translated "i18n"
 - ✅ Many custom configurations for each subeditor
 - ✅ Custom theme for each editor
 - ✅ Selectable design mode between Material and Cupertino
-- ✅ Interactive layers
-- ✅ Hit detection for painted layers
 - ✅ Reorder layer level
-- ✅ WhatsApp Theme
 - ✅ Movable background image
+- ✅ WhatsApp Theme
+- ✅ Frosted-Glass Theme
+- ✅ Interactive layers
+- ✅ Helper lines for better positioning
+- ✅ Hit detection for painted layers
+- ✅ Zoomable paint and main editor
 - ✅ Improved layer movement and scaling functionality for desktop devices
 
 
 #### Planned features
-- ✨ Text-layer with an improved hit-box and ensure it's vertically centered on all devices
+- ✨ Painting-Editor
+  - New painting style which pixelates the background
+  - Freestyle Painter with improved performance and hitbox
+- ✨ Text-Editor
+  - Text-layer with an improved hit-box and ensure it's vertically centered on all devices
+- ✨ Emoji-Editor
+  - Preload emojis in web platforms
+- ✨ AI Futures => Perhaps integrating Adobe Firefly
 
 
 ## Getting started
@@ -181,6 +204,17 @@ To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE
 ``` xml
 <uses-permission android:name="android.permission.VIBRATE"/>
 ```
+
+### OpenHarmony 
+
+To enable smooth hit vibrations from a helper line, you need to add the `VIBRATE` permission to your project's module.json5 file.
+
+```json
+"requestPermissions": [
+    {"name" :  "ohos.permission.VIBRATE"},                
+]
+```
+
 
 ### Web
 
@@ -274,7 +308,7 @@ void _openEditor() {
             /*
               Your code to handle the edited image. Upload it to your server as an example.
               You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-              The returned image format is `png`.
+              By default, the bytes are in `jpg` format.
             */
             Navigator.pop(context);
           },
@@ -298,7 +332,7 @@ Widget build(BuildContext context) {
                /*
                  Your code to handle the edited image. Upload it to your server as an example.
                  You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-                 The returned image format is `png`.
+                 By default, the bytes are in `jpg` format.
                 */
                Navigator.pop(context);
              },
@@ -314,234 +348,20 @@ To display stickers or widgets in the ProImageEditor, you have the flexibility t
 
 
 
+#### Frosted-Glass design
+
+To use the "Frosted-Glass-Design" you can follow the example [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/design_examples/frosted_glass_example.dart)
+
+
+
 #### WhatsApp design
 
 The image editor offers a WhatsApp-themed option that mirrors the popular messaging app's design.
 The editor also follows the small changes that exist in the Material (Android) and Cupertino (iOS) version.
 
-<details>
-  <summary>Show code example</summary>
-  
-```dart
-Navigator.of(context).push(
-  MaterialPageRoute(
-    builder: (context) => ProImageEditor.network(
-      'https://picsum.photos/id/176/2000',
-      callbacks: ProImageEditorCallbacks(
-        onImageEditingComplete: (Uint8List bytes) async {
-        /*
-          Your code to handle the edited image. Upload it to your server as an example.
-          You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-          The returned image format is `png`.
-        */
-          Navigator.pop(context);
-        },
-      ),
-      configs: ProImageEditorConfigs(
-        textEditorConfigs: TextEditorConfigs(
-          whatsAppCustomTextStyles: [
-            GoogleFonts.roboto(),
-            GoogleFonts.averiaLibre(),
-            GoogleFonts.lato(),
-            GoogleFonts.comicNeue(),
-            GoogleFonts.actor(),
-            GoogleFonts.odorMeanChey(),
-            GoogleFonts.nabla(),
-          ],
-        ),
-        imageEditorTheme: const ImageEditorTheme(
-          editorMode: ThemeEditorMode.whatsapp,
-          helperLine: HelperLineTheme(
-            horizontalColor: Color.fromARGB(255, 129, 218, 88),
-            verticalColor: Color.fromARGB(255, 129, 218, 88),
-          ),
-        ),
-        paintEditorConfigs: const PaintEditorConfigs(
-          initialStrokeWidth: 5,
-        ),
-        filterEditorConfigs: FilterEditorConfigs(
-          whatsAppFilterTextOffsetY: 90,
-          filterList: [
-            ColorFilterGenerator(
-              name: "None",
-              filters: [],
-            ),
-            ColorFilterGenerator(
-              name: "Pop",
-              filters: [
-                ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
-                ColorFilterAddons.saturation(0.1),
-                ColorFilterAddons.contrast(0.05),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "B&W",
-              filters: [
-                ColorFilterAddons.grayscale(),
-                ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
-                ColorFilterAddons.brightness(0.1),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "Cool",
-              filters: [
-                ColorFilterAddons.addictiveColor(0, 0, 20),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "Chrome",
-              filters: [
-                ColorFilterAddons.contrast(0.15),
-                ColorFilterAddons.saturation(0.2),
-              ],
-            ),
-            ColorFilterGenerator(
-              name: "Film",
-              filters: [
-                ColorFilterAddons.brightness(.05),
-                ColorFilterAddons.saturation(-0.03),
-              ],
-            ),
-          ],
-        ),
-        stickerEditorConfigs: StickerEditorConfigs(
-          enabled: true,
-          onSearchChanged: (value) {
-            /// Filter your stickers
-            debugPrint(value);
-          },
-          buildStickers: (setLayer) {
-            List<String> demoTitels = ['Recent', 'Favorites', 'Shapes', 'Funny', 'Boring', 'Frog', 'Snow', 'More'];
-            List<Widget> slivers = [];
-            int offset = 0;
-            for (var element in demoTitels) {
-              slivers.addAll([
-                _buildDemoStickersTitle(element),
-                _buildDemoStickers(offset, setLayer),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              ]);
-              offset += 20;
-            }
+You can see the complete example [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/design_examples/whatsapp_example.dart)
 
-            return Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-                    child: CustomScrollView(
-                      slivers: slivers,
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 50,
-                  color: Colors.grey.shade800,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.watch_later_outlined),
-                        color: Colors.white,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.mood),
-                        color: Colors.white,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.pets),
-                        color: Colors.white,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.coronavirus),
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        customWidgets: ImageEditorCustomWidgets(
-          whatsAppBottomWidget: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.center,
-                    decoration: InputDecoration(
-                      filled: true,
-                      isDense: true,
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 7.0),
-                        child: Icon(
-                          Icons.add_photo_alternate_rounded,
-                          size: 24,
-                          color: Colors.white,
-                        ),
-                      ),
-                      hintText: 'Add a caption...',
-                      hintStyle: const TextStyle(
-                        color: Color.fromARGB(255, 238, 238, 238),
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(40),
-                        borderSide: BorderSide.none,
-                      ),
-                      fillColor: const Color(0xFF202D35),
-                    ),
-                  ),
-                ),
-              ),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 7, 16, 12),
-                  color: Colors.black38,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: const Color(0xFF202D35),
-                        ),
-                        child: const Text(
-                          'Alex Frei',
-                          style: TextStyle(
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.send),
-                        style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF0DA886),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    ),
-  ),
-);
-```
-</details>
+
 
 #### Highly configurable
 
@@ -563,7 +383,7 @@ return Scaffold(
                 /*
                   Your code to handle the edited image. Upload it to your server as an example.
                   You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-                  The returned image format is `png`.
+                  By default, the bytes are in `jpg` format.
                 */
                 Navigator.pop(context);
               },
@@ -735,7 +555,7 @@ class DemoState extends State<Demo> {
           /*
             Your code to handle the edited image. Upload it to your server as an example.
             You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-            The returned image format is `png`.
+            By default, the bytes are in `jpg` format.
           */
           Navigator.pop(context);
         },
@@ -1078,12 +898,12 @@ ProImageEditor.asset(
   callbacks: ProImageEditorCallbacks(
     onImageEditingComplete: (bytes) async {
       try {
-        String path = 'your-storage-path/my-image-name.png';
+        String path = 'your-storage-path/my-image-name.jpg';
         Reference ref = FirebaseStorage.instance.ref(path);
 
         /// In some special cases detect firebase the contentType wrong,
-        /// so we make sure the contentType is set to png.
-        await ref.putData(bytes, SettableMetadata(contentType: 'image/png'));
+        /// so we make sure the contentType is set to jpg.
+        await ref.putData(bytes, SettableMetadata(contentType: 'image/jpg'));
       } on FirebaseException catch (e) {
         debugPrint(e.message);
       }
@@ -1107,7 +927,7 @@ ProImageEditor.asset(
   callbacks: ProImageEditorCallbacks(
     onImageEditingComplete: (bytes) async {
       try {
-        String path = 'your-storage-path/my-image-name.png';
+        String path = 'your-storage-path/my-image-name.jpg';
         await _supabase.storage.from('my_bucket').uploadBinary(
               path,
               bytes,
@@ -1185,7 +1005,7 @@ ProImageEditor.memory(
       /*
         Your code to handle the edited image. Upload it to your server as an example.
         You can choose to use await, so that the loading-dialog remains visible until your code is ready, or no async, so that the loading-dialog closes immediately.
-        The returned image format is `png`.
+        By default, the bytes are in `jpg` format.
       */
       Navigator.pop(context);
     },
@@ -1267,19 +1087,20 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 
 ### ProImageEditorCallbacks
-| Property Name                | Description                                                                                                                        | Default Value |
-|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `onImageEditingComplete`     | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `png`. | `required`    |
-| `onImageEditingStarted`      | A callback function that is triggered when the image generation is started.                                                        | `null`        |
-| `onCloseEditor`              | A callback function that will be called before the image editor closes.                                                            | `null`        |
-| `onUpdateUI`                 | A callback function that can be used to update the UI from custom widgets.                                                         | `null`        |
-| `onAddLayer`                 | A callback function that is triggered when a layer is added.                                                                       | `null`        |
-| `onRemoveLayer`              | A callback function that is triggered when a layer is removed.                                                                     | `null`        |
-| `onOpenSubEditor`            | A callback function that is triggered when a sub-editor is opened.                                                                 | `null`        |
-| `onCloseSubEditor`           | A callback function that is triggered when a sub-editor is closed.                                                                 | `null`        |
-| `onScaleStart`               | A callback function that is triggered when a scaling gesture starts. Provides information via `ScaleStartDetails`.                 | `null`        |
-| `onScaleUpdate`              | A callback function that is triggered when a scaling gesture is updated. Provides information via `ScaleUpdateDetails`.            | `null`        |
-| `onScaleEnd`                 | A callback function that is triggered when a scaling gesture ends. Provides information via `ScaleEndDetails`.                     | `null`        |
+
+| Property Name                  | Description                                                                                                                        | Default Value |
+|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------- |---------------|
+| `onImageEditingStarted`        | A callback function that is triggered when the image generation is started.                                                        | `null`        |
+| `onImageEditingComplete`       | A callback function that will be called when the editing is done, returning the edited image as `Uint8List` with the format `jpg`. | `null`    |
+| `onThumbnailGenerated`         | A callback function that is called when the editing is complete and the thumbnail image is generated, along with capturing the original image as a raw `ui.Image`. If used, it will disable the `onImageEditingComplete` callback.   | `null`        |
+| `onCloseEditor`                | A callback function that will be called before the image editor closes.                                                            | `null`        |
+| `mainEditorCallbacks`          | Callbacks from the main editor.                                                                                                    | `null`        |
+| `paintEditorCallbacks`         | Callbacks from the paint editor.                                                                                                   | `null`        |
+| `textEditorCallbacks`          | Callbacks from the text editor.                                                                                                    | `null`        |
+| `cropRotateEditorCallbacks`    | Callbacks from the crop-rotate editor.                                                                                             | `null`        |
+| `filterEditorCallbacks`        | Callbacks from the filter editor.                                                                                                  | `null`        |
+| `blurEditorCallbacks`          | Callbacks from the blur editor.                                                                                                    | `null`        |
+
 
 
 <details>
@@ -1349,7 +1170,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `flip`                    | Text for the "Flip" tooltip.                                                      | `Flip`          |
 | `ratio`                   | Text for the "Ratio" tooltip.                                                     | `Ratio`         |
 | `back`                    | Text for the "Back" button.                                                       | `Back`          |
-| `cancel`                  | Text for the "Cancel" button. Only available when the theme is set to `WhatsApp`. | `Cancel`        |
+| `cancel`                  | Text for the "Cancel" button. | `Cancel`        |
 | `done`                    | Text for the "Done" button.                                                       | `Done`          |
 | `reset`                   | Text for the "Reset" button.                                                      | `Reset`         |
 | `undo`                    | Text for the "Undo" button.                                                       | `Undo`          |
@@ -1418,27 +1239,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 
 
 <details>
-  <summary><b>customWidgets</b></summary>
-
-| Property Name                  | Description                                                                                              | Default Value  |
-|--------------------------------|----------------------------------------------------------------------------------------------------------|----------------|
-| `removeLayer`                  | A custom widget for removing a layer or element from the editor interface.                               | `null`         |
-| `appBar`                       | A custom app bar widget for the top navigation bar.                                                      | `null`         |
-| `appBarPaintingEditor`         | A custom app bar widget for the painting editor component.                                               | `null`         |
-| `appBarTextEditor`             | A custom app bar widget for the text editor component.                                                   | `null`         |
-| `appBarCropRotateEditor`       | A custom app bar widget for the crop and rotate editor component.                                        | `null`         |
-| `appBarFilterEditor`           | A custom app bar widget for the filter editor component.                                                 | `null`         |
-| `appBarBlurEditor`             | A custom app bar widget for the blur editor component.                                                   | `null`         |
-| `bottomNavigationBar`          | A custom widget for the bottom navigation bar.                                                           | `null`         |
-| `bottomBarPaintingEditor`      | A custom bottom bar widget for the painting editor component.                                            | `null`         |
-| `bottomBarCropRotateEditor`    | A custom bottom bar widget for the crop-rotate editor component.                                         | `null`         |
-| `bottomBarTextEditor`          | A custom bottom bar widget for the text editor component.                                                | `null`         |
-| `closeWarningDialog`           | Override the close warning dialog when changes are made.                                                 | `null`         |
-| `whatsAppBottomWidget`         | The widget that is below the `Filter` button in the WhatsApp theme, like a text field and send button.   | `null`         |
-
-</details>
-
-<details>
   <summary><b>imageEditorTheme</b></summary>
 
 | Property Name                | Description                                                         | Default Value                 |
@@ -1458,7 +1258,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `loadingDialogTheme`         | Theme for the loading dialog.                                       | `LoadingDialogTheme()`        |
 | `adaptiveDialogTheme`        | Theme for the adaptive dialog.                                      | `AdaptiveDialogTheme()`       |
 | `uiOverlayStyle`             | Defines the system UI overlay style for the image editor.           | `SystemUiOverlayStyle(...)`   |
-| `editorMode`                 | The pre-designed theme for the editor like `simple` or `whatsapp`.  | `ThemeEditorMode.simple`      |
 | `layerInteraction`           | Theme for the layer interaction settings.                           | `ThemeLayerInteraction()`     |
 
 
@@ -1497,7 +1296,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `cropCornerColor`                      | Color of the crop corners.                                                                       | `imageEditorPrimaryColor`     |
 | `helperLineColor`                      | Color of the helper lines when moving the image.                                                 | `Color(0xFF000000)`           |
 | `cropOverlayColor`                     | Color of the overlay area atop the image when the cropping area is smaller than the image.       | `Color(0xFF000000)`           |
-| `whatsappCupertinoBottomBarColor`      | Background color for the bottom bar when using WhatsApp theme and designMode is set to Cupertino | `Color(0xFF303030)`           |
 
 
 #### Theme filterEditor
@@ -1507,7 +1305,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `appBarForegroundColor`      | Foreground color (text and icons) of the app bar.              | `Color(0xFFE1E1E1)`           |
 | `background`                 | Background color of the filter editor.                         | `imageEditorBackgroundColor`  |
 | `previewTextColor`           | Color of the preview text.                                     | `Color(0xFFE1E1E1)`           |
-| `whatsAppBottomBarColor`     | Color of the background of the bottom bar in WhatsApp theme.   | `Color(0xFF121B22)`           |
 
 
 
@@ -1578,9 +1375,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `rectangle`                  | The icon for the rectangle drawing tool.                                  | `Icons.crop_free`                |
 | `circle`                     | The icon for the circle drawing tool.                                     | `Icons.lens_outlined`            |
 | `dashLine`                   | The icon for the dashed line drawing tool.                                | `Icons.power_input`              |
-| `whatsAppStrokeWidthThin`    | The icon for the thin stroke width when the theme is set to `Whatsapp`.   | `ProImageEditorIcons.penSize1`   |
-| `whatsAppStrokeWidthMedium`  | The icon for the medium stroke width when the theme is set to `Whatsapp`. | `ProImageEditorIcons.penSize2`   |
-| `whatsAppStrokeWidthBold`    | The icon for the bold stroke width when the theme is set to `Whatsapp`.   | `ProImageEditorIcons.penSize3`   |
 
 
 #### icons textEditor
@@ -1647,8 +1441,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `freeStyleHighPerformanceScaling`          | Enables high-performance scaling for free-style drawing.                                                          | `true` on mobile, `false` on desktop |
 | `freeStyleHighPerformanceMoving`           | Enables high-performance moving for free-style drawing.                                                           | `true` on mobile-web                 |
 | `freeStyleHighPerformanceHero`             | Enables high-performance hero-animations for free-style drawing.                                                  | `false`                              |
-| `initialStrokeWidth`                       | Indicates the initial stroke width.                                                                               | `10.0`                               |
-| `initialColor`                             | Indicates the initial drawing color.                                                                              | `Color(0xffff0000)`                  |
 | `initialPaintMode`                         | Indicates the initial paint mode.                                                                                 | `PaintModeE.freeStyle`               |
 | `strokeWidthOnChanged`                     | A callback function that will be called when the stroke width changes.                                            | `null`                               |
 </details>
@@ -1711,7 +1503,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 |----------------------------------|----------------------------------------------------------------------------------------------------------|---------------------------------------|
 | `enabled`                        | Indicates whether the filter editor is enabled.                                                          | `true`                                |
 | `showLayers`                     | Show also layers in the editor.                                                                          | `true`                                |
-| `whatsAppFilterTextOffsetY`      | Offset for the filter text, helpful if the user has an input field that overlays in a stack widget.      | `0`                                   |
 | `filterList`                     | A list of color filter generators to apply to an image.                                                  | `null` (default contains all filters) |
 </details>
 
@@ -1744,7 +1535,6 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `enabled`              | Indicates whether the sticker editor is enabled.                                                         | `false`                    |
 | `initWidth`            | The initial width of the stickers in the editor.                                                         | `100`                      |
 | `buildStickers`        | A callback that builds the stickers.                                                                     | `required`                 |
-| `onSearchChanged`      | A callback triggered each time the search value changes. Activated exclusively in 'WhatsApp' mode.       | `null`                     |
 </details>
 
 <details>
@@ -1798,14 +1588,15 @@ git clone https://github.com/hm21/pro_image_editor.git
 
 ### Included Packages
 
-This package uses several Flutter packages to provide a seamless editing experience. Here's a list of the packages used in this project:
+This package uses several Flutter packages to provide a seamless editing experience. A big thanks to the authors of these amazing packages. Here’s a list of the packages we used in this project:
 
-- [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
-- [defer_pointer](https://pub.dev/packages/defer_pointer)
 - [emoji_picker_flutter](https://pub.dev/packages/emoji_picker_flutter)
 - [http](https://pub.dev/packages/http)
 - [image](https://pub.dev/packages/image)
 - [rounded_background_text](https://pub.dev/packages/rounded_background_text)
 - [vibration](https://pub.dev/packages/vibration)
 
-These packages play a crucial role in enabling various features and functionalities in this package.
+From these packages, only a small part of the code is used, with some code changes that better fit to the image editor.
+- [colorfilter_generator](https://pub.dev/packages/colorfilter_generator)
+- [defer_pointer](https://pub.dev/packages/defer_pointer)
+

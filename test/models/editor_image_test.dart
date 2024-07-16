@@ -2,8 +2,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-// Package imports:
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:

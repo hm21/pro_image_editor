@@ -1,20 +1,188 @@
 # Changelog
 
+## Version 4.2.7
+- **fix(text-editor)**: Resolve issue where cursor size change with long text. This resolves issue [#154](https://github.com/hm21/pro_image_editor/issues/154).
+
+## Version 4.2.6
+- **fix(content-recorder)**: Remove visible border in captured images when user added layers from outside. This resolves issue [#156](https://github.com/hm21/pro_image_editor/issues/156).
+
+## Version 4.2.5
+- **fix(zoom-paint-editor)**: Prevent bottombar from wrapping items to a new line. This resolves issue [#152](https://github.com/hm21/pro_image_editor/issues/152).
+
+## Version 4.2.4
+- **fix(import)**: Ensure to set correct emoji size after image rotation and history restore. This resolves issue [#151](https://github.com/hm21/pro_image_editor/issues/151).
+
+## Version 4.2.3
+- **fix(content-recorder)**: Ensure final generated image respects bounds after rotation when `captureOnlyBackgroundImageArea` is `true`. This resolves issue [#145](https://github.com/hm21/pro_image_editor/issue/145).
+
+## Version 4.2.2
+- **fix(PopScope)**: Check if route already popped in `onPopInvoked` and avoid showing close warning dialog if already popped.
+- **feat(Callbacks)**: Added new callback to `MainEditorCallbacks` which is triggered when `onPopInvoked`.
+
+## Version 4.2.1
+- **feat(theme)**: Added option to change foreground and background color of layer interaction buttons.
+
+## Version 4.2.0
+- **feat(ContentRecorderController)**: Changed the logic how the `ContentRecorderController` records invisible widgets. This makes the image editor backward compatible to older Flutter versions <= `3.19.x`.
+
+## Version 4.1.1
+- **fix(vibration)**:  The `Vibration.hasVibrator` check will now only happen if the user has enabled hitVibration in the helperline configs. This resolves issue [#139](https://github.com/hm21/pro_image_editor/issue/139).
+
+## Version 4.1.0
+- **feat(zoom)**: Paint-Editor and Main-Editor are now zoomable. An example of how to enable this can be found [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/zoom_move_editor_example.dart)
+
+## Version 4.0.10
+- **feat(text-editor)**: Add autocorrect and enableSuggestions configs. This was requsted in [#132](https://github.com/hm21/pro_image_editor/issues/132)
+- **fix(text-editor)**: Remove duplicate text-shadow from invisible text-field. This resolves issue [#131](https://github.com/hm21/pro_image_editor/issue/131).
+
+## Version 4.0.9
+- **fix(emoji-picker)**: Ensure the emoji-picker is rendered inside the safe areas. This resolves issue [#126](https://github.com/hm21/pro_image_editor/issue/126).
+
+## Version 4.0.8
+- **fix(crop-rotate-editor)**: Resolve incorrect transformation issue in crop editor.
+- **fix(export-import)**: Correct image transformation on history reapply. This resolves issue [#120](https://github.com/hm21/pro_image_editor/discussions/120).
+- **fix(export-import)**: Resolve sticker persistence and transformation issues in history reapply. This resolves issue [#121](https://github.com/hm21/pro_image_editor/discussions/121).
+
+## Version 4.0.7
+- **fix(sticker-export)**: Resolve incorrect export from sticker images causing lower resolution.
+- **feat(custom-widget)**: Add custom widgets for font-size bottom sheet. This was requsted in [#123](https://github.com/hm21/pro_image_editor/issues/123)
+
+## Version 4.0.6
+- **feat(layer-scale)**: Add ability to set minimum and maximum scale factor for layers. This was requsted in [#122](https://github.com/hm21/pro_image_editor/issues/122)
+
+## Version 4.0.5
+- **fix(text-editor)**: Resolve misapplication of secondary color. This resolve issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
+- **fix(text-editor)**: Resolve issue where text styles (bold/italic/underline) are not saved in history. This resolves issue [#118](https://github.com/hm21/pro_image_editor/discussions/118).
+
+
+## Version 4.0.4
+- **feat(text-editor)**: Added the ability to programmatically set the secondary color next to the primary color.
+
+## Version 4.0.3
+- **feat(decode-image)**: Ability to decode the image from external, allowing to change the background image dynamically, which was requested in [#110](https://github.com/hm21/pro_image_editor/discussions/110). 
+- **fix(layer-position)**: Ensure layers are rendered from center even without bottombar. This resolves issue [#113](https://github.com/hm21/pro_image_editor/issue/113). 
+
+## Version 4.0.2
+- **refactor(designs)**: Made the "Frosted-Glass" and "WhatsApp" designs more compact, making them easier to implement with less code.
+
+## Version 4.0.1
+- **fix(import-history)**: Resolve incorrect multiple importing from state history. This resolve issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
+
+## Version 4.0.0
+Detailed information about this release and why these breaking-changes are necessary can be found [here](https://github.com/hm21/pro_image_editor/discussions/109).
+
+#### **Breaking Changes:**
+- Remove hardcoded `WhatsApp-Design`.
+- Rewrite the entire logic of `customWidgets`.
+- Move `initialColor` and `initialStrokeWidth` from `paintEditorConfigs` to `imageEditorTheme-paintingEditor`.
+
+#### **feat:**
+- Add new design `Frosted-Glass`.
+- The `WhatsApp` theme is now fully editable.
+- Smaller build size and minimal performance boost because the Whatsapp design is no longer hardcoded.
+- Make it easier to use `customWidget`.
+- Editor design is now more customizable.
+
+## Version 3.0.15
+- **feat(callbacks)**: Add to the main-editor callbacks `onTap`, `onDoubleTap` and `onLongPress` which was requested in [#104](https://github.com/hm21/pro_image_editor/issues/104).
+
+## Version 3.0.14
+- **feat(custom-widget)**: Add custom widgets to the line-width bottomsheet in the Paint Editor, which was requested in [#103](https://github.com/hm21/pro_image_editor/discussions/103).
+- **fix(sticker-export-import)** Fix the issue that the sticker size change after export/import them. This resolve issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).
+
+## Version 3.0.13
+- **fix(state-history)**: Resolve incorrect import/export from transform-configs. This resolve issue [#102](https://github.com/hm21/pro_image_editor/discussions/102).
+
+## Version 3.0.12
+- **fix(import-history)**: Resolve incorrect import of fontfamily and fontscale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83).
+
+## Version 3.0.11
+- **feat(remove-all-layers)**: Add method to remove all layers as requested in [#80](https://github.com/hm21/pro_image_editor/issues/80).
+
+## Version 3.0.10
+- **feat(hover-remove-btn)**: Extend the remove area so that it always detects the layer hovering correctly, even if the user creates a custom widget with a different position for it.
+
+## Version 3.0.9
+- **fix(hover-remove-btn)**: Ensure remove area works correctly on iOS rotated devices. This fix [GitHub issue #75](https://github.com/hm21/pro_image_editor/issues/75).
+
+## Version 3.0.8
+- **feat(custom-color-picker)**: Add currently selected color to custom color picker widget.
+
+## Version 3.0.7
+#### **Breaking Changes:**
+- The property `generateOnlyDrawingBounds` has been renamed to `captureOnlyDrawingBounds`.
+
+#### **feat:**
+- The editor will now capture by default only the area from the background image and cut all layers outside. To disable this behavior, you can set the flag `captureOnlyBackgroundImageArea` to `false` in the configurations, like below:
+```dart
+configs: ProImageEditorConfigs(
+  imageGenerationConfigs: const ImageGeneratioConfigs(
+    captureOnlyBackgroundImageArea: false,
+  ),
+),
+```
+- Visually overlay the background color with opacity over layers outside the capture area.
+- New mode in the paint-editor to erase painted layers.
+
+
+## Version 3.0.6
+- **fix(layer)**: call setState when adding a new layer from external source
+- **fix(web_worker)**: remove web_worker.dart from web build to resolve lint errors
+
+## Version 3.0.5
+- **feat(custom-slider)**: add a custom widget to replace the slider in the filter and blur editor.
+- **feat(custom-color-picker)**: add a custom widget to replace the color picker in the text and paint editor.
+- **feat(custom-crop-aspect-ratio)**: add a custom widget to replace the aspect ratio picker.
+- **fix(main-editor)**: correct image and layer display when bottombar or appbar is not visible.
+
+## Version 3.0.4
+- **feat(hero)**: enable hero animation when opening the editor
+
+## Version 3.0.3
+- **fix(done-editing)**: allow users to continue editing after pressing done if the image-editor doesn't close
+
+## Version 3.0.2
+- **chore(example)**: also release example in pub.dev for pubpoints
+
+## Version 3.0.1
+- **docs(preview-videos)**: update preview videos to version 3.0.0
+
 ## Version 3.0.0 New Crop-Rotate-Editor
 Replace the existing crop-rotate editor, which depended on the `extended_image` and `image_editor` package, with a new solution that doesn't depend on this packages.
 
+
+#### **Breaking Changes:**
+- Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
+- Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
+- Change the layer initial offset position to the center of the screen, not the top left.
+- Rename `ColorFilterGenerator` to `FilterModel`.
+- Changed the logic of overlaying multiple layers, which may produce different results than before.
+- Default `maxBlur` configuration is now 5.0 instead of 2.0.
+- Move `editorBoxConstraintsBuilder` from `configs` to `imageEditorTheme`.
+
 #### **feat:**
-- Double tap to zoom in and out
-- Multiple cursor support
-- Undo/Redo function
-- Reset function
-- Flip function
-- Animated rotation
-- Keyboard shortcut support
-- More theme and configuration options
-- Hero animation for image and layers
-- Useable as a standalone editor
-- Round "cropper" for profile pictures
+- Crop-Rotate-Editor
+  - Double tap to zoom in and out
+  - Multiple cursor support
+  - Undo/Redo function
+  - Reset function
+  - Flip function
+  - Animated rotation
+  - Keyboard shortcut support
+  - More theme and configuration options
+  - Hero animation for image and layers
+  - Round "cropper" for profile pictures
+- Painting-Editor
+  - Standalone drawing of signatures or paintings
+- Emoji-Editor
+  - Infinite scrolling through all categories
+  - Optional as `DraggableScrollableSheet` 
+- Sticker-Editor
+  - Optional as `DraggableScrollableSheet` 
+- Standalone editors "Painting, Crop-Rotate, Filter, Blur"
+- Option to generate thumbnails first and the final image later for faster results with high-resolution images
+- Generate configs to change things like the output format 
+ 
 
 #### **fix:**
 - Layer rendering outside the background image now works everywhere.
@@ -22,16 +190,18 @@ Replace the existing crop-rotate editor, which depended on the `extended_image` 
 
 #### **perf:**
 - Changes are handled internally across all editors, so there's no conversion delay when opening or closing the Crop-Rotate Editor.
-- Image generation is now isolated from the main thread, speeding up the process significantly. Generation time varies mostly between 20ms and 2000ms, depending on user interaction and device performance. On the web, it runs inside a separate web worker.
+- Image generation is now isolated from the main thread, speeding up the process significantly. On the web, it runs inside separate web workers.
+- Filters recalculate matrix only when they change and not after every state refresh.
+- Faster emoji rendering when scrolling in the Emoji Editor.
 
-#### **Breaking Changes:**
-- Change the layer initial offset position to the center of the screen, not the top left. When we import from old state history we must add the half of the editor size to the offset of the layer so that the position is correct. All init positions from layers must also be adjusted by half the editor size.
-- Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`.
-- Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
 <br/>
 
+## Version 2.7.11
+- **merge**: pull request [#60](https://github.com/hm21/pro_image_editor/issues/60) from diegotori/editor_bottom_sheet_constraints. 
+    - BoxConstraints support when opening editors in bottom sheets.
+
 ## Version 2.7.10
-- **fix**: fix: resolve loading-dialog issue with Asuka package closes [GitHub issue #48](https://github.com/hm21/pro_image_editor/issues/48).
+- **fix**: resolve loading-dialog issue with Asuka package closes [GitHub issue #48](https://github.com/hm21/pro_image_editor/issues/48).
 
 ## Version 2.7.9
 - **chore**: Update the `screenshot` package so that it's compatible with Flutter 3.22.0. This fix [GitHub issue #45](https://github.com/hm21/pro_image_editor/issues/45).

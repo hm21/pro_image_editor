@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'color_picker_configs.dart';
+
+export 'color_picker_configs.dart';
 
 /// A padding used to calculate bar height(thumbRadius * 2 - kBarPadding).
 const _kBarPadding = 4;
@@ -61,11 +62,19 @@ class BarColorPicker extends StatefulWidget {
   /// Image editor configurations.
   final ProImageEditorConfigs configs;
 
+  /// Show on the slider a thumb widget.
+  final bool showThumb;
+
+  /// The border width around the slider.
+  final double borderWidth;
+
   const BarColorPicker({
     super.key,
     this.pickMode = PickMode.color,
     this.horizontal = true,
+    this.showThumb = true,
     this.length = 200,
+    this.borderWidth = 0.0,
     this.cornerRadius = 0.0,
     this.thumbRadius = 6,
     this.initialColor = const Color(0xffff0000),
@@ -243,14 +252,7 @@ class _BarColorPickerState extends State<BarColorPicker>
 
     Gradient gradient;
 
-    bool isSimpleEditor =
-        widget.configs.imageEditorTheme.editorMode == ThemeEditorMode.simple;
-
-    double borderWidth =
-        widget.configs.designMode == ImageEditorDesignModeE.cupertino &&
-                !isSimpleEditor
-            ? 2
-            : 0;
+    double borderWidth = widget.borderWidth;
     double left, top;
     double? thumbLeft, thumbTop;
 
@@ -303,7 +305,7 @@ class _BarColorPickerState extends State<BarColorPicker>
                 borderWidth: borderWidth,
                 gradient: gradient,
               ),
-              if (isSimpleEditor)
+              if (widget.showThumb)
                 _buildThumb(
                   borderWidth: borderWidth,
                   thumbRadius: thumbRadius,

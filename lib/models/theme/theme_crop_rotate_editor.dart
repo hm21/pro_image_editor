@@ -79,9 +79,11 @@ class CropRotateEditorTheme {
   /// The opacity of this area is 0.7 when no interaction is active and 0.45 when an interaction is active.
   final Color cropOverlayColor;
 
-  /// Background color for the bottombar when the editor use WhatsApp as theme
-  /// and the designMode is set to Cupertino
-  final Color whatsappCupertinoBottomBarColor;
+  /// The length of the crop corner.
+  final double cropCornerLength;
+
+  /// The thickness of the crop corner.
+  final double cropCornerThickness;
 
   /// Creates an instance of the `CropRotateEditorTheme` class with the specified theme properties.
   const CropRotateEditorTheme({
@@ -93,8 +95,9 @@ class CropRotateEditorTheme {
     this.cropOverlayColor = const Color(0xFF000000),
     this.bottomBarBackgroundColor = imageEditorAppBarColor,
     this.bottomBarForegroundColor = const Color(0xFFE1E1E1),
-    this.whatsappCupertinoBottomBarColor = const Color(0xFF303030),
     this.aspectRatioSheetBackgroundColor = const Color(0xFF303030),
     this.aspectRatioSheetForegroundColor = const Color(0xFFFAFAFA),
+    this.cropCornerLength = 36,
+    this.cropCornerThickness = 6,
   });
 }

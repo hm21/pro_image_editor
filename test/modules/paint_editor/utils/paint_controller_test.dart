@@ -43,7 +43,7 @@ void main() {
 
     controller.addPaintInfo(paintedModel);
 
-    expect(controller.paintHistory, [paintedModel]);
+    expect(controller.activePaintings, [paintedModel]);
   });
 
   test('Undo and redo painting actions', () {
@@ -73,33 +73,11 @@ void main() {
     controller.addPaintInfo(paintedModel2);
 
     controller.undo();
-    expect(controller.paintHistory, [paintedModel1]);
-    expect(controller.paintRedoHistory, [paintedModel2]);
+    expect(controller.activePaintings, [paintedModel1]);
+    expect(controller.historyPosition, 1);
 
     controller.redo();
-    expect(controller.paintHistory, [paintedModel1, paintedModel2]);
-    expect(controller.paintRedoHistory, []);
-  });
-
-  test('Clear painting history', () {
-    final controller = PaintingController(
-      strokeWidth: 2.0,
-      color: Colors.red,
-      mode: PaintModeE.line,
-      fill: false,
-      strokeMultiplier: 1,
-    );
-
-    final paintedModel = PaintedModel(
-      color: Colors.blue,
-      mode: PaintModeE.rect,
-      offsets: [const Offset(0, 0), const Offset(50, 50)],
-      strokeWidth: 3.0,
-    );
-
-    controller.addPaintInfo(paintedModel);
-    controller.clear();
-
-    expect(controller.paintHistory, []);
+    expect(controller.activePaintings, [paintedModel1, paintedModel2]);
+    expect(controller.historyPosition, 2);
   });
 }

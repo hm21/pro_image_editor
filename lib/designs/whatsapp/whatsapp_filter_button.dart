@@ -1,102 +1,115 @@
-// Dart imports:
-import 'dart:math';
-
 // Flutter imports:
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_model.dart';
 
 /// Represents the button for applying filters in the WhatsApp theme.
 class WhatsAppFilterBtn extends StatefulWidget {
-  /// The configuration for the image editor.
-  final ProImageEditorConfigs configs;
-
-  /// The opacity of the button.
-  final double opacity;
+  final FilterModel filter;
+  final bool isSelected;
+  final double? scaleFactor;
+  final Function() onSelectFilter;
+  final Widget editorImage;
+  final Key filterKey;
 
   /// Constructs a WhatsAppFilterBtn widget with the specified parameters.
   const WhatsAppFilterBtn({
     super.key,
-    required this.opacity,
-    required this.configs,
+    required this.filter,
+    required this.isSelected,
+    this.scaleFactor,
+    required this.onSelectFilter,
+    required this.editorImage,
+    required this.filterKey,
   });
 
   @override
   State<WhatsAppFilterBtn> createState() => _WhatsAppFilterBtnState();
 }
 
-class _WhatsAppFilterBtnState extends State<WhatsAppFilterBtn>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  int _repeatCount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    _animation = Tween<double>(
-      begin: -3,
-      end: 3,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _repeatCount++;
-        if (_repeatCount < 2) {
-          _controller.reverse();
-        }
-      } else if (status == AnimationStatus.dismissed && _repeatCount < 2) {
-        _controller.forward();
-      }
-    });
-
-    // Start the animation when the widget initializes
-    _controller.forward();
-  }
+class _WhatsAppFilterBtnState extends State<WhatsAppFilterBtn> {
+  final Size _size = const Size(58, 88);
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 50 + widget.configs.filterEditorConfigs.whatsAppFilterTextOffsetY,
-      child: Opacity(
-        opacity: max(0, min(1, widget.opacity)),
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Transform.translate(
-              offset: Offset(0, _animation.value),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Transform.scale(
+      scale: widget.scaleFactor,
+      child: GestureDetector(
+        key: widget.filterKey,
+        onTap: widget.onSelectFilter,
+        child: AnimatedScale(
+          scale: widget.isSelected ? 1.05 : 1,
+          alignment: Alignment.bottomCenter,
+          duration: const Duration(milliseconds: 200),
+          child: Container(
+            clipBehavior: Clip.hardEdge,
+            height: _size.height,
+            width: _size.width,
+            decoration: const BoxDecoration(),
+            child: Center(
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
                 children: [
-                  const Icon(Icons.keyboard_arrow_up),
-                  Text(
-                    widget.configs.i18n.filterEditor.bottomNavigationBarText,
-                    textAlign: TextAlign.center,
+                  widget.editorImage,
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Container(
+                      color: Colors.black54,
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(2, 3, 2, 3),
+                      child: Text(
+                        widget.filter.name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFE1E1E1),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        ),
+                      ),
+                      child: widget.isSelected
+                          ? Container(
+                              margin: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.black,
+                                  width: 2.5,
+                                ),
+                                borderRadius: BorderRadius.circular(100),
+                                color: const Color(0xFF13A589),
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.all(2.0),
+                                child: Icon(
+                                  Icons.check,
+                                  size: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                   ),
                 ],
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }

@@ -10,12 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/theme/theme_layer_interaction.dart';
-import 'package:pro_image_editor/widgets/pro_image_editor_desktop_mode.dart';
-import '../../../models/history/last_position.dart';
-import '../../../models/layer.dart';
-import '../../../utils/debounce.dart';
+import '/models/editor_configs/pro_image_editor_configs.dart';
+import '/models/history/last_layer_interaction_position.dart';
+import '/models/layer/layer.dart';
+import '/utils/debounce.dart';
 
 /// A helper class responsible for managing layer interactions in the editor.
 ///
@@ -86,6 +84,9 @@ class LayerInteractionManager {
   /// When `true`, enables optimized scaling for improved performance.
   bool freeStyleHighPerformanceScaling = false;
 
+  /// Controls high-performance for layers when editor zoom.
+  bool freeStyleHighPerformanceEditorZoom = false;
+
   /// Controls high-performance moving for free-style drawing.
   /// When `true`, enables optimized moving for improved performance.
   bool freeStyleHighPerformanceMoving = false;
@@ -93,6 +94,12 @@ class LayerInteractionManager {
   /// Controls high-performance hero animation for free-style drawing.
   /// When `true`, enables optimized hero-animation for improved performance.
   bool freeStyleHighPerformanceHero = false;
+
+  bool get freeStyleHighPerformance =>
+      freeStyleHighPerformanceEditorZoom ||
+      freeStyleHighPerformanceScaling ||
+      freeStyleHighPerformanceMoving ||
+      freeStyleHighPerformanceHero;
 
   /// Flag indicating if the scaling tool is active.
   bool _activeScale = false;
@@ -127,6 +134,9 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation based on user interactions.
   calculateInteractiveButtonScaleRotate({
+    required double editorScaleFactor,
+    required Offset editorScaleOffset,
+    required ProImageEditorConfigs configs,
     required ScaleUpdateDetails details,
     required Layer activeLayer,
     required Size editorSize,
@@ -139,9 +149,15 @@ class LayerInteractionManager {
     );
     Size activeSize = rotateScaleLayerSizeHelper!;
 
+    double realDx =
+        (details.focalPoint.dx - editorScaleOffset.dx) / editorScaleFactor;
+
+    double realDy =
+        (details.focalPoint.dy - editorScaleOffset.dy) / editorScaleFactor;
+
     Offset touchPositionFromCenter = Offset(
-          details.focalPoint.dx - editorSize.width / 2,
-          details.focalPoint.dy - editorSize.height / 2,
+          realDx - editorSize.width / 2,
+          realDy - editorSize.height / 2,
         ) -
         layerOffset;
 
@@ -160,9 +176,11 @@ class LayerInteractionManager {
         rotateScaleLayerScaleHelper!;
 
     activeLayer.scale = newDistance / realSize.distance;
+    _setMinMaxScaleFactor(configs, activeLayer);
     activeLayer.rotation =
         touchPositionFromCenter.direction - atan(1 / activeSize.aspectRatio);
 
+    if (editorScaleFactor > 1) return;
     checkRotationLine(
       activeLayer: activeLayer,
       editorSize: editorSize,
@@ -172,21 +190,38 @@ class LayerInteractionManager {
 
   /// Calculates movement of a layer based on user interactions, considering various conditions such as hit areas and screen boundaries.
   calculateMovement({
+    required double editorScaleFactor,
     required BuildContext context,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
     required bool configEnabledHitVibration,
+    required GlobalKey removeAreaKey,
+    required Function(bool) onHoveredRemoveChanged,
   }) {
     if (_activeScale) return;
 
+    RenderBox? box =
+        removeAreaKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box != null) {
+      Offset position = box.localToGlobal(Offset.zero);
+      bool hit = Rect.fromLTWH(
+        position.dx,
+        position.dy,
+        box.size.width,
+        box.size.height,
+      ).contains(detail.focalPoint);
+      if (hoverRemoveBtn != hit) {
+        hoverRemoveBtn = hit;
+        onHoveredRemoveChanged.call(hoverRemoveBtn);
+      }
+    }
+
     activeLayer.offset = Offset(
-      activeLayer.offset.dx + detail.focalPointDelta.dx,
-      activeLayer.offset.dy + detail.focalPointDelta.dy,
+      activeLayer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
+      activeLayer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
     );
 
-    hoverRemoveBtn = detail.focalPoint.dx <= kToolbarHeight &&
-        detail.focalPoint.dy <=
-            kToolbarHeight + MediaQuery.of(context).viewPadding.top;
+    if (editorScaleFactor > 1) return;
 
     bool vibarate = false;
     double posX = activeLayer.offset.dx;
@@ -247,6 +282,8 @@ class LayerInteractionManager {
 
   /// Calculates scaling and rotation of a layer based on user interactions.
   calculateScaleRotate({
+    required double editorScaleFactor,
+    required ProImageEditorConfigs configs,
     required ScaleUpdateDetails detail,
     required Layer activeLayer,
     required Size editorSize,
@@ -256,13 +293,16 @@ class LayerInteractionManager {
     _activeScale = true;
 
     activeLayer.scale = baseScaleFactor * detail.scale;
+    _setMinMaxScaleFactor(configs, activeLayer);
     activeLayer.rotation = baseAngleFactor + detail.rotation;
 
-    checkRotationLine(
-      activeLayer: activeLayer,
-      editorSize: editorSize,
-      configEnabledHitVibration: configEnabledHitVibration,
-    );
+    if (editorScaleFactor == 1) {
+      checkRotationLine(
+        activeLayer: activeLayer,
+        editorSize: editorSize,
+        configEnabledHitVibration: configEnabledHitVibration,
+      );
+    }
 
     scaleDebounce(() => _activeScale = false);
   }
@@ -461,6 +501,31 @@ class LayerInteractionManager {
       Future.delayed(const Duration(milliseconds: 3)).whenComplete(() {
         Vibration.cancel();
       });
+    }
+  }
+
+  void _setMinMaxScaleFactor(ProImageEditorConfigs configs, Layer layer) {
+    if (layer is PaintingLayerData) {
+      layer.scale = layer.scale.clamp(
+        configs.paintEditorConfigs.minScale,
+        configs.paintEditorConfigs.maxScale,
+      );
+    } else if (layer is TextLayerData) {
+      layer.scale = layer.scale.clamp(
+        configs.textEditorConfigs.minScale,
+        configs.textEditorConfigs.maxScale,
+      );
+    } else if (layer is EmojiLayerData) {
+      layer.scale = layer.scale.clamp(
+        configs.emojiEditorConfigs.minScale,
+        configs.emojiEditorConfigs.maxScale,
+      );
+    } else if (layer is StickerLayerData &&
+        configs.stickerEditorConfigs != null) {
+      layer.scale = layer.scale.clamp(
+        configs.stickerEditorConfigs!.minScale,
+        configs.stickerEditorConfigs!.maxScale,
+      );
     }
   }
 }

@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -14,7 +15,6 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
   final editorKey = GlobalKey<ProImageEditorState>();
   Uint8List? editedBytes;
   double? _generationTime;
-  String? contentType;
   DateTime? startEditingTime;
 
   Future<void> onImageEditingStarted() async {
@@ -35,10 +35,15 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
     }
   }
 
-  void onCloseEditor() async {
+  void onCloseEditor({
+    bool showThumbnail = false,
+    ui.Image? rawOriginalImage,
+    final ImageGeneratioConfigs? generatioConfigs,
+  }) async {
     if (editedBytes != null) {
       await precacheImage(MemoryImage(editedBytes!), context);
       if (!mounted) return;
+      editorKey.currentState?.disablePopScope = true;
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -46,7 +51,9 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
             return PreviewImgPage(
               imgBytes: editedBytes!,
               generationTime: _generationTime,
-              contentType: contentType,
+              showThumbnail: showThumbnail,
+              rawOriginalImage: rawOriginalImage,
+              generatioConfigs: generatioConfigs,
             );
           },
         ),
@@ -54,7 +61,6 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
         editedBytes = null;
         _generationTime = null;
         startEditingTime = null;
-        contentType = null;
       });
     }
     if (mounted) Navigator.pop(context);

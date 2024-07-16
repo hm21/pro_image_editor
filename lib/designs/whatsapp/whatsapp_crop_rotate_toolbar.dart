@@ -25,9 +25,12 @@ class WhatsAppCropRotateToolbar extends StatefulWidget {
   /// Callback function for opening aspect ratios.
   final Function() openAspectRatios;
 
+  final Color bottomBarColor;
+
   /// Constructs a WhatsAppCropRotateToolbar widget with the specified parameters.
   const WhatsAppCropRotateToolbar({
     super.key,
+    required this.bottomBarColor,
     required this.configs,
     required this.onCancel,
     required this.onRotate,
@@ -37,10 +40,11 @@ class WhatsAppCropRotateToolbar extends StatefulWidget {
   });
 
   @override
-  State<WhatsAppCropRotateToolbar> createState() => _WhatsAppAppbarState();
+  State<WhatsAppCropRotateToolbar> createState() =>
+      _WhatsAppCropRotateToolbar();
 }
 
-class _WhatsAppAppbarState extends State<WhatsAppCropRotateToolbar> {
+class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
   @override
   Widget build(BuildContext context) {
     if (widget.configs.designMode == ImageEditorDesignModeE.material) {
@@ -133,29 +137,30 @@ class _WhatsAppAppbarState extends State<WhatsAppCropRotateToolbar> {
           ),
         ),
         Container(
-          color: widget.configs.imageEditorTheme.cropRotateEditor
-              .whatsappCupertinoBottomBarColor,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              CupertinoButton(
-                onPressed: widget.onCancel,
-                padding: padding,
-                child: Text(
-                  widget.configs.i18n.cropRotateEditor.cancel,
-                  style: style,
+          color: widget.bottomBarColor,
+          child: SafeArea(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CupertinoButton(
+                  onPressed: widget.onCancel,
+                  padding: padding,
+                  child: Text(
+                    widget.configs.i18n.cropRotateEditor.cancel,
+                    style: style,
+                  ),
                 ),
-              ),
-              CupertinoButton(
-                onPressed: widget.onDone,
-                padding: padding,
-                child: Text(
-                  widget.configs.i18n.cropRotateEditor.done,
-                  style: style.copyWith(fontWeight: FontWeight.w500),
+                CupertinoButton(
+                  onPressed: widget.onDone,
+                  padding: padding,
+                  child: Text(
+                    widget.configs.i18n.cropRotateEditor.done,
+                    style: style.copyWith(fontWeight: FontWeight.w500),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

@@ -1,0 +1,11 @@
+.dart_tool/
+.github/
+.idea/
+.vscode/
+assets/preview/
+build/
+.packages
+.pub/
+.git/
+.gitignore
+pub_login.sh

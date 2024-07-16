@@ -18,7 +18,7 @@ class CropCornerPainter extends CustomPainter {
   final double interactionOpacity;
 
   final double cornerLength;
-  double cornerWidth = 6;
+  final double cornerThickness;
 
   double helperLineWidth = 0.5;
 
@@ -41,6 +41,7 @@ class CropCornerPainter extends CustomPainter {
     required this.scaleFactor,
     required this.imageEditorTheme,
     required this.cornerLength,
+    required this.cornerThickness,
     required this.rotationScaleFactor,
   });
 
@@ -132,7 +133,7 @@ class CropCornerPainter extends CustomPainter {
   }) {
     Path path = Path();
 
-    double width = cornerWidth / rotationScaleFactor;
+    double width = cornerThickness / rotationScaleFactor;
     if (!drawCircle) {
       double length = cornerLength / rotationScaleFactor;
 
@@ -285,8 +286,33 @@ class CropCornerPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return oldDelegate is! CropCornerPainter ||
+        oldDelegate.drawCircle != drawCircle ||
+        oldDelegate.offset != offset ||
         oldDelegate.cropRect != cropRect ||
+        oldDelegate.fadeInOpacity != fadeInOpacity ||
+        oldDelegate.interactionOpacity != interactionOpacity ||
         oldDelegate.viewRect != viewRect ||
+        oldDelegate.screenSize != screenSize ||
+        oldDelegate.scaleFactor != scaleFactor ||
+        oldDelegate.imageEditorTheme != imageEditorTheme ||
+        oldDelegate.cornerLength != cornerLength ||
         oldDelegate.rotationScaleFactor != rotationScaleFactor;
+  }
+
+  CropCornerPainter copy() {
+    return CropCornerPainter(
+      drawCircle: drawCircle,
+      offset: offset,
+      cropRect: cropRect,
+      fadeInOpacity: fadeInOpacity,
+      interactionOpacity: interactionOpacity,
+      viewRect: viewRect,
+      screenSize: screenSize,
+      scaleFactor: scaleFactor,
+      imageEditorTheme: imageEditorTheme,
+      cornerLength: cornerLength,
+      cornerThickness: cornerThickness,
+      rotationScaleFactor: rotationScaleFactor,
+    );
   }
 }

@@ -6,25 +6,33 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
-  publish:
-    permissions:
-      id-token: write # Required for authentication using OIDC
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@v4
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.22.0
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
-      - name: format code
-        run: flutter format .
-
-      - name: analyze code
+      - name: Analyze
         run: flutter analyze .
 
-      - name: run tests
+      - name: Run tests
         run: flutter test
 
-      - name: Publish
-        run: dart pub publish --force
+      - name: Setup Pub Credentials
+        run: |
+          echo "export PUB_DEV_PUBLISH_ACCESS_TOKEN=$PUB_DEV_PUBLISH_ACCESS_TOKEN" >> $GITHUB_ENV
+          echo "export PUB_DEV_PUBLISH_REFRESH_TOKEN=$PUB_DEV_PUBLISH_REFRESH_TOKEN" >> $GITHUB_ENV (optional, if using refresh token)
+
+      - name: Check Publish Warnings
+        run: dart pub publish --dry-run
+
+      - name: Publish Package
+        run: dart pub publish -f

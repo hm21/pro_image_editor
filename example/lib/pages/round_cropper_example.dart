@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -64,8 +62,13 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
-        configs: const ProImageEditorConfigs(
-          cropRotateEditorConfigs: CropRotateEditorConfigs(
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+          imageGenerationConfigs: const ImageGeneratioConfigs(
+            outputFormat: OutputFormat.png,
+            pngFilter: PngFilter.average,
+          ),
+          cropRotateEditorConfigs: const CropRotateEditorConfigs(
             roundCropper: true,
             canChangeAspectRatio: false,
             initAspectRatio: 1,

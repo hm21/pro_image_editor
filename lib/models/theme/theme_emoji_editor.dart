@@ -12,12 +12,15 @@ import 'package:flutter/widgets.dart';
 
 // Project imports:
 import '../theme/theme_shared_values.dart';
+import 'theme_dragable_sheet.dart';
+import 'types/theme_types.dart';
 
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
     show
         BottomActionBarConfig,
         CategoryViewConfig,
         DefaultEmojiTextStyle,
+        ButtonMode,
         EmojiViewConfig,
         SearchViewConfig,
         SkinToneConfig;
@@ -28,8 +31,6 @@ export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
 ///
 /// ```dart
 /// EmojiEditorTheme emojiEditorTheme = EmojiEditorTheme();
-/// ```
-///
 /// ```
 class EmojiEditorTheme {
   /// Configuration for the skin tone.
@@ -71,12 +72,56 @@ class EmojiEditorTheme {
   /// If false, the category view will be displayed at the top and the bottom action bar at the bottom.
   final bool swapCategoryAndBottomBar;
 
+  /// Specifies whether a drag handle is shown on the bottom sheet.
+  final bool showDragHandle;
+
+  /// Configuration settings for the draggable bottom sheet component.
+  final ThemeDraggableSheet themeDraggableSheet;
+
+  /// Padding for the category title.
+  final EdgeInsets categoryTitlePadding;
+
+  /// Text style for the category title.
+  final TextStyle categoryTitleStyle;
+
+  /// Background color for the emoji editor.
+  final Color backgroundColor;
+
+  /// Duration for the scroll animation.
+  final Duration scrollToDuration;
+
+  /// Use this to build custom [BoxConstraints] that will be applied to
+  /// the modal bottom sheet displaying the [EmojiEditor].
+  ///
+  /// Otherwise, it falls back to
+  /// [ProImageEditorConfigs.editorBoxConstraintsBuilder].
+  final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
   /// Creates an instance of the `EmojiEditorTheme` class with the specified theme properties.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// EmojiEditorTheme(
+  ///   bottomActionBarConfig: BottomActionBarConfig(...),
+  ///   skinToneConfig: SkinToneConfig(...),
+  ///   ...
+  /// )
+  /// ```
   const EmojiEditorTheme({
+    this.editorBoxConstraintsBuilder,
+    this.backgroundColor = const Color(0xFF121B22),
+    this.scrollToDuration = Duration.zero,
+    this.themeDraggableSheet = const ThemeDraggableSheet(
+      minChildSize: 0.4,
+      maxChildSize: 0.4,
+      initialChildSize: 0.4,
+    ),
+    this.showDragHandle = true,
     this.bottomActionBarConfig = const BottomActionBarConfig(
       buttonIconColor: imageEditorTextColor,
-      backgroundColor: imageEditorBackgroundColor,
-      buttonColor: imageEditorBackgroundColor,
+      backgroundColor: Color(0xFF121B22),
+      buttonColor: Color(0xFF121B22),
       showBackspaceButton: false,
     ),
     this.skinToneConfig = const SkinToneConfig(
@@ -89,5 +134,11 @@ class EmojiEditorTheme {
     this.emojiViewConfig,
     this.textStyle = DefaultEmojiTextStyle,
     this.swapCategoryAndBottomBar = true,
+    this.categoryTitlePadding = const EdgeInsets.only(left: 10),
+    this.categoryTitleStyle = const TextStyle(
+      color: Color(0xFF86959C),
+      fontWeight: FontWeight.w500,
+      fontSize: 14,
+    ),
   });
 }

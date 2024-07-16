@@ -2,11 +2,6 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/blur_editor.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
-import 'package:pro_image_editor/modules/filter_editor/filter_editor.dart';
-import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -136,12 +131,14 @@ class _StandaloneExampleState extends State<StandaloneExample>
         theme: ThemeData.dark(),
         enableFakeHero: true,
         convertToUint8List: true,
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
-            /// If your users paint a lot in a short time, you should disable this
-            /// flag because it will overload the isolated thread which delay the final result
-            generateImageInBackground: true,
-          ),
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+          imageGenerationConfigs: const ImageGeneratioConfigs(
+
+              /// If your users paint a lot in a short time, you should disable this
+              /// flag because it will overload the isolated thread which delay the final result
+              /// generateImageInBackground: true,
+              ),
         ),
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
@@ -157,12 +154,14 @@ class _StandaloneExampleState extends State<StandaloneExample>
       initConfigs: CropRotateEditorInitConfigs(
         theme: ThemeData.dark(),
         convertToUint8List: true,
-        configs: const ProImageEditorConfigs(
-          imageGenerationConfigs: ImageGeneratioConfigs(
-            /// If your users change a lot stuff in a short time, you should disable this
-            /// flag because it will overload the isolated thread which delay the final result.
-            generateImageInBackground: true,
-          ),
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+          imageGenerationConfigs: const ImageGeneratioConfigs(
+
+              /// If your users change a lot stuff in a short time, you should disable this
+              /// flag because it will overload the isolated thread which delay the final result.
+              /// generateImageInBackground: true,
+              ),
         ),
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
@@ -180,6 +179,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+        ),
       ),
     );
   }
@@ -193,6 +195,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+        ),
       ),
     );
   }

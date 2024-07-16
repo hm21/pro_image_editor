@@ -3,6 +3,16 @@ class I18nPaintingEditor {
   /// Text for the bottom navigation bar item that opens the Painting Editor.
   final String bottomNavigationBarText;
 
+  /// The text used for moving and zooming within the editor.
+  ///
+  /// This icon appears in the editor bottombar.
+  ///
+  /// When in the [PaintEditorConfigs] the config [editorIsZoomable] is set to
+  /// `true`, this text will be displayed, allowing users to interact with the
+  /// editor's zoom and move features. If [editorIsZoomable] is set to `false`,
+  /// the text will be hidden.
+  final String moveAndZoom;
+
   /// Text for the "Freestyle" painting mode.
   final String freestyle;
 
@@ -20,6 +30,9 @@ class I18nPaintingEditor {
 
   /// Text for the "Dash line" painting mode.
   final String dashLine;
+
+  /// Text for the "Eraser" painting mode.
+  final String eraser;
 
   /// Text for the "Line width" tooltip.
   final String lineWidth;
@@ -52,7 +65,6 @@ class I18nPaintingEditor {
   ///
   /// ```dart
   /// I18nPaintingEditor(
-  ///   applyPaintingDialogMsg: 'Applying painting changes...',
   ///   bottomNavigationBarText: 'Paint',
   ///   freestyle: 'Freestyle',
   ///   arrow: 'Arrow',
@@ -62,6 +74,7 @@ class I18nPaintingEditor {
   ///   dashLine: 'Dash Line',
   ///   lineWidth: 'Line Width',
   ///   toggleFill: 'Toggle fill',
+  ///   eraser: 'Eraser',
   ///   undo: 'Undo',
   ///   redo: 'Redo',
   ///   done: 'Done',
@@ -69,6 +82,7 @@ class I18nPaintingEditor {
   /// )
   /// ```
   const I18nPaintingEditor({
+    this.moveAndZoom = 'Zoom',
     this.bottomNavigationBarText = 'Paint',
     this.freestyle = 'Freestyle',
     this.arrow = 'Arrow',
@@ -77,6 +91,7 @@ class I18nPaintingEditor {
     this.circle = 'Circle',
     this.dashLine = 'Dash line',
     this.lineWidth = 'Line width',
+    this.eraser = 'Eraser',
     this.toggleFill = 'Toggle fill',
     this.undo = 'Undo',
     this.redo = 'Redo',

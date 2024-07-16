@@ -81,6 +81,8 @@ class TransformConfigs {
         offset == const Offset(0, 0);
   }
 
+  bool get isNotEmpty => !isEmpty;
+
   double get scale => scaleUser * scaleRotation;
   bool get is90DegRotated {
     RotateAngleSide factor = getRotateAngleSide(angle);
@@ -97,16 +99,16 @@ class TransformConfigs {
         'right': cropRect.right,
         'bottom': cropRect.bottom,
       },
-      'originalRect': {
+      'originalSize': {
         'width': originalSize.width,
         'height': originalSize.height,
       },
       'cropEditorScreenRatio': cropEditorScreenRatio,
       'scaleUser': scaleUser,
       'scaleRotation': scaleRotation,
+      'aspectRatio': aspectRatio,
       'flipX': flipX,
       'flipY': flipY,
-      'aspectRatio': aspectRatio,
       'offset': {
         'dx': offset.dx,
         'dy': offset.dy,

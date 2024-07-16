@@ -3,113 +3,126 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-import 'package:network_image_mock/network_image_mock.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/paint_editor_configs.dart';
-import 'package:pro_image_editor/models/i18n/i18n.dart';
-import 'package:pro_image_editor/models/icons/icons.dart';
-import 'package:pro_image_editor/models/init_configs/paint_canvas_init_configs.dart';
-import 'package:pro_image_editor/models/layer.dart';
-import 'package:pro_image_editor/models/theme/theme.dart';
-import 'package:pro_image_editor/modules/paint_editor/painting_canvas.dart';
+import 'package:pro_image_editor/modules/paint_editor/utils/paint_controller.dart';
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
-import 'package:pro_image_editor/utils/design_mode.dart';
-import '../../fake/fake_image.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/painting_canvas.dart';
 
 void main() {
   group('PaintingCanvas Tests', () {
-    PaintCanvasInitConfigs initConfigs = PaintCanvasInitConfigs(
-      theme: ThemeData(),
-      drawAreaSize: const Size(200, 200),
-      i18n: const I18n(),
-      imageEditorTheme: const ImageEditorTheme(),
-      icons: const ImageEditorIcons(),
-      designMode: ImageEditorDesignModeE.material,
-      configs: const PaintEditorConfigs(),
-    );
-    testWidgets('Initializes with memory constructor',
+    testWidgets(
+        'Handles gestures and updates painting in paintings with start/stop offsets',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintingCanvas.memory(
-          fakeMemoryImage,
-          key: GlobalKey(),
-          initConfigs: initConfigs,
-        ),
-      ));
-
-      expect(find.byType(PaintingCanvas), findsOneWidget);
-    });
-    testWidgets('Initializes with network constructor',
-        (WidgetTester tester) async {
-      mockNetworkImagesFor(() async {
-        await tester.pumpWidget(MaterialApp(
-          home: PaintingCanvas.network(
-            fakeNetworkImage,
-            key: GlobalKey(),
-            initConfigs: initConfigs,
+      final GlobalKey<PaintingCanvasState> canvasKey = GlobalKey();
+      PaintingController ctrl = PaintingController(
+        color: Colors.red,
+        mode: PaintModeE.arrow,
+        fill: false,
+        strokeWidth: 1,
+        strokeMultiplier: 1,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintingCanvas(
+              key: canvasKey,
+              drawAreaSize: const Size(1000, 1000),
+              paintCtrl: ctrl,
+            ),
           ),
-        ));
-
-        expect(find.byType(PaintingCanvas), findsOneWidget);
-      });
-    });
-    testWidgets('Initializes with file constructor',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintingCanvas.file(
-          fakeFileImage,
-          key: GlobalKey(),
-          initConfigs: initConfigs,
         ),
-      ));
+      );
 
-      expect(find.byType(PaintingCanvas), findsOneWidget);
-    });
-
-    testWidgets('Handles gestures and updates painting',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintingCanvas.memory(
-          fakeMemoryImage,
-          key: GlobalKey(),
-          initConfigs: initConfigs,
-        ),
-      ));
-
-      final PaintingCanvasState state =
-          tester.state(find.byType(PaintingCanvas));
+      Offset center = tester.getCenter(find.byKey(canvasKey));
 
       // Simulate scale start gesture
-      const Offset startPoint = Offset(50, 50);
-      final TestGesture gesture = await tester.startGesture(startPoint);
-      await tester.pump();
+      final TestGesture gesture = await tester.startGesture(center);
+
+      /// Assuming the start point is not null
+      expect(ctrl.start, isNotNull);
 
       // Simulate scale update gesture
-      const Offset updatedPoint = Offset(70, 70);
+      Offset updatedPoint = center + const Offset(10, 10);
       await gesture.moveTo(updatedPoint);
-      await tester.pump();
+
+      /// Assuming the end point is not null
+      expect(ctrl.end, isNotNull);
 
       // Simulate scale end gesture
       await gesture.up();
-      await tester.pump();
 
-      expect(state.mode, PaintModeE.freeStyle);
+      // Assuming the paintmode didn't change
+      expect(ctrl.mode, PaintModeE.arrow);
+
       // Assuming the gesture creates an undoable action
-      expect(state.canUndo, isTrue);
+      expect(ctrl.canUndo, isTrue);
+    });
+
+    testWidgets('Handles gestures and updates painting in freestyle-paintings',
+        (WidgetTester tester) async {
+      final GlobalKey<PaintingCanvasState> canvasKey = GlobalKey();
+      PaintingController ctrl = PaintingController(
+        color: Colors.red,
+        mode: PaintModeE.freeStyle,
+        fill: false,
+        strokeWidth: 1,
+        strokeMultiplier: 1,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintingCanvas(
+              key: canvasKey,
+              drawAreaSize: const Size(1000, 1000),
+              paintCtrl: ctrl,
+            ),
+          ),
+        ),
+      );
+
+      Offset center = tester.getCenter(find.byKey(canvasKey));
+
+      // Simulate scale start gesture
+      final TestGesture gesture = await tester.startGesture(center);
+
+      // Simulate scale update gesture
+      await gesture.moveTo(center + const Offset(0, 10));
+      await gesture.moveTo(center + const Offset(10, 0));
+      await gesture.moveTo(center + const Offset(10, 10));
+
+      /// Assuming the offset length is correct
+      expect(ctrl.offsets.length, 4);
+
+      // Simulate scale end gesture
+      await gesture.up();
+
+      // Assuming the paintmode didn't change
+      expect(ctrl.mode, PaintModeE.freeStyle);
+
+      // Assuming the gesture creates an undoable action
+      expect(ctrl.canUndo, isTrue);
     });
 
     testWidgets('Performs undo and redo actions', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintingCanvas.memory(
-          fakeMemoryImage,
-          key: GlobalKey(),
-          initConfigs: initConfigs,
-        ),
-      ));
+      PaintingController ctrl = PaintingController(
+        color: Colors.red,
+        mode: PaintModeE.arrow,
+        fill: false,
+        strokeWidth: 1,
+        strokeMultiplier: 1,
+      );
 
-      final PaintingCanvasState state =
-          tester.state(find.byType(PaintingCanvas));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintingCanvas(
+              drawAreaSize: const Size(200, 200),
+              paintCtrl: ctrl,
+            ),
+          ),
+        ),
+      );
 
       // Simulate scale start gesture
       const Offset startPoint = Offset(50, 50);
@@ -126,56 +139,20 @@ void main() {
       await tester.pump();
 
       // Perform an undo action
-      state.undo();
+      ctrl.undo();
       await tester.pump();
 
       // Verify that undo action has an effect
-      expect(state.canUndo, isFalse); // Assuming the undo clears the action
-      expect(state.canRedo, isTrue); // There should be an action to redo now
+      expect(ctrl.canUndo, isFalse); // Assuming the undo clears the action
+      expect(ctrl.canRedo, isTrue); // There should be an action to redo now
 
       // Perform a redo action
-      state.redo();
+      ctrl.redo();
       await tester.pump();
 
       // Verify that redo action has an effect
-      expect(state.canUndo, isTrue); // The action should be back in the history
-      expect(state.canRedo, isFalse); // There should be no actions to redo now
-    });
-
-    testWidgets('Export painted items', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintingCanvas.memory(
-          fakeMemoryImage,
-          key: GlobalKey(),
-          initConfigs: initConfigs,
-        ),
-      ));
-
-      final PaintingCanvasState state =
-          tester.state(find.byType(PaintingCanvas));
-
-      // Simulate scale start gesture
-      const Offset startPoint = Offset(50, 50);
-      final TestGesture gesture = await tester.startGesture(startPoint);
-      await tester.pump();
-
-      // Simulate scale update gesture
-      const Offset updatedPoint = Offset(70, 70);
-      await gesture.moveTo(updatedPoint);
-      await tester.pump();
-
-      // Simulate scale end gesture
-      await gesture.up();
-      await tester.pump();
-
-      // Export the painted items
-      final List<PaintingLayerData> exportedItems =
-          state.exportPaintedItems(const Size(500, 500));
-
-      // Verify that the exported items match the expected result
-      expect(exportedItems, isNotEmpty); // Assuming there are painted items
-      expect(exportedItems.first,
-          isA<PaintingLayerData>()); // Check the type of exported items
+      expect(ctrl.canUndo, isTrue); // The action should be back in the history
+      expect(ctrl.canRedo, isFalse); // There should be no actions to redo now
     });
   });
 }

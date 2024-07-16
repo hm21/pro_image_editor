@@ -1,17 +1,12 @@
-// ignore_for_file: library_private_types_in_public_api
-
-// Dart imports:
-
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 
 // Project imports:
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
-import '../../../models/history/blur_state_history.dart';
-import '../../../models/history/filter_state_history.dart';
 import '../../../models/history/state_history.dart';
-import '../../../models/isolate_models/isolate_capture_model.dart';
-import '../../../models/layer.dart';
+import '../../../models/multi_threading/thread_capture_model.dart';
+import '../../filter_editor/types/filter_matrix.dart';
 
 /// A class for managing the state and history of image editing changes.
 class StateManager {
@@ -22,14 +17,14 @@ class StateManager {
   List<EditorStateHistory> stateHistory = [];
 
   /// Get the list of filters from the current image editor changes.
-  List<FilterStateHistory> get activeFilters => stateHistory[position].filters;
+  FilterMatrix get activeFilters => stateHistory[position].filters;
 
   /// Get the transformconfigurations from the crop/ rotate editor.
   TransformConfigs get transformConfigs =>
       stateHistory[position].transformConfigs;
 
-  /// Get the blur state from the current image editor changes.
-  BlurStateHistory get activeBlur => stateHistory[position].blur;
+  /// Get the blur from the current image editor changes.
+  double get activeBlur => stateHistory[position].blur;
 
   /// Get the list of layers from the current image editor changes.
   List<Layer> get activeLayers => stateHistory[position].layers;
@@ -38,9 +33,9 @@ class StateManager {
   bool heroScreenshotRequired = false;
 
   /// List of captured screenshots for each state in the history.
-  List<IsolateCaptureState> screenshots = [];
+  List<ThreadCaptureState> screenshots = [];
 
-  IsolateCaptureState? get activeScreenshot {
+  ThreadCaptureState? get activeScreenshot {
     return screenshots.length > position - 1 ? screenshots[position - 1] : null;
   }
 

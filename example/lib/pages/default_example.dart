@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:file_picker/file_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 // Project imports:
 import '../utils/example_constants.dart';
@@ -52,13 +51,13 @@ class _DefaultExampleState extends State<DefaultExample>
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
                     Navigator.pop(context);
-                    LoadingDialog loading = LoadingDialog()
-                      ..show(
-                        context,
-                        configs: const ProImageEditorConfigs(),
-                        theme: ThemeData.dark(),
-                      );
-                    var url = 'https://picsum.photos/2000';
+                    LoadingDialog loading = LoadingDialog();
+                    await loading.show(
+                      context,
+                      configs: const ProImageEditorConfigs(),
+                      theme: ThemeData.dark(),
+                    );
+                    var url = 'https://picsum.photos/5000';
                     var bytes = await fetchImageAsUint8List(url);
 
                     if (!context.mounted) return;
@@ -96,16 +95,19 @@ class _DefaultExampleState extends State<DefaultExample>
                   onTap: () async {
                     Navigator.pop(context);
 
-                    LoadingDialog loading = LoadingDialog()
-                      ..show(
-                        context,
-                        configs: const ProImageEditorConfigs(),
-                        theme: ThemeData.dark(),
-                      );
+                    LoadingDialog loading = LoadingDialog();
+                    await loading.show(
+                      context,
+                      configs: const ProImageEditorConfigs(),
+                      theme: ThemeData.dark(),
+                    );
+                    if (!context.mounted) return;
+
                     await precacheImage(
                         NetworkImage(
                             ExampleConstants.of(context)!.demoNetworkUrl),
                         context);
+
                     if (context.mounted) await loading.hide(context);
                     if (!context.mounted) return;
                     Navigator.of(context).push(
@@ -161,10 +163,8 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
       ),
     );
   }
@@ -177,10 +177,8 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
       ),
     );
   }
@@ -193,10 +191,8 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
       ),
     );
   }
@@ -209,10 +205,8 @@ class _DefaultExampleState extends State<DefaultExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
       ),
     );
   }

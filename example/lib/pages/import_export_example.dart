@@ -1,5 +1,7 @@
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -50,42 +52,68 @@ class _ImportExportExampleState extends State<ImportExportExample>
             onCloseEditor: onCloseEditor,
           ),
           configs: ProImageEditorConfigs(
-            imageGenerationConfigs: const ImageGeneratioConfigs(
-              allowEmptyEditCompletion: true,
-            ),
-            stateHistoryConfigs: StateHistoryConfigs(
-              initStateHistory: ImportStateHistory.fromMap(
-                importHistoryDemoData,
-                configs: const ImportEditorConfigs(
-                  recalculateSizeAndPosition: true,
+              imageGenerationConfigs: const ImageGeneratioConfigs(
+                generateImageInBackground: false,
+              ),
+              designMode: platformDesignMode,
+              imageEditorTheme: ImageEditorTheme(
+                emojiEditor: kIsWeb
+                    ? EmojiEditorTheme(
+                        textStyle: DefaultEmojiTextStyle.copyWith(
+                          fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
+                        ),
+                      )
+                    : const EmojiEditorTheme(),
+              ),
+              emojiEditorConfigs: const EmojiEditorConfigs(
+                checkPlatformCompatibility: !kIsWeb,
+              ),
+              stateHistoryConfigs: StateHistoryConfigs(
+                initStateHistory: ImportStateHistory.fromMap(
+                  importHistoryDemoData,
+                  configs: const ImportEditorConfigs(
+                    recalculateSizeAndPosition: true,
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 2 * kBottomNavigationBarHeight,
-          left: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.lightBlue.shade200,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(100),
-                bottomRight: Radius.circular(100),
-              ),
-            ),
-            child: IconButton(
-              onPressed: () async {
-                var history = editorKey.currentState!.exportStateHistory(
-                  configs: const ExportEditorConfigs(
-                      // configs...
-                      ),
-                );
-                debugPrint(await history.toJson());
-              },
-              icon: const Icon(Icons.send_to_mobile_outlined),
-            ),
-          ),
+              customWidgets:
+                  ImageEditorCustomWidgets(mainEditor: CustomWidgetsMainEditor(
+                bodyItems: (editor, rebuildStream) {
+                  return [
+                    ReactiveCustomWidget(
+                        builder: (_) {
+                          return Positioned(
+                            bottom: 20,
+                            left: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.lightBlue.shade200,
+                                borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(100),
+                                  bottomRight: Radius.circular(100),
+                                ),
+                              ),
+                              child: IconButton(
+                                onPressed: () async {
+                                  var history = await editor.exportStateHistory(
+                                    configs: const ExportEditorConfigs(
+                                        // configs...
+                                        ),
+                                  );
+                                  debugPrint(await history.toJson());
+                                },
+                                icon: const Icon(
+                                  Icons.send_to_mobile_outlined,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        stream: rebuildStream),
+                  ];
+                },
+              ))),
         ),
       ],
     );

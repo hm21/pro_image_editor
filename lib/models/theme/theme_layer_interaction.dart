@@ -41,6 +41,16 @@ class ThemeLayerInteraction {
   /// Indicates whether tooltips should be displayed for the layer.
   final bool showTooltips;
 
+  final Color removeAreaBackgroundActive;
+  final Color removeAreaBackgroundInactive;
+
+  final Color buttonRemoveColor;
+  final Color buttonRemoveBackground;
+  final Color buttonEditTextColor;
+  final Color buttonEditTextBackground;
+  final Color buttonScaleRotateColor;
+  final Color buttonScaleRotateBackground;
+
   /// Creates a new instance of [ThemeLayerInteraction].
   ///
   /// - The [buttonRadius] defaults to `10.0`.
@@ -54,6 +64,8 @@ class ThemeLayerInteraction {
   /// - The [borderStyle] defaults to [LayerInteractionBorderStyle.solid].
   /// - The [showTooltips] defaults to `false`.
   const ThemeLayerInteraction({
+    this.removeAreaBackgroundActive = const Color(0xFFF44336),
+    this.removeAreaBackgroundInactive = const Color(0xFF424242),
     this.buttonRadius = 10,
     this.strokeWidth = 1.2,
     this.borderElementWidth = 7,
@@ -65,6 +77,12 @@ class ThemeLayerInteraction {
     this.hoverCursor = SystemMouseCursors.move,
     this.borderStyle = LayerInteractionBorderStyle.solid,
     this.showTooltips = false,
+    this.buttonRemoveColor = Colors.black,
+    this.buttonRemoveBackground = Colors.white,
+    this.buttonEditTextColor = Colors.black,
+    this.buttonEditTextBackground = Colors.white,
+    this.buttonScaleRotateColor = Colors.black,
+    this.buttonScaleRotateBackground = Colors.white,
   });
 }
 

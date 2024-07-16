@@ -38,10 +38,11 @@ class StickerEditorConfigs {
   /// and behavior of stickers in the editor.
   final BuildStickers buildStickers;
 
-  /// A callback triggered each time the search value changes.
-  ///
-  /// This callback is activated exclusively when the editor mode is set to 'WhatsApp'.
-  final Function(String value)? onSearchChanged;
+  /// The minimum scale factor from the layer.
+  final double minScale;
+
+  /// The maximum scale factor from the layer.
+  final double maxScale;
 
   /// Creates an instance of StickerEditorConfigs with optional settings.
   ///
@@ -49,10 +50,14 @@ class StickerEditorConfigs {
   /// are set to reasonable defaults.
   const StickerEditorConfigs({
     required this.buildStickers,
-    this.onSearchChanged,
     this.initWidth = 100,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
     this.enabled = false,
-  }) : assert(initWidth > 0, 'initWidth must be positive');
+  })  : assert(initWidth > 0, 'initWidth must be positive'),
+        assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
 }
 
-typedef BuildStickers = Widget Function(Function(Widget) setLayer);
+typedef BuildStickers = Widget Function(
+    Function(Widget) setLayer, ScrollController scrollController);

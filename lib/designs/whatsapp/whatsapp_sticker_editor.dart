@@ -6,9 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
+import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
-import 'package:pro_image_editor/modules/sticker_editor.dart';
-import 'package:pro_image_editor/utils/design_mode.dart';
+import 'package:pro_image_editor/modules/sticker_editor/sticker_editor.dart';
 import '../../models/editor_configs/pro_image_editor_configs.dart';
 
 /// Represents the temporary sticker mode for WhatsApp.
@@ -21,9 +21,13 @@ class WhatsAppStickerPage extends StatefulWidget {
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
+  /// The callbacks from the image editor.
+  final ProImageEditorCallbacks callbacks;
+
   const WhatsAppStickerPage({
     super.key,
     required this.configs,
+    required this.callbacks,
   });
 
   @override
@@ -32,6 +36,7 @@ class WhatsAppStickerPage extends StatefulWidget {
 
 class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   final _emojiEditorKey = GlobalKey<EmojiEditorState>();
+  final _stickerScrollController = ScrollController();
   bool _activeSearch = false;
   late TextEditingController _searchCtrl;
   late FocusNode _searchFocus;
@@ -50,6 +55,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   void dispose() {
     _searchCtrl.dispose();
     _searchFocus.dispose();
+    _stickerScrollController.dispose();
     super.dispose();
   }
 
@@ -84,6 +90,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                             WhatsAppStickerMode.sticker,
                         child: StickerEditor(
                           configs: widget.configs,
+                          scrollController: _stickerScrollController,
                         ),
                       ),
                   ],
@@ -115,7 +122,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                   setState(() {
                     _searchCtrl.clear();
                     _activeSearch = false;
-                    widget.configs.stickerEditorConfigs?.onSearchChanged
+                    widget.callbacks.stickerEditorCallbacks?.onSearchChanged
                         ?.call('');
                   });
                 } else {
@@ -342,7 +349,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                 focusNode: _searchFocus,
                 onChanged: (value) {
                   _emojiEditorKey.currentState?.externSearch(value);
-                  widget.configs.stickerEditorConfigs?.onSearchChanged
+                  widget.callbacks.stickerEditorCallbacks?.onSearchChanged
                       ?.call(value);
                   _searchFocus.requestFocus();
                   Future.delayed(const Duration(milliseconds: 1))
@@ -385,7 +392,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                   focusNode: _searchFocus,
                   onChanged: (value) {
                     _emojiEditorKey.currentState?.externSearch(value);
-                    widget.configs.stickerEditorConfigs?.onSearchChanged
+                    widget.callbacks.stickerEditorCallbacks?.onSearchChanged
                         ?.call(value);
                     _searchFocus.requestFocus();
                   },
@@ -403,7 +410,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                 setState(() {
                   if (_searchCtrl.text.isNotEmpty) {
                     _searchCtrl.clear();
-                    widget.configs.stickerEditorConfigs?.onSearchChanged
+                    widget.callbacks.stickerEditorCallbacks?.onSearchChanged
                         ?.call('');
                   } else {
                     _activeSearch = false;

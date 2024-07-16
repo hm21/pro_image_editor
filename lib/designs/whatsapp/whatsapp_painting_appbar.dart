@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'utils/whatsapp_appbar_button_style.dart';
 import 'whatsapp_done_btn.dart';
 
@@ -55,12 +55,8 @@ class _WhatsAppPaintAppBarState extends State<WhatsAppPaintAppBar> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            WhatsAppDoneBtn(
-              foregroundColor: widget.configs.imageEditorTheme.paintingEditor
-                  .appBarForegroundColor,
-              configs: widget.configs,
-              onPressed: widget.onDone,
-            ),
+            if (widget.configs.designMode == ImageEditorDesignModeE.cupertino)
+              _buildDoneBtn(),
             const Spacer(),
             gap,
             AnimatedSwitcher(
@@ -79,20 +75,40 @@ class _WhatsAppPaintAppBarState extends State<WhatsAppPaintAppBar> {
                       icon: Icon(widget.configs.icons.undoAction),
                       style: whatsAppButtonStyle,
                     )
-                  : const SizedBox.shrink(),
+                  : Opacity(
+                      opacity: 0,
+                      child: IconButton(
+                        onPressed: null,
+                        icon: Icon(widget.configs.icons.undoAction),
+                        style: whatsAppButtonStyle,
+                      ),
+                    ),
             ),
             gap,
-            IconButton(
-              tooltip: widget.configs.i18n.paintEditor.bottomNavigationBarText,
-              onPressed: () {},
-              icon: Icon(widget.configs.icons.paintingEditor.bottomNavBar),
-              style: whatsAppButtonStyle.copyWith(
-                backgroundColor: WidgetStateProperty.all(widget.activeColor),
+            if (widget.configs.designMode == ImageEditorDesignModeE.material)
+              _buildDoneBtn()
+            else
+              IconButton(
+                tooltip:
+                    widget.configs.i18n.paintEditor.bottomNavigationBarText,
+                onPressed: () {},
+                icon: Icon(widget.configs.icons.paintingEditor.bottomNavBar),
+                style: whatsAppButtonStyle.copyWith(
+                  backgroundColor: WidgetStateProperty.all(widget.activeColor),
+                ),
               ),
-            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDoneBtn() {
+    return WhatsAppDoneBtn(
+      foregroundColor:
+          widget.configs.imageEditorTheme.paintingEditor.appBarForegroundColor,
+      configs: widget.configs,
+      onPressed: widget.onDone,
     );
   }
 }

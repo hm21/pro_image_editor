@@ -1,10 +1,14 @@
 // Project imports:
+import 'package:pro_image_editor/models/editor_configs/main_editor_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 /// A mixin providing access to converted configurations from [ProImageEditorConfigs].
 mixin ImageEditorConvertedConfigs {
   /// Returns the main configuration options for the editor.
   ProImageEditorConfigs get configs;
+
+  /// Returns the configuration options for the main editor.
+  MainEditorConfigs get mainEditorConfigs => configs.mainEditorConfigs;
 
   /// Returns the configuration options for the paint editor.
   PaintEditorConfigs get paintEditorConfigs => configs.paintEditorConfigs;
@@ -59,4 +63,7 @@ mixin ImageEditorConvertedConfigs {
 
   /// Returns the hero tag used in the image editor.
   String get heroTag => configs.heroTag;
+
+  /// Indicates if the design mode is material. Otherwise the design mode is cupertino.
+  bool get isMaterial => configs.designMode == ImageEditorDesignModeE.material;
 }

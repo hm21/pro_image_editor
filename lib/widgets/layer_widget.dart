@@ -4,27 +4,25 @@ import 'dart:math';
 // Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:rounded_background_text/rounded_background_text.dart';
+import 'package:pro_image_editor/plugins/rounded_background_text/src/rounded_background_text.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/utils/theme_functions.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../mixins/converted_configs.dart';
 import '../mixins/editor_configs_mixin.dart';
-import '../models/layer.dart';
-import '../modules/paint_editor/utils/draw/draw_canvas.dart';
-import '../modules/paint_editor/utils/paint_editor_enum.dart';
+import '../utils/theme_functions.dart';
 import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
-import 'pro_image_editor_desktop_mode.dart';
 
 /// A widget representing a layer within a design canvas.
 class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
 
-  final Size editorBodySize;
+  @override
+  final ProImageEditorCallbacks callbacks;
+
+  final double editorCenterX;
+  final double editorCenterY;
 
   /// Data for the layer.
   final Layer layerData;
@@ -65,7 +63,8 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     super.key,
     this.onScaleRotateDown,
     this.onScaleRotateUp,
-    required this.editorBodySize,
+    required this.editorCenterX,
+    required this.editorCenterY,
     required this.configs,
     required this.layerData,
     this.onTapDown,
@@ -77,6 +76,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.enableHitDetection = false,
     this.selected = false,
     this.isInteractive = false,
+    this.callbacks = const ProImageEditorCallbacks(),
   });
 
   @override
@@ -187,10 +187,10 @@ class _LayerWidgetState extends State<LayerWidget>
   Layer get _layer => widget.layerData;
 
   /// Calculates the horizontal offset for the layer.
-  double get offsetX => _layer.offset.dx + widget.editorBodySize.width / 2;
+  double get offsetX => _layer.offset.dx + widget.editorCenterX;
 
   /// Calculates the vertical offset for the layer.
-  double get offsetY => _layer.offset.dy + widget.editorBodySize.height / 2;
+  double get offsetY => _layer.offset.dy + widget.editorCenterY;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +308,6 @@ class _LayerWidgetState extends State<LayerWidget>
     var layer = _layer as TextLayerData;
     var style = TextStyle(
       fontSize: fontSize * layer.fontScale,
-      fontWeight: FontWeight.w400,
       color: layer.color,
       overflow: TextOverflow.ellipsis,
     );
@@ -323,17 +322,20 @@ class _LayerWidgetState extends State<LayerWidget>
         right: height * horizontalPaddingFactor,
         bottom: height * 0.175 / 2,
       ),
-      child: RoundedBackgroundText(
-        layer.text.toString(),
-        backgroundColor: layer.background,
-        textAlign: layer.align,
-        style: layer.textStyle?.copyWith(
-              fontSize: style.fontSize,
-              fontWeight: style.fontWeight,
-              color: style.color,
-              fontFamily: style.fontFamily,
-            ) ??
-            style,
+      child: HeroMode(
+        enabled: false,
+        child: RoundedBackgroundText(
+          layer.text.toString(),
+          backgroundColor: layer.background,
+          textAlign: layer.align,
+          style: layer.textStyle?.copyWith(
+                fontSize: style.fontSize,
+                fontWeight: style.fontWeight,
+                color: style.color,
+                fontFamily: style.fontFamily,
+              ) ??
+              style,
+        ),
       ),
     );
   }
@@ -370,20 +372,21 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Build the canvas widget
   Widget _buildCanvas() {
     var layer = _layer as PaintingLayerData;
-
     return Padding(
       // Better hit detection for mobile devices
       padding: EdgeInsets.all(isDesktop ? 0 : 15),
-      child: CustomPaint(
-        size: layer.size,
-        willChange: true,
-        isComplex: layer.item.mode == PaintModeE.freeStyle,
-        painter: DrawCanvas(
-          item: layer.item,
-          scale: widget.layerData.scale,
-          selected: widget.selected,
-          enabledHitDetection: widget.enableHitDetection,
-          freeStyleHighPerformance: widget.highPerformanceMode,
+      child: RepaintBoundary(
+        child: CustomPaint(
+          size: layer.size,
+          willChange: false,
+          isComplex: layer.item.mode == PaintModeE.freeStyle,
+          painter: DrawPainting(
+            item: layer.item,
+            scale: widget.layerData.scale,
+            selected: widget.selected,
+            enabledHitDetection: widget.enableHitDetection,
+            freeStyleHighPerformance: widget.highPerformanceMode,
+          ),
         ),
       ),
     );
@@ -392,11 +395,3 @@ class _LayerWidgetState extends State<LayerWidget>
 
 // ignore: camel_case_types
 enum _LayerType { emoji, text, sticker, canvas, unknown }
-
-/// Enumeration for controlling the background color mode of the text layer.
-enum LayerBackgroundColorModeE {
-  background,
-  backgroundAndColor,
-  backgroundAndColorWithOpacity,
-  onlyColor,
-}

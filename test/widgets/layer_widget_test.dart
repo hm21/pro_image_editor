@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/layer.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/widgets/layer_widget.dart';
 
@@ -30,11 +29,12 @@ void main() {
           body: Stack(
             children: [
               LayerWidget(
-                editorBodySize: const Size(500, 500),
+                editorCenterX: 250,
+                editorCenterY: 250,
                 layerData: layer,
                 configs: const ProImageEditorConfigs(),
-                onTap: (Layer layer) {
-                  expect(layer, equals(layer));
+                onTap: (Layer tapLayer) {
+                  expect(layer, equals(tapLayer));
                 },
               ),
             ],

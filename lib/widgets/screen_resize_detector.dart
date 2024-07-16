@@ -1,3 +1,6 @@
+// Dart imports:
+import 'dart:ui';
+
 // Flutter imports:
 import 'package:flutter/material.dart';
 
@@ -18,14 +21,16 @@ import '../utils/debounce.dart';
 /// - [onResizeEnd]: A callback function called when the screen resize ends.
 class ScreenResizeDetector extends StatefulWidget {
   final Widget child;
-  final Function(ResizeEvent) onResizeUpdate;
-  final Function(ResizeEvent) onResizeEnd;
+  final Function(ResizeEvent)? onResizeUpdate;
+  final Function(ResizeEvent)? onResizeEnd;
+  final bool ignoreSafeArea;
 
   const ScreenResizeDetector({
     super.key,
     required this.child,
-    required this.onResizeUpdate,
-    required this.onResizeEnd,
+    this.onResizeUpdate,
+    this.onResizeEnd,
+    this.ignoreSafeArea = false,
   });
 
   @override
@@ -33,8 +38,8 @@ class ScreenResizeDetector extends StatefulWidget {
 }
 
 class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
-  BoxConstraints _startResizeEvent = const BoxConstraints();
-  BoxConstraints _lastConstraints = const BoxConstraints();
+  Size _startContentSize = Size.zero;
+  Size _lastContentSize = Size.zero;
   late Debounce _resizeDebounce$;
   bool _activeResizing = false;
 
@@ -50,25 +55,37 @@ class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
     super.dispose();
   }
 
+  EdgeInsets get _safeArea {
+    if (!widget.ignoreSafeArea) return EdgeInsets.zero;
+
+    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
+    return MediaQueryData.fromView(view).viewPadding;
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.biggest != _lastConstraints.biggest) {
-        widget.onResizeUpdate(ResizeEvent(
-          oldConstraints: _lastConstraints,
-          newConstraints: constraints,
+      Size newSize = Size(
+        constraints.biggest.width - _safeArea.horizontal,
+        constraints.biggest.height - _safeArea.vertical,
+      );
+
+      if (newSize != _lastContentSize) {
+        widget.onResizeUpdate?.call(ResizeEvent(
+          oldContentSize: _lastContentSize,
+          newContentSize: newSize,
         ));
-        _lastConstraints = constraints;
+        _lastContentSize = newSize;
 
         if (!_activeResizing) {
-          _startResizeEvent = constraints;
+          _startContentSize = newSize;
           _activeResizing = true;
         }
 
         _resizeDebounce$(() {
-          widget.onResizeEnd(ResizeEvent(
-            oldConstraints: _startResizeEvent,
-            newConstraints: constraints,
+          widget.onResizeEnd?.call(ResizeEvent(
+            oldContentSize: _startContentSize,
+            newContentSize: newSize,
           ));
           _activeResizing = false;
         });
@@ -81,21 +98,20 @@ class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
 
 /// Represents an event when the screen is resized.
 class ResizeEvent {
-  /// The old constraints before the resize.
-  final BoxConstraints oldConstraints;
+  /// The old content size before the resize.
+  final Size oldContentSize;
 
-  /// The new constraints after the resize.
-  final BoxConstraints newConstraints;
+  /// The new content size after the resize.
+  final Size newContentSize;
 
   const ResizeEvent({
-    required this.oldConstraints,
-    required this.newConstraints,
+    required this.oldContentSize,
+    required this.newContentSize,
   });
 
   /// Gets the change in width after the resize.
-  double get widthChanged => newConstraints.maxWidth - oldConstraints.maxWidth;
+  double get widthChanged => newContentSize.width - oldContentSize.width;
 
   /// Gets the change in height after the resize.
-  double get heightChanged =>
-      newConstraints.maxHeight - oldConstraints.maxHeight;
+  double get heightChanged => newContentSize.height - oldContentSize.height;
 }

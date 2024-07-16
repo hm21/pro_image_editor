@@ -22,15 +22,15 @@ class FirebaseSupabaseExample extends StatefulWidget {
 class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
     with ExampleHelperState<FirebaseSupabaseExample> {
   final _supabase = Supabase.instance.client;
-  final String _path = 'your-storage-path/my-image-name.png';
+  final String _path = 'your-storage-path/my-image-name.jpg';
 
   Future<void> _uploadFirebase(Uint8List bytes) async {
     try {
       Reference ref = FirebaseStorage.instance.ref(_path);
 
       /// In some special cases detect firebase the contentType wrong,
-      /// so we make sure the contentType is set to png.
-      await ref.putData(bytes, SettableMetadata(contentType: 'image/png'));
+      /// so we make sure the contentType is set to jpg.
+      await ref.putData(bytes, SettableMetadata(contentType: 'image/jpg'));
     } on FirebaseException catch (e) {
       debugPrint(e.message);
     }
@@ -87,11 +87,9 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
         },
         onCloseEditor: onCloseEditor,
       ),
-      configs: const ProImageEditorConfigs(
-        imageGenerationConfigs: ImageGeneratioConfigs(
-          allowEmptyEditCompletion: true,
-        ),
-        i18n: I18n(doneLoadingMsg: 'Uploading image...'),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+        i18n: const I18n(doneLoadingMsg: 'Uploading image...'),
       ),
     );
   }

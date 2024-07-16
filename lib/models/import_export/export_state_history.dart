@@ -8,12 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/import_export/utils/export_import_enum.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
 import '../history/state_history.dart';
-import '../layer.dart';
-import 'export_state_history_configs.dart';
 import 'utils/export_import_version.dart';
 
 /// Class responsible for exporting the state history of the editor.
@@ -21,21 +18,28 @@ import 'utils/export_import_version.dart';
 /// This class allows you to export the state history of the editor,
 /// including layers, filters, stickers, and other configurations.
 class ExportStateHistory {
-  final int _editorPosition;
-  final Size _imgSize;
+  final int editorPosition;
+  final Size imgSize;
   final List<EditorStateHistory> stateHistory;
-  late ContentRecorderController _contentRecorderCtrl;
+  late ContentRecorderController contentRecorderCtrl;
+  final ProImageEditorConfigs editorConfigs;
   final ExportEditorConfigs _configs;
+  final ImageInfos imageInfos;
+  final BuildContext context;
 
   /// Constructs an [ExportStateHistory] object with the given parameters.
   ///
-  /// The [stateHistory], [_imgStateHistory], [_imgSize], and [_editorPosition]
+  /// The [stateHistory], [_imgStateHistory], [imgSize], and [editorPosition]
   /// parameters are required, while the [configs] parameter is optional and
   /// defaults to [ExportEditorConfigs()].
-  ExportStateHistory(
-    this.stateHistory,
-    this._imgSize,
-    this._editorPosition, {
+  ExportStateHistory({
+    required this.editorConfigs,
+    required this.stateHistory,
+    required this.imageInfos,
+    required this.imgSize,
+    required this.editorPosition,
+    required this.contentRecorderCtrl,
+    required this.context,
     ExportEditorConfigs configs = const ExportEditorConfigs(),
   }) : _configs = configs;
 
@@ -44,9 +48,6 @@ class ExportStateHistory {
   /// Returns a Map representing the state history of the editor,
   /// including layers, filters, stickers, and other configurations.
   Future<Map> toMap() async {
-    _contentRecorderCtrl =
-        ContentRecorderController(configs: const ProImageEditorConfigs());
-
     List history = [];
     List<Uint8List> stickers = [];
     List<EditorStateHistory> changes = List.from(stateHistory);
@@ -56,13 +57,15 @@ class ExportStateHistory {
     /// Choose history span
     switch (_configs.historySpan) {
       case ExportHistorySpan.current:
-        changes = [changes[_editorPosition - 1]];
+        if (editorPosition > 0) {
+          changes = [changes[editorPosition - 1]];
+        }
         break;
       case ExportHistorySpan.currentAndBackward:
-        changes.removeRange(_editorPosition, changes.length);
+        changes.removeRange(editorPosition, changes.length);
         break;
       case ExportHistorySpan.currentAndForward:
-        changes.removeRange(0, _editorPosition - 1);
+        changes.removeRange(0, editorPosition - 1);
         break;
       case ExportHistorySpan.all:
         break;
@@ -71,39 +74,35 @@ class ExportStateHistory {
     /// Build Layers and filters
     for (EditorStateHistory element in changes) {
       List layers = [];
-      List filters = [];
 
       await _convertLayers(
         element: element,
         layers: layers,
         stickers: stickers,
+        imageInfos: imageInfos,
       );
 
-      if (_configs.exportFilter) {
-        for (var filter in element.filters) {
-          filters.add(filter.toMap());
-        }
-      }
-
+      Map transformConfigsMap = element.transformConfigs.toMap();
       history.add({
         if (layers.isNotEmpty) 'layers': layers,
-        if (filters.isNotEmpty) 'filters': filters,
-        'blur': element.blur.toMap(),
-        'transform': element.transformConfigs.toMap(),
+        if (_configs.exportFilter && element.filters.isNotEmpty)
+          'filters': element.filters,
+        'blur': element.blur,
+        if (transformConfigsMap.isNotEmpty) 'transform': transformConfigsMap,
       });
     }
 
     return {
-      'version': ExportImportVersion.version_1_0_0,
+      'version': ExportImportVersion.version_2_0_0,
       'position': _configs.historySpan == ExportHistorySpan.current ||
               _configs.historySpan == ExportHistorySpan.currentAndForward
           ? 0
-          : _editorPosition - 1,
+          : editorPosition - 1,
       if (history.isNotEmpty) 'history': history,
       if (stickers.isNotEmpty) 'stickers': stickers,
       'imgSize': {
-        'width': _imgSize.width,
-        'height': _imgSize.height,
+        'width': imageInfos.rawSize.width,
+        'height': imageInfos.rawSize.height,
       },
     };
   }
@@ -144,6 +143,7 @@ class ExportStateHistory {
     required EditorStateHistory element,
     required List layers,
     required List stickers,
+    required ImageInfos imageInfos,
   }) async {
     for (var layer in element.layers) {
       if ((_configs.exportPainting && layer.runtimeType == PaintingLayerData) ||
@@ -153,11 +153,25 @@ class ExportStateHistory {
       } else if (_configs.exportSticker &&
           layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
-        stickers.add(
-          await _contentRecorderCtrl.captureFromWidget(
-            layer.sticker,
-          ),
+
+        double imageWidth =
+            (editorConfigs.stickerEditorConfigs?.initWidth ?? 100) *
+                layer.scale;
+        Size targetSize = Size(
+            imageWidth,
+            MediaQuery.of(context).size.height /
+                MediaQuery.of(context).size.width *
+                imageWidth);
+
+        Uint8List? result = await contentRecorderCtrl.captureFromWidget(
+          layer.sticker,
+          format: OutputFormat.png,
+          imageInfos: imageInfos,
+          targetSize: targetSize,
         );
+        if (result == null) return;
+
+        stickers.add(result);
       }
     }
   }

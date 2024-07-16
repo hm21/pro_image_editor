@@ -619,8 +619,12 @@ file:///C:/Users/AlexF/AppData/Local/Pub/Cache/hosted/pub.dev/xml-6.5.0/lib/src/
 file:///C:/Users/AlexF/AppData/Local/Pub/Cache/hosted/pub.dev/xml-6.5.0/lib/xml.dart
 file:///C:/Users/AlexF/AppData/Local/Pub/Cache/hosted/pub.dev/xml-6.5.0/lib/xml_events.dart
 file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/.dart_tool/package_config.json
-file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/utils/content_recorder.dart/utils/content_recorder_models.dart
-file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/utils/content_recorder.dart/utils/convert_image_to_png.dart
+file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/models/editor_configs/image_generation_configs/output_formats.dart
+file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/models/multi_threading/thread_request_model.dart
+file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/models/multi_threading/thread_response_model.dart
+file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/utils/content_recorder.dart/utils/convert_raw_image.dart
+file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/utils/content_recorder.dart/utils/encode_image.dart
+file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/utils/content_recorder.dart/utils/encoder/jpeg_encoder.dart
 file:///C:/Users/AlexF/Desktop/WAIO/Projekte/Plugins/pro_image_editor/lib/web/web_worker.dart
 file:///C:/flutter/bin/cache/dart-sdk/lib/_internal/dart2js_platform.dill
 file:///C:/flutter/bin/cache/dart-sdk/lib/libraries.json

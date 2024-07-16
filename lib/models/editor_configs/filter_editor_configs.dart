@@ -1,5 +1,5 @@
-// Package imports:
-import 'package:colorfilter_generator/colorfilter_generator.dart';
+// Project imports:
+import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_model.dart';
 
 /// Configuration options for a filter editor.
 ///
@@ -23,11 +23,8 @@ class FilterEditorConfigs {
   /// Show also layers in the editor.
   final bool showLayers;
 
-  /// Offset for the filter text, helpful if the user has an input field that overlays in a stack widget.
-  final double whatsAppFilterTextOffsetY;
-
   /// A list of color filter generators to apply to an image.
-  final List<ColorFilterGenerator>? filterList;
+  final List<FilterModel>? filterList;
 
   /// Creates an instance of FilterEditorConfigs with optional settings.
   ///
@@ -35,7 +32,6 @@ class FilterEditorConfigs {
   const FilterEditorConfigs({
     this.enabled = true,
     this.showLayers = true,
-    this.whatsAppFilterTextOffsetY = 0,
     this.filterList,
   });
 }

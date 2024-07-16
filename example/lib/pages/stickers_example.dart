@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/loading_dialog.dart';
 
 // Project imports:
 import '../utils/example_helper.dart';
@@ -23,12 +22,13 @@ class _StickersExampleState extends State<StickersExample>
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog()
-          ..show(
-            context,
-            configs: const ProImageEditorConfigs(),
-            theme: ThemeData.dark(),
-          );
+        LoadingDialog loading = LoadingDialog();
+        await loading.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: ThemeData.dark(),
+        );
+        if (!context.mounted) return;
         await precacheImage(NetworkImage(_url), context);
         if (context.mounted) await loading.hide(context);
         if (!context.mounted) return;
@@ -53,50 +53,50 @@ class _StickersExampleState extends State<StickersExample>
         onCloseEditor: onCloseEditor,
       ),
       configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
         blurEditorConfigs: const BlurEditorConfigs(enabled: false),
         stickerEditorConfigs: StickerEditorConfigs(
           enabled: true,
-          buildStickers: (setLayer) {
+          buildStickers: (setLayer, scrollController) {
             return ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
-              child: Container(
-                color: const Color.fromARGB(255, 224, 239, 251),
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 150,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: 21,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () async {
-                        // Important make sure the image is completly loaded
-                        // cuz the editor will directly take a screenshot
-                        // inside of a background isolated thread.
-                        LoadingDialog loading = LoadingDialog()
-                          ..show(
-                            context,
-                            configs: const ProImageEditorConfigs(),
-                            theme: ThemeData.dark(),
-                          );
-                        await precacheImage(
-                            NetworkImage(
-                                'https://picsum.photos/id/${(index + 3) * 3}/2000'),
-                            context);
-                        if (context.mounted) await loading.hide(context);
-                        setLayer(Sticker(index: index));
-                      },
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Sticker(index: index),
-                      ),
-                    );
-                  },
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 80,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
                 ),
+                controller: scrollController,
+                itemCount: 21,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () async {
+                      // Important make sure the image is completly loaded
+                      // cuz the editor will directly take a screenshot
+                      // inside of a background isolated thread.
+                      LoadingDialog loading = LoadingDialog();
+                      await loading.show(
+                        context,
+                        configs: const ProImageEditorConfigs(),
+                        theme: ThemeData.dark(),
+                      );
+                      if (!context.mounted) return;
+                      await precacheImage(
+                          NetworkImage(
+                              'https://picsum.photos/id/${(index + 3) * 3}/2000'),
+                          context);
+                      if (context.mounted) await loading.hide(context);
+                      setLayer(Sticker(index: index));
+                    },
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Sticker(index: index),
+                    ),
+                  );
+                },
               ),
             );
           },
@@ -125,15 +125,15 @@ class StickerState extends State<Sticker> {
       borderRadius: BorderRadius.circular(7),
       child: Image.network(
         'https://picsum.photos/id/${(widget.index + 3) * 3}/2000',
-        width: 120,
-        height: 120,
+        width: 80,
+        height: 80,
         fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           return AnimatedSwitcher(
             layoutBuilder: (currentChild, previousChildren) {
               return SizedBox(
-                width: 120,
-                height: 120,
+                width: 80,
+                height: 80,
                 child: Stack(
                   fit: StackFit.expand,
                   alignment: Alignment.center,

@@ -1,6 +1,3 @@
-// Dart imports:
-import 'dart:ui';
-
 // Project imports:
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
 
@@ -33,6 +30,16 @@ class PaintEditorConfigs {
   /// Indicates whether the paint editor is enabled.
   final bool enabled;
 
+  /// Indicates whether the editor supports zoom functionality.
+  ///
+  /// When set to `true`, the editor allows users to zoom in and out, providing
+  /// enhanced accessibility and usability, especially on smaller screens or for
+  /// users with visual impairments. If set to `false`, the zoom functionality
+  /// is disabled, and the editor's content remains at a fixed scale.
+  ///
+  /// Default value is `false`.
+  final bool editorIsZoomable;
+
   /// Indicating whether the free-style drawing option is available.
   final bool hasOptionFreeStyle;
 
@@ -51,8 +58,8 @@ class PaintEditorConfigs {
   /// Indicating whether the dash line drawing option is available.
   final bool hasOptionDashLine;
 
-  /// Indicating whether the color picker is visible.
-  final bool showColorPicker;
+  /// Indicating whether the eraser option is available.
+  final bool hasOptionEraser;
 
   /// Indicating whether the fill option can be toggled.
   final bool canToggleFill;
@@ -81,17 +88,32 @@ class PaintEditorConfigs {
   /// By default, it's set to `false`.
   final bool freeStyleHighPerformanceHero;
 
-  /// Indicates the initial stroke width.
-  final double initialStrokeWidth;
-
-  /// Indicates the initial drawing color.
-  final Color initialColor;
-
   /// Indicates the initial paint mode.
   final PaintModeE initialPaintMode;
 
-  /// A callback function that will be called when the stroke width on changed.
-  final Function(double x)? strokeWidthOnChanged;
+  /// The minimum scale factor for the editor.
+  ///
+  /// This value determines the lowest level of zoom that can be applied to the
+  /// editor content. It only has an effect when [editorIsZoomable] is set to `true`.
+  /// If [editorIsZoomable] is `false`, this value is ignored.
+  ///
+  /// Default value is 1.0.
+  final double editorMinScale;
+
+  /// The maximum scale factor for the editor.
+  ///
+  /// This value determines the highest level of zoom that can be applied to the
+  /// editor content. It only has an effect when [editorIsZoomable] is set to `true`.
+  /// If [editorIsZoomable] is `false`, this value is ignored.
+  ///
+  /// Default value is 5.0.
+  final double editorMaxScale;
+
+  /// The minimum scale factor from the layer.
+  final double minScale;
+
+  /// The maximum scale factor from the layer.
+  final double maxScale;
 
   /// Creates an instance of PaintEditorConfigs with optional settings.
   ///
@@ -99,22 +121,27 @@ class PaintEditorConfigs {
   /// Other properties are set to reasonable defaults.
   const PaintEditorConfigs({
     this.enabled = true,
+    this.editorIsZoomable = false,
+    this.editorMinScale = 1.0,
+    this.editorMaxScale = 5.0,
     this.hasOptionFreeStyle = true,
     this.hasOptionArrow = true,
     this.hasOptionLine = true,
     this.hasOptionRect = true,
     this.hasOptionCircle = true,
     this.hasOptionDashLine = true,
+    this.hasOptionEraser = true,
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
     this.initialFill = false,
-    this.showColorPicker = true,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
     this.freeStyleHighPerformanceScaling,
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
-    this.initialStrokeWidth = 10.0,
-    this.initialColor = const Color(0xffff0000),
     this.initialPaintMode = PaintModeE.freeStyle,
-    this.strokeWidthOnChanged,
-  }) : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive');
+  })  : assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale'),
+        assert(editorMaxScale > editorMinScale,
+            'editorMaxScale must be greater than editorMinScale');
 }

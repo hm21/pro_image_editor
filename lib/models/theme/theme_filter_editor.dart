@@ -55,15 +55,19 @@ class FilterEditorTheme {
   /// Color of the preview text.
   final Color previewTextColor;
 
-  /// Color from the background from the bottom bar.
-  final Color whatsAppBottomBarColor;
+  /// The spacing between items in the filter list.
+  final double filterListSpacing;
+
+  /// The margin around the filter list.
+  final EdgeInsets filterListMargin;
 
   /// Creates an instance of the `FilterEditorTheme` class with the specified theme properties.
   const FilterEditorTheme({
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.previewTextColor = const Color(0xFFE1E1E1),
-    this.whatsAppBottomBarColor = const Color(0xFF121B22),
     this.background = imageEditorBackgroundColor,
+    this.filterListSpacing = 15,
+    this.filterListMargin = const EdgeInsets.fromLTRB(8, 4, 8, 10),
   });
 }

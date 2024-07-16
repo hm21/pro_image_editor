@@ -2,12 +2,12 @@
 import '../crop_rotate_editor/transform_factors.dart';
 import 'editor_init_configs.dart';
 
-class CropRotateEditorInitConfigs extends EditorInitConfigs {
-  /// Determines whether to return the image as a Uint8List when closing the editor.
-  final bool convertToUint8List;
+typedef CropRotateEditorDone = Function(
+    TransformConfigs transformations, double fitToScreenFactor);
 
+class CropRotateEditorInitConfigs extends EditorInitConfigs {
   /// A callback function called when editing is completed.
-  final Function(TransformConfigs)? onDone;
+  final CropRotateEditorDone? onDone;
 
   /// Determines whether we draw a "fake" hero widget or not.
   /// If this is set to `true` we need to hide the fake hero by ourself like below
@@ -47,7 +47,7 @@ class CropRotateEditorInitConfigs extends EditorInitConfigs {
     super.configs,
     super.transformConfigs,
     super.layers,
-    super.onUpdateUI,
+    super.callbacks,
     super.mainImageSize,
     super.mainBodySize,
     super.appliedFilters,
@@ -55,9 +55,9 @@ class CropRotateEditorInitConfigs extends EditorInitConfigs {
     super.onCloseEditor,
     super.onImageEditingComplete,
     super.onImageEditingStarted,
+    super.convertToUint8List,
     required super.theme,
     this.onDone,
-    this.convertToUint8List = false,
     this.enableFakeHero = false,
   });
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import '../../utils/design_mode.dart';
-import '../custom_widgets.dart';
+import '../custom_widgets/custom_widgets.dart';
 import '../i18n/i18n.dart';
 import '../icons/icons.dart';
 import '../theme/theme.dart';
@@ -12,24 +12,33 @@ import 'crop_rotate_editor_configs.dart';
 import 'emoji_editor_configs.dart';
 import 'filter_editor_configs.dart';
 import 'helper_lines_configs.dart';
-import 'image_generation_configs.dart';
+import 'image_generation_configs/image_generation_configs.dart';
 import 'layer_interaction_configs.dart';
+import 'main_editor_configs.dart';
 import 'paint_editor_configs.dart';
 import 'state_history_configs.dart';
 import 'sticker_editor_configs.dart';
 import 'text_editor_configs.dart';
 
-export 'image_generation_configs.dart';
+export 'image_generation_configs/image_generation_configs.dart';
 export 'state_history_configs.dart';
 export 'helper_lines_configs.dart';
 export 'paint_editor_configs.dart';
 export 'text_editor_configs.dart';
-export 'crop_rotate_editor_configs.dart';
-export 'filter_editor_configs.dart';
-export 'emoji_editor_configs.dart';
+export 'layer_interaction_configs.dart';
 export 'sticker_editor_configs.dart';
 export 'blur_editor_configs.dart';
-export 'layer_interaction_configs.dart';
+export 'crop_rotate_editor_configs.dart';
+export 'emoji_editor_configs.dart';
+export 'filter_editor_configs.dart';
+export '../i18n/i18n.dart';
+export '../icons/icons.dart';
+export '../theme/theme.dart';
+export '../custom_widgets/custom_widgets.dart';
+export '../crop_rotate_editor/aspect_ratio_item.dart';
+export '../../utils/design_mode.dart';
+export '../../utils/pro_image_editor_mode.dart';
+export '../layer/layer_background_mode.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -56,6 +65,9 @@ class ProImageEditorConfigs {
 
   /// Icons to be used in the Image Editor.
   final ImageEditorIcons icons;
+
+  /// Configuration options for the main Editor.
+  final MainEditorConfigs mainEditorConfigs;
 
   /// Configuration options for the Paint Editor.
   final PaintEditorConfigs paintEditorConfigs;
@@ -97,6 +109,7 @@ class ProImageEditorConfigs {
   /// - The `customWidgets` specifies custom widgets to be used in the Image Editor. By default, it uses an empty `CustomWidgets` instance.
   /// - The `imageEditorTheme` sets the theme for the Image Editor. By default, it uses an empty `ImageEditorTheme` instance.
   /// - The `icons` specifies the icons to be used in the Image Editor. By default, it uses an empty `ImageEditorIcons` instance.
+  /// - The `mainEditorConfigs` configures the Main Editor. By default, it uses an empty `MainEditorConfigs` instance.
   /// - The `paintEditorConfigs` configures the Paint Editor. By default, it uses an empty `PaintEditorConfigs` instance.
   /// - The `textEditorConfigs` configures the Text Editor. By default, it uses an empty `TextEditorConfigs` instance.
   /// - The `cropRotateEditorConfigs` configures the Crop and Rotate Editor. By default, it uses an empty `CropRotateEditorConfigs` instance.
@@ -107,6 +120,7 @@ class ProImageEditorConfigs {
   /// - The `designMode` specifies the design mode for the Image Editor. By default, it is `ImageEditorDesignModeE.material`.
   /// - The `stateHistoryConfigs` holds the configurations related to state history management. By default, it uses an empty `StateHistoryConfigs` instance.
   /// - The `imageGenerationConfigs` holds the configurations related to image generation. By default, it uses an empty `ImageGeneratioConfigs` instance.
+  /// - The `editorBoxConstraintsBuilder` configures global [BoxConstraints] to use when opening editors in modal bottom sheets.
   const ProImageEditorConfigs({
     this.theme,
     this.heroTag = 'Pro-Image-Editor-Hero',
@@ -118,6 +132,7 @@ class ProImageEditorConfigs {
     this.icons = const ImageEditorIcons(),
     this.stateHistoryConfigs = const StateHistoryConfigs(),
     this.imageGenerationConfigs = const ImageGeneratioConfigs(),
+    this.mainEditorConfigs = const MainEditorConfigs(),
     this.paintEditorConfigs = const PaintEditorConfigs(),
     this.textEditorConfigs = const TextEditorConfigs(),
     this.cropRotateEditorConfigs = const CropRotateEditorConfigs(),

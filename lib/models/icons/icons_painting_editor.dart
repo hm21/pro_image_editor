@@ -1,9 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Project imports:
-import '../../utils/pro_image_editor_icons.dart';
-
 /// Customizable icons for the Painting Editor component.
 class IconsPaintingEditor {
   /// The icon to be displayed in the bottom navigation bar.
@@ -11,6 +8,16 @@ class IconsPaintingEditor {
 
   /// The icon for adjusting line weight.
   final IconData lineWeight;
+
+  /// The icon used for moving and zooming within the editor.
+  ///
+  /// This icon appears in the editor bottombar.
+  ///
+  /// When in the [PaintEditorConfigs] the config [editorIsZoomable] is set to
+  /// `true`, this icon will be displayed, allowing users to interact with the
+  /// editor's zoom and move features. If [editorIsZoomable] is set to `false`,
+  /// the icon will be hidden.
+  final IconData moveAndZoom;
 
   /// The icon representing a filled background.
   final IconData fill;
@@ -36,14 +43,8 @@ class IconsPaintingEditor {
   /// The icon for the dashed line drawing tool.
   final IconData dashLine;
 
-  /// The icon for the thin stroke width when the theme is set to `Whatsapp`.
-  final IconData whatsAppStrokeWidthThin;
-
-  /// The icon for the medium stroke width when the theme is set to `Whatsapp`.
-  final IconData whatsAppStrokeWidthMedium;
-
-  /// The icon for the bold stroke width when the theme is set to `Whatsapp`.
-  final IconData whatsAppStrokeWidthBold;
+  /// The icon for the eraser tool.
+  final IconData eraser;
 
   /// Creates an instance of [IconsPaintingEditor] with customizable icon settings.
   ///
@@ -79,6 +80,8 @@ class IconsPaintingEditor {
   /// )
   /// ```
   const IconsPaintingEditor({
+    this.moveAndZoom = Icons.pinch_outlined,
+    this.eraser = Icons.delete_forever_outlined,
     this.bottomNavBar = Icons.edit_outlined,
     this.lineWeight = Icons.line_weight_rounded,
     this.freeStyle = Icons.edit,
@@ -89,8 +92,5 @@ class IconsPaintingEditor {
     this.rectangle = Icons.crop_free,
     this.circle = Icons.lens_outlined,
     this.dashLine = Icons.power_input,
-    this.whatsAppStrokeWidthThin = ProImageEditorIcons.penSize1,
-    this.whatsAppStrokeWidthMedium = ProImageEditorIcons.penSize2,
-    this.whatsAppStrokeWidthBold = ProImageEditorIcons.penSize3,
   });
 }

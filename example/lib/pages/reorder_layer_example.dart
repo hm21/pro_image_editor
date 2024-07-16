@@ -3,8 +3,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:pro_image_editor/models/layer.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/draw/draw_canvas.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -41,59 +39,67 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
   }
 
   Widget _buildEditor() {
-    return Stack(
-      children: [
-        ProImageEditor.asset(
-          ExampleConstants.of(context)!.demoAssetPath,
-          key: editorKey,
-          callbacks: ProImageEditorCallbacks(
-            onImageEditingStarted: onImageEditingStarted,
-            onImageEditingComplete: onImageEditingComplete,
-            onCloseEditor: onCloseEditor,
-          ),
-          configs: const ProImageEditorConfigs(
-            imageGenerationConfigs: ImageGeneratioConfigs(
-              allowEmptyEditCompletion: true,
-            ),
+    return ProImageEditor.asset(
+      ExampleConstants.of(context)!.demoAssetPath,
+      key: editorKey,
+      callbacks: ProImageEditorCallbacks(
+        onImageEditingStarted: onImageEditingStarted,
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+      ),
+      configs: ProImageEditorConfigs(
+        designMode: platformDesignMode,
+        customWidgets: ImageEditorCustomWidgets(
+          mainEditor: CustomWidgetsMainEditor(
+            bodyItems: (editor, rebuildStream) {
+              return [
+                ReactiveCustomWidget(
+                  stream: rebuildStream,
+                  builder: (_) =>
+                      editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
+                          ? const SizedBox.shrink()
+                          : Positioned(
+                              bottom: 20,
+                              left: 0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.lightBlue.shade200,
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(100),
+                                    bottomRight: Radius.circular(100),
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) {
+                                        return ReorderLayerSheet(
+                                          layers: editor.activeLayers,
+                                          onReorder: (oldIndex, newIndex) {
+                                            editor.moveLayerListPosition(
+                                              oldIndex: oldIndex,
+                                              newIndex: newIndex,
+                                            );
+                                            Navigator.pop(context);
+                                          },
+                                        );
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.reorder,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                ),
+              ];
+            },
           ),
         ),
-        Positioned(
-          bottom: 2 * kBottomNavigationBarHeight,
-          left: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.lightBlue.shade200,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(100),
-                bottomRight: Radius.circular(100),
-              ),
-            ),
-            child: IconButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  showDragHandle: true,
-                  builder: (context) {
-                    return StatefulBuilder(builder: (context, setState) {
-                      return ReorderLayerSheet(
-                        layers: editorKey.currentState!.activeLayers,
-                        onReorder: (oldIndex, newIndex) {
-                          editorKey.currentState!.moveLayerListPosition(
-                            oldIndex: oldIndex,
-                            newIndex: newIndex,
-                          );
-                          setState(() {});
-                        },
-                      );
-                    });
-                  },
-                );
-              },
-              icon: const Icon(Icons.sort),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -150,7 +156,7 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
                               willChange: true,
                               isComplex:
                                   layer.item.mode == PaintModeE.freeStyle,
-                              painter: DrawCanvas(
+                              painter: DrawPainting(
                                 item: layer.item,
                                 scale: layer.scale,
                                 enabledHitDetection: false,

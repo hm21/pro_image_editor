@@ -1,14 +1,11 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Package imports:
-import 'package:defer_pointer/defer_pointer.dart';
-
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/plugins/defer_pointer/defer_pointer.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/editor_configs_mixin.dart';
-import '../../models/layer.dart';
 import 'layer_interaction_border_painter.dart';
 import 'layer_interaction_button.dart';
 
@@ -16,6 +13,9 @@ class LayerInteractionHelperWidget extends StatefulWidget
     with SimpleConfigsAccess {
   @override
   final ProImageEditorConfigs configs;
+
+  @override
+  final ProImageEditorCallbacks callbacks;
   final Widget child;
 
   final Function()? onEditLayer;
@@ -40,6 +40,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.onScaleRotateUp,
     this.selected = false,
     this.isInteractive = false,
+    this.callbacks = const ProImageEditorCallbacks(),
   });
 
   @override
@@ -90,6 +91,9 @@ class _LayerInteractionHelperWidgetState
                 cursor: imageEditorTheme.layerInteraction.removeCursor,
                 icon: icons.layerInteraction.remove,
                 tooltip: i18n.layerInteraction.remove,
+                color: imageEditorTheme.layerInteraction.buttonRemoveColor,
+                background:
+                    imageEditorTheme.layerInteraction.buttonRemoveBackground,
               ),
             ),
             if (widget.layerData.runtimeType == TextLayerData)
@@ -105,6 +109,9 @@ class _LayerInteractionHelperWidgetState
                   cursor: imageEditorTheme.layerInteraction.editCursor,
                   icon: icons.layerInteraction.edit,
                   tooltip: i18n.layerInteraction.edit,
+                  color: imageEditorTheme.layerInteraction.buttonEditTextColor,
+                  background: imageEditorTheme
+                      .layerInteraction.buttonEditTextBackground,
                 ),
               ),
             Positioned(
@@ -120,6 +127,9 @@ class _LayerInteractionHelperWidgetState
                 cursor: imageEditorTheme.layerInteraction.rotateScaleCursor,
                 icon: icons.layerInteraction.rotateScale,
                 tooltip: i18n.layerInteraction.rotateScale,
+                color: imageEditorTheme.layerInteraction.buttonScaleRotateColor,
+                background: imageEditorTheme
+                    .layerInteraction.buttonScaleRotateBackground,
               ),
             ),
           ],

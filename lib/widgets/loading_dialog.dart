@@ -1,3 +1,6 @@
+// Dart imports:
+import 'dart:async';
+
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -6,7 +9,6 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/theme_functions.dart';
-import 'platform_circular_progress_indicator.dart';
 
 class LoadingDialog {
   String _msg = '';
@@ -15,8 +17,10 @@ class LoadingDialog {
   bool _isVisible = false;
   bool _isDisposed = false;
 
+  Completer? _completer;
+
   /// Some packages like "Asuka" require the same context like in the dialog
-  ///  to close the dialog.
+  /// to close the dialog.
   BuildContext? _dialogContext;
 
   set msg(String message) {
@@ -43,6 +47,8 @@ class LoadingDialog {
     ThemeData? theme,
     required ProImageEditorConfigs configs,
   }) async {
+    if (_isDisposed) throw ErrorHint('Loading-Dialog is already disposed!');
+
     theme ??= configs.theme ?? Theme.of(context);
 
     if (message == null) {
@@ -52,12 +58,15 @@ class LoadingDialog {
     }
     _isVisible = true;
 
+    _completer = Completer();
+
     final content = PopScope(
       canPop: isDismissible,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: StatefulBuilder(builder: (context, StateSetter setState) {
           state = setState;
+
           return Padding(
             padding: const EdgeInsets.only(top: 3.0),
             child: Row(
@@ -96,15 +105,24 @@ class LoadingDialog {
         }),
       ),
     );
-    return showAdaptiveDialog(
+
+    showAdaptiveDialog(
       context: context,
       barrierDismissible: isDismissible,
       builder: (context) {
         _dialogContext = context;
+
+        if (_completer != null && !_completer!.isCompleted) {
+          _completer?.complete();
+        }
+
         if (_isDisposed && context.mounted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) Navigator.of(context).pop();
           });
+        }
+        if (configs.customWidgets.loadingDialog != null) {
+          return configs.customWidgets.loadingDialog!;
         }
         return configs.designMode == ImageEditorDesignModeE.cupertino
             ? CupertinoTheme(
@@ -139,13 +157,18 @@ class LoadingDialog {
               );
       },
     );
+
+    if (configs.imageGenerationConfigs.awaitLoadingDialogContext) {
+      await _completer!.future;
+    }
   }
 
   /// Hides the loading dialog.
   hide(BuildContext context) {
-    if (_isVisible) {
-      Navigator.pop(_dialogContext ?? context);
-    }
+    if (_completer != null && !_completer!.isCompleted) _completer?.complete();
+
+    if (_isVisible) Navigator.pop(_dialogContext ?? context);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isDisposed = true;
     });
