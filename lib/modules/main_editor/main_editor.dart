@@ -1026,11 +1026,11 @@ class ProImageEditorState extends State<ProImageEditor>
                       child: Container(
                         width: imageEditorTheme
                                 .subEditorPage.enforceSizeFromMainEditor
-                            ? sizesManager.lastScreenSize.width
+                            ? sizesManager.editorSize.width
                             : null,
                         height: imageEditorTheme
                                 .subEditorPage.enforceSizeFromMainEditor
-                            ? sizesManager.lastScreenSize.height
+                            ? sizesManager.editorSize.height
                             : null,
                         clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(

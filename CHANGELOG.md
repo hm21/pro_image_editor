@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.8
+- **fix(dialog-mode)**: Resolve issue where the subEditorPage had thre wrong size in the dialog. This resolves the issue [#164](https://github.com/hm21/pro_image_editor/issues/164).
+
 ## Version 4.2.7
 - **fix(text-editor)**: Resolve issue where cursor size change with long text. This resolves issue [#154](https://github.com/hm21/pro_image_editor/issues/154).
 
