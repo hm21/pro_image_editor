@@ -1849,14 +1849,23 @@ class ProImageEditorState extends State<ProImageEditor>
                 ),
                 onPressed: redoAction,
               ),
-              IconButton(
-                key: const ValueKey('MainEditorMainDoneButton'),
-                tooltip: i18n.done,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                icon: Icon(icons.doneIcon),
-                iconSize: 28,
-                onPressed: doneEditing,
-              ),
+              !_inited
+                  ? Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(
+                            color: _theme.colorScheme.primary,
+                          )),
+                    )
+                  : IconButton(
+                      key: const ValueKey('MainEditorMainDoneButton'),
+                      tooltip: i18n.done,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: Icon(icons.doneIcon),
+                      iconSize: 28,
+                      onPressed: doneEditing,
+                    ),
             ],
           );
   }
