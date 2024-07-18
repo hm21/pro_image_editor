@@ -256,7 +256,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
                             height: 60,
                             child: FittedBox(
                               child: PlatformCircularProgressIndicator(
-                                designMode: ImageEditorDesignModeE.material,
+                                configs: ProImageEditorConfigs(),
                               ),
                             ),
                           ),

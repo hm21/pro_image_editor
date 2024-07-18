@@ -281,7 +281,7 @@ class BlurEditorState extends State<BlurEditor>
                             getMinimumSize(mainImageSize, editorBodySize).width,
                         height: getMinimumSize(mainImageSize, editorBodySize)
                             .height,
-                        designMode: designMode,
+                        configs: configs,
                         image: editorImage,
                         filters: appliedFilters,
                         blurFactor: blurFactor,

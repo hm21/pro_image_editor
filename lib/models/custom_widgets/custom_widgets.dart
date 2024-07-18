@@ -42,9 +42,13 @@ class ImageEditorCustomWidgets {
   /// Replace the existing loading dialog.
   final Widget? loadingDialog;
 
+  /// Replace the existing CircularProgressIndicator.
+  final Widget? circularProgressIndicator;
+
   /// Creates an instance of the `CustomWidgets` class with the specified properties.
   const ImageEditorCustomWidgets({
     this.loadingDialog,
+    this.circularProgressIndicator,
     this.mainEditor = const CustomWidgetsMainEditor(),
     this.paintEditor = const CustomWidgetsPaintEditor(),
     this.textEditor = const CustomWidgetsTextEditor(),

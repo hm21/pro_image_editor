@@ -1826,7 +1826,7 @@ class ProImageEditorState extends State<ProImageEditor>
               ),
               const Spacer(),
               IconButton(
-                key: const ValueKey('MainEditorMainUndoButton'),
+                key: const ValueKey('MainEditorUndoButton'),
                 tooltip: i18n.undo,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 icon: Icon(
@@ -1838,7 +1838,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 onPressed: undoAction,
               ),
               IconButton(
-                key: const ValueKey('MainEditorMainRedoButton'),
+                key: const ValueKey('MainEditorRedoButton'),
                 tooltip: i18n.redo,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 icon: Icon(
@@ -1854,13 +1854,12 @@ class ProImageEditorState extends State<ProImageEditor>
                       padding: const EdgeInsets.symmetric(horizontal: 11.0),
                       child: SizedBox.square(
                         dimension: 22,
-                        child: PlatformCircularProgressIndicator(
-                          designMode: designMode,
-                        ),
+                        child:
+                            PlatformCircularProgressIndicator(configs: configs),
                       ),
                     )
                   : IconButton(
-                      key: const ValueKey('MainEditorMainDoneButton'),
+                      key: const ValueKey('MainEditorDoneButton'),
                       tooltip: i18n.done,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       icon: Icon(icons.doneIcon),
@@ -2419,7 +2418,7 @@ class ProImageEditorState extends State<ProImageEditor>
               fit: BoxFit.contain,
               width: sizesManager.decodedImageSize.width,
               height: sizesManager.decodedImageSize.height,
-              designMode: designMode,
+              configs: configs,
             )
           : TransformedContentGenerator(
               transformConfigs: stateManager.transformConfigs,
@@ -2427,7 +2426,7 @@ class ProImageEditorState extends State<ProImageEditor>
               child: FilteredImage(
                 width: sizesManager.decodedImageSize.width,
                 height: sizesManager.decodedImageSize.height,
-                designMode: designMode,
+                configs: configs,
                 image: editorImage,
                 filters: stateManager.activeFilters,
                 blurFactor: stateManager.activeBlur,

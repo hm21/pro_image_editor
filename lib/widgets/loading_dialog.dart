@@ -79,9 +79,8 @@ class LoadingDialog {
                     height: 40,
                     width: 40,
                     child: FittedBox(
-                      child: PlatformCircularProgressIndicator(
-                        designMode: configs.designMode,
-                      ),
+                      child:
+                          PlatformCircularProgressIndicator(configs: configs),
                     ),
                   ),
                 ),

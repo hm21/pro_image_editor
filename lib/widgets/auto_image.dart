@@ -1,9 +1,9 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 // Project imports:
 import '../models/editor_image.dart';
-import '../utils/design_mode.dart';
 import 'platform_circular_progress_indicator.dart';
 
 /// A versatile widget for displaying images with various sources.
@@ -21,7 +21,7 @@ class AutoImage extends StatelessWidget {
   final double? height;
 
   /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
+  final ProImageEditorConfigs configs;
 
   /// Creates an [AutoImage] widget with the specified image source and optional parameters.
   const AutoImage(
@@ -30,7 +30,7 @@ class AutoImage extends StatelessWidget {
     this.fit,
     this.width,
     this.height,
-    required this.designMode,
+    required this.configs,
   });
 
   @override
@@ -63,9 +63,7 @@ class AutoImage extends StatelessWidget {
             } else {
               // Display a circular progress indicator while the image is loading.
               return Center(
-                child: PlatformCircularProgressIndicator(
-                  designMode: designMode,
-                ),
+                child: PlatformCircularProgressIndicator(configs: configs),
               );
             }
           },

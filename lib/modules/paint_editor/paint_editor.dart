@@ -785,7 +785,7 @@ class PaintingEditorState extends State<PaintingEditor>
                         tag: configs.heroTag,
                         child: AutoImage(
                           EditorImage(byteArray: _fakeHeroBytes),
-                          designMode: designMode,
+                          configs: configs,
                         ),
                       ),
                     ]
@@ -835,7 +835,7 @@ class PaintingEditorState extends State<PaintingEditor>
                                     height: getMinimumSize(
                                             mainImageSize, editorBodySize)
                                         .height,
-                                    designMode: designMode,
+                                    configs: configs,
                                     image: editorImage,
                                     filters: appliedFilters,
                                     blurFactor: appliedBlurFactor,

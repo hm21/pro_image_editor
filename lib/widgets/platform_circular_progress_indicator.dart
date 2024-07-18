@@ -1,22 +1,19 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-// Project imports:
-import '../utils/design_mode.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 /// A circular progress indicator that adapts to the platform.
 ///
 /// On web and non-iOS/macOS platforms, it displays a [CircularProgressIndicator].
 /// On iOS and macOS, it displays a [CupertinoActivityIndicator].
 class PlatformCircularProgressIndicator extends StatefulWidget {
-  /// The design mode of the editor.
-  final ImageEditorDesignModeE designMode;
+  final ProImageEditorConfigs configs;
 
   /// Creates a platform-aware circular progress indicator.
   const PlatformCircularProgressIndicator({
     super.key,
-    required this.designMode,
+    required this.configs,
   });
 
   @override
@@ -29,8 +26,9 @@ class _PlatformCircularProgressIndicatorState
   @override
   Widget build(BuildContext context) {
     // Conditionally choose the progress indicator based on the platform.
-    return widget.designMode == ImageEditorDesignModeE.material
-        ? const CircularProgressIndicator()
-        : const CupertinoActivityIndicator();
+    return widget.configs.customWidgets.circularProgressIndicator ??
+        (widget.configs.designMode == ImageEditorDesignModeE.material
+            ? const CircularProgressIndicator()
+            : const CupertinoActivityIndicator());
   }
 }

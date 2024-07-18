@@ -14,6 +14,9 @@ import 'fake/fake_image.dart';
 
 void main() {
   ProImageEditorConfigs configs = const ProImageEditorConfigs(
+    customWidgets: ImageEditorCustomWidgets(
+      circularProgressIndicator: SizedBox.shrink(),
+    ),
     imageGenerationConfigs: ImageGeneratioConfigs(
       generateInsideSeparateThread: false,
       generateImageInBackground: false,
@@ -55,12 +58,12 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Write text text
+    // Write text
     await tester.enterText(find.byType(EditableText), 'Hello, World!');
     expect(find.text('Hello, World!'), findsOneWidget);
 
     // Press done button
-    final doneBtn = find.byKey(const ValueKey('MainEditorMainDoneButton'));
+    final doneBtn = find.byKey(const ValueKey('TextEditorDoneButton'));
     expect(doneBtn, findsOneWidget);
     await tester.tap(doneBtn);
     await tester.pumpAndSettle();
@@ -69,7 +72,7 @@ void main() {
     final layers1 = find.byType(LayerWidget);
     expect(layers1, findsOneWidget);
     // Press undo button
-    final undoBtn = find.byKey(const ValueKey('MainEditorMainUndoButton'));
+    final undoBtn = find.byKey(const ValueKey('MainEditorUndoButton'));
     expect(undoBtn, findsOneWidget);
     await tester.tap(undoBtn);
     await tester.pumpAndSettle();
@@ -79,7 +82,7 @@ void main() {
     expect(layers2, findsNothing);
 
     // Press redo button
-    final redoBtn = find.byKey(const ValueKey('MainEditorMainRedoButton'));
+    final redoBtn = find.byKey(const ValueKey('MainEditorRedoButton'));
     expect(redoBtn, findsOneWidget);
     await tester.tap(redoBtn);
     await tester.pumpAndSettle();
@@ -92,14 +95,19 @@ void main() {
   group('ProImageEditor open subeditors', () {
     testWidgets('ProImageEditor opens PaintingEditor',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
           home: ProImageEditor.memory(
-        fakeMemoryImage,
-        configs: configs,
-        callbacks: ProImageEditorCallbacks(
-          onImageEditingComplete: (Uint8List bytes) async {},
+            fakeMemoryImage,
+            key: key,
+            configs: configs,
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {},
+            ),
+          ),
         ),
-      )));
+      );
 
       final openBtn = find.byKey(const ValueKey('open-painting-editor-btn'));
       expect(openBtn, findsOneWidget);

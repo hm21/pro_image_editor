@@ -18,8 +18,8 @@ class FilteredImage extends StatelessWidget {
   /// The height of the image.
   final double height;
 
-  /// The design mode of the image editor.
-  final ImageEditorDesignModeE designMode;
+  /// A class representing configuration options for the Image Editor.
+  final ProImageEditorConfigs configs;
 
   /// The list of filters to be applied on the image.
   final FilterMatrix filters;
@@ -37,7 +37,7 @@ class FilteredImage extends StatelessWidget {
     super.key,
     required this.width,
     required this.height,
-    required this.designMode,
+    required this.configs,
     required this.filters,
     required this.image,
     required this.blurFactor,
@@ -79,7 +79,7 @@ class FilteredImage extends StatelessWidget {
       fit: fit,
       width: width,
       height: height,
-      designMode: designMode,
+      configs: configs,
     );
   }
 }

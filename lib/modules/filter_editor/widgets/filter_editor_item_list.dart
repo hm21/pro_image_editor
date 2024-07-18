@@ -254,7 +254,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                     ...(widget.activeFilters ?? []),
                     ...filter.filters,
                   ],
-                  designMode: widget.configs.designMode,
+                  configs: widget.configs,
                   blurFactor: widget.blurFactor ?? 0,
                 ),
               ),

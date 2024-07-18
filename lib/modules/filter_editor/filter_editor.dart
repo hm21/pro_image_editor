@@ -299,7 +299,7 @@ class FilterEditorState extends State<FilterEditor>
                             getMinimumSize(mainImageSize, editorBodySize).width,
                         height: getMinimumSize(mainImageSize, editorBodySize)
                             .height,
-                        designMode: designMode,
+                        configs: configs,
                         image: editorImage,
                         filters: _getActiveFilters(),
                         blurFactor: appliedBlurFactor,

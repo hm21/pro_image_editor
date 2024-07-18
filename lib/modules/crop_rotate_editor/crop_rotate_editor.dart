@@ -2053,9 +2053,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   width: 60,
                   height: 60,
                   child: FittedBox(
-                    child: PlatformCircularProgressIndicator(
-                      designMode: designMode,
-                    ),
+                    child: PlatformCircularProgressIndicator(configs: configs),
                   ),
                 ),
               ),
@@ -2243,7 +2241,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
               FilteredImage(
                 filters: appliedFilters,
                 blurFactor: appliedBlurFactor,
-                designMode: designMode,
+                configs: configs,
                 width: _imgWidth,
                 height: _imgHeight,
                 image: editorImage,
@@ -2289,7 +2287,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 child: FilteredImage(
                   width: _mainImageSize.width,
                   height: _mainImageSize.height,
-                  designMode: designMode,
+                  configs: configs,
                   image: editorImage,
                   filters: appliedFilters,
                   blurFactor: appliedBlurFactor,
@@ -2340,7 +2338,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         child: FilteredImage(
           width: w,
           height: h,
-          designMode: designMode,
+          configs: configs,
           image: editorImage,
           filters: appliedFilters,
           blurFactor: appliedBlurFactor,
