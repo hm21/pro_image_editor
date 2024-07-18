@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.2.9
+- **fix(done-button)**: Disable 'Done' button until image is decoded. This resolves the issue [#166](https://github.com/hm21/pro_image_editor/issues/166).
+
 ## Version 4.2.8
 - **fix(dialog-mode)**: Resolve issue where the subEditorPage had thre wrong size in the dialog. This resolves the issue [#164](https://github.com/hm21/pro_image_editor/issues/164).
 
