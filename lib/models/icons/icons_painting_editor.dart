@@ -22,6 +22,9 @@ class IconsPaintingEditor {
   /// The icon representing a filled background.
   final IconData fill;
 
+  /// The icon representing to change the opacity.
+  final IconData changeOpacity;
+
   /// The icon representing an unfilled (transparent) background.
   final IconData noFill;
 
@@ -81,6 +84,7 @@ class IconsPaintingEditor {
   /// ```
   const IconsPaintingEditor({
     this.moveAndZoom = Icons.pinch_outlined,
+    this.changeOpacity = Icons.opacity_outlined,
     this.eraser = Icons.delete_forever_outlined,
     this.bottomNavBar = Icons.edit_outlined,
     this.lineWeight = Icons.line_weight_rounded,

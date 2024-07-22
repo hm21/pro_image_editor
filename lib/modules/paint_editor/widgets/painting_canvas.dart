@@ -147,6 +147,7 @@ class PaintingCanvasState extends State<PaintingCanvas> {
           color: _paintCtrl.color,
           strokeWidth: _paintCtrl.scaledStrokeWidth,
           fill: _paintCtrl.fill,
+          opacity: _paintCtrl.opacity,
         ),
       );
       widget.onCreatedPainting?.call();
@@ -164,13 +165,16 @@ class PaintingCanvasState extends State<PaintingCanvas> {
         fit: StackFit.expand,
         children: [
           for (final item in _paintCtrl.activePaintings)
-            CustomPaint(
-              willChange: false,
-              isComplex: item.mode == PaintModeE.freeStyle,
-              painter: DrawPainting(
-                item: item,
-                freeStyleHighPerformance: widget.freeStyleHighPerformance,
-                enabledHitDetection: _paintCtrl.mode == PaintModeE.eraser,
+            Opacity(
+              opacity: item.opacity,
+              child: CustomPaint(
+                willChange: false,
+                isComplex: item.mode == PaintModeE.freeStyle,
+                painter: DrawPainting(
+                  item: item,
+                  freeStyleHighPerformance: widget.freeStyleHighPerformance,
+                  enabledHitDetection: _paintCtrl.mode == PaintModeE.eraser,
+                ),
               ),
             ),
           StreamBuilder(
@@ -182,11 +186,14 @@ class PaintingCanvasState extends State<PaintingCanvas> {
                 onScaleUpdate: _onScaleUpdate,
                 onScaleEnd: _onScaleEnd,
                 child: _paintCtrl.busy
-                    ? CustomPaint(
-                        size: widget.drawAreaSize,
-                        willChange: true,
-                        isComplex: true,
-                        painter: DrawPainting(item: _paintCtrl.paintedModel),
+                    ? Opacity(
+                        opacity: _paintCtrl.opacity,
+                        child: CustomPaint(
+                          size: widget.drawAreaSize,
+                          willChange: true,
+                          isComplex: true,
+                          painter: DrawPainting(item: _paintCtrl.paintedModel),
+                        ),
                       )
                     : const SizedBox.expand(),
               );

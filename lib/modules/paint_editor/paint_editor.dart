@@ -287,6 +287,7 @@ class PaintingEditorState extends State<PaintingEditor>
       mode: paintEditorConfigs.initialPaintMode,
       strokeWidth: imageEditorTheme.paintingEditor.initialStrokeWidth,
       color: imageEditorTheme.paintingEditor.initialColor,
+      opacity: imageEditorTheme.paintingEditor.initialOpacity,
       strokeMultiplier: 1,
     );
 
@@ -412,12 +413,87 @@ class PaintingEditorState extends State<PaintingEditor>
     );
   }
 
+  /// Opens a bottom sheet to adjust the opacity when drawing.
+  void openOpacityBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: imageEditorTheme.paintingEditor.opacityBottomSheetColor,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return Material(
+            color: Colors.transparent,
+            textStyle: platformTextStyle(context, designMode),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    BottomSheetHeaderRow(
+                      title: i18n.paintEditor.changeOpacity,
+                      theme: initConfigs.theme,
+                      textStyle: imageEditorTheme
+                          .paintingEditor.opacityBottomSheetTitle,
+                      closeButton:
+                          customWidgets.paintEditor.changeOpacityCloseButton !=
+                                  null
+                              ? (fn) => customWidgets.paintEditor
+                                  .changeOpacityCloseButton!(this, fn)
+                              : null,
+                    ),
+                    StatefulBuilder(builder: (context, setState) {
+                      if (customWidgets.paintEditor.sliderChangeOpacity !=
+                          null) {
+                        return customWidgets.paintEditor.sliderChangeOpacity!(
+                          this,
+                          rebuildController.stream,
+                          paintCtrl.opacity,
+                          (value) {
+                            setOpacity(value);
+                            setState(() {});
+                          },
+                          (onChangedEnd) {},
+                        );
+                      }
+
+                      return Slider.adaptive(
+                        max: 1,
+                        min: 0,
+                        divisions: 100,
+                        value: paintCtrl.opacity,
+                        onChanged: (value) {
+                          setOpacity(value);
+                          setState(() {});
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
   /// Sets the fill mode for drawing elements.
   /// When the `fill` parameter is `true`, drawing elements will be filled; otherwise, they will be outlined.
   void setFill(bool fill) {
     paintCtrl.setFill(fill);
     _uiAppbarIconsStream.add(null);
     paintEditorCallbacks?.handleToggleFill(fill);
+  }
+
+  /// Sets the opacity for drawing elements.
+  ///
+  /// The opacity must be between 0 and 1.
+  void setOpacity(double value) {
+    paintCtrl.setOpacity(value);
+    _uiAppbarIconsStream.add(null);
+    paintEditorCallbacks?.handleOpacity(value);
   }
 
   /// Toggles the fill mode.
@@ -525,6 +601,7 @@ class PaintingEditorState extends State<PaintingEditor>
         color: e.color,
         strokeWidth: e.strokeWidth,
         fill: e.fill,
+        opacity: e.opacity,
       );
 
       // Find extreme points of the painting layer
@@ -572,6 +649,7 @@ class PaintingEditorState extends State<PaintingEditor>
           max(size.width, layer.strokeWidth),
           max(size.height, layer.strokeWidth),
         ),
+        opacity: layer.opacity,
         offset: finalOffset,
       );
     }).toList();
@@ -665,6 +743,20 @@ class PaintingEditorState extends State<PaintingEditor>
                         color: Colors.white,
                       ),
                       onPressed: toggleFill,
+                    );
+                  }),
+            if (paintEditorConfigs.canChangeOpacity)
+              StreamBuilder(
+                  stream: _uiAppbarIconsStream.stream,
+                  builder: (context, snapshot) {
+                    return IconButton(
+                      tooltip: i18n.paintEditor.changeOpacity,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      icon: Icon(
+                        icons.paintingEditor.changeOpacity,
+                        color: Colors.white,
+                      ),
+                      onPressed: openOpacityBottomSheet,
                     );
                   }),
             if (constraints.maxWidth >= 380) const Spacer(),

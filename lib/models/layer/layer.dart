@@ -327,6 +327,9 @@ class PaintingLayerData extends Layer {
   /// The raw size of the painted item before applying scaling.
   final Size rawSize;
 
+  /// The opacity level of the drawing.
+  final double opacity;
+
   /// Creates an instance of PaintingLayerData.
   ///
   /// The [item] and [rawSize] parameters are required, and other properties
@@ -334,6 +337,7 @@ class PaintingLayerData extends Layer {
   PaintingLayerData({
     required this.item,
     required this.rawSize,
+    required this.opacity,
     super.offset,
     super.rotation,
     super.scale,
@@ -354,6 +358,7 @@ class PaintingLayerData extends Layer {
         'w': rawSize.width,
         'h': rawSize.height,
       },
+      'opacity': opacity,
       'type': 'painting',
     };
   }
@@ -365,6 +370,7 @@ class PaintingLayerData extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
+      opacity: map['opacity'] ?? 1.0,
       rawSize: Size(
         map['rawSize']?['w'] ?? 0,
         map['rawSize']?['h'] ?? 0,

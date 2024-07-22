@@ -22,6 +22,11 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
   /// The [ValueChanged<bool>] parameter provides the new fill mode state.
   final ValueChanged<bool>? onToggleFill;
 
+  /// A callback function that is triggered when the opacity changed.
+  ///
+  /// The [ValueChanged<double>] parameter provides the new opacity level.
+  final ValueChanged<double>? onOpacityChange;
+
   /// A callback function that is triggered when drawing is done.
   final Function()? onDrawingDone;
 
@@ -100,6 +105,7 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
     this.onEditorZoomScaleStart,
     this.onEditorZoomScaleUpdate,
     this.onEditorZoomScaleEnd,
+    this.onOpacityChange,
     super.onInit,
     super.onAfterViewInit,
     super.onUndo,
@@ -141,6 +147,15 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
   /// and then calls [handleUpdateUI].
   void handleToggleFill(bool fill) {
     onToggleFill?.call(fill);
+    handleUpdateUI();
+  }
+
+  /// Handles the opacity change event.
+  ///
+  /// This method calls the [onToggleFill] callback with the provided [opacity]
+  /// and then calls [handleUpdateUI].
+  void handleOpacity(double opacity) {
+    onOpacityChange?.call(opacity);
     handleUpdateUI();
   }
 

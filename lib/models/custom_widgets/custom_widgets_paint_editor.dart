@@ -24,6 +24,22 @@ class CustomWidgetsPaintEditor
     Function() tap,
   )? lineWidthCloseButton;
 
+  /// Custom close button in the paint-editor to close the change-opacity bottom sheet.
+  ///
+  /// **Example:**
+  /// ```dart
+  /// changeOpacityCloseButton: (editor, tap) {
+  ///   return IconButton(
+  ///     onPressed: tap,
+  ///     icon: const Icon(Icons.close),
+  ///   );
+  /// },
+  /// ```
+  final Widget Function(
+    PaintingEditorState editorState,
+    Function() tap,
+  )? changeOpacityCloseButton;
+
   /// A custom slider widget for the line width in the paint editor.
   ///
   /// - [editorState] - The current state of the editor.
@@ -47,6 +63,30 @@ class CustomWidgetsPaintEditor
   ///   );
   /// },
   final CustomSlider<PaintingEditorState>? sliderLineWidth;
+
+  /// A custom slider widget to change the line width in the paint editor.
+  ///
+  /// - [editorState] - The current state of the editor.
+  /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
+  /// - [value] - The current value of the slider.
+  /// - [onChanged] - A function to handle changes to the slider's value.
+  /// - [onChangeEnd] - A function to handle the end of slider value changes.
+  ///
+  /// Returns a [ReactiveCustomWidget] that provides a custom slider.
+  ///
+  /// **Example:**
+  /// sliderChangeOpacity: (editorState, rebuildStream, value, onChanged, onChangeEnd) {
+  ///   return ReactiveCustomWidget(
+  ///     stream: rebuildStream,
+  ///     builder: (_) => Slider(
+  ///       onChanged: onChanged,
+  ///       onChangeEnd: onChangeEnd,
+  ///       value: value,
+  ///       activeColor: Colors.blue.shade200,
+  ///     ),
+  ///   );
+  /// },
+  final CustomSlider<PaintingEditorState>? sliderChangeOpacity;
 
   /// A custom color picker widget for the paint editor.
   ///
@@ -78,7 +118,9 @@ class CustomWidgetsPaintEditor
     super.bottomBar,
     super.bodyItems,
     this.lineWidthCloseButton,
+    this.changeOpacityCloseButton,
     this.sliderLineWidth,
+    this.sliderChangeOpacity,
     this.colorPicker,
   });
 }

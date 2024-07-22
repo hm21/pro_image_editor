@@ -21,6 +21,7 @@ void main() {
         fill: false,
         strokeWidth: 1,
         strokeMultiplier: 1,
+        opacity: 1,
       );
       await tester.pumpWidget(
         MaterialApp(
@@ -68,6 +69,7 @@ void main() {
         fill: false,
         strokeWidth: 1,
         strokeMultiplier: 1,
+        opacity: 1,
       );
       await tester.pumpWidget(
         MaterialApp(
@@ -111,6 +113,7 @@ void main() {
         fill: false,
         strokeWidth: 1,
         strokeMultiplier: 1,
+        opacity: 1,
       );
 
       await tester.pumpWidget(

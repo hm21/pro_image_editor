@@ -20,6 +20,9 @@ class PaintingController extends ChangeNotifier {
   /// A flag indicating whether painting operations should fill shapes.
   late bool _fill;
 
+  /// The opacity for the drawing
+  late double opacity;
+
   /// List of offsets representing points on the canvas during painting.
   final List<Offset?> _offsets = [];
 
@@ -50,6 +53,7 @@ class PaintingController extends ChangeNotifier {
         color: color,
         strokeWidth: strokeWidth,
         fill: fill,
+        opacity: opacity,
       );
 
   /// Returns the current painting mode (e.g., line, circle, rectangle).
@@ -104,6 +108,7 @@ class PaintingController extends ChangeNotifier {
     required PaintModeE mode,
     required bool fill,
     required int strokeMultiplier,
+    required this.opacity,
   }) {
     _strokeWidth = strokeWidth;
     _color = color;
@@ -214,6 +219,12 @@ class PaintingController extends ChangeNotifier {
   /// Sets whether the current mode should fill the shape and notifies listeners.
   void setFill(bool fill) {
     _fill = fill;
+    notifyListeners();
+  }
+
+  /// Sets the current level of opacity.
+  void setOpacity(double value) {
+    opacity = value;
     notifyListeners();
   }
 

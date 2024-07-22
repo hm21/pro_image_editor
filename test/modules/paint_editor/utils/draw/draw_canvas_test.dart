@@ -31,6 +31,7 @@ void main() {
         offsets: [const Offset(0, 0), const Offset(50, 50)],
         strokeWidth: 5.0,
         fill: true,
+        opacity: 1,
       );
 
       await tester.pumpWidget(

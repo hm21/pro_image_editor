@@ -67,6 +67,9 @@ class PaintEditorConfigs {
   /// Indicating whether the line width can be changed.
   final bool canChangeLineWidth;
 
+  /// Indicating whether the opacity can be changed.
+  final bool canChangeOpacity;
+
   /// Indicates the initial fill state.
   final bool initialFill;
 
@@ -133,6 +136,7 @@ class PaintEditorConfigs {
     this.hasOptionEraser = true,
     this.canToggleFill = true,
     this.canChangeLineWidth = true,
+    this.canChangeOpacity = true,
     this.initialFill = false,
     this.minScale = double.negativeInfinity,
     this.maxScale = double.infinity,

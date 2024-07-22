@@ -18,6 +18,9 @@ class PaintedModel {
   /// The width of the stroke used for drawing.
   final double strokeWidth;
 
+  /// The opacity for the drawing.
+  final double opacity;
+
   /// A list of offsets representing the points of the shape or drawing.
   /// For shapes like circles and rectangles, it contains two points.
   /// For [FreeStyle], it contains a list of points.
@@ -50,6 +53,7 @@ class PaintedModel {
   /// - [offsets]: The list of offsets representing the points of the shape.
   /// - [color]: The color used for drawing or filling.
   /// - [strokeWidth]: The width of the stroke used for drawing.
+  /// - [opacity]: The opacity of the drawing.
   /// - [fill]: A boolean indicating whether the shape should be filled.
   /// - [hit]: A boolean flag indicating whether this unit of drawing has been hit.
   PaintedModel({
@@ -57,6 +61,7 @@ class PaintedModel {
     required this.offsets,
     required this.color,
     required this.strokeWidth,
+    required this.opacity,
     this.fill = false,
     this.hit = false,
   }) {
@@ -77,6 +82,7 @@ class PaintedModel {
       color: Color(map['color']),
       strokeWidth: map['strokeWidth'] ?? 1,
       fill: map['fill'] ?? false,
+      opacity: map['opacity'] ?? 1,
     );
   }
 
@@ -89,6 +95,7 @@ class PaintedModel {
       strokeWidth: strokeWidth,
       fill: fill,
       hit: hit,
+      opacity: opacity,
     );
   }
 
@@ -106,6 +113,7 @@ class PaintedModel {
       'offsets': offsetMaps,
       'color': color.value,
       'strokeWidth': strokeWidth,
+      'opacity': opacity,
       'fill': fill,
     };
   }

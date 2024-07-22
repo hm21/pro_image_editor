@@ -91,6 +91,7 @@ class LayerCopyManager {
       flipY: layer.flipY,
       item: layer.item.copy(),
       rawSize: layer.rawSize,
+      opacity: layer.opacity,
     );
   }
 }

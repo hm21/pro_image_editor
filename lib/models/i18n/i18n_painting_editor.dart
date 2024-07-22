@@ -40,6 +40,9 @@ class I18nPaintingEditor {
   /// Text for the "Toggle fill" tooltip.
   final String toggleFill;
 
+  /// Text for the "Change opacity" tooltip.
+  final String changeOpacity;
+
   /// Text for the "Undo" button.
   final String undo;
 
@@ -74,6 +77,7 @@ class I18nPaintingEditor {
   ///   dashLine: 'Dash Line',
   ///   lineWidth: 'Line Width',
   ///   toggleFill: 'Toggle fill',
+  ///   changeOpacity = 'Change opacity',
   ///   eraser: 'Eraser',
   ///   undo: 'Undo',
   ///   redo: 'Redo',
@@ -93,6 +97,7 @@ class I18nPaintingEditor {
     this.lineWidth = 'Line width',
     this.eraser = 'Eraser',
     this.toggleFill = 'Toggle fill',
+    this.changeOpacity = 'Change opacity',
     this.undo = 'Undo',
     this.redo = 'Redo',
     this.done = 'Done',

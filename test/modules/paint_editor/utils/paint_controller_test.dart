@@ -17,6 +17,7 @@ void main() {
       mode: PaintModeE.line,
       fill: false,
       strokeMultiplier: 1,
+      opacity: 1,
     );
 
     expect(controller.strokeWidth, 2.0);
@@ -32,6 +33,7 @@ void main() {
       mode: PaintModeE.line,
       fill: false,
       strokeMultiplier: 1,
+      opacity: 1,
     );
 
     final paintedModel = PaintedModel(
@@ -39,6 +41,7 @@ void main() {
       mode: PaintModeE.rect,
       offsets: [const Offset(0, 0), const Offset(50, 50)],
       strokeWidth: 3.0,
+      opacity: 1,
     );
 
     controller.addPaintInfo(paintedModel);
@@ -53,6 +56,7 @@ void main() {
       mode: PaintModeE.line,
       fill: false,
       strokeMultiplier: 1,
+      opacity: 1,
     );
 
     final paintedModel1 = PaintedModel(
@@ -60,6 +64,7 @@ void main() {
       mode: PaintModeE.rect,
       offsets: [const Offset(0, 0), const Offset(50, 50)],
       strokeWidth: 3.0,
+      opacity: 1.0,
     );
 
     final paintedModel2 = PaintedModel(
@@ -67,6 +72,7 @@ void main() {
       mode: PaintModeE.circle,
       offsets: [const Offset(20, 20), const Offset(70, 70)],
       strokeWidth: 2.5,
+      opacity: 1.0,
     );
 
     controller.addPaintInfo(paintedModel1);
