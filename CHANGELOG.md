@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.3.1
+- **feat(crop-rotate-editor)**: Allow users to read and update the aspect ratio using custom methods. This was requested in [#169](https://github.com/hm21/pro_image_editor/issues/169).
+
 ## Version 4.3.0
 - **feat(draw-opacity)**: Add an option to let the user change the opacity of the drawing. This was discussed in [#167](https://github.com/hm21/pro_image_editor/discussions/167).
 

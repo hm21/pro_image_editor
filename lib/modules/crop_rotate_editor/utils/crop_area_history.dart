@@ -74,6 +74,16 @@ mixin CropAreaHistory
   @protected
   double cropEditorScreenRatio = 1;
 
+  /// Returns the currently selected aspect ratio.
+  ///
+  /// This method retrieves the aspect ratio from the active history entry.
+  ///
+  /// Returns:
+  ///   The aspect ratio of the current active history entry.
+  double get activeAspectRatio {
+    return activeHistory.aspectRatio;
+  }
+
   @protected
   bool flipX = false;
   @protected

@@ -922,16 +922,29 @@ class CropRotateEditorState extends State<CropRotateEditor>
               );
         }).then((value) {
       if (value != null) {
-        reset(skipAddHistory: true);
-        aspectRatio = value;
-        cropRotateEditorCallbacks?.handleRatioSelected(value);
-
-        calcCropRect();
-        calcFitToScreen();
-        addHistory(scaleRotation: oldScaleFactor, angle: 0);
-        _updateAllStates();
+        updateAspectRatio(value);
       }
     });
+  }
+
+  /// Updates the current aspect ratio with a new value and adds a new history entry.
+  ///
+  /// This method performs the following steps:
+  /// 1. Resets the editor state while skipping the addition of a history entry.
+  /// 2. Updates the aspect ratio to the provided value.
+  /// 3. Triggers any necessary callbacks related to the new aspect ratio.
+  /// 4. Recalculates the crop rectangle and fits it to the screen.
+  /// 5. Adds a new history entry with the current scale factor and a rotation angle of zero.
+  /// 6. Updates all relevant states in the editor.
+  void updateAspectRatio(double value) {
+    reset(skipAddHistory: true);
+    aspectRatio = value;
+    cropRotateEditorCallbacks?.handleRatioSelected(value);
+
+    calcCropRect();
+    calcFitToScreen();
+    addHistory(scaleRotation: oldScaleFactor, angle: 0);
+    _updateAllStates();
   }
 
   @override
