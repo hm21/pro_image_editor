@@ -789,7 +789,6 @@ class PaintingEditorState extends State<PaintingEditor>
                 }),
             _buildDoneBtn(),
           ] else ...[
-            const Spacer(),
             _buildDoneBtn(),
             PlatformPopupBtn(
               designMode: designMode,
