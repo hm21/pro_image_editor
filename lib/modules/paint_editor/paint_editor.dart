@@ -7,7 +7,6 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -16,8 +15,7 @@ import 'package:pro_image_editor/utils/content_recorder.dart/utils/record_invisi
 import 'package:pro_image_editor/widgets/auto_image.dart';
 import 'package:pro_image_editor/widgets/extended/extended_interactive_viewer.dart';
 import 'package:pro_image_editor/widgets/layer_stack.dart';
-import '../../utils/transparent_image_bytes.dart';
-import '../filter_editor/widgets/filtered_image.dart';
+
 import '/mixins/converted_configs.dart';
 import '/mixins/standalone_editor.dart';
 import '/models/crop_rotate_editor/transform_factors.dart';
@@ -27,13 +25,15 @@ import '/utils/theme_functions.dart';
 import '/widgets/bottom_sheets_header_row.dart';
 import '/widgets/platform_popup_menu.dart';
 import '/widgets/transform/transformed_content_generator.dart';
+import '../../utils/transparent_image_bytes.dart';
+import '../filter_editor/widgets/filtered_image.dart';
 import 'utils/paint_controller.dart';
 import 'utils/paint_desktop_interaction_manager.dart';
 import 'widgets/painting_canvas.dart';
 
+export '/models/paint_editor/paint_bottom_bar_item.dart';
 export './utils/paint_editor_enum.dart';
 export './widgets/draw_painting.dart';
-export '/models/paint_editor/paint_bottom_bar_item.dart';
 
 /// The `PaintingEditor` widget allows users to editing images with painting
 /// tools.
@@ -711,10 +711,9 @@ class PaintingEditorState extends State<PaintingEditor>
           icon: Icon(icons.backButton),
           onPressed: close,
         ),
+        const Spacer(),
         ...[
           if (constraints.maxWidth >= 300) ...[
-            if (constraints.maxWidth >= 380) const SizedBox(width: 80),
-            const Spacer(),
             if (paintEditorConfigs.canChangeLineWidth)
               StreamBuilder(
                   stream: _uiAppbarIconsStream.stream,
@@ -759,7 +758,7 @@ class PaintingEditorState extends State<PaintingEditor>
                       onPressed: openOpacityBottomSheet,
                     );
                   }),
-            if (constraints.maxWidth >= 380) const Spacer(),
+            if (constraints.maxWidth >= 720) const Spacer(),
             StreamBuilder(
                 stream: _uiAppbarIconsStream.stream,
                 builder: (context, snapshot) {
