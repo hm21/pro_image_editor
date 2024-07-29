@@ -758,7 +758,7 @@ class PaintingEditorState extends State<PaintingEditor>
                       onPressed: openOpacityBottomSheet,
                     );
                   }),
-            if (constraints.maxWidth >= 720) const Spacer(),
+            if (constraints.maxWidth >= 640) const Spacer(),
             StreamBuilder(
                 stream: _uiAppbarIconsStream.stream,
                 builder: (context, snapshot) {
