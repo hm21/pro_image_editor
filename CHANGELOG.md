@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.3.3
+- **fix(layout)**: Resolve right overflow issue on small size phones in the paint-editor. This was merged from the pull request [#178](https://github.com/hm21/pro_image_editor/pull/178).
+
 ## Version 4.3.2
 - **fix(paint-validator)**: Resolve right overflow issue. This resolves the issue [#177](https://github.com/hm21/pro_image_editor/issues/177).
 
