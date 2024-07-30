@@ -4,12 +4,12 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/plugins/rounded_background_text/src/rounded_background_text_field.dart';
-
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
 import 'package:pro_image_editor/mixins/converted_configs.dart';
+import 'package:pro_image_editor/plugins/rounded_background_text/src/rounded_background_text_field.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+
 import '../../mixins/editor_configs_mixin.dart';
 import '../../utils/theme_functions.dart';
 import '../../widgets/bottom_sheets_header_row.dart';
@@ -389,6 +389,13 @@ class TextEditorState extends State<TextEditor>
       return customWidgets.textEditor.appBar!
           .call(this, _rebuildController.stream);
     }
+
+    const int defaultIconButtonSize = 48;
+    final List<IconButton> configButtons = _getConfigButtons();
+
+    // Taking into account the back and done button
+    final iconButtonsSize = (2 + configButtons.length) * defaultIconButtonSize;
+
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: imageEditorTheme.textEditor.appBarBackgroundColor,
@@ -401,36 +408,11 @@ class TextEditorState extends State<TextEditor>
           onPressed: close,
         ),
         const Spacer(),
-        if (constraints.maxWidth >= 300) ...[
-          if (textEditorConfigs.canToggleTextAlign)
-            IconButton(
-              key: const ValueKey('TextAlignIconButton'),
-              tooltip: i18n.textEditor.textAlign,
-              onPressed: toggleTextAlign,
-              icon: Icon(align == TextAlign.left
-                  ? icons.textEditor.alignLeft
-                  : align == TextAlign.right
-                      ? icons.textEditor.alignRight
-                      : icons.textEditor.alignCenter),
-            ),
-          if (textEditorConfigs.canChangeFontScale)
-            IconButton(
-              key: const ValueKey('BackgroundModeFontScaleButton'),
-              tooltip: i18n.textEditor.fontScale,
-              onPressed: openFontScaleBottomSheet,
-              icon: Icon(icons.textEditor.fontScale),
-            ),
-          if (textEditorConfigs.canToggleBackgroundMode)
-            IconButton(
-              key: const ValueKey('BackgroundModeColorIconButton'),
-              tooltip: i18n.textEditor.backgroundMode,
-              onPressed: toggleBackgroundMode,
-              icon: Icon(icons.textEditor.backgroundMode),
-            ),
+        if (constraints.maxWidth >= iconButtonsSize) ...[
+          ...configButtons,
           const Spacer(),
           _buildDoneBtn(),
         ] else ...[
-          const Spacer(),
           _buildDoneBtn(),
           PlatformPopupBtn(
             designMode: designMode,
@@ -527,6 +509,34 @@ class TextEditorState extends State<TextEditor>
       ),
     );
   }
+
+  List<IconButton> _getConfigButtons() => [
+        if (textEditorConfigs.canToggleTextAlign)
+          IconButton(
+            key: const ValueKey('TextAlignIconButton'),
+            tooltip: i18n.textEditor.textAlign,
+            onPressed: toggleTextAlign,
+            icon: Icon(align == TextAlign.left
+                ? icons.textEditor.alignLeft
+                : align == TextAlign.right
+                    ? icons.textEditor.alignRight
+                    : icons.textEditor.alignCenter),
+          ),
+        if (textEditorConfigs.canChangeFontScale)
+          IconButton(
+            key: const ValueKey('BackgroundModeFontScaleButton'),
+            tooltip: i18n.textEditor.fontScale,
+            onPressed: openFontScaleBottomSheet,
+            icon: Icon(icons.textEditor.fontScale),
+          ),
+        if (textEditorConfigs.canToggleBackgroundMode)
+          IconButton(
+            key: const ValueKey('BackgroundModeColorIconButton'),
+            tooltip: i18n.textEditor.backgroundMode,
+            onPressed: toggleBackgroundMode,
+            icon: Icon(icons.textEditor.backgroundMode),
+          ),
+      ];
 
   /// Builds and returns an IconButton for applying changes.
   Widget _buildDoneBtn() {

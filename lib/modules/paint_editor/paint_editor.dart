@@ -700,147 +700,204 @@ class PaintingEditorState extends State<PaintingEditor>
       return customWidgets.paintEditor.appBar!
           .call(this, rebuildController.stream);
     }
+
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: imageEditorTheme.paintingEditor.appBarBackgroundColor,
       foregroundColor: imageEditorTheme.paintingEditor.appBarForegroundColor,
-      actions: [
-        IconButton(
-          tooltip: i18n.paintEditor.back,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          icon: Icon(icons.backButton),
-          onPressed: close,
-        ),
-        const Spacer(),
-        ...[
-          if (constraints.maxWidth >= 300) ...[
-            if (paintEditorConfigs.canChangeLineWidth)
-              StreamBuilder(
-                  stream: _uiAppbarIconsStream.stream,
-                  builder: (context, snapshot) {
-                    return IconButton(
-                      tooltip: i18n.paintEditor.lineWidth,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      icon: Icon(
-                        icons.paintingEditor.lineWeight,
-                        color: Colors.white,
-                      ),
-                      onPressed: openLineWeightBottomSheet,
-                    );
-                  }),
-            if (paintEditorConfigs.canToggleFill)
-              StreamBuilder(
-                  stream: _uiAppbarIconsStream.stream,
-                  builder: (context, snapshot) {
-                    return IconButton(
-                      tooltip: i18n.paintEditor.toggleFill,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      icon: Icon(
-                        !_fill
-                            ? icons.paintingEditor.noFill
-                            : icons.paintingEditor.fill,
-                        color: Colors.white,
-                      ),
-                      onPressed: toggleFill,
-                    );
-                  }),
-            if (paintEditorConfigs.canChangeOpacity)
-              StreamBuilder(
-                  stream: _uiAppbarIconsStream.stream,
-                  builder: (context, snapshot) {
-                    return IconButton(
-                      tooltip: i18n.paintEditor.changeOpacity,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      icon: Icon(
-                        icons.paintingEditor.changeOpacity,
-                        color: Colors.white,
-                      ),
-                      onPressed: openOpacityBottomSheet,
-                    );
-                  }),
-            if (constraints.maxWidth >= 640) const Spacer(),
-            StreamBuilder(
-                stream: _uiAppbarIconsStream.stream,
-                builder: (context, snapshot) {
-                  return IconButton(
-                    tooltip: i18n.paintEditor.undo,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(
-                      icons.undoAction,
-                      color:
-                          canUndo ? Colors.white : Colors.white.withAlpha(80),
-                    ),
-                    onPressed: undoAction,
-                  );
-                }),
-            StreamBuilder(
-                stream: _uiAppbarIconsStream.stream,
-                builder: (context, snapshot) {
-                  return IconButton(
-                    tooltip: i18n.paintEditor.redo,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    icon: Icon(
-                      icons.redoAction,
-                      color:
-                          canRedo ? Colors.white : Colors.white.withAlpha(80),
-                    ),
-                    onPressed: redoAction,
-                  );
-                }),
-            _buildDoneBtn(),
-          ] else ...[
-            _buildDoneBtn(),
-            PlatformPopupBtn(
-              designMode: designMode,
-              title: i18n.paintEditor.smallScreenMoreTooltip,
-              options: [
-                if (paintEditorConfigs.canChangeLineWidth)
-                  PopupMenuOption(
-                    label: i18n.paintEditor.lineWidth,
-                    icon: Icon(
-                      icons.paintingEditor.lineWeight,
-                    ),
-                    onTap: openLineWeightBottomSheet,
-                  ),
-                if (paintEditorConfigs.canToggleFill)
-                  PopupMenuOption(
-                    label: i18n.paintEditor.toggleFill,
-                    icon: Icon(
-                      !_fill
-                          ? icons.paintingEditor.noFill
-                          : icons.paintingEditor.fill,
-                    ),
-                    onTap: () {
-                      _fill = !_fill;
-                      setFill(_fill);
-                      if (designMode == ImageEditorDesignModeE.cupertino) {
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
-                if (canUndo)
-                  PopupMenuOption(
-                    label: i18n.paintEditor.undo,
-                    icon: Icon(
-                      icons.undoAction,
-                    ),
-                    onTap: undoAction,
-                  ),
-                if (canRedo)
-                  PopupMenuOption(
-                    label: i18n.paintEditor.redo,
-                    icon: Icon(
-                      icons.redoAction,
-                    ),
-                    onTap: redoAction,
-                  ),
-              ],
-            ),
-          ],
-        ],
-      ],
+      actions: _buildAction(constraints),
     );
   }
+
+  /// Builds an action bar depending on the allowed space
+  List<Widget> _buildAction(BoxConstraints constraints) {
+    const int defaultIconButtonSize = 48;
+    final List<StreamBuilder> configButtons = _getConfigButtons();
+    final List<Widget> actionButtons = _getActionButtons();
+
+    // Taking into account the back button
+    final expandedIconButtonsSize =
+        (1 + configButtons.length + actionButtons.length) *
+            defaultIconButtonSize;
+
+    return [
+      IconButton(
+        tooltip: i18n.paintEditor.back,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        icon: Icon(icons.backButton),
+        onPressed: close,
+      ),
+      const Spacer(),
+      ...[
+        if (constraints.maxWidth >= expandedIconButtonsSize) ...[
+          ...configButtons,
+          if (constraints.maxWidth >= 640) const Spacer(),
+          ...actionButtons,
+        ] else ...[
+          ..._buildShortActionBar(
+            constraints,
+            actionButtons,
+            defaultIconButtonSize,
+          ),
+        ],
+      ],
+    ];
+  }
+
+  /// Builds an action bar with limited number of quick actions
+  List<Widget> _buildShortActionBar(
+    BoxConstraints constraints,
+    List<Widget> actionButtons,
+    int defaultIconButtonSize,
+  ) {
+    final shrunkIconButtonsSize =
+        (1 + actionButtons.length) * defaultIconButtonSize;
+    final bool hasEnoughSpace = constraints.maxWidth >= shrunkIconButtonsSize;
+
+    return [
+      if (hasEnoughSpace) ...[
+        ...actionButtons,
+      ] else ...[
+        _buildDoneBtn(),
+      ],
+      PlatformPopupBtn(
+        designMode: designMode,
+        title: i18n.paintEditor.smallScreenMoreTooltip,
+        options: [
+          if (paintEditorConfigs.canChangeLineWidth)
+            PopupMenuOption(
+              label: i18n.paintEditor.lineWidth,
+              icon: Icon(
+                icons.paintingEditor.lineWeight,
+              ),
+              onTap: openLineWeightBottomSheet,
+            ),
+          if (paintEditorConfigs.canToggleFill)
+            PopupMenuOption(
+              label: i18n.paintEditor.toggleFill,
+              icon: Icon(
+                !_fill
+                    ? icons.paintingEditor.noFill
+                    : icons.paintingEditor.fill,
+              ),
+              onTap: () {
+                _fill = !_fill;
+                setFill(_fill);
+                if (designMode == ImageEditorDesignModeE.cupertino) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          if (paintEditorConfigs.canChangeOpacity)
+            PopupMenuOption(
+              label: i18n.paintEditor.changeOpacity,
+              icon: Icon(
+                icons.paintingEditor.changeOpacity,
+              ),
+              onTap: openOpacityBottomSheet,
+            ),
+          if (!hasEnoughSpace) ...[
+            if (canUndo)
+              PopupMenuOption(
+                label: i18n.paintEditor.undo,
+                icon: Icon(
+                  icons.undoAction,
+                ),
+                onTap: undoAction,
+              ),
+            if (canRedo)
+              PopupMenuOption(
+                label: i18n.paintEditor.redo,
+                icon: Icon(
+                  icons.redoAction,
+                ),
+                onTap: redoAction,
+              ),
+          ]
+        ],
+      )
+    ];
+  }
+
+  /// Builds and returns a list of IconButton to change the line width /
+  /// toggle fill or un-fill / change the opacity.
+  List<StreamBuilder> _getConfigButtons() => [
+        if (paintEditorConfigs.canChangeLineWidth)
+          StreamBuilder(
+              stream: _uiAppbarIconsStream.stream,
+              builder: (context, snapshot) {
+                return IconButton(
+                  tooltip: i18n.paintEditor.lineWidth,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(
+                    icons.paintingEditor.lineWeight,
+                    color: Colors.white,
+                  ),
+                  onPressed: openLineWeightBottomSheet,
+                );
+              }),
+        if (paintEditorConfigs.canToggleFill)
+          StreamBuilder(
+              stream: _uiAppbarIconsStream.stream,
+              builder: (context, snapshot) {
+                return IconButton(
+                  tooltip: i18n.paintEditor.toggleFill,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(
+                    !_fill
+                        ? icons.paintingEditor.noFill
+                        : icons.paintingEditor.fill,
+                    color: Colors.white,
+                  ),
+                  onPressed: toggleFill,
+                );
+              }),
+        if (paintEditorConfigs.canChangeOpacity)
+          StreamBuilder(
+              stream: _uiAppbarIconsStream.stream,
+              builder: (context, snapshot) {
+                return IconButton(
+                  tooltip: i18n.paintEditor.changeOpacity,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  icon: Icon(
+                    icons.paintingEditor.changeOpacity,
+                    color: Colors.white,
+                  ),
+                  onPressed: openOpacityBottomSheet,
+                );
+              }),
+      ];
+
+  /// Builds and returns a list of IconButton to undo / redo / apply changes.
+  List<Widget> _getActionButtons() => [
+        StreamBuilder(
+            stream: _uiAppbarIconsStream.stream,
+            builder: (context, snapshot) {
+              return IconButton(
+                tooltip: i18n.paintEditor.undo,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: Icon(
+                  icons.undoAction,
+                  color: canUndo ? Colors.white : Colors.white.withAlpha(80),
+                ),
+                onPressed: undoAction,
+              );
+            }),
+        StreamBuilder(
+            stream: _uiAppbarIconsStream.stream,
+            builder: (context, snapshot) {
+              return IconButton(
+                tooltip: i18n.paintEditor.redo,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                icon: Icon(
+                  icons.redoAction,
+                  color: canRedo ? Colors.white : Colors.white.withAlpha(80),
+                ),
+                onPressed: redoAction,
+              );
+            }),
+        _buildDoneBtn(),
+      ];
 
   /// Builds and returns an IconButton for applying changes.
   Widget _buildDoneBtn() {
