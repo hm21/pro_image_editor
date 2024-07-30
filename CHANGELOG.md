@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.3.2
+- **fix(paint-validator)**: Resolve right overflow issue. This resolves the issue [#177](https://github.com/hm21/pro_image_editor/issues/177).
+
 ## Version 4.3.1
 - **feat(crop-rotate-editor)**: Allow users to read and update the aspect ratio using custom methods. This was requested in [#169](https://github.com/hm21/pro_image_editor/issues/169).
 
