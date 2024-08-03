@@ -693,14 +693,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
                 : screenshotHistory[screenshotHistoryPosition],
       );
 
-      if (mounted) loading.hide(context);
-
       await initConfigs.onImageEditingComplete
           ?.call(bytes ?? Uint8List.fromList([]));
+
+      if (mounted) loading.hide(context);
 
       initConfigs.onCloseEditor?.call();
     }
     cropRotateEditorCallbacks?.handleDone();
+    _interactionActive = false;
   }
 
   /// Takes a screenshot of the current editor state.

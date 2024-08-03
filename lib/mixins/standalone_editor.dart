@@ -118,8 +118,12 @@ mixin StandaloneEditorState<T extends StatefulWidget,
         theme: theme,
         message: i18n.doneLoadingMsg,
       );
+
+      /// Ensure the image infos are readed
       if (imageInfos == null) await setImageInfos();
       if (!mounted) return;
+
+      /// Capture the final screenshot
       bool screenshotIsCaptured = screenshotHistoryPosition > 0 &&
           screenshotHistoryPosition <= screenshotHistory.length;
       Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
@@ -133,21 +137,24 @@ mixin StandaloneEditorState<T extends StatefulWidget,
       );
 
       createScreenshot = false;
-      if (mounted) {
-        loading.hide(context);
 
-        await initConfigs.onImageEditingComplete
-            ?.call(bytes ?? Uint8List.fromList([]));
+      /// Return final image that the user can handle it but still with the active
+      /// loading dialog
+      await initConfigs.onImageEditingComplete
+          ?.call(bytes ?? Uint8List.fromList([]));
 
-        if (onSetFakeHero != null) {
-          if (bytes != null && mounted) {
-            await precacheImage(MemoryImage(bytes), context);
-          }
-          onSetFakeHero.call(bytes);
+      /// Precache the image for the case the user require the hero animation
+      if (onSetFakeHero != null) {
+        if (bytes != null && mounted) {
+          await precacheImage(MemoryImage(bytes), context);
         }
-
-        initConfigs.onCloseEditor?.call();
+        onSetFakeHero.call(bytes);
       }
+
+      /// Hide the loading dialog
+      if (mounted) loading.hide(context);
+
+      initConfigs.onCloseEditor?.call();
     } else {
       if (onCloseWithValue == null) {
         Navigator.pop(context, returnValue);
