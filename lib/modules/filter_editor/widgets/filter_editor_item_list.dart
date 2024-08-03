@@ -140,11 +140,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
     required int index,
     FilterMatrix? activeFilters,
   }) {
-    if (widget.configs.customWidgets.filterEditor.filterButton != null) {
-      bool isSelected =
-          widget.selectedFilter.hashCode == filter.filters.hashCode ||
-              (widget.selectedFilter.isEmpty && filter.filters.isEmpty);
+    bool isSelected =
+        widget.selectedFilter.hashCode == filter.filters.hashCode ||
+            (widget.selectedFilter.isEmpty && filter.filters.isEmpty);
 
+    if (widget.configs.customWidgets.filterEditor.filterButton != null) {
       return widget.configs.customWidgets.filterEditor.filterButton!.call(
         FilterModel(
           name: widget.configs.i18n.filterEditor.filters
@@ -186,8 +186,11 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
             widget.configs.i18n.filterEditor.filters.getFilterI18n(filter.name),
             style: TextStyle(
               fontSize: 11,
-              color:
-                  widget.configs.imageEditorTheme.filterEditor.previewTextColor,
+              color: isSelected
+                  ? widget.configs.imageEditorTheme.filterEditor
+                      .previewSelectedTextColor
+                  : widget
+                      .configs.imageEditorTheme.filterEditor.previewTextColor,
             ),
           ),
         ],

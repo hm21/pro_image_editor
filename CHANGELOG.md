@@ -4,6 +4,7 @@
 ## 4.3.5
 
 - **FIX**(frosted-glass): Adjust frosted glass example icon button size.
+- **FEAT**(filter-button): Updated the text color of the selected filter to visually indicate which filter is currently active, enhancing user interaction and clarity.
 
 
 ## 4.3.4

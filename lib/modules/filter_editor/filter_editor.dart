@@ -370,24 +370,27 @@ class FilterEditorState extends State<FilterEditor>
                     }),
               ),
             ),
-            FilterEditorItemList(
-              mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
-              mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
-              editorImage: editorImage,
-              activeFilters: appliedFilters,
-              blurFactor: appliedBlurFactor,
-              configs: configs,
-              transformConfigs: transformConfigs,
-              selectedFilter: selectedFilter.filters,
-              onSelectFilter: (filter) {
-                selectedFilter = filter;
-                _uiFilterStream.add(null);
-                filterEditorCallbacks?.handleFilterChanged(filter);
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  takeScreenshot();
-                });
-              },
-            ),
+            StatefulBuilder(builder: (context, setStateFilterList) {
+              return FilterEditorItemList(
+                mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
+                mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
+                editorImage: editorImage,
+                activeFilters: appliedFilters,
+                blurFactor: appliedBlurFactor,
+                configs: configs,
+                transformConfigs: transformConfigs,
+                selectedFilter: selectedFilter.filters,
+                onSelectFilter: (filter) {
+                  selectedFilter = filter;
+                  _uiFilterStream.add(null);
+                  setStateFilterList(() {});
+                  filterEditorCallbacks?.handleFilterChanged(filter);
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    takeScreenshot();
+                  });
+                },
+              );
+            }),
           ],
         ),
       ),

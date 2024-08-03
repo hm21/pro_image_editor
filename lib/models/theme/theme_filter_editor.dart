@@ -55,6 +55,9 @@ class FilterEditorTheme {
   /// Color of the preview text.
   final Color previewTextColor;
 
+  /// Color of the selected preview text.
+  final Color previewSelectedTextColor;
+
   /// The spacing between items in the filter list.
   final double filterListSpacing;
 
@@ -66,6 +69,7 @@ class FilterEditorTheme {
     this.appBarBackgroundColor = imageEditorAppBarColor,
     this.appBarForegroundColor = const Color(0xFFE1E1E1),
     this.previewTextColor = const Color(0xFFE1E1E1),
+    this.previewSelectedTextColor = const Color.fromARGB(255, 34, 148, 242),
     this.background = imageEditorBackgroundColor,
     this.filterListSpacing = 15,
     this.filterListMargin = const EdgeInsets.fromLTRB(8, 4, 8, 10),
