@@ -50,55 +50,52 @@ class _FrostedGlassPaintBottomBarState
             height: 48,
             child: FrostedGlassEffect(
               radius: BorderRadius.zero,
-              child: Padding(
-                padding: const EdgeInsets.all(3),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _mode = _mode == _Mode.color
-                              ? _Mode.lineWidth
-                              : _mode == _Mode.lineWidth
-                                  ? _Mode.mode
-                                  : _Mode.color;
-                        });
-                      },
-                      icon: Icon(
-                        _mode == _Mode.color
-                            ? Icons.draw
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _mode = _mode == _Mode.color
+                            ? _Mode.lineWidth
                             : _mode == _Mode.lineWidth
-                                ? Icons.category
-                                : Icons.color_lens,
-                      ),
-                      style:
-                          IconButton.styleFrom(backgroundColor: Colors.black38),
+                                ? _Mode.mode
+                                : _Mode.color;
+                      });
+                    },
+                    icon: Icon(
+                      _mode == _Mode.color
+                          ? Icons.draw
+                          : _mode == _Mode.lineWidth
+                              ? Icons.category
+                              : Icons.color_lens,
                     ),
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(14, 2, 0, 2),
-                      width: 1.5,
-                      decoration: BoxDecoration(
-                        color: Colors.white54,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+                    style:
+                        IconButton.styleFrom(backgroundColor: Colors.black38),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(14, 2, 0, 2),
+                    width: 1.5,
+                    decoration: BoxDecoration(
+                      color: Colors.white54,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    _mode == _Mode.color
-                        ? Expanded(
-                            child: WhatsAppColorPicker(
-                              onColorChanged: (color) {
-                                widget.paintEditor.paintCtrl.setColor(color);
-                                widget.paintEditor.uiPickerStream.add(null);
-                              },
-                              initColor: widget.paintEditor.paintCtrl.color,
-                            ),
-                          )
-                        : _mode == _Mode.lineWidth
-                            ? _buildLineWidth()
-                            : _buildModes(),
-                  ],
-                ),
+                  ),
+                  _mode == _Mode.color
+                      ? Expanded(
+                          child: WhatsAppColorPicker(
+                            onColorChanged: (color) {
+                              widget.paintEditor.paintCtrl.setColor(color);
+                              widget.paintEditor.uiPickerStream.add(null);
+                            },
+                            initColor: widget.paintEditor.paintCtrl.color,
+                          ),
+                        )
+                      : _mode == _Mode.lineWidth
+                          ? _buildLineWidth()
+                          : _buildModes(),
+                ],
               ),
             ),
           );

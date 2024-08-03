@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 4.3.5
+
+- **FIX**(frosted-glass): Adjust frosted glass example icon button size.
+
+
 ## 4.3.4
 
 - **FIX**(loading-dialog): close loading dialog after generation process completes.
