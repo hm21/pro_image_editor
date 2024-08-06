@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 4.3.6
+
+- **FEAT**(text-editor): Enable access to FocusNode and TextControl for enhanced editor control.
+
 ## 4.3.5
 
 - **FIX**(frosted-glass): Adjust frosted glass example icon button size.

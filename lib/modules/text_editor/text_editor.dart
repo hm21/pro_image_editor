@@ -57,8 +57,8 @@ class TextEditorState extends State<TextEditor>
         SimpleConfigsAccessState {
   late final StreamController _rebuildController;
 
-  final TextEditingController _textCtrl = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
+  final TextEditingController textCtrl = TextEditingController();
+  final FocusNode focusNode = FocusNode();
 
   late TextAlign align;
   late TextStyle selectedTextStyle;
@@ -115,8 +115,8 @@ class TextEditorState extends State<TextEditor>
   @override
   void dispose() {
     _rebuildController.close();
-    _textCtrl.dispose();
-    _focusNode.dispose();
+    textCtrl.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 
@@ -129,7 +129,7 @@ class TextEditorState extends State<TextEditor>
   /// Initializes the text editor from the provided text layer data.
   void _initializeFromLayer() {
     if (widget.layer != null) {
-      _textCtrl.text = widget.layer!.text;
+      textCtrl.text = widget.layer!.text;
       align = widget.layer!.align;
       _fontScale = widget.layer!.fontScale;
       backgroundColorMode = widget.layer!.colorMode!;
@@ -147,7 +147,7 @@ class TextEditorState extends State<TextEditor>
 
   /// Sets up a listener to update the number of lines when text changes.
   void _setupTextControllerListener() {
-    _textCtrl.addListener(() {
+    textCtrl.addListener(() {
       setState(() {
         textEditorCallbacks?.handleUpdateUI();
       });
@@ -344,10 +344,10 @@ class TextEditorState extends State<TextEditor>
 
   /// Handles the "Done" action, either by applying changes or closing the editor.
   void done() {
-    if (_textCtrl.text.trim().isNotEmpty) {
+    if (textCtrl.text.trim().isNotEmpty) {
       Navigator.of(context).pop(
         TextLayerData(
-          text: _textCtrl.text.trim(),
+          text: textCtrl.text.trim(),
           background: _backgroundColor,
           color: _textColor,
           align: align,
@@ -620,7 +620,7 @@ class TextEditorState extends State<TextEditor>
                   void animationStatusListener(AnimationStatus status) {
                     if (status == AnimationStatus.completed) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _focusNode.requestFocus();
+                        focusNode.requestFocus();
                       });
                       animation.removeStatusListener(animationStatusListener);
                     }
@@ -636,8 +636,8 @@ class TextEditorState extends State<TextEditor>
                 child: RoundedBackgroundTextField(
                   key: const ValueKey('rounded-background-text-editor-field'),
                   heroTag: widget.heroTag ?? 'Text-Image-Editor-Empty-Hero',
-                  controller: _textCtrl,
-                  focusNode: _focusNode,
+                  controller: textCtrl,
+                  focusNode: focusNode,
                   onChanged: textEditorCallbacks?.handleChanged,
                   onEditingComplete: textEditorCallbacks?.handleEditingComplete,
                   onSubmitted: textEditorCallbacks?.handleSubmitted,
@@ -646,12 +646,12 @@ class TextEditorState extends State<TextEditor>
                   keyboardType: TextInputType.multiline,
                   textInputAction: TextInputAction.newline,
                   textCapitalization: TextCapitalization.sentences,
-                  textAlign: _textCtrl.text.isEmpty ? TextAlign.center : align,
+                  textAlign: textCtrl.text.isEmpty ? TextAlign.center : align,
                   maxLines: null,
                   cursorColor: imageEditorTheme.textEditor.inputCursorColor,
                   cursorHeight: _textFontSize * 1.2,
                   scrollPhysics: const NeverScrollableScrollPhysics(),
-                  hint: _textCtrl.text.isEmpty
+                  hint: textCtrl.text.isEmpty
                       ? i18n.textEditor.inputHintText
                       : '',
                   hintStyle: selectedTextStyle.copyWith(
