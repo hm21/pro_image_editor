@@ -1868,7 +1868,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     return RecordInvisibleWidget(
       controller: screenshotCtrl,
       child: PopScope(
-        onPopInvoked: (didPop) {
+        onPopInvokedWithResult: (didPop, _) {
           _showFakeHero = true;
           _updateAllStates();
         },

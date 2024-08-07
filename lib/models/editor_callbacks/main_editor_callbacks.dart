@@ -134,8 +134,8 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// See also:
   ///
-  ///  * [Route.onPopInvoked], which is similar.
-  final PopInvokedCallback? onPopInvoked;
+  ///  * [Route.onPopInvokedWithResult], which is similar.
+  final PopInvokedWithResultCallback? onPopInvoked;
 
   /// Creates a new instance of [MainEditorCallbacks].
   const MainEditorCallbacks({

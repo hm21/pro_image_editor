@@ -1752,14 +1752,14 @@ class ProImageEditorState extends State<ProImageEditor>
       child: PopScope(
         canPop:
             disablePopScope || stateManager.position <= 0 || _processFinalImage,
-        onPopInvoked: (didPop) {
+        onPopInvokedWithResult: (didPop, result) {
           if (!didPop &&
               !disablePopScope &&
               stateManager.position > 0 &&
               !_processFinalImage) {
             closeWarning();
           }
-          mainEditorCallbacks?.onPopInvoked?.call(didPop);
+          mainEditorCallbacks?.onPopInvoked?.call(didPop, result);
         },
         child: ScreenResizeDetector(
           ignoreSafeArea: true,
