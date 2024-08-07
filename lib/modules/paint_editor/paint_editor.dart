@@ -973,7 +973,7 @@ class PaintingEditorState extends State<PaintingEditor>
                               if (!widget.paintingOnly)
                                 TransformedContentGenerator(
                                   configs: configs,
-                                  transformConfigs: transformConfigs ??
+                                  transformConfigs: initinalTransformConfigs ??
                                       TransformConfigs.empty(),
                                   child: FilteredImage(
                                     width: getMinimumSize(
@@ -1005,7 +1005,7 @@ class PaintingEditorState extends State<PaintingEditor>
                                     mainImageSize: getMinimumSize(
                                         mainImageSize, editorBodySize),
                                     editorBodySize: editorBodySize,
-                                    transformConfigs: transformConfigs,
+                                    transformConfigs: initinalTransformConfigs,
                                   ),
                                 ),
                               _buildPainter(),

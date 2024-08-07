@@ -272,7 +272,8 @@ class BlurEditorState extends State<BlurEditor>
                   RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
                 configs: configs,
-                transformConfigs: transformConfigs ?? TransformConfigs.empty(),
+                transformConfigs:
+                    initinalTransformConfigs ?? TransformConfigs.empty(),
                 child: StreamBuilder(
                     stream: _uiBlurStream.stream,
                     builder: (context, snapshot) {
@@ -294,7 +295,7 @@ class BlurEditorState extends State<BlurEditor>
                 transformHelper: TransformHelper(
                   mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
                   mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
-                  transformConfigs: transformConfigs,
+                  transformConfigs: initinalTransformConfigs,
                   editorBodySize: editorBodySize,
                 ),
                 configs: configs,

@@ -290,7 +290,8 @@ class FilterEditorState extends State<FilterEditor>
                   RectTween(begin: begin, end: end),
               child: TransformedContentGenerator(
                 configs: configs,
-                transformConfigs: transformConfigs ?? TransformConfigs.empty(),
+                transformConfigs:
+                    initinalTransformConfigs ?? TransformConfigs.empty(),
                 child: StreamBuilder(
                     stream: _uiFilterStream.stream,
                     builder: (context, snapshot) {
@@ -313,7 +314,7 @@ class FilterEditorState extends State<FilterEditor>
                   mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
                   mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
                   editorBodySize: editorBodySize,
-                  transformConfigs: transformConfigs,
+                  transformConfigs: initinalTransformConfigs,
                 ),
                 configs: configs,
                 layers: layers!,
@@ -378,7 +379,7 @@ class FilterEditorState extends State<FilterEditor>
                 activeFilters: appliedFilters,
                 blurFactor: appliedBlurFactor,
                 configs: configs,
-                transformConfigs: transformConfigs,
+                transformConfigs: initinalTransformConfigs,
                 selectedFilter: selectedFilter.filters,
                 onSelectFilter: (filter) {
                   selectedFilter = filter;

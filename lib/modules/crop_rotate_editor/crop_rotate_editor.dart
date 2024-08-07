@@ -359,7 +359,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     // Initialize controllers
     _bottomBarScrollCtrl = ScrollController();
-    _fakeHeroTransformConfigs = transformConfigs ?? TransformConfigs.empty();
+    _fakeHeroTransformConfigs =
+        initinalTransformConfigs ?? TransformConfigs.empty();
     _interactiveCornerArea = isDesktop
         ? cropRotateEditorConfigs.desktopCornerDragArea
         : cropRotateEditorConfigs.mobileCornerDragArea;
@@ -374,7 +375,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _setRawLayers();
 
     // Initialize rotate animation
-    double initAngle = transformConfigs?.angle ?? 0.0;
+    double initAngle = initinalTransformConfigs?.angle ?? 0.0;
     rotateCtrl = AnimationController(
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     rotateCtrl.addStatusListener((status) {
@@ -390,7 +391,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         Tween<double>(begin: initAngle, end: initAngle).animate(rotateCtrl);
 
     // Initialize scale animation
-    double initScale = (transformConfigs?.scaleRotation ?? 1);
+    double initScale = (initinalTransformConfigs?.scaleRotation ?? 1);
     scaleCtrl = AnimationController(
         duration: cropRotateEditorConfigs.animationDuration, vsync: this);
     scaleAnimation =
@@ -406,19 +407,20 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
 
     // Initialize transform configs if available
-    if (transformConfigs != null && transformConfigs!.isNotEmpty) {
-      rotationCount = (transformConfigs!.angle * 2 / pi).abs().toInt();
-      flipX = transformConfigs!.flipX;
-      flipY = transformConfigs!.flipY;
-      translate = transformConfigs!.offset;
-      userScaleFactor = transformConfigs!.scaleUser;
-      aspectRatio = transformConfigs!.aspectRatio;
-      cropRect = transformConfigs!.cropRect;
-      _viewRect = transformConfigs!.cropRect;
-      oldScaleFactor = transformConfigs!.scaleRotation;
+    if (initinalTransformConfigs != null &&
+        initinalTransformConfigs!.isNotEmpty) {
+      rotationCount = (initinalTransformConfigs!.angle * 2 / pi).abs().toInt();
+      flipX = initinalTransformConfigs!.flipX;
+      flipY = initinalTransformConfigs!.flipY;
+      translate = initinalTransformConfigs!.offset;
+      userScaleFactor = initinalTransformConfigs!.scaleUser;
+      aspectRatio = initinalTransformConfigs!.aspectRatio;
+      cropRect = initinalTransformConfigs!.cropRect;
+      _viewRect = initinalTransformConfigs!.cropRect;
+      oldScaleFactor = initinalTransformConfigs!.scaleRotation;
       _rotationScaleFactor = oldScaleFactor;
 
-      setInitHistory(transformConfigs!);
+      setInitHistory(initinalTransformConfigs!);
     }
 
     // Initialize fake hero settings
@@ -430,14 +432,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       cropRotateEditorCallbacks?.onAfterViewInit?.call();
       initialized = true;
-      if (transformConfigs != null &&
-          transformConfigs!.isNotEmpty &&
-          transformConfigs!.aspectRatio < 0) {
-        aspectRatio = transformConfigs!.cropRect.size.aspectRatio;
-        calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
+      if (initinalTransformConfigs != null &&
+          initinalTransformConfigs!.isNotEmpty &&
+          initinalTransformConfigs!.aspectRatio < 0) {
+        aspectRatio = initinalTransformConfigs!.cropRect.size.aspectRatio;
+        calcCropRect(onlyViewRect: initinalTransformConfigs?.isEmpty == false);
         aspectRatio = -1;
       } else {
-        calcCropRect(onlyViewRect: transformConfigs?.isEmpty == false);
+        calcCropRect(onlyViewRect: initinalTransformConfigs?.isEmpty == false);
       }
 
       if (!enableFakeHero) hideFakeHero();
@@ -445,7 +447,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       _setRawLayers();
 
       /// Skip one frame to ensure the image is correctly transformed
-      Size? originalSize = transformConfigs?.originalSize;
+      Size? originalSize = initinalTransformConfigs?.originalSize;
       if (originalSize != null && !originalSize.isInfinite) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           /// Fit to the screen and set duration to zero
@@ -645,8 +647,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     initConfigs.onImageEditingStarted?.call();
 
     TransformConfigs transformC =
-        !canRedo && !canUndo && transformConfigs != null
-            ? transformConfigs!
+        !canRedo && !canUndo && initinalTransformConfigs != null
+            ? initinalTransformConfigs!
             : activeHistory;
 
     _showFakeHero = enableFakeHero;
@@ -712,7 +714,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     await setImageInfos(activeHistory: activeHistory, forceUpdate: true);
     // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (transformConfigs == null &&
+      if (initinalTransformConfigs == null &&
           history.length == 1 &&
           history.first.isEmpty) {
         setInitHistory(
@@ -732,8 +734,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       }
 
       TransformConfigs transformC =
-          !canRedo && !canUndo && transformConfigs != null
-              ? transformConfigs!
+          !canRedo && !canUndo && initinalTransformConfigs != null
+              ? initinalTransformConfigs!
               : activeHistory;
 
       screenshotCtrl.captureImage(
@@ -2314,7 +2316,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   mainBodySize: (mainBodySize ?? editorBodySize),
                   mainImageSize: _mainImageSize,
                   editorBodySize: constraints.biggest,
-                  transformConfigs: transformConfigs,
+                  transformConfigs: initinalTransformConfigs,
                 ),
                 configs: configs,
                 layers: _layers,

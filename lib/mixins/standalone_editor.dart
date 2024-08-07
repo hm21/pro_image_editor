@@ -46,8 +46,9 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   /// Returns the theme data for the editor.
   ThemeData get theme => initConfigs.theme;
 
-  /// Returns the transformation configurations for the editor.
-  TransformConfigs? get transformConfigs => initConfigs.transformConfigs;
+  /// Returns the initinal transformation configurations for the editor.
+  TransformConfigs? get initinalTransformConfigs =>
+      initConfigs.transformConfigs;
 
   /// Returns the layers in the editor.
   List<Layer>? get layers => initConfigs.layers;
