@@ -112,8 +112,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
     if (initConfigs.convertToUint8List) {
       createScreenshot = true;
-      LoadingDialog loading = LoadingDialog();
-      await loading.show(
+      LoadingDialog.instance.show(
         context,
         configs: configs,
         theme: theme,
@@ -122,7 +121,10 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
       /// Ensure the image infos are readed
       if (imageInfos == null) await setImageInfos();
-      if (!mounted) return;
+      if (!mounted) {
+        LoadingDialog.instance.hide();
+        return;
+      }
 
       /// Capture the final screenshot
       bool screenshotIsCaptured = screenshotHistoryPosition > 0 &&
@@ -153,7 +155,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
       }
 
       /// Hide the loading dialog
-      if (mounted) loading.hide(context);
+      LoadingDialog.instance.hide();
 
       initConfigs.onCloseEditor?.call();
     } else {

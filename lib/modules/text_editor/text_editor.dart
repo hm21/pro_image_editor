@@ -368,15 +368,17 @@ class TextEditorState extends State<TextEditor>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Theme(
-          data: widget.theme.copyWith(
-              tooltipTheme:
-                  widget.theme.tooltipTheme.copyWith(preferBelow: true)),
-          child: Scaffold(
-            backgroundColor: imageEditorTheme.textEditor.background,
-            appBar: _buildAppBar(constraints),
-            body: _buildBody(),
-            bottomNavigationBar: _buildBottomBar(),
+        return ExtendedPopScope(
+          child: Theme(
+            data: widget.theme.copyWith(
+                tooltipTheme:
+                    widget.theme.tooltipTheme.copyWith(preferBelow: true)),
+            child: Scaffold(
+              backgroundColor: imageEditorTheme.textEditor.background,
+              appBar: _buildAppBar(constraints),
+              body: _buildBody(),
+              bottomNavigationBar: _buildBottomBar(),
+            ),
           ),
         );
       },

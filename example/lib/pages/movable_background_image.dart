@@ -214,13 +214,11 @@ class _MoveableBackgroundImageExampleState
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () async {
-        LoadingDialog loading = LoadingDialog();
-        await loading.show(
+        LoadingDialog.instance.show(
           context,
           configs: const ProImageEditorConfigs(),
           theme: ThemeData.dark(),
         );
-
         double imgRatio = 1; // set the aspect ratio from your image.
 
         await _createTransparentImage(_editorSize.aspectRatio);
@@ -231,7 +229,7 @@ class _MoveableBackgroundImageExampleState
             'https://picsum.photos/id/${Random().nextInt(200)}/2000';
         await precacheImage(NetworkImage(imageUrl), context);
 
-        if (context.mounted) await loading.hide(context);
+        LoadingDialog.instance.hide();
 
         if (!context.mounted) return;
         Navigator.push(

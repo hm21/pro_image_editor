@@ -141,16 +141,14 @@ class DemoBuildStickers extends StatelessWidget {
               // Important make sure the image is completly loaded
               // cuz the editor will directly take a screenshot
               // inside of a background isolated thread.
-              LoadingDialog loading = LoadingDialog();
-              await loading.show(
+              LoadingDialog.instance.show(
                 context,
                 configs: const ProImageEditorConfigs(),
                 theme: ThemeData.dark(),
               );
 
-              if (!context.mounted) return;
               await precacheImage(NetworkImage(url), context);
-              if (context.mounted) await loading.hide(context);
+              LoadingDialog.instance.hide();
               setLayer(widget);
             },
             child: MouseRegion(

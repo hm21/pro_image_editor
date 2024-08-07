@@ -51,19 +51,19 @@ class _DefaultExampleState extends State<DefaultExample>
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
                     Navigator.pop(context);
-                    LoadingDialog loading = LoadingDialog();
-                    await loading.show(
+                    LoadingDialog.instance.show(
                       context,
                       configs: const ProImageEditorConfigs(),
                       theme: ThemeData.dark(),
                     );
+
                     var url = 'https://picsum.photos/5000';
                     var bytes = await fetchImageAsUint8List(url);
 
                     if (!context.mounted) return;
                     await precacheImage(MemoryImage(bytes), context);
 
-                    if (context.mounted) await loading.hide(context);
+                    LoadingDialog.instance.hide();
 
                     if (!context.mounted) return;
                     Navigator.of(context).push(
@@ -95,20 +95,18 @@ class _DefaultExampleState extends State<DefaultExample>
                   onTap: () async {
                     Navigator.pop(context);
 
-                    LoadingDialog loading = LoadingDialog();
-                    await loading.show(
+                    LoadingDialog.instance.show(
                       context,
                       configs: const ProImageEditorConfigs(),
                       theme: ThemeData.dark(),
                     );
-                    if (!context.mounted) return;
 
                     await precacheImage(
                         NetworkImage(
                             ExampleConstants.of(context)!.demoNetworkUrl),
                         context);
 
-                    if (context.mounted) await loading.hide(context);
+                    LoadingDialog.instance.hide();
                     if (!context.mounted) return;
                     Navigator.of(context).push(
                       MaterialPageRoute(

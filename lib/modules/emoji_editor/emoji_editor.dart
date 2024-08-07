@@ -176,7 +176,11 @@ class EmojiEditorState extends State<EmojiEditor>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: _buildEmojiPicker());
+    return ExtendedPopScope(
+      child: SafeArea(
+        child: _buildEmojiPicker(),
+      ),
+    );
   }
 
   /// Builds a SizedBox containing the EmojiPicker with dynamic sizing.

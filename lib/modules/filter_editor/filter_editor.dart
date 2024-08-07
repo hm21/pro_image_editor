@@ -230,15 +230,17 @@ class FilterEditorState extends State<FilterEditor>
     return Theme(
       data: theme.copyWith(
           tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: imageEditorTheme.uiOverlayStyle,
-        child: RecordInvisibleWidget(
-          controller: screenshotCtrl,
-          child: Scaffold(
-            backgroundColor: imageEditorTheme.filterEditor.background,
-            appBar: _buildAppBar(),
-            body: _buildBody(),
-            bottomNavigationBar: _buildBottomNavBar(),
+      child: ExtendedPopScope(
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: imageEditorTheme.uiOverlayStyle,
+          child: RecordInvisibleWidget(
+            controller: screenshotCtrl,
+            child: Scaffold(
+              backgroundColor: imageEditorTheme.filterEditor.background,
+              appBar: _buildAppBar(),
+              body: _buildBody(),
+              bottomNavigationBar: _buildBottomNavBar(),
+            ),
           ),
         ),
       ),

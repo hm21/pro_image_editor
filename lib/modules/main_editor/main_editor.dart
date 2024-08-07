@@ -664,17 +664,15 @@ class ProImageEditorState extends State<ProImageEditor>
     bool shouldImportStateHistory =
         _imageNeedDecode && stateHistoryConfigs.initStateHistory != null;
     _imageNeedDecode = false;
-    LoadingDialog? loading;
+
     if (shouldImportStateHistory && i18n.importStateHistoryMsg.isNotEmpty) {
-      loading = LoadingDialog();
-      await loading.show(
+      LoadingDialog.instance.show(
         context,
         theme: _theme,
         configs: configs,
         message: i18n.importStateHistoryMsg,
       );
     }
-    if (!mounted) return;
     _imageInfos = await decodeImageInfos(
       bytes: await editorImage.safeByteArray(context),
       screenSize: Size(
@@ -693,9 +691,11 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (shouldImportStateHistory) {
       importStateHistory(stateHistoryConfigs.initStateHistory!);
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await loading?.hide(context);
-      });
+      if (i18n.importStateHistoryMsg.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          LoadingDialog.instance.hide();
+        });
+      }
     }
     if (mounted) setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -1476,8 +1476,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (isSubEditorOpen) await _pageOpenCompleter.future;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      LoadingDialog loading = LoadingDialog();
-      await loading.show(
+      LoadingDialog.instance.show(
         context,
         theme: _theme,
         configs: configs,
@@ -1498,7 +1497,7 @@ class ProImageEditorState extends State<ProImageEditor>
         await onImageEditingComplete?.call(bytes);
       }
 
-      if (mounted) loading.hide(context);
+      LoadingDialog.instance.hide();
 
       onCloseEditor?.call();
 
@@ -1749,7 +1748,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     return RecordInvisibleWidget(
       controller: _controllers.screenshot,
-      child: PopScope(
+      child: ExtendedPopScope(
         canPop:
             disablePopScope || stateManager.position <= 0 || _processFinalImage,
         onPopInvokedWithResult: (didPop, result) {

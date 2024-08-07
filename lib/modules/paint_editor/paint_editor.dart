@@ -674,20 +674,22 @@ class PaintingEditorState extends State<PaintingEditor>
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: imageEditorTheme.uiOverlayStyle,
-      child: Theme(
-        data: theme.copyWith(
-            tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-        child: RecordInvisibleWidget(
-          controller: screenshotCtrl,
-          child: LayoutBuilder(builder: (context, constraints) {
-            return Scaffold(
-              resizeToAvoidBottomInset: false,
-              backgroundColor: imageEditorTheme.paintingEditor.background,
-              appBar: _buildAppBar(constraints),
-              body: _buildBody(),
-              bottomNavigationBar: _buildBottomBar(),
-            );
-          }),
+      child: ExtendedPopScope(
+        child: Theme(
+          data: theme.copyWith(
+              tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
+          child: RecordInvisibleWidget(
+            controller: screenshotCtrl,
+            child: LayoutBuilder(builder: (context, constraints) {
+              return Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: imageEditorTheme.paintingEditor.background,
+                appBar: _buildAppBar(constraints),
+                body: _buildBody(),
+                bottomNavigationBar: _buildBottomBar(),
+              );
+            }),
+          ),
         ),
       ),
     );

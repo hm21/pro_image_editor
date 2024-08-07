@@ -669,8 +669,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       await initConfigs.onDone?.call(transformC, _transformHelperScale);
       if (mounted) Navigator.pop(context, transformC);
     } else {
-      LoadingDialog loading = LoadingDialog();
-      await loading.show(
+      LoadingDialog.instance.show(
         context,
         configs: configs,
         theme: theme,
@@ -681,8 +680,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
         await setImageInfos(activeHistory: activeHistory);
       }
 
-      if (!mounted) return;
-
+      if (!mounted) {
+        LoadingDialog.instance.hide();
+        return;
+      }
       Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
         imageInfos: imageInfos!,
         context: context,
@@ -698,7 +699,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       await initConfigs.onImageEditingComplete
           ?.call(bytes ?? Uint8List.fromList([]));
 
-      if (mounted) loading.hide(context);
+      LoadingDialog.instance.hide();
 
       initConfigs.onCloseEditor?.call();
     }
@@ -1867,7 +1868,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Widget build(BuildContext context) {
     return RecordInvisibleWidget(
       controller: screenshotCtrl,
-      child: PopScope(
+      child: ExtendedPopScope(
         onPopInvokedWithResult: (didPop, _) {
           _showFakeHero = true;
           _updateAllStates();

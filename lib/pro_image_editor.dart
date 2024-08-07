@@ -37,7 +37,8 @@ export 'utils/decode_image.dart';
 
 /// Widgets
 export 'widgets/flat_icon_text_button.dart';
-export 'widgets/loading_dialog.dart';
+export 'widgets/overlays/loading_dialog/loading_dialog.dart';
+export 'widgets/extended/extended_pop_scope.dart';
 export 'widgets/platform_circular_progress_indicator.dart';
 export 'widgets/custom_widgets/reactive_custom_widget.dart';
 export 'widgets/custom_widgets/reactive_custom_appbar.dart';

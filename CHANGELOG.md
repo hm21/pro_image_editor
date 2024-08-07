@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.0.0
+
+> **Breaking Changes** 
+The package now supports Flutter `3.24`, which changes the `onPopInvoked` method.
+Introduced a new loading dialog as a singleton class.
+
+- **FEAT**(loading-dialog): Replaced the existing loading dialog with a new solution which use `Overlay` instead of `Navigator.push`. This provides more control over the dialog's hide process and prevents it from affecting other widgets.
+- **REFACTOR**(editor): Renamed `transformConfigs` to `initTransformConfigs`.
+- **FIX**(flutter-version): Updated deprecated code for Flutter 3.24 compatibility.
+- **CHORE**: Removed the `awaitLoadingDialogContext` configuration as it is no longer required.
 
 ## 4.3.6
 

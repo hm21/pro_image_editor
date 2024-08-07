@@ -87,18 +87,15 @@ class _DesignExampleState extends State<DesignExample>
   }
 
   void _openExample(Widget example, String url) async {
-    LoadingDialog loading = LoadingDialog();
-    await loading.show(
+    LoadingDialog.instance.show(
       context,
       configs: const ProImageEditorConfigs(),
       theme: ThemeData.dark(),
     );
 
-    if (!mounted) return;
-
     await precacheImage(NetworkImage(_urlFrostedGlass), context);
 
-    if (mounted) await loading.hide(context);
+    LoadingDialog.instance.hide();
 
     if (mounted) {
       Navigator.of(context).push(

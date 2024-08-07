@@ -1,13 +1,6 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
-
-// Project imports:
-import 'custom_widgets_blur_editor.dart';
-import 'custom_widgets_crop_rotate_editor.dart';
-import 'custom_widgets_filter_editor.dart';
-import 'custom_widgets_main_editor.dart';
-import 'custom_widgets_paint_editor.dart';
-import 'custom_widgets_text_editor.dart';
+import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
 export 'custom_widgets_blur_editor.dart';
 export 'custom_widgets_crop_rotate_editor.dart';
@@ -40,7 +33,69 @@ class ImageEditorCustomWidgets {
   final CustomWidgetsBlurEditor blurEditor;
 
   /// Replace the existing loading dialog.
-  final Widget? loadingDialog;
+  ///
+  /// **Example:**
+  /// ```dart
+  /// loadingDialog: (message, configs) => Stack(
+  ///   children: [
+  ///     ModalBarrier(
+  ///       onDismiss: kDebugMode ? LoadingDialog.instance.hide : null,
+  ///       color: Colors.black54,
+  ///       dismissible: kDebugMode,
+  ///     ),
+  ///     Center(
+  ///       child: Theme(
+  ///         data: Theme.of(context),
+  ///         child: AlertDialog(
+  ///           contentPadding:
+  ///               const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+  ///           content: ConstrainedBox(
+  ///             constraints: const BoxConstraints(maxWidth: 500),
+  ///             child: Padding(
+  ///               padding: const EdgeInsets.only(top: 3.0),
+  ///               child: Row(
+  ///                 crossAxisAlignment: CrossAxisAlignment.center,
+  ///                 mainAxisAlignment: MainAxisAlignment.start,
+  ///                 children: [
+  ///                   Padding(
+  ///                     padding: const EdgeInsets.only(right: 20.0),
+  ///                     child: SizedBox(
+  ///                       height: 40,
+  ///                       width: 40,
+  ///                       child: FittedBox(
+  ///                         child: PlatformCircularProgressIndicator(
+  ///                           configs: configs,
+  ///                         ),
+  ///                       ),
+  ///                     ),
+  ///                   ),
+  ///                   Expanded(
+  ///                     child: Text(
+  ///                       message,
+  ///                       style: platformTextStyle(
+  ///                         context,
+  ///                         configs.designMode,
+  ///                       ).copyWith(
+  ///                         fontSize: 16,
+  ///                         color: configs.imageEditorTheme
+  ///                             .loadingDialogTheme.textColor,
+  ///                       ),
+  ///                       textAlign: TextAlign.start,
+  ///                     ),
+  ///                   ),
+  ///                 ],
+  ///               ),
+  ///             ),
+  ///           ),
+  ///         ),
+  ///       ),
+  ///     ),
+  ///   ],
+  /// ),
+  ///
+  /// ```
+  final Widget Function(String message, ProImageEditorConfigs configs)?
+      loadingDialog;
 
   /// Replace the existing CircularProgressIndicator.
   final Widget? circularProgressIndicator;

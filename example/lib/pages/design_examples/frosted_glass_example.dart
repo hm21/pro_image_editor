@@ -141,7 +141,10 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
                 setLayer: setLayer, scrollController: scrollController),
           ),
           customWidgets: ImageEditorCustomWidgets(
-            loadingDialog: const FrostedGlassLoadingDialog(),
+            loadingDialog: (message, configs) => FrostedGlassLoadingDialog(
+              message: message,
+              configs: configs,
+            ),
             mainEditor: CustomWidgetsMainEditor(
               closeWarningDialog: (editor) async {
                 if (!context.mounted) return false;
