@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.1
+
+- **FIX**(loading-dialog): The loading dialog will now close correctly regardless of the animation builder's state, preventing potential UI freezes or blocks.
+
+
 ## 5.0.0
 
 > **Breaking Changes** 

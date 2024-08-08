@@ -94,7 +94,11 @@ class LoadingDialog extends ChangeNotifier {
   /// which will remove the overlay after the animation completes.
   void hide() {
     if (_overlays.isNotEmpty) {
-      _overlays.last.animationKey.currentState!.hide();
+      if (_overlays.last.animationKey.currentState == null) {
+        _removeOverlay();
+      } else {
+        _overlays.last.animationKey.currentState!.hide();
+      }
     }
     notifyListeners();
   }
