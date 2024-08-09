@@ -288,6 +288,7 @@ class PaintingEditorState extends State<PaintingEditor>
 
   /// Indicates whether the editor supports zoom functionality.
   bool get _enableZoom =>
+      // ignore: deprecated_member_use_from_same_package
       paintEditorConfigs.editorIsZoomable ?? paintEditorConfigs.enableZoom;
 
   @override
