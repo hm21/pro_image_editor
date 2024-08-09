@@ -64,12 +64,12 @@ class _StandaloneExampleState extends State<StandaloneExample>
                         context);
                     if (!context.mounted) return;
 
-                    bool inited = false;
+                    bool initialized = false;
 
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) {
-                        if (!inited) {
-                          inited = true;
+                        if (!initialized) {
+                          initialized = true;
                           Future.delayed(const Duration(milliseconds: 1), () {
                             _cropRotateEditorKey.currentState!.enableFakeHero =
                                 true;
@@ -133,7 +133,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
         convertToUint8List: true,
         configs: ProImageEditorConfigs(
           designMode: platformDesignMode,
-          imageGenerationConfigs: const ImageGeneratioConfigs(
+          imageGenerationConfigs: const ImageGenerationConfigs(
 
               /// If your users paint a lot in a short time, you should disable this
               /// flag because it will overload the isolated thread which delay the final result
@@ -156,7 +156,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
         convertToUint8List: true,
         configs: ProImageEditorConfigs(
           designMode: platformDesignMode,
-          imageGenerationConfigs: const ImageGeneratioConfigs(
+          imageGenerationConfigs: const ImageGenerationConfigs(
 
               /// If your users change a lot stuff in a short time, you should disable this
               /// flag because it will overload the isolated thread which delay the final result.

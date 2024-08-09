@@ -298,7 +298,7 @@ class FilterEditorState extends State<FilterEditor>
               child: TransformedContentGenerator(
                 configs: configs,
                 transformConfigs:
-                    initinalTransformConfigs ?? TransformConfigs.empty(),
+                    initialTransformConfigs ?? TransformConfigs.empty(),
                 child: StreamBuilder(
                     stream: _uiFilterStream.stream,
                     builder: (context, snapshot) {
@@ -321,7 +321,7 @@ class FilterEditorState extends State<FilterEditor>
                   mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
                   mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
                   editorBodySize: editorBodySize,
-                  transformConfigs: initinalTransformConfigs,
+                  transformConfigs: initialTransformConfigs,
                 ),
                 configs: configs,
                 layers: layers!,
@@ -386,7 +386,7 @@ class FilterEditorState extends State<FilterEditor>
                 activeFilters: appliedFilters,
                 blurFactor: appliedBlurFactor,
                 configs: configs,
-                transformConfigs: initinalTransformConfigs,
+                transformConfigs: initialTransformConfigs,
                 selectedFilter: selectedFilter.filters,
                 onSelectFilter: (filter) {
                   selectedFilter = filter;

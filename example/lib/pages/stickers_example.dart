@@ -72,7 +72,7 @@ class _StickersExampleState extends State<StickersExample>
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () async {
-                      // Important make sure the image is completly loaded
+                      // Important make sure the image is completely loaded
                       // cuz the editor will directly take a screenshot
                       // inside of a background isolated thread.
                       LoadingDialog.instance.show(

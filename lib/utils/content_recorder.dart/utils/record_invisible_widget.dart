@@ -13,7 +13,7 @@ class RecordInvisibleWidget extends StatefulWidget {
     required this.controller,
   });
 
-  /// The widget that will be recorded.
+  /// The child widget. This widget will not be recorded.
   final Widget child;
 
   /// The controller used for managing the recording.

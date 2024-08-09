@@ -186,7 +186,7 @@ class RoundedBackgroundText extends StatelessWidget {
   /// {@template rounded_background_text.background_color}
   /// The text background color.
   ///
-  /// If null, a trasparent color will be used.
+  /// If null, a transparent color will be used.
   /// {@endtemplate}
   final Color? backgroundColor;
 
@@ -635,7 +635,7 @@ class LineMetricsHelper {
   ///  * [isLast], which uses this property to check the amount of lines
   final int length;
 
-  /// The overriden width of the line
+  /// The override width of the line
   ///
   /// This allows another line to affect the width of this line based on the
   /// difference between the two. If the difference is minimal, the width may

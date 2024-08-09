@@ -2,7 +2,7 @@
 import 'dart:ui';
 
 // Project imports:
-import 'theme_dragable_sheet.dart';
+import 'theme_draggable_sheet.dart';
 import 'types/theme_types.dart';
 
 /// The `StickerEditorTheme` class defines the theme for the sticker editor in

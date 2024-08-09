@@ -65,83 +65,16 @@ class CustomWidgetsPaintEditor
 
   /// A custom slider widget for the line width in the paint editor.
   ///
-  /// - [editorState] - The current state of the editor.
-  /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
-  /// - [value] - The current value of the slider.
-  /// - [onChanged] - A function to handle changes to the slider's value.
-  /// - [onChangeEnd] - A function to handle the end of slider value changes.
-  ///
-  /// Returns a [ReactiveCustomWidget] that provides a custom slider.
-  ///
-  /// **Example:**
-  /// ```dart
-  /// sliderLineWidth:
-  /// (editorState, rebuildStream, value, onChanged, onChangeEnd) {
-  ///   return ReactiveCustomWidget(
-  ///     stream: rebuildStream,
-  ///     builder: (_) => Slider(
-  ///       onChanged: onChanged,
-  ///       onChangeEnd: onChangeEnd,
-  ///       value: value,
-  ///       activeColor: Colors.blue.shade200,
-  ///     ),
-  ///   );
-  /// },
-  /// ```
+  /// {@macro customSliderWidget}
   final CustomSlider<PaintingEditorState>? sliderLineWidth;
 
   /// A custom slider widget to change the line width in the paint editor.
   ///
-  /// - [editorState] - The current state of the editor.
-  /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
-  /// - [value] - The current value of the slider.
-  /// - [onChanged] - A function to handle changes to the slider's value.
-  /// - [onChangeEnd] - A function to handle the end of slider value changes.
-  ///
-  /// Returns a [ReactiveCustomWidget] that provides a custom slider.
-  ///
-  /// **Example:**
-  /// ```dart
-  /// sliderChangeOpacity:
-  /// (editorState, rebuildStream, value, onChanged, onChangeEnd) {
-  ///   return ReactiveCustomWidget(
-  ///     stream: rebuildStream,
-  ///     builder: (_) => Slider(
-  ///       onChanged: onChanged,
-  ///       onChangeEnd: onChangeEnd,
-  ///       value: value,
-  ///       activeColor: Colors.blue.shade200,
-  ///     ),
-  ///   );
-  /// },
-  /// ```
+  /// {@macro customSliderWidget}
   final CustomSlider<PaintingEditorState>? sliderChangeOpacity;
 
   /// A custom color picker widget for the paint editor.
   ///
-  /// - [editorState] - The current state of the editor.
-  /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
-  /// - [currentColor] - The currently selected color.
-  /// - [setColor] - A function to update the selected color.
-  ///
-  /// Returns an optional [ReactiveCustomWidget] that provides a custom color
-  /// picker.
-  ///
-  /// **Example:**
-  /// ``` dart
-  /// colorPicker: (editor, rebuildStream, currentColor, setColor) =>
-  ///    ReactiveCustomWidget(
-  ///      stream: rebuildStream,
-  ///      builder: (_) => BarColorPicker(
-  ///        configs: editor.configs,
-  ///        length: 200,
-  ///        horizontal: false,
-  ///        initialColor: currentColor,
-  ///        colorListener: (int value) {
-  ///          setColor(Color(value));
-  ///        },
-  ///      ),
-  /// ),
-  /// ```
+  /// {@macro colorPickerWidget}
   final CustomColorPicker<PaintingEditorState>? colorPicker;
 }

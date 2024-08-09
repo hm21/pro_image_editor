@@ -1,8 +1,8 @@
 /// A typedef representing a matrix for image filtering operations.
 ///
 /// This typedef defines a two-dimensional list of doubles, used as a matrix
-/// for applying various image filtering transformations. Each sublist
-/// represents a row in the matrix, and each element in the sublist represents
+/// for applying various image filtering transformations. Each sub-list
+/// represents a row in the matrix, and each element in the sub-list represents
 /// a coefficient used in the filtering calculation.
 ///
 /// The [FilterMatrix] is typically used in image processing to define how

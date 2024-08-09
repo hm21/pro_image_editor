@@ -52,14 +52,14 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
           child: Row(
             mainAxisAlignment: widget
                 .configs.imageEditorTheme.textEditor.bottomBarMainAxisAlignment,
-            children: _buildIconBtns(),
+            children: _buildIconButtons(),
           ),
         ),
       ),
     );
   }
 
-  List<Widget> _buildIconBtns() {
+  List<Widget> _buildIconButtons() {
     var items = widget.configs.textEditorConfigs.customTextStyles!;
     return List.generate(
       items.length,

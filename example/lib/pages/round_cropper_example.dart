@@ -27,15 +27,15 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
             AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
         if (!context.mounted) return;
 
-        bool inited = false;
+        bool initialized = false;
 
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
                 LayoutBuilder(builder: (context, constraints) {
-              if (!inited) {
-                inited = true;
+              if (!initialized) {
+                initialized = true;
                 Future.delayed(const Duration(milliseconds: 1), () {
                   _cropRotateEditorKey.currentState!.enableFakeHero = true;
                   setState(() {});
@@ -64,7 +64,7 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
         onCloseEditor: onCloseEditor,
         configs: ProImageEditorConfigs(
           designMode: platformDesignMode,
-          imageGenerationConfigs: const ImageGeneratioConfigs(
+          imageGenerationConfigs: const ImageGenerationConfigs(
             outputFormat: OutputFormat.png,
             pngFilter: PngFilter.average,
           ),

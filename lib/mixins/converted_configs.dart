@@ -59,7 +59,7 @@ mixin ImageEditorConvertedConfigs {
   StateHistoryConfigs get stateHistoryConfigs => configs.stateHistoryConfigs;
 
   /// Gets the configurations related to image generation.
-  ImageGeneratioConfigs get imageGenerationConfigs =>
+  ImageGenerationConfigs get imageGenerationConfigs =>
       configs.imageGenerationConfigs;
 
   /// Returns the hero tag used in the image editor.

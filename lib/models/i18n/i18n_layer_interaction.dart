@@ -17,9 +17,9 @@ class I18nLayerInteraction {
   ///
   /// ```dart
   /// I18nLayerInteraction(
-  ///   remove: 'Eliminar',
-  ///   edit: 'Editar',
-  ///   rotateScale: 'Rotar y Escalar',
+  ///   remove: 'Remove',
+  ///   edit: 'Edit',
+  ///   rotateScale: 'Rotate and Scale',
   /// )
   /// ```
   const I18nLayerInteraction({

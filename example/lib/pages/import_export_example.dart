@@ -52,7 +52,7 @@ class _ImportExportExampleState extends State<ImportExportExample>
             onCloseEditor: onCloseEditor,
           ),
           configs: ProImageEditorConfigs(
-              imageGenerationConfigs: const ImageGeneratioConfigs(
+              imageGenerationConfigs: const ImageGenerationConfigs(
                 generateImageInBackground: false,
               ),
               designMode: platformDesignMode,

@@ -1083,7 +1083,7 @@ Creates a `ProImageEditor` widget for editing an image from a network URL.
 | `heroTag`                         | A unique hero tag for the Image Editor widget.                             | `'Pro-Image-Editor-Hero'`          |
 | `layerInteraction`                | Configuration options for the layer interaction behavior.                  | `LayerInteraction()`               |
 | `stateHistoryConfigs`             | Holds the configurations related to state history management.              | `StateHistoryConfigs()`            |
-| `imageGenerationConfigs`          | Holds the configurations related to image generation.                      | `ImageGeneratioConfigs()`          |
+| `imageGenerationConfigs`          | Holds the configurations related to image generation.                      | `imageGenerationConfigs()`          |
 
 
 ### ProImageEditorCallbacks

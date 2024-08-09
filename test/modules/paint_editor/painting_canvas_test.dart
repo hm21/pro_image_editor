@@ -53,7 +53,7 @@ void main() {
       // Simulate scale end gesture
       await gesture.up();
 
-      // Assuming the paintmode didn't change
+      // Assuming the paintMode didn't change
       expect(ctrl.mode, PaintModeE.arrow);
 
       // Assuming the gesture creates an undoable action
@@ -99,7 +99,7 @@ void main() {
       // Simulate scale end gesture
       await gesture.up();
 
-      // Assuming the paintmode didn't change
+      // Assuming the paintMode didn't change
       expect(ctrl.mode, PaintModeE.freeStyle);
 
       // Assuming the gesture creates an undoable action

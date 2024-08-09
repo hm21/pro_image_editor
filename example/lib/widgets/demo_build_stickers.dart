@@ -13,7 +13,7 @@ class DemoBuildStickers extends StatelessWidget {
     required this.scrollController,
   });
 
-  final List<String> demoTitels = [
+  final List<String> demoTitles = [
     'Recent',
     'Favorites',
     'Shapes',
@@ -27,7 +27,7 @@ class DemoBuildStickers extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> slivers = [];
     int offset = 0;
-    for (var element in demoTitels) {
+    for (var element in demoTitles) {
       slivers.addAll([
         SliverPadding(
           padding: const EdgeInsets.only(bottom: 4),
@@ -138,7 +138,7 @@ class DemoBuildStickers extends StatelessWidget {
           );
           return GestureDetector(
             onTap: () async {
-              // Important make sure the image is completly loaded
+              // Important make sure the image is completely loaded
               // cuz the editor will directly take a screenshot
               // inside of a background isolated thread.
               LoadingDialog.instance.show(

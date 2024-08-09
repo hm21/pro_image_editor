@@ -282,9 +282,13 @@ class PaintingEditorState extends State<PaintingEditor>
           ),
       ];
 
-  /// The Uint8List from the fake hero image, which is drawed when finish
+  /// The Uint8List from the fake hero image, which is drawn when finish
   /// editing.
   Uint8List? _fakeHeroBytes;
+
+  /// Indicates whether the editor supports zoom functionality.
+  bool get _enableZoom =>
+      paintEditorConfigs.editorIsZoomable ?? paintEditorConfigs.enableZoom;
 
   @override
   void initState() {
@@ -953,7 +957,7 @@ class PaintingEditorState extends State<PaintingEditor>
                   : [
                       ExtendedInteractiveViewer(
                         key: _interactiveViewer,
-                        editorIsZoomable: paintEditorConfigs.editorIsZoomable,
+                        enableZoom: _enableZoom,
                         minScale: paintEditorConfigs.editorMinScale,
                         maxScale: paintEditorConfigs.editorMaxScale,
                         enableInteraction: paintMode == PaintModeE.moveAndZoom,
@@ -987,7 +991,7 @@ class PaintingEditorState extends State<PaintingEditor>
                               if (!widget.paintingOnly)
                                 TransformedContentGenerator(
                                   configs: configs,
-                                  transformConfigs: initinalTransformConfigs ??
+                                  transformConfigs: initialTransformConfigs ??
                                       TransformConfigs.empty(),
                                   child: FilteredImage(
                                     width: getMinimumSize(
@@ -1019,7 +1023,7 @@ class PaintingEditorState extends State<PaintingEditor>
                                     mainImageSize: getMinimumSize(
                                         mainImageSize, editorBodySize),
                                     editorBodySize: editorBodySize,
-                                    transformConfigs: initinalTransformConfigs,
+                                    transformConfigs: initialTransformConfigs,
                                   ),
                                 ),
                               _buildPainter(),
@@ -1050,10 +1054,8 @@ class PaintingEditorState extends State<PaintingEditor>
     if (paintModes.length <= 1) return const SizedBox.shrink();
 
     double minWidth = min(MediaQuery.of(context).size.width, 600);
-    double maxWidth = max(
-        (paintModes.length + (paintEditorConfigs.editorIsZoomable ? 1 : 0)) *
-            80,
-        minWidth);
+    double maxWidth =
+        max((paintModes.length + (_enableZoom ? 1 : 0)) * 80, minWidth);
     return Theme(
       data: theme,
       child: Scrollbar(
@@ -1090,7 +1092,7 @@ class PaintingEditorState extends State<PaintingEditor>
                     runAlignment: WrapAlignment.spaceAround,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: <Widget>[
-                      if (paintEditorConfigs.editorIsZoomable) ...[
+                      if (_enableZoom) ...[
                         FlatIconTextButton(
                           label: Text(
                             i18n.paintEditor.moveAndZoom,

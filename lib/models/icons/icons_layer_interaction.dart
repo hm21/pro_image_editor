@@ -20,7 +20,7 @@ class IconsLayerInteraction {
   /// The icon data for removing a layer.
   final IconData remove;
 
-  /// The icon data for editing a Textlayer.
+  /// The icon data for editing a TextLayer.
   final IconData edit;
 
   /// The icon data for rotating or scaling a layer.

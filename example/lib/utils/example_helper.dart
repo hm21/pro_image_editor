@@ -38,7 +38,7 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
   void onCloseEditor({
     bool showThumbnail = false,
     ui.Image? rawOriginalImage,
-    final ImageGeneratioConfigs? generatioConfigs,
+    final ImageGenerationConfigs? generationConfigs,
   }) async {
     if (editedBytes != null) {
       await precacheImage(MemoryImage(editedBytes!), context);
@@ -53,7 +53,7 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
               generationTime: _generationTime,
               showThumbnail: showThumbnail,
               rawOriginalImage: rawOriginalImage,
-              generatioConfigs: generatioConfigs,
+              generationConfigs: generationConfigs,
             );
           },
         ),

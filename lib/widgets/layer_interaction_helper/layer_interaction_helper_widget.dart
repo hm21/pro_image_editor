@@ -168,7 +168,7 @@ class _LayerInteractionHelperWidgetState
               top: 0,
               left: 0,
               child: LayerInteractionButton(
-                toogleTooltipVisibility: (val) =>
+                toggleTooltipVisibility: (val) =>
                     setState(() => _tooltipVisible = val),
                 rotation: -widget.layerData.rotation,
                 onTap: widget.onRemoveLayer,
@@ -186,7 +186,7 @@ class _LayerInteractionHelperWidgetState
                 top: 0,
                 right: 0,
                 child: LayerInteractionButton(
-                  toogleTooltipVisibility: (val) =>
+                  toggleTooltipVisibility: (val) =>
                       setState(() => _tooltipVisible = val),
                   rotation: -widget.layerData.rotation,
                   onTap: widget.onEditLayer,
@@ -203,7 +203,7 @@ class _LayerInteractionHelperWidgetState
               bottom: 0,
               right: 0,
               child: LayerInteractionButton(
-                toogleTooltipVisibility: (val) =>
+                toggleTooltipVisibility: (val) =>
                     setState(() => _tooltipVisible = val),
                 rotation: -widget.layerData.rotation,
                 onScaleRotateDown: widget.onScaleRotateDown,

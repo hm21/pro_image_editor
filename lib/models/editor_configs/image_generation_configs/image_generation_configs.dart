@@ -13,10 +13,10 @@ export 'processor_configs.dart';
 
 /// Configuration settings for image generation.
 ///
-/// [ImageGeneratioConfigs] holds various configuration options
+/// [ImageGenerationConfigs] holds various configuration options
 /// that affect how images are generated.
-class ImageGeneratioConfigs {
-  /// Creates a new instance of [ImageGeneratioConfigs].
+class ImageGenerationConfigs {
+  /// Creates a new instance of [ImageGenerationConfigs].
   ///
   /// - The [allowEmptyEditCompletion] parameter controls if empty edit
   ///   completions are allowed.
@@ -29,7 +29,7 @@ class ImageGeneratioConfigs {
   /// - The [customPixelRatio] parameter set the pixel ratio of the image
   ///   relative to the content.
   /// - The [processorConfigs] parameter set the processor configs.
-  const ImageGeneratioConfigs({
+  const ImageGenerationConfigs({
     this.captureOnlyBackgroundImageArea = true,
     this.allowEmptyEditCompletion = true,
     this.generateInsideSeparateThread = true,
@@ -177,9 +177,9 @@ class ImageGeneratioConfigs {
   /// values.
   ///
   /// The [copyWith] method allows you to create a new instance of
-  /// [ImageGeneratioConfigs] with some properties updated while keeping the
+  /// [ImageGenerationConfigs] with some properties updated while keeping the
   /// others unchanged.
-  ImageGeneratioConfigs copyWith({
+  ImageGenerationConfigs copyWith({
     bool? captureOnlyBackgroundImageArea,
     bool? allowEmptyEditCompletion,
     bool? generateInsideSeparateThread,
@@ -197,7 +197,7 @@ class ImageGeneratioConfigs {
     Size? maxThumbnailSize,
     JpegChroma? jpegChroma,
   }) {
-    return ImageGeneratioConfigs(
+    return ImageGenerationConfigs(
       captureOnlyBackgroundImageArea:
           captureOnlyBackgroundImageArea ?? this.captureOnlyBackgroundImageArea,
       allowEmptyEditCompletion:

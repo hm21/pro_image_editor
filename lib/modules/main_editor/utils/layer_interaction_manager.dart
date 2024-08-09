@@ -228,7 +228,7 @@ class LayerInteractionManager {
 
     if (editorScaleFactor > 1) return;
 
-    bool vibarate = false;
+    bool shouldVibrate = false;
     double posX = activeLayer.offset.dx;
     double posY = activeLayer.offset.dy;
 
@@ -251,7 +251,7 @@ class LayerInteractionManager {
             (helperGoNearLineLeft || helperGoNearLineRight)) ||
         (showVerticalHelperLine && hitAreaX)) {
       if (!showVerticalHelperLine) {
-        vibarate = true;
+        shouldVibrate = true;
         snapStartPosX = detail.focalPoint.dx;
       }
       showVerticalHelperLine = true;
@@ -268,7 +268,7 @@ class LayerInteractionManager {
             (helperGoNearLineTop || helperGoNearLineBottom)) ||
         (showHorizontalHelperLine && hitAreaY)) {
       if (!showHorizontalHelperLine) {
-        vibarate = true;
+        shouldVibrate = true;
         snapStartPosY = detail.focalPoint.dy;
       }
       showHorizontalHelperLine = true;
@@ -280,7 +280,7 @@ class LayerInteractionManager {
           posY <= 0 ? LayerLastPosition.top : LayerLastPosition.bottom;
     }
 
-    if (configEnabledHitVibration && vibarate) {
+    if (configEnabledHitVibration && shouldVibrate) {
       _lineHitVibrate();
     }
   }

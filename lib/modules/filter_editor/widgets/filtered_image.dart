@@ -51,7 +51,7 @@ class FilteredImage extends StatelessWidget {
       width: width,
       height: height,
       child: Stack(
-        // StackFit.expand is importent for [transformed_content_generator.dart]
+        // StackFit.expand is important for [transformed_content_generator.dart]
         fit: StackFit.expand,
         alignment: Alignment.center,
         children: [

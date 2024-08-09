@@ -48,9 +48,8 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   /// Returns the theme data for the editor.
   ThemeData get theme => initConfigs.theme;
 
-  /// Returns the initinal transformation configurations for the editor.
-  TransformConfigs? get initinalTransformConfigs =>
-      initConfigs.transformConfigs;
+  /// Returns the initial transformation configurations for the editor.
+  TransformConfigs? get initialTransformConfigs => initConfigs.transformConfigs;
 
   /// Returns the layers in the editor.
   List<Layer>? get layers => initConfigs.layers;
@@ -125,7 +124,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
         message: i18n.doneLoadingMsg,
       );
 
-      /// Ensure the image infos are readed
+      /// Ensure the image infos are read
       if (imageInfos == null) await setImageInfos();
       if (!mounted) {
         LoadingDialog.instance.hide();

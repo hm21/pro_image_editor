@@ -305,7 +305,7 @@ class _MoveableBackgroundImageExampleState
                   ),
                   configs: ProImageEditorConfigs(
                       designMode: platformDesignMode,
-                      imageGenerationConfigs: ImageGeneratioConfigs(
+                      imageGenerationConfigs: ImageGenerationConfigs(
                         captureOnlyDrawingBounds: true,
                         captureOnlyBackgroundImageArea: false,
                         outputFormat: OutputFormat.png,
@@ -431,7 +431,7 @@ class _MoveableBackgroundImageExampleState
       scrollbarOrientation: ScrollbarOrientation.top,
       thickness: isDesktop ? null : 0,
       child: BottomAppBar(
-        /// kBottomNavigationBarHeight is important that helperlines will work
+        /// kBottomNavigationBarHeight is important that helper-lines will work
         height: kBottomNavigationBarHeight,
         color: Colors.black,
         padding: EdgeInsets.zero,

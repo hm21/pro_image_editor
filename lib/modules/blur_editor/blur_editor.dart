@@ -277,7 +277,7 @@ class BlurEditorState extends State<BlurEditor>
               child: TransformedContentGenerator(
                 configs: configs,
                 transformConfigs:
-                    initinalTransformConfigs ?? TransformConfigs.empty(),
+                    initialTransformConfigs ?? TransformConfigs.empty(),
                 child: StreamBuilder(
                     stream: _uiBlurStream.stream,
                     builder: (context, snapshot) {
@@ -299,7 +299,7 @@ class BlurEditorState extends State<BlurEditor>
                 transformHelper: TransformHelper(
                   mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
                   mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
-                  transformConfigs: initinalTransformConfigs,
+                  transformConfigs: initialTransformConfigs,
                   editorBodySize: editorBodySize,
                 ),
                 configs: configs,

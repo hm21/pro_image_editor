@@ -17,7 +17,7 @@ void main() {
     customWidgets: ImageEditorCustomWidgets(
       circularProgressIndicator: SizedBox.shrink(),
     ),
-    imageGenerationConfigs: ImageGeneratioConfigs(
+    imageGenerationConfigs: ImageGenerationConfigs(
       generateInsideSeparateThread: false,
       generateImageInBackground: false,
     ),

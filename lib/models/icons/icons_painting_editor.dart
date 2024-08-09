@@ -64,9 +64,9 @@ class IconsPaintingEditor {
   ///
   /// This icon appears in the editor bottombar.
   ///
-  /// When in the [PaintEditorConfigs] the config [editorIsZoomable] is set to
+  /// When in the [PaintEditorConfigs] the config [enableZoom] is set to
   /// `true`, this icon will be displayed, allowing users to interact with the
-  /// editor's zoom and move features. If [editorIsZoomable] is set to `false`,
+  /// editor's zoom and move features. If [enableZoom] is set to `false`,
   /// the icon will be hidden.
   final IconData moveAndZoom;
 

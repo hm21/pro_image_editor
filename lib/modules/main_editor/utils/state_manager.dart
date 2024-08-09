@@ -16,7 +16,7 @@ class StateManager {
   /// Get the list of filters from the current image editor changes.
   FilterMatrix get activeFilters => stateHistory[position].filters;
 
-  /// Get the transformconfigurations from the crop/ rotate editor.
+  /// Get the transformConfigurations from the crop/ rotate editor.
   TransformConfigs get transformConfigs =>
       stateHistory[position].transformConfigs;
 

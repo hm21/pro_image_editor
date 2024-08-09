@@ -1,8 +1,14 @@
 # Changelog
 
+## 5.0.3
+- **REFACTOR**(config): Rename 'editorIsZoomable' to 'enableZoom'
+- **FIX**(config): Correct typo `initinalTransformConfigs` to 'initialTransformConfigs'
+- **STYLE**(spelling): Correct spelling errors in code comments and documentation
+
+
 ## 5.0.2
 
-- **STYLE**: Add extensive lint tests to enhance code quality
+- **STYLE**(lint): Add extensive lint tests across multiple components to enhance code quality
 
 
 ## 5.0.1
@@ -63,7 +69,7 @@ Introduced a new loading dialog as a singleton class.
 
 ## 4.2.8
 
-- **FIX**(dialog-mode): Resolve issue where the subEditorPage had thre wrong size in the dialog. This resolves the issue [#164](https://github.com/hm21/pro_image_editor/issues/164).
+- **FIX**(dialog-mode): Resolve issue where the subEditorPage had the wrong size in the dialog. This resolves the issue [#164](https://github.com/hm21/pro_image_editor/issues/164).
 
 
 ## 4.2.7
@@ -109,17 +115,17 @@ Introduced a new loading dialog as a singleton class.
 
 ## 4.1.1
 
-- **FIX**(vibration):  The `Vibration.hasVibrator` check will now only happen if the user has enabled hitVibration in the helperline configs. This resolves issue [#139](https://github.com/hm21/pro_image_editor/issue/139).
+- **FIX**(vibration):  The `Vibration.hasVibrator` check will now only happen if the user has enabled hitVibration in the helper-line configs. This resolves issue [#139](https://github.com/hm21/pro_image_editor/issue/139).
 
 
 ## 4.1.0
 
-- **FEAT**(zoom): Paint-Editor and Main-Editor are now zoomable. An example of how to enable this can be found [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/zoom_move_editor_example.dart)
+- **FEAT**(zoom): Paint-Editor and Main-Editor has now option for zooming. An example of how to enable this can be found [here](https://github.com/hm21/pro_image_editor/blob/stable/example/lib/pages/zoom_move_editor_example.dart)
 
 
 ## 4.0.10
 
-- **FEAT**(text-editor): Add autocorrect and enableSuggestions configs. This was requsted in [#132](https://github.com/hm21/pro_image_editor/issues/132)
+- **FEAT**(text-editor): Add autocorrect and enableSuggestions configs. This was requested in [#132](https://github.com/hm21/pro_image_editor/issues/132)
 - **FIX**(text-editor): Remove duplicate text-shadow from invisible text-field. This resolves issue [#131](https://github.com/hm21/pro_image_editor/issue/131).
 
 
@@ -138,12 +144,12 @@ Introduced a new loading dialog as a singleton class.
 ## 4.0.7
 
 - **FIX**(sticker-export): Resolve incorrect export from sticker images causing lower resolution.
-- **FEAT**(custom-widget): Add custom widgets for font-size bottom sheet. This was requsted in [#123](https://github.com/hm21/pro_image_editor/issues/123)
+- **FEAT**(custom-widget): Add custom widgets for font-size bottom sheet. This was requested in [#123](https://github.com/hm21/pro_image_editor/issues/123)
 
 
 ## 4.0.6
 
-- **FEAT**(layer-scale): Add ability to set minimum and maximum scale factor for layers. This was requsted in [#122](https://github.com/hm21/pro_image_editor/issues/122)
+- **FEAT**(layer-scale): Add ability to set minimum and maximum scale factor for layers. This was requested in [#122](https://github.com/hm21/pro_image_editor/issues/122)
 
 
 ## 4.0.5
@@ -207,7 +213,7 @@ Introduced a new loading dialog as a singleton class.
 
 ## 3.0.12
 
-- **FIX**(import-history): Resolve incorrect import of fontfamily and fontscale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83).
+- **FIX**(import-history): Resolve incorrect import of fontfamily and font-scale. This issue was discussed in [#83](https://github.com/hm21/pro_image_editor/discussions/83).
 
 
 ## 3.0.11
@@ -238,7 +244,7 @@ Introduced a new loading dialog as a singleton class.
 - **FEAT**: The editor will now capture by default only the area from the background image and cut all layers outside. To disable this behavior, you can set the flag `captureOnlyBackgroundImageArea` to `false` in the configurations, like below:
 ```dart
 configs: ProImageEditorConfigs(
-  imageGenerationConfigs: const ImageGeneratioConfigs(
+  imageGenerationConfigs: const imageGenerationConfigs(
     captureOnlyBackgroundImageArea: false,
   ),
 ),
@@ -274,7 +280,7 @@ configs: ProImageEditorConfigs(
 
 ## 3.0.2
 
-- **CHORE**(example): also release example in pub.dev for pubpoints
+- **CHORE**(example): also release example in pub.dev for pub-points
 
 
 ## 3.0.1
@@ -288,7 +294,7 @@ configs: ProImageEditorConfigs(
 
 
 - **BREAKING** **FEAT**: Move `onImageEditingComplete`, `onCloseEditor` and `onUpdateUI` callbacks inside `callbacks: ProImageEditorCallbacks()`.
-- **BREAKING** **FEAT**: Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: ImageGeneratioConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
+- **BREAKING** **FEAT**: Change the `allowCompleteWithEmptyEditing` config to `allowEmptyEditCompletion`. Use it new like this `configs: ProImageEditorConfigs(imageGenerationConfigs: imageGenerationConfigs(allowEmptyEditCompletion: false))`. The default value is now also `true` and not `false` anymore.
 - **BREAKING** **FEAT**: Change the layer initial offset position to the center of the screen, not the top left.
 - **BREAKING** **FEAT**: Rename `ColorFilterGenerator` to `FilterModel`.
 - **BREAKING** **FEAT**: Changed the logic of overlaying multiple layers, which may produce different results than before.

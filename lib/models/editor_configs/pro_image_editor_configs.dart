@@ -81,7 +81,7 @@ class ProImageEditorConfigs {
   ///   history management. By default, it uses an empty `StateHistoryConfigs`
   ///   instance.
   /// - The `imageGenerationConfigs` holds the configurations related to
-  ///   image generation. By default, it uses an empty `ImageGeneratioConfigs`
+  ///   image generation. By default, it uses an empty `imageGenerationConfigs`
   ///   instance.
   /// - The `editorBoxConstraintsBuilder` configures global [BoxConstraints]
   ///   to use when opening editors in modal bottom sheets.
@@ -95,7 +95,7 @@ class ProImageEditorConfigs {
     this.imageEditorTheme = const ImageEditorTheme(),
     this.icons = const ImageEditorIcons(),
     this.stateHistoryConfigs = const StateHistoryConfigs(),
-    this.imageGenerationConfigs = const ImageGeneratioConfigs(),
+    this.imageGenerationConfigs = const ImageGenerationConfigs(),
     this.mainEditorConfigs = const MainEditorConfigs(),
     this.paintEditorConfigs = const PaintEditorConfigs(),
     this.textEditorConfigs = const TextEditorConfigs(),
@@ -162,5 +162,5 @@ class ProImageEditorConfigs {
   final StateHistoryConfigs stateHistoryConfigs;
 
   /// Holds the configurations related to image generation.
-  final ImageGeneratioConfigs imageGenerationConfigs;
+  final ImageGenerationConfigs imageGenerationConfigs;
 }

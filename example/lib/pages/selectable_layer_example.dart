@@ -50,7 +50,7 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        imageGenerationConfigs: const ImageGeneratioConfigs(
+        imageGenerationConfigs: const ImageGenerationConfigs(
           processorConfigs: ProcessorConfigs(
             processorMode: ProcessorMode.auto,
           ),

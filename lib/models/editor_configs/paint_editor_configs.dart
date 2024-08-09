@@ -33,7 +33,8 @@ class PaintEditorConfigs {
   /// Other properties are set to reasonable defaults.
   const PaintEditorConfigs({
     this.enabled = true,
-    this.editorIsZoomable = false,
+    this.editorIsZoomable,
+    this.enableZoom = false,
     this.editorMinScale = 1.0,
     this.editorMaxScale = 5.0,
     this.hasOptionFreeStyle = true,
@@ -69,7 +70,13 @@ class PaintEditorConfigs {
   /// is disabled, and the editor's content remains at a fixed scale.
   ///
   /// Default value is `false`.
-  final bool editorIsZoomable;
+  final bool enableZoom;
+
+  /// {@macro enableZoom}
+  ///
+  /// **Deprecated**: Use [enableZoom] instead.
+  @Deprecated('Use enableZoom instead')
+  final bool? editorIsZoomable;
 
   /// Indicating whether the free-style drawing option is available.
   final bool hasOptionFreeStyle;
@@ -109,6 +116,7 @@ class PaintEditorConfigs {
   ///
   /// When this option is enabled, it optimizes scaling for improved
   /// performance.
+  ///
   /// By default, it's set to `true` on mobile devices and `false` on desktop
   /// devices.
   final bool? freeStyleHighPerformanceScaling;
@@ -116,6 +124,7 @@ class PaintEditorConfigs {
   /// Enables high-performance moving for free-style drawing when set to `true`.
   ///
   /// When this option is enabled, it optimizes moving for improved performance.
+  ///
   /// By default, it's set to `true` only on mobile-web devices.
   final bool? freeStyleHighPerformanceMoving;
 
@@ -124,6 +133,7 @@ class PaintEditorConfigs {
   ///
   /// When this option is enabled, it optimizes hero-animations for improved
   /// performance.
+  ///
   /// By default, it's set to `false`.
   final bool freeStyleHighPerformanceHero;
 
@@ -133,9 +143,9 @@ class PaintEditorConfigs {
   /// The minimum scale factor for the editor.
   ///
   /// This value determines the lowest level of zoom that can be applied to the
-  /// editor content. It only has an effect when [editorIsZoomable] is set to
+  /// editor content. It only has an effect when [enableZoom] is set to
   /// `true`.
-  /// If [editorIsZoomable] is `false`, this value is ignored.
+  /// If [enableZoom] is `false`, this value is ignored.
   ///
   /// Default value is 1.0.
   final double editorMinScale;
@@ -143,9 +153,9 @@ class PaintEditorConfigs {
   /// The maximum scale factor for the editor.
   ///
   /// This value determines the highest level of zoom that can be applied to the
-  /// editor content. It only has an effect when [editorIsZoomable] is set to
+  /// editor content. It only has an effect when [enableZoom] is set to
   /// `true`.
-  /// If [editorIsZoomable] is `false`, this value is ignored.
+  /// If [enableZoom] is `false`, this value is ignored.
   ///
   /// Default value is 5.0.
   final double editorMaxScale;

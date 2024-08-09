@@ -28,10 +28,10 @@ class EmojiCellExtended extends StatelessWidget {
   /// Font size for the emoji
   final double emojiSize;
 
-  /// Hitbox of emoji cell
+  /// HitBox of emoji cell
   final double emojiBoxSize;
 
-  /// Optinonal category that will be passed through to callbacks
+  /// Optional category that will be passed through to callbacks
   final CategoryEmoji? categoryEmoji;
 
   /// Visual tap feedback, see [ButtonMode] for options

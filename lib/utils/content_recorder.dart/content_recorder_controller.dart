@@ -55,7 +55,7 @@ class ContentRecorderController {
   /// Send widgets to the recorder widget which will draw them.
   late final StreamController<Widget?> recorderStream;
 
-  /// A helper to ensure the widget is drawed.
+  /// A helper to ensure the widget is painted.
   Completer<bool> recordReadyHelper = Completer();
 
   /// Initializes the isolate and sets up communication ports.
@@ -94,7 +94,7 @@ class ContentRecorderController {
   Future<Uint8List?> _capture({
     required ImageInfos imageInfos,
     Function(ui.Image?)? onImageCaptured,
-    bool stateHistroyScreenshot = false,
+    bool stateHistoryScreenshot = false,
     String? id,
     ui.Image? image,
     OutputFormat? outputFormat,
@@ -102,7 +102,7 @@ class ContentRecorderController {
     /// If we're just capturing a screenshot for the state history in the web
     /// platform, but web worker is not supported, we return null.
     if (kIsWeb &&
-        stateHistroyScreenshot &&
+        stateHistoryScreenshot &&
         !_webWorkerManager.supportWebWorkers) {
       return null;
     }
@@ -372,7 +372,7 @@ class ContentRecorderController {
     Size? targetSize,
     OutputFormat? format,
     Function(ui.Image?)? onImageCaptured,
-    bool stateHistroyScreenshot = false,
+    bool stateHistoryScreenshot = false,
     String? id,
   }) async {
     recordReadyHelper = Completer();
@@ -404,7 +404,7 @@ class ContentRecorderController {
       imageInfos: imageInfos,
       id: id,
       onImageCaptured: onImageCaptured,
-      stateHistroyScreenshot: stateHistroyScreenshot,
+      stateHistoryScreenshot: stateHistoryScreenshot,
       outputFormat: format,
     );
   }
@@ -432,7 +432,7 @@ class ContentRecorderController {
 
     /// Set every screenshot to broken which didn't read the ui image before
     /// changes happen.
-    screenshots.where((el) => !el.readedRenderedImage).forEach((screenshot) {
+    screenshots.where((el) => !el.processedRenderedImage).forEach((screenshot) {
       screenshot.broken = true;
     });
     ThreadCaptureState isolateCaptureState = ThreadCaptureState();
@@ -441,9 +441,9 @@ class ContentRecorderController {
         ? await _capture(
             id: isolateCaptureState.id,
             imageInfos: imageInfos,
-            stateHistroyScreenshot: true,
+            stateHistoryScreenshot: true,
             onImageCaptured: (img) {
-              isolateCaptureState.readedRenderedImage = true;
+              isolateCaptureState.processedRenderedImage = true;
             },
           )
         : await captureFromWidget(
@@ -451,9 +451,9 @@ class ContentRecorderController {
             id: isolateCaptureState.id,
             imageInfos: imageInfos,
             targetSize: targetSize,
-            stateHistroyScreenshot: true,
+            stateHistoryScreenshot: true,
             onImageCaptured: (img) {
-              isolateCaptureState.readedRenderedImage = true;
+              isolateCaptureState.processedRenderedImage = true;
             },
           );
     isolateCaptureState.completer.complete(bytes ?? Uint8List.fromList([]));
@@ -520,11 +520,12 @@ class ContentRecorderController {
                 );
         }
       } else {
-        // If the user didn't change anything just ensure the outputformat
+        // If the user didn't change anything just ensure the output-format
         // is correct.
         bytes = originalImageBytes;
 
-        String contentType = lookupMimeType('', headerBytes: bytes) ?? 'Unkown';
+        String contentType =
+            lookupMimeType('', headerBytes: bytes) ?? 'Unknown';
         List<String> sp = contentType.split('/');
         bool formatIsCorrect = sp.length > 1 &&
             (_configs.imageGenerationConfigs.outputFormat.name == sp[1] ||

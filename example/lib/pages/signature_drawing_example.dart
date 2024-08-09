@@ -72,7 +72,7 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                                 /// Optional true
                                 canChangeLineWidth: true,
                               ),
-                              imageGenerationConfigs: ImageGeneratioConfigs(
+                              imageGenerationConfigs: ImageGenerationConfigs(
                                 outputFormat: OutputFormat.png,
                                 customPixelRatio:
                                     MediaQuery.of(context).devicePixelRatio,
@@ -117,7 +117,7 @@ class _SignatureDrawingExampleState extends State<SignatureDrawingExample>
                                   initialColor: Colors.black,
                                 ),
                               ),
-                              imageGenerationConfigs: ImageGeneratioConfigs(
+                              imageGenerationConfigs: ImageGenerationConfigs(
                                 outputFormat: OutputFormat.png,
                                 customPixelRatio:
                                     MediaQuery.of(context).devicePixelRatio,

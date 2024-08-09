@@ -82,7 +82,7 @@ abstract class ThreadManager {
     );
     tasks.add(task);
 
-    /// Destroy active tasks in thread if reached the convurrency limit
+    /// Destroy active tasks in thread if reached the concurrency limit
     if ((processorConfigs.processorMode == ProcessorMode.limit ||
             processorConfigs.processorMode == ProcessorMode.auto) &&
         thread.activeTasks > processorConfigs.maxConcurrency) {

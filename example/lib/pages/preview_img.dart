@@ -18,14 +18,14 @@ class PreviewImgPage extends StatefulWidget {
   final double? generationTime;
   final bool showThumbnail;
   final ui.Image? rawOriginalImage;
-  final ImageGeneratioConfigs? generatioConfigs;
+  final ImageGenerationConfigs? generationConfigs;
 
   const PreviewImgPage({
     super.key,
     required this.imgBytes,
     this.generationTime,
     this.rawOriginalImage,
-    this.generatioConfigs,
+    this.generationConfigs,
     this.showThumbnail = false,
   }) : assert(showThumbnail == false || rawOriginalImage != null,
             'rawOriginalImage is required if you want to display a thumbnail.');
@@ -38,7 +38,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
   final _valueStyle = const TextStyle(fontStyle: FontStyle.italic);
 
   Future<ImageInfos>? _decodedImageInfos;
-  String _contentType = 'Unkown';
+  String _contentType = 'Unknown';
   double? _generationTime;
 
   Future<Uint8List?>? _highQualityGeneration;
@@ -56,7 +56,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
   }
 
   void _setContentType() {
-    _contentType = lookupMimeType('', headerBytes: _imageBytes) ?? 'Unkown';
+    _contentType = lookupMimeType('', headerBytes: _imageBytes) ?? 'Unknown';
   }
 
   String formatBytes(int bytes, [int decimals = 2]) {
@@ -79,7 +79,7 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
           widget.rawOriginalImage!,
 
           /// Set optional configs for the output
-          configs: widget.generatioConfigs ?? const ImageGeneratioConfigs(),
+          configs: widget.generationConfigs ?? const ImageGenerationConfigs(),
           context: context,
         ).then((res) {
           if (res == null) return res;

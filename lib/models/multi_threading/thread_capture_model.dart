@@ -36,7 +36,7 @@ class ThreadCaptureState {
   ///
   /// This boolean flag is set to `true` once the captured image data has been
   /// successfully read and processed.
-  bool readedRenderedImage = false;
+  bool processedRenderedImage = false;
 
   /// A unique identifier for the capture process.
   ///

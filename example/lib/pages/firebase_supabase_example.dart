@@ -81,7 +81,7 @@ class _FirebaseSupabaseExampleState extends State<FirebaseSupabaseExample>
             await _uploadSupabase(bytes);
           } catch (e) {
             debugPrint(
-                'Failed: You need to completly set up firebase or supabase in your project.');
+                'Failed: You need to completely set up firebase or supabase in your project.');
           }
           setGenerationTime();
         },

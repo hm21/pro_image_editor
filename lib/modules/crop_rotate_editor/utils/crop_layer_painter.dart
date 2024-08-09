@@ -72,7 +72,7 @@ class CropLayerPainter extends CustomPainter {
     required Size size,
   }) {
     Path path = Path()
-      // Filltype "evenOdd" is important for the canvas web renderer
+      // FillType "evenOdd" is important for the canvas web renderer
       ..fillType = PathFillType.evenOdd
       ..addRect(Rect.fromCenter(
         center: Offset(
@@ -112,7 +112,7 @@ class CropLayerPainter extends CustomPainter {
         );
 
       /// Subtract the area of the current rectangle from the path for the
-      /// Wentire canvas
+      /// entire canvas
       path = Path.combine(PathOperation.difference, path, rectPath);
     } else {
       Path rectPath = Path()
@@ -125,7 +125,7 @@ class CropLayerPainter extends CustomPainter {
         );
 
       /// Subtract the area of the current rectangle from the path for the
-      /// Wentire canvas
+      /// entire canvas
       path = Path.combine(PathOperation.difference, path, rectPath);
     }
 

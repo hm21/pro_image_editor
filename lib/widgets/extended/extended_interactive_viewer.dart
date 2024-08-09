@@ -11,7 +11,7 @@ import 'package:flutter/widgets.dart';
 /// Example usage:
 /// ```dart
 /// ExtendedInteractiveViewer(
-///   editorIsZoomable: true,
+///   enableZoom: true,
 ///   enableInteraction: true,
 ///   minScale: 0.5,
 ///   maxScale: 3.0,
@@ -21,7 +21,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// The [ExtendedInteractiveViewer] requires the following parameters:
 /// - [child]: The widget to be displayed and interacted with.
-/// - [editorIsZoomable]: A boolean indicating whether zoom functionality is
+/// - [enableZoom]: A boolean indicating whether zoom functionality is
 /// enabled.
 /// - [minScale]: The minimum scale factor for zooming.
 /// - [maxScale]: The maximum scale factor for zooming.
@@ -33,7 +33,7 @@ class ExtendedInteractiveViewer extends StatefulWidget {
     super.key,
     required this.child,
     this.enableInteraction = true,
-    required this.editorIsZoomable,
+    required this.enableZoom,
     required this.minScale,
     required this.maxScale,
     required this.onInteractionStart,
@@ -48,7 +48,7 @@ class ExtendedInteractiveViewer extends StatefulWidget {
   ///
   /// When set to `true`, the editor allows users to zoom in and out. If set to
   /// `false`, the content remains at a fixed scale.
-  final bool editorIsZoomable;
+  final bool enableZoom;
 
   /// Indicates whether user interactions such as panning and zooming are
   /// enabled.
@@ -174,7 +174,7 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.editorIsZoomable) return widget.child;
+    if (!widget.enableZoom) return widget.child;
 
     /// If we disable the interaction we need to return it as Transform widget
     /// that the InteractiveViewer will not absorb the scale events.

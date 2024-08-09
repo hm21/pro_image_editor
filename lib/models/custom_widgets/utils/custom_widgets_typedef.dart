@@ -37,6 +37,8 @@ typedef CropEditorAspectRatioOptions<T> = ReactiveCustomWidget Function(
 /// color picker.
 ///
 /// - [T] - The type representing the editor state.
+///
+/// {@template colorPickerWidget}
 /// - [editorState] - The current state of the editor.
 /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
 /// - [currentColor] - The currently selected color.
@@ -61,6 +63,7 @@ typedef CropEditorAspectRatioOptions<T> = ReactiveCustomWidget Function(
 ///      ),
 /// ),
 /// ```
+/// {@endtemplate}
 typedef CustomColorPicker<T> = ReactiveCustomWidget? Function(
   T editorState,
   Stream<void> rebuildStream,
@@ -72,6 +75,8 @@ typedef CustomColorPicker<T> = ReactiveCustomWidget? Function(
 /// slider.
 ///
 /// - [T] - The type representing the editor state.
+///
+/// {@template customSliderWidget}
 /// - [editorState] - The current state of the editor.
 /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
 /// - [value] - The current value of the slider.
@@ -94,6 +99,7 @@ typedef CustomColorPicker<T> = ReactiveCustomWidget? Function(
 ///   );
 /// },
 /// ```
+/// {@endtemplate}
 typedef CustomSlider<T> = ReactiveCustomWidget Function(
   T editorState,
   Stream<void> rebuildStream,

@@ -31,28 +31,7 @@ class CustomWidgetsFilterEditor
   /// This widget allows users to adjust values using a slider in the filter
   /// editor.
   ///
-  /// - [editorState] - The current state of the editor.
-  /// - [rebuildStream] - A [Stream] that triggers the widget to rebuild.
-  /// - [value] - The current value of the slider.
-  /// - [onChanged] - A function to handle changes to the slider's value.
-  /// - [onChangeEnd] - A function to handle the end of slider value changes.
-  ///
-  /// Returns a [ReactiveCustomWidget] that provides a custom slider.
-  ///
-  /// **Example:**
-  /// ```dart
-  /// slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) {
-  ///   return ReactiveCustomWidget(
-  ///     stream: rebuildStream,
-  ///     builder: (_) => Slider(
-  ///       onChanged: onChanged,
-  ///       onChangeEnd: onChangeEnd,
-  ///       value: value,
-  ///       activeColor: Colors.blue.shade200,
-  ///     ),
-  ///   );
-  /// },
-  /// ```
+  /// {@macro customSliderWidget}
   final CustomSlider<FilterEditorState>? slider;
 
   /// Creating a widget that represents a filter button in an editor.

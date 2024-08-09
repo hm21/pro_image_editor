@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart';
 
 // Project imports:
 import '../theme/theme_shared_values.dart';
-import 'theme_dragable_sheet.dart';
+import 'theme_draggable_sheet.dart';
 import 'types/theme_types.dart';
 
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'

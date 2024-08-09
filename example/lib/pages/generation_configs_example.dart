@@ -444,7 +444,7 @@ class _GenerationConfigState extends State<GenerationConfig>
       outputFormat = OutputFormat.jpg;
     }
 
-    var generationConfigs = ImageGeneratioConfigs(
+    var generationConfigs = ImageGenerationConfigs(
       captureOnlyDrawingBounds: _generateOnlyDrawingBounds,
       generateImageInBackground: _generateImageInBackground,
       generateInsideSeparateThread: _generateInsideSeparateThread,
@@ -473,7 +473,7 @@ class _GenerationConfigState extends State<GenerationConfig>
         onCloseEditor: () => onCloseEditor(
           showThumbnail: _generateThumbnail,
           rawOriginalImage: _rawOriginalImage,
-          generatioConfigs: generationConfigs,
+          generationConfigs: generationConfigs,
         ),
         onThumbnailGenerated: _generateThumbnail
             ? (thumbnailBytes, rawImage) async {

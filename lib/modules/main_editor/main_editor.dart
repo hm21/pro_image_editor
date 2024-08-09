@@ -22,7 +22,7 @@ import '../../models/history/last_layer_interaction_position.dart';
 import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/import_export/utils/export_import_version.dart';
-import '../../models/theme/theme_dragable_sheet.dart';
+import '../../models/theme/theme_draggable_sheet.dart';
 import '../../plugins/defer_pointer/defer_pointer.dart';
 import '../../pro_image_editor.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
@@ -77,54 +77,6 @@ import 'utils/state_manager.dart';
 /// - [ProImageEditorCallbacks] for callbacks.
 class ProImageEditor extends StatefulWidget
     with SimpleConfigsAccess, SimpleCallbacksAccess {
-  /// This constructor creates a `ProImageEditor` widget configured to edit an
-  /// image loaded from the specified `byteArray`.
-  ///
-  /// The `byteArray` parameter should contain the image data as a `Uint8List`.
-  ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to
-  /// the widget for identification and state preservation.
-  ///
-  /// The `configs` parameter specifies the configuration options for the image
-  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
-  ///
-  /// The `callbacks` parameter is required and specifies the callbacks to
-  /// handle events and interactions within the image editor.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// ProImageEditor.ProImageEditor.memory(
-  ///   bytes,
-  ///   configs: ProImageEditorConfigs(),
-  ///   callbacks: ProImageEditorCallbacks(
-  ///      onImageEditingComplete: (Uint8List bytes) async {
-  ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server
-  /// as an example.
-  ///
-  ///           You can choose to use await, so that the load dialog remains
-  /// visible until your code is ready,
-  ///           or no async, so that the load dialog closes immediately.
-  ///        */
-  ///        Navigator.pop(context);
-  ///      },
-  ///   ),
-  /// )
-  /// ```
-  factory ProImageEditor.memory(
-    Uint8List byteArray, {
-    Key? key,
-    required ProImageEditorCallbacks callbacks,
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
-  }) {
-    return ProImageEditor._(
-      key: key,
-      byteArray: byteArray,
-      configs: configs,
-      callbacks: callbacks,
-    );
-  }
-
   /// Creates a `ProImageEditor` widget for image editing.
   ///
   /// Use one of the specific constructors like `memory`, `file`, `asset`, or
@@ -136,13 +88,17 @@ class ProImageEditor extends StatefulWidget
   /// sources of the image data. At least one of these parameters must not be
   /// null.
   ///
+  /// {@template mainEditorConfigs}
+  /// The `key` parameter is an optional parameter used to provide a `Key` to
+  /// the widget for identification and state preservation.
+  ///
   /// The `configs` parameter allows you to customize the image editing
-  /// experience by providing
-  /// various configuration options. If not specified, default settings will be
-  /// used.
+  /// experience by providing various configuration options. If not specified,
+  /// default settings will be used.
   ///
   /// The `callbacks` parameter is required and specifies the callbacks to
   /// handle events and interactions within the image editor.
+  /// {@endtemplate}
   const ProImageEditor._({
     super.key,
     required this.callbacks,
@@ -160,23 +116,17 @@ class ProImageEditor extends StatefulWidget
         );
 
   /// This constructor creates a `ProImageEditor` widget configured to edit an
-  /// image loaded from the specified `file`.
+  /// image loaded from the specified `byteArray`.
   ///
-  /// The `file` parameter should point to the image file.
+  /// The `byteArray` parameter should contain the image data as a `Uint8List`.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to
-  /// the widget for identification and state preservation.
-  ///
-  /// The `configs` parameter specifies the configuration options for the image
-  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
-  ///
-  /// The `callbacks` parameter is required and specifies the callbacks to
-  /// handle events and interactions within the image editor.
+  /// {@macro mainEditorConfigs}
   ///
   /// Example usage:
   /// ```dart
-  /// ProImageEditor.ProImageEditor.file(
-  ///   File(pathToMyFile),
+  /// ProImageEditor.ProImageEditor.memory(
+  ///   bytes,
+  /// {@template mainEditorDemoTemplateCode}
   ///   configs: ProImageEditorConfigs(),
   ///   callbacks: ProImageEditorCallbacks(
   ///      onImageEditingComplete: (Uint8List bytes) async {
@@ -191,6 +141,35 @@ class ProImageEditor extends StatefulWidget
   ///        Navigator.pop(context);
   ///      },
   ///   ),
+  /// {@endtemplate}
+  /// )
+  /// ```
+  factory ProImageEditor.memory(
+    Uint8List byteArray, {
+    Key? key,
+    required ProImageEditorCallbacks callbacks,
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+  }) {
+    return ProImageEditor._(
+      key: key,
+      byteArray: byteArray,
+      configs: configs,
+      callbacks: callbacks,
+    );
+  }
+
+  /// This constructor creates a `ProImageEditor` widget configured to edit an
+  /// image loaded from the specified `file`.
+  ///
+  /// The `file` parameter should point to the image file.
+  ///
+  /// {@macro mainEditorConfigs}
+  ///
+  /// Example usage:
+  /// ```dart
+  /// ProImageEditor.ProImageEditor.file(
+  ///   File(pathToMyFile),
+  ///   {@macro mainEditorDemoTemplateCode}
   /// )
   /// ```
   factory ProImageEditor.file(
@@ -212,33 +191,13 @@ class ProImageEditor extends StatefulWidget
   ///
   /// The `assetPath` parameter should specify the path to the image asset.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to
-  /// the widget for identification and state preservation.
-  ///
-  /// The `configs` parameter specifies the configuration options for the image
-  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
-  ///
-  /// The `callbacks` parameter is required and specifies the callbacks to
-  /// handle events and interactions within the image editor.
+  /// {@macro mainEditorConfigs}
   ///
   /// Example usage:
   /// ```dart
   /// ProImageEditor.asset(
   ///   'assets/demo.png',
-  ///   configs: ProImageEditorConfigs(),
-  ///   callbacks: ProImageEditorCallbacks(
-  ///      onImageEditingComplete: (Uint8List bytes) async {
-  ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server
-  /// as an example.
-  ///
-  ///           You can choose to use await, so that the load dialog remains
-  /// visible until your code is ready,
-  ///           or no async, so that the load dialog closes immediately.
-  ///        */
-  ///        Navigator.pop(context);
-  ///      },
-  ///   ),
+  ///   {@macro mainEditorDemoTemplateCode}
   /// )
   /// ```
   factory ProImageEditor.asset(
@@ -261,33 +220,13 @@ class ProImageEditor extends StatefulWidget
   /// The `networkUrl` parameter specifies the URL from which the image will be
   /// loaded.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to
-  /// the widget for identification and state preservation.
-  ///
-  /// The `configs` parameter specifies the configuration options for the image
-  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
-  ///
-  /// The `callbacks` parameter is required and specifies the callbacks to
-  /// handle events and interactions within the image editor.
+  /// {@macro mainEditorConfigs}
   ///
   /// Example usage:
   /// ```dart
   /// ProImageEditor.network(
   ///   'https://example.com/image.jpg',
-  ///   configs: ProImageEditorConfigs(),
-  ///   callbacks: ProImageEditorCallbacks(
-  ///      onImageEditingComplete: (Uint8List bytes) async {
-  ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server
-  ///           as an example.
-  ///
-  ///           You can choose to use await, so that the load dialog remains
-  ///           visible until your code is ready,
-  ///           or no async, so that the load dialog closes immediately.
-  ///        */
-  ///        Navigator.pop(context);
-  ///      },
-  ///   ),
+  ///   {@macro mainEditorDemoTemplateCode}
   /// )
   /// ```
   factory ProImageEditor.network(
@@ -367,7 +306,7 @@ class ProImageEditorState extends State<ProImageEditor>
   int selectedLayerIndex = -1;
 
   /// Flag indicating if the editor has been initialized.
-  bool _inited = false;
+  bool _initialized = false;
 
   /// Flag indicating if the image needs decoding.
   bool _imageNeedDecode = true;
@@ -633,7 +572,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!blockSelectLayer &&
         layerInteractionManager.layersAreSelectable(configs) &&
         layerInteraction.initialSelected) {
-      /// Skip one frame to ensure captured image in seperate thread will not
+      /// Skip one frame to ensure captured image in separate thread will not
       /// capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         layerInteractionManager.selectedLayerId = layer.id;
@@ -690,7 +629,7 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
     takeScreenshot();
     if (selectedLayerId.isNotEmpty) {
-      /// Skip one frame to ensure captured image in seperate thread will not 
+      /// Skip one frame to ensure captured image in separate thread will not 
       /// capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         _layerInteractionManager.selectedLayerId = selectedLayerId;
@@ -735,7 +674,7 @@ class ProImageEditorState extends State<ProImageEditor>
     sizesManager.originalImageSize ??= _imageInfos!.rawSize;
     sizesManager.decodedImageSize = _imageInfos!.renderedSize;
 
-    _inited = true;
+    _initialized = true;
     if (!_decodeImageCompleter.isCompleted) {
       _decodeImageCompleter.complete(true);
     }
@@ -984,7 +923,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void _selectLayerAfterHeroIsDone(String id) {
     if (layerInteractionManager.layersAreSelectable(configs) &&
         layerInteraction.initialSelected) {
-      /// Skip one frame to ensure captured image in seperate thread will not
+      /// Skip one frame to ensure captured image in separate thread will not
       /// capture the border.
       Future.delayed(const Duration(milliseconds: 1), () async {
         if (isSubEditorOpen) await _pageOpenCompleter.future;
@@ -1190,7 +1129,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method opens the crop editor, allowing the user to crop and rotate
   /// the image.
   void openCropRotateEditor() async {
-    if (!_inited) await _decodeImageCompleter.future;
+    if (!_initialized) await _decodeImageCompleter.future;
 
     await openPage<TransformConfigs?>(
       CropRotateEditor.autoSource(
@@ -1544,7 +1483,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
     callbacks.onImageEditingStarted?.call();
 
-    /// Hide every unnessacary element that Screenshot Controller will capture
+    /// Hide every unnecessary element that Screenshot Controller will capture
     /// a correct image.
     setState(() {
       _processFinalImage = true;
@@ -1943,7 +1882,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 ),
                 onPressed: redoAction,
               ),
-              !_inited
+              !_initialized
                   ? Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 11.0),
                       child: SizedBox.square(
@@ -2018,7 +1957,8 @@ class ProImageEditorState extends State<ProImageEditor>
                 : EdgeInsets.zero,
             child: ExtendedInteractiveViewer(
               key: _interactiveViewer,
-              editorIsZoomable: mainEditorConfigs.editorIsZoomable,
+              enableZoom: mainEditorConfigs.editorIsZoomable ??
+                  mainEditorConfigs.enableZoom,
               minScale: mainEditorConfigs.editorMinScale,
               maxScale: mainEditorConfigs.editorMaxScale,
               onInteractionStart: (details) {
@@ -2504,7 +2444,7 @@ class ProImageEditorState extends State<ProImageEditor>
     return Hero(
       tag: heroTag,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
-      child: !_inited
+      child: !_initialized
           ? AutoImage(
               editorImage,
               fit: BoxFit.contain,

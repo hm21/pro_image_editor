@@ -50,10 +50,10 @@ class _ZoomMoveEditorExampleState extends State<ZoomMoveEditorExample>
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
         mainEditorConfigs: const MainEditorConfigs(
-          editorIsZoomable: true,
+          enableZoom: true,
         ),
         paintEditorConfigs: const PaintEditorConfigs(
-          editorIsZoomable: true,
+          enableZoom: true,
         ),
         icons: const ImageEditorIcons(
           paintingEditor: IconsPaintingEditor(

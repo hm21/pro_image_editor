@@ -87,7 +87,7 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        imageGenerationConfigs: const ImageGeneratioConfigs(
+        imageGenerationConfigs: const ImageGenerationConfigs(
           /// Choose the output format below
           outputFormat: OutputFormat.tiff,
           pngFilter: PngFilter.none,

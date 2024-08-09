@@ -27,7 +27,7 @@ import 'package:pro_image_editor/utils/unique_id_generator.dart';
 Future<Uint8List?> generateHighQualityImage(
   ui.Image image, {
   BuildContext? context,
-  ImageGeneratioConfigs configs = const ImageGeneratioConfigs(
+  ImageGenerationConfigs configs = const ImageGenerationConfigs(
     outputFormat: OutputFormat.png,
     maxOutputSize: Size.infinite,
     processorConfigs: ProcessorConfigs(

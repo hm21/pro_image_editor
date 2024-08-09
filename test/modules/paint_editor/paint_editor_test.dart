@@ -92,7 +92,7 @@ void main() {
         ),
       ));
 
-      /// Test if paintmodes will change correctly
+      /// Test if paintModes will change correctly
       key.currentState!.setMode(PaintModeE.freeStyle);
       expect(key.currentState!.paintMode, PaintModeE.freeStyle);
 
@@ -114,7 +114,7 @@ void main() {
         ),
       ));
 
-      /// Test if paintmodes will change correctly
+      /// Test if paintModes will change correctly
       for (double i = 1; i <= 10; i++) {
         key.currentState!.setStrokeWidth(i);
         expect(key.currentState!.strokeWidth, i);

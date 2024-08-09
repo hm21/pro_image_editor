@@ -25,7 +25,7 @@ class ColorFilterGenerator extends StatefulWidget {
 }
 
 class _ColorFilterGeneratorState extends State<ColorFilterGenerator> {
-  late Widget _filterdWidget;
+  late Widget _filteredWidget;
 
   late FilterMatrix _tempFilters;
 
@@ -45,7 +45,7 @@ class _ColorFilterGeneratorState extends State<ColorFilterGenerator> {
         child: tree,
       );
     }
-    _filterdWidget = tree;
+    _filteredWidget = tree;
   }
 
   @override
@@ -53,6 +53,6 @@ class _ColorFilterGeneratorState extends State<ColorFilterGenerator> {
     if (widget.filters.hashCode != _tempFilters.hashCode) {
       _generateFilteredWidget();
     }
-    return _filterdWidget;
+    return _filteredWidget;
   }
 }
