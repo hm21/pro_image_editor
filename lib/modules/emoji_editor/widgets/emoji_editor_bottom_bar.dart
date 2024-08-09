@@ -1,14 +1,18 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
-// Package imports:
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-
-// Project imports:
+import 'package:flutter/material.dart';
 import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_state_manager.dart';
 
 /// Represents the bottom bar for the emoji editor.
 class EmojiEditorBottomBar extends StatelessWidget {
+  /// A bottom bar widget for the emoji editor interface.
+  const EmojiEditorBottomBar(
+    this.config,
+    this.tabController,
+    this.categoryEmojis,
+    this.closeSkinToneOverlay, {
+    super.key,
+  });
+
   /// The configuration for the emoji editor.
   final Config config;
 
@@ -20,14 +24,6 @@ class EmojiEditorBottomBar extends StatelessWidget {
 
   /// Callback function for closing the skin tone overlay.
   final VoidCallback closeSkinToneOverlay;
-
-  const EmojiEditorBottomBar(
-    this.config,
-    this.tabController,
-    this.categoryEmojis,
-    this.closeSkinToneOverlay, {
-    super.key,
-  });
 
   List<CategoryEmoji> get _categories {
     return categoryEmojis.where((el) => el.emoji.isNotEmpty).toList();

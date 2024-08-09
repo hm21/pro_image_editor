@@ -3,6 +3,13 @@ import 'package:flutter/widgets.dart';
 
 /// Represents custom text styles for the text editor in the `WhatsApp` design.
 class WhatsAppCustomTextStyles {
+  /// Class representing custom text styles for WhatsApp with optional tooltip.
+  const WhatsAppCustomTextStyles({
+    required this.id,
+    required this.style,
+    this.tooltip,
+  });
+
   /// The unique identifier for the text style.
   final String id;
 
@@ -11,10 +18,4 @@ class WhatsAppCustomTextStyles {
 
   /// Tooltip for the item.
   final String? tooltip;
-
-  const WhatsAppCustomTextStyles({
-    required this.id,
-    required this.style,
-    this.tooltip,
-  });
 }

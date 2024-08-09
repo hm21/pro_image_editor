@@ -17,6 +17,16 @@ import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/fi
 /// );
 /// ```
 class FilterEditorConfigs {
+  /// Creates an instance of FilterEditorConfigs with optional settings.
+  ///
+  /// By default, the editor is enabled, and the filter list contains all
+  /// filters.
+  const FilterEditorConfigs({
+    this.enabled = true,
+    this.showLayers = true,
+    this.filterList,
+  });
+
   /// Indicates whether the filter editor is enabled.
   final bool enabled;
 
@@ -25,13 +35,4 @@ class FilterEditorConfigs {
 
   /// A list of color filter generators to apply to an image.
   final List<FilterModel>? filterList;
-
-  /// Creates an instance of FilterEditorConfigs with optional settings.
-  ///
-  /// By default, the editor is enabled, and the filter list contains all filters.
-  const FilterEditorConfigs({
-    this.enabled = true,
-    this.showLayers = true,
-    this.filterList,
-  });
 }

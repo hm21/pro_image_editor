@@ -5,7 +5,37 @@ import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'utils/custom_widgets_typedef.dart';
 
+/// A custom widget for the main editor interface in an image editor.
+///
+/// This widget provides a customizable interface for the main editing area,
+/// allowing for configuration of the app bar, bottom bar, body items, and
+/// additional components specific to the main editor functionality.
 class CustomWidgetsMainEditor {
+  /// Creates a [CustomWidgetsMainEditor] widget.
+  ///
+  /// This widget allows customization of various components in the main editor,
+  /// enabling a flexible design tailored to specific editing needs.
+  ///
+  /// Example:
+  /// ```
+  /// CustomWidgetsMainEditor(
+  ///   appBar: myAppBar,
+  ///   bottomBar: myBottomBar,
+  ///   bodyItems: myBodyItems,
+  ///   closeWarningDialog: myCloseWarningDialog,
+  ///   removeLayerArea: myRemoveLayerArea,
+  ///   wrapBody: myWrapBody,
+  /// )
+  /// ```
+  const CustomWidgetsMainEditor({
+    this.closeWarningDialog,
+    this.removeLayerArea,
+    this.wrapBody,
+    this.appBar,
+    this.bottomBar,
+    this.bodyItems,
+  });
+
   /// Override the close warning dialog when we made changes.
   ///
   /// **Example:**
@@ -17,7 +47,8 @@ class CustomWidgetsMainEditor {
   ///            context: context,
   ///            builder: (BuildContext context) => AlertDialog(
   ///              title: const Text('Close?'),
-  ///              content: const Text('Are you sure you want to close the Image Editor? Your changes will not be saved.'),
+  ///              content: const Text('Are you sure you want to close the
+  /// Image Editor? Your changes will not be saved.'),
   ///              actions: <Widget>[
   ///                TextButton(
   ///                  onPressed: () => Navigator.pop(context, false),
@@ -82,22 +113,24 @@ class CustomWidgetsMainEditor {
   /// This is helpful when you want to interact with the full body.
   final Widget Function(
     ProImageEditorState editor,
-    Stream rebuildStream,
+    Stream<void> rebuildStream,
     Widget content,
   )? wrapBody;
 
   /// A custom app bar widget.
   ///
   /// **Example**
+  /// ```dart
   /// appBar: (editor, rebuildStream) => ReactiveCustomAppbar(
   ///   stream: rebuildStream,
   ///   builder: (_) => AppBar(
   ///     title: const Text('Title'),
   ///   ),
   /// ),
+  /// ```
   final ReactiveCustomAppbar? Function(
     ProImageEditorState editor,
-    Stream rebuildStream,
+    Stream<void> rebuildStream,
   )? appBar;
 
   /// A custom bottom bar widget.
@@ -119,7 +152,7 @@ class CustomWidgetsMainEditor {
   /// ```
   final ReactiveCustomWidget? Function(
     ProImageEditorState editor,
-    Stream rebuildStream,
+    Stream<void> rebuildStream,
     Key key,
   )? bottomBar;
 
@@ -140,15 +173,6 @@ class CustomWidgetsMainEditor {
   /// ```
   final List<ReactiveCustomWidget> Function(
     ProImageEditorState editor,
-    Stream rebuildStream,
+    Stream<void> rebuildStream,
   )? bodyItems;
-
-  const CustomWidgetsMainEditor({
-    this.closeWarningDialog,
-    this.removeLayerArea,
-    this.wrapBody,
-    this.appBar,
-    this.bottomBar,
-    this.bodyItems,
-  });
 }

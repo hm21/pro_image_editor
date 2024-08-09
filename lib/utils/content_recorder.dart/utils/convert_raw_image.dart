@@ -10,18 +10,19 @@ import 'package:pro_image_editor/models/multi_threading/thread_request_model.dar
 import 'package:pro_image_editor/models/multi_threading/thread_response_model.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/encode_image.dart';
 
-/// Converts an image to PNG format and finds the bounding box of non-transparent areas.
+/// Converts an image to PNG format and finds the bounding box of
+/// non-transparent areas.
 ///
-/// This function takes an [ImageFromMainThread] object, finds the bounding box of
-/// the non-transparent area in the image, crops the image to this bounding box,
-/// and encodes it to PNG format.
+/// This function takes an [ImageFromMainThread] object, finds the bounding
+/// box of the non-transparent area in the image, crops the image to this
+/// bounding box, and encodes it to PNG format.
 ///
 /// Returns a [ResponseFromThread] containing the PNG byte data.
 @pragma('vm:entry-point')
 Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
-    {Completer? destroy$}) async {
+    {Completer<void>? destroy$}) async {
   try {
-    Future healthCheck() async {
+    Future<void> healthCheck() async {
       await Future.delayed(const Duration(microseconds: 10));
       if (destroy$?.isCompleted == true) {
         throw ArgumentError('Kill thread');
@@ -30,7 +31,8 @@ Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
 
     /// Finds the bounding box of the non-transparent area in the given [image].
     ///
-    /// Returns a [BoundingBox] object representing the coordinates and dimensions of the bounding box.
+    /// Returns a [BoundingBox] object representing the coordinates and
+    /// dimensions of the bounding box.
     Future<_BoundingBox> findBoundingBox(img.Image image) async {
       int left = image.width;
       int right = 0;
@@ -194,8 +196,12 @@ Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
   }
 }
 
-/// Represents a bounding box in terms of its position (left and top) and size (width and height).
+/// Represents a bounding box in terms of its position (left and top) and size
+/// (width and height).
 class _BoundingBox {
+  /// Constructs a [_BoundingBox] instance.
+  _BoundingBox(this.left, this.top, this.width, this.height);
+
   /// The x-coordinate of the top-left corner of the bounding box.
   final int left;
 
@@ -207,7 +213,4 @@ class _BoundingBox {
 
   /// The height of the bounding box.
   final int height;
-
-  /// Constructs a [_BoundingBox] instance.
-  _BoundingBox(this.left, this.top, this.width, this.height);
 }

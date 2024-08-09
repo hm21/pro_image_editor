@@ -1,38 +1,74 @@
-// Dart imports:
 import 'dart:ui';
 
-// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-// Package imports:
 import 'package:image/image.dart' show JpegChroma, PngFilter;
 
-// Project imports:
 import 'output_formats.dart';
 import 'processor_configs.dart';
 
+export 'package:image/image.dart' show JpegChroma, PngFilter;
 export 'output_formats.dart';
 export 'processor_configs.dart';
-export 'package:image/image.dart' show JpegChroma, PngFilter;
 
 /// Configuration settings for image generation.
 ///
 /// [ImageGeneratioConfigs] holds various configuration options
 /// that affect how images are generated.
 class ImageGeneratioConfigs {
+  /// Creates a new instance of [ImageGeneratioConfigs].
+  ///
+  /// - The [allowEmptyEditCompletion] parameter controls if empty edit
+  ///   completions are allowed.
+  /// - The [generateInsideSeparateThread] parameter controls if image
+  ///   generation occurs inside an isolate.
+  /// - The [generateImageInBackground] parameter controls if image generation
+  ///   runs in the background.
+  /// - The [captureOnlyDrawingBounds] parameter controls if only image
+  ///   bounds are generated.
+  /// - The [customPixelRatio] parameter set the pixel ratio of the image
+  ///   relative to the content.
+  /// - The [processorConfigs] parameter set the processor configs.
+  const ImageGeneratioConfigs({
+    this.captureOnlyBackgroundImageArea = true,
+    this.allowEmptyEditCompletion = true,
+    this.generateInsideSeparateThread = true,
+    this.generateImageInBackground = !kIsWeb || !kDebugMode,
+    this.captureOnlyDrawingBounds = true,
+    this.customPixelRatio,
+    this.pngLevel = 6,
+    this.pngFilter = PngFilter.none,
+    this.singleFrame = false,
+    this.jpegQuality = 100,
+    this.jpegChroma = JpegChroma.yuv444,
+    this.outputFormat = OutputFormat.jpg,
+    this.processorConfigs = const ProcessorConfigs(),
+    this.maxOutputSize = const Size(2000, 2000),
+    this.maxThumbnailSize = const Size(100, 100),
+  })  : assert(jpegQuality > 0 && jpegQuality <= 100,
+            'jpegQuality must be between 1 and 100'),
+        assert(
+            captureOnlyDrawingBounds || !captureOnlyBackgroundImageArea,
+            'When [captureOnlyDrawingBounds] is true must '
+            '[captureOnlyBackgroundImageArea] be false'),
+        assert(
+            pngLevel >= 0 && pngLevel <= 9, 'pngLevel must be between 0 and 9'),
+        assert(customPixelRatio == null || customPixelRatio > 0,
+            'customPixelRatio must be greater than 0');
+
   /// Indicates if it should only capture the background image area and cut all
   /// stuff outside, such as when a layer overlaps the image.
   ///
-  /// When set to `true`, this flag ensures that the capture process focuses solely
-  /// on the background image area, ignoring any other elements that might be present.
+  /// When set to `true`, this flag ensures that the capture process focuses
+  /// solely on the background image area, ignoring any other elements that
+  /// might be present.
   ///
-  /// If set to `false`, the capture will include all elements within the image area,
-  /// not just the background.
+  /// If set to `false`, the capture will include all elements within the image
+  /// area, not just the background.
   ///
   /// **Note:** If you disable this flag, it may require more performance to
-  /// generate the image, especially on high resolution images in a large screen,
-  /// cuz the editor need to find the bounding box by itself.
+  /// generate the image, especially on high resolution images in a large
+  /// screen, cuz the editor need to find the bounding box by itself.
   final bool captureOnlyBackgroundImageArea;
 
   /// Determines whether to capture only the content within the boundaries of
@@ -113,18 +149,21 @@ class ImageGeneratioConfigs {
   final PngFilter pngFilter;
 
   /// Specifies the quality level for JPEG images. It ranges from 1 to 100,
-  /// where 1 indicates the lowest quality and 100 indicates the highest quality.
+  /// where 1 indicates the lowest quality and 100 indicates the highest
+  /// quality.
   final int jpegQuality;
 
   /// The maximum output size for the image. It will maintain the image's aspect
-  /// ratio but will fit within the specified constraints, similar to `BoxFit.contain`.
+  /// ratio but will fit within the specified constraints, similar to
+  /// `BoxFit.contain`.
   final Size maxOutputSize;
 
-  /// The maximum output size for the thumbnail image. It will maintain the image's aspect
-  /// ratio but will fit within the specified constraints, similar to `BoxFit.contain`.
+  /// The maximum output size for the thumbnail image. It will maintain the
+  /// image's aspect ratio but will fit within the specified constraints,
+  /// similar to `BoxFit.contain`.
   ///
-  /// This option is useful if you have a high-resolution image that typically takes
-  /// a long time to generate, but you need to display it quickly.
+  /// This option is useful if you have a high-resolution image that typically
+  /// takes a long time to generate, but you need to display it quickly.
   ///
   /// This option only works when the `onThumbnailGenerated` callback is set.
   /// It will disable the `onImageEditingComplete` callback.
@@ -134,43 +173,12 @@ class ImageGeneratioConfigs {
   /// compression ratio for chrominance components.
   final JpegChroma jpegChroma;
 
-  /// Creates a new instance of [ImageGeneratioConfigs].
+  /// Creates a copy of this object with the given fields replaced with the new
+  /// values.
   ///
-  /// - The [allowEmptyEditCompletion] parameter controls if empty edit completions are allowed.
-  /// - The [generateInsideSeparateThread] parameter controls if image generation occurs inside an isolate.
-  /// - The [generateImageInBackground] parameter controls if image generation runs in the background.
-  /// - The [captureOnlyDrawingBounds] parameter controls if only image bounds are generated.
-  /// - The [customPixelRatio] parameter set the pixel ratio of the image relative to the content.
-  /// - The [processorConfigs] parameter set the processor configs.
-  const ImageGeneratioConfigs({
-    this.captureOnlyBackgroundImageArea = true,
-    this.allowEmptyEditCompletion = true,
-    this.generateInsideSeparateThread = true,
-    this.generateImageInBackground = !kIsWeb || !kDebugMode,
-    this.captureOnlyDrawingBounds = true,
-    this.customPixelRatio,
-    this.pngLevel = 6,
-    this.pngFilter = PngFilter.none,
-    this.singleFrame = false,
-    this.jpegQuality = 100,
-    this.jpegChroma = JpegChroma.yuv444,
-    this.outputFormat = OutputFormat.jpg,
-    this.processorConfigs = const ProcessorConfigs(),
-    this.maxOutputSize = const Size(2000, 2000),
-    this.maxThumbnailSize = const Size(100, 100),
-  })  : assert(jpegQuality > 0 && jpegQuality <= 100,
-            'jpegQuality must be between 1 and 100'),
-        assert(captureOnlyDrawingBounds || !captureOnlyBackgroundImageArea,
-            'When [captureOnlyDrawingBounds] is true must [captureOnlyBackgroundImageArea] be false'),
-        assert(
-            pngLevel >= 0 && pngLevel <= 9, 'pngLevel must be between 0 and 9'),
-        assert(customPixelRatio == null || customPixelRatio > 0,
-            'customPixelRatio must be greater than 0');
-
-  /// Creates a copy of this object with the given fields replaced with the new values.
-  ///
-  /// The [copyWith] method allows you to create a new instance of [ImageGeneratioConfigs]
-  /// with some properties updated while keeping the others unchanged.
+  /// The [copyWith] method allows you to create a new instance of
+  /// [ImageGeneratioConfigs] with some properties updated while keeping the
+  /// others unchanged.
   ImageGeneratioConfigs copyWith({
     bool? captureOnlyBackgroundImageArea,
     bool? allowEmptyEditCompletion,

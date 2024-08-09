@@ -1,7 +1,10 @@
+// ignore_for_file: public_member_api_docs
+
 part of 'defer_pointer.dart';
 
 /// Handles paint and hit testing for descendant [DeferPointer] widgets.
-/// Deferred painting (aka 'paint on top') is optional and can be defined per [DeferPointer].
+/// Deferred painting (aka 'paint on top') is optional and can be defined per
+/// [DeferPointer].
 class DeferredPointerHandler extends StatefulWidget {
   const DeferredPointerHandler({super.key, required this.child, this.link});
   final Widget child;
@@ -9,7 +12,8 @@ class DeferredPointerHandler extends StatefulWidget {
   @override
   DeferredPointerHandlerState createState() => DeferredPointerHandlerState();
 
-  /// The state from the closest instance of this class that encloses the given context.
+  /// The state from the closest instance of this class that encloses the given
+  /// context.
   static DeferredPointerHandlerState of(BuildContext context) {
     final inherited = context
         .dependOnInheritedWidgetOfExactType<_InheritedDeferredPaintSurface>();
@@ -21,7 +25,8 @@ class DeferredPointerHandler extends StatefulWidget {
 
 /// Holds an internal [DeferredPointerHandlerLink] which can be found using
 /// [DeferredPointerHandler].of(context).link.
-/// Also accepts an external link which will be used instead of the internal one.
+/// Also accepts an external link which will be used instead of the internal
+/// one.
 class DeferredPointerHandlerState extends State<DeferredPointerHandler> {
   final DeferredPointerHandlerLink _link = DeferredPointerHandlerLink();
   get link => _link;

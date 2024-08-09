@@ -3,17 +3,18 @@ import 'package:flutter/widgets.dart';
 /// An abstract class representing a loading dialog overlay animation.
 /// Intended to be subclassed for specific animation implementations.
 abstract class LoadingDialogOverlayAnimation extends StatefulWidget {
-  /// The child widget to be animated.
-  final Widget child;
-
-  /// Callback function called when the animation is done.
-  final Function() onAnimationDone;
-
+  /// A widget that provides an overlay animation for a loading dialog.
   const LoadingDialogOverlayAnimation({
     super.key,
     required this.child,
     required this.onAnimationDone,
   });
+
+  /// The child widget to be animated.
+  final Widget child;
+
+  /// Callback function called when the animation is done.
+  final Function() onAnimationDone;
 }
 
 /// State class for handling animation logic.

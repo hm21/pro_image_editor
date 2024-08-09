@@ -7,6 +7,20 @@ import 'utils/whatsapp_appbar_button_style.dart';
 
 /// Represents the app bar for the WhatsApp theme.
 class WhatsAppAppBar extends StatefulWidget {
+  /// Constructs a WhatsAppAppBar widget with the specified parameters.
+  const WhatsAppAppBar({
+    super.key,
+    required this.canUndo,
+    required this.openEditor,
+    required this.configs,
+    required this.onClose,
+    required this.onTapUndo,
+    required this.onTapCropRotateEditor,
+    required this.onTapStickerEditor,
+    required this.onTapTextEditor,
+    required this.onTapPaintEditor,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -33,20 +47,6 @@ class WhatsAppAppBar extends StatefulWidget {
 
   /// Callback function for tapping the paint editor button.
   final Function() onTapPaintEditor;
-
-  /// Constructs a WhatsAppAppBar widget with the specified parameters.
-  const WhatsAppAppBar({
-    super.key,
-    required this.canUndo,
-    required this.openEditor,
-    required this.configs,
-    required this.onClose,
-    required this.onTapUndo,
-    required this.onTapCropRotateEditor,
-    required this.onTapStickerEditor,
-    required this.onTapTextEditor,
-    required this.onTapPaintEditor,
-  });
 
   @override
   State<WhatsAppAppBar> createState() => _WhatsAppAppBarState();

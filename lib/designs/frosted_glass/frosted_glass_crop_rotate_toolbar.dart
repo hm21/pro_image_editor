@@ -8,6 +8,22 @@ import '../../pro_image_editor.dart';
 
 /// Represents the toolbar for the crop/rotate functionality in the frosted-glass theme.
 class FrostedGlassCropRotateToolbar extends StatefulWidget {
+  /// Creates a [FrostedGlassCropRotateToolbar].
+  ///
+  /// This toolbar is designed for image editing applications, providing
+  /// interactive buttons for cropping and rotating functionalities. It is part
+  /// of the frosted-glass themed user interface.
+  /// ```
+  const FrostedGlassCropRotateToolbar({
+    super.key,
+    required this.configs,
+    required this.onCancel,
+    required this.onRotate,
+    required this.onDone,
+    required this.onReset,
+    required this.openAspectRatios,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -25,16 +41,6 @@ class FrostedGlassCropRotateToolbar extends StatefulWidget {
 
   /// Callback function for opening aspect ratios.
   final Function() openAspectRatios;
-
-  const FrostedGlassCropRotateToolbar({
-    super.key,
-    required this.configs,
-    required this.onCancel,
-    required this.onRotate,
-    required this.onDone,
-    required this.onReset,
-    required this.openAspectRatios,
-  });
 
   @override
   State<FrostedGlassCropRotateToolbar> createState() =>

@@ -7,9 +7,7 @@ import 'package:pro_image_editor/models/editor_configs/image_generation_configs/
 
 /// Represents an image object sent from the main thread.
 class ImageConvertThreadRequest extends ThreadRequest {
-  /// Specifies whether only the bounds of the image should be generated.
-  final bool generateOnlyImageBounds;
-
+  /// Constructor for creating an ImageConvertThreadRequest instance.
   const ImageConvertThreadRequest({
     required this.generateOnlyImageBounds,
     required super.id,
@@ -21,34 +19,13 @@ class ImageConvertThreadRequest extends ThreadRequest {
     required super.jpegQuality,
     required super.jpegChroma,
   });
+
+  /// Specifies whether only the bounds of the image should be generated.
+  final bool generateOnlyImageBounds;
 }
 
 /// Represents a raw object sent from the main thread.
 class ThreadRequest {
-  /// The unique identifier for this task.
-  final String id;
-
-  /// The image object from the `image` package.
-  final img.Image image;
-
-  /// Specifies the output format for the generated image.
-  final OutputFormat outputFormat;
-
-  /// Specifies whether single frame generation is enabled for the output formats PNG, TIFF, CUR, PVR, and ICO.
-  final bool singleFrame;
-
-  /// Specifies the compression level for PNG images. Ranges from 0 to 9.
-  final int pngLevel;
-
-  /// Specifies the filter method for optimizing PNG compression.
-  final PngFilter pngFilter;
-
-  /// Specifies the quality level for JPEG images. Ranges from 2 to 100.
-  final int jpegQuality;
-
-  /// Specifies the chroma subsampling method for JPEG images.
-  final JpegChroma jpegChroma;
-
   /// Constructs an [ImageConvertThreadRequest] instance.
   ///
   /// All parameters are required.
@@ -62,4 +39,29 @@ class ThreadRequest {
     required this.jpegQuality,
     required this.jpegChroma,
   });
+
+  /// The unique identifier for this task.
+  final String id;
+
+  /// The image object from the `image` package.
+  final img.Image image;
+
+  /// Specifies the output format for the generated image.
+  final OutputFormat outputFormat;
+
+  /// Specifies whether single frame generation is enabled for the output
+  /// formats PNG, TIFF, CUR, PVR, and ICO.
+  final bool singleFrame;
+
+  /// Specifies the compression level for PNG images. Ranges from 0 to 9.
+  final int pngLevel;
+
+  /// Specifies the filter method for optimizing PNG compression.
+  final PngFilter pngFilter;
+
+  /// Specifies the quality level for JPEG images. Ranges from 2 to 100.
+  final int jpegQuality;
+
+  /// Specifies the chroma subsampling method for JPEG images.
+  final JpegChroma jpegChroma;
 }

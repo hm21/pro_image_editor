@@ -1,3 +1,5 @@
+// ignore_for_file: argument_type_not_assignable
+
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,25 +11,13 @@ import 'layer_background_mode.dart';
 
 /// Represents a layer with common properties for widgets.
 class Layer {
-  late GlobalKey key;
-
-  /// The position offset of the widget.
-  late Offset offset;
-
-  /// The rotation and scale values of the widget.
-  late double rotation, scale;
-
-  /// Flags to control horizontal and vertical flipping.
-  late bool flipX, flipY;
-
-  /// A unique identifier for the layer.
-  late String id;
-
   /// Creates a new layer with optional properties.
   ///
-  /// The [id] parameter can be used to provide a custom identifier for the layer.
+  /// The [id] parameter can be used to provide a custom identifier for the
+  /// layer.
   /// The [offset] parameter determines the position offset of the widget.
-  /// The [rotation] parameter sets the rotation angle of the widget in degrees (default is 0).
+  /// The [rotation] parameter sets the rotation angle of the widget in degrees
+  /// (default is 0).
   /// The [scale] parameter sets the scale factor of the widget (default is 1).
   /// The [flipX] parameter controls horizontal flipping (default is false).
   /// The [flipY] parameter controls vertical flipping (default is false).
@@ -49,10 +39,13 @@ class Layer {
     this.flipY = flipY ?? false;
   }
 
+  /// Factory constructor for creating a Layer instance from a map and a list
+  /// of stickers.
   factory Layer.fromMap(
-    Map map,
+    Map<String, dynamic> map,
     List<Uint8List> stickers,
   ) {
+    /// Creates a base Layer instance with default or map-provided properties.
     Layer layer = Layer(
       flipX: map['flipX'] ?? false,
       flipY: map['flipY'] ?? false,
@@ -61,26 +54,55 @@ class Layer {
       scale: map['scale'] ?? 1,
     );
 
+    /// Determines the layer type from the map and returns the appropriate
+    /// LayerData subclass.
     switch (map['type']) {
       case 'text':
+
+        /// Returns a TextLayerData instance when type is 'text'.
         return TextLayerData.fromMap(layer, map);
       case 'emoji':
+
+        /// Returns an EmojiLayerData instance when type is 'emoji'.
         return EmojiLayerData.fromMap(layer, map);
       case 'painting':
+
+        /// Returns a PaintingLayerData instance when type is 'painting'.
         return PaintingLayerData.fromMap(layer, map);
       case 'sticker':
+
+        /// Returns a StickerLayerData instance when type is 'sticker',
+        /// utilizing the stickers list.
         return StickerLayerData.fromMap(layer, map, stickers);
       default:
+
+        /// Returns the base Layer instance when type is unrecognized.
         return layer;
     }
   }
+
+  /// Global key associated with the Layer instance, used for accessing the
+  /// widget tree.
+  late GlobalKey key;
+
+  /// The position offset of the widget.
+  late Offset offset;
+
+  /// The rotation and scale values of the widget.
+  late double rotation, scale;
+
+  /// Flags to control horizontal and vertical flipping.
+  late bool flipX, flipY;
+
+  /// A unique identifier for the layer.
+  late String id;
 
   /// Converts this transform object to a Map.
   ///
   /// Returns a Map representing the properties of this layer object,
   /// including the X and Y coordinates, rotation angle, scale factors, and
   /// flip flags.
-  Map toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'x': offset.dx,
       'y': offset.dy,
@@ -95,44 +117,21 @@ class Layer {
 
 /// Represents a text layer with customizable properties.
 class TextLayerData extends Layer {
-  /// The text content of the layer.
-  String text;
-
-  /// The color mode for the text.
-  LayerBackgroundMode? colorMode;
-
-  /// The text color.
-  Color color;
-
-  /// The background color for the text.
-  Color background;
-
-  /// This flag define if the secondary color is manually set.
-  bool customSecondaryColor;
-
-  /// The position of the color picker (if applicable).
-  double? colorPickerPosition;
-
-  /// The text alignment within the layer.
-  TextAlign align;
-
-  /// The font scale for text, to make text bigger or smaller.
-  double fontScale;
-
-  /// A custom text style for the text. Be careful the editor allow not to import
-  /// and export this style.
-  TextStyle? textStyle;
-
   /// Creates a new text layer with customizable properties.
   ///
   /// The [text] parameter specifies the text content of the layer.
   /// The [colorMode] parameter sets the color mode for the text.
-  /// The [colorPickerPosition] parameter sets the position of the color picker (if applicable).
+  /// The [colorPickerPosition] parameter sets the position of the color picker
+  /// (if applicable).
   /// The [color] parameter specifies the text color (default is Colors.white).
-  /// The [background] parameter defines the background color for the text (default is Colors.transparent).
-  /// The [align] parameter determines the text alignment within the layer (default is TextAlign.left).
-  /// The other optional parameters such as [textStyle], [offset], [rotation], [scale], [id], [flipX], and [flipY]
-  /// can be used to customize the position, appearance, and behavior of the text layer.
+  /// The [background] parameter defines the background color for the text
+  /// (default is Colors.transparent).
+  /// The [align] parameter determines the text alignment within the layer
+  /// (default is TextAlign.left).
+  /// The other optional parameters such as [textStyle], [offset], [rotation],
+  /// [scale], [id], [flipX], and [flipY]
+  /// can be used to customize the position, appearance, and behavior of the
+  /// text layer.
   TextLayerData({
     required this.text,
     this.customSecondaryColor = false,
@@ -151,68 +150,64 @@ class TextLayerData extends Layer {
     super.flipY,
   });
 
-  @override
-  Map toMap() {
-    return {
-      ...super.toMap(),
-      'text': text,
-      'colorMode': LayerBackgroundMode.values[colorMode?.index ?? 0].name,
-      'color': color.value,
-      'background': background.value,
-      'colorPickerPosition': colorPickerPosition ?? 0,
-      'align': align.name,
-      'fontScale': fontScale,
-      'type': 'text',
-      if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
-      if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
-      if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
-      if (textStyle?.fontWeight != null)
-        'fontWeight': textStyle?.fontWeight!.value,
-      if (textStyle?.letterSpacing != null)
-        'letterSpacing': textStyle?.letterSpacing,
-      if (textStyle?.height != null) 'height': textStyle?.height,
-      if (textStyle?.wordSpacing != null) 'wordSpacing': textStyle?.wordSpacing,
-      if (textStyle?.decoration != null)
-        'decoration': textStyle?.decoration.toString(),
-    };
-  }
-
-  factory TextLayerData.fromMap(Layer layer, Map map) {
+  /// Factory constructor for creating a TextLayerData instance from a Layer
+  /// instance and a map.
+  factory TextLayerData.fromMap(Layer layer, Map<String, dynamic> map) {
+    /// Helper function to determine the text decoration style from a string.
     TextDecoration getDecoration(String decoration) {
       if (decoration.contains('combine')) {
+        /// List to hold multiple text decoration styles if combined.
         List<TextDecoration> decorations = [];
 
+        /// Adds line-through decoration if specified.
         if (decoration.contains('lineThrough')) {
           decorations.add(TextDecoration.lineThrough);
         }
+
+        /// Adds overline decoration if specified.
         if (decoration.contains('overline')) {
           decorations.add(TextDecoration.overline);
         }
+
+        /// Adds underline decoration if specified.
         if (decoration.contains('underline')) {
           decorations.add(TextDecoration.underline);
         }
 
+        /// Combines multiple decorations into a single TextDecoration.
         return TextDecoration.combine(decorations);
       } else {
+        /// Checks and returns line-through decoration.
         if (decoration.contains('lineThrough')) {
           return TextDecoration.lineThrough;
-        } else if (decoration.contains('overline')) {
+        }
+
+        /// Checks and returns overline decoration.
+        else if (decoration.contains('overline')) {
           return TextDecoration.overline;
-        } else if (decoration.contains('underline')) {
+        }
+
+        /// Checks and returns underline decoration.
+        else if (decoration.contains('underline')) {
           return TextDecoration.underline;
         }
       }
 
+      /// Returns no decoration if none is specified.
       return TextDecoration.none;
     }
 
-    String? fontFamily = map['fontFamily'];
-    double? wordSpacing = map['wordSpacing'];
-    double? height = map['height'];
-    double? letterSpacing = map['letterSpacing'];
-    int? fontWeight = map['fontWeight'];
-    String? fontStyle = map['fontStyle'];
-    String? decoration = map['decoration'];
+    /// Optional properties for text styling from the map.
+    String? fontFamily = map['fontFamily'] as String?;
+    double? wordSpacing = map['wordSpacing'] as double?;
+    double? height = map['height'] as double?;
+    double? letterSpacing = map['letterSpacing'] as double?;
+    int? fontWeight = map['fontWeight'] as int?;
+    String? fontStyle = map['fontStyle'] as String?;
+    String? decoration = map['decoration'] as String?;
+
+    /// Constructs and returns a TextLayerData instance with properties derived
+    /// from the map.
     return TextLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
@@ -248,6 +243,60 @@ class TextLayerData extends Layer {
       customSecondaryColor: map['customSecondaryColor'] ?? false,
     );
   }
+
+  /// The text content of the layer.
+  String text;
+
+  /// The color mode for the text.
+  LayerBackgroundMode? colorMode;
+
+  /// The text color.
+  Color color;
+
+  /// The background color for the text.
+  Color background;
+
+  /// This flag define if the secondary color is manually set.
+  bool customSecondaryColor;
+
+  /// The position of the color picker (if applicable).
+  double? colorPickerPosition;
+
+  /// The text alignment within the layer.
+  TextAlign align;
+
+  /// The font scale for text, to make text bigger or smaller.
+  double fontScale;
+
+  /// A custom text style for the text. Be careful the editor allow not to
+  /// import and export this style.
+  TextStyle? textStyle;
+
+  @override
+  Map<String, dynamic> toMap() {
+    return {
+      ...super.toMap(),
+      'text': text,
+      'colorMode': LayerBackgroundMode.values[colorMode?.index ?? 0].name,
+      'color': color.value,
+      'background': background.value,
+      'colorPickerPosition': colorPickerPosition ?? 0,
+      'align': align.name,
+      'fontScale': fontScale,
+      'type': 'text',
+      if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
+      if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
+      if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
+      if (textStyle?.fontWeight != null)
+        'fontWeight': textStyle?.fontWeight!.value,
+      if (textStyle?.letterSpacing != null)
+        'letterSpacing': textStyle?.letterSpacing,
+      if (textStyle?.height != null) 'height': textStyle?.height,
+      if (textStyle?.wordSpacing != null) 'wordSpacing': textStyle?.wordSpacing,
+      if (textStyle?.decoration != null)
+        'decoration': textStyle?.decoration.toString(),
+    };
+  }
 }
 
 /// A class representing a layer with emoji content.
@@ -266,9 +315,6 @@ class TextLayerData extends Layer {
 /// );
 /// ```
 class EmojiLayerData extends Layer {
-  /// The emoji to display on the layer.
-  String emoji;
-
   /// Creates an instance of EmojiLayerData.
   ///
   /// The [emoji] parameter is required, and other properties are optional.
@@ -282,16 +328,11 @@ class EmojiLayerData extends Layer {
     super.flipY,
   });
 
-  @override
-  Map toMap() {
-    return {
-      ...super.toMap(),
-      'emoji': emoji,
-      'type': 'emoji',
-    };
-  }
-
-  factory EmojiLayerData.fromMap(Layer layer, Map map) {
+  /// Factory constructor for creating an EmojiLayerData instance from a Layer
+  /// and a map.
+  factory EmojiLayerData.fromMap(Layer layer, Map<String, dynamic> map) {
+    /// Constructs and returns an EmojiLayerData instance with properties
+    /// derived from the layer and map.
     return EmojiLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
@@ -300,6 +341,18 @@ class EmojiLayerData extends Layer {
       scale: layer.scale,
       emoji: map['emoji'],
     );
+  }
+
+  /// The emoji to display on the layer.
+  String emoji;
+
+  @override
+  Map<String, dynamic> toMap() {
+    return {
+      ...super.toMap(),
+      'emoji': emoji,
+      'type': 'emoji',
+    };
   }
 }
 
@@ -321,15 +374,6 @@ class EmojiLayerData extends Layer {
 /// );
 /// ```
 class PaintingLayerData extends Layer {
-  /// The custom-painted item to display on the layer.
-  final PaintedModel item;
-
-  /// The raw size of the painted item before applying scaling.
-  final Size rawSize;
-
-  /// The opacity level of the drawing.
-  final double opacity;
-
   /// Creates an instance of PaintingLayerData.
   ///
   /// The [item] and [rawSize] parameters are required, and other properties
@@ -346,24 +390,11 @@ class PaintingLayerData extends Layer {
     super.flipY,
   });
 
-  /// Returns the size of the layer after applying the scaling factor.
-  Size get size => Size(rawSize.width * scale, rawSize.height * scale);
-
-  @override
-  Map toMap() {
-    return {
-      ...super.toMap(),
-      'item': item.toMap(),
-      'rawSize': {
-        'w': rawSize.width,
-        'h': rawSize.height,
-      },
-      'opacity': opacity,
-      'type': 'painting',
-    };
-  }
-
-  factory PaintingLayerData.fromMap(Layer layer, Map map) {
+  /// Factory constructor for creating a PaintingLayerData instance from a
+  /// Layer and a map.
+  factory PaintingLayerData.fromMap(Layer layer, Map<String, dynamic> map) {
+    /// Constructs and returns a PaintingLayerData instance with properties
+    /// derived from the layer and map.
     return PaintingLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
@@ -377,6 +408,32 @@ class PaintingLayerData extends Layer {
       ),
       item: PaintedModel.fromMap(map['item'] ?? {}),
     );
+  }
+
+  /// The custom-painted item to display on the layer.
+  final PaintedModel item;
+
+  /// The raw size of the painted item before applying scaling.
+  final Size rawSize;
+
+  /// The opacity level of the drawing.
+  final double opacity;
+
+  /// Returns the size of the layer after applying the scaling factor.
+  Size get size => Size(rawSize.width * scale, rawSize.height * scale);
+
+  @override
+  Map<String, dynamic> toMap() {
+    return {
+      ...super.toMap(),
+      'item': item.toMap(),
+      'rawSize': {
+        'w': rawSize.width,
+        'h': rawSize.height,
+      },
+      'opacity': opacity,
+      'type': 'painting',
+    };
   }
 }
 
@@ -395,9 +452,6 @@ class PaintingLayerData extends Layer {
 /// );
 /// ```
 class StickerLayerData extends Layer {
-  /// The sticker to display on the layer.
-  Widget sticker;
-
   /// Creates an instance of StickerLayerData.
   ///
   /// The [sticker] parameter is required, and other properties are optional.
@@ -411,30 +465,25 @@ class StickerLayerData extends Layer {
     super.flipY,
   });
 
-  /// Converts this transform object to a Map suitable for representing a sticker.
-  ///
-  /// Returns a Map representing the properties of this transform object, augmented
-  /// with the specified [listPosition] indicating the position of the sticker in a list.
-  Map toStickerMap(int listPosition) {
-    return {
-      ...toMap(),
-      'listPosition': listPosition,
-      'type': 'sticker',
-    };
-  }
-
+  /// Factory constructor for creating a StickerLayerData instance from a
+  /// Layer, a map, and a list of stickers.
   factory StickerLayerData.fromMap(
     Layer layer,
-    Map map,
+    Map<String, dynamic> map,
     List<Uint8List> stickers,
   ) {
-    int stickerPosition = map['listPosition'] ?? -1;
+    /// Determines the position of the sticker in the list.
+    int stickerPosition = (map['listPosition'] as int?) ?? -1;
+
+    /// Widget to display a sticker or a placeholder if not found.
     Widget sticker = kDebugMode
         ? Text(
             'Sticker $stickerPosition not found',
             style: const TextStyle(color: Colors.red, fontSize: 24),
           )
         : const SizedBox.shrink();
+
+    /// Updates the sticker widget if the position is valid.
     if (stickers.isNotEmpty && stickers.length > stickerPosition) {
       sticker = ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 1, minHeight: 1),
@@ -444,6 +493,8 @@ class StickerLayerData extends Layer {
       );
     }
 
+    /// Constructs and returns a StickerLayerData instance with properties
+    /// derived from the layer and map.
     return StickerLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
@@ -452,5 +503,22 @@ class StickerLayerData extends Layer {
       scale: layer.scale,
       sticker: sticker,
     );
+  }
+
+  /// The sticker to display on the layer.
+  Widget sticker;
+
+  /// Converts this transform object to a Map suitable for representing a
+  /// sticker.
+  ///
+  /// Returns a Map representing the properties of this transform object,
+  /// augmented with the specified [listPosition] indicating the position of
+  /// the sticker in a list.
+  Map<String, dynamic> toStickerMap(int listPosition) {
+    return {
+      ...toMap(),
+      'listPosition': listPosition,
+      'type': 'sticker',
+    };
   }
 }

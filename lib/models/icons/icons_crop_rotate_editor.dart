@@ -3,22 +3,8 @@ import 'package:flutter/material.dart';
 
 /// Customizable icons for the Crop/Rotate Editor component.
 class IconsCropRotateEditor {
-  /// The icon to be displayed in the bottom navigation bar.
-  final IconData bottomNavBar;
-
-  /// The icon for the rotate action.
-  final IconData rotate;
-
-  /// The icon for the aspect ratio action.
-  final IconData aspectRatio;
-
-  /// The icon for the flip action.
-  final IconData flip;
-
-  /// The icon for the reset action.
-  final IconData reset;
-
-  /// Creates an instance of [IconsCropRotateEditor] with customizable icon settings.
+  /// Creates an instance of [IconsCropRotateEditor] with customizable icon
+  /// settings.
   ///
   /// You can provide custom icons for various actions in the Crop/Rotate Editor component.
   /// - [bottomNavBar] icon represents the icon in the bottom navigation bar.
@@ -43,4 +29,19 @@ class IconsCropRotateEditor {
     this.flip = Icons.flip,
     this.reset = Icons.restore,
   });
+
+  /// The icon to be displayed in the bottom navigation bar.
+  final IconData bottomNavBar;
+
+  /// The icon for the rotate action.
+  final IconData rotate;
+
+  /// The icon for the aspect ratio action.
+  final IconData aspectRatio;
+
+  /// The icon for the flip action.
+  final IconData flip;
+
+  /// The icon for the reset action.
+  final IconData reset;
 }

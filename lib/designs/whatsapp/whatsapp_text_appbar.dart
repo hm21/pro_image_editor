@@ -8,6 +8,16 @@ import 'whatsapp_done_btn.dart';
 
 /// Represents the app bar for the text-editor in the WhatsApp theme.
 class WhatsAppTextAppBar extends StatefulWidget {
+  /// Creates a [WhatsAppTextAppBar] widget.
+  const WhatsAppTextAppBar({
+    super.key,
+    required this.configs,
+    required this.align,
+    required this.onDone,
+    required this.onAlignChange,
+    required this.onBackgroundModeChange,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -22,15 +32,6 @@ class WhatsAppTextAppBar extends StatefulWidget {
 
   /// Callback function for changing the background mode for the text.
   final Function() onBackgroundModeChange;
-
-  const WhatsAppTextAppBar({
-    super.key,
-    required this.configs,
-    required this.align,
-    required this.onDone,
-    required this.onAlignChange,
-    required this.onBackgroundModeChange,
-  });
 
   @override
   State<WhatsAppTextAppBar> createState() => _WhatsAppTextAppBarState();

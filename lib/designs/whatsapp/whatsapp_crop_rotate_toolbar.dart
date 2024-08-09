@@ -5,8 +5,22 @@ import 'package:flutter/material.dart';
 // Project imports:
 import '../../pro_image_editor.dart';
 
-/// Represents the toolbar for the crop/rotate functionality in the WhatsApp theme.
+/// Represents the toolbar for the crop/rotate functionality in the WhatsApp
+/// theme.
 class WhatsAppCropRotateToolbar extends StatefulWidget {
+  /// Constructs a WhatsAppCropRotateToolbar widget with the specified
+  /// parameters.
+  const WhatsAppCropRotateToolbar({
+    super.key,
+    required this.bottomBarColor,
+    required this.configs,
+    required this.onCancel,
+    required this.onRotate,
+    required this.onDone,
+    required this.onReset,
+    required this.openAspectRatios,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -25,19 +39,8 @@ class WhatsAppCropRotateToolbar extends StatefulWidget {
   /// Callback function for opening aspect ratios.
   final Function() openAspectRatios;
 
+  /// Background color from the bottombar
   final Color bottomBarColor;
-
-  /// Constructs a WhatsAppCropRotateToolbar widget with the specified parameters.
-  const WhatsAppCropRotateToolbar({
-    super.key,
-    required this.bottomBarColor,
-    required this.configs,
-    required this.onCancel,
-    required this.onRotate,
-    required this.onDone,
-    required this.onReset,
-    required this.openAspectRatios,
-  });
 
   @override
   State<WhatsAppCropRotateToolbar> createState() =>

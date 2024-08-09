@@ -4,16 +4,22 @@ import 'package:flutter/widgets.dart';
 // Project imports:
 import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 
+/// A widget for applying color filters to its child widget.
 class ColorFilterGenerator extends StatefulWidget {
-  final FilterMatrix filters;
-  final Widget child;
-
+  /// Constructor for creating an instance of ColorFilterGenerator.
   const ColorFilterGenerator({
     super.key,
     required this.filters,
     required this.child,
   });
 
+  /// The matrix of filters to apply.
+  final FilterMatrix filters;
+
+  /// The child widget to which the filters are applied.
+  final Widget child;
+
+  /// Creates the state for the ColorFilterGenerator widget.
   @override
   State<ColorFilterGenerator> createState() => _ColorFilterGeneratorState();
 }

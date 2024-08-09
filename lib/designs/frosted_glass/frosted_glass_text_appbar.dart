@@ -5,10 +5,31 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'frosted_glass_effect.dart';
 
+/// A stateless widget that represents an app bar with a frosted glass effect.
+///
+/// This app bar is designed for use in a text editor interface, providing
+/// a stylish and functional header that integrates with text editing
+/// operations.
 class FrostedGlassTextAppbar extends StatelessWidget {
-  final TextEditorState textEditor;
-
+  /// Creates a [FrostedGlassTextAppbar].
+  ///
+  /// This app bar utilizes a frosted glass effect to enhance the visual design
+  /// of a text editor, offering controls and options relevant to text editing.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassTextAppbar(
+  ///   textEditor: myTextEditorState,
+  /// )
+  /// ```
   const FrostedGlassTextAppbar({super.key, required this.textEditor});
+
+  /// The state of the text editor associated with this app bar.
+  ///
+  /// This state allows the app bar to interact with the text editor,
+  /// providing necessary controls and options to manage text editing
+  /// activities.
+  final TextEditorState textEditor;
 
   @override
   Widget build(BuildContext context) {

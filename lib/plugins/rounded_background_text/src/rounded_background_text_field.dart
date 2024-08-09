@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -232,7 +234,8 @@ class RoundedBackgroundTextField extends StatefulWidget {
   ///
   /// See also:
   ///
-  ///  * [showSelectionHandles], which controls the visibility of the selection handles.
+  ///  * [showSelectionHandles], which controls the visibility of the selection
+  /// handles.
   final bool showCursor;
 
   /// {@macro flutter.widgets.editableText.autocorrect}
@@ -281,7 +284,10 @@ class RoundedBackgroundTextField extends StatefulWidget {
   ///    Flutter.
   final String? restorationId;
 
-  /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
+  /// {
+  /// @macro flutter.services.TextInputConfiguration.
+  /// enableIMEPersonalizedLearning
+  /// }
   final bool enableIMEPersonalizedLearning;
 
   final List<TextInputFormatter>? inputFormatters;
@@ -368,7 +374,8 @@ class RoundedBackgroundTextField extends StatefulWidget {
   /// be rendered differently, depending on the locale.
   ///
   /// It's rarely necessary to set this property. By default its value
-  /// is inherited from the enclosing app with `Localizations.localeOf(context)`.
+  /// is inherited from the enclosing app with
+  /// `Localizations.localeOf(context)`.
   ///
   /// See [RenderEditable.locale] for more information.
   final Locale? locale;

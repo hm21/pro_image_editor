@@ -7,41 +7,6 @@ import 'standalone_editor_callbacks.dart';
 
 /// A class representing callbacks for the crop-rotate editor.
 class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
-  /// A callback function that is triggered when a rotation gesture starts.
-  ///
-  /// The [ValueChanged<double>] parameter provides the initial rotation value.
-  final ValueChanged<double>? onRotateStart;
-
-  /// A callback function that is triggered when a rotation gesture ends.
-  ///
-  /// The [ValueChanged<double>] parameter provides the final rotation value.
-  final ValueChanged<double>? onRotateEnd;
-
-  /// A callback function that is triggered when the flip action is performed.
-  ///
-  /// The [FlipCallback] provides information on the flip actions for the x and y axes.
-  final FlipCallback? onFlip;
-
-  /// A callback function that is triggered when a ratio is selected.
-  ///
-  /// The [ValueChanged<double>] parameter provides the selected ratio value.
-  final ValueChanged<double>? onRatioSelected;
-
-  /// A callback function that is triggered when a move action is performed.
-  final Function()? onMove;
-
-  /// A callback function that is triggered when a resize action is performed.
-  final Function()? onResize;
-
-  /// A callback function that is triggered when a scale action is performed.
-  final Function()? onScale;
-
-  /// A callback function that is triggered when a double tap action is performed.
-  final Function()? onDoubleTap;
-
-  /// A callback function that is triggered when a reset action is performed.
-  final Function()? onReset;
-
   /// Creates a new instance of [CropRotateEditorCallbacks].
   const CropRotateEditorCallbacks({
     this.onRotateStart,
@@ -61,6 +26,43 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
     super.onCloseEditor,
     super.onUpdateUI,
   });
+
+  /// A callback function that is triggered when a rotation gesture starts.
+  ///
+  /// The [ValueChanged<double>] parameter provides the initial rotation value.
+  final ValueChanged<double>? onRotateStart;
+
+  /// A callback function that is triggered when a rotation gesture ends.
+  ///
+  /// The [ValueChanged<double>] parameter provides the final rotation value.
+  final ValueChanged<double>? onRotateEnd;
+
+  /// A callback function that is triggered when the flip action is performed.
+  ///
+  /// The [FlipCallback] provides information on the flip actions for the x
+  /// and y axes.
+  final FlipCallback? onFlip;
+
+  /// A callback function that is triggered when a ratio is selected.
+  ///
+  /// The [ValueChanged<double>] parameter provides the selected ratio value.
+  final ValueChanged<double>? onRatioSelected;
+
+  /// A callback function that is triggered when a move action is performed.
+  final Function()? onMove;
+
+  /// A callback function that is triggered when a resize action is performed.
+  final Function()? onResize;
+
+  /// A callback function that is triggered when a scale action is performed.
+  final Function()? onScale;
+
+  /// A callback function that is triggered when a double tap action is
+  /// performed.
+  final Function()? onDoubleTap;
+
+  /// A callback function that is triggered when a reset action is performed.
+  final Function()? onReset;
 
   /// Handles the rotate start event.
   ///
@@ -82,8 +84,8 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the flip event.
   ///
-  /// This method calls the [onFlip] callback with the provided [flipX] and [flipY]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onFlip] callback with the provided [flipX] and
+  /// [flipY] and then calls [handleUpdateUI].
   void handleFlip(bool flipX, bool flipY) {
     onFlip?.call(flipX, flipY);
     handleUpdateUI();
@@ -116,7 +118,8 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the double tap event.
   ///
-  /// This method calls the [onDoubleTap] callback and then calls [handleUpdateUI].
+  /// This method calls the [onDoubleTap] callback and then calls
+  /// [handleUpdateUI].
   void handleDoubleTap() {
     onDoubleTap?.call();
     handleUpdateUI();

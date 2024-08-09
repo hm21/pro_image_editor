@@ -7,7 +7,21 @@ import 'package:pro_image_editor/models/multi_threading/thread_response_model.da
 import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/isolate/isolate_thread_code.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread.dart';
 
+/// Represents a thread managed by an isolate.
+///
+/// Inherits from [Thread] and includes an additional parameter for specifying
+/// the number of cores used by the thread.
 class IsolateThread extends Thread {
+  /// Creates an instance of [IsolateThread].
+  ///
+  /// [onMessage] is a callback that is triggered when a message is received
+  /// by the thread.
+  /// [coreNumber] specifies the number of cores allocated to the thread.
+  IsolateThread({
+    required super.onMessage,
+    required this.coreNumber,
+  });
+
   /// The isolate used for offloading image processing tasks.
   Isolate? isolate;
 
@@ -20,18 +34,13 @@ class IsolateThread extends Thread {
   /// Number of processor cores available for the isolate to utilize.
   final int coreNumber;
 
-  IsolateThread({
-    required super.onMessage,
-    required this.coreNumber,
-  });
-
   @override
   void init() async {
     receivePort = ReceivePort();
     receivePort.listen((message) {
       if (message is SendPort) {
         sendPort = message;
-        readyState.complete();
+        readyState.complete(true);
       } else if (message is ThreadResponse) {
         onMessage(message);
         activeTasks--;

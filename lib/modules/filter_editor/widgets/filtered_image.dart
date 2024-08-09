@@ -12,6 +12,18 @@ import 'filter_generator.dart';
 
 /// Represents an image where filters and blur factors can be applied.
 class FilteredImage extends StatelessWidget {
+  /// Constructor for creating an instance of FilteredImage.
+  const FilteredImage({
+    super.key,
+    required this.width,
+    required this.height,
+    required this.configs,
+    required this.filters,
+    required this.image,
+    required this.blurFactor,
+    this.fit = BoxFit.contain,
+  });
+
   /// The width of the image.
   final double width;
 
@@ -32,17 +44,6 @@ class FilteredImage extends StatelessWidget {
 
   /// The blur factor
   final double blurFactor;
-
-  const FilteredImage({
-    super.key,
-    required this.width,
-    required this.height,
-    required this.configs,
-    required this.filters,
-    required this.image,
-    required this.blurFactor,
-    this.fit = BoxFit.contain,
-  });
 
   @override
   Widget build(BuildContext context) {

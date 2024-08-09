@@ -1,6 +1,6 @@
-/// The `AspectRatioItem` class represents an item with an aspect ratio value and an
-/// optional text description. It is commonly used to define aspect ratio options for
-/// widgets or components that require a specific aspect ratio.
+/// The `AspectRatioItem` class represents an item with an aspect ratio value
+/// and an optional text description. It is commonly used to define aspect ratio
+/// options for widgets or components that require a specific aspect ratio.
 ///
 /// Usage:
 ///
@@ -13,12 +13,13 @@
 ///
 /// Properties:
 ///
-/// - `text`: The text description for this aspect ratio item, which is typically
-///   used to provide a label or description for the aspect ratio.
+/// - `text`: The text description for this aspect ratio item, which is
+/// typically used to provide a label or description for the aspect ratio.
 ///
-/// - `value`: The numerical value representing the aspect ratio. It is expressed as
-///   a double value, e.g., 16:9 is represented as `16 / 9`. This property is optional
-///   but commonly used when setting aspect ratios for widgets.
+/// - `value`: The numerical value representing the aspect ratio. It is
+///   expressed as a double value, e.g., 16:9 is represented as `16 / 9`. This
+///   property is optional but commonly used when setting aspect ratios for
+///   widgets.
 ///
 /// Example Usage:
 ///
@@ -29,12 +30,13 @@
 /// );
 /// ```
 class AspectRatioItem {
+  /// Creates an instance of the `AspectRatioItem` class with the specified
+  /// properties.
+  const AspectRatioItem({this.value, required this.text});
+
   /// The text for this aspect ratio item.
   final String text;
 
   /// The numerical value representing the aspect ratio.
   final double? value;
-
-  /// Creates an instance of the `AspectRatioItem` class with the specified properties.
-  const AspectRatioItem({this.value, required this.text});
 }

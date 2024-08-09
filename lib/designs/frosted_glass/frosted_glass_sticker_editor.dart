@@ -11,22 +11,38 @@ import '../../models/editor_configs/pro_image_editor_configs.dart';
 
 /// Represents the temporary sticker mode for Frosted-Glass.
 ///
-/// This variable defines the temporary sticker mode for Frosted-Glass, indicating whether stickers or emojis are being used.
+/// This variable defines the temporary sticker mode for Frosted-Glass,
+/// indicating whether stickers or emojis are being used.
 FrostedGlassStickerMode temporaryStickerMode = FrostedGlassStickerMode.emoji;
 
 /// Represents the sticker-editor page for the Frosted-Glass theme.
+///
+/// This page provides an interface for adding and managing stickers and emojis
+/// on images, following the frosted-glass design theme.
 class FrostedGlassStickerPage extends StatefulWidget {
-  /// The configuration for the image editor.
-  final ProImageEditorConfigs configs;
-
-  /// The callbacks from the image editor.
-  final ProImageEditorCallbacks callbacks;
-
+  /// Creates a [FrostedGlassStickerPage].
+  ///
+  /// This page integrates with the frosted-glass theme to offer a user-friendly
+  /// interface for selecting and applying stickers or emojis to images.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassStickerPage(
+  ///   configs: myEditorConfigs,
+  ///   callbacks: myEditorCallbacks,
+  /// )
+  /// ```
   const FrostedGlassStickerPage({
     super.key,
     required this.configs,
     required this.callbacks,
   });
+
+  /// The configuration for the image editor.
+  final ProImageEditorConfigs configs;
+
+  /// The callbacks from the image editor.
+  final ProImageEditorCallbacks callbacks;
 
   @override
   State<FrostedGlassStickerPage> createState() =>
@@ -179,7 +195,7 @@ class _FrostedGlassStickerPageState extends State<FrostedGlassStickerPage> {
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          segments: <ButtonSegment>[
+                          segments: [
                             ButtonSegment(
                               value: FrostedGlassStickerMode.sticker,
                               label: Text(
@@ -202,7 +218,7 @@ class _FrostedGlassStickerPageState extends State<FrostedGlassStickerPage> {
                             ),
                           ],
                           selected: {temporaryStickerMode},
-                          onSelectionChanged: (Set newSelection) {
+                          onSelectionChanged: (newSelection) {
                             setState(() {
                               temporaryStickerMode = newSelection.first;
                             });
@@ -305,7 +321,22 @@ class _FrostedGlassStickerPageState extends State<FrostedGlassStickerPage> {
   }
 }
 
+/// An enumeration representing the modes for frosted glass sticker
+/// functionality.
+///
+/// This enum is used to define the different modes available in the frosted
+/// glass sticker feature, such as adding stickers or emojis to an image.
+
 enum FrostedGlassStickerMode {
+  /// Mode for adding stickers.
+  ///
+  /// This mode allows the user to select and place various stickers on an
+  /// image, enhancing the visual content with decorative elements.
   sticker,
+
+  /// Mode for adding emojis.
+  ///
+  /// This mode allows the user to select and place emojis on an image,
+  /// providing a fun and expressive way to enhance visual content.
   emoji,
 }

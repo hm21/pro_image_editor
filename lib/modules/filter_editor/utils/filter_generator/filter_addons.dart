@@ -1,7 +1,25 @@
 // Dart imports:
 import 'dart:math';
 
+/// A utility class providing various color filter transformations.
+///
+/// This class contains static methods that generate color filter matrices
+/// for applying different effects to images, such as overlaying colors,
+/// scaling RGB values, converting to grayscale, applying sepia tones,
+/// and more.
 class ColorFilterAddons {
+  /// Generates a color overlay filter matrix.
+  ///
+  /// This method returns a color matrix that applies an overlay effect using
+  /// the specified RGB values and scale. The resulting effect blends the
+  /// original colors with the specified overlay colors.
+  ///
+  /// Parameters:
+  /// - [r]: The red component of the overlay color.
+  /// - [g]: The green component of the overlay color.
+  /// - [b]: The blue component of the overlay color.
+  /// - [scale]: The blending scale factor, where `0` is no overlay and `1` is
+  ///   full overlay.
   static List<double> colorOverlay(
     double r,
     double g,
@@ -33,14 +51,36 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates an RGB scale filter matrix.
+  ///
+  /// This method returns a color matrix that scales the red, green, and blue
+  /// components of an image by the specified factors.
+  ///
+  /// Parameters:
+  /// - [r]: The scale factor for the red component.
+  /// - [g]: The scale factor for the green component.
+  /// - [b]: The scale factor for the blue component.
   static List<double> rgbScale(double r, double g, double b) {
     return [r, 0, 0, 0, 0, 0, g, 0, 0, 0, 0, 0, b, 0, 0, 0, 0, 0, 1, 0];
   }
 
+  /// Generates an additive color filter matrix.
+  ///
+  /// This method returns a color matrix that adds the specified RGB values to
+  /// each pixel in an image, creating an additive color effect.
+  ///
+  /// Parameters:
+  /// - [r]: The red component to add.
+  /// - [g]: The green component to add.
+  /// - [b]: The blue component to add.
   static List<double> addictiveColor(double r, double g, double b) {
     return [1, 0, 0, 0, r, 0, 1, 0, 0, g, 0, 0, 1, 0, b, 0, 0, 0, 1, 0];
   }
 
+  /// Generates a grayscale filter matrix.
+  ///
+  /// This method returns a color matrix that converts an image to grayscale
+  /// using the luminance values for the RGB components.
   static List<double> grayscale() {
     const double lumR = 0.2126;
     const double lumG = 0.7152;
@@ -69,6 +109,14 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates a sepia filter matrix.
+  ///
+  /// This method returns a color matrix that applies a sepia tone effect to
+  /// an image, using the specified intensity value.
+  ///
+  /// Parameters:
+  /// - [value]: The intensity of the sepia effect, where `0` is no effect and
+  ///   `1` is full effect.
   static List<double> sepia(double value) {
     double inv0_607 = 1 - 0.607 * value;
     double inv0_314 = 1 - 0.314 * value;
@@ -97,6 +145,10 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates an invert color filter matrix.
+  ///
+  /// This method returns a color matrix that inverts the colors of an image,
+  /// effectively creating a negative effect.
   static List<double> invert() {
     const double offset = 255.0;
     return [
@@ -123,6 +175,14 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates a brightness adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the brightness of an
+  /// image by the specified value.
+  ///
+  /// Parameters:
+  /// - [value]: The brightness adjustment factor, where negative values darken
+  ///   the image and positive values lighten the image.
   static List<double> brightness(double value) {
     value = value <= 0 ? value * 255 : value * 100;
     if (value == 0) {
@@ -152,6 +212,14 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates a contrast adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the contrast of an image
+  /// by the specified value.
+  ///
+  /// Parameters:
+  /// - [value]: The contrast adjustment factor, where negative values decrease
+  ///   contrast and positive values increase contrast.
   static List<double> contrast(double value) {
     double adj = value * 255;
     double factor = (259 * (adj + 255)) / (255 * (259 - adj));
@@ -180,6 +248,14 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates a hue adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the hue of an image by
+  /// the specified value.
+  ///
+  /// Parameters:
+  /// - [value]: The hue adjustment factor, where positive values rotate the
+  ///   hue clockwise and negative values rotate it counterclockwise.
   static List<double> hue(double value) {
     if (value == 0) {
       return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
@@ -215,6 +291,14 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates a saturation adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the saturation of an
+  /// image by the specified value.
+  ///
+  /// Parameters:
+  /// - [value]: The saturation adjustment factor, where negative values
+  ///   decrease saturation and positive values increase saturation.
   static List<double> saturation(double value) {
     if (value == 0) {
       return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
@@ -249,6 +333,14 @@ class ColorFilterAddons {
     ];
   }
 
+  /// Generates an opacity adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the opacity of an image
+  /// by the specified value.
+  ///
+  /// Parameters:
+  /// - [value]: The opacity factor, where `0` is fully transparent and `1` is
+  ///   fully opaque.
   static List<double> opacity(double value) {
     return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, value, 0];
   }

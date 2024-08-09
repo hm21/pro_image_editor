@@ -1,13 +1,28 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
+/// A custom painter for drawing the crop layer background and overlay.
+///
+/// This class extends [CustomPainter] and is used to draw the crop layer's
+/// background and overlay for a crop and rotate editor. It supports both
+/// rectangular and round crop shapes and handles image rotation effects.
 class CropLayerPainter extends CustomPainter {
-  final double imgRatio;
-  final bool is90DegRotated;
-  final Color backgroundColor;
-  final bool isRoundCropper;
-  final double opacity;
-
+  /// Creates an instance of [CropLayerPainter].
+  ///
+  /// The constructor initializes various parameters needed to draw the crop
+  /// layer's background and overlay, such as the image ratio, rotation
+  /// settings, and visual appearance.
+  ///
+  /// Example:
+  /// ```
+  /// CropLayerPainter(
+  ///   imgRatio: 1.5,
+  ///   isRoundCropper: false,
+  ///   is90DegRotated: true,
+  ///   backgroundColor: Colors.black.withOpacity(0.5),
+  ///   opacity: 0.8,
+  /// )
+  /// ```
   CropLayerPainter({
     required this.imgRatio,
     required this.isRoundCropper,
@@ -15,6 +30,36 @@ class CropLayerPainter extends CustomPainter {
     required this.backgroundColor,
     required this.opacity,
   });
+
+  /// The aspect ratio of the image.
+  ///
+  /// This double value represents the aspect ratio of the image being edited,
+  /// affecting how the crop layer is drawn and scaled.
+  final double imgRatio;
+
+  /// Indicates whether the image is rotated by 90 degrees.
+  ///
+  /// This boolean flag determines whether the image is currently rotated by 90
+  /// degrees, affecting the orientation of the crop layer.
+  final bool is90DegRotated;
+
+  /// The background color of the crop layer.
+  ///
+  /// This [Color] is used to fill the background of the crop layer, providing
+  /// contrast and focus for the cropping area.
+  final Color backgroundColor;
+
+  /// Indicates whether the crop shape is round.
+  ///
+  /// This boolean flag determines whether the crop layer should be drawn with
+  /// a round shape, affecting the visual appearance of the cropping area.
+  final bool isRoundCropper;
+
+  /// The opacity of the crop layer.
+  ///
+  /// This double value represents the opacity of the crop layer, allowing for
+  /// adjustable transparency to enhance the visual experience.
+  final double opacity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -26,18 +71,17 @@ class CropLayerPainter extends CustomPainter {
     required Canvas canvas,
     required Size size,
   }) {
-    Path path = Path();
-
-    /// Filltype "evenOdd" is important for the canvas web renderer
-    path.fillType = PathFillType.evenOdd;
-    path.addRect(Rect.fromCenter(
-      center: Offset(
-        size.width / 2,
-        size.height / 2,
-      ),
-      width: size.width,
-      height: size.height,
-    ));
+    Path path = Path()
+      // Filltype "evenOdd" is important for the canvas web renderer
+      ..fillType = PathFillType.evenOdd
+      ..addRect(Rect.fromCenter(
+        center: Offset(
+          size.width / 2,
+          size.height / 2,
+        ),
+        width: size.width,
+        height: size.height,
+      ));
 
     double ratio = is90DegRotated ? 1 / imgRatio : imgRatio;
 
@@ -67,7 +111,8 @@ class CropLayerPainter extends CustomPainter {
           ),
         );
 
-      /// Subtract the area of the current rectangle from the path for the entire canvas
+      /// Subtract the area of the current rectangle from the path for the
+      /// Wentire canvas
       path = Path.combine(PathOperation.difference, path, rectPath);
     } else {
       Path rectPath = Path()
@@ -79,7 +124,8 @@ class CropLayerPainter extends CustomPainter {
           ),
         );
 
-      /// Subtract the area of the current rectangle from the path for the entire canvas
+      /// Subtract the area of the current rectangle from the path for the
+      /// Wentire canvas
       path = Path.combine(PathOperation.difference, path, rectPath);
     }
 

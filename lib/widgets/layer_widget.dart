@@ -15,49 +15,6 @@ import 'layer_interaction_helper/layer_interaction_helper_widget.dart';
 
 /// A widget representing a layer within a design canvas.
 class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
-  @override
-  final ProImageEditorConfigs configs;
-
-  @override
-  final ProImageEditorCallbacks callbacks;
-
-  final double editorCenterX;
-  final double editorCenterY;
-
-  /// Data for the layer.
-  final Layer layerData;
-
-  /// Callback when a tap down event occurs.
-  final Function()? onTapDown;
-
-  /// Callback when a tap up event occurs.
-  final Function()? onTapUp;
-
-  /// Callback when a tap event occurs.
-  final Function(Layer)? onTap;
-
-  /// Callback for removing the layer.
-  final Function()? onRemoveTap;
-
-  /// Callback for editing the layer.
-  final Function()? onEditTap;
-
-  final Function(PointerDownEvent, Size)? onScaleRotateDown;
-  final Function(PointerUpEvent)? onScaleRotateUp;
-
-  /// Controls high-performance for free-style drawing.
-  final bool highPerformanceMode;
-
-  /// Enables or disables hit detection.
-  /// When set to `true`, it allows detecting user interactions with the interface.
-  final bool enableHitDetection;
-
-  /// Indicates whether the layer is selected.
-  final bool selected;
-
-  /// Indicates whether the layer is interactive.
-  final bool isInteractive;
-
   /// Creates a [LayerWidget] with the specified properties.
   const LayerWidget({
     super.key,
@@ -78,6 +35,85 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.isInteractive = false,
     this.callbacks = const ProImageEditorCallbacks(),
   });
+  @override
+  final ProImageEditorConfigs configs;
+
+  @override
+  final ProImageEditorCallbacks callbacks;
+
+  /// The x-coordinate of the editor's center.
+  ///
+  /// This parameter specifies the horizontal center of the editor's body in
+  /// logical pixels, used to position and transform layers relative to the
+  /// editor's center.
+  final double editorCenterX;
+
+  /// The y-coordinate of the editor's center.
+  ///
+  /// This parameter specifies the vertical center of the editor's body in
+  /// logical pixels,  used to position and transform layers relative to the
+  /// editor's center.
+  final double editorCenterY;
+
+  /// Data for the layer.
+  final Layer layerData;
+
+  /// Callback when a tap down event occurs.
+  final Function()? onTapDown;
+
+  /// Callback when a tap up event occurs.
+  final Function()? onTapUp;
+
+  /// Callback when a tap event occurs.
+  final Function(Layer)? onTap;
+
+  /// Callback for removing the layer.
+  final Function()? onRemoveTap;
+
+  /// Callback for editing the layer.
+  final Function()? onEditTap;
+
+  /// Callback for handling pointer down events associated with scale and rotate
+  /// gestures.
+  ///
+  /// This callback is triggered when the user presses down on the widget to
+  /// begin a scaling or rotating gesture. It provides both the pointer event
+  /// and the size of the widget being interacted with, allowing for precise
+  /// manipulation.
+  ///
+  /// - Parameters:
+  ///   - event: The [PointerDownEvent] containing details about the pointer
+  ///     interaction, such as position and device type.
+  ///   - size: The [Size] of the widget being manipulated, useful for
+  ///     calculating scaling and rotation transformations relative to the
+  ///     widget's dimensions.
+  final Function(PointerDownEvent, Size)? onScaleRotateDown;
+
+  /// Callback for handling pointer up events associated with scale and rotate
+  /// gestures.
+  ///
+  /// This callback is triggered when the user releases the widget after a
+  /// scaling or rotating gesture. It allows for finalizing the interaction and
+  /// making any necessary updates or state changes based on the completed
+  /// gesture.
+  ///
+  /// - Parameter event: The [PointerUpEvent] containing details about the
+  ///   pointer release, such as position and device type.
+  final Function(PointerUpEvent)? onScaleRotateUp;
+
+  /// Controls high-performance for free-style drawing.
+  final bool highPerformanceMode;
+
+  /// Enables or disables hit detection.
+  /// When set to `true`, it allows detecting user interactions with the
+  /// interface.
+  final bool enableHitDetection;
+
+  /// Indicates whether the layer is selected.
+  final bool selected;
+
+  /// Indicates whether the layer is interactive.
+  final bool isInteractive;
 
   @override
   createState() => _LayerWidgetState();
@@ -174,7 +210,8 @@ class _LayerWidgetState extends State<LayerWidget>
         !(_layer as PaintingLayerData).item.hit;
   }
 
-  /// Calculates the transformation matrix for the layer's position and rotation.
+  /// Calculates the transformation matrix for the layer's position and
+  /// rotation.
   Matrix4 _calcTransformMatrix() {
     return Matrix4.identity()
       ..setEntry(3, 2, 0.001) // Add a small z-offset to avoid rendering issues
@@ -296,9 +333,7 @@ class _LayerWidgetState extends State<LayerWidget>
       text: span,
       textAlign: TextAlign.left,
       textDirection: TextDirection.ltr,
-    );
-
-    painter.layout();
+    )..layout();
     return painter.preferredLineHeight;
   }
 

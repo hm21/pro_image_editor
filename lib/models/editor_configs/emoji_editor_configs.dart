@@ -21,6 +21,21 @@ export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
 /// );
 /// ```
 class EmojiEditorConfigs {
+  /// Creates an instance of EmojiEditorConfigs with optional settings.
+  ///
+  /// By default, the editor is enabled, and other properties are set to
+  /// reasonable defaults.
+  const EmojiEditorConfigs({
+    this.enabled = true,
+    this.initScale = 5.0,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
+    this.checkPlatformCompatibility = true,
+    this.emojiSet = defaultEmojiSet,
+  })  : assert(initScale > 0, 'initScale must be positive'),
+        assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
+
   /// Indicates whether the emoji editor is enabled.
   final bool enabled;
 
@@ -38,19 +53,4 @@ class EmojiEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
-
-  /// Creates an instance of EmojiEditorConfigs with optional settings.
-  ///
-  /// By default, the editor is enabled, and other properties are set to
-  /// reasonable defaults.
-  const EmojiEditorConfigs({
-    this.enabled = true,
-    this.initScale = 5.0,
-    this.minScale = double.negativeInfinity,
-    this.maxScale = double.infinity,
-    this.checkPlatformCompatibility = true,
-    this.emojiSet = defaultEmojiSet,
-  })  : assert(initScale > 0, 'initScale must be positive'),
-        assert(maxScale >= minScale,
-            'maxScale must be greater than or equal to minScale');
 }

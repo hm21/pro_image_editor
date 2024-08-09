@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' as ui show Image;
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
@@ -47,11 +48,15 @@ import 'utils/state_manager.dart';
 
 /// A widget for image editing using ProImageEditor.
 ///
-/// `ProImageEditor` provides a versatile image editing widget for Flutter applications.
-/// It allows you to edit images from various sources like memory, files, assets, or network URLs.
+/// `ProImageEditor` provides a versatile image editing widget for Flutter
+/// applications.
+/// It allows you to edit images from various sources like memory, files,
+/// assets, or network URLs.
 ///
-/// You can use one of the specific constructors, such as `memory`, `file`, `asset`, or `network`,
-/// to create an instance of this widget based on your image source. Additionally, you can provide
+/// You can use one of the specific constructors, such as `memory`, `file`,
+/// `asset`, or `network`,
+/// to create an instance of this widget based on your image source.
+/// Additionally, you can provide
 /// custom configuration settings through the `configs` parameter.
 ///
 /// Example usage:
@@ -63,7 +68,8 @@ import 'utils/state_manager.dart';
 /// ProImageEditor.network('https://example.com/image.jpg');
 /// ```
 ///
-/// To handle image editing, you can use the callbacks provided by the `EditorConfigs` instance
+/// To handle image editing, you can use the callbacks provided by the
+/// `EditorConfigs` instance
 /// passed through the `configs` parameter.
 ///
 /// See also:
@@ -71,60 +77,19 @@ import 'utils/state_manager.dart';
 /// - [ProImageEditorCallbacks] for callbacks.
 class ProImageEditor extends StatefulWidget
     with SimpleConfigsAccess, SimpleCallbacksAccess {
-  @override
-  final ProImageEditorConfigs configs;
-  @override
-  final ProImageEditorCallbacks callbacks;
-
-  /// Image data as a `Uint8List` from memory.
-  final Uint8List? byteArray;
-
-  /// Path to the image asset.
-  final String? assetPath;
-
-  /// URL of the image to be loaded from the network.
-  final String? networkUrl;
-
-  /// File object representing the image file.
-  final File? file;
-
-  /// Creates a `ProImageEditor` widget for image editing.
-  ///
-  /// Use one of the specific constructors like `memory`, `file`, `asset`, or `network`
-  /// to create an instance of this widget based on your image source.
-  ///
-  /// The [byteArray], [assetPath], [networkUrl], and [file] parameters represent different
-  /// sources of the image data. At least one of these parameters must not be null.
-  ///
-  /// The `configs` parameter allows you to customize the image editing experience by providing
-  /// various configuration options. If not specified, default settings will be used.
-  ///
-  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
-  const ProImageEditor._({
-    super.key,
-    required this.callbacks,
-    this.byteArray,
-    this.assetPath,
-    this.networkUrl,
-    this.file,
-    this.configs = const ProImageEditorConfigs(),
-  }) : assert(
-          byteArray != null ||
-              file != null ||
-              networkUrl != null ||
-              assetPath != null,
-          'At least one of bytes, file, networkUrl, or assetPath must not be null.',
-        );
-
-  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `byteArray`.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an
+  /// image loaded from the specified `byteArray`.
   ///
   /// The `byteArray` parameter should contain the image data as a `Uint8List`.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to
+  /// the widget for identification and state preservation.
   ///
-  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
+  /// The `configs` parameter specifies the configuration options for the image
+  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
+  /// The `callbacks` parameter is required and specifies the callbacks to
+  /// handle events and interactions within the image editor.
   ///
   /// Example usage:
   /// ```dart
@@ -134,9 +99,11 @@ class ProImageEditor extends StatefulWidget
   ///   callbacks: ProImageEditorCallbacks(
   ///      onImageEditingComplete: (Uint8List bytes) async {
   ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server as an example.
+  ///          `Your code to handle the edited image. Upload it to your server
+  /// as an example.
   ///
-  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           You can choose to use await, so that the load dialog remains
+  /// visible until your code is ready,
   ///           or no async, so that the load dialog closes immediately.
   ///        */
   ///        Navigator.pop(context);
@@ -158,15 +125,53 @@ class ProImageEditor extends StatefulWidget
     );
   }
 
-  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `file`.
+  /// Creates a `ProImageEditor` widget for image editing.
+  ///
+  /// Use one of the specific constructors like `memory`, `file`, `asset`, or
+  /// `network`
+  /// to create an instance of this widget based on your image source.
+  ///
+  /// The [byteArray], [assetPath], [networkUrl], and [file] parameters
+  /// represent different
+  /// sources of the image data. At least one of these parameters must not be
+  /// null.
+  ///
+  /// The `configs` parameter allows you to customize the image editing
+  /// experience by providing
+  /// various configuration options. If not specified, default settings will be
+  /// used.
+  ///
+  /// The `callbacks` parameter is required and specifies the callbacks to
+  /// handle events and interactions within the image editor.
+  const ProImageEditor._({
+    super.key,
+    required this.callbacks,
+    this.byteArray,
+    this.assetPath,
+    this.networkUrl,
+    this.file,
+    this.configs = const ProImageEditorConfigs(),
+  }) : assert(
+          byteArray != null ||
+              file != null ||
+              networkUrl != null ||
+              assetPath != null,
+          'byteArray, file, networkUrl, or assetPath must not be null.',
+        );
+
+  /// This constructor creates a `ProImageEditor` widget configured to edit an
+  /// image loaded from the specified `file`.
   ///
   /// The `file` parameter should point to the image file.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to
+  /// the widget for identification and state preservation.
   ///
-  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
+  /// The `configs` parameter specifies the configuration options for the image
+  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
+  /// The `callbacks` parameter is required and specifies the callbacks to
+  /// handle events and interactions within the image editor.
   ///
   /// Example usage:
   /// ```dart
@@ -176,9 +181,11 @@ class ProImageEditor extends StatefulWidget
   ///   callbacks: ProImageEditorCallbacks(
   ///      onImageEditingComplete: (Uint8List bytes) async {
   ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server as an example.
+  ///          `Your code to handle the edited image. Upload it to your server
+  ///           as an example.
   ///
-  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           You can choose to use await, so that the load dialog remains
+  ///           visible until your code is ready,
   ///           or no async, so that the load dialog closes immediately.
   ///        */
   ///        Navigator.pop(context);
@@ -200,15 +207,19 @@ class ProImageEditor extends StatefulWidget
     );
   }
 
-  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `assetPath`.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an
+  /// image loaded from the specified `assetPath`.
   ///
   /// The `assetPath` parameter should specify the path to the image asset.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to
+  /// the widget for identification and state preservation.
   ///
-  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
+  /// The `configs` parameter specifies the configuration options for the image
+  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
+  /// The `callbacks` parameter is required and specifies the callbacks to
+  /// handle events and interactions within the image editor.
   ///
   /// Example usage:
   /// ```dart
@@ -218,9 +229,11 @@ class ProImageEditor extends StatefulWidget
   ///   callbacks: ProImageEditorCallbacks(
   ///      onImageEditingComplete: (Uint8List bytes) async {
   ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server as an example.
+  ///          `Your code to handle the edited image. Upload it to your server
+  /// as an example.
   ///
-  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           You can choose to use await, so that the load dialog remains
+  /// visible until your code is ready,
   ///           or no async, so that the load dialog closes immediately.
   ///        */
   ///        Navigator.pop(context);
@@ -242,15 +255,20 @@ class ProImageEditor extends StatefulWidget
     );
   }
 
-  /// This constructor creates a `ProImageEditor` widget configured to edit an image loaded from the specified `networkUrl`.
+  /// This constructor creates a `ProImageEditor` widget configured to edit an
+  /// image loaded from the specified `networkUrl`.
   ///
-  /// The `networkUrl` parameter specifies the URL from which the image will be loaded.
+  /// The `networkUrl` parameter specifies the URL from which the image will be
+  /// loaded.
   ///
-  /// The `key` parameter is an optional parameter used to provide a `Key` to the widget for identification and state preservation.
+  /// The `key` parameter is an optional parameter used to provide a `Key` to
+  /// the widget for identification and state preservation.
   ///
-  /// The `configs` parameter specifies the configuration options for the image editor. It defaults to an empty instance of `ProImageEditorConfigs`.
+  /// The `configs` parameter specifies the configuration options for the image
+  /// editor. It defaults to an empty instance of `ProImageEditorConfigs`.
   ///
-  /// The `callbacks` parameter is required and specifies the callbacks to handle events and interactions within the image editor.
+  /// The `callbacks` parameter is required and specifies the callbacks to
+  /// handle events and interactions within the image editor.
   ///
   /// Example usage:
   /// ```dart
@@ -260,9 +278,11 @@ class ProImageEditor extends StatefulWidget
   ///   callbacks: ProImageEditorCallbacks(
   ///      onImageEditingComplete: (Uint8List bytes) async {
   ///        /*
-  ///          `Your code to handle the edited image. Upload it to your server as an example.
+  ///          `Your code to handle the edited image. Upload it to your server
+  ///           as an example.
   ///
-  ///           You can choose to use await, so that the load dialog remains visible until your code is ready,
+  ///           You can choose to use await, so that the load dialog remains
+  ///           visible until your code is ready,
   ///           or no async, so that the load dialog closes immediately.
   ///        */
   ///        Navigator.pop(context);
@@ -283,11 +303,29 @@ class ProImageEditor extends StatefulWidget
       callbacks: callbacks,
     );
   }
+  @override
+  final ProImageEditorConfigs configs;
+  @override
+  final ProImageEditorCallbacks callbacks;
+
+  /// Image data as a `Uint8List` from memory.
+  final Uint8List? byteArray;
+
+  /// Path to the image asset.
+  final String? assetPath;
+
+  /// URL of the image to be loaded from the network.
+  final String? networkUrl;
+
+  /// File object representing the image file.
+  final File? file;
 
   @override
   State<ProImageEditor> createState() => ProImageEditorState();
 }
 
+/// State class for the ProImageEditor widget, handling configurations
+/// and user interactions for image editing.
 class ProImageEditorState extends State<ProImageEditor>
     with
         ImageEditorConvertedConfigs,
@@ -298,7 +336,7 @@ class ProImageEditorState extends State<ProImageEditor>
   final _bottomBarKey = GlobalKey();
   final _removeAreaKey = GlobalKey();
   final _interactiveViewer = GlobalKey<ExtendedInteractiveViewerState>();
-  late final StreamController _rebuildController;
+  late final StreamController<void> _rebuildController;
 
   /// Helper class for managing sizes and layout calculations.
   late final SizesManager sizesManager;
@@ -346,11 +384,12 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Whether a dialog is currently open.
   bool _openDialog = false;
 
-  /// Indicates whether the `onScaleUpdate` function can be triggered to interact
-  /// with the layers
+  /// Indicates whether the `onScaleUpdate` function can be triggered to
+  /// interact with the layers.
   bool blockOnScaleUpdateFunction = false;
 
-  /// Indicates whether the browser's context menu was enabled before any changes.
+  /// Indicates whether the browser's context menu was enabled before any
+  /// changes.
   bool _browserContextMenuBeforeEnabled = false;
 
   /// Indicates whether PopScope is disabled.
@@ -381,13 +420,15 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// A [Completer] used to track the completion of a page open operation.
   ///
-  /// The completer is initialized and can be used to await the page open operation.
-  Completer _pageOpenCompleter = Completer();
+  /// The completer is initialized and can be used to await the page open
+  /// operation.
+  Completer<bool> _pageOpenCompleter = Completer();
 
   /// A [Completer] used to track the completion of an image decoding operation.
   ///
-  /// The completer is initialized and can be used to await the image decoding operation.
-  final Completer _decodeImageCompleter = Completer();
+  /// The completer is initialized and can be used to await the image
+  /// decoding operation.
+  final Completer<bool> _decodeImageCompleter = Completer();
 
   @override
   void initState() {
@@ -484,8 +525,8 @@ class ProImageEditorState extends State<ProImageEditor>
           if (isSubEditorOpen) {
             if (!imageEditorTheme.subEditorPage.barrierDismissible) {
               if (cropRotateEditor.currentState != null) {
-                // Important to close the crop-editor like that cuz we need to set
-                // the fake hero first
+                // Important to close the crop-editor like that cuz we need to
+                // set the fake hero first
                 cropRotateEditor.currentState!.close();
               } else {
                 Navigator.pop(context);
@@ -504,19 +545,23 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
-  /// Adds a new state to the history with the given configuration and updates the state manager.
+  /// Adds a new state to the history with the given configuration and updates
+  /// the state manager.
   ///
   /// This method is responsible for capturing the current state of the editor,
-  /// including layers, transformations, filters, and blur settings. It then adds
-  /// this state to the history, enabling undo and redo functionality. Additionally,
-  /// it can take a screenshot if required.
+  /// including layers, transformations, filters, and blur settings. It then
+  /// adds this state to the history, enabling undo and redo functionality.
+  /// Additionally, it can take a screenshot if required.
   ///
   /// - [layers]: An optional list of layers to be included in the new state.
   /// - [newLayer]: An optional new layer to be added to the current layers.
-  /// - [transformConfigs]: Optional transformation configurations for the new state.
-  /// - [filters]: An optional list of filter states to be included in the new state.
+  /// - [transformConfigs]: Optional transformation configurations for the new
+  /// state.
+  /// - [filters]: An optional list of filter states to be included in the new
+  /// state.
   /// - [blur]: An optional blur state to be included in the new state.
-  /// - [heroScreenshotRequired]: A flag indicating whether a hero screenshot is required.
+  /// - [heroScreenshotRequired]: A flag indicating whether a hero screenshot
+  /// is required.
   ///
   /// Example usage:
   /// ```dart
@@ -570,7 +615,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Add a new layer to the image editor.
   ///
-  /// This method adds a new layer to the image editor and updates the editing state.
+  /// This method adds a new layer to the image editor and updates the editing
+  /// state.
   void addLayer(
     Layer layer, {
     int removeLayerIndex = -1,
@@ -587,7 +633,8 @@ class ProImageEditorState extends State<ProImageEditor>
     if (!blockSelectLayer &&
         layerInteractionManager.layersAreSelectable(configs) &&
         layerInteraction.initialSelected) {
-      /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+      /// Skip one frame to ensure captured image in seperate thread will not
+      /// capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         layerInteractionManager.selectedLayerId = layer.id;
         _controllers.uiLayerCtrl.add(null);
@@ -612,15 +659,16 @@ class ProImageEditorState extends State<ProImageEditor>
           stateHistory[stateManager.position].layers[oldIndex]);
     }
 
-    var layers = _layerCopyManager.copyLayerList(activeLayers);
-    layers.removeAt(layerPos);
+    var layers = _layerCopyManager.copyLayerList(activeLayers)
+      ..removeAt(layerPos);
     addHistory(layers: layers);
     setState(() {});
   }
 
   /// Remove all layers from the editor.
   ///
-  /// This method removes all layers from the editor and updates the editing state.
+  /// This method removes all layers from the editor and updates the editing
+  /// state.
   void removeAllLayers() {
     addHistory(layers: []);
     setState(() {});
@@ -628,7 +676,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Update the temporary layer in the editor.
   ///
-  /// This method updates the temporary layer in the editor and updates the editing state.
+  /// This method updates the temporary layer in the editor and updates the
+  /// editing state.
   void _updateTempLayer() {
     addHistory();
     layerInteractionManager.selectedLayerId = '';
@@ -641,7 +690,8 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
     takeScreenshot();
     if (selectedLayerId.isNotEmpty) {
-      /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+      /// Skip one frame to ensure captured image in seperate thread will not 
+      /// capture the border.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         _layerInteractionManager.selectedLayerId = selectedLayerId;
         setState(() {});
@@ -659,7 +709,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Decode the image being edited.
   ///
-  /// This method decodes the image if it hasn't been decoded yet and updates its properties.
+  /// This method decodes the image if it hasn't been decoded yet and updates
+  /// its properties.
   Future<void> decodeImage([TransformConfigs? transformConfigs]) async {
     bool shouldImportStateHistory =
         _imageNeedDecode && stateHistoryConfigs.initStateHistory != null;
@@ -710,23 +761,26 @@ class ProImageEditorState extends State<ProImageEditor>
     double? renderedBottomBarHeight =
         _bottomBarKey.currentContext?.size?.height;
     if (renderedBottomBarHeight != null) {
-      sizesManager.bottomBarHeight = renderedBottomBarHeight;
-      sizesManager.appBarHeight = sizesManager.editorSize.height -
-          sizesManager.bodySize.height -
-          sizesManager.bottomBarHeight;
+      sizesManager
+        ..bottomBarHeight = renderedBottomBarHeight
+        ..appBarHeight = sizesManager.editorSize.height -
+            sizesManager.bodySize.height -
+            sizesManager.bottomBarHeight;
     }
   }
 
   /// Handle the start of a scaling operation.
   ///
-  /// This method is called when a scaling operation begins and initializes the necessary variables.
+  /// This method is called when a scaling operation begins and initializes the
+  /// necessary variables.
   void _onScaleStart(ScaleStartDetails details) {
     if (sizesManager.bodySize != sizesManager.editorSize) {
       _calcAppBarHeight();
     }
 
-    layerInteractionManager.snapStartPosX = details.focalPoint.dx;
-    layerInteractionManager.snapStartPosY = details.focalPoint.dy;
+    layerInteractionManager
+      ..snapStartPosX = details.focalPoint.dx
+      ..snapStartPosY = details.focalPoint.dy;
 
     if (selectedLayerIndex < 0) return;
 
@@ -738,37 +792,36 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     _setTempLayer(layer);
-    layerInteractionManager.baseScaleFactor = layer.scale;
-    layerInteractionManager.baseAngleFactor = layer.rotation;
-    layerInteractionManager.snapStartRotation = layer.rotation * 180 / pi;
-    layerInteractionManager.snapLastRotation =
-        layerInteractionManager.snapStartRotation;
-    layerInteractionManager.rotationStartedHelper = false;
-    layerInteractionManager.showHelperLines = true;
+    layerInteractionManager
+      ..baseScaleFactor = layer.scale
+      ..baseAngleFactor = layer.rotation
+      ..snapStartRotation = layer.rotation * 180 / pi
+      ..snapLastRotation = layerInteractionManager.snapStartRotation
+      ..rotationStartedHelper = false
+      ..showHelperLines = true;
 
     double posX = layer.offset.dx;
     double posY = layer.offset.dy;
 
-    layerInteractionManager.lastPositionY =
-        posY <= -layerInteractionManager.hitSpan
-            ? LayerLastPosition.top
-            : posY >= layerInteractionManager.hitSpan
-                ? LayerLastPosition.bottom
-                : LayerLastPosition.center;
-
-    layerInteractionManager.lastPositionX =
-        posX <= -layerInteractionManager.hitSpan
-            ? LayerLastPosition.left
-            : posX >= layerInteractionManager.hitSpan
-                ? LayerLastPosition.right
-                : LayerLastPosition.center;
+    layerInteractionManager
+      ..lastPositionY = posY <= -layerInteractionManager.hitSpan
+          ? LayerLastPosition.top
+          : posY >= layerInteractionManager.hitSpan
+              ? LayerLastPosition.bottom
+              : LayerLastPosition.center
+      ..lastPositionX = posX <= -layerInteractionManager.hitSpan
+          ? LayerLastPosition.left
+          : posX >= layerInteractionManager.hitSpan
+              ? LayerLastPosition.right
+              : LayerLastPosition.center;
     setState(() {});
     mainEditorCallbacks?.handleScaleStart(details);
   }
 
   /// Handle updates during scaling.
   ///
-  /// This method is called during a scaling operation and updates the selected layer's position and properties.
+  /// This method is called during a scaling operation and updates the selected
+  /// layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails details) {
     mainEditorCallbacks?.handleScaleUpdate(details);
     if (selectedLayerIndex < 0 || blockOnScaleUpdateFunction) return;
@@ -794,19 +847,21 @@ class ProImageEditorState extends State<ProImageEditor>
     if (_activeLayer == null) return;
 
     if (layerInteractionManager.rotateScaleLayerSizeHelper != null) {
-      layerInteractionManager.freeStyleHighPerformanceScaling =
-          paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
-      layerInteractionManager.calculateInteractiveButtonScaleRotate(
-        configs: configs,
-        activeLayer: _activeLayer!,
-        configEnabledHitVibration: helperLines.hitVibration,
-        details: details,
-        editorSize: sizesManager.editorSize,
-        layerTheme: imageEditorTheme.layerInteraction,
-        editorScaleFactor: _interactiveViewer.currentState?.scaleFactor ?? 1.0,
-        editorScaleOffset:
-            _interactiveViewer.currentState?.offset ?? Offset.zero,
-      );
+      layerInteractionManager
+        ..freeStyleHighPerformanceScaling =
+            paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop
+        ..calculateInteractiveButtonScaleRotate(
+          configs: configs,
+          activeLayer: _activeLayer!,
+          configEnabledHitVibration: helperLines.hitVibration,
+          details: details,
+          editorSize: sizesManager.editorSize,
+          layerTheme: imageEditorTheme.layerInteraction,
+          editorScaleFactor:
+              _interactiveViewer.currentState?.scaleFactor ?? 1.0,
+          editorScaleOffset:
+              _interactiveViewer.currentState?.offset ?? Offset.zero,
+        );
       _activeLayer!.key.currentState!.setState(() {});
       checkUpdateHelperLineUI();
       return;
@@ -817,29 +872,31 @@ class ProImageEditorState extends State<ProImageEditor>
 
     layerInteractionManager.enabledHitDetection = false;
     if (details.pointerCount == 1) {
-      layerInteractionManager.freeStyleHighPerformanceMoving =
-          paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile;
-      layerInteractionManager.calculateMovement(
-        editorScaleFactor: editorScaleFactor,
-        removeAreaKey: _removeAreaKey,
-        activeLayer: _activeLayer!,
-        context: context,
-        detail: details,
-        configEnabledHitVibration: helperLines.hitVibration,
-        onHoveredRemoveChanged: _controllers.removeBtnCtrl.add,
-      );
+      layerInteractionManager
+        ..freeStyleHighPerformanceMoving =
+            paintEditorConfigs.freeStyleHighPerformanceMoving ?? isWebMobile
+        ..calculateMovement(
+          editorScaleFactor: editorScaleFactor,
+          removeAreaKey: _removeAreaKey,
+          activeLayer: _activeLayer!,
+          context: context,
+          detail: details,
+          configEnabledHitVibration: helperLines.hitVibration,
+          onHoveredRemoveChanged: _controllers.removeBtnCtrl.add,
+        );
     } else if (details.pointerCount == 2) {
-      layerInteractionManager.freeStyleHighPerformanceScaling =
-          paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop;
-      layerInteractionManager.calculateScaleRotate(
-        editorScaleFactor: editorScaleFactor,
-        configs: configs,
-        activeLayer: _activeLayer!,
-        detail: details,
-        editorSize: sizesManager.editorSize,
-        screenPaddingHelper: sizesManager.imageMargin,
-        configEnabledHitVibration: helperLines.hitVibration,
-      );
+      layerInteractionManager
+        ..freeStyleHighPerformanceScaling =
+            paintEditorConfigs.freeStyleHighPerformanceScaling ?? !isDesktop
+        ..calculateScaleRotate(
+          editorScaleFactor: editorScaleFactor,
+          configs: configs,
+          activeLayer: _activeLayer!,
+          detail: details,
+          editorSize: sizesManager.editorSize,
+          screenPaddingHelper: sizesManager.imageMargin,
+          configEnabledHitVibration: helperLines.hitVibration,
+        );
     }
     mainEditorCallbacks?.handleUpdateLayer(_activeLayer!);
     _activeLayer?.key.currentState?.setState(() {});
@@ -848,7 +905,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Handle the end of a scaling operation.
   ///
-  /// This method is called when a scaling operation ends and resets helper lines and flags.
+  /// This method is called when a scaling operation ends and resets helper
+  /// lines and flags.
   void _onScaleEnd(ScaleEndDetails details) async {
     mainEditorCallbacks?.handleScaleEnd(details);
 
@@ -862,7 +920,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Handles tap events on a text layer.
   ///
-  /// This method opens a text editor for the specified text layer and updates the layer's properties
+  /// This method opens a text editor for the specified text layer and updates
+  /// the layer's properties
   /// based on the user's input.
   ///
   /// [layerData] - The text layer data to be edited.
@@ -886,8 +945,7 @@ class ProImageEditorState extends State<ProImageEditor>
     int i = activeLayers.indexWhere((element) => element.id == layerData.id);
     if (i >= 0) {
       _setTempLayer(layerData);
-      TextLayerData textLayer = activeLayers[i] as TextLayerData;
-      textLayer
+      (activeLayers[i] as TextLayerData)
         ..text = layer.text
         ..background = layer.background
         ..color = layer.color
@@ -911,12 +969,14 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleUpdateUI();
   }
 
-  /// Initializes the key event listener by adding a handler to the keyboard service.
+  /// Initializes the key event listener by adding a handler to the keyboard
+  /// service.
   void initKeyEventListener() {
     ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
   }
 
-  /// Removes the key event listener by removing the handler from the keyboard service.
+  /// Removes the key event listener by removing the handler from the keyboard
+  /// service.
   void removeKeyEventListener() {
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
   }
@@ -924,7 +984,8 @@ class ProImageEditorState extends State<ProImageEditor>
   void _selectLayerAfterHeroIsDone(String id) {
     if (layerInteractionManager.layersAreSelectable(configs) &&
         layerInteraction.initialSelected) {
-      /// Skip one frame to ensure captured image in seperate thread will not capture the border.
+      /// Skip one frame to ensure captured image in seperate thread will not
+      /// capture the border.
       Future.delayed(const Duration(milliseconds: 1), () async {
         if (isSubEditorOpen) await _pageOpenCompleter.future;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -1054,8 +1115,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the painting editor.
   ///
-  /// This method opens the painting editor and allows the user to draw on the current image.
-  /// After closing the painting editor, any changes made are applied to the image's layers.
+  /// This method opens the painting editor and allows the user to draw on the
+  /// current image.
+  /// After closing the painting editor, any changes made are applied to the
+  /// image's layers.
   void openPaintingEditor() async {
     List<PaintingLayerData>? paintingLayers =
         await openPage<List<PaintingLayerData>>(
@@ -1097,7 +1160,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the text editor.
   ///
-  /// This method opens the text editor, allowing the user to add or edit text layers on the image.
+  /// This method opens the text editor, allowing the user to add or edit text
+  /// layers on the image.
   void openTextEditor({
     /// Small Duration is important for a smooth hero animation
     Duration duration = const Duration(milliseconds: 150),
@@ -1123,11 +1187,12 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the crop rotate editor.
   ///
-  /// This method opens the crop editor, allowing the user to crop and rotate the image.
+  /// This method opens the crop editor, allowing the user to crop and rotate
+  /// the image.
   void openCropRotateEditor() async {
     if (!_inited) await _decodeImageCompleter.future;
 
-    openPage<TransformConfigs?>(
+    await openPage<TransformConfigs?>(
       CropRotateEditor.autoSource(
         key: cropRotateEditor,
         file: editorImage.file,
@@ -1157,7 +1222,7 @@ class ProImageEditorState extends State<ProImageEditor>
             ).updatedLayers;
 
             _imageInfos = null;
-            decodeImage(transformConfigs);
+            unawaited(decodeImage(transformConfigs));
             addHistory(
               transformConfigs: transformConfigs,
               layers: updatedLayers,
@@ -1185,11 +1250,14 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the filter editor.
   ///
-  /// This method allows the user to apply filters to the current image and replaces the image
+  /// This method allows the user to apply filters to the current image and
+  /// replaces the image
   /// with the filtered version if a filter is applied.
   ///
-  /// The filter editor is opened as a page, and the resulting filtered image is received as a
-  /// `Uint8List`. If no filter is applied or the operation is canceled, the original image is retained.
+  /// The filter editor is opened as a page, and the resulting filtered image
+  /// is received as a
+  /// `Uint8List`. If no filter is applied or the operation is canceled, the
+  /// original image is retained.
   void openFilterEditor() async {
     if (!mounted) return;
     FilterMatrix? filters = await openPage(
@@ -1263,11 +1331,14 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the emoji editor.
   ///
-  /// This method opens the emoji editor as a modal bottom sheet, allowing the user to add emoji
-  /// layers to the current image. The selected emoji layer's properties, such as scale and offset,
+  /// This method opens the emoji editor as a modal bottom sheet, allowing the
+  /// user to add emoji
+  /// layers to the current image. The selected emoji layer's properties, such
+  /// as scale and offset,
   /// are adjusted before adding it to the image's layers.
   ///
-  /// Keyboard event handlers are temporarily removed while the emoji editor is active and restored
+  /// Keyboard event handlers are temporarily removed while the emoji editor is
+  /// active and restored
   /// after its closure.
   void openEmojiEditor() async {
     setState(() => layerInteractionManager.selectedLayerId = '');
@@ -1392,8 +1463,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Undo the last editing action.
   ///
-  /// This function allows the user to undo the most recent editing action performed on the image.
-  /// It decreases the edit position, and the image is decoded to reflect the previous state.
+  /// This function allows the user to undo the most recent editing action
+  /// performed on the image.
+  /// It decreases the edit position, and the image is decoded to reflect
+  /// the previous state.
   void undoAction() {
     if (stateManager.position > 0) {
       setState(() {
@@ -1408,8 +1481,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Redo the previously undone editing action.
   ///
-  /// This function allows the user to redo an editing action that was previously undone using the
-  /// `undoAction` function. It increases the edit position, and the image is decoded to reflect
+  /// This function allows the user to redo an editing action that was
+  /// previously undone using the
+  /// `undoAction` function. It increases the edit position, and the image is
+  /// decoded to reflect
   /// the next state.
   void redoAction() {
     if (stateManager.position < stateHistory.length - 1) {
@@ -1425,16 +1500,19 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Takes a screenshot of the current editor state.
   ///
-  /// This method is intended to be used for capturing the current state of the editor
-  /// and saving it as an image.
+  /// This method is intended to be used for capturing the current state of the
+  /// editor and saving it as an image.
   ///
-  /// - If a subeditor is currently open, the method waits until it is fully loaded.
-  /// - The screenshot is taken in a post-frame callback to ensure the UI is fully rendered.
+  /// - If a subeditor is currently open, the method waits until it is fully
+  ///   loaded.
+  /// - The screenshot is taken in a post-frame callback to ensure the UI is
+  ///   fully rendered.
   void _takeScreenshot() async {
     // Wait for the editor to be fully open, if it is currently opening
     if (isSubEditorOpen) await _pageOpenCompleter.future;
 
-    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered
+    // Capture the screenshot in a post-frame callback to ensure the UI is fully
+    // rendered
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_imageInfos == null) await decodeImage();
 
@@ -1449,13 +1527,14 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Complete the editing process and return the edited image.
   ///
-  /// This function is called when the user is done editing the image. If no changes have been made
-  /// or if the image has no additional layers, it cancels the editing process and closes the editor.
-  /// Otherwise, it captures the current state of the image, including any applied changes or layers,
+  /// This function is called when the user is done editing the image. If no
+  /// changes have been made or if the image has no additional layers, it
+  /// cancels the editing process and closes the editor. Otherwise, it captures
+  /// the current state of the image, including any applied changes or layers,
   /// and returns it as a byte array.
   ///
-  /// Before returning the edited image, a loading dialog is displayed to indicate that the operation
-  /// is in progress.
+  /// Before returning the edited image, a loading dialog is displayed to
+  /// indicate that the operation is in progress.
   void doneEditing() async {
     if (_processFinalImage) return;
     if (stateManager.position <= 0 && activeLayers.isEmpty) {
@@ -1465,7 +1544,8 @@ class ProImageEditorState extends State<ProImageEditor>
     }
     callbacks.onImageEditingStarted?.call();
 
-    /// Hide every unnessacary element that Screenshot Controller will capture a correct image.
+    /// Hide every unnessacary element that Screenshot Controller will capture
+    /// a correct image.
     setState(() {
       _processFinalImage = true;
       layerInteractionManager.selectedLayerId = '';
@@ -1486,12 +1566,15 @@ class ProImageEditorState extends State<ProImageEditor>
       if (callbacks.onThumbnailGenerated != null) {
         if (_imageInfos == null) await decodeImage();
 
-        final List<dynamic> results = await Future.wait([
+        final results = await Future.wait([
           captureEditorImage(),
           _controllers.screenshot.getOriginalImage(imageInfos: _imageInfos!),
         ]);
 
-        await callbacks.onThumbnailGenerated!(results[0], results[1]);
+        await callbacks.onThumbnailGenerated!(
+          results[0] as Uint8List,
+          results[1] as ui.Image,
+        );
       } else {
         Uint8List? bytes = await captureEditorImage();
         await onImageEditingComplete?.call(bytes);
@@ -1509,9 +1592,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Captures the final editor image.
   ///
   /// This method generates the final image of the editor content, taking
-  /// into account the pixel ratio for high-resolution images. If `generateOnlyImageBounds`
-  /// is set in `imageGenerationConfigs`, it uses the base pixel ratio; otherwise, it uses
-  /// the maximum of the base pixel ratio and the device's pixel ratio.
+  /// into account the pixel ratio for high-resolution images. If
+  /// `generateOnlyImageBounds` is set in `imageGenerationConfigs`, it uses the
+  /// base pixel ratio; otherwise, it uses the maximum of the base pixel ratio
+  /// and the device's pixel ratio.
   ///
   /// Returns a [Uint8List] representing the final image.
   ///
@@ -1540,7 +1624,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Close the image editor.
   ///
-  /// This function allows the user to close the image editor without saving any changes or edits.
+  /// This function allows the user to close the image editor without saving
+  /// any changes or edits.
   /// It navigates back to the previous screen or closes the modal editor.
   void closeEditor() {
     if (stateManager.position <= 0) {
@@ -1613,13 +1698,19 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Imports state history and performs necessary recalculations.
   ///
-  /// If [ImportStateHistory.configs.recalculateSizeAndPosition] is `true`, it recalculates the position and size of layers.
-  /// It adjusts the scale and offset of each layer based on the image size and the editor's dimensions.
+  /// If [ImportStateHistory.configs.recalculateSizeAndPosition] is `true`, it
+  /// recalculates the position and size of layers.
+  /// It adjusts the scale and offset of each layer based on the image size and
+  /// the editor's dimensions.
   ///
-  /// If [ImportStateHistory.configs.mergeMode] is [ImportEditorMergeMode.replace], it replaces the current state history with the imported one.
-  /// Otherwise, it merges the imported state history with the current one based on the merge mode.
+  /// If [ImportStateHistory.configs.mergeMode] is
+  /// [ImportEditorMergeMode.replace], it replaces the current state history
+  /// with the imported one.
+  /// Otherwise, it merges the imported state history with the current one
+  /// based on the merge mode.
   ///
-  /// After importing, it updates the UI by calling [setState()] and the optional [onUpdateUI] callback.
+  /// After importing, it updates the UI by calling [setState()] and the
+  /// optional [onUpdateUI] callback.
   void importStateHistory(ImportStateHistory import) {
     /// Recalculate position and size
     if (import.configs.recalculateSizeAndPosition ||
@@ -1640,14 +1731,14 @@ class ProImageEditorState extends State<ProImageEditor>
             // Choose the middle value between scaleWidth and scaleHeight
             double scale = (scaleWidth + scaleHeight) / 2;
 
-            // Adjust the scale
-            layer.scale *= scale;
-
-            // Adjust the offset
-            layer.offset = Offset(
-              layer.offset.dx * scaleWidth,
-              layer.offset.dy * scaleHeight,
-            );
+            layer
+              // Adjust the scale
+              ..scale *= scale
+              // Adjust the offset
+              ..offset = Offset(
+                layer.offset.dx * scaleWidth,
+                layer.offset.dy * scaleHeight,
+              );
           }
           if (import.version == ExportImportVersion.version_1_0_0) {
             layer.offset -= Offset(
@@ -1662,19 +1753,19 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     if (import.configs.mergeMode == ImportEditorMergeMode.replace) {
-      stateManager.screenshots = [];
-
-      stateManager.position =
-          import.editorPosition + (import.stateHistory.isEmpty ? 0 : 1);
-      stateManager.stateHistory = [
-        EditorStateHistory(
-          transformConfigs: TransformConfigs.empty(),
-          blur: 0,
-          filters: [],
-          layers: [],
-        ),
-        ...import.stateHistory
-      ];
+      stateManager
+        ..screenshots = []
+        ..position =
+            import.editorPosition + (import.stateHistory.isEmpty ? 0 : 1)
+        ..stateHistory = [
+          EditorStateHistory(
+            transformConfigs: TransformConfigs.empty(),
+            blur: 0,
+            filters: [],
+            layers: [],
+          ),
+          ...import.stateHistory
+        ];
       for (var i = 0; i < import.stateHistory.length; i++) {
         if (i < import.stateHistory.length - 1) {
           _controllers.screenshot
@@ -1715,9 +1806,12 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Exports the current state history.
   ///
-  /// `configs` specifies the export configurations, such as whether to include filters or layers.
+  /// `configs` specifies the export configurations, such as whether to include
+  /// filters or layers.
   ///
-  /// Returns an [ExportStateHistory] object containing the exported state history, image state history, image size, edit position, and export configurations.
+  /// Returns an [ExportStateHistory] object containing the exported state
+  /// history, image state history, image size, edit position, and export
+  /// configurations.
   Future<ExportStateHistory> exportStateHistory(
       {ExportEditorConfigs configs = const ExportEditorConfigs()}) async {
     if (_imageInfos == null) await decodeImage();
@@ -1763,20 +1857,21 @@ class ProImageEditorState extends State<ProImageEditor>
         child: ScreenResizeDetector(
           ignoreSafeArea: true,
           onResizeUpdate: (event) {
-            sizesManager.recalculateLayerPosition(
-              history: stateManager.stateHistory,
-              resizeEvent: ResizeEvent(
-                oldContentSize: Size(
-                  event.oldContentSize.width,
-                  event.oldContentSize.height - sizesManager.allToolbarHeight,
+            sizesManager
+              ..recalculateLayerPosition(
+                history: stateManager.stateHistory,
+                resizeEvent: ResizeEvent(
+                  oldContentSize: Size(
+                    event.oldContentSize.width,
+                    event.oldContentSize.height - sizesManager.allToolbarHeight,
+                  ),
+                  newContentSize: Size(
+                    event.newContentSize.width,
+                    event.newContentSize.height - sizesManager.allToolbarHeight,
+                  ),
                 ),
-                newContentSize: Size(
-                  event.newContentSize.width,
-                  event.newContentSize.height - sizesManager.allToolbarHeight,
-                ),
-              ),
-            );
-            sizesManager.lastScreenSize = event.newContentSize;
+              )
+              ..lastScreenSize = event.newContentSize;
           },
           onResizeEnd: (event) async {
             await decodeImage();
@@ -2260,18 +2355,16 @@ class ProImageEditorState extends State<ProImageEditor>
                               onScaleRotateDown: (details, layerOriginalSize) {
                                 selectedLayerIndex = i;
                                 layerInteractionManager
-                                        .rotateScaleLayerSizeHelper =
-                                    layerOriginalSize;
-                                layerInteractionManager
-                                        .rotateScaleLayerScaleHelper =
-                                    layerItem.scale;
+                                  ..rotateScaleLayerSizeHelper =
+                                      layerOriginalSize
+                                  ..rotateScaleLayerScaleHelper =
+                                      layerItem.scale;
                                 _checkInteractiveViewer();
                               },
                               onScaleRotateUp: (details) {
                                 layerInteractionManager
-                                    .rotateScaleLayerSizeHelper = null;
-                                layerInteractionManager
-                                    .rotateScaleLayerScaleHelper = null;
+                                  ..rotateScaleLayerSizeHelper = null
+                                  ..rotateScaleLayerScaleHelper = null;
                                 setState(() {
                                   selectedLayerIndex = -1;
                                 });

@@ -1,7 +1,20 @@
 import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+/// A widget that provides a custom pop behavior when a pop action is invoked
+/// and optionally returns a result.
 class ExtendedPopScope<T> extends StatelessWidget {
+  /// Creates an instance of [ExtendedPopScope].
+  ///
+  /// The [child] parameter is required and specifies the widget to be displayed
+  /// within the pop scope. The other parameters are optional:
+  const ExtendedPopScope({
+    super.key,
+    required this.child,
+    this.canPop = true,
+    this.onPopInvokedWithResult,
+  });
+
   /// The widget below this widget in the tree.
   ///
   /// {@macro flutter.widgets.ProxyWidget.child}
@@ -42,13 +55,6 @@ class ExtendedPopScope<T> extends StatelessWidget {
   /// feature will not animate when this boolean is false.
   /// {@endtemplate}
   final bool canPop;
-
-  const ExtendedPopScope({
-    super.key,
-    required this.child,
-    this.canPop = true,
-    this.onPopInvokedWithResult,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -8,13 +8,14 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 /// On web and non-iOS/macOS platforms, it displays a [CircularProgressIndicator].
 /// On iOS and macOS, it displays a [CupertinoActivityIndicator].
 class PlatformCircularProgressIndicator extends StatefulWidget {
-  final ProImageEditorConfigs configs;
-
   /// Creates a platform-aware circular progress indicator.
   const PlatformCircularProgressIndicator({
     super.key,
     required this.configs,
   });
+
+  /// A class representing configuration options for the Image Editor.
+  final ProImageEditorConfigs configs;
 
   @override
   State<PlatformCircularProgressIndicator> createState() =>

@@ -4,12 +4,26 @@ import 'dart:ui';
 // Project imports:
 import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dart';
 
+/// A helper class for managing transformation calculations in the image editor.
+///
+/// This class provides utilities for handling transformations related to the
+/// image and editor body sizes, offering a unified approach to scale
+/// calculations based on the current transformation configurations.
 class TransformHelper {
-  final Size mainBodySize;
-  final Size mainImageSize;
-  final Size editorBodySize;
-  final TransformConfigs? transformConfigs;
-
+  /// Creates an instance of [TransformHelper].
+  ///
+  /// The constructor initializes the sizes of the main body, main image, and
+  /// editor body, as well as optional transformation configurations.
+  ///
+  /// Example:
+  /// ```
+  /// TransformHelper(
+  ///   mainBodySize: Size(300, 400),
+  ///   mainImageSize: Size(600, 800),
+  ///   editorBodySize: Size(300, 400),
+  ///   transformConfigs: myTransformConfigs,
+  /// )
+  /// ```
   const TransformHelper({
     required this.mainBodySize,
     required this.mainImageSize,
@@ -17,6 +31,40 @@ class TransformHelper {
     this.transformConfigs,
   });
 
+  /// The size of the main body.
+  ///
+  /// This [Size] object represents the dimensions of the main body area in the
+  /// editor, providing a reference for scaling transformations.
+  final Size mainBodySize;
+
+  /// The size of the main image.
+  ///
+  /// This [Size] object represents the dimensions of the main image being
+  /// edited, affecting how transformations are applied relative to the image.
+  final Size mainImageSize;
+
+  /// The size of the editor body.
+  ///
+  /// This [Size] object represents the dimensions of the editor's visible
+  /// area, influencing how the image is scaled and displayed.
+  final Size editorBodySize;
+
+  /// Optional transformation configurations.
+  ///
+  /// This [TransformConfigs] object contains optional settings for
+  /// transformations, such as rotation and cropping, allowing for dynamic
+  /// adjustments.
+  final TransformConfigs? transformConfigs;
+
+  /// Calculates the scale factor for transformations.
+  ///
+  /// This getter computes the appropriate scale factor based on the current
+  /// body and image sizes, taking into account rotation and cropping
+  /// configurations.
+  ///
+  /// Returns:
+  /// - A double representing the scale factor used to transform the image
+  ///   within the editor body.
   double get scale {
     if (mainBodySize.isEmpty) return 1;
 

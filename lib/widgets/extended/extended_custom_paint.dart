@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 /// custom painters.
 /// The [child] parameter is the widget to be painted on.
 class ExtendedCustomPaint extends StatefulWidget {
+  /// A widget that extends [CustomPaint] with additional customization options.
   const ExtendedCustomPaint({
     super.key,
     this.initIsComplex = false,
@@ -44,10 +45,19 @@ class ExtendedCustomPaint extends StatefulWidget {
   State<ExtendedCustomPaint> createState() => ExtendedCustomPaintState();
 }
 
+/// The state for [ExtendedCustomPaint], managing the painting logic and
+/// properties.
 class ExtendedCustomPaintState extends State<ExtendedCustomPaint> {
+  /// Indicates whether the painting is complex.
   late bool isComplex;
+
+  /// Determines if the painting will change.
   late bool willChange;
+
+  /// The painter used for drawing on the foreground.
   late CustomPainter? foregroundPainter;
+
+  /// The painter used for drawing on the background.
   late CustomPainter? painter;
 
   @override

@@ -1,5 +1,32 @@
 /// Configuration settings for a draggable bottom sheet component.
 class ThemeDraggableSheet {
+  /// Creates an instance of [ThemeDraggableSheet] with customizable settings.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// ThemeDraggableSheet(
+  ///   initialChildSize: 0.5,
+  ///   minChildSize: 0.25,
+  ///   maxChildSize: 1.0,
+  ///   expand: false,
+  ///   snap: true,
+  ///   snapSizes: [0.25, 0.5, 0.75],
+  ///   snapAnimationDuration: Duration(milliseconds: 200),
+  ///   shouldCloseOnMinExtent: true,
+  /// )
+  /// ```
+  const ThemeDraggableSheet({
+    this.initialChildSize = 0.5,
+    this.minChildSize = 0.25,
+    this.maxChildSize = 1.0,
+    this.expand = false,
+    this.snap = false,
+    this.snapSizes,
+    this.snapAnimationDuration,
+    this.shouldCloseOnMinExtent = true,
+  });
+
   /// The initial size of the child as a fraction of the parent.
   ///
   /// Defaults to `0.5` (50% of the parent size).
@@ -39,31 +66,4 @@ class ThemeDraggableSheet {
   ///
   /// Defaults to `true`.
   final bool shouldCloseOnMinExtent;
-
-  /// Creates an instance of [ThemeDraggableSheet] with customizable settings.
-  ///
-  /// Example:
-  ///
-  /// ```dart
-  /// ThemeDraggableSheet(
-  ///   initialChildSize: 0.5,
-  ///   minChildSize: 0.25,
-  ///   maxChildSize: 1.0,
-  ///   expand: false,
-  ///   snap: true,
-  ///   snapSizes: [0.25, 0.5, 0.75],
-  ///   snapAnimationDuration: Duration(milliseconds: 200),
-  ///   shouldCloseOnMinExtent: true,
-  /// )
-  /// ```
-  const ThemeDraggableSheet({
-    this.initialChildSize = 0.5,
-    this.minChildSize = 0.25,
-    this.maxChildSize = 1.0,
-    this.expand = false,
-    this.snap = false,
-    this.snapSizes,
-    this.snapAnimationDuration,
-    this.shouldCloseOnMinExtent = true,
-  });
 }

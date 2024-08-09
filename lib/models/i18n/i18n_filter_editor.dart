@@ -1,23 +1,15 @@
+// ignore_for_file: public_member_api_docs
+
 /// Internationalization (i18n) settings for the Filter Editor component.
 class I18nFilterEditor {
-  /// Text for the bottom navigation bar item that opens the Filter Editor.
-  final String bottomNavigationBarText;
-
-  /// Text for the "Back" button in the Filter Editor.
-  final String back;
-
-  /// Text for the "Done" button in the Filter Editor.
-  final String done;
-
-  /// Internationalization settings for individual filters within the Filter Editor.
-  final I18nFilters filters;
-
-  /// Creates an instance of [I18nFilterEditor] with customizable internationalization settings.
+  /// Creates an instance of [I18nFilterEditor] with customizable
+  /// internationalization settings.
   ///
-  /// You can provide translations and messages specifically for the Filter Editor
-  /// component of your application. Customize the text for the bottom navigation bar,
-  /// messages such as "Filter is being applied," and filter-specific internationalization
-  /// settings using the [filters] parameter.
+  /// You can provide translations and messages specifically for the Filter
+  /// Editor component of your application. Customize the text for the bottom
+  /// navigation bar, messages such as "Filter is being applied," and
+  /// filter-specific internationalization settings using the [filters]
+  /// parameter.
   ///
   /// Example:
   ///
@@ -39,58 +31,33 @@ class I18nFilterEditor {
     this.done = 'Done',
     this.filters = const I18nFilters(),
   });
+
+  /// Text for the bottom navigation bar item that opens the Filter Editor.
+  final String bottomNavigationBarText;
+
+  /// Text for the "Back" button in the Filter Editor.
+  final String back;
+
+  /// Text for the "Done" button in the Filter Editor.
+  final String done;
+
+  /// Internationalization settings for individual filters within the Filter
+  /// Editor.
+  final I18nFilters filters;
 }
 
+/// A class representing internationalized strings for filter-related UI text.
+///
+/// This class provides a collection of localized strings used for displaying
+/// filter-related text in the user interface, enabling easy
+/// internationalization of filter names and descriptions.
 class I18nFilters {
-  final String none;
-  final String addictiveBlue;
-  final String addictiveRed;
-  final String aden;
-  final String amaro;
-  final String ashby;
-  final String brannan;
-  final String brooklyn;
-  final String charmes;
-  final String clarendon;
-  final String crema;
-  final String dogpatch;
-  final String earlybird;
-  final String f1977;
-  final String gingham;
-  final String ginza;
-  final String hefe;
-  final String helena;
-  final String hudson;
-  final String inkwell;
-  final String juno;
-  final String kelvin;
-  final String lark;
-  final String loFi;
-  final String ludwig;
-  final String maven;
-  final String mayfair;
-  final String moon;
-  final String nashville;
-  final String perpetua;
-  final String reyes;
-  final String rise;
-  final String sierra;
-  final String skyline;
-  final String slumber;
-  final String stinson;
-  final String sutro;
-  final String toaster;
-  final String valencia;
-  final String vesper;
-  final String walden;
-  final String willow;
-  final String xProII;
-
-  /// Creates an instance of [I18nFilters] with customizable internationalization settings.
+  /// Creates an instance of [I18nFilters] with customizable
+  /// internationalization settings.
   ///
-  /// You can provide translations and messages for each filter available in your
-  /// Filter Editor component. Customize the text for filter names and messages
-  /// such as "Filter is being applied."
+  /// You can provide translations and messages for each filter available in
+  /// your Filter Editor component. Customize the text for filter names and
+  /// messages such as "Filter is being applied."
   ///
   /// Example:
   ///
@@ -148,6 +115,49 @@ class I18nFilters {
     this.willow = 'Willow',
     this.xProII = 'X-Pro II',
   });
+  final String none;
+  final String addictiveBlue;
+  final String addictiveRed;
+  final String aden;
+  final String amaro;
+  final String ashby;
+  final String brannan;
+  final String brooklyn;
+  final String charmes;
+  final String clarendon;
+  final String crema;
+  final String dogpatch;
+  final String earlybird;
+  final String f1977;
+  final String gingham;
+  final String ginza;
+  final String hefe;
+  final String helena;
+  final String hudson;
+  final String inkwell;
+  final String juno;
+  final String kelvin;
+  final String lark;
+  final String loFi;
+  final String ludwig;
+  final String maven;
+  final String mayfair;
+  final String moon;
+  final String nashville;
+  final String perpetua;
+  final String reyes;
+  final String rise;
+  final String sierra;
+  final String skyline;
+  final String slumber;
+  final String stinson;
+  final String sutro;
+  final String toaster;
+  final String valencia;
+  final String vesper;
+  final String walden;
+  final String willow;
+  final String xProII;
 
   /// Retrieves the localized translation for a given filter name.
   ///

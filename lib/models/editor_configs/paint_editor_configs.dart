@@ -27,6 +27,37 @@ import '../../modules/paint_editor/utils/paint_editor_enum.dart';
 /// );
 /// ```
 class PaintEditorConfigs {
+  /// Creates an instance of PaintEditorConfigs with optional settings.
+  ///
+  /// By default, the editor is enabled, and most drawing tools are enabled.
+  /// Other properties are set to reasonable defaults.
+  const PaintEditorConfigs({
+    this.enabled = true,
+    this.editorIsZoomable = false,
+    this.editorMinScale = 1.0,
+    this.editorMaxScale = 5.0,
+    this.hasOptionFreeStyle = true,
+    this.hasOptionArrow = true,
+    this.hasOptionLine = true,
+    this.hasOptionRect = true,
+    this.hasOptionCircle = true,
+    this.hasOptionDashLine = true,
+    this.hasOptionEraser = true,
+    this.canToggleFill = true,
+    this.canChangeLineWidth = true,
+    this.canChangeOpacity = true,
+    this.initialFill = false,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
+    this.freeStyleHighPerformanceScaling,
+    this.freeStyleHighPerformanceMoving,
+    this.freeStyleHighPerformanceHero = false,
+    this.initialPaintMode = PaintModeE.freeStyle,
+  })  : assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale'),
+        assert(editorMaxScale > editorMinScale,
+            'editorMaxScale must be greater than editorMinScale');
+
   /// Indicates whether the paint editor is enabled.
   final bool enabled;
 
@@ -73,10 +104,13 @@ class PaintEditorConfigs {
   /// Indicates the initial fill state.
   final bool initialFill;
 
-  /// Enables high-performance scaling for free-style drawing when set to `true`.
+  /// Enables high-performance scaling for free-style drawing when set to
+  /// `true`.
   ///
-  /// When this option is enabled, it optimizes scaling for improved performance.
-  /// By default, it's set to `true` on mobile devices and `false` on desktop devices.
+  /// When this option is enabled, it optimizes scaling for improved
+  /// performance.
+  /// By default, it's set to `true` on mobile devices and `false` on desktop
+  /// devices.
   final bool? freeStyleHighPerformanceScaling;
 
   /// Enables high-performance moving for free-style drawing when set to `true`.
@@ -85,9 +119,11 @@ class PaintEditorConfigs {
   /// By default, it's set to `true` only on mobile-web devices.
   final bool? freeStyleHighPerformanceMoving;
 
-  /// Enables high-performance hero-animations for free-style drawing when set to `true`.
+  /// Enables high-performance hero-animations for free-style drawing when set
+  /// to `true`.
   ///
-  /// When this option is enabled, it optimizes hero-animations for improved performance.
+  /// When this option is enabled, it optimizes hero-animations for improved
+  /// performance.
   /// By default, it's set to `false`.
   final bool freeStyleHighPerformanceHero;
 
@@ -97,7 +133,8 @@ class PaintEditorConfigs {
   /// The minimum scale factor for the editor.
   ///
   /// This value determines the lowest level of zoom that can be applied to the
-  /// editor content. It only has an effect when [editorIsZoomable] is set to `true`.
+  /// editor content. It only has an effect when [editorIsZoomable] is set to
+  /// `true`.
   /// If [editorIsZoomable] is `false`, this value is ignored.
   ///
   /// Default value is 1.0.
@@ -106,7 +143,8 @@ class PaintEditorConfigs {
   /// The maximum scale factor for the editor.
   ///
   /// This value determines the highest level of zoom that can be applied to the
-  /// editor content. It only has an effect when [editorIsZoomable] is set to `true`.
+  /// editor content. It only has an effect when [editorIsZoomable] is set to
+  /// `true`.
   /// If [editorIsZoomable] is `false`, this value is ignored.
   ///
   /// Default value is 5.0.
@@ -117,35 +155,4 @@ class PaintEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
-
-  /// Creates an instance of PaintEditorConfigs with optional settings.
-  ///
-  /// By default, the editor is enabled, and most drawing tools are enabled.
-  /// Other properties are set to reasonable defaults.
-  const PaintEditorConfigs({
-    this.enabled = true,
-    this.editorIsZoomable = false,
-    this.editorMinScale = 1.0,
-    this.editorMaxScale = 5.0,
-    this.hasOptionFreeStyle = true,
-    this.hasOptionArrow = true,
-    this.hasOptionLine = true,
-    this.hasOptionRect = true,
-    this.hasOptionCircle = true,
-    this.hasOptionDashLine = true,
-    this.hasOptionEraser = true,
-    this.canToggleFill = true,
-    this.canChangeLineWidth = true,
-    this.canChangeOpacity = true,
-    this.initialFill = false,
-    this.minScale = double.negativeInfinity,
-    this.maxScale = double.infinity,
-    this.freeStyleHighPerformanceScaling,
-    this.freeStyleHighPerformanceMoving,
-    this.freeStyleHighPerformanceHero = false,
-    this.initialPaintMode = PaintModeE.freeStyle,
-  })  : assert(maxScale >= minScale,
-            'maxScale must be greater than or equal to minScale'),
-        assert(editorMaxScale > editorMinScale,
-            'editorMaxScale must be greater than editorMinScale');
 }

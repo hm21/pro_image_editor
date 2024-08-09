@@ -12,16 +12,17 @@ import '../../../widgets/screen_resize_detector.dart';
 
 /// A helper class for managing screen size and padding calculations.
 class SizesManager {
+  /// Constructor for creating an instance of SizesManager.
+  SizesManager({
+    required this.context,
+    required this.configs,
+  });
+
   /// The build context used to obtain screen size information.
   final BuildContext context;
 
   /// Configuration options for the image editor.
   final ProImageEditorConfigs configs;
-
-  SizesManager({
-    required this.context,
-    required this.configs,
-  });
 
   /// Returns the height of the app bar.
   double appBarHeight = 0;
@@ -41,7 +42,8 @@ class SizesManager {
   /// The raw image size.
   Size? originalImageSize;
 
-  /// Represents a temporary decoded image size which is required for screen resizing.
+  /// Represents a temporary decoded image size which is required for screen
+  /// resizing.
   Size temporaryDecodedImageSize = const Size(0, 0);
 
   /// Getter for the screen inner height, excluding top and bottom padding.
@@ -67,13 +69,21 @@ class SizesManager {
                 decodedImageSize.width) /
             2,
       );
+
+  /// Calculates the gaps around the image on the screen using padding and
+  /// toolbar height.
   EdgeInsets get imageScreenGaps => EdgeInsets.only(
+        /// Calculates the top gap based on screen height, padding, image
+        /// height, and toolbar height, centered vertically.
         top: (screen.height -
                 screenPadding.top -
                 screenPadding.bottom -
                 decodedImageSize.height -
                 allToolbarHeight) /
             2,
+
+        /// Calculates the left gap based on screen width, padding, and image
+        /// width, centered horizontally.
         left: (screen.width -
                 screenPadding.left -
                 screenPadding.right -
@@ -81,7 +91,11 @@ class SizesManager {
             2,
       );
 
+  /// Calculates the vertical center position of the editor.
   double editorCenterY(int selectedLayerIndex) =>
+
+      /// Computes the vertical center by subtracting the heights of the
+      /// app bar and bottom bar from the editor's total height.
       (editorSize.height - appBarHeight - bottomBarHeight) / 2;
 
   /// Stores the last recorded screen size.
@@ -93,7 +107,8 @@ class SizesManager {
   /// Stores the last recorded editor size.
   Size editorSize = Size.zero;
 
-  /// Recalculates the position and scale of layers based on the temporary decoded image size.
+  /// Recalculates the position and scale of layers based on the temporary
+  /// decoded image size.
   void recalculateLayerPosition({
     required List<EditorStateHistory> history,
     required ResizeEvent resizeEvent,
@@ -130,11 +145,12 @@ class SizesManager {
       );
       if (scaleFactor != 0) {
         for (var layer in el.layers) {
-          layer.scale /= scaleFactor;
-          layer.offset = Offset(
-            layer.offset.dx / scaleFactor,
-            layer.offset.dy / scaleFactor,
-          );
+          layer
+            ..scale /= scaleFactor
+            ..offset = Offset(
+              layer.offset.dx / scaleFactor,
+              layer.offset.dy / scaleFactor,
+            );
         }
       }
     }

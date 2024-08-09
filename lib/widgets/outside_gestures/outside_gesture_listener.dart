@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'outside_gesture_behavior.dart';
 import 'outside_render_proxy_box.dart';
 
+/// Extends the OutsideListener
 class OutsideListener extends SingleChildRenderObjectWidget {
   /// Creates a widget that forwards point events to callbacks.
   ///
@@ -117,12 +118,13 @@ class OutsideListener extends SingleChildRenderObjectWidget {
       if (onPointerPanZoomEnd != null) 'panZoomEnd',
       if (onPointerSignal != null) 'signal',
     ];
-    properties.add(
-        IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'));
-    properties.add(EnumProperty<OutsideHitTestBehavior>('behavior', behavior));
+    properties
+      ..add(IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'))
+      ..add(EnumProperty<OutsideHitTestBehavior>('behavior', behavior));
   }
 }
 
+/// Extends the OutsidePointerListener
 class OutsideRenderPointerListener
     extends OutsideRenderProxyBoxWithHitTestBehavior {
   /// Creates a render object that forwards pointer events to callbacks.

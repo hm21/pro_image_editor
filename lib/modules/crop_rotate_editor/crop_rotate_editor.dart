@@ -41,26 +41,25 @@ import 'widgets/crop_corner_painter.dart';
 
 export 'widgets/crop_aspect_ratio_options.dart';
 
-/// The `CropRotateEditor` widget allows users to editing images with crop, flip and rotate tools.
+/// The `CropRotateEditor` widget allows users to editing images with crop, flip
+/// and rotate tools.
 ///
-/// You can create a `CropRotateEditor` using one of the factory methods provided:
+/// You can create a `CropRotateEditor` using one of the factory methods
+/// provided:
 /// - `CropRotateEditor.file`: Loads an image from a file.
 /// - `CropRotateEditor.asset`: Loads an image from an asset.
 /// - `CropRotateEditor.network`: Loads an image from a network URL.
 /// - `CropRotateEditor.memory`: Loads an image from memory as a `Uint8List`.
-/// - `CropRotateEditor.autoSource`: Automatically selects the source based on provided parameters.
+/// - `CropRotateEditor.autoSource`: Automatically selects the source based on
+/// provided parameters.
 class CropRotateEditor extends StatefulWidget
     with StandaloneEditor<CropRotateEditorInitConfigs> {
-  @override
-  final CropRotateEditorInitConfigs initConfigs;
-  @override
-  final EditorImage editorImage;
-
   /// Constructs a `CropRotateEditor` widget.
   ///
   /// The [key] parameter is used to provide a key for the widget.
   /// The [editorImage] parameter specifies the image to be edited.
-  /// The [initConfigs] parameter specifies the initialization configurations for the editor.
+  /// The [initConfigs] parameter specifies the initialization configurations
+  /// for the editor.
   const CropRotateEditor._({
     super.key,
     required this.editorImage,
@@ -106,7 +105,8 @@ class CropRotateEditor extends StatefulWidget
     );
   }
 
-  /// Constructs a `CropRotateEditor` widget with an image loaded from a network URL.
+  /// Constructs a `CropRotateEditor` widget with an image loaded from a
+  /// network URL.
   factory CropRotateEditor.network(
     String networkUrl, {
     Key? key,
@@ -119,7 +119,8 @@ class CropRotateEditor extends StatefulWidget
     );
   }
 
-  /// Constructs a `CropRotateEditor` widget with an image loaded automatically based on the provided source.
+  /// Constructs a `CropRotateEditor` widget with an image loaded automatically
+  /// based on the provided source.
   ///
   /// Either [byteArray], [file], [networkUrl], or [assetPath] must be provided.
   factory CropRotateEditor.autoSource({
@@ -156,9 +157,14 @@ class CropRotateEditor extends StatefulWidget
       );
     } else {
       throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' "
+          'must be provided.');
     }
   }
+  @override
+  final CropRotateEditorInitConfigs initConfigs;
+  @override
+  final EditorImage editorImage;
 
   @override
   State<CropRotateEditor> createState() => CropRotateEditorState();
@@ -181,7 +187,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// A key used to access the state of the CropRotateGestureDetector widget.
   final _gestureKey = GlobalKey<CropRotateGestureDetectorState>();
 
-  /// A ScrollController for controlling the scrolling behavior of the bottom navigation bar.
+  /// A ScrollController for controlling the scrolling behavior of the bottom
+  /// navigation bar.
   late ScrollController _bottomBarScrollCtrl;
 
   /// Debounce object for handling the end of a scaling gesture.
@@ -205,7 +212,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Indicates whether interaction is currently active.
   bool _interactionActive = false;
 
-  /// Determines if the image sticks to the screen width based on the image width and content constraints.
+  /// Determines if the image sticks to the screen width based on the image
+  /// width and content constraints.
   bool get imageSticksToScreenWidth => _imgWidth >= editorBodySize.width;
 
   /// Determines if the image is rotated 90 degrees based on the rotation count.
@@ -245,7 +253,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The horizontal space for cropping.
   double _cropSpaceHorizontal = 0;
 
-  /// The ratio used for cropping, based on the aspect ratio and main image size.
+  /// The ratio used for cropping, based on the aspect ratio and main image
+  /// size.
   double get _ratio =>
       1 / (aspectRatio == 0 ? _mainImageSize.aspectRatio : aspectRatio);
 
@@ -261,7 +270,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The starting scale value for pinch gestures.
   double _startingPinchScale = 1;
 
-  /// Helper variable to store the initial scale value at the start of a scaling gesture.
+  /// Helper variable to store the initial scale value at the start of a
+  /// scaling gesture.
   double _scaleStartZoomHelper = 1;
 
   /// The starting translate offset for gestures.
@@ -273,7 +283,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The view rectangle for the cropping area.
   Rect _viewRect = Rect.zero;
 
-  /// Gets the size of the rendered image based on the constraints and rotation state.
+  /// Gets the size of the rendered image based on the constraints and rotation
+  /// state.
   Size get _renderedImgSize => Size(
         _rotated90deg
             ? _renderedImgConstraints.maxHeight
@@ -313,7 +324,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   bool _hasToolbar = true;
 
-  /// Sets the current mouse cursor and updates the widget that manages the cursor.
+  /// Sets the current mouse cursor and updates the widget that manages the
+  /// cursor.
   set _cursor(MouseCursor cursor) {
     _mouseCursor = cursor;
     _mouseCursorsKey.currentState?.setCursor(cursor);
@@ -540,7 +552,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     calcCropRect();
     _updateAllStates();
     // Skip a few frames to ensure image constraints are set correctly
-    Future.delayed(const Duration(milliseconds: 60)).whenComplete(() {
+    Future.delayed(const Duration(milliseconds: 60), () {
       calcCropRect();
       calcFitToScreen();
       _imageSizeIsDecoded = true;
@@ -549,18 +561,27 @@ class CropRotateEditorState extends State<CropRotateEditor>
     });
   }
 
+  /// Hides the fake hero widget and updates the related UI states.
   void hideFakeHero() {
+    /// Set the fake hero visibility flag to false.
     _showFakeHero = false;
+
+    /// Show other widgets by setting the flag to true.
     showWidgets = true;
+
+    /// Update the state of the crop painter with the current widget visibility.
     cropPainterKey.currentState?.update(
       isComplex: showWidgets,
       willChange: showWidgets,
     );
 
+    /// Animate the opacity transition for the painter.
     loopWithTransitionTiming(
       (double curveT) {
+        /// Adjust the painter opacity based on the transition curve.
         _painterOpacity = 1 * curveT;
 
+        /// Update the crop painter with the new opacity.
         cropPainterKey.currentState?.update(foregroundPainter: cropPainter);
       },
       mounted: mounted,
@@ -570,6 +591,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       onDone: takeScreenshot,
     );
 
+    /// Call the method to update all states.
     _updateAllStates();
   }
 
@@ -713,7 +735,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     if (!widget.initConfigs.convertToUint8List) return;
 
     await setImageInfos(activeHistory: activeHistory, forceUpdate: true);
-    // Capture the screenshot in a post-frame callback to ensure the UI is fully rendered.
+    // Capture the screenshot in a post-frame callback to ensure the UI is
+    //fully rendered.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (initinalTransformConfigs == null &&
           history.length == 1 &&
@@ -867,7 +890,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
           (cropRect.height + _cropSpaceVertical) > _renderedImgSize.height;
       double ratio = cropRect.size.aspectRatio;
 
-      /// If the croprect is to small or it will fit to both sizes we choose from the aspect ratio.
+      /// If the croprect is to small or it will fit to both sizes we choose
+      /// from the aspect ratio.
       if ((fitToWidth && fitToHeight) ||
           (!fitToHeight &&
               !fitToWidth &&
@@ -893,7 +917,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       /// Seems like this calculation is not required but it there is an issue
       /// we should multiply it below with the scaleFactor
-      /// double scaleFitFactor = oldScaleAnimationValue == null || _renderedImgSize.aspectRatio < ratio ?
+      /// double scaleFitFactor = oldScaleAnimationValue == null ||
+      /// _renderedImgSize.aspectRatio < ratio ?
       ///     1 :
       ///     scaleAnimation.value / oldScaleAnimationValue;
 
@@ -931,14 +956,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
     });
   }
 
-  /// Updates the current aspect ratio with a new value and adds a new history entry.
+  /// Updates the current aspect ratio with a new value and adds a new history
+  /// entry.
   ///
   /// This method performs the following steps:
   /// 1. Resets the editor state while skipping the addition of a history entry.
   /// 2. Updates the aspect ratio to the provided value.
   /// 3. Triggers any necessary callbacks related to the new aspect ratio.
   /// 4. Recalculates the crop rectangle and fits it to the screen.
-  /// 5. Adds a new history entry with the current scale factor and a rotation angle of zero.
+  /// 5. Adds a new history entry with the current scale factor and a rotation
+  /// angle of zero.
   /// 6. Updates all relevant states in the editor.
   void updateAspectRatio(double value) {
     reset(skipAddHistory: true);
@@ -1613,7 +1640,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
             2 /
             targetZoom;
 
-    /// direct double clamp trigger an error on android samsung s10 so better use own solution to clamp
+    /// direct double clamp trigger an error on android samsung s10 so better
+    /// use own solution to clamp
     targetOffset = Offset(
       clampValue(targetOffset.dx, -maxOffsetX, maxOffsetX),
       clampValue(targetOffset.dy, -maxOffsetY, maxOffsetY),
@@ -1748,7 +1776,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           return SystemMouseCursors.resizeUpRight;
         default:
           if (kDebugMode) {
-            throw ErrorDescription('Invalid cursor number!');
+            throw ArgumentError('Invalid cursor number!');
           } else {
             debugPrint('Invalid cursor number!');
             return SystemMouseCursors.basic;
@@ -1787,7 +1815,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           return SystemMouseCursors.resizeUp;
         default:
           if (kDebugMode) {
-            throw ErrorDescription('Invalid cursor number!');
+            throw ArgumentError('Invalid cursor number!');
           } else {
             debugPrint('Invalid cursor number!');
             return SystemMouseCursors.basic;
@@ -1893,7 +1921,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
   }
 
-  /// Builds the app bar for the editor, including buttons for actions such as back, rotate, aspect ratio, and done.
+  /// Builds the app bar for the editor, including buttons for actions such as
+  /// back, rotate, aspect ratio, and done.
   PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
     if (customWidgets.cropRotateEditor.appBar != null) {
       var customToolbar = customWidgets.cropRotateEditor.appBar!
@@ -2126,8 +2155,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildEventListener({required Widget child}) {
-    /// Controll the GestureDetector directly from this OutsideListener that both
-    /// listeners can't block the events between them
+    /// Controll the GestureDetector directly from this OutsideListener that
+    /// both listeners can't block the events between them
     return OutsideListener(
       behavior: OutsideHitTestBehavior.all,
       onPointerDown: (event) {

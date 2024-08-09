@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.2
+
+- **STYLE**: Add extensive lint tests to enhance code quality
+
+
 ## 5.0.1
 
 - **FIX**(loading-dialog): The loading dialog will now close correctly regardless of the animation builder's state, preventing potential UI freezes or blocks.

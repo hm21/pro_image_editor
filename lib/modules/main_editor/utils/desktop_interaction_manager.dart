@@ -10,21 +10,29 @@ import 'package:flutter/services.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import '../../../models/layer/layer.dart';
 
-/// A manager class responsible for handling desktop interactions in the image editor.
+/// A manager class responsible for handling desktop interactions in the image
+/// editor.
 ///
-/// The `DesktopInteractionManager` class provides methods for responding to keyboard
-/// and mouse events on desktop platforms. It enables users to perform actions such
-/// as zooming, rotating, and navigating layers using keyboard shortcuts and mouse
-/// scroll wheel movements.
+/// The `DesktopInteractionManager` class provides methods for responding to
+/// keyboard and mouse events on desktop platforms. It enables users to perform
+/// actions such as zooming, rotating, and navigating layers using keyboard
+/// shortcuts and mouse scroll wheel movements.
 class DesktopInteractionManager {
-  final BuildContext context;
-  final Function? onUpdateUI;
-  final Function setState;
-  final ProImageEditorConfigs configs;
-
-  bool _ctrlDown = false;
-  bool _shiftDown = false;
-
+  /// Creates an instance of [DesktopInteractionManager].
+  ///
+  /// The constructor initializes the context, update callback, state setter,
+  /// and configuration settings for managing desktop interactions in the
+  /// image editor.
+  ///
+  /// Example:
+  /// ```
+  /// DesktopInteractionManager(
+  ///   context: myContext,
+  ///   onUpdateUI: myUpdateUICallback,
+  ///   setState: mySetStateFunction,
+  ///   configs: myEditorConfigs,
+  /// )
+  /// ```
   DesktopInteractionManager({
     required this.context,
     required this.onUpdateUI,
@@ -32,10 +40,40 @@ class DesktopInteractionManager {
     required this.configs,
   });
 
+  /// The build context associated with the desktop interaction manager.
+  ///
+  /// This [BuildContext] is used to access the widget tree and manage
+  /// interactions with the UI, such as displaying dialogs or updating widgets.
+  final BuildContext context;
+
+  /// Callback function to trigger UI updates.
+  ///
+  /// This optional [Function] is invoked to request updates to the user
+  /// interface, allowing for dynamic changes in response to interactions.
+  final Function? onUpdateUI;
+
+  /// Function to set the state within the widget.
+  ///
+  /// This [Function] is used to modify the state of the widget, enabling
+  /// changes to the UI based on user interactions or other events.
+  final Function setState;
+
+  /// Configuration settings for the image editor.
+  ///
+  /// This [ProImageEditorConfigs] object contains various configuration
+  /// options that influence the behavior and appearance of the image editor
+  /// during desktop interactions.
+  final ProImageEditorConfigs configs;
+
+  bool _ctrlDown = false;
+  bool _shiftDown = false;
+
   /// Handles keyboard events.
   ///
-  /// This method responds to key events and performs actions based on the pressed keys.
-  /// If the 'Escape' key is pressed and the widget is still mounted, it triggers the navigator to pop the current context.
+  /// This method responds to key events and performs actions based on the
+  /// pressed keys.
+  /// If the 'Escape' key is pressed and the widget is still mounted, it
+  /// triggers the navigator to pop the current context.
   bool onKey(
     KeyEvent event, {
     required Layer? activeLayer,
@@ -124,8 +162,9 @@ class DesktopInteractionManager {
             ? 0.15
             : configs.textEditorConfigs.initFontSize / 50;
     if (zoomIn) {
-      activeLayer.scale -= factor;
-      activeLayer.scale = max(0.1, activeLayer.scale);
+      activeLayer
+        ..scale -= factor
+        ..scale = max(0.1, activeLayer.scale);
     } else {
       activeLayer.scale += factor;
     }
@@ -158,8 +197,9 @@ class DesktopInteractionManager {
                 ? 0.15
                 : configs.textEditorConfigs.initFontSize / 50;
         if (event.scrollDelta.dy > 0) {
-          activeLayer.scale -= factor;
-          activeLayer.scale = max(0.1, activeLayer.scale);
+          activeLayer
+            ..scale -= factor
+            ..scale = max(0.1, activeLayer.scale);
         } else if (event.scrollDelta.dy < 0) {
           activeLayer.scale += factor;
         }

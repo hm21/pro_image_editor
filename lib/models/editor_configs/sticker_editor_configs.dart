@@ -18,9 +18,24 @@ import 'package:flutter/widgets.dart';
 /// );
 /// ```
 class StickerEditorConfigs {
+  /// Creates an instance of StickerEditorConfigs with optional settings.
+  ///
+  /// By default, the editor is disabled (if not specified), and other
+  /// properties are set to reasonable defaults.
+  const StickerEditorConfigs({
+    required this.buildStickers,
+    this.initWidth = 100,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
+    this.enabled = false,
+  })  : assert(initWidth > 0, 'initWidth must be positive'),
+        assert(maxScale >= minScale,
+            'maxScale must be greater than or equal to minScale');
+
   /// Indicates whether the sticker editor is enabled.
   ///
-  /// When set to `true`, the sticker editor is active and users can interact with it.
+  /// When set to `true`, the sticker editor is active and users can interact
+  /// with it.
   /// If `false`, the editor is disabled and does not respond to user inputs.
   final bool enabled;
 
@@ -43,21 +58,12 @@ class StickerEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
-
-  /// Creates an instance of StickerEditorConfigs with optional settings.
-  ///
-  /// By default, the editor is disabled (if not specified), and other properties
-  /// are set to reasonable defaults.
-  const StickerEditorConfigs({
-    required this.buildStickers,
-    this.initWidth = 100,
-    this.minScale = double.negativeInfinity,
-    this.maxScale = double.infinity,
-    this.enabled = false,
-  })  : assert(initWidth > 0, 'initWidth must be positive'),
-        assert(maxScale >= minScale,
-            'maxScale must be greater than or equal to minScale');
 }
 
+/// A typedef representing a function signature for building sticker widgets.
+///
+/// This typedef defines a function that builds a widget for stickers in an
+/// editor, allowing customization of how stickers are displayed and
+/// manipulated within the user interface.
 typedef BuildStickers = Widget Function(
     Function(Widget) setLayer, ScrollController scrollController);

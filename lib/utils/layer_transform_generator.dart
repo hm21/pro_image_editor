@@ -8,15 +8,31 @@ import '../models/crop_rotate_editor/transform_factors.dart';
 import '../modules/crop_rotate_editor/utils/rotate_angle.dart';
 import '../modules/main_editor/utils/layer_copy_manager.dart';
 
+/// A class for generating transformed layers in an image editor.
+///
+/// This class applies various transformations to a list of layers, including
+/// rotation, translation, flipping, and zooming. It initializes with the
+/// current and new transformation configurations and manages the updated
+/// layers after transformations.
 class LayerTransformGenerator {
-  final List<Layer> updatedLayers = [];
-  final TransformConfigs activeTransformConfigs;
-  final TransformConfigs newTransformConfigs;
-  final Size layerDrawAreaSize;
-  final bool undoChanges;
-  final double fitToScreenFactor;
-  final double transformHelperScale;
-
+  /// Creates an instance of [LayerTransformGenerator].
+  ///
+  /// The constructor initializes the transformation process by copying each
+  /// layer, applying the specified transformations, and storing the updated
+  /// layers in the [updatedLayers] list.
+  ///
+  /// Example:
+  /// ```
+  /// LayerTransformGenerator(
+  ///   layers: myLayers,
+  ///   undoChanges: false,
+  ///   activeTransformConfigs: activeConfigs,
+  ///   newTransformConfigs: newConfigs,
+  ///   layerDrawAreaSize: Size(500, 500),
+  ///   fitToScreenFactor: 1.0,
+  ///   transformHelperScale: 1.0,
+  /// )
+  /// ```
   LayerTransformGenerator({
     required List<Layer> layers,
     required this.undoChanges,
@@ -38,6 +54,48 @@ class LayerTransformGenerator {
       updatedLayers.add(layer);
     }
   }
+
+  /// A list of layers that have been updated with transformations.
+  ///
+  /// This list contains copies of the original layers, each modified according
+  /// to the specified transformations.
+  final List<Layer> updatedLayers = [];
+
+  /// The active transformation configurations.
+  ///
+  /// This [TransformConfigs] object contains the current transformation
+  /// settings applied to the layers, serving as a baseline for transformations.
+  final TransformConfigs activeTransformConfigs;
+
+  /// The new transformation configurations to apply.
+  ///
+  /// This [TransformConfigs] object contains the desired transformation
+  /// settings to be applied to the layers.
+  final TransformConfigs newTransformConfigs;
+
+  /// The size of the layer drawing area.
+  ///
+  /// This [Size] object represents the dimensions of the area where layers are
+  /// drawn, affecting how transformations are scaled.
+  final Size layerDrawAreaSize;
+
+  /// Indicates whether to undo changes.
+  ///
+  /// This boolean flag determines if the transformations should be reverted,
+  /// allowing for undo functionality.
+  final bool undoChanges;
+
+  /// The factor for fitting transformations to the screen.
+  ///
+  /// This double value specifies how transformations should be adjusted to
+  /// fit within the visible screen area.
+  final double fitToScreenFactor;
+
+  /// The scale factor used by the transform helper.
+  ///
+  /// This double value affects the overall scale of transformations, allowing
+  /// for additional scaling adjustments.
+  final double transformHelperScale;
 
   void _rotateLayer(Layer layer) {
     double rotationAngle =
@@ -97,14 +155,16 @@ class LayerTransformGenerator {
     }
 
     if (undoChanges) {
-      layer.offset /= activeTransformConfigs.scaleRotation;
-      layer.scale /= activeTransformConfigs.scaleRotation;
+      layer
+        ..offset /= activeTransformConfigs.scaleRotation
+        ..scale /= activeTransformConfigs.scaleRotation;
     } else {
       double scaleRotation = newTransformConfigs.scaleRotation /
           activeTransformConfigs.scaleRotation;
 
-      layer.offset *= scaleRotation;
-      layer.scale *= scaleRotation;
+      layer
+        ..offset *= scaleRotation
+        ..scale *= scaleRotation;
     }
   }
 
@@ -116,33 +176,37 @@ class LayerTransformGenerator {
 
     if (newTransformConfigs.is90DegRotated) {
       if (shouldFlipX) {
-        layer.flipY = !layer.flipY;
-        layer.offset = Offset(
-          layer.offset.dx,
-          -layer.offset.dy,
-        );
+        layer
+          ..flipY = !layer.flipY
+          ..offset = Offset(
+            layer.offset.dx,
+            -layer.offset.dy,
+          );
       }
       if (shouldFlipY) {
-        layer.flipX = !layer.flipX;
-        layer.offset = Offset(
-          -layer.offset.dx,
-          layer.offset.dy,
-        );
+        layer
+          ..flipX = !layer.flipX
+          ..offset = Offset(
+            -layer.offset.dx,
+            layer.offset.dy,
+          );
       }
     } else {
       if (shouldFlipX) {
-        layer.flipX = !layer.flipX;
-        layer.offset = Offset(
-          -layer.offset.dx,
-          layer.offset.dy,
-        );
+        layer
+          ..flipX = !layer.flipX
+          ..offset = Offset(
+            -layer.offset.dx,
+            layer.offset.dy,
+          );
       }
       if (shouldFlipY) {
-        layer.flipY = !layer.flipY;
-        layer.offset = Offset(
-          layer.offset.dx,
-          -layer.offset.dy,
-        );
+        layer
+          ..flipY = !layer.flipY
+          ..offset = Offset(
+            layer.offset.dx,
+            -layer.offset.dy,
+          );
       }
     }
   }
@@ -202,7 +266,8 @@ class LayerTransformGenerator {
     double scale =
         newTransformConfigs.scaleUser / activeTransformConfigs.scaleUser;
 
-    layer.offset *= scale * transformHelperScale;
-    layer.scale *= scale * transformHelperScale;
+    layer
+      ..offset *= scale * transformHelperScale
+      ..scale *= scale * transformHelperScale;
   }
 }

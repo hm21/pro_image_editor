@@ -1,26 +1,27 @@
 // Dart imports:
 import 'dart:ui';
 
-// Flutter imports:
-import 'package:flutter/foundation.dart';
-
 // Project imports:
 import '../../../models/paint_editor/painted_model.dart';
 import 'paint_editor_enum.dart';
 
+/// Represents an element within the painting editor.
 class PaintElement {
   /// Draws an element on a canvas based on the specified mode and parameters.
   ///
-  /// This function is used to draw various elements such as freehand lines, straight
-  /// lines, arrows, dashed lines, rectangles, and circles on a canvas. The appearance
-  /// of the element is determined by the provided [mode] and additional parameters
-  /// such as [offsets], [painter], [scale], [start], and [end].
+  /// This function is used to draw various elements such as freehand lines,
+  /// straight lines, arrows, dashed lines, rectangles, and circles on a
+  /// canvas. The appearance of the element is determined by the provided
+  /// [mode] and additional parameters such as [offsets], [painter], [scale],
+  /// [start], and [end].
   ///
   /// - `canvas`: The canvas on which to draw the element.
   /// - `size`: The size of the canvas.
   /// - `scale`: The scaling factor applied to the coordinates of the element.
-  /// - `freeStyleHighPerformance`: Controls high-performance for free-style drawing.
-  /// - `item` Represents a unit of shape or drawing information used in painting.
+  /// - `freeStyleHighPerformance`: Controls high-performance for free-style
+  ///   drawing.
+  /// - `item` Represents a unit of shape or drawing information used in
+  ///   painting.
   void drawElement({
     required Canvas canvas,
     required Size size,
@@ -68,22 +69,24 @@ class PaintElement {
         canvas.drawPath(path, painter);
         break;
       default:
-        throw ErrorHint('$mode is not a valid PaintModeE');
+        throw ArgumentError('$mode is not a valid PaintModeE');
     }
   }
 
   /// Draws freehand lines on a canvas.
   ///
-  /// This function takes a list of [offsets] representing points and draws freehand
-  /// lines connecting those points on the specified [canvas] using the provided [painter].
+  /// This function takes a list of [offsets] representing points and draws
+  /// freehand lines connecting those points on the specified [canvas] using
+  /// the provided [painter].
   /// The lines are scaled by the given [scale].
   ///
   /// - [offsets]: A list of points representing the path of the freehand lines.
   /// - [canvas]: The canvas on which to draw the freehand lines.
-  /// - [painter]: The paint object specifying the appearance of the lines (e.g., color,
-  ///   stroke cap).
+  /// - [painter]: The paint object specifying the appearance of the lines
+  ///   (e.g., color, stroke cap).
   /// - [scale]: The scaling factor applied to the coordinates of the lines.
-  /// - [freeStyleHighPerformance]: Controls high-performance for freehand drawing.
+  /// - [freeStyleHighPerformance]: Controls high-performance for freehand
+  ///   drawing.
   void _drawFreeStyle({
     required List<Offset?> offsets,
     required Canvas canvas,
@@ -100,9 +103,10 @@ class PaintElement {
         final nextOffset = offsets[i + 1];
 
         if (currentOffset != null && nextOffset != null) {
-          path.reset();
-          path.moveTo(currentOffset.dx * scale, currentOffset.dy * scale);
-          path.lineTo(nextOffset.dx * scale, nextOffset.dy * scale);
+          path
+            ..reset()
+            ..moveTo(currentOffset.dx * scale, currentOffset.dy * scale)
+            ..lineTo(nextOffset.dx * scale, nextOffset.dy * scale);
           canvas.drawPath(path, painter);
         } else if (currentOffset != null && nextOffset == null) {
           canvas.drawPoints(PointMode.points, [currentOffset], painter);
@@ -134,14 +138,15 @@ class PaintElement {
 
   /// Draws a line with an arrowhead on top of it.
   ///
-  /// This function is used to draw a line from the specified [start] point to the
-  /// [end] point using the provided [painter], and it also adds an arrowhead at
-  /// the [end] point.
+  /// This function is used to draw a line from the specified [start] point to
+  /// the [end] point using the provided [painter], and it also adds an
+  /// arrowhead at the [end] point.
   ///
   /// - `canvas`: The canvas on which to draw the arrow.
   /// - `start`: The starting point of the line.
   /// - `end`: The ending point of the line and the location of the arrowhead.
-  /// - `painter`: The paint object specifying the line's color, width, and style.
+  /// - `painter`: The paint object specifying the line's color, width, and
+  /// style.
   void _drawArrow(Canvas canvas, Offset start, Offset end, Paint painter) {
     final arrowPainter = Paint()
       ..color = painter.color
@@ -160,22 +165,24 @@ class PaintElement {
 
     // Save the canvas state, translate it to the end point, rotate it to match
     // the direction of the line, and then draw the arrowhead.
-    canvas.save();
-    canvas.translate(end.dx, end.dy);
-    canvas.rotate((end - start).direction);
-    canvas.drawPath(path, arrowPainter);
-    canvas.restore();
+    canvas
+      ..save()
+      ..translate(end.dx, end.dy)
+      ..rotate((end - start).direction)
+      ..drawPath(path, arrowPainter)
+      ..restore();
   }
 
   /// Draws a dashed path based on the provided path and stroke width.
   ///
-  /// This function takes an existing [path] and returns a new path that consists
-  /// of dashed segments. The spacing between dashes and the width of dashes depend
-  /// on the [width] parameter, which is typically the `strokeWidth` of the painter
-  /// used for drawing the path.
+  /// This function takes an existing [path] and returns a new path that
+  /// consists of dashed segments. The spacing between dashes and the width of
+  /// dashes depend on the [width] parameter, which is typically the
+  /// `strokeWidth` of the painter used for drawing the path.
   ///
   /// - [path]: The original path to be converted into a dashed path.
-  /// - [width]: The stroke width used to determine the proportion of spacing and dashes.
+  /// - [width]: The stroke width used to determine the proportion of spacing
+  ///   and dashes.
   ///
   /// Returns a new path representing the dashed line.
   void _drawDashLine(

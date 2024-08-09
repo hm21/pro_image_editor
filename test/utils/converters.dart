@@ -15,7 +15,7 @@ import '../fake/fake_image.dart';
 void main() {
   group('converters tests', () {
     test('fetchImageAsUint8List', () async {
-      mockNetworkImagesFor(() async {
+      await mockNetworkImagesFor(() async {
         final Uint8List imageBytes =
             await fetchImageAsUint8List(fakeNetworkImage);
 

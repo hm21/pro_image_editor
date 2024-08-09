@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'outside_gesture_behavior.dart';
 import 'outside_raw_gesture_detector.dart';
 
+/// Creates a widget that detects gestures.
 class OutsideGestureDetector extends StatelessWidget {
   /// Creates a widget that detects gestures.
   ///
@@ -104,7 +105,8 @@ class OutsideGestureDetector extends StatelessWidget {
               throw FlutterError.fromParts(<DiagnosticsNode>[
                 ErrorSummary('Incorrect GestureDetector arguments.'),
                 ErrorDescription(
-                  'Having both a pan gesture recognizer and a scale gesture recognizer is redundant; scale is a superset of pan.',
+                  'Having both a pan gesture recognizer and a scale gesture '
+                  'recognizer is redundant; scale is a superset of pan.',
                 ),
                 ErrorHint('Just use the scale gesture recognizer.'),
               ]);
@@ -113,8 +115,10 @@ class OutsideGestureDetector extends StatelessWidget {
             if (haveVerticalDrag && haveHorizontalDrag) {
               throw FlutterError(
                 'Incorrect GestureDetector arguments.\n'
-                'Simultaneously having a vertical drag gesture recognizer, a horizontal drag gesture recognizer, and a $recognizer gesture recognizer '
-                'will result in the $recognizer gesture recognizer being ignored, since the other two will catch all drags.',
+                'Simultaneously having a vertical drag gesture recognizer, a '
+                'horizontal drag gesture recognizer, and a $recognizer gesture'
+                'recognizer  will result in the $recognizer gesture recognizer '
+                'being ignored, since the other two will catch all drags.',
               );
             }
           }
@@ -180,8 +184,8 @@ class OutsideGestureDetector extends StatelessWidget {
   /// See also:
   ///
   ///  * [kSecondaryButton], the button this callback responds to.
-  ///  * [onSecondaryTapUp], which is called at the same time but includes details
-  ///    regarding the pointer position.
+  ///  * [onSecondaryTapUp], which is called at the same time but includes
+  /// details regarding the pointer position.
   final GestureTapCallback? onSecondaryTap;
 
   /// A pointer that might cause a tap with a secondary button has contacted the
@@ -296,8 +300,10 @@ class OutsideGestureDetector extends StatelessWidget {
   /// See also:
   ///
   ///  * [kPrimaryButton], the button this callback responds to.
-  ///  * [onSecondaryLongPressDown], a similar callback but for a secondary button.
-  ///  * [onTertiaryLongPressDown], a similar callback but for a tertiary button.
+  ///  * [onSecondaryLongPressDown], a similar callback but for a secondary
+  /// button.
+  ///  * [onTertiaryLongPressDown], a similar callback but for a tertiary
+  /// button.
   ///  * [LongPressGestureRecognizer.onLongPressDown], which exposes this
   ///    callback at the gesture layer.
   final GestureLongPressDownCallback? onLongPressDown;
@@ -318,12 +324,14 @@ class OutsideGestureDetector extends StatelessWidget {
   ///    callback at the gesture layer.
   final GestureLongPressCancelCallback? onLongPressCancel;
 
-  /// Called when a long press gesture with a primary button has been recognized.
+  /// Called when a long press gesture with a primary button has been
+  /// recognized.
   ///
   /// Triggered when a pointer has remained in contact with the screen at the
   /// same location for a long period of time.
   ///
-  /// This is equivalent to (and is called immediately after) [onLongPressStart].
+  /// This is equivalent to (and is called immediately after)
+  /// [onLongPressStart].
   /// The only difference between the two is that this callback does not
   /// contain details of the position at which the pointer initially contacted
   /// the screen.
@@ -335,7 +343,8 @@ class OutsideGestureDetector extends StatelessWidget {
   ///    callback at the gesture layer.
   final GestureLongPressCallback? onLongPress;
 
-  /// Called when a long press gesture with a primary button has been recognized.
+  /// Called when a long press gesture with a primary button has been
+  /// recognized.
   ///
   /// Triggered when a pointer has remained in contact with the screen at the
   /// same location for a long period of time.
@@ -404,7 +413,8 @@ class OutsideGestureDetector extends StatelessWidget {
   ///
   ///  * [kSecondaryButton], the button this callback responds to.
   ///  * [onLongPressDown], a similar callback but for a secondary button.
-  ///  * [onTertiaryLongPressDown], a similar callback but for a tertiary button.
+  ///  * [onTertiaryLongPressDown], a similar callback but for a tertiary
+  /// button.
   ///  * [LongPressGestureRecognizer.onSecondaryLongPressDown], which exposes
   ///    this callback at the gesture layer.
   final GestureLongPressDownCallback? onSecondaryLongPressDown;
@@ -466,7 +476,8 @@ class OutsideGestureDetector extends StatelessWidget {
   /// See also:
   ///
   ///  * [kSecondaryButton], the button this callback responds to.
-  ///  * [LongPressGestureRecognizer.onSecondaryLongPressMoveUpdate], which exposes
+  ///  * [LongPressGestureRecognizer.onSecondaryLongPressMoveUpdate], which
+  /// exposes
   ///    this callback at the gesture layer.
   final GestureLongPressMoveUpdateCallback? onSecondaryLongPressMoveUpdate;
 
@@ -513,7 +524,8 @@ class OutsideGestureDetector extends StatelessWidget {
   ///
   ///  * [kTertiaryButton], the button this callback responds to.
   ///  * [onLongPressDown], a similar callback but for a primary button.
-  ///  * [onSecondaryLongPressDown], a similar callback but for a secondary button.
+  ///  * [onSecondaryLongPressDown], a similar callback but for a secondary
+  /// button.
   ///  * [LongPressGestureRecognizer.onTertiaryLongPressDown], which exposes
   ///    this callback at the gesture layer.
   final GestureLongPressDownCallback? onTertiaryLongPressDown;
@@ -575,8 +587,8 @@ class OutsideGestureDetector extends StatelessWidget {
   /// See also:
   ///
   ///  * [kTertiaryButton], the button this callback responds to.
-  ///  * [LongPressGestureRecognizer.onTertiaryLongPressMoveUpdate], which exposes
-  ///    this callback at the gesture layer.
+  ///  * [LongPressGestureRecognizer.onTertiaryLongPressMoveUpdate], which
+  /// exposes this callback at the gesture layer.
   final GestureLongPressMoveUpdateCallback? onTertiaryLongPressMoveUpdate;
 
   /// A pointer that has triggered a long-press with a tertiary button has
@@ -767,7 +779,8 @@ class OutsideGestureDetector extends StatelessWidget {
   /// detecting screens.
   final GestureForcePressUpdateCallback? onForcePressUpdate;
 
-  /// The pointer tracked by [onForcePressStart] is no longer in contact with the screen.
+  /// The pointer tracked by [onForcePressStart] is no longer in contact with
+  /// the screen.
   ///
   /// This callback will only be fired on devices with pressure
   /// detecting screens.
@@ -777,8 +790,8 @@ class OutsideGestureDetector extends StatelessWidget {
   /// how the hit test propagates to children and whether to consider targets
   /// behind this one.
   ///
-  /// This defaults to [OutsideHitTestBehavior.deferToChild] if [child] is not null and
-  /// [OutsideHitTestBehavior.translucent] if child is null.
+  /// This defaults to [OutsideHitTestBehavior.deferToChild] if [child] is not
+  /// null and [OutsideHitTestBehavior.translucent] if child is null.
   ///
   /// See [OutsideHitTestBehavior] for the allowed values and their meanings.
   final OutsideHitTestBehavior? behavior;
@@ -809,12 +822,14 @@ class OutsideGestureDetector extends StatelessWidget {
   ///
   /// See also:
   ///
-  ///  * [DragGestureRecognizer.dragStartBehavior], which gives an example for the different behaviors.
+  ///  * [DragGestureRecognizer.dragStartBehavior], which gives an example for
+  /// the different behaviors.
   final DragStartBehavior dragStartBehavior;
 
   /// The kind of devices that are allowed to be recognized.
   ///
-  /// If set to null, events from all device types will be recognized. Defaults to null.
+  /// If set to null, events from all device types will be recognized. Defaults
+  /// to null.
   final Set<PointerDeviceKind>? supportedDevices;
 
   /// {@macro flutter.gestures.scale.trackpadScrollCausesScale}

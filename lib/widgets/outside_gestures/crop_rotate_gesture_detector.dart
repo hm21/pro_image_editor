@@ -6,7 +6,32 @@ import 'package:flutter/widgets.dart';
 import 'outside_gesture_behavior.dart';
 import 'outside_raw_gesture_detector.dart';
 
+/// A stateful widget that detects and handles gestures for cropping and
+/// rotating.
+///
+/// This widget provides gesture detection for complex interactions like
+/// double-tap and scaling (pinch-to-zoom) gestures, which are commonly used in
+/// image editing applications for cropping and rotating images.
+
 class CropRotateGestureDetector extends StatefulWidget {
+  /// Creates a [CropRotateGestureDetector].
+  ///
+  /// The widget captures double-tap and scaling gestures and forwards them to
+  /// the provided callback functions. These callbacks enable customization of
+  /// the widget's response to user interactions.
+  ///
+  /// Example:
+  /// ```
+  /// CropRotateGestureDetector(
+  ///   child: ImageWidget(),
+  ///   onDoubleTap: () {
+  ///     // Handle double-tap gesture
+  ///   },
+  ///   onScaleUpdate: (ScaleUpdateDetails details) {
+  ///     // Handle scale update gesture
+  ///   },
+  /// )
+  /// ```
   const CropRotateGestureDetector({
     super.key,
     this.child,
@@ -69,7 +94,16 @@ class CropRotateGestureDetector extends StatefulWidget {
       CropRotateGestureDetectorState();
 }
 
+/// The state class for [CropRotateGestureDetector].
+///
+/// This class manages gesture detection for cropping and rotating functionality
+/// in an image editor. It detects double-tap and scale gestures, allowing for
+/// actions such as zooming and rotating images based on user interaction.
 class CropRotateGestureDetectorState extends State<CropRotateGestureDetector> {
+  /// A global key for accessing the state of the [OutsideRawGestureDetector].
+  ///
+  /// This key is used to control and manage the raw gesture detector that
+  /// detects gestures outside the usual hit testing areas.
   final rawKey = GlobalKey<OutsideRawGestureDetectorState>();
 
   @override

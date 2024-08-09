@@ -1,6 +1,9 @@
+// ignore_for_file: public_member_api_docs
+
 part of 'defer_pointer.dart';
 
-/// Holds a list of [DeferPointerRenderObject]s which the [DeferredPointerHandler] widget uses to perform hit tests.
+/// Holds a list of [DeferPointerRenderObject]s which the
+/// [DeferredPointerHandler] widget uses to perform hit tests.
 class DeferredPointerHandlerLink extends ChangeNotifier {
   DeferredPointerHandlerLink();
   final List<DeferPointerRenderObject> _painters = [];

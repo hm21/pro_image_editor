@@ -9,6 +9,7 @@ import 'outside_gesture_behavior.dart';
 import 'outside_gesture_listener.dart';
 import 'outside_render_semantics_gesture_handler.dart';
 
+/// OutsideRawGestureDetector
 class OutsideRawGestureDetector extends StatefulWidget {
   /// Creates a widget that detects gestures.
   ///
@@ -25,6 +26,7 @@ class OutsideRawGestureDetector extends StatefulWidget {
     this.semantics,
   });
 
+  /// Listener is external
   final bool externListener;
 
   /// The widget below this widget in the tree.
@@ -43,7 +45,8 @@ class OutsideRawGestureDetector extends StatefulWidget {
 
   /// How this gesture detector should behave during hit testing.
   ///
-  /// This defaults to [OutsideHitTestBehavior.deferToChild] if [child] is not null and
+  /// This defaults to [OutsideHitTestBehavior.deferToChild] if [child] is not
+  /// null and
   /// [OutsideHitTestBehavior.translucent] if child is null.
   final OutsideHitTestBehavior? behavior;
 
@@ -68,10 +71,12 @@ class OutsideRawGestureDetector extends StatefulWidget {
   ///  * During a semantic long press, it calls [LongPressGestureRecognizer]'s
   ///    `onLongPressDown`, `onLongPressStart`, `onLongPress`, `onLongPressEnd`
   ///    and `onLongPressUp`.
-  ///  * During a semantic horizontal drag, it calls [HorizontalDragGestureRecognizer]'s
+  ///  * During a semantic horizontal drag, it calls
+  /// [HorizontalDragGestureRecognizer]'s
   ///    `onDown`, `onStart`, `onUpdate` and `onEnd`, then
   ///    [PanGestureRecognizer]'s `onDown`, `onStart`, `onUpdate` and `onEnd`.
-  ///  * During a semantic vertical drag, it calls [VerticalDragGestureRecognizer]'s
+  ///  * During a semantic vertical drag, it calls
+  /// [VerticalDragGestureRecognizer]'s
   ///    `onDown`, `onStart`, `onUpdate` and `onEnd`, then
   ///    [PanGestureRecognizer]'s `onDown`, `onStart`, `onUpdate` and `onEnd`.
   ///
@@ -94,7 +99,8 @@ class OutsideRawGestureDetector extends StatefulWidget {
   ///   Widget build(BuildContext context) {
   ///     return RawGestureDetector(
   ///       gestures: <Type, GestureRecognizerFactory>{
-  ///         ForcePressGestureRecognizer: GestureRecognizerFactoryWithHandlers<ForcePressGestureRecognizer>(
+  ///         ForcePressGestureRecognizer:
+  /// GestureRecognizerFactoryWithHandlers<ForcePressGestureRecognizer>(
   ///           () => ForcePressGestureRecognizer(debugOwner: this),
   ///           (ForcePressGestureRecognizer instance) {
   ///             instance.onStart = (_) => onForcePress();
@@ -114,7 +120,8 @@ class OutsideRawGestureDetector extends StatefulWidget {
   ///   VoidCallback onLongPress;
   ///
   ///   @override
-  ///   void assignSemantics(OutsideRenderSemanticsGestureHandler renderObject) {
+  ///   void assignSemantics(OutsideRenderSemanticsGestureHandler renderObject)
+  /// {
   ///     renderObject.onLongPress = onLongPress;
   ///   }
   /// }
@@ -160,19 +167,24 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
   /// the gesture detector should be enabled.
   ///
   /// The argument should follow the same conventions as
-  /// [OutsideRawGestureDetector.gestures]. It acts like a temporary replacement for
+  /// [OutsideRawGestureDetector.gestures]. It acts like a temporary
+  /// replacement for
   /// that value until the next build.
   void replaceGestureRecognizers(Map<Type, GestureRecognizerFactory> gestures) {
     assert(() {
       if (!context.findRenderObject()!.owner!.debugDoingLayout) {
         throw FlutterError.fromParts(<DiagnosticsNode>[
           ErrorSummary(
-              'Unexpected call to replaceGestureRecognizers() method of RawGestureDetectorState.'),
+              'Unexpected call to replaceGestureRecognizers() method of '
+              'RawGestureDetectorState.'),
           ErrorDescription(
-              'The replaceGestureRecognizers() method can only be called during the layout phase.'),
+              'The replaceGestureRecognizers() method can only be called '
+              'during the layout phase.'),
           ErrorHint(
-            'To set the gesture recognizers at other times, trigger a new build using setState() '
-            'and provide the new gesture recognizers as constructor arguments to the corresponding '
+            'To set the gesture recognizers at other times, trigger a new '
+            'build using setState() '
+            'and provide the new gesture recognizers as constructor arguments '
+            'to the corresponding '
             'RawGestureDetector or GestureDetector object.',
           ),
         ]);
@@ -187,7 +199,8 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
     }
   }
 
-  /// This method can be called to filter the list of available semantic actions,
+  /// This method can be called to filter the list of available semantic
+  /// actions,
   /// after the render object was created.
   ///
   /// The actual filtering is happening in the next frame and a frame will be
@@ -208,8 +221,10 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
     assert(() {
       if (semanticsGestureHandler == null) {
         throw FlutterError(
-          'Unexpected call to replaceSemanticsActions() method of RawGestureDetectorState.\n'
-          'The replaceSemanticsActions() method can only be called after the OutsideRenderSemanticsGestureHandler has been created.',
+          'Unexpected call to replaceSemanticsActions() method of '
+          'RawGestureDetectorState.\n'
+          'The replaceSemanticsActions() method can only be called after the '
+          'OutsideRenderSemanticsGestureHandler has been created.',
         );
       }
       return true;
@@ -238,8 +253,12 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
       assert(!_recognizers!.containsKey(type));
       _recognizers![type] =
           oldRecognizers[type] ?? gestures[type]!.constructor();
-      assert(_recognizers![type].runtimeType == type,
-          'GestureRecognizerFactory of type $type created a GestureRecognizer of type ${_recognizers![type].runtimeType}. The GestureRecognizerFactory must be specialized with the type of the class that it returns from its constructor method.');
+      assert(
+          _recognizers![type].runtimeType == type,
+          'GestureRecognizerFactory of type $type created a GestureRecognizer'
+          'of type ${_recognizers![type].runtimeType}. The '
+          'GestureRecognizerFactory must be specialized with the type of the '
+          'class that it returns from its constructor method.');
       gestures[type]!.initializer(_recognizers![type]!);
     }
     for (final Type type in oldRecognizers.keys) {
@@ -249,6 +268,19 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
     }
   }
 
+  /// Handles pointer down events for gesture recognition.
+  ///
+  /// This method is called when a pointer (such as a finger or stylus) is
+  /// detected to be in contact with the screen. It adds the pointer event to
+  /// each gesture recognizer present in the `_recognizers` collection,
+  /// enabling them to begin tracking the gesture.
+  ///
+  /// The method assumes that `_recognizers` is not null, and asserts this
+  /// condition to ensure the gesture recognizers are initialized before
+  /// handling events.
+  ///
+  /// - Parameter event: The pointer event containing details about the pointer
+  ///   contact, such as its position and device type.
   void handlePointerDown(PointerDownEvent event) {
     assert(_recognizers != null);
     for (final GestureRecognizer recognizer in _recognizers!.values) {
@@ -256,6 +288,20 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
     }
   }
 
+  /// Handles pointer pan-zoom start events for gesture recognition.
+  ///
+  /// This method is called when a pan-zoom gesture begins, such as when a user
+  /// starts a two-finger pinch gesture on the screen. It adds the pan-zoom
+  /// start event to each gesture recognizer present in the `_recognizers`
+  /// collection, enabling them to track the gesture's progress.
+  ///
+  /// The method assumes that `_recognizers` is not null, and asserts this
+  /// condition to ensure the gesture recognizers are initialized before
+  /// handling events.
+  ///
+  /// - Parameter event: The pan-zoom start event containing details about the
+  ///   initial state of the pan-zoom gesture, such as the focal point and
+  /// scale.
   void handlePointerPanZoomStart(PointerPanZoomStartEvent event) {
     assert(_recognizers != null);
     for (final GestureRecognizer recognizer in _recognizers!.values) {
@@ -306,14 +352,14 @@ class OutsideRawGestureDetectorState extends State<OutsideRawGestureDetector> {
           .map<String>(
               (GestureRecognizer recognizer) => recognizer.debugDescription)
           .toList();
-      properties.add(
-          IterableProperty<String>('gestures', gestures, ifEmpty: '<none>'));
-      properties.add(IterableProperty<GestureRecognizer>(
-          'recognizers', _recognizers!.values,
-          level: DiagnosticLevel.fine));
-      properties.add(DiagnosticsProperty<bool>(
-          'excludeFromSemantics', widget.excludeFromSemantics,
-          defaultValue: false));
+      properties
+        ..add(IterableProperty<String>('gestures', gestures, ifEmpty: '<none>'))
+        ..add(IterableProperty<GestureRecognizer>(
+            'recognizers', _recognizers!.values,
+            level: DiagnosticLevel.fine))
+        ..add(DiagnosticsProperty<bool>(
+            'excludeFromSemantics', widget.excludeFromSemantics,
+            defaultValue: false));
       if (!widget.excludeFromSemantics) {
         properties.add(DiagnosticsProperty<SemanticsGestureDelegate>(
             'semantics', widget.semantics,
@@ -482,12 +528,13 @@ class _GestureSemantics extends SingleChildRenderObjectWidget {
 
 typedef _AssignSemantics = void Function(OutsideRenderSemanticsGestureHandler);
 
+/// SemanticsGestureDelegate
 abstract class SemanticsGestureDelegate {
   /// Create a delegate of gesture semantics.
   const SemanticsGestureDelegate();
 
-  /// Assigns semantics notations to the [OutsideRenderSemanticsGestureHandler] render
-  /// object of the gesture detector.
+  /// Assigns semantics notations to the [OutsideRenderSemanticsGestureHandler]
+  /// render object of the gesture detector.
   ///
   /// This method is called when the widget is created, updated, or during
   /// [RawGestureDetectorState.replaceGestureRecognizers].

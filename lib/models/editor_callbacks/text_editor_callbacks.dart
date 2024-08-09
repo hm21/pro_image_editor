@@ -7,6 +7,22 @@ import 'standalone_editor_callbacks.dart';
 
 /// A class representing callbacks for the text editor.
 class TextEditorCallbacks extends StandaloneEditorCallbacks {
+  /// Creates a new instance of [TextEditorCallbacks].
+  const TextEditorCallbacks({
+    this.onChanged,
+    this.onEditingComplete,
+    this.onColorChanged,
+    this.onSubmitted,
+    this.onTextAlignChanged,
+    this.onFontScaleChanged,
+    this.onBackgroundModeChanged,
+    super.onInit,
+    super.onAfterViewInit,
+    super.onDone,
+    super.onCloseEditor,
+    super.onUpdateUI,
+  });
+
   /// A callback that is called when the value changes.
   ///
   /// This field holds a function that will be called when the value changes.
@@ -30,42 +46,33 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
   /// A callback that is called when the color is changed.
   ///
   /// This field holds a function that will be called when the color is changed.
-  /// The function takes a single parameter of type [int], which represents the new color.
+  /// The function takes a single parameter of type [int], which represents the
+  /// new color.
   final ValueChanged<int>? onColorChanged;
 
   /// A callback that is called when the text alignment is changed.
   ///
-  /// This field holds a function that will be called when the text alignment is changed.
-  /// The function takes a single parameter of type [TextAlign], which represents the new text alignment.
+  /// This field holds a function that will be called when the text alignment
+  /// is changed.
+  /// The function takes a single parameter of type [TextAlign], which
+  /// represents the new text alignment.
   final ValueChanged<TextAlign>? onTextAlignChanged;
 
   /// A callback that is called when the font scale is changed.
   ///
-  /// This field holds a function that will be called when the font scale is changed.
-  /// The function takes a single parameter of type [double], which represents the new font scale.
+  /// This field holds a function that will be called when the font scale is
+  /// changed.
+  /// The function takes a single parameter of type [double], which represents
+  /// the new font scale.
   final ValueChanged<double>? onFontScaleChanged;
 
   /// A callback that is called when the background mode is changed.
   ///
-  /// This field holds a function that will be called when the background mode is changed.
-  /// The function takes a single parameter of type [LayerBackgroundColorModeE], which represents the new background mode.
+  /// This field holds a function that will be called when the background mode
+  /// is changed.
+  /// The function takes a single parameter of type [LayerBackgroundColorModeE],
+  /// which represents the new background mode.
   final ValueChanged<LayerBackgroundMode>? onBackgroundModeChanged;
-
-  /// Creates a new instance of [TextEditorCallbacks].
-  const TextEditorCallbacks({
-    this.onChanged,
-    this.onEditingComplete,
-    this.onColorChanged,
-    this.onSubmitted,
-    this.onTextAlignChanged,
-    this.onFontScaleChanged,
-    this.onBackgroundModeChanged,
-    super.onInit,
-    super.onAfterViewInit,
-    super.onDone,
-    super.onCloseEditor,
-    super.onUpdateUI,
-  });
 
   /// Handles the value change event.
   ///
@@ -78,7 +85,8 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the editing complete event.
   ///
-  /// This method calls the [onEditingComplete] callback and then calls [handleUpdateUI].
+  /// This method calls the [onEditingComplete] callback and then calls
+  /// [handleUpdateUI].
   void handleEditingComplete() {
     onEditingComplete?.call();
     handleUpdateUI();
@@ -95,8 +103,8 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the color change event.
   ///
-  /// This method calls the [onColorChanged] callback with the provided [newColor]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onColorChanged] callback with the provided
+  /// [newColor] and then calls [handleUpdateUI].
   void handleColorChanged(int newColor) {
     onColorChanged?.call(newColor);
     handleUpdateUI();
@@ -104,8 +112,8 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the text alignment change event.
   ///
-  /// This method calls the [onTextAlignChanged] callback with the provided [newTextAlign]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onTextAlignChanged] callback with the provided
+  /// [newTextAlign] and then calls [handleUpdateUI].
   void handleTextAlignChanged(TextAlign newTextAlign) {
     onTextAlignChanged?.call(newTextAlign);
     handleUpdateUI();
@@ -113,8 +121,8 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the font scale change event.
   ///
-  /// This method calls the [onFontScaleChanged] callback with the provided [newScale]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onFontScaleChanged] callback with the provided
+  /// [newScale] and then calls [handleUpdateUI].
   void handleFontScaleChanged(double newScale) {
     onFontScaleChanged?.call(newScale);
     handleUpdateUI();
@@ -122,8 +130,8 @@ class TextEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the background mode change event.
   ///
-  /// This method calls the [onBackgroundModeChanged] callback with the provided [newMode]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onBackgroundModeChanged] callback with the
+  /// provided [newMode] and then calls [handleUpdateUI].
   void handleBackgroundModeChanged(LayerBackgroundMode newMode) {
     onBackgroundModeChanged?.call(newMode);
     handleUpdateUI();

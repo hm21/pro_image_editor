@@ -2,7 +2,33 @@
 import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_appbar.dart';
 import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_widget.dart';
 
+/// An abstract class representing a customizable standalone editor widget.
+///
+/// This class provides a base for creating standalone editor widgets, allowing
+/// customization of the app bar, bottom bar, and body items.
 abstract class CustomWidgetsStandaloneEditor<EditorState> {
+  /// Creates a [CustomWidgetsStandaloneEditor] instance.
+  ///
+  /// This constructor allows subclasses to specify the app bar, bottom bar,
+  /// and body items, enabling flexible design and functionality for editor
+  /// widgets.
+  ///
+  /// Example:
+  /// ```
+  /// class MyEditor extends CustomWidgetsStandaloneEditor<MyEditorState> {
+  ///   const MyEditor({
+  ///     super.appBar,
+  ///     super.bottomBar,
+  ///     super.bodyItems,
+  ///   });
+  /// }
+  /// ```
+  const CustomWidgetsStandaloneEditor({
+    this.appBar,
+    this.bottomBar,
+    this.bodyItems,
+  });
+
   /// A custom app bar widget.
   ///
   /// **Example**
@@ -13,7 +39,7 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
   ///   ),
   /// ),
   final ReactiveCustomAppbar? Function(
-      EditorState editorState, Stream rebuildStream)? appBar;
+      EditorState editorState, Stream<void> rebuildStream)? appBar;
 
   /// A custom bottom bar widget.
   ///
@@ -30,7 +56,7 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
   /// },
   /// ```
   final ReactiveCustomWidget? Function(
-      EditorState editorState, Stream rebuildStream)? bottomBar;
+      EditorState editorState, Stream<void> rebuildStream)? bottomBar;
 
   /// Add custom widgets at a specific position inside the body.
   ///
@@ -49,12 +75,6 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
   /// ```
   final List<ReactiveCustomWidget> Function(
     EditorState editorState,
-    Stream rebuildStream,
+    Stream<void> rebuildStream,
   )? bodyItems;
-
-  const CustomWidgetsStandaloneEditor({
-    this.appBar,
-    this.bottomBar,
-    this.bodyItems,
-  });
 }

@@ -1,33 +1,40 @@
-// Dart imports:
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
-// Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-
-// Package imports:
 import 'package:image/image.dart' as img;
 import 'package:mime/mime.dart';
-
-// Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
+
 import '../../models/multi_threading/thread_capture_model.dart';
 import '../../models/multi_threading/thread_request_model.dart';
 import '../unique_id_generator.dart';
 import 'threads_managers/isolate/isolate_manager.dart';
-import 'utils/dart_ui_remove_transparent_image_areas.dart';
-import 'utils/encode_image.dart';
-
 import 'threads_managers/web_worker/web_worker_manager_dummy.dart'
     if (dart.library.html) 'threads_managers/web_worker/web_worker_manager.dart';
+import 'utils/dart_ui_remove_transparent_image_areas.dart';
+import 'utils/encode_image.dart';
 
 /// A controller class responsible for capturing and processing images
 /// using an isolated thread for performance improvements.
 class ContentRecorderController {
+  /// Constructor to initialize the controller and set up the isolate if not
+  /// running on the web.
+  ContentRecorderController({
+    required ProImageEditorConfigs configs,
+    bool ignoreGeneration = false,
+  }) : _configs = configs {
+    containerKey = GlobalKey();
+    recorderKey = GlobalKey();
+    recorderStream = StreamController();
+
+    if (!ignoreGeneration) _initMultiThreading();
+  }
+
   /// A key to identify the container widget for rendering the image.
   late final GlobalKey containerKey;
 
@@ -35,6 +42,8 @@ class ContentRecorderController {
   late final GlobalKey recorderKey;
 
   final ProImageEditorConfigs _configs;
+
+  /// Generate only a thumbnail as final image.
   bool generateOnlyThumbnail = false;
 
   /// Instance of ProImageEditorWebWorker used for web worker communication.
@@ -47,19 +56,7 @@ class ContentRecorderController {
   late final StreamController<Widget?> recorderStream;
 
   /// A helper to ensure the widget is drawed.
-  Completer recordReadyHelper = Completer();
-
-  /// Constructor to initialize the controller and set up the isolate if not running on the web.
-  ContentRecorderController({
-    required ProImageEditorConfigs configs,
-    bool ignoreGeneration = false,
-  }) : _configs = configs {
-    containerKey = GlobalKey();
-    recorderKey = GlobalKey();
-    recorderStream = StreamController();
-
-    if (!ignoreGeneration) _initMultiThreading();
-  }
+  Completer<bool> recordReadyHelper = Completer();
 
   /// Initializes the isolate and sets up communication ports.
   void _initMultiThreading() async {
@@ -70,9 +67,10 @@ class ContentRecorderController {
     }
   }
 
-  /// Destroys the isolate and closes the receive port if not running on the web.
+  /// Destroys the isolate and closes the receive port if not running on the
+  /// web.
   Future<void> destroy() async {
-    recorderStream.close();
+    await recorderStream.close();
     if (!recordReadyHelper.isCompleted) {
       recordReadyHelper.complete(true);
     }
@@ -84,8 +82,10 @@ class ContentRecorderController {
     }
   }
 
-  /// Captures an image using the provided configuration and optionally a specific completer ID and pixel ratio.
-  /// The method determines if the task should be processed in an isolate or on the main thread based on the platform.
+  /// Captures an image using the provided configuration and optionally a
+  /// specific completer ID and pixel ratio.
+  /// The method determines if the task should be processed in an isolate or on
+  /// the main thread based on the platform.
   ///
   /// [onImageCaptured] - Optional callback to handle the captured image.
   /// [id] - Optional unique identifier for the completer.
@@ -99,8 +99,8 @@ class ContentRecorderController {
     ui.Image? image,
     OutputFormat? outputFormat,
   }) async {
-    // If we're just capturing a screenshot for the state history in the web platform,
-    // but web worker is not supported, we return null.
+    /// If we're just capturing a screenshot for the state history in the web
+    /// platform, but web worker is not supported, we return null.
     if (kIsWeb &&
         stateHistroyScreenshot &&
         !_webWorkerManager.supportWebWorkers) {
@@ -120,7 +120,8 @@ class ContentRecorderController {
     );
   }
 
-  /// Selects the appropriate capture mode based on the platform and configuration.
+  /// Selects the appropriate capture mode based on the platform and
+  /// configuration.
   ///
   /// This function determines the capture mode based on the platform and
   /// configuration settings specified in [_configs]. If the configuration
@@ -161,7 +162,8 @@ class ContentRecorderController {
     }
   }
 
-  /// Captures an image using an isolated thread and processes it according to the provided configuration.
+  /// Captures an image using an isolated thread and processes it according to
+  /// the provided configuration.
   ///
   /// [image] - The image to be processed.
   /// [id] - The unique identifier for the completer.
@@ -179,7 +181,8 @@ class ContentRecorderController {
     );
   }
 
-  /// Captures an image using an web worker and processes it according to the provided configuration.
+  /// Captures an image using an web worker and processes it according to the
+  /// provided configuration.
   ///
   /// [image] - The image to be processed.
   /// [id] - The unique identifier for the completer.
@@ -201,7 +204,8 @@ class ContentRecorderController {
     }
   }
 
-  /// Captures an image on the main thread and processes it according to the provided configuration.
+  /// Captures an image on the main thread and processes it according to the
+  /// provided configuration.
   ///
   /// [image] - The image to be processed.
   Future<Uint8List?> _captureWithMainThread({
@@ -231,7 +235,8 @@ class ContentRecorderController {
     return image;
   }
 
-  /// Get the rendered image from the widget tree using the specified pixel ratio.
+  /// Get the rendered image from the widget tree using the specified pixel
+  /// ratio.
   Future<ui.Image?> _getRenderedImage({
     required ImageInfos imageInfos,
     bool? useThumbnailSize,
@@ -244,8 +249,8 @@ class ContentRecorderController {
           widgetKey.currentContext?.findRenderObject();
       if (findRenderObject == null) return null;
 
-      // If the render object's paint information is dirty we waiting until it's painted
-      // or 500ms are ago.
+      // If the render object's paint information is dirty we waiting until
+      // it's painted or 500ms are ago.
       int retryHelper = 0;
       while (!findRenderObject.attached && retryHelper < 25) {
         await Future.delayed(const Duration(milliseconds: 20));
@@ -311,9 +316,7 @@ class ContentRecorderController {
         double cropY = max(0, image.height.toDouble() - cropHeight) / 2;
 
         ui.PictureRecorder recorder = ui.PictureRecorder();
-        Canvas canvas = Canvas(recorder);
-
-        canvas.drawImageRect(
+        Canvas(recorder).drawImageRect(
           image,
           Rect.fromLTWH(cropX, cropY, cropWidth, cropHeight),
           Rect.fromLTWH(0, 0, cropWidth, cropHeight),
@@ -333,8 +336,10 @@ class ContentRecorderController {
 
   /// Retrieves the original image based on the provided image information.
   ///
-  /// This method asynchronously fetches the original image without using the thumbnail size.
-  /// It calls the `_getRenderedImage` method with the `useThumbnailSize` parameter set to false.
+  /// This method asynchronously fetches the original image without using the
+  /// thumbnail size.
+  /// It calls the `_getRenderedImage` method with the `useThumbnailSize`
+  /// parameter set to false.
   Future<ui.Image> getOriginalImage({required ImageInfos imageInfos}) async {
     return (await _getRenderedImage(
       imageInfos: imageInfos,
@@ -342,7 +347,8 @@ class ContentRecorderController {
     ))!;
   }
 
-  /// Retrieves the maximum output dimension for image generation from the configuration.
+  /// Retrieves the maximum output dimension for image generation from the
+  /// configuration.
   Size _maxOutputDimension(bool useThumbnailSize) => !useThumbnailSize
       ? _configs.imageGenerationConfigs.maxOutputSize
       : _configs.imageGenerationConfigs.maxThumbnailSize;
@@ -405,8 +411,10 @@ class ContentRecorderController {
 
   /// Capture an image of the current editor state in an isolate.
   ///
-  /// This method captures the current state of the image editor as a screenshot.
-  /// It sets all previously unprocessed screenshots to broken before capturing a new one.
+  /// This method captures the current state of the image editor as a
+  /// screenshot.
+  /// It sets all previously unprocessed screenshots to broken before
+  /// capturing a new one.
   ///
   /// - `screenshotCtrl`: The controller to capture the screenshot.
   /// - `configs`: Configuration for the image editor.
@@ -601,8 +609,8 @@ class ContentRecorderController {
   void addEmptyScreenshot({
     required List<ThreadCaptureState> screenshots,
   }) {
-    ThreadCaptureState isolateCaptureState = ThreadCaptureState();
-    isolateCaptureState.broken = true;
+    ThreadCaptureState isolateCaptureState = ThreadCaptureState()
+      ..broken = true;
     screenshots.add(isolateCaptureState);
   }
 

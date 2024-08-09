@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 
 /// A custom page route builder that allows specifying custom page transitions.
 ///
-/// The `CustomPageRouteBuilder` is an extension of the `PageRouteBuilder` class that enables you to define custom page transition animations for your routes. It takes a `pageBuilder` and a `pageTransitionsBuilder` as required parameters.
+/// The `CustomPageRouteBuilder` is an extension of the `PageRouteBuilder`
+/// class that enables you to define custom page transition animations for your
+/// routes. It takes a `pageBuilder` and a `pageTransitionsBuilder` as required
+/// parameters.
 ///
 /// Parameters:
 /// - `pageBuilder`: A function that builds the content of the page.
-/// - `pageTransitionsBuilder`: A `PageTransitionsBuilder` that defines the custom page transition animation.
+/// - `pageTransitionsBuilder`: A `PageTransitionsBuilder` that defines the
+/// custom page transition animation.
 ///
 /// Example Usage:
 /// ```dart
@@ -19,13 +23,12 @@ import 'package:flutter/material.dart';
 /// Navigator.of(context).push(customPageRoute);
 /// ```
 class CustomPageRouteBuilder<T> extends PageRouteBuilder<T> {
-  /// The custom page transitions builder.
-  final PageTransitionsBuilder pageTransitionsBuilder;
-
   /// Creates a custom page route builder.
   ///
-  /// The `pageBuilder` parameter is required and defines the content of the page.
-  /// The `pageTransitionsBuilder` parameter is required and specifies the custom page transition animation.
+  /// The `pageBuilder` parameter is required and defines the content of the
+  /// page.
+  /// The `pageTransitionsBuilder` parameter is required and specifies the
+  /// custom page transition animation.
   ///
   /// Example Usage:
   /// ```dart
@@ -40,6 +43,9 @@ class CustomPageRouteBuilder<T> extends PageRouteBuilder<T> {
     required super.pageBuilder,
     required this.pageTransitionsBuilder,
   });
+
+  /// The custom page transitions builder.
+  final PageTransitionsBuilder pageTransitionsBuilder;
 
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,

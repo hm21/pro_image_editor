@@ -1,6 +1,7 @@
 // dart compile js -o lib/web/web_worker.dart.js lib/web/web_worker.dart
 
 // ignore_for_file: avoid_web_libraries_in_flutter
+// ignore_for_file: argument_type_not_assignable
 
 // Dart imports:
 import 'dart:async';
@@ -20,13 +21,17 @@ void main() {
   WebWorkerManager();
 }
 
+/// Manages the web workers for the application.
 class WebWorkerManager {
-  final workerScope = html.DedicatedWorkerGlobalScope.instance;
-
+  /// Creates a new [WebWorkerManager] instance and initializes it.
   WebWorkerManager() {
     _init();
   }
 
+  /// The global scope for the dedicated web worker.
+  final workerScope = html.DedicatedWorkerGlobalScope.instance;
+
+  /// Initializes the web worker manager by setting up message listeners.
   void _init() {
     workerScope.onMessage.listen((dynamic event) async {
       var data = event.data;
@@ -39,7 +44,7 @@ class WebWorkerManager {
           await _handleEncode(data);
           break;
         case 'destroyActiveTasks':
-          _handleDestroyActiveTasks(data['ignoreTaskId']);
+          _handleDestroyActiveTasks(data['ignoreTaskId'] as String);
           break;
         case 'kill':
           workerScope.close();
@@ -50,11 +55,12 @@ class WebWorkerManager {
     });
   }
 
-  Map<String, Completer> tasks = {};
+  /// A map to keep track of ongoing tasks and their corresponding completers.
+  Map<String, Completer<void>> tasks = {};
 
   Future<void> _handleConvert(dynamic data) async {
     final workerScope = html.DedicatedWorkerGlobalScope.instance;
-    String id = data['id'];
+    String id = data['id'] as String;
     var imageData = data['image'] ?? {};
 
     var destroy$ = Completer();
@@ -76,7 +82,7 @@ class WebWorkerManager {
 
   Future<void> _handleEncode(dynamic data) async {
     final workerScope = html.DedicatedWorkerGlobalScope.instance;
-    String id = data['id'];
+    String id = data['id'] as String;
     var imageData = data['image'] ?? {};
 
     Uint8List bytes = await encodeImage(
@@ -107,7 +113,8 @@ class WebWorkerManager {
       String id, dynamic imageData, dynamic data) {
     return ImageConvertThreadRequest(
       id: id,
-      generateOnlyImageBounds: data['generateOnlyImageBounds'] ?? true,
+      generateOnlyImageBounds:
+          (data['generateOnlyImageBounds'] as bool?) ?? true,
       jpegChroma: _getJpegChroma(data),
       jpegQuality: _getJpgQuality(data),
       pngFilter: _getPngFilter(data),
@@ -161,7 +168,7 @@ class WebWorkerManager {
             .firstWhere((el) => el.name == imageData['outputFormat']);
   }
 
-  int _getJpgQuality(dynamic data) => data['jpegQuality'] ?? 100;
-  int _getPngLevel(dynamic data) => data['pngLevel'] ?? 6;
-  bool _getSingleFrame(dynamic data) => data['singleFrame'] ?? false;
+  int _getJpgQuality(dynamic data) => (data['jpegQuality'] as int?) ?? 100;
+  int _getPngLevel(dynamic data) => (data['pngLevel'] as int?) ?? 6;
+  bool _getSingleFrame(dynamic data) => (data['singleFrame'] as bool?) ?? false;
 }

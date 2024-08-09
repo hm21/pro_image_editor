@@ -12,10 +12,11 @@ import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_widget.d
 /// Returns a [ReactiveCustomWidget] that handles the removal of a button.
 typedef RemoveButton = ReactiveCustomWidget Function(
   GlobalKey key,
-  Stream rebuildStream,
+  Stream<void> rebuildStream,
 );
 
-/// A typedef for creating a [ReactiveCustomWidget] that manages crop editor aspect ratio options.
+/// A typedef for creating a [ReactiveCustomWidget] that manages crop editor
+/// aspect ratio options.
 ///
 /// - [T] - The type representing the editor state.
 /// - [editorState] - The current state of the editor.
@@ -23,15 +24,17 @@ typedef RemoveButton = ReactiveCustomWidget Function(
 /// - [aspectRatio] - The aspect ratio to be set.
 /// - [originalAspectRatio] - The original aspect ratio.
 ///
-/// Returns a [ReactiveCustomWidget] that provides options for crop editor aspect ratios.
+/// Returns a [ReactiveCustomWidget] that provides options for crop editor
+/// aspect ratios.
 typedef CropEditorAspectRatioOptions<T> = ReactiveCustomWidget Function(
   T editorState,
-  Stream rebuildStream,
+  Stream<void> rebuildStream,
   double aspectRatio,
   double originalAspectRatio,
 );
 
-/// A typedef for creating a [ReactiveCustomWidget] that includes a custom color picker.
+/// A typedef for creating a [ReactiveCustomWidget] that includes a custom
+/// color picker.
 ///
 /// - [T] - The type representing the editor state.
 /// - [editorState] - The current state of the editor.
@@ -39,9 +42,11 @@ typedef CropEditorAspectRatioOptions<T> = ReactiveCustomWidget Function(
 /// - [currentColor] - The currently selected color.
 /// - [setColor] - A function to update the selected color.
 ///
-/// Returns an optional [ReactiveCustomWidget] that provides a custom color picker.
+/// Returns an optional [ReactiveCustomWidget] that provides a custom color
+/// picker.
 ///
 /// **Example:**
+/// ```dart
 /// colorPicker: (editor, rebuildStream, currentColor, setColor) =>
 ///    ReactiveCustomWidget(
 ///      stream: rebuildStream,
@@ -55,14 +60,16 @@ typedef CropEditorAspectRatioOptions<T> = ReactiveCustomWidget Function(
 ///        },
 ///      ),
 /// ),
+/// ```
 typedef CustomColorPicker<T> = ReactiveCustomWidget? Function(
   T editorState,
-  Stream rebuildStream,
+  Stream<void> rebuildStream,
   Color currentColor,
   void Function(Color color) setColor,
 );
 
-/// A typedef for creating a [ReactiveCustomWidget] that includes a custom slider.
+/// A typedef for creating a [ReactiveCustomWidget] that includes a custom
+/// slider.
 ///
 /// - [T] - The type representing the editor state.
 /// - [editorState] - The current state of the editor.
@@ -74,6 +81,7 @@ typedef CustomColorPicker<T> = ReactiveCustomWidget? Function(
 /// Returns a [ReactiveCustomWidget] that provides a custom slider.
 ///
 /// **Example:**
+/// ```dart
 /// slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) {
 ///   return ReactiveCustomWidget(
 ///     stream: rebuildStream,
@@ -85,9 +93,10 @@ typedef CustomColorPicker<T> = ReactiveCustomWidget? Function(
 ///     ),
 ///   );
 /// },
+/// ```
 typedef CustomSlider<T> = ReactiveCustomWidget Function(
   T editorState,
-  Stream rebuildStream,
+  Stream<void> rebuildStream,
   double value,
   Function(double value) onChanged,
   Function(double value) onChangeEnd,

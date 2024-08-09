@@ -1,4 +1,4 @@
-Map importHistoryDemoData = {
+Map<String, dynamic> importHistoryDemoData = {
   "version": "2.0.0",
   "position": 5,
   "history": [

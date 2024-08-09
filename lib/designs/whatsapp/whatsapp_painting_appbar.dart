@@ -8,6 +8,17 @@ import 'whatsapp_done_btn.dart';
 
 /// Represents the app bar for the paint functionality in the WhatsApp theme.
 class WhatsAppPaintAppBar extends StatefulWidget {
+  /// Creates a [WhatsAppPaintAppBar] widget.
+  const WhatsAppPaintAppBar({
+    super.key,
+    required this.canUndo,
+    required this.activeColor,
+    required this.configs,
+    required this.onClose,
+    required this.onDone,
+    required this.onTapUndo,
+  });
+
   /// Indicates whether the undo action is available.
   final bool canUndo;
 
@@ -25,16 +36,6 @@ class WhatsAppPaintAppBar extends StatefulWidget {
 
   /// Callback function for undoing a paint action.
   final Function() onTapUndo;
-
-  const WhatsAppPaintAppBar({
-    super.key,
-    required this.canUndo,
-    required this.activeColor,
-    required this.configs,
-    required this.onClose,
-    required this.onDone,
-    required this.onTapUndo,
-  });
 
   @override
   State<WhatsAppPaintAppBar> createState() => _WhatsAppPaintAppBarState();

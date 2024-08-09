@@ -20,28 +20,93 @@ import 'state_history_configs.dart';
 import 'sticker_editor_configs.dart';
 import 'text_editor_configs.dart';
 
-export 'image_generation_configs/image_generation_configs.dart';
-export 'state_history_configs.dart';
-export 'helper_lines_configs.dart';
-export 'paint_editor_configs.dart';
-export 'text_editor_configs.dart';
-export 'layer_interaction_configs.dart';
-export 'sticker_editor_configs.dart';
+export '../../utils/design_mode.dart';
+export '../../utils/pro_image_editor_mode.dart';
+export '../crop_rotate_editor/aspect_ratio_item.dart';
+export '../custom_widgets/custom_widgets.dart';
+export '../i18n/i18n.dart';
+export '../icons/icons.dart';
+export '../layer/layer_background_mode.dart';
+export '../theme/theme.dart';
 export 'blur_editor_configs.dart';
 export 'crop_rotate_editor_configs.dart';
 export 'emoji_editor_configs.dart';
 export 'filter_editor_configs.dart';
-export '../i18n/i18n.dart';
-export '../icons/icons.dart';
-export '../theme/theme.dart';
-export '../custom_widgets/custom_widgets.dart';
-export '../crop_rotate_editor/aspect_ratio_item.dart';
-export '../../utils/design_mode.dart';
-export '../../utils/pro_image_editor_mode.dart';
-export '../layer/layer_background_mode.dart';
+export 'helper_lines_configs.dart';
+export 'image_generation_configs/image_generation_configs.dart';
+export 'layer_interaction_configs.dart';
+export 'paint_editor_configs.dart';
+export 'state_history_configs.dart';
+export 'sticker_editor_configs.dart';
+export 'text_editor_configs.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
+  /// Creates an instance of [ProImageEditorConfigs].
+  ///
+  /// - The `theme` specifies the theme for the Image Editor.
+  /// - The `heroTag` is a unique tag for the Image Editor widget. By default,
+  ///   it is 'Pro-Image-Editor-Hero'.
+  /// - The `i18n` is used for internationalization settings. By default, it
+  ///   uses an empty `I18n` instance.
+  /// - The `helperLines` configures helper lines in the Image Editor. By
+  ///   default, it uses an empty `HelperLines` instance.
+  /// - The `layerInteraction` specifies options for the layer interaction
+  ///   behavior.
+  /// - The `customWidgets` specifies custom widgets to be used in the Image
+  ///   Editor. By default, it uses an empty `CustomWidgets` instance.
+  /// - The `imageEditorTheme` sets the theme for the Image Editor. By
+  ///   default, it uses an empty `ImageEditorTheme` instance.
+  /// - The `icons` specifies the icons to be used in the Image Editor. By
+  ///   default, it uses an empty `ImageEditorIcons` instance.
+  /// - The `mainEditorConfigs` configures the Main Editor. By default, it
+  ///   uses an empty `MainEditorConfigs` instance.
+  /// - The `paintEditorConfigs` configures the Paint Editor. By default, it
+  ///   uses an empty `PaintEditorConfigs` instance.
+  /// - The `textEditorConfigs` configures the Text Editor. By default, it
+  ///   uses an empty `TextEditorConfigs` instance.
+  /// - The `cropRotateEditorConfigs` configures the Crop and Rotate Editor.
+  ///   By default, it uses an empty `CropRotateEditorConfigs` instance.
+  /// - The `filterEditorConfigs` configures the Filter Editor. By default,
+  ///   it uses an empty `FilterEditorConfigs` instance.
+  /// - The `blurEditorConfigs` configures the Blur Editor. By default, it
+  ///   uses an empty `BlurEditorConfigs` instance.
+  /// - The `emojiEditorConfigs` configures the Emoji Editor. By default, it
+  ///   uses an empty `EmojiEditorConfigs` instance.
+  /// - The `stickerEditorConfigs` configures the Sticker Editor. By default,
+  ///   it uses an empty `StickerEditorConfigs` instance.
+  /// - The `designMode` specifies the design mode for the Image Editor. By
+  ///   default, it is `ImageEditorDesignModeE.material`.
+  /// - The `stateHistoryConfigs` holds the configurations related to state
+  ///   history management. By default, it uses an empty `StateHistoryConfigs`
+  ///   instance.
+  /// - The `imageGenerationConfigs` holds the configurations related to
+  ///   image generation. By default, it uses an empty `ImageGeneratioConfigs`
+  ///   instance.
+  /// - The `editorBoxConstraintsBuilder` configures global [BoxConstraints]
+  ///   to use when opening editors in modal bottom sheets.
+  const ProImageEditorConfigs({
+    this.theme,
+    this.heroTag = 'Pro-Image-Editor-Hero',
+    this.i18n = const I18n(),
+    this.helperLines = const HelperLines(),
+    this.layerInteraction = const LayerInteraction(),
+    this.customWidgets = const ImageEditorCustomWidgets(),
+    this.imageEditorTheme = const ImageEditorTheme(),
+    this.icons = const ImageEditorIcons(),
+    this.stateHistoryConfigs = const StateHistoryConfigs(),
+    this.imageGenerationConfigs = const ImageGeneratioConfigs(),
+    this.mainEditorConfigs = const MainEditorConfigs(),
+    this.paintEditorConfigs = const PaintEditorConfigs(),
+    this.textEditorConfigs = const TextEditorConfigs(),
+    this.cropRotateEditorConfigs = const CropRotateEditorConfigs(),
+    this.filterEditorConfigs = const FilterEditorConfigs(),
+    this.blurEditorConfigs = const BlurEditorConfigs(),
+    this.emojiEditorConfigs = const EmojiEditorConfigs(),
+    this.stickerEditorConfigs,
+    this.designMode = ImageEditorDesignModeE.material,
+  });
+
   /// The theme to be used for the Image Editor.
   final ThemeData? theme;
 
@@ -98,48 +163,4 @@ class ProImageEditorConfigs {
 
   /// Holds the configurations related to image generation.
   final ImageGeneratioConfigs imageGenerationConfigs;
-
-  /// Creates an instance of [ProImageEditorConfigs].
-  ///
-  /// - The `theme` specifies the theme for the Image Editor.
-  /// - The `heroTag` is a unique tag for the Image Editor widget. By default, it is 'Pro-Image-Editor-Hero'.
-  /// - The `i18n` is used for internationalization settings. By default, it uses an empty `I18n` instance.
-  /// - The `helperLines` configures helper lines in the Image Editor. By default, it uses an empty `HelperLines` instance.
-  /// - The `layerInteraction` specifies options for the layer interaction behavior.
-  /// - The `customWidgets` specifies custom widgets to be used in the Image Editor. By default, it uses an empty `CustomWidgets` instance.
-  /// - The `imageEditorTheme` sets the theme for the Image Editor. By default, it uses an empty `ImageEditorTheme` instance.
-  /// - The `icons` specifies the icons to be used in the Image Editor. By default, it uses an empty `ImageEditorIcons` instance.
-  /// - The `mainEditorConfigs` configures the Main Editor. By default, it uses an empty `MainEditorConfigs` instance.
-  /// - The `paintEditorConfigs` configures the Paint Editor. By default, it uses an empty `PaintEditorConfigs` instance.
-  /// - The `textEditorConfigs` configures the Text Editor. By default, it uses an empty `TextEditorConfigs` instance.
-  /// - The `cropRotateEditorConfigs` configures the Crop and Rotate Editor. By default, it uses an empty `CropRotateEditorConfigs` instance.
-  /// - The `filterEditorConfigs` configures the Filter Editor. By default, it uses an empty `FilterEditorConfigs` instance.
-  /// - The `blurEditorConfigs` configures the Blur Editor. By default, it uses an empty `BlurEditorConfigs` instance.
-  /// - The `emojiEditorConfigs` configures the Emoji Editor. By default, it uses an empty `EmojiEditorConfigs` instance.
-  /// - The `stickerEditorConfigs` configures the Sticker Editor. By default, it uses an empty `StickerEditorConfigs` instance.
-  /// - The `designMode` specifies the design mode for the Image Editor. By default, it is `ImageEditorDesignModeE.material`.
-  /// - The `stateHistoryConfigs` holds the configurations related to state history management. By default, it uses an empty `StateHistoryConfigs` instance.
-  /// - The `imageGenerationConfigs` holds the configurations related to image generation. By default, it uses an empty `ImageGeneratioConfigs` instance.
-  /// - The `editorBoxConstraintsBuilder` configures global [BoxConstraints] to use when opening editors in modal bottom sheets.
-  const ProImageEditorConfigs({
-    this.theme,
-    this.heroTag = 'Pro-Image-Editor-Hero',
-    this.i18n = const I18n(),
-    this.helperLines = const HelperLines(),
-    this.layerInteraction = const LayerInteraction(),
-    this.customWidgets = const ImageEditorCustomWidgets(),
-    this.imageEditorTheme = const ImageEditorTheme(),
-    this.icons = const ImageEditorIcons(),
-    this.stateHistoryConfigs = const StateHistoryConfigs(),
-    this.imageGenerationConfigs = const ImageGeneratioConfigs(),
-    this.mainEditorConfigs = const MainEditorConfigs(),
-    this.paintEditorConfigs = const PaintEditorConfigs(),
-    this.textEditorConfigs = const TextEditorConfigs(),
-    this.cropRotateEditorConfigs = const CropRotateEditorConfigs(),
-    this.filterEditorConfigs = const FilterEditorConfigs(),
-    this.blurEditorConfigs = const BlurEditorConfigs(),
-    this.emojiEditorConfigs = const EmojiEditorConfigs(),
-    this.stickerEditorConfigs,
-    this.designMode = ImageEditorDesignModeE.material,
-  });
 }

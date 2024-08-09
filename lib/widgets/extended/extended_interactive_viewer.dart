@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
 
-/// A widget that provides interactive viewing capabilities with zoom and pan functionality.
+/// A widget that provides interactive viewing capabilities with zoom and pan
+/// functionality.
 ///
-/// The [ExtendedInteractiveViewer] wraps a given child widget and allows users to
-/// interact with it through zooming and panning. The interactivity can be enabled
-/// or disabled, and the zoom levels can be controlled with [minScale] and [maxScale].
+/// The [ExtendedInteractiveViewer] wraps a given child widget and allows users
+/// to interact with it through zooming and panning. The interactivity can be
+/// enabled or disabled, and the zoom levels can be controlled with [minScale]
+/// and [maxScale].
 ///
 /// Example usage:
 /// ```dart
@@ -19,12 +21,26 @@ import 'package:flutter/widgets.dart';
 ///
 /// The [ExtendedInteractiveViewer] requires the following parameters:
 /// - [child]: The widget to be displayed and interacted with.
-/// - [editorIsZoomable]: A boolean indicating whether zoom functionality is enabled.
+/// - [editorIsZoomable]: A boolean indicating whether zoom functionality is
+/// enabled.
 /// - [minScale]: The minimum scale factor for zooming.
 /// - [maxScale]: The maximum scale factor for zooming.
 ///
 /// Optionally, you can control the interactivity using [enableInteraction].
 class ExtendedInteractiveViewer extends StatefulWidget {
+  /// Creates an [ExtendedInteractiveViewer] with the given parameters.
+  const ExtendedInteractiveViewer({
+    super.key,
+    required this.child,
+    this.enableInteraction = true,
+    required this.editorIsZoomable,
+    required this.minScale,
+    required this.maxScale,
+    required this.onInteractionStart,
+    required this.onInteractionUpdate,
+    required this.onInteractionEnd,
+  });
+
   /// The child widget to be displayed and interacted with.
   final Widget child;
 
@@ -34,7 +50,8 @@ class ExtendedInteractiveViewer extends StatefulWidget {
   /// `false`, the content remains at a fixed scale.
   final bool editorIsZoomable;
 
-  /// Indicates whether user interactions such as panning and zooming are enabled.
+  /// Indicates whether user interactions such as panning and zooming are
+  /// enabled.
   ///
   /// Default value is `true`.
   final bool enableInteraction;
@@ -113,19 +130,6 @@ class ExtendedInteractiveViewer extends StatefulWidget {
   ///  * [onInteractionEnd], which handles the end of the same interaction.
   final GestureScaleUpdateCallback? onInteractionUpdate;
 
-  /// Creates an [ExtendedInteractiveViewer] with the given parameters.
-  const ExtendedInteractiveViewer({
-    super.key,
-    required this.child,
-    this.enableInteraction = true,
-    required this.editorIsZoomable,
-    required this.minScale,
-    required this.maxScale,
-    required this.onInteractionStart,
-    required this.onInteractionUpdate,
-    required this.onInteractionEnd,
-  });
-
   @override
   State<ExtendedInteractiveViewer> createState() =>
       ExtendedInteractiveViewerState();
@@ -143,7 +147,8 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer> {
     super.initState();
   }
 
-  /// Sets the interaction state to the given value and updates the UI accordingly.
+  /// Sets the interaction state to the given value and updates the UI
+  /// accordingly.
   void setEnableInteraction(bool value) {
     if (_enableInteraction != value) {
       _enableInteraction = value;
@@ -151,10 +156,15 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer> {
     }
   }
 
+  /// The factor by which the current transformation is scaled.
+  /// Returns the maximum scale factor applied on any axis.
   double get scaleFactor {
     return _transformCtrl.value.getMaxScaleOnAxis();
   }
 
+  /// The current translation offset applied to the transformation.
+  /// Returns an [Offset] representing the translation values on the x and y
+  /// axes.
   Offset get offset {
     return Offset(
       _transformCtrl.value.getTranslation().x,

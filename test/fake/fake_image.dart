@@ -2,7 +2,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-get fakeMemoryImage => Uint8List.fromList([
+Uint8List get fakeMemoryImage => Uint8List.fromList([
       0x89,
       0x50,
       0x4E,

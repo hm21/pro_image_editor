@@ -5,13 +5,36 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'frosted_glass_effect.dart';
 
+/// A stateless widget that represents an app bar with a frosted glass blur
+/// effect.
+/// This widget is specifically designed to be used within an image editing
+/// application,
+/// providing a visually appealing interface for interacting with the blur
+/// editor.
 class FrostedGlassBlurAppbar extends StatelessWidget {
-  final BlurEditorState blurEditor;
-
+  /// Creates a [FrostedGlassBlurAppbar].
+  ///
+  /// The [blurEditor] parameter is required to configure the app bar's
+  /// behavior, allowing it to interact with the blur editor's state and manage
+  /// image blur effects.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassBlurAppbar(
+  ///   blurEditor: myBlurEditorState,
+  /// )
+  /// ```
   const FrostedGlassBlurAppbar({
     super.key,
     required this.blurEditor,
   });
+
+  /// The configuration for the blur editor.
+  ///
+  /// This field provides access to the state of the [BlurEditorState] instance.
+  /// It allows the app bar to interact with the blur editor, enabling
+  /// functionality such as applying or modifying blur effects on the image.
+  final BlurEditorState blurEditor;
 
   @override
   Widget build(BuildContext context) {

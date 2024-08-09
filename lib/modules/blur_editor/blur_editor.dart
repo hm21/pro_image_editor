@@ -28,19 +28,16 @@ import '../filter_editor/widgets/filtered_image.dart';
 /// - `BlurEditor.asset`: Loads an image from an asset.
 /// - `BlurEditor.network`: Loads an image from a network URL.
 /// - `BlurEditor.memory`: Loads an image from memory as a `Uint8List`.
-/// - `BlurEditor.autoSource`: Automatically selects the source based on provided parameters.
+/// - `BlurEditor.autoSource`: Automatically selects the source based on
+/// provided parameters.
 class BlurEditor extends StatefulWidget
     with StandaloneEditor<BlurEditorInitConfigs> {
-  @override
-  final BlurEditorInitConfigs initConfigs;
-  @override
-  final EditorImage editorImage;
-
   /// Constructs a `BlurEditor` widget.
   ///
   /// The [key] parameter is used to provide a key for the widget.
   /// The [editorImage] parameter specifies the image to be edited.
-  /// The [initConfigs] parameter specifies the initialization configurations for the editor.
+  /// The [initConfigs] parameter specifies the initialization configurations
+  /// for the editor.
   const BlurEditor._({
     super.key,
     required this.editorImage,
@@ -99,7 +96,8 @@ class BlurEditor extends StatefulWidget
     );
   }
 
-  /// Constructs a `BlurEditor` widget with an image loaded automatically based on the provided source.
+  /// Constructs a `BlurEditor` widget with an image loaded automatically based
+  /// on the provided source.
   ///
   /// Either [byteArray], [file], [networkUrl], or [assetPath] must be provided.
   factory BlurEditor.autoSource({
@@ -136,9 +134,14 @@ class BlurEditor extends StatefulWidget
       );
     } else {
       throw ArgumentError(
-          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must be provided.");
+          "Either 'byteArray', 'file', 'networkUrl' or 'assetPath' must "
+          'be provided.');
     }
   }
+  @override
+  final BlurEditorInitConfigs initConfigs;
+  @override
+  final EditorImage editorImage;
 
   @override
   createState() => BlurEditorState();
@@ -151,7 +154,7 @@ class BlurEditorState extends State<BlurEditor>
         ImageEditorConvertedCallbacks,
         StandaloneEditorState<BlurEditor, BlurEditorInitConfigs> {
   /// Update the image with the applied blur and the slider value.
-  late final StreamController _uiBlurStream;
+  late final StreamController<void> _uiBlurStream;
 
   /// Represents the selected blur state.
   late double blurFactor;
@@ -182,7 +185,8 @@ class BlurEditorState extends State<BlurEditor>
     super.setState(fn);
   }
 
-  /// Handles the "Done" action, either by applying changes or closing the editor.
+  /// Handles the "Done" action, either by applying changes or closing the
+  /// editor.
   void done() async {
     doneEditing(
       returnValue: blurFactor,

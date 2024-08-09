@@ -48,7 +48,7 @@ void main() {
     });
 
     testWidgets('displays image from network', (WidgetTester tester) async {
-      mockNetworkImagesFor(() async {
+      await mockNetworkImagesFor(() async {
         when(mockEditorImage.type).thenReturn(EditorImageType.network);
         when(mockEditorImage.networkUrl).thenReturn(fakeNetworkImage);
 

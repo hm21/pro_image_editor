@@ -5,15 +5,28 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 export 'custom_widgets_blur_editor.dart';
 export 'custom_widgets_crop_rotate_editor.dart';
 export 'custom_widgets_filter_editor.dart';
+export 'custom_widgets_main_editor.dart';
 export 'custom_widgets_paint_editor.dart';
 export 'custom_widgets_text_editor.dart';
-export 'custom_widgets_main_editor.dart';
 
-/// The `ImageEditorCustomWidgets` class encapsulates custom widget components that can be
-/// used within various parts of the application's user interface. It provides
-/// flexibility for customizing the appearance and behavior of specific UI elements
-/// such as app bars, bottom navigation bars, and more.
+/// The `ImageEditorCustomWidgets` class encapsulates custom widget components
+/// that can be used within various parts of the application's user interface.
+/// It provides flexibility for customizing the appearance and behavior of
+/// specific UI elements such as app bars, bottom navigation bars, and more.
 class ImageEditorCustomWidgets {
+  /// Creates an instance of the `CustomWidgets` class with the specified
+  /// properties.
+  const ImageEditorCustomWidgets({
+    this.loadingDialog,
+    this.circularProgressIndicator,
+    this.mainEditor = const CustomWidgetsMainEditor(),
+    this.paintEditor = const CustomWidgetsPaintEditor(),
+    this.textEditor = const CustomWidgetsTextEditor(),
+    this.cropRotateEditor = const CustomWidgetsCropRotateEditor(),
+    this.filterEditor = const CustomWidgetsFilterEditor(),
+    this.blurEditor = const CustomWidgetsBlurEditor(),
+  });
+
   /// The main editor instance.
   final CustomWidgetsMainEditor mainEditor;
 
@@ -92,23 +105,10 @@ class ImageEditorCustomWidgets {
   ///     ),
   ///   ],
   /// ),
-  ///
   /// ```
   final Widget Function(String message, ProImageEditorConfigs configs)?
       loadingDialog;
 
   /// Replace the existing CircularProgressIndicator.
   final Widget? circularProgressIndicator;
-
-  /// Creates an instance of the `CustomWidgets` class with the specified properties.
-  const ImageEditorCustomWidgets({
-    this.loadingDialog,
-    this.circularProgressIndicator,
-    this.mainEditor = const CustomWidgetsMainEditor(),
-    this.paintEditor = const CustomWidgetsPaintEditor(),
-    this.textEditor = const CustomWidgetsTextEditor(),
-    this.cropRotateEditor = const CustomWidgetsCropRotateEditor(),
-    this.filterEditor = const CustomWidgetsFilterEditor(),
-    this.blurEditor = const CustomWidgetsBlurEditor(),
-  });
 }

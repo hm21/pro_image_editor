@@ -14,7 +14,8 @@ const _kBarPadding = 4;
 
 /// A widget that allows users to pick colors from a gradient bar.
 ///
-/// The `BarColorPicker` widget provides a horizontal or vertical bar with a thumb that users can drag to select a color from a gradient.
+/// The `BarColorPicker` widget provides a horizontal or vertical bar with a
+/// thumb that users can drag to select a color from a gradient.
 ///
 /// Example Usage:
 /// ```dart
@@ -29,6 +30,24 @@ const _kBarPadding = 4;
 /// )
 /// ```
 class BarColorPicker extends StatefulWidget {
+  /// A widget for selecting colors using a bar-based picker.
+  const BarColorPicker({
+    super.key,
+    this.pickMode = PickMode.color,
+    this.horizontal = true,
+    this.showThumb = true,
+    this.length = 200,
+    this.borderWidth = 0.0,
+    this.cornerRadius = 0.0,
+    this.thumbRadius = 6,
+    this.initialColor = const Color(0xffff0000),
+    this.thumbColor = Colors.black,
+    this.onPositionChange,
+    this.initPosition,
+    required this.colorListener,
+    required this.configs,
+  });
+
   /// The pick mode, which determines the available color options.
   final PickMode pickMode;
 
@@ -54,9 +73,10 @@ class BarColorPicker extends StatefulWidget {
   final Color initialColor;
 
   /// Callback function that is called when the thumb position changes.
-  final ValueChanged? onPositionChange;
+  final ValueChanged<double>? onPositionChange;
 
-  /// The initial position of the thumb in the bar. If not provided, it will be estimated based on the gradient and an initial color.
+  /// The initial position of the thumb in the bar. If not provided, it will be
+  /// estimated based on the gradient and an initial color.
   final double? initPosition;
 
   /// Image editor configurations.
@@ -67,23 +87,6 @@ class BarColorPicker extends StatefulWidget {
 
   /// The border width around the slider.
   final double borderWidth;
-
-  const BarColorPicker({
-    super.key,
-    this.pickMode = PickMode.color,
-    this.horizontal = true,
-    this.showThumb = true,
-    this.length = 200,
-    this.borderWidth = 0.0,
-    this.cornerRadius = 0.0,
-    this.thumbRadius = 6,
-    this.initialColor = const Color(0xffff0000),
-    this.thumbColor = Colors.black,
-    this.onPositionChange,
-    this.initPosition,
-    required this.colorListener,
-    required this.configs,
-  });
 
   @override
   createState() => _BarColorPickerState();
@@ -189,8 +192,8 @@ class _BarColorPickerState extends State<BarColorPicker>
     // interpolation factor (t) that brings color 'a' towards color 'b' to
     // approximate the target color. This can be a complex task depending on
     // how accurate you want it to be. A simple approach would be to try several
-    // values of t and choose the one that results in a color closest to the target.
-    // For more accuracy, more sophisticated methods may be used.
+    // values of t and choose the one that results in a color closest to the
+    // target. For more accuracy, more sophisticated methods may be used.
 
     double bestT = 0;
     double minDistance = double.infinity;
@@ -229,7 +232,7 @@ class _BarColorPickerState extends State<BarColorPicker>
     }
 
     if (colors.isEmpty) {
-      throw ArgumentError("The colors list must not be empty.");
+      throw ArgumentError('The colors list must not be empty.');
     } else if (colors.length == 1) {
       return colors.first;
     }

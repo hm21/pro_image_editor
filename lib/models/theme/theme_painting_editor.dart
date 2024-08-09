@@ -6,8 +6,10 @@ import 'theme_shared_values.dart';
 
 /// Flutter PaintingEditorTheme Class Documentation
 ///
-/// The `PaintingEditorTheme` class defines the theme for the painting editor in the image editor.
-/// It includes properties such as colors for the app bar, background, bottom bar, and more.
+/// The `PaintingEditorTheme` class defines the theme for the painting editor
+/// in the image editor.
+/// It includes properties such as colors for the app bar, background, bottom
+/// bar, and more.
 ///
 /// Usage:
 ///
@@ -23,7 +25,8 @@ import 'theme_shared_values.dart';
 ///
 /// Properties:
 ///
-/// - `appBarBackgroundColor`: Background color of the app bar in the painting editor.
+/// - `appBarBackgroundColor`: Background color of the app bar in the painting
+///    editor.
 ///
 /// - `appBarForegroundColor`: Foreground color (text and icons) of the app bar.
 ///
@@ -31,11 +34,14 @@ import 'theme_shared_values.dart';
 ///
 /// - `bottomBarColor`: Background color of the bottom navigation bar.
 ///
-/// - `bottomBarActiveItemColor`: Color of active items in the bottom navigation bar.
+/// - `bottomBarActiveItemColor`: Color of active items in the bottom
+///   navigation bar.
 ///
-/// - `bottomBarInactiveItemColor`: Color of inactive items in the bottom navigation bar.
+/// - `bottomBarInactiveItemColor`: Color of inactive items in the bottom
+///   navigation bar.
 ///
-/// - `lineWidthBottomSheetColor`: Color of the bottom sheet used to select line width.
+/// - `lineWidthBottomSheetColor`: Color of the bottom sheet used to select
+///   line width.
 ///
 /// Example Usage:
 ///
@@ -53,6 +59,26 @@ import 'theme_shared_values.dart';
 /// // Access other theme properties...
 /// ```
 class PaintingEditorTheme {
+  /// Creates an instance of the `PaintingEditorTheme` class with the specified
+  /// theme properties.
+  const PaintingEditorTheme({
+    this.lineWidthBottomSheetTitle,
+    this.opacityBottomSheetTitle,
+    this.appBarBackgroundColor = imageEditorAppBarColor,
+    this.lineWidthBottomSheetColor = const Color(0xFF252728),
+    this.opacityBottomSheetColor = const Color(0xFF252728),
+    this.appBarForegroundColor = const Color(0xFFE1E1E1),
+    this.background = imageEditorBackgroundColor,
+    this.bottomBarColor = imageEditorAppBarColor,
+    this.bottomBarActiveItemColor = imageEditorPrimaryColor,
+    this.bottomBarInactiveItemColor = const Color(0xFFEEEEEE),
+    this.initialStrokeWidth = 10.0,
+    this.initialOpacity = 1.0,
+    this.initialColor = const Color(0xffff0000),
+  })  : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive'),
+        assert(initialOpacity >= 0 && initialOpacity <= 1,
+            'initialOpacity must be between 0 and 1');
+
   /// Background color of the app bar in the painting editor.
   final Color appBarBackgroundColor;
 
@@ -91,23 +117,4 @@ class PaintingEditorTheme {
 
   /// Indicates the initial drawing color.
   final Color initialColor;
-
-  /// Creates an instance of the `PaintingEditorTheme` class with the specified theme properties.
-  const PaintingEditorTheme({
-    this.lineWidthBottomSheetTitle,
-    this.opacityBottomSheetTitle,
-    this.appBarBackgroundColor = imageEditorAppBarColor,
-    this.lineWidthBottomSheetColor = const Color(0xFF252728),
-    this.opacityBottomSheetColor = const Color(0xFF252728),
-    this.appBarForegroundColor = const Color(0xFFE1E1E1),
-    this.background = imageEditorBackgroundColor,
-    this.bottomBarColor = imageEditorAppBarColor,
-    this.bottomBarActiveItemColor = imageEditorPrimaryColor,
-    this.bottomBarInactiveItemColor = const Color(0xFFEEEEEE),
-    this.initialStrokeWidth = 10.0,
-    this.initialOpacity = 1.0,
-    this.initialColor = const Color(0xffff0000),
-  })  : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive'),
-        assert(initialOpacity >= 0 && initialOpacity <= 1,
-            'initialOpacity must be between 0 and 1');
 }

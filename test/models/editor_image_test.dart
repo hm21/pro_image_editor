@@ -35,7 +35,7 @@ void main() {
 
     test('Constructor should throw an error if all properties are null', () {
       expect(
-        () => EditorImage(),
+        EditorImage.new,
         throwsA(isA<AssertionError>()),
       );
     });

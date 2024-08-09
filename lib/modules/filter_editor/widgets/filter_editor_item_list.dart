@@ -13,46 +13,10 @@ import '../utils/filter_generator/filter_model.dart';
 import '../utils/filter_generator/filter_presets.dart';
 import 'filtered_image.dart';
 
+/// A widget for displaying a list of filter editor items, allowing users
+/// to select and apply filters to an image.
 class FilterEditorItemList extends StatefulWidget {
-  /// The EditorImage class represents an image with multiple sources,
-  /// including bytes, file, network URL, and asset path.
-  final EditorImage editorImage;
-
-  /// The image editor configs.
-  final ProImageEditorConfigs configs;
-
-  /// Specifies the scale factor for items.
-  ///
-  /// If provided, this value scales the items in the editor by the specified factor.
-  final double? itemScaleFactor;
-
-  /// Specifies the list of active filter state histories.
-  ///
-  /// If provided, this list contains the history of active filters applied to the image.
-  final FilterMatrix? activeFilters;
-
-  /// Specifies the blur factor.
-  final double? blurFactor;
-
-  /// Specifies the selected filter.
-  ///
-  /// This property represents the currently selected filter for the image editor.
-  final FilterMatrix selectedFilter;
-
-  /// The transform configurations how the image should be initialized.
-  final TransformConfigs? transformConfigs;
-
-  /// Callback function for selecting a filter.
-  ///
-  /// This function is called when a filter is selected in the editor. It takes a [FilterModel] as a parameter, representing the selected filter.
-  final Function(FilterModel filter) onSelectFilter;
-
-  /// The size of the image with layers applied.
-  final Size mainImageSize;
-
-  /// The size of the body with layers applied.
-  final Size mainBodySize;
-
+  /// Constructor for creating an instance of FilterEditorItemList.
   const FilterEditorItemList({
     super.key,
     required this.editorImage,
@@ -67,6 +31,49 @@ class FilterEditorItemList extends StatefulWidget {
     required this.configs,
   });
 
+  /// The EditorImage class represents an image with multiple sources,
+  /// including bytes, file, network URL, and asset path.
+  final EditorImage editorImage;
+
+  /// The image editor configs.
+  final ProImageEditorConfigs configs;
+
+  /// Specifies the scale factor for items.
+  ///
+  /// If provided, this value scales the items in the editor by the specified
+  /// factor.
+  final double? itemScaleFactor;
+
+  /// Specifies the list of active filter state histories.
+  ///
+  /// If provided, this list contains the history of active filters applied to
+  /// the image.
+  final FilterMatrix? activeFilters;
+
+  /// Specifies the blur factor.
+  final double? blurFactor;
+
+  /// Specifies the selected filter.
+  ///
+  /// This property represents the currently selected filter for the image
+  /// editor.
+  final FilterMatrix selectedFilter;
+
+  /// The transform configurations how the image should be initialized.
+  final TransformConfigs? transformConfigs;
+
+  /// Callback function for selecting a filter.
+  ///
+  /// This function is called when a filter is selected in the editor. It takes
+  /// a [FilterModel] as a parameter, representing the selected filter.
+  final Function(FilterModel filter) onSelectFilter;
+
+  /// The size of the image with layers applied.
+  final Size mainImageSize;
+
+  /// The size of the body with layers applied.
+  final Size mainBodySize;
+
   @override
   State<FilterEditorItemList> createState() => _FilterEditorItemListState();
 }
@@ -74,7 +81,8 @@ class FilterEditorItemList extends StatefulWidget {
 class _FilterEditorItemListState extends State<FilterEditorItemList> {
   late ScrollController _scrollCtrl;
 
-  /// A list of `ColorFilterGenerator` objects that define the image filters available in the editor.
+  /// A list of `ColorFilterGenerator` objects that define the image filters
+  /// available in the editor.
   List<FilterModel> get _filters =>
       widget.configs.filterEditorConfigs.filterList ?? presetFiltersList;
 

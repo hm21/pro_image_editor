@@ -2,7 +2,8 @@
 import 'package:pro_image_editor/models/editor_configs/main_editor_configs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-/// A mixin providing access to converted configurations from [ProImageEditorConfigs].
+/// A mixin providing access to converted configurations from
+/// [ProImageEditorConfigs].
 mixin ImageEditorConvertedConfigs {
   /// Returns the main configuration options for the editor.
   ProImageEditorConfigs get configs;
@@ -64,6 +65,7 @@ mixin ImageEditorConvertedConfigs {
   /// Returns the hero tag used in the image editor.
   String get heroTag => configs.heroTag;
 
-  /// Indicates if the design mode is material. Otherwise the design mode is cupertino.
+  /// Indicates if the design mode is material. Otherwise the design mode is
+  /// cupertino.
   bool get isMaterial => configs.designMode == ImageEditorDesignModeE.material;
 }

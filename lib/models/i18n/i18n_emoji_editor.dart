@@ -1,5 +1,33 @@
 /// Internationalization (i18n) settings for the Emoji Editor component.
 class I18nEmojiEditor {
+  /// Creates an instance of [I18nEmojiEditor] with customizable
+  /// internationalization settings.
+  ///
+  /// You can provide translations and messages specifically for the Emoji
+  /// Editor component of your application.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// I18nEmojiEditor(
+  ///   bottomNavigationBarText: 'Emojis',
+  ///   search: 'Search',
+  /// )
+  /// ```
+  const I18nEmojiEditor({
+    this.bottomNavigationBarText = 'Emoji',
+    this.search = 'Search',
+    this.categoryRecent = 'Recent',
+    this.categorySmileys = 'Smileys & People',
+    this.categoryAnimals = 'Animals & Nature',
+    this.categoryFood = 'Food & Drink',
+    this.categoryActivities = 'Activities',
+    this.categoryTravel = 'Travel & Places',
+    this.categoryObjects = 'Objects',
+    this.categorySymbols = 'Symbols',
+    this.categoryFlags = 'Flags',
+  });
+
   /// Text for the bottom navigation bar item that opens the Emoji Editor.
   final String bottomNavigationBarText;
 
@@ -32,31 +60,4 @@ class I18nEmojiEditor {
 
   /// Text for the 'Flags' category in the emoji picker.
   final String categoryFlags;
-
-  /// Creates an instance of [I18nEmojiEditor] with customizable internationalization settings.
-  ///
-  /// You can provide translations and messages specifically for the Emoji Editor
-  /// component of your application.
-  ///
-  /// Example:
-  ///
-  /// ```dart
-  /// I18nEmojiEditor(
-  ///   bottomNavigationBarText: 'Emojis',
-  ///   search: 'Search',
-  /// )
-  /// ```
-  const I18nEmojiEditor({
-    this.bottomNavigationBarText = 'Emoji',
-    this.search = 'Search',
-    this.categoryRecent = 'Recent',
-    this.categorySmileys = 'Smileys & People',
-    this.categoryAnimals = 'Animals & Nature',
-    this.categoryFood = 'Food & Drink',
-    this.categoryActivities = 'Activities',
-    this.categoryTravel = 'Travel & Places',
-    this.categoryObjects = 'Objects',
-    this.categorySymbols = 'Symbols',
-    this.categoryFlags = 'Flags',
-  });
 }

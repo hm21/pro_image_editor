@@ -8,8 +8,41 @@ import '../crop_rotate_editor/transform_factors.dart';
 
 /// Configuration class for initializing the image editor.
 ///
-/// This class holds various configurations needed to initialize the image editor.
+/// This class holds various configurations needed to initialize the image
+/// editor.
 abstract class EditorInitConfigs {
+  /// Creates a new instance of [EditorInitConfigs].
+  ///
+  /// The [theme] parameter specifies the theme data for the editor.
+  /// The [configs] parameter specifies the configuration options for the image
+  /// editor.
+  /// The [callbacks] parameter specifies the callback options for the image
+  /// editor.
+  /// The [mainImageSize] parameter specifies the size of the image with layers
+  /// applied.
+  /// The [mainBodySize] parameter specifies the size of the body with layers
+  /// applied.
+  /// The [appliedFilters] parameter specifies the list of applied filters.
+  /// The [appliedBlurFactor] parameter specifies the applied blur factor.
+  /// The [transformConfigs] parameter specifies the transformation
+  /// configurations for the editor.
+  /// The [layers] parameter specifies the layers in the editor.
+  const EditorInitConfigs({
+    required this.theme,
+    this.configs = const ProImageEditorConfigs(),
+    this.callbacks = const ProImageEditorCallbacks(),
+    this.mainImageSize,
+    this.mainBodySize,
+    this.transformConfigs,
+    this.appliedFilters = const [],
+    this.appliedBlurFactor = 0,
+    this.layers,
+    this.onCloseEditor,
+    this.onImageEditingComplete,
+    this.onImageEditingStarted,
+    this.convertToUint8List = false,
+  });
+
   /// The configuration options for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -37,50 +70,26 @@ abstract class EditorInitConfigs {
   /// The layers in the editor.
   final List<Layer>? layers;
 
-  /// Determines whether to return the image as a Uint8List when closing the editor.
+  /// Determines whether to return the image as a Uint8List when closing the
+  /// editor.
   final bool convertToUint8List;
 
   /// A callback function that will be called when the editing is done,
   /// and it returns the edited image as a `Uint8List` with the format `jpg`.
   ///
-  /// The edited image is provided as a Uint8List to the [onImageEditingComplete] function
-  /// when the editing is completed.
+  /// The edited image is provided as a Uint8List to the
+  /// [onImageEditingComplete] function when the editing is completed.
   ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px"/>
   final ImageEditingCompleteCallback? onImageEditingComplete;
 
-  /// A callback function that is triggered when the image generation is started.
+  /// A callback function that is triggered when the image generation is
+  /// started.
   final Function()? onImageEditingStarted;
 
-  /// A callback function that will be called before the image editor will close.
+  /// A callback function that will be called before the image editor will
+  /// close.
   ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
   final ImageEditingEmptyCallback? onCloseEditor;
-
-  /// Creates a new instance of [EditorInitConfigs].
-  ///
-  /// The [theme] parameter specifies the theme data for the editor.
-  /// The [configs] parameter specifies the configuration options for the image editor.
-  /// The [callbacks] parameter specifies the callback options for the image editor.
-  /// The [mainImageSize] parameter specifies the size of the image with layers applied.
-  /// The [mainBodySize] parameter specifies the size of the body with layers applied.
-  /// The [appliedFilters] parameter specifies the list of applied filters.
-  /// The [appliedBlurFactor] parameter specifies the applied blur factor.
-  /// The [transformConfigs] parameter specifies the transformation configurations for the editor.
-  /// The [layers] parameter specifies the layers in the editor.
-  const EditorInitConfigs({
-    required this.theme,
-    this.configs = const ProImageEditorConfigs(),
-    this.callbacks = const ProImageEditorCallbacks(),
-    this.mainImageSize,
-    this.mainBodySize,
-    this.transformConfigs,
-    this.appliedFilters = const [],
-    this.appliedBlurFactor = 0,
-    this.layers,
-    this.onCloseEditor,
-    this.onImageEditingComplete,
-    this.onImageEditingStarted,
-    this.convertToUint8List = false,
-  });
 }

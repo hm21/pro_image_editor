@@ -6,8 +6,39 @@ import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
 import 'utils/custom_widgets_standalone_editor.dart';
 import 'utils/custom_widgets_typedef.dart';
 
+/// A custom widget for editing text in an image editor.
+///
+/// This widget extends the standalone editor for the text editor state,
+/// providing a customizable interface for applying and adjusting text
+/// properties such as color and font size.
 class CustomWidgetsTextEditor
     extends CustomWidgetsStandaloneEditor<TextEditorState> {
+  /// Creates a [CustomWidgetsTextEditor] widget.
+  ///
+  /// This widget allows customization of the app bar, bottom bar, body items,
+  /// and additional components specific to text editing functionality,
+  /// enabling a flexible design tailored to specific needs.
+  ///
+  /// Example:
+  /// ```
+  /// CustomWidgetsTextEditor(
+  ///   appBar: myAppBar,
+  ///   bottomBar: myBottomBar,
+  ///   bodyItems: myBodyItems,
+  ///   colorPicker: myColorPicker,
+  ///   sliderFontSize: mySliderFontSize,
+  ///   fontSizeCloseButton: myFontSizeCloseButton,
+  /// )
+  /// ```
+  const CustomWidgetsTextEditor({
+    super.appBar,
+    super.bottomBar,
+    super.bodyItems,
+    this.colorPicker,
+    this.sliderFontSize,
+    this.fontSizeCloseButton,
+  });
+
   /// A custom color picker widget for the text editor.
   ///
   /// - [editorState] - The current state of the editor.
@@ -15,9 +46,11 @@ class CustomWidgetsTextEditor
   /// - [currentColor] - The currently selected color.
   /// - [setColor] - A function to update the selected color.
   ///
-  /// Returns an optional [ReactiveCustomWidget] that provides a custom color picker.
+  /// Returns an optional [ReactiveCustomWidget] that provides a custom color
+  /// picker.
   ///
   /// **Example:**
+  /// ```dart
   /// colorPicker: (editor, rebuildStream, currentColor, setColor) =>
   ///    ReactiveCustomWidget(
   ///      stream: rebuildStream,
@@ -31,6 +64,7 @@ class CustomWidgetsTextEditor
   ///        },
   ///      ),
   /// ),
+  /// ```
   final CustomColorPicker<TextEditorState>? colorPicker;
 
   /// Custom close button to close the font-size bottom sheet.
@@ -60,7 +94,9 @@ class CustomWidgetsTextEditor
   /// Returns a [ReactiveCustomWidget] that provides a custom slider.
   ///
   /// **Example:**
-  /// sliderFontSize: (editorState, rebuildStream, value, onChanged, onChangeEnd) {
+  /// ```dart
+  /// sliderFontSize:
+  /// (editorState, rebuildStream, value, onChanged, onChangeEnd) {
   ///   return ReactiveCustomWidget(
   ///     stream: rebuildStream,
   ///     builder: (_) => Slider(
@@ -71,14 +107,6 @@ class CustomWidgetsTextEditor
   ///     ),
   ///   );
   /// },
+  /// ```
   final CustomSlider<TextEditorState>? sliderFontSize;
-
-  const CustomWidgetsTextEditor({
-    super.appBar,
-    super.bottomBar,
-    super.bodyItems,
-    this.colorPicker,
-    this.sliderFontSize,
-    this.fontSizeCloseButton,
-  });
 }

@@ -8,6 +8,29 @@ import 'paint_editor_enum.dart';
 /// The `PaintingController` class is responsible for managing and controlling
 /// the painting state.
 class PaintingController extends ChangeNotifier {
+  /// Creates an instance of the `PaintingController` with initial settings.
+  ///
+  /// - `strokeWidth`: The initial stroke width.
+  /// - `color`: The initial color.
+  /// - `mode`: The initial painting mode (e.g., line, circle, rectangle).
+  /// - `fill`: Whether the initial mode should fill the shape
+  /// (e.g., circle or rectangle).
+  /// - `strokeMultiplier`: The multiplier for the stroke width.
+  PaintingController({
+    required double strokeWidth,
+    required Color color,
+    required PaintModeE mode,
+    required bool fill,
+    required int strokeMultiplier,
+    required this.opacity,
+  }) {
+    _strokeWidth = strokeWidth;
+    _color = color;
+    _mode = mode;
+    _fill = fill;
+    _strokeMultiplier = strokeMultiplier;
+  }
+
   /// The width of the stroke for painting operations.
   late double _strokeWidth;
 
@@ -46,7 +69,8 @@ class PaintingController extends ChangeNotifier {
 
   /// Getter for the current state of the painted model.
   ///
-  /// Returns a [PaintedModel] instance representing the current state of the painting.
+  /// Returns a [PaintedModel] instance representing the current state of the
+  /// painting.
   PaintedModel get paintedModel => PaintedModel(
         mode: mode,
         offsets: mode == PaintModeE.freeStyle ? offsets : [start, end],
@@ -68,7 +92,8 @@ class PaintingController extends ChangeNotifier {
   /// Indicates whether there is an ongoing painting action.
   bool get busy => _paintInProgress;
 
-  /// Indicates whether the current mode requires filling (e.g., circle or rectangle).
+  /// Indicates whether the current mode requires filling
+  /// (e.g., circle or rectangle).
   bool get fill => _fill;
 
   /// Returns the current color used for painting.
@@ -95,28 +120,6 @@ class PaintingController extends ChangeNotifier {
   /// Determines whether redo actions can be performed on the current state.
   bool get canRedo => historyPosition < paintHistory.length;
 
-  /// Creates an instance of the `PaintingController` with initial settings.
-  ///
-  /// - `strokeWidth`: The initial stroke width.
-  /// - `color`: The initial color.
-  /// - `mode`: The initial painting mode (e.g., line, circle, rectangle).
-  /// - `fill`: Whether the initial mode should fill the shape (e.g., circle or rectangle).
-  /// - `strokeMultiplier`: The multiplier for the stroke width.
-  PaintingController({
-    required double strokeWidth,
-    required Color color,
-    required PaintModeE mode,
-    required bool fill,
-    required int strokeMultiplier,
-    required this.opacity,
-  }) {
-    _strokeWidth = strokeWidth;
-    _color = color;
-    _mode = mode;
-    _fill = fill;
-    _strokeMultiplier = strokeMultiplier;
-  }
-
   /// Adds a painted model to the painting history and notifies listeners of
   /// the change.
   void addPaintInfo(PaintedModel paintInfo) {
@@ -136,10 +139,11 @@ class PaintingController extends ChangeNotifier {
 
   /// Clean forward changes in the history.
   ///
-  /// This method removes any changes made after the current edit position in the history.
-  /// It ensures that the state history and screenshots are consistent with the current
-  /// position. This is useful when performing an undo operation, and new edits are made,
-  /// effectively discarding the "redo" history.
+  /// This method removes any changes made after the current edit position in
+  /// the history.
+  /// It ensures that the state history and screenshots are consistent with the
+  /// current position. This is useful when performing an undo operation, and
+  /// new edits are made, effectively discarding the "redo" history.
   void _cleanForwardChanges() {
     if (paintHistory.isNotEmpty) {
       while (paintHistory.length > historyPosition) {
@@ -216,7 +220,8 @@ class PaintingController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sets whether the current mode should fill the shape and notifies listeners.
+  /// Sets whether the current mode should fill the shape and notifies
+  /// listeners.
   void setFill(bool fill) {
     _fill = fill;
     notifyListeners();

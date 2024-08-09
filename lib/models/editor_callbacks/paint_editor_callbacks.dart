@@ -7,6 +7,26 @@ import 'standalone_editor_callbacks.dart';
 
 /// A class representing callbacks for the paint editor.
 class PaintEditorCallbacks extends StandaloneEditorCallbacks {
+  /// Creates a new instance of [PaintEditorCallbacks].
+  const PaintEditorCallbacks({
+    this.onPaintModeChanged,
+    this.onDrawingDone,
+    this.onColorChanged,
+    this.onLineWidthChanged,
+    this.onToggleFill,
+    this.onEditorZoomScaleStart,
+    this.onEditorZoomScaleUpdate,
+    this.onEditorZoomScaleEnd,
+    this.onOpacityChange,
+    super.onInit,
+    super.onAfterViewInit,
+    super.onUndo,
+    super.onRedo,
+    super.onDone,
+    super.onCloseEditor,
+    super.onUpdateUI,
+  });
+
   /// A callback function that is triggered when the line width changes.
   ///
   /// The [ValueChanged<double>] parameter provides the new line width.
@@ -52,8 +72,10 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// See also:
   ///
-  ///  * [onEditorZoomScaleStart], which handles the start of the same interaction.
-  ///  * [onEditorZoomScaleUpdate], which handles an update to the same interaction.
+  ///  * [onEditorZoomScaleStart], which handles the start of the same
+  ///    interaction.
+  ///  * [onEditorZoomScaleUpdate], which handles an update to the same
+  ///    interaction.
   final GestureScaleEndCallback? onEditorZoomScaleEnd;
 
   /// Called when the user begins a pan or scale gesture on the editor.
@@ -71,7 +93,8 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// See also:
   ///
-  ///  * [onEditorZoomScaleUpdate], which handles an update to the same interaction.
+  ///  * [onEditorZoomScaleUpdate], which handles an update to the same
+  /// interaction.
   ///  * [onEditorZoomScaleEnd], which handles the end of the same interaction.
   final GestureScaleStartCallback? onEditorZoomScaleStart;
 
@@ -91,34 +114,15 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
   ///
   /// See also:
   ///
-  ///  * [onEditorZoomScaleStart], which handles the start of the same interaction.
+  ///  * [onEditorZoomScaleStart], which handles the start of the same
+  /// interaction.
   ///  * [onEditorZoomScaleEnd], which handles the end of the same interaction.
   final GestureScaleUpdateCallback? onEditorZoomScaleUpdate;
 
-  /// Creates a new instance of [PaintEditorCallbacks].
-  const PaintEditorCallbacks({
-    this.onPaintModeChanged,
-    this.onDrawingDone,
-    this.onColorChanged,
-    this.onLineWidthChanged,
-    this.onToggleFill,
-    this.onEditorZoomScaleStart,
-    this.onEditorZoomScaleUpdate,
-    this.onEditorZoomScaleEnd,
-    this.onOpacityChange,
-    super.onInit,
-    super.onAfterViewInit,
-    super.onUndo,
-    super.onRedo,
-    super.onDone,
-    super.onCloseEditor,
-    super.onUpdateUI,
-  });
-
   /// Handles the line width change event.
   ///
-  /// This method calls the [onLineWidthChanged] callback with the provided [newWidth]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onLineWidthChanged] callback with the provided
+  /// [newWidth] and then calls [handleUpdateUI].
   void handleLineWidthChanged(double newWidth) {
     onLineWidthChanged?.call(newWidth);
     handleUpdateUI();
@@ -126,7 +130,8 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the drawing done event.
   ///
-  /// This method calls the [onDrawingDone] callback and then calls [handleUpdateUI].
+  /// This method calls the [onDrawingDone] callback and then calls
+  /// [handleUpdateUI].
   void handleDrawingDone() {
     onDrawingDone?.call();
     handleUpdateUI();
@@ -134,8 +139,8 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the paint mode change event.
   ///
-  /// This method calls the [onPaintModeChanged] callback with the provided [newMode]
-  /// and then calls [handleUpdateUI].
+  /// This method calls the [onPaintModeChanged] callback with the provided
+  /// [newMode] and then calls [handleUpdateUI].
   void handlePaintModeChanged(PaintModeE newMode) {
     onPaintModeChanged?.call(newMode);
     handleUpdateUI();
@@ -161,7 +166,8 @@ class PaintEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Handles the color changed event.
   ///
-  /// This method calls the [onColorChanged] callback and then calls [handleUpdateUI].
+  /// This method calls the [onColorChanged] callback and then calls
+  /// [handleUpdateUI].
   void handleColorChanged() {
     onColorChanged?.call();
     handleUpdateUI();

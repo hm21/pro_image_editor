@@ -29,7 +29,7 @@ void main() {
     });
     testWidgets('Initializes with network constructor',
         (WidgetTester tester) async {
-      mockNetworkImagesFor(() async {
+      await mockNetworkImagesFor(() async {
         await tester.pumpWidget(MaterialApp(
           home: PaintingEditor.network(
             fakeNetworkImage,

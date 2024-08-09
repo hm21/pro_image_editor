@@ -5,6 +5,9 @@ import 'package:pro_image_editor/widgets/overlays/loading_dialog/animations/load
 ///
 /// The animation is controlled by an [AnimationController].
 class OpacityOverlayAnimation extends LoadingDialogOverlayAnimation {
+  /// Creates an [OpacityOverlayAnimation] widget.
+  ///
+  /// The [child] and [onAnimationDone] parameters must not be null.
   const OpacityOverlayAnimation({
     super.key,
     required super.child,

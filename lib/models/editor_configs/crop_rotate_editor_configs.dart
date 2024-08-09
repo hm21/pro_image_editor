@@ -24,90 +24,6 @@ export '../crop_rotate_editor/rotate_direction.dart';
 /// );
 /// ```
 class CropRotateEditorConfigs {
-  /// Indicates whether the editor is enabled.
-  final bool enabled;
-
-  /// Indicating whether the image can be rotated.
-  final bool canRotate;
-
-  /// Indicating whether the image can be flipped.
-  final bool canFlip;
-
-  /// Indicating whether the aspect ratio of the image can be changed.
-  final bool canChangeAspectRatio;
-
-  /// Indicating whether the editor can be reset.
-  final bool canReset;
-
-  /// Layers will also be transformed like the crop-rotate image.
-  final bool transformLayers;
-
-  /// Enables double-tap zoom functionality when set to true.
-  final bool enableDoubleTap;
-
-  /// Determines if the mouse scroll direction should be reversed.
-  final bool reverseMouseScroll;
-
-  /// Determines if the drag direction should be reversed.
-  final bool reverseDragDirection;
-
-  /// The cropper is round and not rectangular, which is optimal for cutting profile images.
-  ///
-  /// The round cropper only supports an aspect ratio of 1.
-  final bool roundCropper;
-
-  /// The initial aspect ratio for cropping.
-  ///
-  /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
-  final double? initAspectRatio;
-
-  /// The maximum scale allowed for the view.
-  final double maxScale;
-
-  /// The scaling factor applied to mouse scrolling.
-  final double mouseScaleFactor;
-
-  /// The scaling factor applied when double-tapping.
-  final double doubleTapScaleFactor;
-
-  /// The allowed aspect ratios for cropping.
-  ///
-  /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
-  final List<AspectRatioItem> aspectRatios;
-
-  /// The duration for the animation controller that handles rotation and scale animations.
-  final Duration animationDuration;
-
-  /// The duration of drag-crop animations.
-  final Duration cropDragAnimationDuration;
-
-  /// Fade in animation from content outside the crop area.
-  final Duration fadeInOutsideCropAreaAnimationDuration;
-
-  /// The duration of the outside crop area opacity.
-  final Duration opacityOutsideCropAreaDuration;
-
-  /// The curve used for the rotation animation.
-  final Curve rotateAnimationCurve;
-
-  /// The curve used for the scale animation, which is triggered when the image needs to resize due to rotation.
-  final Curve scaleAnimationCurve;
-
-  /// The animation curve used for crop animations.
-  final Curve cropDragAnimationCurve;
-
-  /// The animation curve used for the fade in animation from content outside the crop area.
-  final Curve fadeInOutsideCropAreaAnimationCurve;
-
-  /// The direction in which the image will be rotated.
-  final RotateDirection rotateDirection;
-
-  /// Defines the size of the draggable area on corners of the crop rectangle for desktop devices.
-  final double desktopCornerDragArea;
-
-  /// Defines the size of the draggable area on corners of the crop rectangle for mobile devices.
-  final double mobileCornerDragArea;
-
   /// Creates an instance of CropRotateEditorConfigs with optional settings.
   ///
   /// By default, all options are enabled, and the initial aspect ratio is set
@@ -159,4 +75,94 @@ class CropRotateEditorConfigs {
             mobileCornerDragArea > 0, 'mobileCornerDragArea must be positive'),
         assert(doubleTapScaleFactor > 1,
             'doubleTapScaleFactor must be greater than 1');
+
+  /// Indicates whether the editor is enabled.
+  final bool enabled;
+
+  /// Indicating whether the image can be rotated.
+  final bool canRotate;
+
+  /// Indicating whether the image can be flipped.
+  final bool canFlip;
+
+  /// Indicating whether the aspect ratio of the image can be changed.
+  final bool canChangeAspectRatio;
+
+  /// Indicating whether the editor can be reset.
+  final bool canReset;
+
+  /// Layers will also be transformed like the crop-rotate image.
+  final bool transformLayers;
+
+  /// Enables double-tap zoom functionality when set to true.
+  final bool enableDoubleTap;
+
+  /// Determines if the mouse scroll direction should be reversed.
+  final bool reverseMouseScroll;
+
+  /// Determines if the drag direction should be reversed.
+  final bool reverseDragDirection;
+
+  /// The cropper is round and not rectangular, which is optimal for cutting
+  /// profile images.
+  ///
+  /// The round cropper only supports an aspect ratio of 1.
+  final bool roundCropper;
+
+  /// The initial aspect ratio for cropping.
+  ///
+  /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
+  final double? initAspectRatio;
+
+  /// The maximum scale allowed for the view.
+  final double maxScale;
+
+  /// The scaling factor applied to mouse scrolling.
+  final double mouseScaleFactor;
+
+  /// The scaling factor applied when double-tapping.
+  final double doubleTapScaleFactor;
+
+  /// The allowed aspect ratios for cropping.
+  ///
+  /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
+  final List<AspectRatioItem> aspectRatios;
+
+  /// The duration for the animation controller that handles rotation and
+  /// scale animations.
+  final Duration animationDuration;
+
+  /// The duration of drag-crop animations.
+  final Duration cropDragAnimationDuration;
+
+  /// Fade in animation from content outside the crop area.
+  final Duration fadeInOutsideCropAreaAnimationDuration;
+
+  /// The duration of the outside crop area opacity.
+  final Duration opacityOutsideCropAreaDuration;
+
+  /// The curve used for the rotation animation.
+  final Curve rotateAnimationCurve;
+
+  /// The curve used for the scale animation, which is triggered when the
+  /// image needs to resize due to rotation.
+  final Curve scaleAnimationCurve;
+
+  /// The animation curve used for crop animations.
+  final Curve cropDragAnimationCurve;
+
+  /// The animation curve used for the fade in animation from content outside
+  /// the crop area.
+  final Curve fadeInOutsideCropAreaAnimationCurve;
+
+  /// The direction in which the image will be rotated.
+  final RotateDirection rotateDirection;
+
+  /// Defines the size of the draggable area on corners of the crop rectangle
+  /// for desktop devices.
+  final double desktopCornerDragArea;
+
+  /// Defines the size of the draggable area on corners of the crop rectangle
+  /// for mobile devices.
+  final double mobileCornerDragArea;
 }

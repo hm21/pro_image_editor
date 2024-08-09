@@ -66,8 +66,8 @@ class AspectRatioPainter extends CustomPainter {
               fontSize: 16.0,
             )),
         textDirection: TextDirection.ltr,
-        maxLines: 1);
-    textPainter.layout(maxWidth: rect.width);
+        maxLines: 1)
+      ..layout(maxWidth: rect.width);
 
     textPainter.paint(
         canvas,

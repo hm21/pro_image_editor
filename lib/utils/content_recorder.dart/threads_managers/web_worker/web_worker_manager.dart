@@ -10,10 +10,16 @@ import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/th
 import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/web_worker/web_worker_thread.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/processor_helper.dart';
 
+/// Manages web workers for background processing tasks.
+///
+/// Extends [ThreadManager] to initialize and handle web worker threads.
+/// Uses the browser's Web Worker API to offload tasks.
 class WebWorkerManager extends ThreadManager {
+  /// List of web worker threads managed by this manager.
   @override
   final List<WebWorkerThread> threads = [];
 
+  /// Indicates whether web workers are supported by the browser.
   final bool supportWebWorkers = html.Worker.supported;
 
   @override
@@ -24,6 +30,7 @@ class WebWorkerManager extends ThreadManager {
       configs: configs.imageGenerationConfigs.processorConfigs,
       deviceNumberOfProcessors: _deviceNumberOfProcessors(),
     );
+
     for (var i = 0; i < processors && !isDestroyed; i++) {
       threads.add(WebWorkerThread(
         onMessage: (message) {
@@ -34,10 +41,10 @@ class WebWorkerManager extends ThreadManager {
     }
   }
 
+  /// Retrieves the number of processors available on the device.
   int _deviceNumberOfProcessors() {
     var hardwareConcurrency = js.context['navigator']?['hardwareConcurrency'];
-    return hardwareConcurrency != null ||
-            hardwareConcurrency.runtimeType is! int
+    return hardwareConcurrency != null && hardwareConcurrency.runtimeType is int
         ? hardwareConcurrency as int
         : 1;
   }

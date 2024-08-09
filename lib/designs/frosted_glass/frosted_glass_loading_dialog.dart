@@ -5,15 +5,41 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import 'frosted_glass_effect.dart';
 
+/// A stateless widget that displays a loading dialog with a frosted glass
+/// effect.
+///
+/// This dialog is used to indicate loading or processing states within an image
+/// editing application, providing a visually appealing overlay with a message.
 class FrostedGlassLoadingDialog extends StatelessWidget {
-  final String message;
-  final ProImageEditorConfigs configs;
-
+  /// Creates a [FrostedGlassLoadingDialog].
+  ///
+  /// This dialog displays a loading indicator with a message, using a frosted
+  /// glass effect to enhance the user interface during processing operations.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassLoadingDialog(
+  ///   message: 'Loading, please wait...',
+  ///   configs: myEditorConfigs,
+  /// )
+  /// ```
   const FrostedGlassLoadingDialog({
     super.key,
     required this.message,
     required this.configs,
   });
+
+  /// The message to display within the loading dialog.
+  ///
+  /// This message provides context or information about the current loading
+  /// operation, keeping the user informed about the application's status.
+  final String message;
+
+  /// The configuration settings for the loading dialog.
+  ///
+  /// These settings determine various aspects of the dialog's appearance and
+  /// behavior, ensuring it matches the application's overall theme and style.
+  final ProImageEditorConfigs configs;
 
   @override
   Widget build(BuildContext context) {

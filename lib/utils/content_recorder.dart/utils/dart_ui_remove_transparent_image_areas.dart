@@ -129,6 +129,19 @@ Future<ui.Image?> dartUiRemoveTransparentImgAreas(
 
 /// Helper class to manage image metadata and pixel data.
 class _RemoveHelper {
+  /// Constructs a [_RemoveHelper] instance.
+  ///
+  /// All parameters are required.
+  _RemoveHelper({
+    required this.width,
+    required this.height,
+    required this.minX,
+    required this.minY,
+    required this.maxX,
+    required this.maxY,
+    required this.bytes,
+  });
+
   /// The width of the image.
   final int width;
 
@@ -149,17 +162,4 @@ class _RemoveHelper {
 
   /// The byte data of the image.
   final ByteData bytes;
-
-  /// Constructs a [_RemoveHelper] instance.
-  ///
-  /// All parameters are required.
-  _RemoveHelper({
-    required this.width,
-    required this.height,
-    required this.minX,
-    required this.minY,
-    required this.maxX,
-    required this.maxY,
-    required this.bytes,
-  });
 }

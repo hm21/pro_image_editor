@@ -6,6 +6,18 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 
 /// Represents the bottom bar for the text-editor.
 class TextEditorBottomBar extends StatefulWidget {
+  /// Bottom bar widget for the text editor.
+  ///
+  /// [configs] contains configuration settings for the text editor.
+  /// [selectedStyle] represents the currently selected text style.
+  /// [onFontChange] callback is invoked when the font is changed.
+  const TextEditorBottomBar({
+    super.key,
+    required this.configs,
+    required this.selectedStyle,
+    required this.onFontChange,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -14,13 +26,6 @@ class TextEditorBottomBar extends StatefulWidget {
 
   /// Callback function for changing the text font style.
   final Function(TextStyle style) onFontChange;
-
-  const TextEditorBottomBar({
-    super.key,
-    required this.configs,
-    required this.selectedStyle,
-    required this.onFontChange,
-  });
 
   @override
   State<TextEditorBottomBar> createState() => _TextEditorBottomBarState();

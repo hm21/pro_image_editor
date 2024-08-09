@@ -1,4 +1,6 @@
 // Dart imports:
+// ignore_for_file: public_member_api_docs
+
 import 'dart:collection';
 
 // Flutter imports:
@@ -8,7 +10,8 @@ import 'package:flutter/rendering.dart';
 part 'deferred_pointer_handler_link.dart';
 part 'deferred_pointer_handler.dart';
 
-/// Create a StatelessWidget to wrap our RenderObjectWidget so we can bind to inherited widget.
+/// Create a StatelessWidget to wrap our RenderObjectWidget so we can bind to
+/// inherited widget.
 class DeferPointer extends StatelessWidget {
   const DeferPointer({
     super.key,
@@ -18,7 +21,8 @@ class DeferPointer extends StatelessWidget {
   });
   final Widget child;
 
-  /// child will be painted in the [DeferredPointerHandler] causing it to render on top of any siblings in the it's current context.
+  /// child will be painted in the [DeferredPointerHandler] causing it to
+  /// render on top of any siblings in the it's current context.
   final bool paintOnTop;
 
   /// an optional link that can be shared with a [DeferredPointerHandler],
@@ -29,14 +33,15 @@ class DeferPointer extends StatelessWidget {
   Widget build(BuildContext context) {
     final link = this.link ?? DeferredPointerHandler.of(context).link;
     return _DeferPointerRenderObjectWidget(
-      link: link,
+      link: link as DeferredPointerHandlerLink,
       deferPaint: paintOnTop,
       child: child,
     );
   }
 }
 
-/// Single child render object returns a custom render object [DeferPointerRenderObject]
+/// Single child render object returns a custom render object
+/// [DeferPointerRenderObject]
 class _DeferPointerRenderObjectWidget extends SingleChildRenderObjectWidget {
   const _DeferPointerRenderObjectWidget({
     required this.link,
@@ -55,8 +60,9 @@ class _DeferPointerRenderObjectWidget extends SingleChildRenderObjectWidget {
   @override
   void updateRenderObject(
       BuildContext context, DeferPointerRenderObject renderObject) {
-    renderObject.link = link;
-    renderObject.deferPaint = deferPaint;
+    renderObject
+      ..link = link
+      ..deferPaint = deferPaint;
   }
 }
 

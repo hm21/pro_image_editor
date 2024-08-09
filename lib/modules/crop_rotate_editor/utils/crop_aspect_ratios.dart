@@ -7,7 +7,8 @@ class CropAspectRatios {
 
   /// Represents the original aspect ratio.
   ///
-  /// Use this value to maintain the original aspect ratio of an image or content.
+  /// Use this value to maintain the original aspect ratio of an image or
+  /// content.
   static const double original = 0;
 
   /// Represents a 1:1 aspect ratio.

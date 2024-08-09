@@ -11,15 +11,6 @@
 /// );
 /// ```
 class BlurEditorConfigs {
-  /// Indicates whether the blur editor is enabled.
-  final bool enabled;
-
-  /// Show also layers in the editor.
-  final bool showLayers;
-
-  /// Maximum blur value.
-  final double maxBlur;
-
   /// Creates an instance of BlurEditorConfigs with optional settings.
   ///
   /// By default, the editor is enabled, and max blur is 5.0.
@@ -28,4 +19,13 @@ class BlurEditorConfigs {
     this.showLayers = true,
     this.maxBlur = 5.0,
   }) : assert(maxBlur > 0, 'maxBlur must be positive');
+
+  /// Indicates whether the blur editor is enabled.
+  final bool enabled;
+
+  /// Show also layers in the editor.
+  final bool showLayers;
+
+  /// Maximum blur value.
+  final double maxBlur;
 }

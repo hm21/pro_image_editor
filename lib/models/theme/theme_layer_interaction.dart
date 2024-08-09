@@ -8,49 +8,6 @@ import 'package:flutter/services.dart';
 /// stroke width, dash width, dash space, dash color, and cursor styles for
 /// interacting with layers in the theme.
 class ThemeLayerInteraction {
-  /// The radius of buttons used for layer interactions.
-  final double buttonRadius;
-
-  /// The width of the stroke used for layer interactions.
-  final double strokeWidth;
-
-  /// The width of the border element used for layer interactions.
-  final double borderElementWidth;
-
-  /// The space between the border element used for layer interactions.
-  final double borderElementSpace;
-
-  /// The color of the border element used for layer interactions.
-  final Color borderColor;
-
-  /// The cursor style for removing a layer.
-  final SystemMouseCursor removeCursor;
-
-  /// The cursor style for editing a Text layer.
-  final SystemMouseCursor editCursor;
-
-  /// The cursor style for rotating or scaling a layer.
-  final SystemMouseCursor rotateScaleCursor;
-
-  /// The cursor style when hovering over a layer.
-  final SystemMouseCursor hoverCursor;
-
-  /// Specifies the style of the selected layer border.
-  final LayerInteractionBorderStyle borderStyle;
-
-  /// Indicates whether tooltips should be displayed for the layer.
-  final bool showTooltips;
-
-  final Color removeAreaBackgroundActive;
-  final Color removeAreaBackgroundInactive;
-
-  final Color buttonRemoveColor;
-  final Color buttonRemoveBackground;
-  final Color buttonEditTextColor;
-  final Color buttonEditTextBackground;
-  final Color buttonScaleRotateColor;
-  final Color buttonScaleRotateBackground;
-
   /// Creates a new instance of [ThemeLayerInteraction].
   ///
   /// - The [buttonRadius] defaults to `10.0`.
@@ -84,10 +41,101 @@ class ThemeLayerInteraction {
     this.buttonScaleRotateColor = Colors.black,
     this.buttonScaleRotateBackground = Colors.white,
   });
+
+  /// The radius of buttons used for layer interactions.
+  final double buttonRadius;
+
+  /// The width of the stroke used for layer interactions.
+  final double strokeWidth;
+
+  /// The width of the border element used for layer interactions.
+  final double borderElementWidth;
+
+  /// The space between the border element used for layer interactions.
+  final double borderElementSpace;
+
+  /// The color of the border element used for layer interactions.
+  final Color borderColor;
+
+  /// The cursor style for removing a layer.
+  final SystemMouseCursor removeCursor;
+
+  /// The cursor style for editing a Text layer.
+  final SystemMouseCursor editCursor;
+
+  /// The cursor style for rotating or scaling a layer.
+  final SystemMouseCursor rotateScaleCursor;
+
+  /// The cursor style when hovering over a layer.
+  final SystemMouseCursor hoverCursor;
+
+  /// Specifies the style of the selected layer border.
+  final LayerInteractionBorderStyle borderStyle;
+
+  /// Indicates whether tooltips should be displayed for the layer.
+  final bool showTooltips;
+
+  /// The background color for the active removal area.
+  ///
+  /// This color is used for the background of the area where layers can be
+  /// removed when it is active.
+  final Color removeAreaBackgroundActive;
+
+  /// The background color for the inactive removal area.
+  ///
+  /// This color is used for the background of the area where layers can be
+  /// removed when it is inactive.
+  final Color removeAreaBackgroundInactive;
+
+  /// The color of the remove button.
+  ///
+  /// This value determines the color of the button used to remove layers,
+  /// affecting its visibility and contrast.
+  final Color buttonRemoveColor;
+
+  /// The background color of the remove button.
+  ///
+  /// This value specifies the background color of the button used to remove
+  /// layers, influencing its visual appearance.
+  final Color buttonRemoveBackground;
+
+  /// The color of the edit text button.
+  ///
+  /// This value determines the color of the button used to edit text layers,
+  /// affecting its visibility and contrast.
+  final Color buttonEditTextColor;
+
+  /// The background color of the edit text button.
+  ///
+  /// This value specifies the background color of the button used to edit text
+  /// layers, influencing its visual appearance.
+  final Color buttonEditTextBackground;
+
+  /// The color of the scale and rotate button.
+  ///
+  /// This value determines the color of the button used to scale and rotate
+  /// layers, affecting its visibility and contrast.
+  final Color buttonScaleRotateColor;
+
+  /// The background color of the scale and rotate button.
+  ///
+  /// This value specifies the background color of the button used to scale and
+  /// rotate layers, influencing its visual appearance.
+  final Color buttonScaleRotateBackground;
 }
 
+/// An enumeration representing the style of the border for a selected layer.
+///
+/// This enum defines the different visual styles available for the border of a
+/// selected layer, such as solid, dashed, or dotted.
+
 enum LayerInteractionBorderStyle {
+  /// A solid border style.
   solid,
+
+  /// A dashed border style.
   dashed,
+
+  /// A dotted border style.
   dotted,
 }

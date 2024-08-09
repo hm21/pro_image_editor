@@ -5,15 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/modules/crop_rotate_editor/widgets/crop_aspect_ratio_button.dart';
 
-/// Provides a widget for selecting crop aspect ratio options within an image editor.
+/// Provides a widget for selecting crop aspect ratio options within an image
+/// editor.
 ///
-/// This widget displays a list of available aspect ratios for cropping an image,
-/// allowing the user to select from the list. Each aspect ratio option is represented
-/// as a [ListTile] containing an [AspectRatioButton] and the corresponding aspect ratio text.
+/// This widget displays a list of available aspect ratios for cropping an
+/// image, allowing the user to select from the list. Each aspect ratio option
+/// is represented as a [ListTile] containing an [AspectRatioButton] and the
+/// corresponding aspect ratio text.
 ///
-/// The selected aspect ratio is returned to the calling widget via [Navigator.pop]
-/// when an aspect ratio option is tapped.
+/// The selected aspect ratio is returned to the calling widget via
+/// [Navigator.pop] when an aspect ratio option is tapped.
 class CropAspectRatioOptions extends StatefulWidget {
+  /// Constructs a [CropAspectRatioOptions] widget.
+  ///
+  /// The [configs], [originalAspectRatio], and [aspectRatio] parameters are
+  /// required.
+  const CropAspectRatioOptions({
+    super.key,
+    required this.aspectRatio,
+    required this.originalAspectRatio,
+    required this.configs,
+  });
+
   /// The configuration settings for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -22,16 +35,6 @@ class CropAspectRatioOptions extends StatefulWidget {
 
   /// The currently selected aspect ratio.
   final double aspectRatio;
-
-  /// Constructs a [CropAspectRatioOptions] widget.
-  ///
-  /// The [configs], [originalAspectRatio], and [aspectRatio] parameters are required.
-  const CropAspectRatioOptions({
-    super.key,
-    required this.aspectRatio,
-    required this.originalAspectRatio,
-    required this.configs,
-  });
 
   @override
   State<CropAspectRatioOptions> createState() => _CropAspectRatioOptionsState();

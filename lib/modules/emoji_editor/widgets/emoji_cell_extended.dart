@@ -1,9 +1,6 @@
-// Flutter imports:
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 /// A widget that represents an individual clickable emoji cell.
 /// Can have a long pressed listener [onSkinToneDialogRequested] that
@@ -54,6 +51,7 @@ class EmojiCellExtended extends StatelessWidget {
   /// Callback for a single tap on the cell.
   final OnEmojiSelected onEmojiSelected;
 
+  /// The style from the emoji
   final TextStyle emojiStyle;
 
   @override

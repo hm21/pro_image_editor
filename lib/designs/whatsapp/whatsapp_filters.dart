@@ -8,15 +8,41 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+/// A stateless widget that represents a collection of filters in the WhatsApp
+/// theme.
+///
+/// This widget provides a user interface for selecting and applying filters to
+/// images, using a design inspired by WhatsApp.
 class WhatsappFilters extends StatelessWidget {
-  final ProImageEditorState editor;
-  final WhatsAppHelper whatsAppHelper;
-
+  /// Creates a [WhatsappFilters] widget.
+  ///
+  /// This widget displays a list of available filters and allows users to
+  /// select and apply them to an image within the editor.
+  ///
+  /// Example:
+  /// ```
+  /// WhatsappFilters(
+  ///   editor: myEditorState,
+  ///   whatsAppHelper: myWhatsAppHelper,
+  /// )
+  /// ```
   const WhatsappFilters({
     super.key,
     required this.editor,
     required this.whatsAppHelper,
   });
+
+  /// The state of the image editor associated with these filters.
+  ///
+  /// This state provides access to the current image and operations for
+  /// applying filters, integrating with the editor's workflow.
+  final ProImageEditorState editor;
+
+  /// Helper functions and utilities for WhatsApp-themed filter operations.
+  ///
+  /// This helper provides methods and properties specific to the WhatsApp
+  /// filter functionality, aiding in managing and applying filters.
+  final WhatsAppHelper whatsAppHelper;
 
   @override
   Widget build(BuildContext context) {

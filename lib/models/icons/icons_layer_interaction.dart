@@ -6,15 +6,6 @@ import 'package:flutter/material.dart';
 /// This class defines the icons used for various layer interactions such as
 /// removing a layer and rotating/scaling a layer.
 class IconsLayerInteraction {
-  /// The icon data for removing a layer.
-  final IconData remove;
-
-  /// The icon data for editing a Textlayer.
-  final IconData edit;
-
-  /// The icon data for rotating or scaling a layer.
-  final IconData rotateScale;
-
   /// Creates a new instance of [IconsLayerInteraction].
   ///
   /// The [edit] icon defaults to [Icons.edit].
@@ -25,4 +16,13 @@ class IconsLayerInteraction {
     this.edit = Icons.edit_outlined,
     this.rotateScale = Icons.sync,
   });
+
+  /// The icon data for removing a layer.
+  final IconData remove;
+
+  /// The icon data for editing a Textlayer.
+  final IconData edit;
+
+  /// The icon data for rotating or scaling a layer.
+  final IconData rotateScale;
 }

@@ -1,6 +1,3 @@
-// Flutter imports:
-import 'package:flutter/foundation.dart';
-
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
@@ -35,6 +32,7 @@ class StateManager {
   /// List of captured screenshots for each state in the history.
   List<ThreadCaptureState> screenshots = [];
 
+  /// Retrieves the currently active screenshot based on the position.
   ThreadCaptureState? get activeScreenshot {
     return screenshots.length > position - 1 ? screenshots[position - 1] : null;
   }
@@ -44,10 +42,11 @@ class StateManager {
 
   /// Clean forward changes in the history.
   ///
-  /// This method removes any changes made after the current edit position in the history.
-  /// It ensures that the state history and screenshots are consistent with the current
-  /// position. This is useful when performing an undo operation, and new edits are made,
-  /// effectively discarding the "redo" history.
+  /// This method removes any changes made after the current edit position in
+  /// the history. It ensures that the state history and screenshots are
+  /// consistent with the current position. This is useful when performing an
+  /// undo operation, and new edits are made, effectively discarding the "redo"
+  /// history.
   void cleanForwardChanges() {
     if (stateHistory.length > 1) {
       while (position < stateHistory.length - 1) {
@@ -62,15 +61,18 @@ class StateManager {
 
   /// Set the history limit to manage the maximum number of stored states.
   ///
-  /// This method sets a limit on the number of states that can be stored in the history.
-  /// If the number of stored states exceeds this limit, the oldest states are removed to
-  /// free up memory. This is crucial for preventing excessive memory usage, especially when
-  /// each state includes large data such as screenshots.
+  /// This method sets a limit on the number of states that can be stored in
+  /// the history.
+  /// If the number of stored states exceeds this limit, the oldest states are
+  /// removed to free up memory. This is crucial for preventing excessive
+  /// memory usage, especially when each state includes large data such as
+  /// screenshots.
   ///
-  /// - `limit`: The maximum number of states to retain in the history. Must be 1 or greater.
+  /// - `limit`: The maximum number of states to retain in the history. Must
+  /// be 1 or greater.
   void setHistoryLimit(int limit) {
     if (limit <= 0) {
-      throw ErrorHint('The state history limit must be 1 or greater!');
+      throw ArgumentError('The state history limit must be 1 or greater!');
     }
     while (position > limit) {
       if (position > 0) {

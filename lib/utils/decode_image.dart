@@ -43,13 +43,9 @@ Future<ImageInfos> decodeImageInfos({
   );
 }
 
+/// Contains information about an image's size and rotation status.
 class ImageInfos {
-  final Size rawSize;
-  final Size renderedSize;
-  final Size cropRectSize;
-  final double pixelRatio;
-  final bool isRotated;
-
+  /// Creates an instance of [ImageInfos].
   const ImageInfos({
     required this.rawSize,
     required this.renderedSize,
@@ -58,6 +54,23 @@ class ImageInfos {
     required this.isRotated,
   });
 
+  /// The raw size of the image.
+  final Size rawSize;
+
+  /// The size of the image after rendering.
+  final Size renderedSize;
+
+  /// The size of the cropping rectangle.
+  final Size cropRectSize;
+
+  /// The pixel ratio of the image.
+  final double pixelRatio;
+
+  /// Whether the image is rotated.
+  final bool isRotated;
+
+  /// Creates a copy of the current [ImageInfos] instance with optional
+  /// updated values.
   ImageInfos copyWith({
     Size? rawSize,
     Size? renderedSize,

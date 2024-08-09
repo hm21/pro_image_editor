@@ -6,17 +6,42 @@ import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
 import 'package:pro_image_editor/designs/frosted_glass/frosted_glass_effect.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+/// A custom action bar widget with a frosted glass effect, designed for use
+/// within an image editing application. This widget provides an interface for
+/// users to interact with the image editor and access the sticker editor
+/// feature.
 class FrostedGlassActionBar extends StatefulWidget {
-  /// The configuration for the image editor.
-  final ProImageEditorState editor;
-
-  final Function() openStickerEditor;
-
+  /// Creates a [FrostedGlassActionBar].
+  ///
+  /// The [editor] and [openStickerEditor] parameters are required to configure
+  /// the action bar's behavior. The [editor] parameter provides access to the
+  /// image editor's state, allowing the action bar to interact with and modify
+  /// the image being edited. The [openStickerEditor] parameter is a callback
+  /// function that opens the sticker editor when invoked.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassActionBar(
+  ///   editor: myEditorState,
+  ///   openStickerEditor: () => myStickerEditorFunction(),
+  /// )
+  /// ```
   const FrostedGlassActionBar({
     super.key,
     required this.editor,
     required this.openStickerEditor,
   });
+
+  /// The configuration for the image editor.
+  final ProImageEditorState editor;
+
+  /// A callback function to open the sticker editor.
+  ///
+  /// This function is invoked when the user wishes to add or edit stickers
+  /// on the image. The function should be defined in the parent widget and
+  /// passed to this action bar to handle the opening of the sticker editor
+  /// interface.
+  final Function() openStickerEditor;
 
   @override
   State<FrostedGlassActionBar> createState() => _FrostedGlassActionBarState();

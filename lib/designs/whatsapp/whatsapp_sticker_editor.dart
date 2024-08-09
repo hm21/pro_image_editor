@@ -13,22 +13,24 @@ import '../../models/editor_configs/pro_image_editor_configs.dart';
 
 /// Represents the temporary sticker mode for WhatsApp.
 ///
-/// This variable defines the temporary sticker mode for WhatsApp, indicating whether stickers or emojis are being used.
+/// This variable defines the temporary sticker mode for WhatsApp, indicating
+/// whether stickers or emojis are being used.
 WhatsAppStickerMode whatsAppTemporaryStickerMode = WhatsAppStickerMode.sticker;
 
 /// Represents the sticker-editor page for the WhatsApp theme.
 class WhatsAppStickerPage extends StatefulWidget {
-  /// The configuration for the image editor.
-  final ProImageEditorConfigs configs;
-
-  /// The callbacks from the image editor.
-  final ProImageEditorCallbacks callbacks;
-
+  /// Creates a [WhatsAppStickerPage] widget.
   const WhatsAppStickerPage({
     super.key,
     required this.configs,
     required this.callbacks,
   });
+
+  /// The configuration for the image editor.
+  final ProImageEditorConfigs configs;
+
+  /// The callbacks from the image editor.
+  final ProImageEditorCallbacks callbacks;
 
   @override
   State<WhatsAppStickerPage> createState() => _WhatsAppStickerPageState();
@@ -183,7 +185,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          segments: <ButtonSegment>[
+                          segments: [
                             ButtonSegment(
                               value: WhatsAppStickerMode.sticker,
                               label: Text(
@@ -206,7 +208,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                             ),
                           ],
                           selected: {whatsAppTemporaryStickerMode},
-                          onSelectionChanged: (Set newSelection) {
+                          onSelectionChanged: (newSelection) {
                             setState(() {
                               whatsAppTemporaryStickerMode = newSelection.first;
                             });
@@ -425,7 +427,20 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   }
 }
 
+/// An enumeration representing the modes for WhatsApp sticker functionality.
+///
+/// This enum defines the available modes for adding visual elements, such as
+/// stickers or emojis, to images within the WhatsApp-themed editor.
 enum WhatsAppStickerMode {
+  /// Mode for adding stickers.
+  ///
+  /// This mode allows the user to select and place various stickers on an
+  /// image, enhancing the visual content with decorative elements.
   sticker,
+
+  /// Mode for adding emojis.
+  ///
+  /// This mode allows the user to select and place emojis on an image,
+  /// providing a fun and expressive way to enhance visual content.
   emoji,
 }

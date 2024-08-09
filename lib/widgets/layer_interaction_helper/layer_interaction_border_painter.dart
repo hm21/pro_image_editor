@@ -7,14 +7,41 @@ import 'package:flutter/widgets.dart';
 // Project imports:
 import 'package:pro_image_editor/models/theme/theme_layer_interaction.dart';
 
+/// A custom painter for rendering the border of a layer interaction area.
+///
+/// This painter draws borders around interactive layers in an image editing
+/// application, applying styles and themes to enhance the visual appearance
+/// of the interaction area.
 class LayerInteractionBorderPainter extends CustomPainter {
-  final ThemeLayerInteraction theme;
-  final LayerInteractionBorderStyle borderStyle;
-
+  /// Creates a [LayerInteractionBorderPainter].
+  ///
+  /// The painter uses the provided [theme] and [borderStyle] to determine the
+  /// appearance of the layer's border, such as color, stroke width, and style.
+  ///
+  /// Example:
+  /// ```
+  /// LayerInteractionBorderPainter(
+  ///   theme: myThemeLayerInteraction,
+  ///   borderStyle: LayerInteractionBorderStyle.solid,
+  /// )
+  /// ```
   LayerInteractionBorderPainter({
     required this.theme,
     required this.borderStyle,
   });
+
+  /// The theme settings for the layer interaction.
+  ///
+  /// This theme provides color, opacity, and other styling options for the
+  /// layer border, ensuring it matches the overall design of the application.
+  final ThemeLayerInteraction theme;
+
+  /// The style of the layer interaction border.
+  ///
+  /// This style determines how the border is drawn, such as whether it is
+  /// solid, dashed, or dotted, and influences the border's appearance.
+  final LayerInteractionBorderStyle borderStyle;
+
   @override
   void paint(Canvas canvas, Size size) {
     switch (borderStyle) {
@@ -93,32 +120,33 @@ class LayerInteractionBorderPainter extends CustomPainter {
       ..strokeWidth = theme.strokeWidth;
 
     // Draw top border
-    canvas.drawLine(
-      const Offset(0, 0),
-      Offset(size.width, 0),
-      paint,
-    );
+    canvas
+      ..drawLine(
+        const Offset(0, 0),
+        Offset(size.width, 0),
+        paint,
+      )
 
-    // Draw right border
-    canvas.drawLine(
-      Offset(size.width, 0),
-      Offset(size.width, size.height),
-      paint,
-    );
+      // Draw right border
+      ..drawLine(
+        Offset(size.width, 0),
+        Offset(size.width, size.height),
+        paint,
+      )
 
-    // Draw bottom border
-    canvas.drawLine(
-      Offset(0, size.height),
-      Offset(size.width, size.height),
-      paint,
-    );
+      // Draw bottom border
+      ..drawLine(
+        Offset(0, size.height),
+        Offset(size.width, size.height),
+        paint,
+      )
 
-    // Draw left border
-    canvas.drawLine(
-      const Offset(0, 0),
-      Offset(0, size.height),
-      paint,
-    );
+      // Draw left border
+      ..drawLine(
+        const Offset(0, 0),
+        Offset(0, size.height),
+        paint,
+      );
   }
 
 // Method to draw a rounded dotted border

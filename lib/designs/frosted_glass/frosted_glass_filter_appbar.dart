@@ -5,13 +5,32 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'frosted_glass_effect.dart';
 
+/// A stateless widget that represents an app bar with a frosted glass effect.
+///
+/// This app bar is designed to be used within a filter editing interface,
+/// providing a stylish and functional header for managing filter operations.
 class FrostedGlassFilterAppbar extends StatelessWidget {
-  final FilterEditorState filterEditor;
-
+  /// Creates a [FrostedGlassFilterAppbar].
+  ///
+  /// The app bar uses a frosted glass effect, integrating seamlessly with the
+  /// filter editor to enhance the user interface of the application.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassFilterAppbar(
+  ///   filterEditor: myFilterEditorState,
+  /// )
+  /// ```
   const FrostedGlassFilterAppbar({
     super.key,
     required this.filterEditor,
   });
+
+  /// The state of the filter editor associated with this app bar.
+  ///
+  /// This state allows the app bar to interact with the filter editor,
+  /// providing necessary controls and options to manage filters effectively.
+  final FilterEditorState filterEditor;
 
   @override
   Widget build(BuildContext context) {

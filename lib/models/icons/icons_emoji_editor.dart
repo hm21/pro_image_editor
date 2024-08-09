@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 
 /// Customizable icons for the Emoji Editor component.
 class IconsEmojiEditor {
-  /// The icon to be displayed in the bottom navigation bar.
-  final IconData bottomNavBar;
-
   /// Creates an instance of [IconsEmojiEditor] with customizable icon settings.
   ///
   /// You can provide a custom [bottomNavBar] icon to be displayed in the
@@ -22,4 +19,7 @@ class IconsEmojiEditor {
   const IconsEmojiEditor({
     this.bottomNavBar = Icons.sentiment_satisfied_alt_rounded,
   });
+
+  /// The icon to be displayed in the bottom navigation bar.
+  final IconData bottomNavBar;
 }

@@ -8,6 +8,24 @@ import '../models/theme/theme.dart';
 
 /// A dialog that adapts its appearance based on the design mode.
 class AdaptiveDialog extends StatefulWidget {
+  /// Creates an [AdaptiveDialog].
+  ///
+  /// The [designMode] determines the appearance of the dialog.
+  /// The [title] and [content] are required widgets to display in the dialog.
+  /// The [actions] is a list of [AdaptiveDialogAction] widgets to include as
+  /// buttons.
+  /// The [brightness] controls the brightness of the dialog.
+  /// The [imageEditorTheme] is the theme specific to the image editor.
+  const AdaptiveDialog({
+    super.key,
+    required this.designMode,
+    required this.title,
+    required this.content,
+    required this.actions,
+    required this.brightness,
+    required this.imageEditorTheme,
+  });
+
   /// The design mode to determine the appearance of the dialog.
   final ImageEditorDesignModeE designMode;
 
@@ -23,24 +41,8 @@ class AdaptiveDialog extends StatefulWidget {
   /// The brightness of the dialog.
   final Brightness brightness;
 
+  /// Theme from the image editor.
   final ImageEditorTheme imageEditorTheme;
-
-  /// Creates an [AdaptiveDialog].
-  ///
-  /// The [designMode] determines the appearance of the dialog.
-  /// The [title] and [content] are required widgets to display in the dialog.
-  /// The [actions] is a list of [AdaptiveDialogAction] widgets to include as buttons.
-  /// The [brightness] controls the brightness of the dialog.
-  /// The [imageEditorTheme] is the theme specific to the image editor.
-  const AdaptiveDialog({
-    super.key,
-    required this.designMode,
-    required this.title,
-    required this.content,
-    required this.actions,
-    required this.brightness,
-    required this.imageEditorTheme,
-  });
 
   @override
   State<AdaptiveDialog> createState() => _AdaptiveDialogState();
@@ -89,15 +91,6 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
 
 /// An action button that adapts its appearance based on the design mode.
 class AdaptiveDialogAction extends StatefulWidget {
-  /// The design mode to determine the appearance of the action button.
-  final ImageEditorDesignModeE designMode;
-
-  /// The callback function to be executed when the button is pressed.
-  final Function() onPressed;
-
-  /// The widget to display as the action button.
-  final Widget child;
-
   /// Creates an [AdaptiveDialogAction].
   ///
   /// The [designMode] determines the appearance of the action button.
@@ -109,6 +102,15 @@ class AdaptiveDialogAction extends StatefulWidget {
     required this.child,
     required this.designMode,
   });
+
+  /// The design mode to determine the appearance of the action button.
+  final ImageEditorDesignModeE designMode;
+
+  /// The callback function to be executed when the button is pressed.
+  final Function() onPressed;
+
+  /// The widget to display as the action button.
+  final Widget child;
 
   @override
   State<AdaptiveDialogAction> createState() => _AdaptiveDialogActionState();

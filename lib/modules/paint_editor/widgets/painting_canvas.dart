@@ -11,13 +11,31 @@ import '../utils/paint_controller.dart';
 
 /// A widget for creating a canvas for painting on images.
 ///
-/// This widget allows you to create a canvas for painting on images loaded from various sources, including network URLs, asset paths, files, or memory (Uint8List).
+/// This widget allows you to create a canvas for painting on images loaded
+/// from various sources, including network URLs, asset paths, files, or memory
+/// (Uint8List).
 /// It provides customization options for appearance and behavior.
 class PaintingCanvas extends StatefulWidget {
+  /// Constructs a `PaintingCanvas` widget.
+  const PaintingCanvas({
+    super.key,
+    this.onStartPainting,
+    this.onCreatedPainting,
+    this.onRemoveLayer,
+    this.freeStyleHighPerformance = false,
+    required this.drawAreaSize,
+    required this.paintCtrl,
+  });
+
   /// Callback function when the active painting is done.
   final VoidCallback? onCreatedPainting;
 
+  /// Callback invoked when layers are removed.
+  ///
+  /// Receives a list of layer identifiers that have been removed.
   final ValueChanged<List<String>>? onRemoveLayer;
+
+  /// Callback invoked when painting starts.
   final VoidCallback? onStartPainting;
 
   /// Size of the image.
@@ -30,28 +48,18 @@ class PaintingCanvas extends StatefulWidget {
   /// Controls high-performance for free-style drawing.
   final bool freeStyleHighPerformance;
 
-  /// Constructs a `PaintingCanvas` widget.
-  const PaintingCanvas({
-    super.key,
-    this.onStartPainting,
-    this.onCreatedPainting,
-    this.onRemoveLayer,
-    this.freeStyleHighPerformance = false,
-    required this.drawAreaSize,
-    required this.paintCtrl,
-  });
-
   @override
   PaintingCanvasState createState() => PaintingCanvasState();
 }
 
+/// State class for managing the painting canvas.
 class PaintingCanvasState extends State<PaintingCanvas> {
   /// Getter for accessing the [PaintingController] instance provided by the
   /// parent widget.
   PaintingController get _paintCtrl => widget.paintCtrl;
 
   /// Stream controller for updating painting events.
-  late final StreamController _activePaintingStreamCtrl;
+  late final StreamController<void> _activePaintingStreamCtrl;
 
   @override
   void initState() {
@@ -65,9 +73,11 @@ class PaintingCanvasState extends State<PaintingCanvas> {
     super.dispose();
   }
 
-  /// This method is called when a scaling gesture for painting begins. It captures the starting point of the gesture.
+  /// This method is called when a scaling gesture for painting begins. It
+  /// captures the starting point of the gesture.
   ///
-  /// It is not meant to be called directly but is an event handler for scaling gestures.
+  /// It is not meant to be called directly but is an event handler for scaling
+  /// gestures.
   void _onScaleStart(ScaleStartDetails details) {
     if (widget.paintCtrl.mode == PaintModeE.moveAndZoom) {
       return;
@@ -77,16 +87,20 @@ class PaintingCanvasState extends State<PaintingCanvas> {
     }
 
     final offset = details.localFocalPoint;
-    _paintCtrl.setStart(offset);
-    _paintCtrl.addOffsets(offset);
+    _paintCtrl
+      ..setStart(offset)
+      ..addOffsets(offset);
     _activePaintingStreamCtrl.add(null);
   }
 
   /// Fires while the user is interacting with the screen to record painting.
   ///
-  /// This method is called during an ongoing scaling gesture to record painting actions. It captures the current position and updates the painting controller accordingly.
+  /// This method is called during an ongoing scaling gesture to record
+  /// painting actions. It captures the current position and updates the
+  /// painting controller accordingly.
   ///
-  /// It is not meant to be called directly but is an event handler for scaling gestures.
+  /// It is not meant to be called directly but is an event handler for scaling
+  /// gestures.
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (widget.paintCtrl.mode == PaintModeE.moveAndZoom) {
       return;
@@ -119,9 +133,11 @@ class PaintingCanvasState extends State<PaintingCanvas> {
 
   /// Fires when the user stops interacting with the screen.
   ///
-  /// This method is called when a scaling gesture for painting ends. It finalizes and records the painting action.
+  /// This method is called when a scaling gesture for painting ends. It
+  /// finalizes and records the painting action.
   ///
-  /// It is not meant to be called directly but is an event handler for scaling gestures.
+  /// It is not meant to be called directly but is an event handler for scaling
+  /// gestures.
   void _onScaleEnd(ScaleEndDetails details) {
     if (widget.paintCtrl.mode == PaintModeE.moveAndZoom ||
         widget.paintCtrl.mode == PaintModeE.eraser) {

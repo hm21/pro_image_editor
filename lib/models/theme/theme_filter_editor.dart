@@ -4,8 +4,10 @@ import 'package:flutter/widgets.dart';
 // Project imports:
 import 'theme_shared_values.dart';
 
-/// The `FilterEditorTheme` class defines the theme for the filter editor in the image editor.
-/// It includes properties such as colors for the app bar, background, and preview text.
+/// The `FilterEditorTheme` class defines the theme for the filter editor in
+/// the image editor.
+/// It includes properties such as colors for the app bar, background, and
+/// preview text.
 ///
 /// Usage:
 ///
@@ -20,7 +22,8 @@ import 'theme_shared_values.dart';
 ///
 /// Properties:
 ///
-/// - `appBarBackgroundColor`: Background color of the app bar in the filter editor.
+/// - `appBarBackgroundColor`: Background color of the app bar in the filter
+///   editor.
 ///
 /// - `appBarForegroundColor`: Foreground color (text and icons) of the app bar.
 ///
@@ -43,6 +46,18 @@ import 'theme_shared_values.dart';
 /// // Access other theme properties...
 /// ```
 class FilterEditorTheme {
+  /// Creates an instance of the `FilterEditorTheme` class with the specified
+  /// theme properties.
+  const FilterEditorTheme({
+    this.appBarBackgroundColor = imageEditorAppBarColor,
+    this.appBarForegroundColor = const Color(0xFFE1E1E1),
+    this.previewTextColor = const Color(0xFFE1E1E1),
+    this.previewSelectedTextColor = const Color.fromARGB(255, 34, 148, 242),
+    this.background = imageEditorBackgroundColor,
+    this.filterListSpacing = 15,
+    this.filterListMargin = const EdgeInsets.fromLTRB(8, 4, 8, 10),
+  });
+
   /// Background color of the app bar in the filter editor.
   final Color appBarBackgroundColor;
 
@@ -63,15 +78,4 @@ class FilterEditorTheme {
 
   /// The margin around the filter list.
   final EdgeInsets filterListMargin;
-
-  /// Creates an instance of the `FilterEditorTheme` class with the specified theme properties.
-  const FilterEditorTheme({
-    this.appBarBackgroundColor = imageEditorAppBarColor,
-    this.appBarForegroundColor = const Color(0xFFE1E1E1),
-    this.previewTextColor = const Color(0xFFE1E1E1),
-    this.previewSelectedTextColor = const Color.fromARGB(255, 34, 148, 242),
-    this.background = imageEditorBackgroundColor,
-    this.filterListSpacing = 15,
-    this.filterListMargin = const EdgeInsets.fromLTRB(8, 4, 8, 10),
-  });
 }

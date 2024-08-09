@@ -5,18 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 
+/// A [StatefulWidget] that applies transformations to its [child] widget
+/// based on provided transformation and editor configurations.
 class TransformedContentGenerator extends StatefulWidget {
-  final Widget child;
-
-  final TransformConfigs transformConfigs;
-  final ProImageEditorConfigs configs;
-
+  /// Creates an instance of [TransformedContentGenerator] with the given
+  /// parameters.
   const TransformedContentGenerator({
     required this.child,
     required this.transformConfigs,
     required this.configs,
     super.key,
   });
+
+  /// The widget to which transformations will be applied.
+  final Widget child;
+
+  /// Configuration object for the transformations.
+  final TransformConfigs transformConfigs;
+
+  /// Configuration object for the image editor.
+  final ProImageEditorConfigs configs;
 
   @override
   State<TransformedContentGenerator> createState() =>
@@ -153,12 +161,16 @@ class _TransformedContentGeneratorState
   }
 }
 
+/// A [CustomClipper] that defines the clipping area based on provided
+/// configurations.
 class CutOutsideArea extends CustomClipper<Rect> {
-  final TransformConfigs configs;
-
+  /// Creates an instance of [CutOutsideArea] with the given [configs].
   CutOutsideArea({
     required this.configs,
   });
+
+  /// The configuration object that provides the crop rectangle.
+  final TransformConfigs configs;
   @override
   Rect getClip(Size size) {
     Rect cropRect = configs.cropRect;

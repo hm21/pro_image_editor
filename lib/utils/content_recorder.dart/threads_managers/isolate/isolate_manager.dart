@@ -7,6 +7,11 @@ import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/is
 import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread_manager.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/utils/processor_helper.dart';
 
+/// Manages the lifecycle and communication of isolates.
+///
+/// This class handles the creation, management, and disposal of isolates
+/// for performing background tasks. It ensures proper communication with
+/// the main thread and handles the results from isolate operations.
 class IsolateManager extends ThreadManager {
   /// List of isolate models used for managing isolates.
   @override

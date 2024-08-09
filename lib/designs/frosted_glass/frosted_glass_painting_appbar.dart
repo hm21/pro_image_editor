@@ -5,13 +5,32 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'frosted_glass_effect.dart';
 
+/// A stateless widget that represents an app bar with a frosted glass effect.
+///
+/// This app bar is designed for use in a painting editor interface, providing
+/// a stylish and functional header that integrates with painting operations.
 class FrostedGlassPaintingAppbar extends StatelessWidget {
-  final PaintingEditorState paintEditor;
-
+  /// Creates a [FrostedGlassPaintingAppbar].
+  ///
+  /// This app bar utilizes a frosted glass effect to enhance the visual design
+  /// of a painting editor, offering controls and options relevant to painting.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassPaintingAppbar(
+  ///   paintEditor: myPaintEditorState,
+  /// )
+  /// ```
   const FrostedGlassPaintingAppbar({
     super.key,
     required this.paintEditor,
   });
+
+  /// The state of the painting editor associated with this app bar.
+  ///
+  /// This state allows the app bar to interact with the painting editor,
+  /// providing necessary controls and options to manage painting activities.
+  final PaintingEditorState paintEditor;
 
   @override
   Widget build(BuildContext context) {

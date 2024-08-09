@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'theme_shared_values.dart';
 
-/// The `TextEditorTheme` class defines the theme for the text editor in the image editor.
-/// It includes properties such as colors for the app bar, background, text input, and more.
+/// The `TextEditorTheme` class defines the theme for the text editor in the
+/// image editor.
+/// It includes properties such as colors for the app bar, background, text
+/// input, and more.
 ///
 /// Usage:
 ///
@@ -21,7 +23,8 @@ import 'theme_shared_values.dart';
 ///
 /// Properties:
 ///
-/// - `appBarBackgroundColor`: Background color of the app bar in the text editor.
+/// - `appBarBackgroundColor`: Background color of the app bar in the text
+///   editor.
 ///
 /// - `appBarForegroundColor`: Foreground color (text and icons) of the app bar.
 ///
@@ -47,6 +50,21 @@ import 'theme_shared_values.dart';
 /// // Access other theme properties...
 /// ```
 class TextEditorTheme {
+  /// Creates an instance of the `TextEditorTheme` class with the specified
+  /// theme properties.
+  const TextEditorTheme({
+    this.fontSizeBottomSheetTitle,
+    this.textFieldMargin =
+        const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
+    this.appBarBackgroundColor = imageEditorAppBarColor,
+    this.appBarForegroundColor = const Color(0xFFE1E1E1),
+    this.background = const Color(0x9B000000),
+    this.bottomBarBackgroundColor = const Color(0xFF000000),
+    this.bottomBarMainAxisAlignment = MainAxisAlignment.spaceEvenly,
+    this.inputHintColor = const Color(0xFFBDBDBD),
+    this.inputCursorColor = imageEditorPrimaryColor,
+  });
+
   /// Background color of the app bar in the text editor.
   final Color appBarBackgroundColor;
 
@@ -73,18 +91,4 @@ class TextEditorTheme {
 
   /// Title of the bottom sheet used to select the font-size.
   final TextStyle? fontSizeBottomSheetTitle;
-
-  /// Creates an instance of the `TextEditorTheme` class with the specified theme properties.
-  const TextEditorTheme({
-    this.fontSizeBottomSheetTitle,
-    this.textFieldMargin =
-        const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
-    this.appBarBackgroundColor = imageEditorAppBarColor,
-    this.appBarForegroundColor = const Color(0xFFE1E1E1),
-    this.background = const Color(0x9B000000),
-    this.bottomBarBackgroundColor = const Color(0xFF000000),
-    this.bottomBarMainAxisAlignment = MainAxisAlignment.spaceEvenly,
-    this.inputHintColor = const Color(0xFFBDBDBD),
-    this.inputCursorColor = imageEditorPrimaryColor,
-  });
 }

@@ -11,9 +11,11 @@ import 'models/loading_dialog_overlay_details.dart';
 
 /// A singleton class that manages the display of loading dialogs.
 ///
-/// The `LoadingDialog` class provides methods to show and hide a loading dialog.
+/// The `LoadingDialog` class provides methods to show and hide a loading
+/// dialog.
 /// It allows customization of the loading message, dismissibility, and theme.
-/// It maintains a stack of active overlays to handle multiple dialogs if needed.
+/// It maintains a stack of active overlays to handle multiple dialogs if
+/// needed.
 class LoadingDialog extends ChangeNotifier {
   LoadingDialog._();
 
@@ -35,13 +37,15 @@ class LoadingDialog extends ChangeNotifier {
   /// Parameters:
   /// - [context]: The build context in which to display the dialog.
   /// - [message]: An optional parameter to customize the loading message.
-  /// - [isDismissible]: Determines if the dialog can be dismissed. Defaults to the value of `kDebugMode`.
-  /// - [theme]: The theme data for styling the dialog. If not provided, the current theme of the context is used.
+  /// - [isDismissible]: Determines if the dialog can be dismissed. Defaults to
+  /// the value of `kDebugMode`.
+  /// - [theme]: The theme data for styling the dialog. If not provided, the
+  /// current theme of the context is used.
   /// - [configs]: Configuration settings for the Pro Image Editor.
   ///
   /// The method creates an overlay entry with an animated opacity transition,
-  /// and inserts it into the overlay stack. Custom widgets for the loading dialog
-  /// can be provided via `configs.customWidgets.loadingDialog`.
+  /// and inserts it into the overlay stack. Custom widgets for the loading
+  /// dialog can be provided via `configs.customWidgets.loadingDialog`.
   void show(
     BuildContext context, {
     String? message,
@@ -146,7 +150,8 @@ class LoadingDialog extends ChangeNotifier {
 
   /// Builds a Material-styled dialog widget.
   ///
-  /// The dialog is themed with the provided [theme] and contains the specified [content].
+  /// The dialog is themed with the provided [theme] and contains the specified
+  /// [content].
   Widget _buildMaterialDialog({
     required ThemeData theme,
     required Widget content,
@@ -163,7 +168,8 @@ class LoadingDialog extends ChangeNotifier {
 
   /// Builds a Cupertino-styled dialog widget.
   ///
-  /// The dialog is themed with the provided [theme] and contains the specified [content].
+  /// The dialog is themed with the provided [theme] and contains the specified
+  /// [content].
   /// The theme brightness determines the primary color of the dialog.
   Widget _buildCupertinoDialog({
     required ThemeData theme,

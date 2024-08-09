@@ -15,6 +15,7 @@ import 'package:flutter/widgets.dart';
 /// the [alignment] parameter defines the alignment of the scaled
 /// child, and the [child] parameter is the widget to be scaled.
 class ExtendedTransformScale extends StatefulWidget {
+  /// Creates an instance of [ExtendedTransformScale].
   const ExtendedTransformScale({
     super.key,
     required this.initScale,
@@ -35,7 +36,10 @@ class ExtendedTransformScale extends StatefulWidget {
   State<ExtendedTransformScale> createState() => ExtendedTransformScaleState();
 }
 
+/// The state class for [ExtendedTransformScale], which manages the scale
+/// transformation.
 class ExtendedTransformScaleState extends State<ExtendedTransformScale> {
+  /// The current scale factor applied to the child widget.
   late double scale;
 
   @override

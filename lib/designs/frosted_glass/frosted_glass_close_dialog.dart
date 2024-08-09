@@ -5,13 +5,34 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'frosted_glass_effect.dart';
 
+/// A stateless widget that represents a dialog with a frosted glass effect,
+/// designed to confirm closing an image editing session. This dialog provides
+/// users with the option to close the editor or cancel the action.
 class FrostedGlassCloseDialog extends StatelessWidget {
-  final ProImageEditorState editor;
-
+  /// Creates a [FrostedGlassCloseDialog].
+  ///
+  /// The [editor] parameter is required to interact with the image editor's
+  /// state, allowing the dialog to access the current editing session's
+  /// information.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassCloseDialog(
+  ///   editor: myEditorState,
+  /// )
+  /// ```
   const FrostedGlassCloseDialog({
     super.key,
     required this.editor,
   });
+
+  /// The configuration for the image editor.
+  ///
+  /// This field provides access to the state of the [ProImageEditorState]
+  /// instance.
+  /// It allows the dialog to interact with the image editor, ensuring that any
+  /// changes or unsaved work can be considered before closing the session.
+  final ProImageEditorState editor;
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 /// A custom widget for the header row of a bottom sheet.
 class BottomSheetHeaderRow extends StatefulWidget {
-  /// Creates a [BottomSheetHeaderRow] widget with the specified title, theme, and padding.
+  /// Creates a [BottomSheetHeaderRow] widget with the specified title, theme,
+  /// and padding.
   const BottomSheetHeaderRow(
       {super.key,
       required this.title,

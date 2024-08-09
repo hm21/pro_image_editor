@@ -3,6 +3,22 @@ import 'package:flutter/widgets.dart';
 
 /// A class representing the theme configuration for a sub-editor page.
 class SubEditorPageTheme {
+  /// Creates a [SubEditorPageTheme].
+  ///
+  /// The [enforceSizeFromMainEditor] defaults to `false`.
+  /// The [barrierDismissible] defaults to `false`.
+  const SubEditorPageTheme({
+    this.enforceSizeFromMainEditor = false,
+    this.barrierDismissible = false,
+    this.borderRadius,
+    this.positionTop,
+    this.positionLeft,
+    this.positionRight,
+    this.positionBottom,
+    this.barrierColor,
+    this.transitionsBuilder,
+  });
+
   /// Whether to enforce the size from the main editor.
   final bool enforceSizeFromMainEditor;
 
@@ -29,28 +45,15 @@ class SubEditorPageTheme {
 
   /// The builder function for transitions.
   ///
-  /// This function takes [BuildContext], [Animation<double>], [Animation<double>], and [Widget] as parameters
-  /// and returns a Widget representing the transition.
+  /// This function takes [BuildContext], [Animation<double>],
+  /// [Animation<double>], and [Widget] as parameters and returns a Widget
+  /// representing the transition.
   final Widget Function(
           BuildContext, Animation<double>, Animation<double>, Widget)?
       transitionsBuilder;
 
-  /// Creates a [SubEditorPageTheme].
-  ///
-  /// The [enforceSizeFromMainEditor] defaults to `false`.
-  /// The [barrierDismissible] defaults to `false`.
-  const SubEditorPageTheme({
-    this.enforceSizeFromMainEditor = false,
-    this.barrierDismissible = false,
-    this.borderRadius,
-    this.positionTop,
-    this.positionLeft,
-    this.positionRight,
-    this.positionBottom,
-    this.barrierColor,
-    this.transitionsBuilder,
-  });
-
+  /// Checks if repositioning is required based on the presence of certain
+  /// properties.
   bool get requireReposition {
     return positionTop != null ||
         positionLeft != null ||

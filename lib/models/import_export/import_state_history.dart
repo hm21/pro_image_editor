@@ -1,3 +1,5 @@
+// ignore_for_file: argument_type_not_assignable
+
 // Dart imports:
 import 'dart:convert';
 import 'dart:io';
@@ -15,20 +17,14 @@ import 'utils/export_import_version.dart';
 
 /// This class represents the state history of an imported editor session.
 class ImportStateHistory {
-  /// The position of the editor.
-  final int editorPosition;
-
-  /// The size of the imported image.
-  final Size imgSize;
-
-  /// The state history of each editor state in the session.
-  final List<EditorStateHistory> stateHistory;
-
-  /// The configurations for importing the editor state history.
-  final ImportEditorConfigs configs;
-
-  /// Version from import/export history for backward compatibility.
-  final String version;
+  /// Creates an [ImportStateHistory] instance from a JSON file.
+  factory ImportStateHistory.fromJsonFile(
+    File file, {
+    ImportEditorConfigs configs = const ImportEditorConfigs(),
+  }) {
+    String json = file.readAsStringSync();
+    return ImportStateHistory.fromJson(json, configs: configs);
+  }
 
   /// Constructs an [ImportStateHistory] instance.
   ImportStateHistory._({
@@ -41,13 +37,14 @@ class ImportStateHistory {
 
   /// Creates an [ImportStateHistory] instance from a map representation.
   factory ImportStateHistory.fromMap(
-    Map map, {
+    Map<String, dynamic> map, {
     ImportEditorConfigs configs = const ImportEditorConfigs(),
   }) {
     List<EditorStateHistory> stateHistory = [];
     List<Uint8List> stickers = [];
 
-    String version = map['version'] ?? ExportImportVersion.version_1_0_0;
+    String version =
+        (map['version'] as String?) ?? ExportImportVersion.version_1_0_0;
 
     for (var sticker in List.from(map['stickers'] ?? [])) {
       stickers.add(Uint8List.fromList(List.from(sticker)));
@@ -122,12 +119,18 @@ class ImportStateHistory {
     return ImportStateHistory.fromMap(jsonDecode(json), configs: configs);
   }
 
-  /// Creates an [ImportStateHistory] instance from a JSON file.
-  factory ImportStateHistory.fromJsonFile(
-    File file, {
-    ImportEditorConfigs configs = const ImportEditorConfigs(),
-  }) {
-    String json = file.readAsStringSync();
-    return ImportStateHistory.fromJson(json, configs: configs);
-  }
+  /// The position of the editor.
+  final int editorPosition;
+
+  /// The size of the imported image.
+  final Size imgSize;
+
+  /// The state history of each editor state in the session.
+  final List<EditorStateHistory> stateHistory;
+
+  /// The configurations for importing the editor state history.
+  final ImportEditorConfigs configs;
+
+  /// Version from import/export history for backward compatibility.
+  final String version;
 }

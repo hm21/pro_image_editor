@@ -11,6 +11,10 @@ import 'package:pro_image_editor/models/multi_threading/thread_request_model.dar
 import 'package:pro_image_editor/models/multi_threading/thread_task_model.dart';
 import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread.dart';
 
+/// Manages multiple threads for background operations.
+///
+/// This abstract class defines the contract for managing and interacting
+/// with threads, including starting, stopping, and communicating with them.
 abstract class ThreadManager {
   /// List of threads.
   List<Thread> get threads;
@@ -35,7 +39,8 @@ abstract class ThreadManager {
 
   /// Destroys the thread manager and all associated threads.
   ///
-  /// This method sets [isDestroyed] to true and destroys each thread in [threads].
+  /// This method sets [isDestroyed] to true and destroys each thread in
+  /// [threads].
   void destroy() {
     isDestroyed = true;
     for (var model in threads) {
@@ -43,7 +48,8 @@ abstract class ThreadManager {
     }
   }
 
-  /// Destroys all active tasks in each thread, except the task with the given [ignoreId].
+  /// Destroys all active tasks in each thread, except the task with the given
+  /// [ignoreId].
   ///
   /// [ignoreId] - The ID of the task that should not be destroyed.
   void destroyAllActiveTasks(String ignoreId) {
@@ -52,7 +58,8 @@ abstract class ThreadManager {
     }
   }
 
-  /// Sends a [ThreadRequest] to the least busy thread and returns the result as a [Uint8List].
+  /// Sends a [ThreadRequest] to the least busy thread and returns the result
+  /// as a [Uint8List].
   ///
   /// [data] - The data to be processed by the thread.
   ///
@@ -102,7 +109,8 @@ abstract class ThreadManager {
 
   /// Gets the thread that is currently the least busy.
   ///
-  /// This method finds the thread with the fewest active tasks among the ready threads.
+  /// This method finds the thread with the fewest active tasks among the ready
+  /// threads.
   /// If no thread is ready, it selects the first thread in the list.
   ///
   /// Returns the least busy [Thread].
@@ -111,12 +119,16 @@ abstract class ThreadManager {
     var models = threads.where((model) => model.isReady).toList();
     if (models.isEmpty) models.add(threads.first);
 
-    // Find the minimum number of active tasks among the ready models
+    /// Find the minimum number of active tasks among the ready models
     int minActiveTasks = models.map((model) => model.activeTasks).reduce(min);
-    // Filter the models to include only those with the minimum number of active tasks
+
+    /// Filter the models to include only those with the minimum number of
+    /// active tasks
     List<Thread> leastActiveTaskModels =
         models.where((model) => model.activeTasks == minActiveTasks).toList();
-    // Randomly select one model from the list of models with the minimum number of active tasks
+
+    /// Randomly select one model from the list of models with the minimum
+    /// number of active tasks
     return leastActiveTaskModels[
         Random().nextInt(leastActiveTaskModels.length)];
   }

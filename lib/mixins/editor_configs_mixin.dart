@@ -22,5 +22,6 @@ mixin SimpleConfigsAccessState<T extends StatefulWidget>
   @override
   ProImageEditorConfigs get configs => _widget.configs;
 
+  /// Returns the callbacks for the editor.
   ProImageEditorCallbacks get callbacks => _widget.callbacks;
 }

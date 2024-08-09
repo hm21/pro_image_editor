@@ -11,6 +11,15 @@ import '../utils/paint_element.dart';
 
 /// Handles the painting ongoing on the canvas.
 class DrawPainting extends CustomPainter {
+  /// Constructor for the canvas.
+  DrawPainting({
+    this.selected = false,
+    required this.item,
+    this.scale = 1,
+    this.enabledHitDetection = false,
+    this.freeStyleHighPerformance = false,
+  });
+
   /// The model containing information about the painting.
   final PaintedModel item;
 
@@ -28,15 +37,6 @@ class DrawPainting extends CustomPainter {
 
   /// Indicates whether the layer is currently selected.
   bool selected = true;
-
-  /// Constructor for the canvas.
-  DrawPainting({
-    this.selected = false,
-    required this.item,
-    this.scale = 1,
-    this.enabledHitDetection = false,
-    this.freeStyleHighPerformance = false,
-  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -206,25 +206,26 @@ class DrawPainting extends CustomPainter {
     Offset startCap = start - perpendicularVector * strokeHalfWidth;
     Offset endCap = end - perpendicularVector * strokeHalfWidth;
     // Move to the starting point
-    path.moveTo(startPoint.dx, startPoint.dy);
+    path
+      ..moveTo(startPoint.dx, startPoint.dy)
 
-    // Add a straight line segment to the ending point
-    path.lineTo(endPoint.dx, endPoint.dy);
+      // Add a straight line segment to the ending point
+      ..lineTo(endPoint.dx, endPoint.dy)
 
-    // Add rounded caps at both ends
-    path.arcToPoint(
-      startCap,
-      radius: Radius.circular(strokeHalfWidth),
-      clockwise: false,
-    );
-    path.arcToPoint(
-      endCap,
-      radius: Radius.circular(strokeHalfWidth),
-      clockwise: false,
-    );
+      // Add rounded caps at both ends
+      ..arcToPoint(
+        startCap,
+        radius: Radius.circular(strokeHalfWidth),
+        clockwise: false,
+      )
+      ..arcToPoint(
+        endCap,
+        radius: Radius.circular(strokeHalfWidth),
+        clockwise: false,
+      )
 
-    // Close the path
-    path.close();
+      // Close the path
+      ..close();
 
     // Check if the position is inside the path
     return path.contains(position);

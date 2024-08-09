@@ -7,10 +7,31 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-class FrostedGlassTextSizeSlider extends StatelessWidget {
-  final TextEditorState textEditor;
+/// A stateless widget that provides a text size slider with a frosted glass
+/// effect.
+///
+/// This slider is designed for use in a text editor interface, allowing users
+/// to adjust the text size while maintaining the frosted glass theme.
 
+class FrostedGlassTextSizeSlider extends StatelessWidget {
+  /// Creates a [FrostedGlassTextSizeSlider].
+  ///
+  /// This slider allows users to adjust the size of text within a text editor,
+  /// using a frosted glass effect to enhance its visual design.
+  ///
+  /// Example:
+  /// ```
+  /// FrostedGlassTextSizeSlider(
+  ///   textEditor: myTextEditorState,
+  /// )
+  /// ```
   const FrostedGlassTextSizeSlider({super.key, required this.textEditor});
+
+  /// The state of the text editor associated with this slider.
+  ///
+  /// This state allows the slider to interact with the text editor, providing
+  /// necessary controls to manage text size adjustments.
+  final TextEditorState textEditor;
 
   @override
   Widget build(BuildContext context) {

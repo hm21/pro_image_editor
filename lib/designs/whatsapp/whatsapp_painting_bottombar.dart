@@ -7,22 +7,29 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/utils/pro_image_editor_icons.dart';
 
 /// Represents the bottom bar for the paint functionality in the WhatsApp theme.
+///
+/// This widget provides controls for adjusting the stroke width and color
+/// for painting operations, using a design inspired by WhatsApp.
 class WhatsAppPaintBottomBar extends StatefulWidget {
-  /// The configuration for the image editor.
-  final ProImageEditorConfigs configs;
-
-  /// The current stroke width.
-  final double strokeWidth;
-
-  /// Callback function for setting the stroke width.
-  final Function(double value) onSetLineWidth;
-  final Color initColor;
-  final ValueChanged<Color> onColorChanged;
-
-  final IconData iconStrokeWidthThin;
-  final IconData iconStrokeWidthMedium;
-  final IconData iconStrokeWidthBold;
-
+  /// Creates a [WhatsAppPaintBottomBar] widget.
+  ///
+  /// This bottom bar allows users to select stroke widths and colors for
+  /// painting, integrating seamlessly with the WhatsApp theme.
+  ///
+  /// Example:
+  /// ```
+  /// WhatsAppPaintBottomBar(
+  ///   configs: myEditorConfigs,
+  ///   strokeWidth: 5.0,
+  ///   onSetLineWidth: (width) {
+  ///     // Handle stroke width change
+  ///   },
+  ///   initColor: Colors.black,
+  ///   onColorChanged: (color) {
+  ///     // Handle color change
+  ///   },
+  /// )
+  /// ```
   const WhatsAppPaintBottomBar({
     super.key,
     required this.configs,
@@ -34,6 +41,54 @@ class WhatsAppPaintBottomBar extends StatefulWidget {
     this.iconStrokeWidthMedium = ProImageEditorIcons.penSize2,
     this.iconStrokeWidthBold = ProImageEditorIcons.penSize3,
   });
+
+  /// The configuration for the image editor.
+  ///
+  /// These settings determine various aspects of the bottom bar's behavior
+  /// and appearance, ensuring it aligns with the application's overall theme.
+  final ProImageEditorConfigs configs;
+
+  /// The current stroke width for painting.
+  ///
+  /// This value determines the thickness of the lines drawn in the painting
+  /// editor, allowing users to customize the appearance of their artwork.
+  final double strokeWidth;
+
+  /// Callback function for setting the stroke width.
+  ///
+  /// This function is called whenever the user selects a different stroke
+  /// width, allowing the application to update the line thickness.
+  final Function(double value) onSetLineWidth;
+
+  /// The initial color for painting.
+  ///
+  /// This color sets the initial paint color, providing a starting point
+  /// for color customization.
+  final Color initColor;
+
+  /// Callback function for handling color changes.
+  ///
+  /// This function is called whenever the user selects a new color, allowing
+  /// the application to update the painting color.
+  final ValueChanged<Color> onColorChanged;
+
+  /// Icon representing thin stroke width.
+  ///
+  /// This icon is used to visually represent the option for selecting a
+  /// thin stroke width in the paint toolbar.
+  final IconData iconStrokeWidthThin;
+
+  /// Icon representing medium stroke width.
+  ///
+  /// This icon is used to visually represent the option for selecting a
+  /// medium stroke width in the paint toolbar.
+  final IconData iconStrokeWidthMedium;
+
+  /// Icon representing bold stroke width.
+  ///
+  /// This icon is used to visually represent the option for selecting a
+  /// bold stroke width in the paint toolbar.
+  final IconData iconStrokeWidthBold;
 
   @override
   State<WhatsAppPaintBottomBar> createState() => _WhatsAppPaintBottomBarState();

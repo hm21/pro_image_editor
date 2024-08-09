@@ -7,6 +7,14 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 
 /// Represents the "Done" button for the WhatsApp theme.
 class WhatsAppDoneBtn extends StatefulWidget {
+  /// Constructs a WhatsAppDoneBtn widget with the specified parameters.
+  const WhatsAppDoneBtn({
+    super.key,
+    required this.configs,
+    required this.foregroundColor,
+    required this.onPressed,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -15,14 +23,6 @@ class WhatsAppDoneBtn extends StatefulWidget {
 
   /// Callback function for when the button is pressed.
   final Function() onPressed;
-
-  /// Constructs a WhatsAppDoneBtn widget with the specified parameters.
-  const WhatsAppDoneBtn({
-    super.key,
-    required this.configs,
-    required this.foregroundColor,
-    required this.onPressed,
-  });
 
   @override
   State<WhatsAppDoneBtn> createState() => _WhatsAppDoneBtnState();

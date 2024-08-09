@@ -9,6 +9,14 @@ import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.
 
 /// Represents the button for applying filters in the WhatsApp theme.
 class WhatsAppOpenFilterBtn extends StatefulWidget {
+  /// Constructs a WhatsAppFilterBtn widget with the specified parameters.
+  const WhatsAppOpenFilterBtn({
+    super.key,
+    required this.opacity,
+    required this.configs,
+    this.filterTextOffsetY = 0,
+  });
+
   /// The configuration for the image editor.
   final ProImageEditorConfigs configs;
 
@@ -18,14 +26,6 @@ class WhatsAppOpenFilterBtn extends StatefulWidget {
   /// Offset for the filter text, helpful if the user has an input field that
   /// overlays in a stack widget.
   final double filterTextOffsetY;
-
-  /// Constructs a WhatsAppFilterBtn widget with the specified parameters.
-  const WhatsAppOpenFilterBtn({
-    super.key,
-    required this.opacity,
-    required this.configs,
-    this.filterTextOffsetY = 0,
-  });
 
   @override
   State<WhatsAppOpenFilterBtn> createState() => _WhatsAppOpenFilterBtnState();
@@ -54,19 +54,19 @@ class _WhatsAppOpenFilterBtnState extends State<WhatsAppOpenFilterBtn>
       curve: Curves.easeInOut,
     ));
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _repeatCount++;
-        if (_repeatCount < 2) {
-          _controller.reverse();
+    _controller
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _repeatCount++;
+          if (_repeatCount < 2) {
+            _controller.reverse();
+          }
+        } else if (status == AnimationStatus.dismissed && _repeatCount < 2) {
+          _controller.forward();
         }
-      } else if (status == AnimationStatus.dismissed && _repeatCount < 2) {
-        _controller.forward();
-      }
-    });
-
-    // Start the animation when the widget initializes
-    _controller.forward();
+      })
+      // Start the animation when the widget initializes
+      ..forward();
   }
 
   @override

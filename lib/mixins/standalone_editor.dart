@@ -24,7 +24,8 @@ mixin StandaloneEditor<T extends EditorInitConfigs> {
   EditorImage get editorImage;
 }
 
-/// A mixin providing access to standalone editor configurations and image within a state.
+/// A mixin providing access to standalone editor configurations and image
+/// within a state.
 mixin StandaloneEditorState<T extends StatefulWidget,
         I extends EditorInitConfigs>
     on State<T>, ImageEditorConvertedConfigs, ImageEditorConvertedCallbacks {
@@ -40,8 +41,9 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   @override
   ProImageEditorCallbacks get callbacks => initConfigs.callbacks;
 
+  /// Helper stream to rebuild widgets.
   @protected
-  late final StreamController rebuildController;
+  late final StreamController<void> rebuildController;
 
   /// Returns the theme data for the editor.
   ThemeData get theme => initConfigs.theme;
@@ -85,6 +87,10 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   /// state of a screenshot captured by the isolate.
   final List<ThreadCaptureState> screenshotHistory = [];
 
+  /// Sets the image information data.
+  ///
+  /// This method decodes image information based on the current editor state
+  /// and configuration, ensuring accurate metadata extraction.
   Future<void> setImageInfos({
     TransformConfigs? activeHistory,
     bool? forceUpdate,
@@ -141,8 +147,8 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
       createScreenshot = false;
 
-      /// Return final image that the user can handle it but still with the active
-      /// loading dialog
+      /// Return final image that the user can handle it but still with the
+      /// active loading dialog
       await initConfigs.onImageEditingComplete
           ?.call(bytes ?? Uint8List.fromList([]));
 
@@ -185,6 +191,10 @@ mixin StandaloneEditorState<T extends StatefulWidget,
     }
   }
 
+  /// Takes a screenshot of the current editor state.
+  ///
+  /// This method captures a screenshot of the current editor state, storing
+  /// it in the screenshot history for potential future use.
   @protected
   void takeScreenshot() async {
     if (!initConfigs.convertToUint8List) return;
@@ -214,6 +224,10 @@ mixin StandaloneEditorState<T extends StatefulWidget,
     super.dispose();
   }
 
+  /// Gets the minimum size between two sizes.
+  ///
+  /// This method returns the smaller of two sizes, ensuring that the resulting
+  /// size is neither null nor empty.
   @protected
   Size getMinimumSize(Size? a, Size b) {
     return a == null || a.isEmpty

@@ -195,8 +195,8 @@ void main() {
     });
   });
 
-  group("When applying constraints to the opened bottom sheet", () {
-    const widgetKey = ValueKey("example-widget");
+  group('When applying constraints to the opened bottom sheet', () {
+    const widgetKey = ValueKey('example-widget');
     const expectedConstraints = BoxConstraints(
       maxWidth: 720,
     );
