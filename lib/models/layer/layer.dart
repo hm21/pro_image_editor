@@ -521,4 +521,29 @@ class StickerLayerData extends Layer {
       'type': 'sticker',
     };
   }
+
+  /// Creates a new instance of [StickerLayerData] with modified properties.
+  ///
+  /// Each property of the new instance can be replaced by providing a value
+  /// to the corresponding parameter of this method. Unprovided parameters
+  /// will default to the current instance's values.
+  StickerLayerData copyWith({
+    Widget? sticker,
+    Offset? offset,
+    double? rotation,
+    double? scale,
+    String? id,
+    bool? flipX,
+    bool? flipY,
+  }) {
+    return StickerLayerData(
+      sticker: sticker ?? this.sticker,
+      offset: offset ?? this.offset,
+      rotation: rotation ?? this.rotation,
+      scale: scale ?? this.scale,
+      id: id ?? this.id,
+      flipX: flipX ?? this.flipX,
+      flipY: flipY ?? this.flipY,
+    );
+  }
 }

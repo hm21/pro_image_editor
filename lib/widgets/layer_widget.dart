@@ -257,6 +257,7 @@ class _LayerWidgetState extends State<LayerWidget>
             LayerInteractionHelperWidget(
               layerData: widget.layerData,
               configs: configs,
+              callbacks: callbacks,
               selected: widget.selected,
               onEditLayer: widget.onEditTap,
               isInteractive: widget.isInteractive,

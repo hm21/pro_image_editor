@@ -552,6 +552,43 @@ class ProImageEditorState extends State<ProImageEditor>
     stateManager.setHistoryLimit(configs.stateHistoryConfigs.stateHistoryLimit);
   }
 
+  /// Replaces a layer at the specified index with a new layer.
+  ///
+  /// This method updates the current layer at the given [index] in the list of
+  /// active layers with the specified [layer]. It also resets the
+  /// `selectedLayerId` in the `layerInteractionManager` to an empty string,
+  /// effectively deselecting any currently selected layer. Additionally, it
+  /// adds the updated list of layers to the history, enabling undo/redo
+  /// functionality, and triggers a UI update by sending a null event to the
+  /// UI layer controller.
+  ///
+  /// This is useful when you need to modify an existing layer while maintaining
+  /// the rest of the layer order and history tracking.
+  ///
+  /// Parameters:
+  /// - [index]: The index of the layer to be replaced. Must be within the
+  ///   bounds of the current list of active layers.
+  /// - [layer]: The new `Layer` instance that will replace the existing layer
+  ///   at the specified index.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// replaceLayer(index: 2, layer: newLayer);
+  /// ```
+  void replaceLayer({
+    required int index,
+    required Layer layer,
+  }) {
+    layerInteractionManager.selectedLayerId = '';
+    addHistory(
+      layers: [...activeLayers]
+        ..removeAt(index)
+        ..insert(index, layer),
+    );
+
+    _controllers.uiLayerCtrl.add(null);
+  }
+
   /// Add a new layer to the image editor.
   ///
   /// This method adds a new layer to the image editor and updates the editing
@@ -2243,6 +2280,7 @@ class ProImageEditorState extends State<ProImageEditor>
                             return LayerWidget(
                               key: layerItem.key,
                               configs: configs,
+                              callbacks: callbacks,
                               editorCenterX: sizesManager.editorSize.width / 2,
                               editorCenterY: sizesManager
                                   .editorCenterY(selectedLayerIndex),
@@ -2258,6 +2296,10 @@ class ProImageEditorState extends State<ProImageEditor>
                               onEditTap: () {
                                 if (layerItem is TextLayerData) {
                                   _onTextLayerTap(layerItem);
+                                } else if (layerItem is StickerLayerData) {
+                                  callbacks
+                                      .stickerEditorCallbacks!.onTapEditSticker
+                                      ?.call(this, layerItem, i);
                                 }
                               },
                               onTap: (layer) async {

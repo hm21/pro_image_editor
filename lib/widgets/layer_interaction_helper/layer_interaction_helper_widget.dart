@@ -144,7 +144,6 @@ class _LayerInteractionHelperWidgetState
       // interaction.
       return DeferPointer(child: widget.child);
     }
-
     return TooltipVisibility(
       visible:
           _tooltipVisible && imageEditorTheme.layerInteraction.showTooltips,
@@ -181,7 +180,10 @@ class _LayerInteractionHelperWidgetState
                     imageEditorTheme.layerInteraction.buttonRemoveBackground,
               ),
             ),
-            if (widget.layerData.runtimeType == TextLayerData)
+            if (widget.layerData.runtimeType == TextLayerData ||
+                (widget.layerData.runtimeType == StickerLayerData &&
+                    widget.callbacks.stickerEditorCallbacks?.onTapEditSticker !=
+                        null))
               Positioned(
                 top: 0,
                 right: 0,
