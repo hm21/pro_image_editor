@@ -1586,6 +1586,15 @@ git clone https://github.com/hm21/pro_image_editor.git
 
 <br/>
 
+## Contributors
+<a href="https://github.com/hm21/pro_image_editor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hm21/pro_image_editor" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
+<br/>
+
 ### Included Packages
 
 This package uses several Flutter packages to provide a seamless editing experience. A big thanks to the authors of these amazing packages. Here’s a list of the packages we used in this project:

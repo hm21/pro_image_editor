@@ -69,28 +69,35 @@ class _FrostedGlassCropRotateToolbar
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                onPressed: widget.onRotate,
-                tooltip: widget.configs.i18n.cropRotateEditor.rotate,
-                icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
-                color: widget.configs.imageEditorTheme.cropRotateEditor
-                    .appBarForegroundColor,
-              ),
-              CupertinoButton(
-                onPressed: widget.onReset,
-                padding: padding,
-                child: Text(
-                  widget.configs.i18n.cropRotateEditor.reset,
-                  style: style,
+              if (widget.configs.cropRotateEditorConfigs.canRotate)
+                IconButton(
+                  onPressed: widget.onRotate,
+                  tooltip: widget.configs.i18n.cropRotateEditor.rotate,
+                  icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
+                  color: widget.configs.imageEditorTheme.cropRotateEditor
+                      .appBarForegroundColor,
+                )
+              else
+                const SizedBox.shrink(),
+              if (widget.configs.cropRotateEditorConfigs.canReset)
+                CupertinoButton(
+                  onPressed: widget.onReset,
+                  padding: padding,
+                  child: Text(
+                    widget.configs.i18n.cropRotateEditor.reset,
+                    style: style,
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: widget.openAspectRatios,
-                tooltip: widget.configs.i18n.cropRotateEditor.ratio,
-                icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
-                color: widget.configs.imageEditorTheme.cropRotateEditor
-                    .appBarForegroundColor,
-              ),
+              if (widget.configs.cropRotateEditorConfigs.canChangeAspectRatio)
+                IconButton(
+                  onPressed: widget.openAspectRatios,
+                  tooltip: widget.configs.i18n.cropRotateEditor.ratio,
+                  icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
+                  color: widget.configs.imageEditorTheme.cropRotateEditor
+                      .appBarForegroundColor,
+                )
+              else
+                const SizedBox.shrink(),
             ],
           ),
         ),

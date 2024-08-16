@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.1.1
+- **FIX**(Frosted-Glass-Design): Ensure configuration options such as `canReset` function correctly.
+- **DOCS**(Contributors): Include contributor avatars in the README file.
+
+
 ## 5.1.0
 - **FEAT**(Layer Management): Added method `replaceLayer` to enable replacing an existing layer at a specified index, enhancing layer management and history tracking capabilities.
 - **FEAT**(Sticker Interaction): Added callback `onTapEditSticker` to display an edit button on stickers when tapped, allowing for customizable sticker editing interactions. This was requested in [#188](https://github.com/hm21/pro_image_editor/issues/188).
