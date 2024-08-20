@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.1.2
+- **FIX**(Crop-Editor): Ensure custom aspect ratio is applied when no changes are made.
+
+
 ## 5.1.1
 - **FIX**(Frosted-Glass-Design): Ensure configuration options such as `canReset` function correctly.
 - **DOCS**(Contributors): Include contributor avatars in the README file.

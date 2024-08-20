@@ -668,6 +668,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _interactionActive = true;
     initConfigs.onImageEditingStarted?.call();
 
+    /// If the user set a custom initAspectRatio we need to enforce add
+    /// a history even there was no changes
+    if (!canUndo &&
+        cropRotateEditorConfigs.initAspectRatio != CropAspectRatios.custom) {
+      addHistory();
+    }
+
     TransformConfigs transformC =
         !canRedo && !canUndo && initialTransformConfigs != null
             ? initialTransformConfigs!
