@@ -664,7 +664,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Handles the crop image operation.
   Future<void> done() async {
-    if (_interactionActive) return;
+    if (_interactionActive ||
+        (!_imageSizeIsDecoded && initConfigs.convertToUint8List)) {
+      return;
+    }
     _interactionActive = true;
     initConfigs.onImageEditingStarted?.call();
 
@@ -713,17 +716,33 @@ class CropRotateEditorState extends State<CropRotateEditor>
         LoadingDialog.instance.hide();
         return;
       }
-      Uint8List? bytes = await screenshotCtrl.captureFinalScreenshot(
-        imageInfos: imageInfos!,
-        context: context,
-        widget: _screenshotWidget(transformC),
-        targetSize:
-            _rotated90deg ? imageInfos!.rawSize.flipped : imageInfos!.rawSize,
-        backgroundScreenshot:
-            screenshotHistoryPosition >= screenshotHistory.length
-                ? null
-                : screenshotHistory[screenshotHistoryPosition],
-      );
+      Uint8List? bytes;
+      int retry = 0;
+      do {
+        if (retry > 0) {
+          debugPrint('Generation failed! Retry $retry');
+
+          /// Cooldown for the case the image generation failed
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (!mounted) return;
+        }
+        bytes = await screenshotCtrl.captureFinalScreenshot(
+          imageInfos: imageInfos!,
+          context: context,
+          widget: _screenshotWidget(transformC),
+          targetSize:
+              _rotated90deg ? imageInfos!.rawSize.flipped : imageInfos!.rawSize,
+          backgroundScreenshot:
+              screenshotHistoryPosition >= screenshotHistory.length
+                  ? null
+                  : screenshotHistory[screenshotHistoryPosition],
+        );
+        retry++;
+      } while (bytes == null && retry < 7 && mounted);
+
+      if (bytes == null) {
+        debugPrint('Failed to capture the final image.');
+      }
 
       await initConfigs.onImageEditingComplete
           ?.call(bytes ?? Uint8List.fromList([]));
