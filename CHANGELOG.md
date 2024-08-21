@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 5.1.4
+- **FIX**(Crop-Editor): Ensure the editor respect the maximum output size.
+
+
 ## 5.1.3
 - **FIX**(Crop-Editor): Occasionally, image generation may fail due to issues related to internal Flutter widget builds. In such cases, we immediately retry the generation to ensure the final image is produced. 
 Note that this issue primarily occurs in debug mode and it was very rare in release mode.

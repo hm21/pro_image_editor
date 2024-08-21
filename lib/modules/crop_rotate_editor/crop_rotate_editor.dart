@@ -730,8 +730,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
           imageInfos: imageInfos!,
           context: context,
           widget: _screenshotWidget(transformC),
-          targetSize:
-              _rotated90deg ? imageInfos!.rawSize.flipped : imageInfos!.rawSize,
+          targetSize: _rotated90deg
+              ? imageInfos!.renderedSize.flipped
+              : imageInfos!.renderedSize,
           backgroundScreenshot:
               screenshotHistoryPosition >= screenshotHistory.length
                   ? null
@@ -791,8 +792,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
       screenshotCtrl.captureImage(
         imageInfos: imageInfos!,
         screenshots: screenshotHistory,
-        targetSize:
-            _rotated90deg ? imageInfos!.rawSize.flipped : imageInfos!.rawSize,
+        targetSize: _rotated90deg
+            ? imageInfos!.renderedSize.flipped
+            : imageInfos!.renderedSize,
         widget: _screenshotWidget(transformC),
       );
     });
