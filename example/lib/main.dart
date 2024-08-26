@@ -1,10 +1,9 @@
 // Flutter imports:
+import 'package:example/pages/video/combine_video_editor_example.dart';
 import 'package:example/pages/design_examples/design_example.dart';
-import 'package:example/pages/zoom_move_editor_example.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Package imports:
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -81,10 +80,10 @@ class _MyHomePageState extends State<MyHomePage> {
     const GenerationConfigsExample(),
     const PickImageExample(),
     const GoogleFontExample(),
+    const CombineVideoEditorExample(),
     const CustomAppbarBottombarExample(),
     const ImportExportExample(),
     const MoveableBackgroundImageExample(),
-    const ZoomMoveEditorExample(),
     const ImageFormatConvertExample(),
   ];
 
@@ -105,10 +104,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return ExampleConstants(
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
-        child: ExtendedPopScope(
-          child: Scaffold(
-            body: SafeArea(child: _buildCard()),
-          ),
+        child: Scaffold(
+          body: SafeArea(child: _buildCard()),
         ),
       ),
     );
