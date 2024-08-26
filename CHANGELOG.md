@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.1.5
+- **CHORE**: Update `emoji_picker_flutter` dependency to version `3.0.0`
+- **CHORE**: Update `vibration` dependency to version `2.0.0`
+- **CHORE**: Update `mime` dependency to version `1.0.6`
 
 ## 5.1.4
 - **FIX**(Crop-Editor): Ensure the editor respect the maximum output size.
