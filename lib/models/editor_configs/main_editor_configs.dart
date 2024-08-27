@@ -6,7 +6,6 @@ class MainEditorConfigs {
   /// Creates an instance of MainEditorConfigs with optional settings.
   const MainEditorConfigs({
     this.enableZoom = false,
-    this.editorIsZoomable,
     this.editorMinScale = 1.0,
     this.editorMaxScale = 5.0,
     this.transformSetup,
@@ -23,12 +22,6 @@ class MainEditorConfigs {
   /// Default value is `false`.
   /// {@endtemplate}
   final bool enableZoom;
-
-  /// {@macro enableZoom}
-  ///
-  /// **Deprecated**: Use [enableZoom] instead.
-  @Deprecated('Use enableZoom instead')
-  final bool? editorIsZoomable;
 
   /// The minimum scale factor for the editor.
   ///
@@ -62,13 +55,11 @@ class MainEditorConfigs {
   /// others unchanged.
   MainEditorConfigs copyWith(
       {bool? enableZoom,
-      bool? editorIsZoomable, // Deprecated, but included for completeness
       double? editorMinScale,
       double? editorMaxScale,
       MainEditorTransformSetup? transformSetup}) {
     return MainEditorConfigs(
       enableZoom: enableZoom ?? this.enableZoom,
-      editorIsZoomable: editorIsZoomable ?? this.editorIsZoomable,
       editorMinScale: editorMinScale ?? this.editorMinScale,
       editorMaxScale: editorMaxScale ?? this.editorMaxScale,
       transformSetup: transformSetup ?? this.transformSetup,

@@ -33,7 +33,6 @@ class PaintEditorConfigs {
   /// Other properties are set to reasonable defaults.
   const PaintEditorConfigs({
     this.enabled = true,
-    this.editorIsZoomable,
     this.enableZoom = false,
     this.editorMinScale = 1.0,
     this.editorMaxScale = 5.0,
@@ -71,12 +70,6 @@ class PaintEditorConfigs {
   ///
   /// Default value is `false`.
   final bool enableZoom;
-
-  /// {@macro enableZoom}
-  ///
-  /// **Deprecated**: Use [enableZoom] instead.
-  @Deprecated('Use enableZoom instead')
-  final bool? editorIsZoomable;
 
   /// Indicating whether the free-style drawing option is available.
   final bool hasOptionFreeStyle;
@@ -175,7 +168,6 @@ class PaintEditorConfigs {
   PaintEditorConfigs copyWith({
     bool? enabled,
     bool? enableZoom,
-    bool? editorIsZoomable, // Deprecated, but included for completeness
     bool? hasOptionFreeStyle,
     bool? hasOptionArrow,
     bool? hasOptionLine,
@@ -199,7 +191,6 @@ class PaintEditorConfigs {
     return PaintEditorConfigs(
       enabled: enabled ?? this.enabled,
       enableZoom: enableZoom ?? this.enableZoom,
-      editorIsZoomable: editorIsZoomable ?? this.editorIsZoomable,
       hasOptionFreeStyle: hasOptionFreeStyle ?? this.hasOptionFreeStyle,
       hasOptionArrow: hasOptionArrow ?? this.hasOptionArrow,
       hasOptionLine: hasOptionLine ?? this.hasOptionLine,

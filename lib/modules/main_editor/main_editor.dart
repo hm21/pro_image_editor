@@ -2033,9 +2033,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 : EdgeInsets.zero,
             child: ExtendedInteractiveViewer(
               key: _interactiveViewer,
-              // ignore: deprecated_member_use_from_same_package
-              enableZoom: mainEditorConfigs.editorIsZoomable ??
-                  mainEditorConfigs.enableZoom,
+              enableZoom: mainEditorConfigs.enableZoom,
               minScale: mainEditorConfigs.editorMinScale,
               maxScale: mainEditorConfigs.editorMaxScale,
               onInteractionStart: (details) {

@@ -1,12 +1,15 @@
 # Changelog
 
+## 5.2.1
+- **REFACTOR**(vars): remove deprecated variables
+
 ## 5.2.0
-- **BREAKING** **FEAT**: Added the `ImageInfos` parameter to the `onDone` callback in the crop-rotate-editor.
-- **FEAT**: Add `copyWith` method to all config classes.
-- **DOCS**: Add an example how to start with the crop-rotate-editor and move than to the main-editor.
-- **CHORE**: Update `emoji_picker_flutter` dependency to version `3.0.0`.
-- **CHORE**: Update `vibration` dependency to version `2.0.0`.
-- **CHORE**: Update `mime` dependency to version `1.0.6`.
+- **BREAKING** **FEAT**(Callback): Added the `ImageInfos` parameter to the `onDone` callback in the crop-rotate-editor.
+- **FEAT**(Config): Add `copyWith` method to all config classes.
+- **DOCS**(Example): Add an example how to start with the crop-rotate-editor and move than to the main-editor.
+- **CHORE**(Dependency): Update `emoji_picker_flutter` dependency to version `3.0.0`.
+- **CHORE**(Dependency): Update `vibration` dependency to version `2.0.0`.
+- **CHORE**(Dependency): Update `mime` dependency to version `1.0.6`.
 
 ## 5.1.4
 - **FIX**(Crop-Editor): Ensure the editor respect the maximum output size.
