@@ -45,7 +45,8 @@ class WhatsAppCategoryViewState extends State<EmojiEditorCategoryView>
 
   /// Builds the backspace button based on configuration settings.
   Widget _buildBackspaceButton() {
-    if (widget.config.categoryViewConfig.showBackspaceButton) {
+    if (widget.config.categoryViewConfig.extraTab ==
+        CategoryExtraTab.BACKSPACE) {
       return BackspaceButton(
         widget.config,
         widget.state.onBackspacePressed,

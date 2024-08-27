@@ -64,7 +64,7 @@ class HeaderSearchViewState extends SearchViewState {
               children: [
                 IconButton(
                   onPressed: widget.showEmojiView,
-                  color: widget.config.searchViewConfig.buttonColor,
+                  color: widget.config.searchViewConfig.buttonIconColor,
                   icon: Icon(
                     Icons.arrow_back,
                     color: widget.config.searchViewConfig.buttonIconColor,
