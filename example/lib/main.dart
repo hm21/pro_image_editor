@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/pages/crop_to_main_editor.dart';
 import 'package:example/pages/design_examples/design_example.dart';
 import 'package:example/pages/zoom_move_editor_example.dart';
 import 'package:flutter/gestures.dart';
@@ -72,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const DefaultExample(),
     const DesignExample(),
     const StandaloneExample(),
+    const CropToMainEditorExample(),
     const SignatureDrawingExample(),
     const StickersExample(),
     const FirebaseSupabaseExample(),

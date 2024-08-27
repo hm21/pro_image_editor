@@ -10,7 +10,6 @@ import 'package:flutter/widgets.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../history/state_history.dart';
 import 'utils/export_import_version.dart';
 
 /// Class responsible for exporting the state history of the editor.

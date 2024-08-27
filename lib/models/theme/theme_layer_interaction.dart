@@ -123,8 +123,8 @@ class ThemeLayerInteraction {
   /// rotate layers, influencing its visual appearance.
   final Color buttonScaleRotateBackground;
 
-  /// Creates a copy of this `ThemeLayerInteraction` object with the given fields
-  /// replaced with new values.
+  /// Creates a copy of this `ThemeLayerInteraction` object with the given
+  /// fields replaced with new values.
   ///
   /// The [copyWith] method allows you to create a new instance of
   /// [ThemeLayerInteraction] with some properties updated while keeping the

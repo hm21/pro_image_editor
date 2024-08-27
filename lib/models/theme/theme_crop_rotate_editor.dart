@@ -108,8 +108,8 @@ class CropRotateEditorTheme {
   /// The thickness of the crop corner.
   final double cropCornerThickness;
 
-  /// Creates a copy of this `CropRotateEditorTheme` object with the given fields
-  /// replaced with new values.
+  /// Creates a copy of this `CropRotateEditorTheme` object with the given
+  /// fields replaced with new values.
   ///
   /// The [copyWith] method allows you to create a new instance of
   /// [CropRotateEditorTheme] with some properties updated while keeping the

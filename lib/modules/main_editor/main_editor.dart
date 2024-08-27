@@ -19,7 +19,6 @@ import '../../mixins/editor_configs_mixin.dart';
 import '../../mixins/main_editor/main_editor_global_keys.dart';
 import '../../models/crop_rotate_editor/transform_factors.dart';
 import '../../models/history/last_layer_interaction_position.dart';
-import '../../models/history/state_history.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/import_export/utils/export_import_version.dart';
 import '../../models/theme/theme_draggable_sheet.dart';
@@ -393,12 +392,18 @@ class ProImageEditorState extends State<ProImageEditor>
       networkUrl: widget.networkUrl,
     );
 
-    stateManager.stateHistory.add(EditorStateHistory(
-      transformConfigs: TransformConfigs.empty(),
-      blur: 0,
-      layers: [],
-      filters: [],
-    ));
+    /// For the case the user add transformConfigs we initialize the editor with
+    /// this configurations and not the empty history
+    if (mainEditorConfigs.transformSetup != null) {
+      _initializeWithTransformations();
+    } else {
+      stateManager.stateHistory.add(EditorStateHistory(
+        transformConfigs: TransformConfigs.empty(),
+        blur: 0,
+        layers: [],
+        filters: [],
+      ));
+    }
 
     if (helperLines.hitVibration) {
       Vibration.hasVibrator().then((hasVibrator) {
@@ -683,11 +688,37 @@ class ProImageEditorState extends State<ProImageEditor>
     _tempLayer = null;
   }
 
+  void _initializeWithTransformations() {
+    var transformSetup = mainEditorConfigs.transformSetup!;
+
+    /// Add the initial history
+    stateManager.stateHistory.add(
+      EditorStateHistory(
+        transformConfigs: transformSetup.transformConfigs,
+        blur: 0,
+        layers: [],
+        filters: [],
+      ),
+    );
+
+    /// Set the decoded image infos for the case they are not empty
+    if (transformSetup.imageInfos != null) {
+      _imageInfos = transformSetup.imageInfos!;
+      decodeImage(
+        transformSetup.transformConfigs,
+        transformSetup.imageInfos,
+      );
+    }
+  }
+
   /// Decode the image being edited.
   ///
   /// This method decodes the image if it hasn't been decoded yet and updates
   /// its properties.
-  Future<void> decodeImage([TransformConfigs? transformConfigs]) async {
+  Future<void> decodeImage([
+    TransformConfigs? transformConfigs,
+    ImageInfos? imageInfos,
+  ]) async {
     bool shouldImportStateHistory =
         _imageNeedDecode && stateHistoryConfigs.initStateHistory != null;
     _imageNeedDecode = false;
@@ -700,14 +731,15 @@ class ProImageEditorState extends State<ProImageEditor>
         message: i18n.importStateHistoryMsg,
       );
     }
-    _imageInfos = await decodeImageInfos(
-      bytes: await editorImage.safeByteArray(context),
-      screenSize: Size(
-        sizesManager.lastScreenSize.width,
-        sizesManager.bodySize.height,
-      ),
-      configs: transformConfigs ?? stateManager.transformConfigs,
-    );
+    _imageInfos = imageInfos ??
+        await decodeImageInfos(
+          bytes: await editorImage.safeByteArray(context),
+          screenSize: Size(
+            sizesManager.lastScreenSize.width,
+            sizesManager.bodySize.height,
+          ),
+          configs: transformConfigs ?? stateManager.transformConfigs,
+        );
     sizesManager.originalImageSize ??= _imageInfos!.rawSize;
     sizesManager.decodedImageSize = _imageInfos!.renderedSize;
 
@@ -1187,7 +1219,7 @@ class ProImageEditorState extends State<ProImageEditor>
           enableFakeHero: true,
           appliedBlurFactor: stateManager.activeBlur,
           appliedFilters: stateManager.activeFilters,
-          onDone: (transformConfigs, fitToScreenFactor) async {
+          onDone: (transformConfigs, fitToScreenFactor, imageInfos) async {
             List<Layer> updatedLayers = LayerTransformGenerator(
               layers: stateManager.activeLayers,
               activeTransformConfigs: stateManager.transformConfigs,
@@ -1530,6 +1562,13 @@ class ProImageEditorState extends State<ProImageEditor>
 
     /// Ensure hero animations finished
     if (isSubEditorOpen) await _pageOpenCompleter.future;
+
+    /// For the case the user add initial transformConfigs but there are no
+    /// changes we need to ensure the editor will generate the image.
+    if (mainEditorConfigs.transformSetup != null &&
+        stateManager.position == 0) {
+      addHistory();
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       LoadingDialog.instance.show(

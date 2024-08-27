@@ -41,6 +41,7 @@ class CropRotateEditorConfigs {
     this.reverseMouseScroll = false,
     this.reverseDragDirection = false,
     this.roundCropper = false,
+    this.provideImageInfos = false,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
@@ -108,6 +109,14 @@ class CropRotateEditorConfigs {
   ///
   /// The round cropper only supports an aspect ratio of 1.
   final bool roundCropper;
+
+  /// A boolean flag that determines whether the `imageInfos` parameter
+  /// should be included in the `onDone` callback.
+  ///
+  /// When set to `true`, the `imageInfos` parameter will be provided in the
+  /// `onDone` callback of the crop editor, containing detailed information
+  /// about the edited image. If set to `false`, `imageInfos` will be `null`.
+  final bool provideImageInfos;
 
   /// The initial aspect ratio for cropping.
   ///
@@ -183,6 +192,7 @@ class CropRotateEditorConfigs {
     bool? reverseMouseScroll,
     bool? reverseDragDirection,
     bool? roundCropper,
+    bool? provideImageInfos,
     double? initAspectRatio,
     double? maxScale,
     double? mouseScaleFactor,
@@ -201,6 +211,7 @@ class CropRotateEditorConfigs {
     double? mobileCornerDragArea,
   }) {
     return CropRotateEditorConfigs(
+      provideImageInfos: provideImageInfos ?? this.provideImageInfos,
       enabled: enabled ?? this.enabled,
       canRotate: canRotate ?? this.canRotate,
       canFlip: canFlip ?? this.canFlip,

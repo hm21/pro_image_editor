@@ -1,4 +1,6 @@
 // Project imports:
+import 'package:pro_image_editor/utils/decode_image.dart';
+
 import '../crop_rotate_editor/transform_factors.dart';
 import 'editor_init_configs.dart';
 
@@ -6,11 +8,18 @@ import 'editor_init_configs.dart';
 /// crop and rotate editing process.
 ///
 /// This typedef defines a function that handles the completion of editing
-/// transformations, passing the final transformation configurations and
-/// fit-to-screen factor.
+/// transformations, passing the final transformation configurations,
+/// fit-to-screen factor, and optionally the image information.
+///
+/// - [transformations]: The final transformation configurations after editing.
+/// - [fitToScreenFactor]: The factor used to fit the image to the screen.
+/// - [imageInfos]: The optional image information, which will only be provided
+///   if the `provideImageInfos` flag in the [CropRotateEditorConfigs] is set
+///   to true.
 typedef CropRotateEditorDone = Function(
   TransformConfigs transformations,
   double fitToScreenFactor,
+  ImageInfos? imageInfos,
 );
 
 /// Configuration settings for initializing the Crop and Rotate Editor.

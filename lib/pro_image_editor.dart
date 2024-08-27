@@ -9,6 +9,7 @@ export 'models/editor_callbacks/pro_image_editor_callbacks.dart';
 /// Configs and Callbacks
 export 'models/editor_configs/pro_image_editor_configs.dart';
 export 'models/editor_image.dart';
+export 'models/history/state_history.dart';
 
 /// Import/Export state history
 export 'models/import_export/export_state_history_configs.dart';

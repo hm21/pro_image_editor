@@ -686,6 +686,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _showFakeHero = enableFakeHero;
     _fakeHeroTransformConfigs = transformC;
     _updateAllStates();
+
     if (!initConfigs.convertToUint8List) {
       List<Layer> updatedLayers = LayerTransformGenerator(
         layers: initConfigs.layers ?? [],
@@ -698,7 +699,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
       ).updatedLayers;
       _layers = updatedLayers;
       _updateAllStates();
-      await initConfigs.onDone?.call(transformC, _transformHelperScale);
+
+      /// Read the image information in the case the user require them
+      if (cropRotateEditorConfigs.provideImageInfos && imageInfos == null) {
+        await setImageInfos(activeHistory: activeHistory);
+      }
+
+      await initConfigs.onDone
+          ?.call(transformC, _transformHelperScale, imageInfos);
       if (mounted) Navigator.pop(context, transformC);
     } else {
       LoadingDialog.instance.show(
