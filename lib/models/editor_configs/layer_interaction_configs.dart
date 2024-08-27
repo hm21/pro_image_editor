@@ -29,6 +29,22 @@ class LayerInteraction {
   /// This option takes effect only when `selectable` is set to `enabled` or
   /// `auto` where the device is a desktop.
   final bool initialSelected;
+
+  /// Creates a copy of this `LayerInteraction` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [LayerInteraction] with some properties updated while keeping the
+  /// others unchanged.
+  LayerInteraction copyWith({
+    LayerInteractionSelectable? selectable,
+    bool? initialSelected,
+  }) {
+    return LayerInteraction(
+      selectable: selectable ?? this.selectable,
+      initialSelected: initialSelected ?? this.initialSelected,
+    );
+  }
 }
 
 /// Enumerates the different selectability states for a layer.

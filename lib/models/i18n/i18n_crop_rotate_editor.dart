@@ -67,4 +67,40 @@ class I18nCropRotateEditor {
 
   /// The tooltip text displayed for the "More" option on small screens.
   final String smallScreenMoreTooltip;
+
+  /// Creates a copy of this `I18nCropRotateEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [I18nCropRotateEditor] with some properties updated while keeping the
+  /// others unchanged.
+  I18nCropRotateEditor copyWith({
+    String? bottomNavigationBarText,
+    String? rotate,
+    String? flip,
+    String? ratio,
+    String? back,
+    String? cancel,
+    String? done,
+    String? reset,
+    String? undo,
+    String? redo,
+    String? smallScreenMoreTooltip,
+  }) {
+    return I18nCropRotateEditor(
+      bottomNavigationBarText:
+          bottomNavigationBarText ?? this.bottomNavigationBarText,
+      rotate: rotate ?? this.rotate,
+      flip: flip ?? this.flip,
+      ratio: ratio ?? this.ratio,
+      back: back ?? this.back,
+      cancel: cancel ?? this.cancel,
+      done: done ?? this.done,
+      reset: reset ?? this.reset,
+      undo: undo ?? this.undo,
+      redo: redo ?? this.redo,
+      smallScreenMoreTooltip:
+          smallScreenMoreTooltip ?? this.smallScreenMoreTooltip,
+    );
+  }
 }

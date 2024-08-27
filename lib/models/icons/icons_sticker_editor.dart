@@ -26,4 +26,18 @@ class IconsStickerEditor {
 
   /// The icon to be displayed in the bottom navigation bar.
   final IconData bottomNavBar;
+
+  /// Creates a copy of this `IconsStickerEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsStickerEditor] with some properties updated while keeping the
+  /// others unchanged.
+  IconsStickerEditor copyWith({
+    IconData? bottomNavBar,
+  }) {
+    return IconsStickerEditor(
+      bottomNavBar: bottomNavBar ?? this.bottomNavBar,
+    );
+  }
 }

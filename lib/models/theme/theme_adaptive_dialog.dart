@@ -14,4 +14,22 @@ class AdaptiveDialogTheme {
 
   /// Primary color in the Cupertino design with brightness `dark`.
   final Color cupertinoPrimaryColorDark;
+
+  /// Creates a copy of this `AdaptiveDialogTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [AdaptiveDialogTheme] with some properties updated while keeping the
+  /// others unchanged.
+  AdaptiveDialogTheme copyWith({
+    Color? cupertinoPrimaryColorLight,
+    Color? cupertinoPrimaryColorDark,
+  }) {
+    return AdaptiveDialogTheme(
+      cupertinoPrimaryColorLight:
+          cupertinoPrimaryColorLight ?? this.cupertinoPrimaryColorLight,
+      cupertinoPrimaryColorDark:
+          cupertinoPrimaryColorDark ?? this.cupertinoPrimaryColorDark,
+    );
+  }
 }

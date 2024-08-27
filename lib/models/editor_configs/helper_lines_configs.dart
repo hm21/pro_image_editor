@@ -66,4 +66,24 @@ class HelperLines {
   /// detection with helper lines. You can set it to `false` to disable haptic
   /// feedback.
   final bool hitVibration;
+
+  /// Creates a copy of this `HelperLines` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [HelperLines] with some properties updated while keeping the
+  /// others unchanged.
+  HelperLines copyWith({
+    bool? showVerticalLine,
+    bool? showHorizontalLine,
+    bool? showRotateLine,
+    bool? hitVibration,
+  }) {
+    return HelperLines(
+      showVerticalLine: showVerticalLine ?? this.showVerticalLine,
+      showHorizontalLine: showHorizontalLine ?? this.showHorizontalLine,
+      showRotateLine: showRotateLine ?? this.showRotateLine,
+      hitVibration: hitVibration ?? this.hitVibration,
+    );
+  }
 }

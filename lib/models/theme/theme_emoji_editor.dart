@@ -146,4 +146,47 @@ class EmojiEditorTheme {
   /// Otherwise, it falls back to
   /// [ProImageEditorConfigs.editorBoxConstraintsBuilder].
   final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
+  /// Creates a copy of this `EmojiEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [EmojiEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  EmojiEditorTheme copyWith({
+    SkinToneConfig? skinToneConfig,
+    BottomActionBarConfig? bottomActionBarConfig,
+    SearchViewConfig? searchViewConfig,
+    CategoryViewConfig? categoryViewConfig,
+    EmojiViewConfig? emojiViewConfig,
+    TextStyle? textStyle,
+    bool? swapCategoryAndBottomBar,
+    bool? showDragHandle,
+    ThemeDraggableSheet? themeDraggableSheet,
+    EdgeInsets? categoryTitlePadding,
+    TextStyle? categoryTitleStyle,
+    Color? backgroundColor,
+    Duration? scrollToDuration,
+    EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder,
+  }) {
+    return EmojiEditorTheme(
+      skinToneConfig: skinToneConfig ?? this.skinToneConfig,
+      bottomActionBarConfig:
+          bottomActionBarConfig ?? this.bottomActionBarConfig,
+      searchViewConfig: searchViewConfig ?? this.searchViewConfig,
+      categoryViewConfig: categoryViewConfig ?? this.categoryViewConfig,
+      emojiViewConfig: emojiViewConfig ?? this.emojiViewConfig,
+      textStyle: textStyle ?? this.textStyle,
+      swapCategoryAndBottomBar:
+          swapCategoryAndBottomBar ?? this.swapCategoryAndBottomBar,
+      showDragHandle: showDragHandle ?? this.showDragHandle,
+      themeDraggableSheet: themeDraggableSheet ?? this.themeDraggableSheet,
+      categoryTitlePadding: categoryTitlePadding ?? this.categoryTitlePadding,
+      categoryTitleStyle: categoryTitleStyle ?? this.categoryTitleStyle,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      scrollToDuration: scrollToDuration ?? this.scrollToDuration,
+      editorBoxConstraintsBuilder:
+          editorBoxConstraintsBuilder ?? this.editorBoxConstraintsBuilder,
+    );
+  }
 }

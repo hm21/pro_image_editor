@@ -205,4 +205,49 @@ class I18n {
 
   /// Text for the "Remove" action.
   final String remove;
+
+  /// Creates a copy of this `I18n` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [I18n] with some properties updated while keeping the
+  /// others unchanged.
+  I18n copyWith({
+    I18nPaintingEditor? paintEditor,
+    I18nVarious? various,
+    I18nLayerInteraction? layerInteraction,
+    I18nTextEditor? textEditor,
+    I18nFilterEditor? filterEditor,
+    I18nBlurEditor? blurEditor,
+    I18nEmojiEditor? emojiEditor,
+    I18nStickerEditor? stickerEditor,
+    I18nCropRotateEditor? cropRotateEditor,
+    String? doneLoadingMsg,
+    String? importStateHistoryMsg,
+    String? cancel,
+    String? undo,
+    String? redo,
+    String? done,
+    String? remove,
+  }) {
+    return I18n(
+      paintEditor: paintEditor ?? this.paintEditor,
+      various: various ?? this.various,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
+      textEditor: textEditor ?? this.textEditor,
+      filterEditor: filterEditor ?? this.filterEditor,
+      blurEditor: blurEditor ?? this.blurEditor,
+      emojiEditor: emojiEditor ?? this.emojiEditor,
+      stickerEditor: stickerEditor ?? this.stickerEditor,
+      cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      doneLoadingMsg: doneLoadingMsg ?? this.doneLoadingMsg,
+      importStateHistoryMsg:
+          importStateHistoryMsg ?? this.importStateHistoryMsg,
+      cancel: cancel ?? this.cancel,
+      undo: undo ?? this.undo,
+      redo: redo ?? this.redo,
+      done: done ?? this.done,
+      remove: remove ?? this.remove,
+    );
+  }
 }

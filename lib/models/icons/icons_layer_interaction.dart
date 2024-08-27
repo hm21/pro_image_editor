@@ -25,4 +25,22 @@ class IconsLayerInteraction {
 
   /// The icon data for rotating or scaling a layer.
   final IconData rotateScale;
+
+  /// Creates a copy of this `IconsLayerInteraction` object with the given
+  /// fields replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsLayerInteraction] with some properties updated while keeping the
+  /// others unchanged.
+  IconsLayerInteraction copyWith({
+    IconData? remove,
+    IconData? edit,
+    IconData? rotateScale,
+  }) {
+    return IconsLayerInteraction(
+      remove: remove ?? this.remove,
+      edit: edit ?? this.edit,
+      rotateScale: rotateScale ?? this.rotateScale,
+    );
+  }
 }

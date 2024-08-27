@@ -53,4 +53,29 @@ class EmojiEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
+
+  /// Creates a copy of this `EmojiEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [EmojiEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  EmojiEditorConfigs copyWith({
+    bool? enabled,
+    double? initScale,
+    bool? checkPlatformCompatibility,
+    List<CategoryEmoji>? emojiSet,
+    double? minScale,
+    double? maxScale,
+  }) {
+    return EmojiEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      initScale: initScale ?? this.initScale,
+      checkPlatformCompatibility:
+          checkPlatformCompatibility ?? this.checkPlatformCompatibility,
+      emojiSet: emojiSet ?? this.emojiSet,
+      minScale: minScale ?? this.minScale,
+      maxScale: maxScale ?? this.maxScale,
+    );
+  }
 }

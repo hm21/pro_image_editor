@@ -117,4 +117,50 @@ class PaintingEditorTheme {
 
   /// Indicates the initial drawing color.
   final Color initialColor;
+
+  /// Creates a copy of this `PaintingEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [PaintingEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  PaintingEditorTheme copyWith({
+    Color? appBarBackgroundColor,
+    Color? appBarForegroundColor,
+    Color? background,
+    Color? bottomBarColor,
+    Color? bottomBarActiveItemColor,
+    Color? bottomBarInactiveItemColor,
+    Color? lineWidthBottomSheetColor,
+    Color? opacityBottomSheetColor,
+    TextStyle? lineWidthBottomSheetTitle,
+    TextStyle? opacityBottomSheetTitle,
+    double? initialStrokeWidth,
+    double? initialOpacity,
+    Color? initialColor,
+  }) {
+    return PaintingEditorTheme(
+      appBarBackgroundColor:
+          appBarBackgroundColor ?? this.appBarBackgroundColor,
+      appBarForegroundColor:
+          appBarForegroundColor ?? this.appBarForegroundColor,
+      background: background ?? this.background,
+      bottomBarColor: bottomBarColor ?? this.bottomBarColor,
+      bottomBarActiveItemColor:
+          bottomBarActiveItemColor ?? this.bottomBarActiveItemColor,
+      bottomBarInactiveItemColor:
+          bottomBarInactiveItemColor ?? this.bottomBarInactiveItemColor,
+      lineWidthBottomSheetColor:
+          lineWidthBottomSheetColor ?? this.lineWidthBottomSheetColor,
+      opacityBottomSheetColor:
+          opacityBottomSheetColor ?? this.opacityBottomSheetColor,
+      lineWidthBottomSheetTitle:
+          lineWidthBottomSheetTitle ?? this.lineWidthBottomSheetTitle,
+      opacityBottomSheetTitle:
+          opacityBottomSheetTitle ?? this.opacityBottomSheetTitle,
+      initialStrokeWidth: initialStrokeWidth ?? this.initialStrokeWidth,
+      initialOpacity: initialOpacity ?? this.initialOpacity,
+      initialColor: initialColor ?? this.initialColor,
+    );
+  }
 }

@@ -77,4 +77,18 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
     EditorState editorState,
     Stream<void> rebuildStream,
   )? bodyItems;
+
+  /// An abstract method to enforce implementation of the `copyWith` method
+  /// in all subclasses.
+  CustomWidgetsStandaloneEditor<EditorState> copyWith({
+    ReactiveCustomAppbar? Function(
+            EditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            EditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    List<ReactiveCustomWidget> Function(
+            EditorState editorState, Stream<void> rebuildStream)?
+        bodyItems,
+  });
 }

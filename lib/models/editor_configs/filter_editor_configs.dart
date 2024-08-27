@@ -35,4 +35,22 @@ class FilterEditorConfigs {
 
   /// A list of color filter generators to apply to an image.
   final List<FilterModel>? filterList;
+
+  /// Creates a copy of this `FilterEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [FilterEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  FilterEditorConfigs copyWith({
+    bool? enabled,
+    bool? showLayers,
+    List<FilterModel>? filterList,
+  }) {
+    return FilterEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      showLayers: showLayers ?? this.showLayers,
+      filterList: filterList ?? this.filterList,
+    );
+  }
 }

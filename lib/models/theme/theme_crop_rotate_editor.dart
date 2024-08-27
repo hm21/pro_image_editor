@@ -107,4 +107,46 @@ class CropRotateEditorTheme {
 
   /// The thickness of the crop corner.
   final double cropCornerThickness;
+
+  /// Creates a copy of this `CropRotateEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [CropRotateEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  CropRotateEditorTheme copyWith({
+    Color? appBarBackgroundColor,
+    Color? appBarForegroundColor,
+    Color? bottomBarBackgroundColor,
+    Color? bottomBarForegroundColor,
+    Color? aspectRatioSheetBackgroundColor,
+    Color? aspectRatioSheetForegroundColor,
+    Color? background,
+    Color? cropCornerColor,
+    Color? helperLineColor,
+    Color? cropOverlayColor,
+    double? cropCornerLength,
+    double? cropCornerThickness,
+  }) {
+    return CropRotateEditorTheme(
+      appBarBackgroundColor:
+          appBarBackgroundColor ?? this.appBarBackgroundColor,
+      appBarForegroundColor:
+          appBarForegroundColor ?? this.appBarForegroundColor,
+      bottomBarBackgroundColor:
+          bottomBarBackgroundColor ?? this.bottomBarBackgroundColor,
+      bottomBarForegroundColor:
+          bottomBarForegroundColor ?? this.bottomBarForegroundColor,
+      aspectRatioSheetBackgroundColor: aspectRatioSheetBackgroundColor ??
+          this.aspectRatioSheetBackgroundColor,
+      aspectRatioSheetForegroundColor: aspectRatioSheetForegroundColor ??
+          this.aspectRatioSheetForegroundColor,
+      background: background ?? this.background,
+      cropCornerColor: cropCornerColor ?? this.cropCornerColor,
+      helperLineColor: helperLineColor ?? this.helperLineColor,
+      cropOverlayColor: cropOverlayColor ?? this.cropOverlayColor,
+      cropCornerLength: cropCornerLength ?? this.cropCornerLength,
+      cropCornerThickness: cropCornerThickness ?? this.cropCornerThickness,
+    );
+  }
 }

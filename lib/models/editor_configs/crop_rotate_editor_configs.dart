@@ -165,4 +165,76 @@ class CropRotateEditorConfigs {
   /// Defines the size of the draggable area on corners of the crop rectangle
   /// for mobile devices.
   final double mobileCornerDragArea;
+
+  /// Creates a copy of this `CropRotateEditorConfigs` object with the given
+  /// fields replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [CropRotateEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  CropRotateEditorConfigs copyWith({
+    bool? enabled,
+    bool? canRotate,
+    bool? canFlip,
+    bool? canChangeAspectRatio,
+    bool? canReset,
+    bool? transformLayers,
+    bool? enableDoubleTap,
+    bool? reverseMouseScroll,
+    bool? reverseDragDirection,
+    bool? roundCropper,
+    double? initAspectRatio,
+    double? maxScale,
+    double? mouseScaleFactor,
+    double? doubleTapScaleFactor,
+    List<AspectRatioItem>? aspectRatios,
+    Duration? animationDuration,
+    Duration? cropDragAnimationDuration,
+    Duration? fadeInOutsideCropAreaAnimationDuration,
+    Duration? opacityOutsideCropAreaDuration,
+    Curve? rotateAnimationCurve,
+    Curve? scaleAnimationCurve,
+    Curve? cropDragAnimationCurve,
+    Curve? fadeInOutsideCropAreaAnimationCurve,
+    RotateDirection? rotateDirection,
+    double? desktopCornerDragArea,
+    double? mobileCornerDragArea,
+  }) {
+    return CropRotateEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      canRotate: canRotate ?? this.canRotate,
+      canFlip: canFlip ?? this.canFlip,
+      canChangeAspectRatio: canChangeAspectRatio ?? this.canChangeAspectRatio,
+      canReset: canReset ?? this.canReset,
+      transformLayers: transformLayers ?? this.transformLayers,
+      enableDoubleTap: enableDoubleTap ?? this.enableDoubleTap,
+      reverseMouseScroll: reverseMouseScroll ?? this.reverseMouseScroll,
+      reverseDragDirection: reverseDragDirection ?? this.reverseDragDirection,
+      roundCropper: roundCropper ?? this.roundCropper,
+      initAspectRatio: initAspectRatio ?? this.initAspectRatio,
+      maxScale: maxScale ?? this.maxScale,
+      mouseScaleFactor: mouseScaleFactor ?? this.mouseScaleFactor,
+      doubleTapScaleFactor: doubleTapScaleFactor ?? this.doubleTapScaleFactor,
+      aspectRatios: aspectRatios ?? this.aspectRatios,
+      animationDuration: animationDuration ?? this.animationDuration,
+      cropDragAnimationDuration:
+          cropDragAnimationDuration ?? this.cropDragAnimationDuration,
+      fadeInOutsideCropAreaAnimationDuration:
+          fadeInOutsideCropAreaAnimationDuration ??
+              this.fadeInOutsideCropAreaAnimationDuration,
+      opacityOutsideCropAreaDuration:
+          opacityOutsideCropAreaDuration ?? this.opacityOutsideCropAreaDuration,
+      rotateAnimationCurve: rotateAnimationCurve ?? this.rotateAnimationCurve,
+      scaleAnimationCurve: scaleAnimationCurve ?? this.scaleAnimationCurve,
+      cropDragAnimationCurve:
+          cropDragAnimationCurve ?? this.cropDragAnimationCurve,
+      fadeInOutsideCropAreaAnimationCurve:
+          fadeInOutsideCropAreaAnimationCurve ??
+              this.fadeInOutsideCropAreaAnimationCurve,
+      rotateDirection: rotateDirection ?? this.rotateDirection,
+      desktopCornerDragArea:
+          desktopCornerDragArea ?? this.desktopCornerDragArea,
+      mobileCornerDragArea: mobileCornerDragArea ?? this.mobileCornerDragArea,
+    );
+  }
 }

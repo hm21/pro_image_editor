@@ -44,4 +44,26 @@ class IconsCropRotateEditor {
 
   /// The icon for the reset action.
   final IconData reset;
+
+  /// Creates a copy of this `IconsCropRotateEditor` object with the given
+  /// fields replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsCropRotateEditor] with some properties updated while keeping the
+  /// others unchanged.
+  IconsCropRotateEditor copyWith({
+    IconData? bottomNavBar,
+    IconData? rotate,
+    IconData? aspectRatio,
+    IconData? flip,
+    IconData? reset,
+  }) {
+    return IconsCropRotateEditor(
+      bottomNavBar: bottomNavBar ?? this.bottomNavBar,
+      rotate: rotate ?? this.rotate,
+      aspectRatio: aspectRatio ?? this.aspectRatio,
+      flip: flip ?? this.flip,
+      reset: reset ?? this.reset,
+    );
+  }
 }

@@ -151,4 +151,46 @@ class ImageEditorIcons {
 
   /// Icons for the layer interaction settings.
   final IconsLayerInteraction layerInteraction;
+
+  /// Creates a copy of this `ImageEditorIcons` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [ImageEditorIcons] with some properties updated while keeping the
+  /// others unchanged.
+  ImageEditorIcons copyWith({
+    IconData? closeEditor,
+    IconData? doneIcon,
+    IconData? backButton,
+    IconData? applyChanges,
+    IconData? undoAction,
+    IconData? redoAction,
+    IconData? removeElementZone,
+    IconsPaintingEditor? paintingEditor,
+    IconsTextEditor? textEditor,
+    IconsCropRotateEditor? cropRotateEditor,
+    IconsFilterEditor? filterEditor,
+    IconsBlurEditor? blurEditor,
+    IconsEmojiEditor? emojiEditor,
+    IconsStickerEditor? stickerEditor,
+    IconsLayerInteraction? layerInteraction,
+  }) {
+    return ImageEditorIcons(
+      closeEditor: closeEditor ?? this.closeEditor,
+      doneIcon: doneIcon ?? this.doneIcon,
+      backButton: backButton ?? this.backButton,
+      applyChanges: applyChanges ?? this.applyChanges,
+      undoAction: undoAction ?? this.undoAction,
+      redoAction: redoAction ?? this.redoAction,
+      removeElementZone: removeElementZone ?? this.removeElementZone,
+      paintingEditor: paintingEditor ?? this.paintingEditor,
+      textEditor: textEditor ?? this.textEditor,
+      cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      filterEditor: filterEditor ?? this.filterEditor,
+      blurEditor: blurEditor ?? this.blurEditor,
+      emojiEditor: emojiEditor ?? this.emojiEditor,
+      stickerEditor: stickerEditor ?? this.stickerEditor,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
+    );
+  }
 }

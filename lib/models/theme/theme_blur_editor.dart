@@ -57,4 +57,24 @@ class BlurEditorTheme {
 
   /// Background color of the blur editor.
   final Color background;
+
+  /// Creates a copy of this `BlurEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [BlurEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  BlurEditorTheme copyWith({
+    Color? appBarBackgroundColor,
+    Color? appBarForegroundColor,
+    Color? background,
+  }) {
+    return BlurEditorTheme(
+      appBarBackgroundColor:
+          appBarBackgroundColor ?? this.appBarBackgroundColor,
+      appBarForegroundColor:
+          appBarForegroundColor ?? this.appBarForegroundColor,
+      background: background ?? this.background,
+    );
+  }
 }

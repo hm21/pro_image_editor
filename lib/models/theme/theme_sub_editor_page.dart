@@ -62,4 +62,36 @@ class SubEditorPageTheme {
         borderRadius != null ||
         enforceSizeFromMainEditor;
   }
+
+  /// Creates a copy of this `SubEditorPageTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [SubEditorPageTheme] with some properties updated while keeping the
+  /// others unchanged.
+  SubEditorPageTheme copyWith({
+    bool? enforceSizeFromMainEditor,
+    bool? barrierDismissible,
+    BorderRadiusGeometry? borderRadius,
+    double? positionTop,
+    double? positionLeft,
+    double? positionRight,
+    double? positionBottom,
+    Color? barrierColor,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transitionsBuilder,
+  }) {
+    return SubEditorPageTheme(
+      enforceSizeFromMainEditor:
+          enforceSizeFromMainEditor ?? this.enforceSizeFromMainEditor,
+      barrierDismissible: barrierDismissible ?? this.barrierDismissible,
+      borderRadius: borderRadius ?? this.borderRadius,
+      positionTop: positionTop ?? this.positionTop,
+      positionLeft: positionLeft ?? this.positionLeft,
+      positionRight: positionRight ?? this.positionRight,
+      positionBottom: positionBottom ?? this.positionBottom,
+      barrierColor: barrierColor ?? this.barrierColor,
+      transitionsBuilder: transitionsBuilder ?? this.transitionsBuilder,
+    );
+  }
 }

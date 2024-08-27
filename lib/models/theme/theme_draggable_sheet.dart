@@ -66,4 +66,34 @@ class ThemeDraggableSheet {
   ///
   /// Defaults to `true`.
   final bool shouldCloseOnMinExtent;
+
+  /// Creates a copy of this `ThemeDraggableSheet` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [ThemeDraggableSheet] with some properties updated while keeping the
+  /// others unchanged.
+  ThemeDraggableSheet copyWith({
+    double? initialChildSize,
+    double? minChildSize,
+    double? maxChildSize,
+    bool? expand,
+    bool? snap,
+    List<double>? snapSizes,
+    Duration? snapAnimationDuration,
+    bool? shouldCloseOnMinExtent,
+  }) {
+    return ThemeDraggableSheet(
+      initialChildSize: initialChildSize ?? this.initialChildSize,
+      minChildSize: minChildSize ?? this.minChildSize,
+      maxChildSize: maxChildSize ?? this.maxChildSize,
+      expand: expand ?? this.expand,
+      snap: snap ?? this.snap,
+      snapSizes: snapSizes ?? this.snapSizes,
+      snapAnimationDuration:
+          snapAnimationDuration ?? this.snapAnimationDuration,
+      shouldCloseOnMinExtent:
+          shouldCloseOnMinExtent ?? this.shouldCloseOnMinExtent,
+    );
+  }
 }

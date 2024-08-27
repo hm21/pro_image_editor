@@ -55,4 +55,34 @@ class CustomWidgetsFilterEditor
     Widget editorImage,
     Key filterKey,
   )? filterButton;
+
+  @override
+  CustomWidgetsFilterEditor copyWith({
+    ReactiveCustomAppbar? Function(
+            FilterEditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            FilterEditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    List<ReactiveCustomWidget> Function(
+            FilterEditorState editorState, Stream<void> rebuildStream)?
+        bodyItems,
+    CustomSlider<FilterEditorState>? slider,
+    Widget Function(
+      FilterModel filter,
+      bool isSelected,
+      double? scaleFactor,
+      Function() onSelectFilter,
+      Widget editorImage,
+      Key filterKey,
+    )? filterButton,
+  }) {
+    return CustomWidgetsFilterEditor(
+      appBar: appBar ?? this.appBar,
+      bottomBar: bottomBar ?? this.bottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+      slider: slider ?? this.slider,
+      filterButton: filterButton ?? this.filterButton,
+    );
+  }
 }

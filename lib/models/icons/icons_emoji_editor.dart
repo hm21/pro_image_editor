@@ -22,4 +22,18 @@ class IconsEmojiEditor {
 
   /// The icon to be displayed in the bottom navigation bar.
   final IconData bottomNavBar;
+
+  /// Creates a copy of this `IconsEmojiEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsEmojiEditor] with some properties updated while keeping the
+  /// others unchanged.
+  IconsEmojiEditor copyWith({
+    IconData? bottomNavBar,
+  }) {
+    return IconsEmojiEditor(
+      bottomNavBar: bottomNavBar ?? this.bottomNavBar,
+    );
+  }
 }

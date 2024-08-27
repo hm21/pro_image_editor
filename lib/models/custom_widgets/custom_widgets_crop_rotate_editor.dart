@@ -44,4 +44,25 @@ class CustomWidgetsCropRotateEditor
   /// Returns a [ReactiveCustomWidget] that provides options for crop editor
   /// aspect ratios.
   final CropEditorAspectRatioOptions<CropRotateEditorState>? aspectRatioOptions;
+
+  @override
+  CustomWidgetsCropRotateEditor copyWith({
+    ReactiveCustomAppbar? Function(
+            CropRotateEditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            CropRotateEditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    List<ReactiveCustomWidget> Function(
+            CropRotateEditorState editorState, Stream<void> rebuildStream)?
+        bodyItems,
+    CropEditorAspectRatioOptions<CropRotateEditorState>? aspectRatioOptions,
+  }) {
+    return CustomWidgetsCropRotateEditor(
+      appBar: appBar ?? this.appBar,
+      bottomBar: bottomBar ?? this.bottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+      aspectRatioOptions: aspectRatioOptions ?? this.aspectRatioOptions,
+    );
+  }
 }

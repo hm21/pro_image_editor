@@ -101,4 +101,51 @@ class TextEditorConfigs {
   ///
   /// Defaults to true.
   final bool autocorrect;
+
+  /// Creates a copy of this `TextEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [TextEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  TextEditorConfigs copyWith({
+    bool? enabled,
+    bool? canToggleTextAlign,
+    bool? canChangeFontScale,
+    bool? showSelectFontStyleBottomBar,
+    bool? canToggleBackgroundMode,
+    double? initFontSize,
+    TextAlign? initialTextAlign,
+    double? initFontScale,
+    double? maxFontScale,
+    double? minFontScale,
+    LayerBackgroundMode? initialBackgroundColorMode,
+    List<TextStyle>? customTextStyles,
+    double? minScale,
+    double? maxScale,
+    bool? enableSuggestions,
+    bool? autocorrect,
+  }) {
+    return TextEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      canToggleTextAlign: canToggleTextAlign ?? this.canToggleTextAlign,
+      canChangeFontScale: canChangeFontScale ?? this.canChangeFontScale,
+      showSelectFontStyleBottomBar:
+          showSelectFontStyleBottomBar ?? this.showSelectFontStyleBottomBar,
+      canToggleBackgroundMode:
+          canToggleBackgroundMode ?? this.canToggleBackgroundMode,
+      initFontSize: initFontSize ?? this.initFontSize,
+      initialTextAlign: initialTextAlign ?? this.initialTextAlign,
+      initFontScale: initFontScale ?? this.initFontScale,
+      maxFontScale: maxFontScale ?? this.maxFontScale,
+      minFontScale: minFontScale ?? this.minFontScale,
+      initialBackgroundColorMode:
+          initialBackgroundColorMode ?? this.initialBackgroundColorMode,
+      customTextStyles: customTextStyles ?? this.customTextStyles,
+      minScale: minScale ?? this.minScale,
+      maxScale: maxScale ?? this.maxScale,
+      enableSuggestions: enableSuggestions ?? this.enableSuggestions,
+      autocorrect: autocorrect ?? this.autocorrect,
+    );
+  }
 }

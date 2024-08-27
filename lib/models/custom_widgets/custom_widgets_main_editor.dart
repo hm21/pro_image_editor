@@ -175,4 +175,42 @@ class CustomWidgetsMainEditor {
     ProImageEditorState editor,
     Stream<void> rebuildStream,
   )? bodyItems;
+
+  /// Creates a copy of this `CustomWidgetsMainEditor` object with the given
+  /// fields replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [CustomWidgetsMainEditor] with some properties updated while keeping the
+  /// others unchanged.
+  CustomWidgetsMainEditor copyWith({
+    Future<bool> Function(ProImageEditorState editor)? closeWarningDialog,
+    RemoveButton? removeLayerArea,
+    Widget Function(
+      ProImageEditorState editor,
+      Stream<void> rebuildStream,
+      Widget content,
+    )? wrapBody,
+    ReactiveCustomAppbar? Function(
+      ProImageEditorState editor,
+      Stream<void> rebuildStream,
+    )? appBar,
+    ReactiveCustomWidget? Function(
+      ProImageEditorState editor,
+      Stream<void> rebuildStream,
+      Key key,
+    )? bottomBar,
+    List<ReactiveCustomWidget> Function(
+      ProImageEditorState editor,
+      Stream<void> rebuildStream,
+    )? bodyItems,
+  }) {
+    return CustomWidgetsMainEditor(
+      closeWarningDialog: closeWarningDialog ?? this.closeWarningDialog,
+      removeLayerArea: removeLayerArea ?? this.removeLayerArea,
+      wrapBody: wrapBody ?? this.wrapBody,
+      appBar: appBar ?? this.appBar,
+      bottomBar: bottomBar ?? this.bottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+    );
+  }
 }

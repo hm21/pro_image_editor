@@ -190,4 +190,59 @@ class ImageEditorTheme {
   /// globally to the modal bottom sheet when opening various editors
   /// from this library.
   final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
+  /// Creates a copy of this `ImageEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [ImageEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  ImageEditorTheme copyWith({
+    HelperLineTheme? helperLine,
+    PaintingEditorTheme? paintingEditor,
+    TextEditorTheme? textEditor,
+    CropRotateEditorTheme? cropRotateEditor,
+    FilterEditorTheme? filterEditor,
+    BlurEditorTheme? blurEditor,
+    EmojiEditorTheme? emojiEditor,
+    StickerEditorTheme? stickerEditor,
+    double? outsideCaptureAreaLayerOpacity,
+    SubEditorPageTheme? subEditorPage,
+    Color? background,
+    Color? bottomBarBackgroundColor,
+    Color? appBarBackgroundColor,
+    Color? appBarForegroundColor,
+    LoadingDialogTheme? loadingDialogTheme,
+    AdaptiveDialogTheme? adaptiveDialogTheme,
+    SystemUiOverlayStyle? uiOverlayStyle,
+    ThemeLayerInteraction? layerInteraction,
+    EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder,
+  }) {
+    return ImageEditorTheme(
+      helperLine: helperLine ?? this.helperLine,
+      paintingEditor: paintingEditor ?? this.paintingEditor,
+      textEditor: textEditor ?? this.textEditor,
+      cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      filterEditor: filterEditor ?? this.filterEditor,
+      blurEditor: blurEditor ?? this.blurEditor,
+      emojiEditor: emojiEditor ?? this.emojiEditor,
+      stickerEditor: stickerEditor ?? this.stickerEditor,
+      outsideCaptureAreaLayerOpacity:
+          outsideCaptureAreaLayerOpacity ?? this.outsideCaptureAreaLayerOpacity,
+      subEditorPage: subEditorPage ?? this.subEditorPage,
+      background: background ?? this.background,
+      bottomBarBackgroundColor:
+          bottomBarBackgroundColor ?? this.bottomBarBackgroundColor,
+      appBarBackgroundColor:
+          appBarBackgroundColor ?? this.appBarBackgroundColor,
+      appBarForegroundColor:
+          appBarForegroundColor ?? this.appBarForegroundColor,
+      loadingDialogTheme: loadingDialogTheme ?? this.loadingDialogTheme,
+      adaptiveDialogTheme: adaptiveDialogTheme ?? this.adaptiveDialogTheme,
+      uiOverlayStyle: uiOverlayStyle ?? this.uiOverlayStyle,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
+      editorBoxConstraintsBuilder:
+          editorBoxConstraintsBuilder ?? this.editorBoxConstraintsBuilder,
+    );
+  }
 }

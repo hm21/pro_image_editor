@@ -28,4 +28,22 @@ class BlurEditorConfigs {
 
   /// Maximum blur value.
   final double maxBlur;
+
+  /// Creates a copy of this `BlurEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [BlurEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  BlurEditorConfigs copyWith({
+    bool? enabled,
+    bool? showLayers,
+    double? maxBlur,
+  }) {
+    return BlurEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      showLayers: showLayers ?? this.showLayers,
+      maxBlur: maxBlur ?? this.maxBlur,
+    );
+  }
 }

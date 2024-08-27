@@ -77,4 +77,36 @@ class CustomWidgetsPaintEditor
   ///
   /// {@macro colorPickerWidget}
   final CustomColorPicker<PaintingEditorState>? colorPicker;
+
+  @override
+  CustomWidgetsPaintEditor copyWith({
+    ReactiveCustomAppbar? Function(
+            PaintingEditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            PaintingEditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    List<ReactiveCustomWidget> Function(
+            PaintingEditorState editorState, Stream<void> rebuildStream)?
+        bodyItems,
+    Widget Function(PaintingEditorState editorState, Function() tap)?
+        lineWidthCloseButton,
+    Widget Function(PaintingEditorState editorState, Function() tap)?
+        changeOpacityCloseButton,
+    CustomSlider<PaintingEditorState>? sliderLineWidth,
+    CustomSlider<PaintingEditorState>? sliderChangeOpacity,
+    CustomColorPicker<PaintingEditorState>? colorPicker,
+  }) {
+    return CustomWidgetsPaintEditor(
+      appBar: appBar ?? this.appBar,
+      bottomBar: bottomBar ?? this.bottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+      lineWidthCloseButton: lineWidthCloseButton ?? this.lineWidthCloseButton,
+      changeOpacityCloseButton:
+          changeOpacityCloseButton ?? this.changeOpacityCloseButton,
+      sliderLineWidth: sliderLineWidth ?? this.sliderLineWidth,
+      sliderChangeOpacity: sliderChangeOpacity ?? this.sliderChangeOpacity,
+      colorPicker: colorPicker ?? this.colorPicker,
+    );
+  }
 }

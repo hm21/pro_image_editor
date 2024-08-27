@@ -38,4 +38,25 @@ class CustomWidgetsBlurEditor
   ///
   /// {@macro customSliderWidget}
   final CustomSlider<BlurEditorState>? slider;
+
+  @override
+  CustomWidgetsBlurEditor copyWith({
+    ReactiveCustomAppbar? Function(
+            BlurEditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            BlurEditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    List<ReactiveCustomWidget> Function(
+            BlurEditorState editorState, Stream<void> rebuildStream)?
+        bodyItems,
+    CustomSlider<BlurEditorState>? slider,
+  }) {
+    return CustomWidgetsBlurEditor(
+      appBar: appBar ?? this.appBar,
+      bottomBar: bottomBar ?? this.bottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+      slider: slider ?? this.slider,
+    );
+  }
 }

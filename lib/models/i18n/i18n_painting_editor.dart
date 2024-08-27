@@ -106,4 +106,52 @@ class I18nPaintingEditor {
 
   /// The tooltip text displayed for the "More" option on small screens.
   final String smallScreenMoreTooltip;
+
+  /// Creates a copy of this `I18nPaintingEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [I18nPaintingEditor] with some properties updated while keeping the
+  /// others unchanged.
+  I18nPaintingEditor copyWith({
+    String? moveAndZoom,
+    String? bottomNavigationBarText,
+    String? freestyle,
+    String? arrow,
+    String? line,
+    String? rectangle,
+    String? circle,
+    String? dashLine,
+    String? lineWidth,
+    String? eraser,
+    String? toggleFill,
+    String? changeOpacity,
+    String? undo,
+    String? redo,
+    String? done,
+    String? back,
+    String? smallScreenMoreTooltip,
+  }) {
+    return I18nPaintingEditor(
+      moveAndZoom: moveAndZoom ?? this.moveAndZoom,
+      bottomNavigationBarText:
+          bottomNavigationBarText ?? this.bottomNavigationBarText,
+      freestyle: freestyle ?? this.freestyle,
+      arrow: arrow ?? this.arrow,
+      line: line ?? this.line,
+      rectangle: rectangle ?? this.rectangle,
+      circle: circle ?? this.circle,
+      dashLine: dashLine ?? this.dashLine,
+      lineWidth: lineWidth ?? this.lineWidth,
+      eraser: eraser ?? this.eraser,
+      toggleFill: toggleFill ?? this.toggleFill,
+      changeOpacity: changeOpacity ?? this.changeOpacity,
+      undo: undo ?? this.undo,
+      redo: redo ?? this.redo,
+      done: done ?? this.done,
+      back: back ?? this.back,
+      smallScreenMoreTooltip:
+          smallScreenMoreTooltip ?? this.smallScreenMoreTooltip,
+    );
+  }
 }

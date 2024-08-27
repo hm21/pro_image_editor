@@ -54,4 +54,22 @@ class HelperLineTheme {
 
   /// Color of rotation helper lines.
   final Color rotateColor;
+
+  /// Creates a copy of this `HelperLineTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [HelperLineTheme] with some properties updated while keeping the
+  /// others unchanged.
+  HelperLineTheme copyWith({
+    Color? horizontalColor,
+    Color? verticalColor,
+    Color? rotateColor,
+  }) {
+    return HelperLineTheme(
+      horizontalColor: horizontalColor ?? this.horizontalColor,
+      verticalColor: verticalColor ?? this.verticalColor,
+      rotateColor: rotateColor ?? this.rotateColor,
+    );
+  }
 }

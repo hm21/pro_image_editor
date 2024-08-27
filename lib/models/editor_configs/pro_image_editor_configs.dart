@@ -163,4 +163,52 @@ class ProImageEditorConfigs {
 
   /// Holds the configurations related to image generation.
   final ImageGenerationConfigs imageGenerationConfigs;
+
+  /// Creates a copy of this `ProImageEditorConfigs` object with the given
+  /// fields replaced with new values.
+  ProImageEditorConfigs copyWith({
+    ThemeData? theme,
+    String? heroTag,
+    I18n? i18n,
+    HelperLines? helperLines,
+    LayerInteraction? layerInteraction,
+    ImageEditorCustomWidgets? customWidgets,
+    ImageEditorTheme? imageEditorTheme,
+    ImageEditorIcons? icons,
+    StateHistoryConfigs? stateHistoryConfigs,
+    ImageGenerationConfigs? imageGenerationConfigs,
+    MainEditorConfigs? mainEditorConfigs,
+    PaintEditorConfigs? paintEditorConfigs,
+    TextEditorConfigs? textEditorConfigs,
+    CropRotateEditorConfigs? cropRotateEditorConfigs,
+    FilterEditorConfigs? filterEditorConfigs,
+    BlurEditorConfigs? blurEditorConfigs,
+    EmojiEditorConfigs? emojiEditorConfigs,
+    StickerEditorConfigs? stickerEditorConfigs,
+    ImageEditorDesignModeE? designMode,
+  }) {
+    return ProImageEditorConfigs(
+      theme: theme ?? this.theme,
+      heroTag: heroTag ?? this.heroTag,
+      i18n: i18n ?? this.i18n,
+      helperLines: helperLines ?? this.helperLines,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
+      customWidgets: customWidgets ?? this.customWidgets,
+      imageEditorTheme: imageEditorTheme ?? this.imageEditorTheme,
+      icons: icons ?? this.icons,
+      stateHistoryConfigs: stateHistoryConfigs ?? this.stateHistoryConfigs,
+      imageGenerationConfigs:
+          imageGenerationConfigs ?? this.imageGenerationConfigs,
+      mainEditorConfigs: mainEditorConfigs ?? this.mainEditorConfigs,
+      paintEditorConfigs: paintEditorConfigs ?? this.paintEditorConfigs,
+      textEditorConfigs: textEditorConfigs ?? this.textEditorConfigs,
+      cropRotateEditorConfigs:
+          cropRotateEditorConfigs ?? this.cropRotateEditorConfigs,
+      filterEditorConfigs: filterEditorConfigs ?? this.filterEditorConfigs,
+      blurEditorConfigs: blurEditorConfigs ?? this.blurEditorConfigs,
+      emojiEditorConfigs: emojiEditorConfigs ?? this.emojiEditorConfigs,
+      stickerEditorConfigs: stickerEditorConfigs ?? this.stickerEditorConfigs,
+      designMode: designMode ?? this.designMode,
+    );
+  }
 }

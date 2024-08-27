@@ -78,4 +78,33 @@ class FilterEditorTheme {
 
   /// The margin around the filter list.
   final EdgeInsets filterListMargin;
+
+  /// Creates a copy of this `FilterEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [FilterEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  FilterEditorTheme copyWith({
+    Color? appBarBackgroundColor,
+    Color? appBarForegroundColor,
+    Color? background,
+    Color? previewTextColor,
+    Color? previewSelectedTextColor,
+    double? filterListSpacing,
+    EdgeInsets? filterListMargin,
+  }) {
+    return FilterEditorTheme(
+      appBarBackgroundColor:
+          appBarBackgroundColor ?? this.appBarBackgroundColor,
+      appBarForegroundColor:
+          appBarForegroundColor ?? this.appBarForegroundColor,
+      background: background ?? this.background,
+      previewTextColor: previewTextColor ?? this.previewTextColor,
+      previewSelectedTextColor:
+          previewSelectedTextColor ?? this.previewSelectedTextColor,
+      filterListSpacing: filterListSpacing ?? this.filterListSpacing,
+      filterListMargin: filterListMargin ?? this.filterListMargin,
+    );
+  }
 }

@@ -24,4 +24,18 @@ class IconsFilterEditor {
 
   /// The icon to be displayed in the bottom navigation bar.
   final IconData bottomNavBar;
+
+  /// Creates a copy of this `IconsFilterEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsFilterEditor] with some properties updated while keeping the
+  /// others unchanged.
+  IconsFilterEditor copyWith({
+    IconData? bottomNavBar,
+  }) {
+    return IconsFilterEditor(
+      bottomNavBar: bottomNavBar ?? this.bottomNavBar,
+    );
+  }
 }

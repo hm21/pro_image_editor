@@ -122,6 +122,62 @@ class ThemeLayerInteraction {
   /// This value specifies the background color of the button used to scale and
   /// rotate layers, influencing its visual appearance.
   final Color buttonScaleRotateBackground;
+
+  /// Creates a copy of this `ThemeLayerInteraction` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [ThemeLayerInteraction] with some properties updated while keeping the
+  /// others unchanged.
+  ThemeLayerInteraction copyWith({
+    double? buttonRadius,
+    double? strokeWidth,
+    double? borderElementWidth,
+    double? borderElementSpace,
+    Color? borderColor,
+    SystemMouseCursor? removeCursor,
+    SystemMouseCursor? editCursor,
+    SystemMouseCursor? rotateScaleCursor,
+    SystemMouseCursor? hoverCursor,
+    LayerInteractionBorderStyle? borderStyle,
+    bool? showTooltips,
+    Color? removeAreaBackgroundActive,
+    Color? removeAreaBackgroundInactive,
+    Color? buttonRemoveColor,
+    Color? buttonRemoveBackground,
+    Color? buttonEditTextColor,
+    Color? buttonEditTextBackground,
+    Color? buttonScaleRotateColor,
+    Color? buttonScaleRotateBackground,
+  }) {
+    return ThemeLayerInteraction(
+      buttonRadius: buttonRadius ?? this.buttonRadius,
+      strokeWidth: strokeWidth ?? this.strokeWidth,
+      borderElementWidth: borderElementWidth ?? this.borderElementWidth,
+      borderElementSpace: borderElementSpace ?? this.borderElementSpace,
+      borderColor: borderColor ?? this.borderColor,
+      removeCursor: removeCursor ?? this.removeCursor,
+      editCursor: editCursor ?? this.editCursor,
+      rotateScaleCursor: rotateScaleCursor ?? this.rotateScaleCursor,
+      hoverCursor: hoverCursor ?? this.hoverCursor,
+      borderStyle: borderStyle ?? this.borderStyle,
+      showTooltips: showTooltips ?? this.showTooltips,
+      removeAreaBackgroundActive:
+          removeAreaBackgroundActive ?? this.removeAreaBackgroundActive,
+      removeAreaBackgroundInactive:
+          removeAreaBackgroundInactive ?? this.removeAreaBackgroundInactive,
+      buttonRemoveColor: buttonRemoveColor ?? this.buttonRemoveColor,
+      buttonRemoveBackground:
+          buttonRemoveBackground ?? this.buttonRemoveBackground,
+      buttonEditTextColor: buttonEditTextColor ?? this.buttonEditTextColor,
+      buttonEditTextBackground:
+          buttonEditTextBackground ?? this.buttonEditTextBackground,
+      buttonScaleRotateColor:
+          buttonScaleRotateColor ?? this.buttonScaleRotateColor,
+      buttonScaleRotateBackground:
+          buttonScaleRotateBackground ?? this.buttonScaleRotateBackground,
+    );
+  }
 }
 
 /// An enumeration representing the style of the border for a selected layer.

@@ -165,4 +165,63 @@ class PaintEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
+
+  /// Creates a copy of this `PaintEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [PaintEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  PaintEditorConfigs copyWith({
+    bool? enabled,
+    bool? enableZoom,
+    bool? editorIsZoomable, // Deprecated, but included for completeness
+    bool? hasOptionFreeStyle,
+    bool? hasOptionArrow,
+    bool? hasOptionLine,
+    bool? hasOptionRect,
+    bool? hasOptionCircle,
+    bool? hasOptionDashLine,
+    bool? hasOptionEraser,
+    bool? canToggleFill,
+    bool? canChangeLineWidth,
+    bool? canChangeOpacity,
+    bool? initialFill,
+    bool? freeStyleHighPerformanceScaling,
+    bool? freeStyleHighPerformanceMoving,
+    bool? freeStyleHighPerformanceHero,
+    PaintModeE? initialPaintMode,
+    double? editorMinScale,
+    double? editorMaxScale,
+    double? minScale,
+    double? maxScale,
+  }) {
+    return PaintEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      enableZoom: enableZoom ?? this.enableZoom,
+      editorIsZoomable: editorIsZoomable ?? this.editorIsZoomable,
+      hasOptionFreeStyle: hasOptionFreeStyle ?? this.hasOptionFreeStyle,
+      hasOptionArrow: hasOptionArrow ?? this.hasOptionArrow,
+      hasOptionLine: hasOptionLine ?? this.hasOptionLine,
+      hasOptionRect: hasOptionRect ?? this.hasOptionRect,
+      hasOptionCircle: hasOptionCircle ?? this.hasOptionCircle,
+      hasOptionDashLine: hasOptionDashLine ?? this.hasOptionDashLine,
+      hasOptionEraser: hasOptionEraser ?? this.hasOptionEraser,
+      canToggleFill: canToggleFill ?? this.canToggleFill,
+      canChangeLineWidth: canChangeLineWidth ?? this.canChangeLineWidth,
+      canChangeOpacity: canChangeOpacity ?? this.canChangeOpacity,
+      initialFill: initialFill ?? this.initialFill,
+      freeStyleHighPerformanceScaling: freeStyleHighPerformanceScaling ??
+          this.freeStyleHighPerformanceScaling,
+      freeStyleHighPerformanceMoving:
+          freeStyleHighPerformanceMoving ?? this.freeStyleHighPerformanceMoving,
+      freeStyleHighPerformanceHero:
+          freeStyleHighPerformanceHero ?? this.freeStyleHighPerformanceHero,
+      initialPaintMode: initialPaintMode ?? this.initialPaintMode,
+      editorMinScale: editorMinScale ?? this.editorMinScale,
+      editorMaxScale: editorMaxScale ?? this.editorMaxScale,
+      minScale: minScale ?? this.minScale,
+      maxScale: maxScale ?? this.maxScale,
+    );
+  }
 }

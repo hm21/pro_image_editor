@@ -58,6 +58,28 @@ class StickerEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
+
+  /// Creates a copy of this `StickerEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [StickerEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  StickerEditorConfigs copyWith({
+    bool? enabled,
+    double? initWidth,
+    BuildStickers? buildStickers,
+    double? minScale,
+    double? maxScale,
+  }) {
+    return StickerEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      initWidth: initWidth ?? this.initWidth,
+      buildStickers: buildStickers ?? this.buildStickers,
+      minScale: minScale ?? this.minScale,
+      maxScale: maxScale ?? this.maxScale,
+    );
+  }
 }
 
 /// A typedef representing a function signature for building sticker widgets.

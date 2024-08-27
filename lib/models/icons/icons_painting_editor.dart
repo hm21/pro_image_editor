@@ -99,4 +99,42 @@ class IconsPaintingEditor {
 
   /// The icon for the eraser tool.
   final IconData eraser;
+
+  /// Creates a copy of this `IconsPaintingEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsPaintingEditor] with some properties updated while keeping the
+  /// others unchanged.
+  IconsPaintingEditor copyWith({
+    IconData? moveAndZoom,
+    IconData? changeOpacity,
+    IconData? eraser,
+    IconData? bottomNavBar,
+    IconData? lineWeight,
+    IconData? freeStyle,
+    IconData? arrow,
+    IconData? line,
+    IconData? fill,
+    IconData? noFill,
+    IconData? rectangle,
+    IconData? circle,
+    IconData? dashLine,
+  }) {
+    return IconsPaintingEditor(
+      moveAndZoom: moveAndZoom ?? this.moveAndZoom,
+      changeOpacity: changeOpacity ?? this.changeOpacity,
+      eraser: eraser ?? this.eraser,
+      bottomNavBar: bottomNavBar ?? this.bottomNavBar,
+      lineWeight: lineWeight ?? this.lineWeight,
+      freeStyle: freeStyle ?? this.freeStyle,
+      arrow: arrow ?? this.arrow,
+      line: line ?? this.line,
+      fill: fill ?? this.fill,
+      noFill: noFill ?? this.noFill,
+      rectangle: rectangle ?? this.rectangle,
+      circle: circle ?? this.circle,
+      dashLine: dashLine ?? this.dashLine,
+    );
+  }
 }

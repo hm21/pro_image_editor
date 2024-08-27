@@ -111,4 +111,34 @@ class ImageEditorCustomWidgets {
 
   /// Replace the existing CircularProgressIndicator.
   final Widget? circularProgressIndicator;
+
+  /// Creates a copy of this `ImageEditorCustomWidgets` object with the given
+  /// fields replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [ImageEditorCustomWidgets] with some properties updated while keeping the
+  /// others unchanged.
+  ImageEditorCustomWidgets copyWith({
+    CustomWidgetsMainEditor? mainEditor,
+    CustomWidgetsPaintEditor? paintEditor,
+    CustomWidgetsTextEditor? textEditor,
+    CustomWidgetsCropRotateEditor? cropRotateEditor,
+    CustomWidgetsFilterEditor? filterEditor,
+    CustomWidgetsBlurEditor? blurEditor,
+    Widget Function(String message, ProImageEditorConfigs configs)?
+        loadingDialog,
+    Widget? circularProgressIndicator,
+  }) {
+    return ImageEditorCustomWidgets(
+      mainEditor: mainEditor ?? this.mainEditor,
+      paintEditor: paintEditor ?? this.paintEditor,
+      textEditor: textEditor ?? this.textEditor,
+      cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      filterEditor: filterEditor ?? this.filterEditor,
+      blurEditor: blurEditor ?? this.blurEditor,
+      loadingDialog: loadingDialog ?? this.loadingDialog,
+      circularProgressIndicator:
+          circularProgressIndicator ?? this.circularProgressIndicator,
+    );
+  }
 }

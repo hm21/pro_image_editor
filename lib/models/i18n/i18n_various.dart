@@ -56,4 +56,30 @@ class I18nVarious {
   /// This text is displayed on the button used to cancel the action of closing
   /// the image editor, allowing users to return to editing.
   final String closeEditorWarningCancelBtn;
+
+  /// Creates a copy of this `I18nVarious` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [I18nVarious] with some properties updated while keeping the
+  /// others unchanged.
+  I18nVarious copyWith({
+    String? loadingDialogMsg,
+    String? closeEditorWarningTitle,
+    String? closeEditorWarningMessage,
+    String? closeEditorWarningConfirmBtn,
+    String? closeEditorWarningCancelBtn,
+  }) {
+    return I18nVarious(
+      loadingDialogMsg: loadingDialogMsg ?? this.loadingDialogMsg,
+      closeEditorWarningTitle:
+          closeEditorWarningTitle ?? this.closeEditorWarningTitle,
+      closeEditorWarningMessage:
+          closeEditorWarningMessage ?? this.closeEditorWarningMessage,
+      closeEditorWarningConfirmBtn:
+          closeEditorWarningConfirmBtn ?? this.closeEditorWarningConfirmBtn,
+      closeEditorWarningCancelBtn:
+          closeEditorWarningCancelBtn ?? this.closeEditorWarningCancelBtn,
+    );
+  }
 }

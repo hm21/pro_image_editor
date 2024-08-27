@@ -1,6 +1,7 @@
 # Changelog
 
-## 5.1.5
+## 5.2.0
+- **FEAT**: Add `copyWith` method to all config classes
 - **CHORE**: Update `emoji_picker_flutter` dependency to version `3.0.0`
 - **CHORE**: Update `vibration` dependency to version `2.0.0`
 - **CHORE**: Update `mime` dependency to version `1.0.6`

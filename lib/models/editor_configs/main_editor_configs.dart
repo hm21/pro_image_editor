@@ -45,4 +45,24 @@ class MainEditorConfigs {
   ///
   /// Default value is 5.0.
   final double editorMaxScale;
+
+  /// Creates a copy of this `MainEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [MainEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  MainEditorConfigs copyWith({
+    bool? enableZoom,
+    bool? editorIsZoomable, // Deprecated, but included for completeness
+    double? editorMinScale,
+    double? editorMaxScale,
+  }) {
+    return MainEditorConfigs(
+      enableZoom: enableZoom ?? this.enableZoom,
+      editorIsZoomable: editorIsZoomable ?? this.editorIsZoomable,
+      editorMinScale: editorMinScale ?? this.editorMinScale,
+      editorMaxScale: editorMaxScale ?? this.editorMaxScale,
+    );
+  }
 }

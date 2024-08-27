@@ -57,4 +57,30 @@ class IconsTextEditor {
 
   /// The icon for resetting font scale to preset value.
   final IconData resetFontScale;
+
+  /// Creates a copy of this `IconsTextEditor` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [IconsTextEditor] with some properties updated while keeping the
+  /// others unchanged.
+  IconsTextEditor copyWith({
+    IconData? bottomNavBar,
+    IconData? alignLeft,
+    IconData? alignCenter,
+    IconData? alignRight,
+    IconData? backgroundMode,
+    IconData? fontScale,
+    IconData? resetFontScale,
+  }) {
+    return IconsTextEditor(
+      bottomNavBar: bottomNavBar ?? this.bottomNavBar,
+      alignLeft: alignLeft ?? this.alignLeft,
+      alignCenter: alignCenter ?? this.alignCenter,
+      alignRight: alignRight ?? this.alignRight,
+      backgroundMode: backgroundMode ?? this.backgroundMode,
+      fontScale: fontScale ?? this.fontScale,
+      resetFontScale: resetFontScale ?? this.resetFontScale,
+    );
+  }
 }

@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 
 // Project imports:
 import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
+import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_appbar.dart';
+import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_widget.dart';
 import 'utils/custom_widgets_standalone_editor.dart';
 import 'utils/custom_widgets_typedef.dart';
 
@@ -64,4 +66,30 @@ class CustomWidgetsTextEditor
   ///
   /// {@macro customSliderWidget}
   final CustomSlider<TextEditorState>? sliderFontSize;
+
+  @override
+  CustomWidgetsTextEditor copyWith({
+    ReactiveCustomAppbar? Function(
+            TextEditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            TextEditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    List<ReactiveCustomWidget> Function(
+            TextEditorState editorState, Stream<void> rebuildStream)?
+        bodyItems,
+    CustomColorPicker<TextEditorState>? colorPicker,
+    CustomSlider<TextEditorState>? sliderFontSize,
+    Widget Function(TextEditorState editorState, Function() tap)?
+        fontSizeCloseButton,
+  }) {
+    return CustomWidgetsTextEditor(
+      appBar: appBar ?? this.appBar,
+      bottomBar: bottomBar ?? this.bottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+      colorPicker: colorPicker ?? this.colorPicker,
+      sliderFontSize: sliderFontSize ?? this.sliderFontSize,
+      fontSizeCloseButton: fontSizeCloseButton ?? this.fontSizeCloseButton,
+    );
+  }
 }

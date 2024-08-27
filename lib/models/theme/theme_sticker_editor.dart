@@ -51,4 +51,26 @@ class StickerEditorTheme {
   /// Otherwise, it falls back to
   /// [ProImageEditorConfigs.editorBoxConstraintsBuilder].
   final EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder;
+
+  /// Creates a copy of this `StickerEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [StickerEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  StickerEditorTheme copyWith({
+    bool? showDragHandle,
+    Color? bottomSheetBackgroundColor,
+    ThemeDraggableSheet? themeDraggableSheet,
+    EditorBoxConstraintsBuilder? editorBoxConstraintsBuilder,
+  }) {
+    return StickerEditorTheme(
+      showDragHandle: showDragHandle ?? this.showDragHandle,
+      bottomSheetBackgroundColor:
+          bottomSheetBackgroundColor ?? this.bottomSheetBackgroundColor,
+      themeDraggableSheet: themeDraggableSheet ?? this.themeDraggableSheet,
+      editorBoxConstraintsBuilder:
+          editorBoxConstraintsBuilder ?? this.editorBoxConstraintsBuilder,
+    );
+  }
 }

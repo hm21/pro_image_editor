@@ -91,4 +91,39 @@ class TextEditorTheme {
 
   /// Title of the bottom sheet used to select the font-size.
   final TextStyle? fontSizeBottomSheetTitle;
+
+  /// Creates a copy of this `TextEditorTheme` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [TextEditorTheme] with some properties updated while keeping the
+  /// others unchanged.
+  TextEditorTheme copyWith({
+    Color? appBarBackgroundColor,
+    Color? bottomBarBackgroundColor,
+    Color? appBarForegroundColor,
+    Color? background,
+    Color? inputHintColor,
+    Color? inputCursorColor,
+    MainAxisAlignment? bottomBarMainAxisAlignment,
+    EdgeInsets? textFieldMargin,
+    TextStyle? fontSizeBottomSheetTitle,
+  }) {
+    return TextEditorTheme(
+      appBarBackgroundColor:
+          appBarBackgroundColor ?? this.appBarBackgroundColor,
+      bottomBarBackgroundColor:
+          bottomBarBackgroundColor ?? this.bottomBarBackgroundColor,
+      appBarForegroundColor:
+          appBarForegroundColor ?? this.appBarForegroundColor,
+      background: background ?? this.background,
+      inputHintColor: inputHintColor ?? this.inputHintColor,
+      inputCursorColor: inputCursorColor ?? this.inputCursorColor,
+      bottomBarMainAxisAlignment:
+          bottomBarMainAxisAlignment ?? this.bottomBarMainAxisAlignment,
+      textFieldMargin: textFieldMargin ?? this.textFieldMargin,
+      fontSizeBottomSheetTitle:
+          fontSizeBottomSheetTitle ?? this.fontSizeBottomSheetTitle,
+    );
+  }
 }
