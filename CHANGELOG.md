@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.2.2
+- **FIX**(Frosted-Glass): Resolve issue that loading-dialog didn't use the text from the i18n class.
+
 ## 5.2.1
 - **REFACTOR**(vars): remove deprecated variables
 

@@ -73,10 +73,11 @@ class FrostedGlassLoadingDialog extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Please wait...',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          message,
+                          style: const TextStyle(
+                              fontSize: 16, color: Colors.white),
                           textAlign: TextAlign.start,
                         ),
                       ),
