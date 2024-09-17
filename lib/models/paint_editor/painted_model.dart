@@ -4,6 +4,8 @@
 import 'dart:ui';
 
 // Project imports:
+import 'package:pro_image_editor/utils/parser/double_parser.dart';
+
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
 import '../../utils/unique_id_generator.dart';
 
@@ -16,7 +18,12 @@ class PaintedModel {
 
     /// Iterate over the offsets in the map and add them to the list.
     for (var el in List.from(map['offsets'])) {
-      offsets.add(Offset(el['x'], el['y']));
+      offsets.add(
+        Offset(
+          safeParseDouble(el['x']),
+          safeParseDouble(el['y']),
+        ),
+      );
     }
 
     /// Constructs and returns a PaintedModel instance with properties
@@ -26,9 +33,9 @@ class PaintedModel {
           .firstWhere((element) => element.name == map['mode']),
       offsets: offsets,
       color: Color(map['color']),
-      strokeWidth: map['strokeWidth'] ?? 1,
+      strokeWidth: safeParseDouble(map['strokeWidth'], fallback: 1),
       fill: map['fill'] ?? false,
-      opacity: map['opacity'] ?? 1,
+      opacity: safeParseDouble(map['opacity'], fallback: 1),
     );
   }
 

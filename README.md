@@ -129,7 +129,7 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/blur-editor.gif?raw=true" alt="Blur-Editor" />
       </td>
       <td align="center" width="50%">
       </td>

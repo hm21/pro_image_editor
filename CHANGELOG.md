@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.2.3
+- **Fix**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolve issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
+
 ## 5.2.2
 - **FIX**(Frosted-Glass): Resolve issue that loading-dialog didn't use the text from the i18n class.
 

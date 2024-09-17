@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
+import '../../utils/parser/double_parser.dart';
+import '../../utils/parser/int_parser.dart';
 import '../../utils/unique_id_generator.dart';
 import '../paint_editor/painted_model.dart';
 import 'layer_background_mode.dart';
@@ -49,9 +51,9 @@ class Layer {
     Layer layer = Layer(
       flipX: map['flipX'] ?? false,
       flipY: map['flipY'] ?? false,
-      offset: Offset(map['x'] ?? 0, map['y'] ?? 0),
-      rotation: map['rotation'] ?? 0,
-      scale: map['scale'] ?? 1,
+      offset: Offset(safeParseDouble(map['x']), safeParseDouble(map['y'])),
+      rotation: safeParseDouble(map['rotation']),
+      scale: safeParseDouble(map['scale'], fallback: 1),
     );
 
     /// Determines the layer type from the map and returns the appropriate
@@ -199,10 +201,10 @@ class TextLayerData extends Layer {
 
     /// Optional properties for text styling from the map.
     String? fontFamily = map['fontFamily'] as String?;
-    double? wordSpacing = map['wordSpacing'] as double?;
-    double? height = map['height'] as double?;
-    double? letterSpacing = map['letterSpacing'] as double?;
-    int? fontWeight = map['fontWeight'] as int?;
+    double? wordSpacing = tryParseDouble(map['wordSpacing']);
+    double? height = tryParseDouble(map['height']);
+    double? letterSpacing = tryParseDouble(map['letterSpacing']);
+    int? fontWeight = tryParseInt(map['fontWeight']);
     String? fontStyle = map['fontStyle'] as String?;
     String? decoration = map['decoration'] as String?;
 
@@ -401,10 +403,10 @@ class PaintingLayerData extends Layer {
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      opacity: map['opacity'] ?? 1.0,
+      opacity: safeParseDouble(map['opacity'], fallback: 1.0),
       rawSize: Size(
-        map['rawSize']?['w'] ?? 0,
-        map['rawSize']?['h'] ?? 0,
+        safeParseDouble(map['rawSize']?['w'], fallback: 0),
+        safeParseDouble(map['rawSize']?['h'], fallback: 0),
       ),
       item: PaintedModel.fromMap(map['item'] ?? {}),
     );
@@ -473,7 +475,7 @@ class StickerLayerData extends Layer {
     List<Uint8List> stickers,
   ) {
     /// Determines the position of the sticker in the list.
-    int stickerPosition = (map['listPosition'] as int?) ?? -1;
+    int stickerPosition = safeParseInt(map['listPosition'], fallback: -1);
 
     /// Widget to display a sticker or a placeholder if not found.
     Widget sticker = kDebugMode
