@@ -2,6 +2,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
 
+import 'custom_widgets_layer_interaction.dart';
+
 export 'custom_widgets_blur_editor.dart';
 export 'custom_widgets_crop_rotate_editor.dart';
 export 'custom_widgets_filter_editor.dart';
@@ -25,6 +27,7 @@ class ImageEditorCustomWidgets {
     this.cropRotateEditor = const CustomWidgetsCropRotateEditor(),
     this.filterEditor = const CustomWidgetsFilterEditor(),
     this.blurEditor = const CustomWidgetsBlurEditor(),
+    this.layerInteraction = const CustomWidgetsLayerInteraction(),
   });
 
   /// The main editor instance.
@@ -44,6 +47,10 @@ class ImageEditorCustomWidgets {
 
   /// The blur editor instance.
   final CustomWidgetsBlurEditor blurEditor;
+
+  /// Defines the set of interactions (edit, remove, rotate/scale) for
+  /// custom widgets.
+  final CustomWidgetsLayerInteraction layerInteraction;
 
   /// Replace the existing loading dialog.
   ///
@@ -128,6 +135,7 @@ class ImageEditorCustomWidgets {
     Widget Function(String message, ProImageEditorConfigs configs)?
         loadingDialog,
     Widget? circularProgressIndicator,
+    CustomWidgetsLayerInteraction? layerInteraction,
   }) {
     return ImageEditorCustomWidgets(
       mainEditor: mainEditor ?? this.mainEditor,
@@ -139,6 +147,7 @@ class ImageEditorCustomWidgets {
       loadingDialog: loadingDialog ?? this.loadingDialog,
       circularProgressIndicator:
           circularProgressIndicator ?? this.circularProgressIndicator,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
     );
   }
 }

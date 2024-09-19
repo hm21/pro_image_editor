@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.3.0
+- **Feat**(Custom-Widgets): add custom widgets to replace layer interaction buttons (edit, remove, rotateScale)
+
 ## 5.2.3
 - **Fix**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolve issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
 

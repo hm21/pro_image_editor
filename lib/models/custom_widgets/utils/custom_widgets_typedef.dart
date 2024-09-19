@@ -107,3 +107,47 @@ typedef CustomSlider<T> = ReactiveCustomWidget Function(
   Function(double value) onChanged,
   Function(double value) onChangeEnd,
 );
+
+/// A typedef for a function that creates a [ReactiveCustomWidget] for a tap
+/// interaction.
+///
+/// The function takes the following parameters:
+///
+/// * [rebuildStream]: A stream that triggers the widget to rebuild.
+/// * [onTap]: A callback function that is invoked when the widget is tapped.
+/// * [toggleTooltipVisibility]: A function that toggles the visibility of a
+/// tooltip based on the boolean value passed.
+/// * [rotation]: A double value representing the current rotation of the
+/// widget.
+///
+/// Returns a nullable [ReactiveCustomWidget].
+typedef LayerInteractionTapButton = ReactiveCustomWidget? Function(
+  Stream<void> rebuildStream,
+  Function() onTap,
+  Function(bool) toggleTooltipVisibility,
+  double rotation,
+);
+
+/// A typedef for a function that creates a [ReactiveCustomWidget] for scale
+/// and rotate interactions.
+///
+/// The function takes the following parameters:
+///
+/// * [rebuildStream]: A stream that triggers the widget to rebuild.
+/// * [onScaleRotateDown]: A callback function that is invoked when the
+/// scale/rotate action starts (on pointer down event).
+/// * [onScaleRotateUp]: A callback function that is invoked when the
+/// scale/rotate action ends (on pointer up event).
+/// * [toggleTooltipVisibility]: A function that toggles the visibility of a
+/// tooltip based on the boolean value passed.
+/// * [rotation]: A double value representing the current rotation of the
+/// widget.
+///
+/// Returns a nullable [ReactiveCustomWidget].
+typedef LayerInteractionScaleRotateButton = ReactiveCustomWidget? Function(
+  Stream<void> rebuildStream,
+  Function(PointerDownEvent) onScaleRotateDown,
+  Function(PointerUpEvent) onScaleRotateUp,
+  Function(bool) toggleTooltipVisibility,
+  double rotation,
+);

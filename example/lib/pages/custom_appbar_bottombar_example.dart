@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pro_image_editor/models/custom_widgets/custom_widgets_layer_interaction.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -73,6 +74,8 @@ class _CustomAppbarBottombarExampleState
   ];
 
   final String _url = 'https://picsum.photos/id/237/2000';
+
+  final _layerInteractionButtonRadius = 10.0;
 
   @override
   void initState() {
@@ -191,6 +194,119 @@ class _CustomAppbarBottombarExampleState
               appBar: (blurEditor, rebuildStream) => ReactiveCustomAppbar(
                 stream: rebuildStream,
                 builder: (_) => _appBarBlurEditor(blurEditor),
+              ),
+            ),
+            layerInteraction: CustomWidgetsLayerInteraction(
+              editIcon:
+                  (rebuildStream, onTap, toggleTooltipVisibility, rotation) =>
+                      ReactiveCustomWidget(
+                builder: (_) {
+                  return Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Transform.rotate(
+                      angle: rotation,
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: onTap,
+                          child: Tooltip(
+                            message: 'Edit',
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                    _layerInteractionButtonRadius * 2),
+                                color: Colors.white,
+                              ),
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.black,
+                                size: _layerInteractionButtonRadius * 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                stream: rebuildStream,
+              ),
+              removeIcon:
+                  (rebuildStream, onTap, toggleTooltipVisibility, rotation) =>
+                      ReactiveCustomWidget(
+                builder: (_) {
+                  return Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Transform.rotate(
+                      angle: rotation,
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: onTap,
+                          child: Tooltip(
+                            message: 'Remove',
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                    _layerInteractionButtonRadius * 2),
+                                color: Colors.white,
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.black,
+                                size: _layerInteractionButtonRadius * 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                stream: rebuildStream,
+              ),
+              rotateScaleIcon: (rebuildStream, onScaleRotateDown,
+                      onScaleRotateUp, toggleTooltipVisibility, rotation) =>
+                  ReactiveCustomWidget(
+                builder: (_) {
+                  return Positioned(
+                    /// IMPORTANT: The editor currently only supports this
+                    /// position for rotation to function correctly
+                    bottom: 0,
+                    right: 0,
+                    child: Transform.rotate(
+                      angle: rotation,
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Listener(
+                          onPointerDown: onScaleRotateDown,
+                          onPointerUp: onScaleRotateUp,
+                          child: Tooltip(
+                            message: 'Rotate',
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                    _layerInteractionButtonRadius * 2),
+                                color: Colors.white,
+                              ),
+                              child: Icon(
+                                Icons.rotate_90_degrees_ccw,
+                                color: Colors.black,
+                                size: _layerInteractionButtonRadius * 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                stream: rebuildStream,
               ),
             ),
           ),
