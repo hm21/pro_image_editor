@@ -144,6 +144,12 @@ class _LayerInteractionHelperWidgetState
     super.dispose();
   }
 
+  @override
+  void setState(void Function() fn) {
+    _rebuildStream.add(null);
+    super.setState(fn);
+  }
+
   void toggleTooltipVisibility(bool state) {
     setState(() => _tooltipVisible = state);
   }
