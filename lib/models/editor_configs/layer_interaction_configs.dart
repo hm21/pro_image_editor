@@ -18,6 +18,7 @@ class LayerInteraction {
   const LayerInteraction({
     this.selectable = LayerInteractionSelectable.auto,
     this.initialSelected = false,
+    this.hideToolbarOnInteraction = false,
   });
 
   /// Specifies the selectability behavior for the layer.
@@ -30,6 +31,10 @@ class LayerInteraction {
   /// `auto` where the device is a desktop.
   final bool initialSelected;
 
+  /// Determines whether the toolbars should be hidden when the user interacts
+  /// with the editor.
+  final bool hideToolbarOnInteraction;
+
   /// Creates a copy of this `LayerInteraction` object with the given fields
   /// replaced with new values.
   ///
@@ -39,10 +44,13 @@ class LayerInteraction {
   LayerInteraction copyWith({
     LayerInteractionSelectable? selectable,
     bool? initialSelected,
+    bool? hideToolbarOnInteraction,
   }) {
     return LayerInteraction(
       selectable: selectable ?? this.selectable,
       initialSelected: initialSelected ?? this.initialSelected,
+      hideToolbarOnInteraction:
+          hideToolbarOnInteraction ?? this.hideToolbarOnInteraction,
     );
   }
 }

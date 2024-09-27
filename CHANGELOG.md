@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.4.0
+- **Feat**(Filter): Filter-preview widgets are now animated with a default fadeInUp effect.
+- **Feat**(Layer-Interaction): Toolbars will no longer hide by default when interacting with a layer. To restore the previous behavior, set `hideToolbarOnInteraction` to true in the `layerInteraction` settings.
+- **Feat**(Design): Introduced a new design theme called "Grounded".
+
 ## 5.3.0
 - **Feat**(Custom-Widgets): add custom widgets to replace layer interaction buttons (edit, remove, rotateScale)
 

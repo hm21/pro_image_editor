@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:example/pages/design_examples/frosted_glass_example.dart';
+import 'package:example/pages/design_examples/grounded_example.dart';
 import 'package:example/pages/design_examples/highly_configurable_example.dart';
 import 'package:example/utils/example_helper.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class _DesignExampleState extends State<DesignExample>
     with ExampleHelperState<DesignExample> {
   final String _urlWhatsApp = 'https://picsum.photos/id/350/1500/3000';
   final String _urlFrostedGlass = 'https://picsum.photos/id/28/1500/3000';
+  final String _urlGrounded = 'https://picsum.photos/id/28/1500/3000';
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +37,23 @@ class _DesignExampleState extends State<DesignExample>
               children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('Designs',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Designs',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.grass_outlined),
+                  title: const Text('Grounded'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    _openExample(
+                      GroundedDesignExample(url: _urlGrounded),
+                      _urlGrounded,
+                    );
+                  },
+                ),
                 ListTile(
                   leading: const Icon(Icons.auto_awesome),
                   title: const Text('Frosted-Glass'),

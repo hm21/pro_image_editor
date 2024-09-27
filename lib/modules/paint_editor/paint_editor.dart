@@ -693,17 +693,23 @@ class PaintingEditorState extends State<PaintingEditor>
         child: Theme(
           data: theme.copyWith(
               tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-          child: RecordInvisibleWidget(
-            controller: screenshotCtrl,
-            child: LayoutBuilder(builder: (context, constraints) {
-              return Scaffold(
-                resizeToAvoidBottomInset: false,
-                backgroundColor: imageEditorTheme.paintingEditor.background,
-                appBar: _buildAppBar(constraints),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomBar(),
-              );
-            }),
+          child: SafeArea(
+            top: paintEditorConfigs.safeArea.top,
+            bottom: paintEditorConfigs.safeArea.bottom,
+            left: paintEditorConfigs.safeArea.left,
+            right: paintEditorConfigs.safeArea.right,
+            child: RecordInvisibleWidget(
+              controller: screenshotCtrl,
+              child: LayoutBuilder(builder: (context, constraints) {
+                return Scaffold(
+                  resizeToAvoidBottomInset: false,
+                  backgroundColor: imageEditorTheme.paintingEditor.background,
+                  appBar: _buildAppBar(constraints),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomBar(),
+                );
+              }),
+            ),
           ),
         ),
       ),

@@ -25,6 +25,7 @@ dependencies:
   image_picker: ^1.1.1
   mime: ^1.0.5
   url_launcher: ^6.2.6
+  flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
   flutter_test:

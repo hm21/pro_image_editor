@@ -227,7 +227,6 @@ mixin StandaloneEditorState<T extends StatefulWidget,
   ///
   /// This method returns the smaller of two sizes, ensuring that the resulting
   /// size is neither null nor empty.
-  @protected
   Size getMinimumSize(Size? a, Size b) {
     return a == null || a.isEmpty
         ? b.isEmpty

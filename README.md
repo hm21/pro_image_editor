@@ -48,35 +48,35 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">Grounded-Design</th>
       <th align="center">Frosted-Glass-Design</th>
-      <th align="center">WhatsApp-Design</th>
     </tr>
   </thead>
   <tbody>
     <tr>
+      <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/grounded-design.gif?raw=true" alt="Grounded-Design" />
+      </td>
       <td align="center" width="50%">
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/frosted-glass-design.gif?raw=true" alt="Frosted-Glass-Design" />
       </td>
-      <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
-      </td>
     </tr>
   </tbody>
 </table>
 <table>
   <thead>
     <tr>
+      <th align="center">WhatsApp-Design</th>
       <th align="center">Paint-Editor</th>
-      <th align="center">Text-Editor</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/paint-editor.gif?raw=true" alt="Paint-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/whatsapp-design.gif?raw=true" alt="WhatsApp-Design" />
       </td>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/text-editor.gif?raw=true" alt="Text-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/paint-editor.gif?raw=true" alt="Paint-Editor" />
       </td>
     </tr>
   </tbody>
@@ -84,37 +84,37 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">Text-Editor</th>
       <th align="center">Crop-Rotate-Editor</th>
-      <th align="center">Filter-Editor</th>
     </tr>
   </thead>
   <tbody>
    <tr>
       <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/text-editor.gif?raw=true" alt="Text-Editor" />
+      </td>
+      <td align="center" width="50%">
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/crop-rotate-editor.gif?raw=true" alt="Crop-Rotate-Editor" />
       </td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">Filter-Editor</th>
+      <th align="center">Emoji-Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
       <td align="center" width="50%">
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/filter-editor.gif?raw=true" alt="Filter-Editor" />
       </td>
-    </tr>
-  </tbody>
-</table>
-
-<table>
-  <thead>
-    <tr>
-      <th align="center">Emoji-Editor</th>
-      <th align="center">Sticker/ Widget Editor</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
       <td align="center" width="50%">
         <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/emoji-editor.gif?raw=true" alt="Emoji-Editor" />
       </td>
-      <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
-      </td>
     </tr>
   </tbody>
 </table>
@@ -122,16 +122,17 @@ The ProImageEditor is a Flutter widget designed for image editing within your ap
 <table>
   <thead>
     <tr>
+      <th align="center">Sticker/ Widget Editor</th>
       <th align="center">Blur-Editor</th>
-      <th align="center">-</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center" width="50%">
-        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/blur-editor.gif?raw=true" alt="Blur-Editor" />
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/sticker-editor.gif?raw=true" alt="Sticker-Widget-Editor" />
       </td>
       <td align="center" width="50%">
+        <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/preview/blur-editor.gif?raw=true" alt="Blur-Editor" />
       </td>
     </tr>
   </tbody>

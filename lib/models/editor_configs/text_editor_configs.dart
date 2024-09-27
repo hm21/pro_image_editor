@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 // Project imports:
 import '../layer/layer_background_mode.dart';
+import 'utils/editor_safe_area.dart';
 
 /// Configuration options for a text editor.
 ///
@@ -41,6 +42,7 @@ class TextEditorConfigs {
     this.maxScale = double.infinity,
     this.customTextStyles,
     this.initialBackgroundColorMode = LayerBackgroundMode.backgroundAndColor,
+    this.safeArea = const EditorSafeArea(),
   })  : assert(initFontSize > 0, 'initFontSize must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
@@ -102,6 +104,9 @@ class TextEditorConfigs {
   /// Defaults to true.
   final bool autocorrect;
 
+  /// Defines the safe area configuration for the editor.
+  final EditorSafeArea safeArea;
+
   /// Creates a copy of this `TextEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -125,8 +130,10 @@ class TextEditorConfigs {
     double? maxScale,
     bool? enableSuggestions,
     bool? autocorrect,
+    EditorSafeArea? safeArea,
   }) {
     return TextEditorConfigs(
+      safeArea: safeArea ?? this.safeArea,
       enabled: enabled ?? this.enabled,
       canToggleTextAlign: canToggleTextAlign ?? this.canToggleTextAlign,
       canChangeFontScale: canChangeFontScale ?? this.canChangeFontScale,

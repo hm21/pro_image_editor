@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 class DemoBuildStickers extends StatelessWidget {
-  final Function(Widget) setLayer;
-  final ScrollController scrollController;
-
   DemoBuildStickers({
     super.key,
     required this.setLayer,
     required this.scrollController,
+    this.categoryColor = const Color(0xFF424242),
   });
+  final Function(Widget) setLayer;
+  final ScrollController scrollController;
+  final Color categoryColor;
 
   final List<String> demoTitles = [
     'Recent',
@@ -57,7 +58,7 @@ class DemoBuildStickers extends StatelessWidget {
         ),
         Container(
           height: 50,
-          color: Colors.grey.shade800,
+          color: categoryColor,
           child: Row(
             children: [
               IconButton(

@@ -1,3 +1,5 @@
+import 'utils/editor_safe_area.dart';
+
 /// Configuration options for a blur editor.
 ///
 /// `BlurEditorConfigs` allows you to define settings for a blur editor,
@@ -18,6 +20,7 @@ class BlurEditorConfigs {
     this.enabled = true,
     this.showLayers = true,
     this.maxBlur = 5.0,
+    this.safeArea = const EditorSafeArea(),
   }) : assert(maxBlur > 0, 'maxBlur must be positive');
 
   /// Indicates whether the blur editor is enabled.
@@ -29,6 +32,9 @@ class BlurEditorConfigs {
   /// Maximum blur value.
   final double maxBlur;
 
+  /// Defines the safe area configuration for the editor.
+  final EditorSafeArea safeArea;
+
   /// Creates a copy of this `BlurEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -39,8 +45,10 @@ class BlurEditorConfigs {
     bool? enabled,
     bool? showLayers,
     double? maxBlur,
+    EditorSafeArea? safeArea,
   }) {
     return BlurEditorConfigs(
+      safeArea: safeArea ?? this.safeArea,
       enabled: enabled ?? this.enabled,
       showLayers: showLayers ?? this.showLayers,
       maxBlur: maxBlur ?? this.maxBlur,

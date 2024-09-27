@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // Project imports:
 import '../crop_rotate_editor/aspect_ratio_item.dart';
 import '../crop_rotate_editor/rotate_direction.dart';
+import 'utils/editor_safe_area.dart';
 
 export '../crop_rotate_editor/rotate_direction.dart';
 
@@ -65,6 +66,7 @@ class CropRotateEditorConfigs {
       AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
       AspectRatioItem(text: '9*16', value: 9.0 / 16.0)
     ],
+    this.safeArea = const EditorSafeArea(),
   })  : assert(maxScale >= 1, 'maxScale must be greater than or equal to 1'),
         assert(desktopCornerDragArea > 0,
             'desktopCornerDragArea must be positive'),
@@ -175,6 +177,9 @@ class CropRotateEditorConfigs {
   /// for mobile devices.
   final double mobileCornerDragArea;
 
+  /// Defines the safe area configuration for the editor.
+  final EditorSafeArea safeArea;
+
   /// Creates a copy of this `CropRotateEditorConfigs` object with the given
   /// fields replaced with new values.
   ///
@@ -209,8 +214,10 @@ class CropRotateEditorConfigs {
     RotateDirection? rotateDirection,
     double? desktopCornerDragArea,
     double? mobileCornerDragArea,
+    EditorSafeArea? safeArea,
   }) {
     return CropRotateEditorConfigs(
+      safeArea: safeArea ?? this.safeArea,
       provideImageInfos: provideImageInfos ?? this.provideImageInfos,
       enabled: enabled ?? this.enabled,
       canRotate: canRotate ?? this.canRotate,

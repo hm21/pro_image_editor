@@ -195,11 +195,16 @@ class BlurEditorState extends State<BlurEditor>
     blurEditorCallbacks?.handleDone();
   }
 
-  /// Handles changes in the blur factor value.
-  void _onChanged(double value) {
+  /// Set the blur factor and update the UI.
+  void setBlurFactor(double value) {
     blurFactor = value;
     _uiBlurStream.add(null);
     blurEditorCallbacks?.handleBlurFactorChange(value);
+  }
+
+  /// Handles changes in the blur factor value.
+  void _onChanged(double value) {
+    setBlurFactor(value);
   }
 
   /// Handles the end of changes in the blur factor value.
@@ -217,13 +222,19 @@ class BlurEditorState extends State<BlurEditor>
           tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: imageEditorTheme.uiOverlayStyle,
-        child: RecordInvisibleWidget(
-          controller: screenshotCtrl,
-          child: Scaffold(
-            backgroundColor: imageEditorTheme.blurEditor.background,
-            appBar: _buildAppBar(),
-            body: _buildBody(),
-            bottomNavigationBar: _buildBottomNavBar(),
+        child: SafeArea(
+          top: blurEditorConfigs.safeArea.top,
+          bottom: blurEditorConfigs.safeArea.bottom,
+          left: blurEditorConfigs.safeArea.left,
+          right: blurEditorConfigs.safeArea.right,
+          child: RecordInvisibleWidget(
+            controller: screenshotCtrl,
+            child: Scaffold(
+              backgroundColor: imageEditorTheme.blurEditor.background,
+              appBar: _buildAppBar(),
+              body: _buildBody(),
+              bottomNavigationBar: _buildBottomNavBar(),
+            ),
           ),
         ),
       ),

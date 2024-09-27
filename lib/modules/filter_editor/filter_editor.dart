@@ -215,6 +215,12 @@ class FilterEditorState extends State<FilterEditor>
     _uiFilterStream.add(null);
   }
 
+  /// Set the current filter opacity.
+  void setFilterOpacity(double value) {
+    filterOpacity = value;
+    _uiFilterStream.add(null);
+  }
+
   /// Handles changes in the filter factor value.
   void _onChanged(double value) {
     filterOpacity = value;
@@ -238,13 +244,19 @@ class FilterEditorState extends State<FilterEditor>
       child: ExtendedPopScope(
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: imageEditorTheme.uiOverlayStyle,
-          child: RecordInvisibleWidget(
-            controller: screenshotCtrl,
-            child: Scaffold(
-              backgroundColor: imageEditorTheme.filterEditor.background,
-              appBar: _buildAppBar(),
-              body: _buildBody(),
-              bottomNavigationBar: _buildBottomNavBar(),
+          child: SafeArea(
+            top: filterEditorConfigs.safeArea.top,
+            bottom: filterEditorConfigs.safeArea.bottom,
+            left: filterEditorConfigs.safeArea.left,
+            right: filterEditorConfigs.safeArea.right,
+            child: RecordInvisibleWidget(
+              controller: screenshotCtrl,
+              child: Scaffold(
+                backgroundColor: imageEditorTheme.filterEditor.background,
+                appBar: _buildAppBar(),
+                body: _buildBody(),
+                bottomNavigationBar: _buildBottomNavBar(),
+              ),
             ),
           ),
         ),

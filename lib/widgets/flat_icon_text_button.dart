@@ -12,6 +12,7 @@ class FlatIconTextButton extends TextButton {
     super.onPressed,
     super.clipBehavior,
     super.focusNode,
+    double spacing = 5.0,
     required Widget icon,
     required Widget label,
   }) : super(
@@ -24,7 +25,7 @@ class FlatIconTextButton extends TextButton {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               icon,
-              const SizedBox(height: 5.0),
+              SizedBox(height: spacing),
               label,
             ],
           ),

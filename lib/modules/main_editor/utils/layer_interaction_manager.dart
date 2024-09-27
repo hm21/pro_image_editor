@@ -144,6 +144,7 @@ class LayerInteractionManager {
     required ScaleUpdateDetails details,
     required Layer activeLayer,
     required Size editorSize,
+    required double appBarHeight,
     required bool configEnabledHitVibration,
     required ThemeLayerInteraction layerTheme,
   }) {
@@ -161,7 +162,7 @@ class LayerInteractionManager {
 
     Offset touchPositionFromCenter = Offset(
           realDx - editorSize.width / 2,
-          realDy - editorSize.height / 2,
+          realDy - editorSize.height / 2 - appBarHeight,
         ) -
         layerOffset;
 

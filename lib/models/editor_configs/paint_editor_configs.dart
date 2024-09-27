@@ -1,5 +1,6 @@
 // Project imports:
 import '../../modules/paint_editor/utils/paint_editor_enum.dart';
+import 'utils/editor_safe_area.dart';
 
 /// Configuration options for a paint editor.
 ///
@@ -53,6 +54,7 @@ class PaintEditorConfigs {
     this.freeStyleHighPerformanceMoving,
     this.freeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintModeE.freeStyle,
+    this.safeArea = const EditorSafeArea(),
   })  : assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale'),
         assert(editorMaxScale > editorMinScale,
@@ -159,6 +161,9 @@ class PaintEditorConfigs {
   /// The maximum scale factor from the layer.
   final double maxScale;
 
+  /// Defines the safe area configuration for the editor.
+  final EditorSafeArea safeArea;
+
   /// Creates a copy of this `PaintEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -187,8 +192,10 @@ class PaintEditorConfigs {
     double? editorMaxScale,
     double? minScale,
     double? maxScale,
+    EditorSafeArea? safeArea,
   }) {
     return PaintEditorConfigs(
+      safeArea: safeArea ?? this.safeArea,
       enabled: enabled ?? this.enabled,
       enableZoom: enableZoom ?? this.enableZoom,
       hasOptionFreeStyle: hasOptionFreeStyle ?? this.hasOptionFreeStyle,

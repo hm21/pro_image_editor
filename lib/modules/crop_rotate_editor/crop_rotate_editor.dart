@@ -1930,29 +1930,36 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   Widget build(BuildContext context) {
-    return RecordInvisibleWidget(
-      controller: screenshotCtrl,
-      child: ExtendedPopScope(
-        onPopInvokedWithResult: (didPop, _) {
-          _showFakeHero = true;
-          _updateAllStates();
-        },
-        child: LayoutBuilder(builder: (context, constraints) {
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: imageEditorTheme.uiOverlayStyle,
-            child: Theme(
-              data: theme.copyWith(
-                  tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-              child: Scaffold(
-                resizeToAvoidBottomInset: false,
-                backgroundColor: imageEditorTheme.cropRotateEditor.background,
-                appBar: _buildAppBar(constraints),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomAppBar(),
+    return SafeArea(
+      top: cropRotateEditorConfigs.safeArea.top,
+      bottom: cropRotateEditorConfigs.safeArea.bottom,
+      left: cropRotateEditorConfigs.safeArea.left,
+      right: cropRotateEditorConfigs.safeArea.right,
+      child: RecordInvisibleWidget(
+        controller: screenshotCtrl,
+        child: ExtendedPopScope(
+          onPopInvokedWithResult: (didPop, _) {
+            _showFakeHero = true;
+            _updateAllStates();
+          },
+          child: LayoutBuilder(builder: (context, constraints) {
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: imageEditorTheme.uiOverlayStyle,
+              child: Theme(
+                data: theme.copyWith(
+                    tooltipTheme:
+                        theme.tooltipTheme.copyWith(preferBelow: true)),
+                child: Scaffold(
+                  resizeToAvoidBottomInset: false,
+                  backgroundColor: imageEditorTheme.cropRotateEditor.background,
+                  appBar: _buildAppBar(constraints),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomAppBar(),
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

@@ -386,11 +386,17 @@ class TextEditorState extends State<TextEditor>
             data: widget.theme.copyWith(
                 tooltipTheme:
                     widget.theme.tooltipTheme.copyWith(preferBelow: true)),
-            child: Scaffold(
-              backgroundColor: imageEditorTheme.textEditor.background,
-              appBar: _buildAppBar(constraints),
-              body: _buildBody(),
-              bottomNavigationBar: _buildBottomBar(),
+            child: SafeArea(
+              top: textEditorConfigs.safeArea.top,
+              bottom: textEditorConfigs.safeArea.bottom,
+              left: textEditorConfigs.safeArea.left,
+              right: textEditorConfigs.safeArea.right,
+              child: Scaffold(
+                backgroundColor: imageEditorTheme.textEditor.background,
+                appBar: _buildAppBar(constraints),
+                body: _buildBody(),
+                bottomNavigationBar: _buildBottomBar(),
+              ),
             ),
           ),
         );

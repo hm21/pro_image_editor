@@ -316,8 +316,11 @@ class ProImageEditorState extends State<ProImageEditor>
   /// The pixel ratio of the device's screen.
   ImageInfos? _imageInfos;
 
-  /// Whether a sub editor is currently open.
+  /// Indicates whether a sub-editor is currently open.
   bool isSubEditorOpen = false;
+
+  /// Indicates whether a sub-editor is in the process of closing.
+  bool isSubEditorClosing = false;
 
   /// Whether a dialog is currently open.
   bool _openDialog = false;
@@ -841,7 +844,7 @@ class ProImageEditorState extends State<ProImageEditor>
     bool beforeShowRotationHelperLine =
         layerInteractionManager.showRotationHelperLine;
 
-    checkUpdateHelperLineUI() {
+    void checkUpdateHelperLineUI() {
       if (beforeShowHorizontalHelperLine !=
               layerInteractionManager.showHorizontalHelperLine ||
           beforeShowVerticalHelperLine !=
@@ -863,7 +866,8 @@ class ProImageEditorState extends State<ProImageEditor>
           activeLayer: _activeLayer!,
           configEnabledHitVibration: helperLines.hitVibration,
           details: details,
-          editorSize: sizesManager.editorSize,
+          editorSize: sizesManager.bodySize,
+          appBarHeight: sizesManager.appBarHeight,
           layerTheme: imageEditorTheme.layerInteraction,
           editorScaleFactor:
               _interactiveViewer.currentState?.scaleFactor ?? 1.0,
@@ -901,7 +905,7 @@ class ProImageEditorState extends State<ProImageEditor>
           configs: configs,
           activeLayer: _activeLayer!,
           detail: details,
-          editorSize: sizesManager.editorSize,
+          editorSize: sizesManager.bodySize,
           screenPaddingHelper: sizesManager.imageMargin,
           configEnabledHitVibration: helperLines.hitVibration,
         );
@@ -1057,26 +1061,37 @@ class ProImageEditorState extends State<ProImageEditor>
             },
         pageBuilder: (context, animation, secondaryAnimation) {
           void animationStatusListener(AnimationStatus status) {
-            if (status == AnimationStatus.completed) {
-              if (cropRotateEditor.currentState != null) {
-                cropRotateEditor.currentState!.hideFakeHero();
-              }
-            } else if (status == AnimationStatus.dismissed) {
-              setState(() {
-                isSubEditorOpen = false;
-                if (!_pageOpenCompleter.isCompleted) {
-                  _pageOpenCompleter.complete(true);
+            switch (status) {
+              case AnimationStatus.completed:
+                if (cropRotateEditor.currentState != null) {
+                  cropRotateEditor.currentState!.hideFakeHero();
                 }
-                layerInteractionManager.freeStyleHighPerformanceHero = false;
+                break;
+              case AnimationStatus.dismissed:
+                setState(() {
+                  isSubEditorOpen = false;
+                  isSubEditorClosing = false;
+                  if (!_pageOpenCompleter.isCompleted) {
+                    _pageOpenCompleter.complete(true);
+                  }
+                  layerInteractionManager.freeStyleHighPerformanceHero = false;
 
-                if (stateManager.heroScreenshotRequired) {
-                  stateManager.heroScreenshotRequired = false;
-                  _takeScreenshot();
-                }
-              });
+                  if (stateManager.heroScreenshotRequired) {
+                    stateManager.heroScreenshotRequired = false;
+                    _takeScreenshot();
+                  }
+                });
 
-              animation.removeStatusListener(animationStatusListener);
-              mainEditorCallbacks?.handleCloseSubEditor(editorName);
+                animation.removeStatusListener(animationStatusListener);
+                mainEditorCallbacks?.handleEndCloseSubEditor(editorName);
+                break;
+              case AnimationStatus.reverse:
+                isSubEditorClosing = true;
+                mainEditorCallbacks?.handleStartCloseSubEditor(editorName);
+
+                break;
+              case AnimationStatus.forward:
+                break;
             }
           }
 
@@ -1920,7 +1935,8 @@ class ProImageEditorState extends State<ProImageEditor>
           .call(this, _rebuildController.stream);
     }
 
-    return selectedLayerIndex >= 0
+    return selectedLayerIndex >= 0 &&
+            configs.layerInteraction.hideToolbarOnInteraction
         ? null
         : AppBar(
             automaticallyImplyLeading: false,
@@ -2025,7 +2041,8 @@ class ProImageEditorState extends State<ProImageEditor>
       child: Stack(
         children: [
           Padding(
-            padding: selectedLayerIndex >= 0
+            padding: selectedLayerIndex >= 0 &&
+                    configs.layerInteraction.hideToolbarOnInteraction
                 ? EdgeInsets.only(
                     top: sizesManager.appBarHeight,
                     bottom: sizesManager.bottomBarHeight,
@@ -2124,7 +2141,8 @@ class ProImageEditorState extends State<ProImageEditor>
           .call(this, _rebuildController.stream, _bottomBarKey);
     }
 
-    return selectedLayerIndex >= 0
+    return selectedLayerIndex >= 0 &&
+            configs.layerInteraction.hideToolbarOnInteraction
         ? null
         : SizedBox(
             key: _bottomBarKey,
@@ -2446,10 +2464,12 @@ class ProImageEditorState extends State<ProImageEditor>
                   Align(
                     alignment: Alignment.center,
                     child: AnimatedContainer(
-                      margin: EdgeInsets.only(
-                        top: sizesManager.appBarHeight,
-                        bottom: sizesManager.bottomBarHeight,
-                      ),
+                      margin: configs.layerInteraction.hideToolbarOnInteraction
+                          ? EdgeInsets.only(
+                              top: sizesManager.appBarHeight,
+                              bottom: sizesManager.bottomBarHeight,
+                            )
+                          : EdgeInsets.zero,
                       duration: Duration(milliseconds: duration),
                       width: screenW,
                       height: layerInteractionManager.showHorizontalHelperLine
