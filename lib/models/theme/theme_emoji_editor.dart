@@ -3,9 +3,11 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
         BottomActionBarConfig,
         CategoryViewConfig,
         DefaultEmojiTextStyle,
+        EmojiPickerItem,
         EmojiViewConfig,
         SearchViewConfig,
-        SkinToneConfig;
+        SkinToneConfig,
+        ViewOrderConfig;
 
 // Flutter imports:
 import 'package:flutter/widgets.dart';
@@ -71,7 +73,11 @@ class EmojiEditorTheme {
     this.categoryViewConfig,
     this.emojiViewConfig,
     this.textStyle = DefaultEmojiTextStyle,
-    this.swapCategoryAndBottomBar = true,
+    this.viewOrderConfig = const ViewOrderConfig(
+      top: EmojiPickerItem.searchBar,
+      middle: EmojiPickerItem.emojiView,
+      bottom: EmojiPickerItem.categoryBar,
+    ),
     this.categoryTitlePadding = const EdgeInsets.only(left: 10),
     this.categoryTitleStyle = const TextStyle(
       color: Color(0xFF86959C),
@@ -113,14 +119,8 @@ class EmojiEditorTheme {
   /// being filtered out.
   final TextStyle textStyle;
 
-  /// Determines whether to swap the positions of the category view and the
-  /// bottom action bar.
-  ///
-  /// If true, the category view will be displayed at the bottom and the bottom
-  /// action bar at the top.
-  /// If false, the category view will be displayed at the top and the bottom
-  /// action bar at the bottom.
-  final bool swapCategoryAndBottomBar;
+  /// View order config
+  final ViewOrderConfig viewOrderConfig;
 
   /// Specifies whether a drag handle is shown on the bottom sheet.
   final bool showDragHandle;
@@ -160,7 +160,7 @@ class EmojiEditorTheme {
     CategoryViewConfig? categoryViewConfig,
     EmojiViewConfig? emojiViewConfig,
     TextStyle? textStyle,
-    bool? swapCategoryAndBottomBar,
+    ViewOrderConfig? viewOrderConfig,
     bool? showDragHandle,
     ThemeDraggableSheet? themeDraggableSheet,
     EdgeInsets? categoryTitlePadding,
@@ -177,8 +177,7 @@ class EmojiEditorTheme {
       categoryViewConfig: categoryViewConfig ?? this.categoryViewConfig,
       emojiViewConfig: emojiViewConfig ?? this.emojiViewConfig,
       textStyle: textStyle ?? this.textStyle,
-      swapCategoryAndBottomBar:
-          swapCategoryAndBottomBar ?? this.swapCategoryAndBottomBar,
+      viewOrderConfig: viewOrderConfig ?? this.viewOrderConfig,
       showDragHandle: showDragHandle ?? this.showDragHandle,
       themeDraggableSheet: themeDraggableSheet ?? this.themeDraggableSheet,
       categoryTitlePadding: categoryTitlePadding ?? this.categoryTitlePadding,

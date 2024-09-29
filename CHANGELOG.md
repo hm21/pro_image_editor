@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.4.1
+- **Feat**(Emoji-Editor): Update the emoji-editor to version `3.1.0` with custom view order configuration support.
+
 ## 5.4.0
 - **Feat**(Filter): Filter-preview widgets are now animated with a default fadeInUp effect.
 - **Feat**(Layer-Interaction): Toolbars will no longer hide by default when interacting with a layer. To restore the previous behavior, set `hideToolbarOnInteraction` to true in the `layerInteraction` settings.
