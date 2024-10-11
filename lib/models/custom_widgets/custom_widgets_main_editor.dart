@@ -47,8 +47,8 @@ class CustomWidgetsMainEditor {
   ///            context: context,
   ///            builder: (BuildContext context) => AlertDialog(
   ///              title: const Text('Close?'),
-  ///              content: const Text('Are you sure you want to close the
-  /// Image Editor? Your changes will not be saved.'),
+  ///              content: const Text('''Are you sure you want to close the
+  /// Image Editor? Your changes will not be saved.'''),
   ///              actions: <Widget>[
   ///                TextButton(
   ///                  onPressed: () => Navigator.pop(context, false),

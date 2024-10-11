@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.4.2
+- **Fix**(Painting-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolve issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
+
 ## 5.4.1
 - **Feat**(Emoji-Editor): Update the emoji-editor to version `3.1.0` with custom view order configuration support.
 

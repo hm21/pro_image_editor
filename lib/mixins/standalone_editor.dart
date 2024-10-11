@@ -199,6 +199,8 @@ mixin StandaloneEditorState<T extends StatefulWidget,
     if (!initConfigs.convertToUint8List) return;
 
     await setImageInfos();
+    screenshotHistory.removeRange(
+        screenshotHistoryPosition, screenshotHistory.length);
     screenshotHistoryPosition++;
     screenshotCtrl.captureImage(
       imageInfos: imageInfos!,
