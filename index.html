@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base href="/pro_image_editor/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Examples from the pro_image_editor package.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="example">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>Examples</title>
+  <link rel="manifest" href="manifest.json">
+
+
+  <style>
+    /* Loading indicator styles */
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Hide loading spinner when Flutter app is loaded */
+    .loading-spinner-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading spinner -->
+  <div id="loading-screen" class="loading-spinner-wrapper">
+    <div class="loading-spinner"></div>
+    <p style="margin-top: 10px;">Flutter Loading...</p>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+
+</html>
