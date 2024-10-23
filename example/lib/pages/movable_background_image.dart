@@ -328,67 +328,68 @@ class _MovableBackgroundImageExampleState
                       blurEditorConfigs:
                           const BlurEditorConfigs(enabled: false),
                       customWidgets: ImageEditorCustomWidgets(
-                          mainEditor: CustomWidgetsMainEditor(
-                        bodyItems: (editor, rebuildStream) {
-                          return [
-                            ReactiveCustomWidget(
-                              stream: rebuildStream,
-                              builder: (_) => editor.selectedLayerIndex >= 0 ||
-                                      editor.isSubEditorOpen
-                                  ? const SizedBox.shrink()
-                                  : Positioned(
-                                      bottom: 20,
-                                      left: 0,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.lightBlue.shade200,
-                                          borderRadius: const BorderRadius.only(
-                                            topRight: Radius.circular(100),
-                                            bottomRight: Radius.circular(100),
+                        mainEditor: CustomWidgetsMainEditor(
+                          bodyItems: (editor, rebuildStream) {
+                            return [
+                              ReactiveCustomWidget(
+                                stream: rebuildStream,
+                                builder: (_) => editor.selectedLayerIndex >=
+                                            0 ||
+                                        editor.isSubEditorOpen
+                                    ? const SizedBox.shrink()
+                                    : Positioned(
+                                        bottom: 20,
+                                        left: 0,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.lightBlue.shade200,
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                              topRight: Radius.circular(100),
+                                              bottomRight: Radius.circular(100),
+                                            ),
                                           ),
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            showModalBottomSheet(
-                                              context: context,
-                                              builder: (context) {
-                                                return ReorderLayerSheet(
-                                                  layers: editor.activeLayers,
-                                                  onReorder:
-                                                      (oldIndex, newIndex) {
-                                                    editor
-                                                        .moveLayerListPosition(
-                                                      oldIndex: oldIndex,
-                                                      newIndex: newIndex,
-                                                    );
-                                                    Navigator.pop(context);
-                                                  },
-                                                );
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.reorder,
-                                            color: Colors.white,
+                                          child: IconButton(
+                                            onPressed: () {
+                                              showModalBottomSheet(
+                                                context: context,
+                                                builder: (context) {
+                                                  return ReorderLayerSheet(
+                                                    layers: editor.activeLayers,
+                                                    onReorder:
+                                                        (oldIndex, newIndex) {
+                                                      editor
+                                                          .moveLayerListPosition(
+                                                        oldIndex: oldIndex,
+                                                        newIndex: newIndex,
+                                                      );
+                                                      Navigator.pop(context);
+                                                    },
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            icon: const Icon(
+                                              Icons.reorder,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                              ),
+                            ];
+                          },
+                          bottomBar: (editor, rebuildStream, key) =>
+                              ReactiveCustomWidget(
+                            stream: rebuildStream,
+                            key: key,
+                            builder: (_) => _bottomNavigationBar(
+                              editor,
+                              constraints,
                             ),
-                          ];
-                        },
-                        bottomBar: (editor, rebuildStream, key) =>
-                            editor.selectedLayerIndex < 0
-                                ? ReactiveCustomWidget(
-                                    stream: rebuildStream,
-                                    key: key,
-                                    builder: (_) => _bottomNavigationBar(
-                                      editor,
-                                      constraints,
-                                    ),
-                                  )
-                                : null,
-                      )),
+                          ),
+                        ),
+                      ),
                       imageEditorTheme: const ImageEditorTheme(
                         uiOverlayStyle: SystemUiOverlayStyle(
                           statusBarColor: Colors.black,

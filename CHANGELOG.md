@@ -7,6 +7,9 @@
 - **CHORE**(Dependency): Update `vibration` dependency to version `2.0.1`.
 - **CHORE**(Dependency): Update `mime` dependency to version `2.0.0`.
 
+- **FIX**(Example): Resolve the issue where the `movable_background_image` example displays the helper lines in the wrong position.
+- **FIX**(Example): Resolve all linting issues in the example code.
+
 ## 5.4.2
 - **FIX**(Painting-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolve issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
 
