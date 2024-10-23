@@ -212,6 +212,25 @@ class _MovableBackgroundImageExampleState
             kBottomNavigationBarHeight -
             MediaQuery.of(context).padding.vertical,
       );
+
+  void _openReorderSheet(ProImageEditorState editor) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ReorderLayerSheet(
+          layers: editor.activeLayers,
+          onReorder: (oldIndex, newIndex) {
+            editor.moveLayerListPosition(
+              oldIndex: oldIndex,
+              newIndex: newIndex,
+            );
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -350,25 +369,8 @@ class _MovableBackgroundImageExampleState
                                             ),
                                           ),
                                           child: IconButton(
-                                            onPressed: () {
-                                              showModalBottomSheet(
-                                                context: context,
-                                                builder: (context) {
-                                                  return ReorderLayerSheet(
-                                                    layers: editor.activeLayers,
-                                                    onReorder:
-                                                        (oldIndex, newIndex) {
-                                                      editor
-                                                          .moveLayerListPosition(
-                                                        oldIndex: oldIndex,
-                                                        newIndex: newIndex,
-                                                      );
-                                                      Navigator.pop(context);
-                                                    },
-                                                  );
-                                                },
-                                              );
-                                            },
+                                            onPressed: () =>
+                                                _openReorderSheet(editor),
                                             icon: const Icon(
                                               Icons.reorder,
                                               color: Colors.white,
