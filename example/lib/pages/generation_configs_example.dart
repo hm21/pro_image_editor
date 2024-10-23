@@ -10,7 +10,22 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../utils/example_helper.dart';
 
+/// A widget that demonstrates the configuration of generation settings.
+///
+/// The [GenerationConfigsExample] widget is a stateful widget that allows users
+/// to configure and manage generation settings, likely for an image or content
+/// generation process. It can be used in scenarios where specific
+/// configurations or parameters need to be applied to the generation process.
+///
+/// The state for this widget is managed by the [_GenerationConfigsExampleState]
+/// class.
+///
+/// Example usage:
+/// ```dart
+/// GenerationConfigsExample();
+/// ```
 class GenerationConfigsExample extends StatefulWidget {
+  /// Creates a new [GenerationConfigsExample] widget.
   const GenerationConfigsExample({super.key});
 
   @override
@@ -39,13 +54,32 @@ class _GenerationConfigsExampleState extends State<GenerationConfigsExample> {
   }
 }
 
+/// A widget that allows users to configure generation options.
+///
+/// The [GenerationConfig] widget is a stateful widget that provides a user
+/// interface
+/// for configuring various options related to a generation process. This widget
+/// can be used in scenarios where specific settings or parameters need to be
+/// applied before generating content or images.
+///
+/// The state for this widget is managed by the [_GenerationConfigState] class.
+///
+/// Example usage:
+/// ```dart
+/// GenerationConfig();
+/// ```
 class GenerationConfig extends StatefulWidget {
+  /// Creates a new [GenerationConfig] widget.
   const GenerationConfig({super.key});
 
   @override
   State<GenerationConfig> createState() => _GenerationConfigState();
 }
 
+/// The state for the [GenerationConfig] widget.
+///
+/// This class manages the logic and state required for configuring generation
+/// settings within the [GenerationConfig] widget.
 class _GenerationConfigState extends State<GenerationConfig>
     with ExampleHelperState<GenerationConfig> {
   bool _generateThumbnail = false;
@@ -178,14 +212,19 @@ class _GenerationConfigState extends State<GenerationConfig>
       SwitchListTile.adaptive(
         title: const Text('Generate thumbnail'),
         subtitle: const Text(
-            'This option is useful if you have a high-resolution image that typically takes a long time to generate, but you need to display it quickly.'),
+            'This option is useful if you have a high-resolution image that '
+            'typically takes a long time to generate, but you need to display '
+            'it quickly.'),
         value: _generateThumbnail,
         onChanged: (value) => setState(() => _generateThumbnail = value),
       ),
       SwitchListTile.adaptive(
         title: const Text('Generate image in background'),
         subtitle: const Text(
-            'Captures the final image after each change, such as adding a layer. This significantly speeds up the editor because in most cases, the image is already created when the user presses "done".'),
+          'Captures the final image after each change, such as adding a'
+          ' layer. This significantly speeds up the editor because in most '
+          'cases, the image is already created when the user presses "done".',
+        ),
         value: _generateImageInBackground,
         onChanged: (value) =>
             setState(() => _generateImageInBackground = value),
@@ -193,7 +232,8 @@ class _GenerationConfigState extends State<GenerationConfig>
       SwitchListTile.adaptive(
         title: const Text('Generate in a separate thread'),
         subtitle: const Text(
-            'Allows image generation to run in an separate thread, preventing any impact on the UI.'),
+            'Allows image generation to run in an separate thread, preventing '
+            'any impact on the UI.'),
         value: _generateInsideSeparateThread,
         onChanged: (value) =>
             setState(() => _generateInsideSeparateThread = value),
@@ -233,7 +273,8 @@ class _GenerationConfigState extends State<GenerationConfig>
         maxValue: 16,
         title: 'Background processors',
         subtitle:
-            'The number of background processors to use. This option only has an effect when the processor mode is "limit".',
+            'The number of background processors to use. This option only has '
+            'an effect when the processor mode is "limit".',
         initialValue: _numberOfBackgroundProcessors,
         onUpdate: (val) => _numberOfBackgroundProcessors = val,
       ),
@@ -242,7 +283,8 @@ class _GenerationConfigState extends State<GenerationConfig>
         maxValue: 7,
         title: 'Task concurrency',
         subtitle:
-            'The maximum concurrency level. This option only has an effect when the processor mode is "limit" or "auto".',
+            'The maximum concurrency level. This option only has an effect when'
+            ' the processor mode is "limit" or "auto".',
         initialValue: _maxConcurrency,
         onUpdate: (val) => _maxConcurrency = val,
       ),
@@ -254,8 +296,9 @@ class _GenerationConfigState extends State<GenerationConfig>
       _buildGroupHeader('Size limits'),
       TextPickerListTile<Size>(
         title: 'Maximum output size',
-        subtitle:
-            'The maximum output size for the image. It will maintain the image\'s aspect ratio but will fit within the specified constraints, similar to BoxFit.contain.',
+        subtitle: 'The maximum output size for the image. It will maintain the '
+            'image\'s aspect ratio but will fit within the specified '
+            'constraints, similar to BoxFit.contain.',
         selected: _maxOutputSize,
         textOptions: const [
           TextItem<Size>(
@@ -292,7 +335,9 @@ class _GenerationConfigState extends State<GenerationConfig>
       TextPickerListTile<Size>(
         title: 'Maximum thumbnail size',
         subtitle:
-            'The maximum output size for the thumbnail image. It will maintain the image\'s aspect ratio but will fit within the specified constraints, similar to BoxFit.contain.',
+            'The maximum output size for the thumbnail image. It will maintain '
+            'the image\'s aspect ratio but will fit within the specified '
+            'constraints, similar to BoxFit.contain.',
         selected: _maxThumbSize,
         textOptions: const [
           TextItem<Size>(
@@ -331,7 +376,8 @@ class _GenerationConfigState extends State<GenerationConfig>
       TextPickerListTile<PngFilter>(
         title: 'PNG-Filter',
         subtitle:
-            'Specifies the filter method for optimizing PNG compression. It determines how scanline filtering is applied.',
+            'Specifies the filter method for optimizing PNG compression. It '
+            'determines how scanline filtering is applied.',
         selected: _pngFilter,
         textOptions: const [
           TextItem<PngFilter>(
@@ -362,14 +408,17 @@ class _GenerationConfigState extends State<GenerationConfig>
         maxValue: 9,
         title: 'PNG-Level',
         subtitle:
-            'Specifies the compression level for PNG images. It ranges from 0 to 9, where 0 indicates no compression and 9 indicates maximum compression.',
+            'Specifies the compression level for PNG images. It ranges from 0 '
+            'to 9, where 0 indicates no compression and 9 indicates maximum '
+            'compression.',
         initialValue: _pngLevel,
         onUpdate: (val) => _pngLevel = val,
       ),
       SwitchListTile.adaptive(
         title: const Text('Single frame generation'),
         subtitle: const Text(
-            'Specifies whether single frame generation is enabled for the output formats PNG, TIFF, CUR, PVR, and ICO.'),
+            'Specifies whether single frame generation is enabled for the '
+            'output formats PNG, TIFF, CUR, PVR, and ICO.'),
         value: _singleFrame,
         onChanged: (value) => setState(() => _singleFrame = value),
       ),
@@ -384,14 +433,16 @@ class _GenerationConfigState extends State<GenerationConfig>
         maxValue: 100,
         title: 'JPEG-Quality',
         subtitle:
-            'Specifies the quality level for JPEG images. It ranges from 1 to 100, where 1 indicates the lowest quality and 100 indicates the highest quality.',
+            'Specifies the quality level for JPEG images. It ranges from 1 to '
+            '100, where 1 indicates the lowest quality and 100 indicates the '
+            'highest quality.',
         initialValue: _jpegQuality,
         onUpdate: (val) => _jpegQuality = val,
       ),
       TextPickerListTile<JpegChroma>(
         title: 'JPEG Chroma (sub)sampling format.',
-        subtitle:
-            'Specifies the chroma subsampling method for JPEG images. It defines the compression ratio for chrominance components.',
+        subtitle: 'Specifies the chroma subsampling method for JPEG images. It '
+            'defines the compression ratio for chrominance components.',
         selected: _jpegChroma,
         textOptions: const [
           TextItem<JpegChroma>(
@@ -414,7 +465,8 @@ class _GenerationConfigState extends State<GenerationConfig>
       SwitchListTile.adaptive(
         title: const Text('Capture only drawing areas'),
         subtitle: const Text(
-            'Determines whether to capture only the content within the boundaries of the image when editing is complete.'),
+            'Determines whether to capture only the content within the '
+            'boundaries of the image when editing is complete.'),
         value: _generateOnlyDrawingBounds,
         onChanged: (value) =>
             setState(() => _generateOnlyDrawingBounds = value),
@@ -424,7 +476,8 @@ class _GenerationConfigState extends State<GenerationConfig>
         maxValue: 20,
         title: 'Custom pixel ratio',
         subtitle:
-            'The pixel ratio of the image relative to the content. If "0", the editor will select automatically.',
+            'The pixel ratio of the image relative to the content. If "0", '
+            'the editor will select automatically.',
         initialValue: _customPixelRatio,
         onUpdate: (val) => _customPixelRatio = val,
       ),
@@ -497,14 +550,37 @@ class _GenerationConfigState extends State<GenerationConfig>
   }
 }
 
+/// A widget that displays a list tile with a number picker.
+///
+/// The [NumberPickerListTile] widget is a stateful widget that allows users
+/// to pick a number within a defined range using a number picker. The selected
+/// number is displayed in the list tile, and users can interact with it to
+/// update the value.
+///
+/// This widget requires a title, subtitle, initial value, minimum and maximum
+/// values, and a callback function to handle updates when the number is
+/// changed.
+///
+/// Example usage:
+/// ```dart
+/// NumberPickerListTile(
+///   title: 'Select Quantity',
+///   subtitle: 'Choose the number of items',
+///   initialValue: 5,
+///   minValue: 1,
+///   maxValue: 10,
+///   onUpdate: (value) {
+///     // Handle the updated number here
+///   },
+/// );
+/// ```
 class NumberPickerListTile extends StatefulWidget {
-  final String title;
-  final String subtitle;
-  final int initialValue;
-  final int minValue;
-  final int maxValue;
-  final Function(int) onUpdate;
-
+  /// Creates a new [NumberPickerListTile] widget.
+  ///
+  /// The [title] and [subtitle] are required to display text in the list tile.
+  /// The [initialValue] is optional, with a default of 0. The [minValue] and
+  /// [maxValue] define the range for the number picker, and the [onUpdate]
+  /// callback is required to handle updates when the number is changed.
   const NumberPickerListTile({
     super.key,
     this.initialValue = 0,
@@ -515,10 +591,32 @@ class NumberPickerListTile extends StatefulWidget {
     required this.onUpdate,
   });
 
+  /// The title of the list tile.
+  final String title;
+
+  /// The subtitle of the list tile.
+  final String subtitle;
+
+  /// The initial value for the number picker.
+  final int initialValue;
+
+  /// The minimum value for the number picker.
+  final int minValue;
+
+  /// The maximum value for the number picker.
+  final int maxValue;
+
+  /// The callback function to handle the updated number.
+  final Function(int) onUpdate;
+
   @override
   State<NumberPickerListTile> createState() => _NumberPickerListTileState();
 }
 
+/// The state for the [NumberPickerListTile] widget.
+///
+/// This class manages the logic and state for displaying and interacting
+/// with the number picker within the [NumberPickerListTile] widget.
 class _NumberPickerListTileState extends State<NumberPickerListTile> {
   late int _selectedValue;
 
@@ -606,13 +704,38 @@ class _NumberPickerListTileState extends State<NumberPickerListTile> {
   }
 }
 
+/// A widget that displays a list tile with a text picker for selecting options.
+///
+/// The [TextPickerListTile] widget is a stateful widget that allows users to
+/// select a text option from a list of available options. The selected text
+/// is displayed in the list tile, and users can update their selection by
+/// interacting with the tile.
+///
+/// This widget requires a title, subtitle, a list of text options, the
+/// currently selected option, and a callback function to handle updates when
+/// the selection
+/// changes.
+///
+/// Example usage:
+/// ```dart
+/// TextPickerListTile(
+///   title: 'Select Option',
+///   subtitle: 'Choose an item from the list',
+///   textOptions: textItemList,
+///   selected: selectedItem,
+///   onUpdate: (newSelection) {
+///     // Handle the updated selection here
+///   },
+/// );
+/// ```
 class TextPickerListTile<T> extends StatefulWidget {
-  final String title;
-  final String subtitle;
-  final List<TextItem<T>> textOptions;
-  final TextItem<T> selected;
-  final Function(TextItem<T>) onUpdate;
-
+  /// Creates a new [TextPickerListTile] widget.
+  ///
+  /// The [title] and [subtitle] are required to display text in the list tile.
+  /// The [textOptions] parameter provides the list of selectable text options.
+  /// The [selected] parameter defines the currently selected text option, and
+  /// the [onUpdate] callback is required to handle updates when the selection
+  /// is changed.
   const TextPickerListTile({
     super.key,
     required this.title,
@@ -622,10 +745,29 @@ class TextPickerListTile<T> extends StatefulWidget {
     required this.onUpdate,
   });
 
+  /// The title of the list tile.
+  final String title;
+
+  /// The subtitle of the list tile.
+  final String subtitle;
+
+  /// A list of text options that the user can select from.
+  final List<TextItem<T>> textOptions;
+
+  /// The currently selected text option.
+  final TextItem<T> selected;
+
+  /// A callback function to handle updates when the user selects a new option.
+  final Function(TextItem<T>) onUpdate;
+
   @override
   State<TextPickerListTile<T>> createState() => _TextPickerListTileState<T>();
 }
 
+/// The state for the [TextPickerListTile] widget.
+///
+/// This class manages the logic and state for displaying and interacting
+/// with the text picker within the [TextPickerListTile] widget.
 class _TextPickerListTileState<T> extends State<TextPickerListTile<T>> {
   late TextItem<T> _selectedItem;
 
@@ -714,11 +856,34 @@ class _TextPickerListTileState<T> extends State<TextPickerListTile<T>> {
   }
 }
 
+/// A generic class that represents a selectable text item with an associated
+/// value.
+///
+/// The [TextItem] class is used to define items that have a text label and an
+/// associated value. This is useful in cases where the user can select from
+/// a list of options, and each option has both a displayable text and a value
+/// of a specific type [T].
+///
+/// Example usage:
+/// ```dart
+/// TextItem<int>(
+///   value: 1,
+///   text: 'One',
+/// );
+/// ```
 class TextItem<T> {
-  final T value;
-  final String text;
+  /// Creates a new [TextItem] with the given [value] and [text].
+  ///
+  /// The [value] represents the data associated with this item, and [text] is
+  /// the displayable label for this item.
   const TextItem({
     required this.value,
     required this.text,
   });
+
+  /// The value associated with the item.
+  final T value;
+
+  /// The text that will be displayed for this item.
+  final String text;
 }

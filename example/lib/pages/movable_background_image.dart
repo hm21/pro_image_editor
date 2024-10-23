@@ -20,17 +20,19 @@ import '../utils/example_helper.dart';
 import '../utils/pixel_transparent_painter.dart';
 import 'reorder_layer_example.dart';
 
-class MoveableBackgroundImageExample extends StatefulWidget {
-  const MoveableBackgroundImageExample({super.key});
+/// The example for movableBackground
+class MovableBackgroundImageExample extends StatefulWidget {
+  /// Creates a new [MovableBackgroundImageExample] widget.
+  const MovableBackgroundImageExample({super.key});
 
   @override
-  State<MoveableBackgroundImageExample> createState() =>
-      _MoveableBackgroundImageExampleState();
+  State<MovableBackgroundImageExample> createState() =>
+      _MovableBackgroundImageExampleState();
 }
 
-class _MoveableBackgroundImageExampleState
-    extends State<MoveableBackgroundImageExample>
-    with ExampleHelperState<MoveableBackgroundImageExample> {
+class _MovableBackgroundImageExampleState
+    extends State<MovableBackgroundImageExample>
+    with ExampleHelperState<MovableBackgroundImageExample> {
   late final ScrollController _bottomBarScrollCtrl;
   late Uint8List _transparentBytes;
   double _transparentAspectRatio = -1;
@@ -96,7 +98,7 @@ class _MoveableBackgroundImageExampleState
     }
 
     if (!kIsWeb && Platform.isIOS) {
-      showCupertinoModalPopup(
+      await showCupertinoModalPopup(
         context: context,
         builder: (BuildContext context) => CupertinoTheme(
           data: const CupertinoThemeData(),
@@ -136,7 +138,7 @@ class _MoveableBackgroundImageExampleState
         ),
       );
     } else {
-      showModalBottomSheet(
+      await showModalBottomSheet(
         context: context,
         showDragHandle: true,
         constraints: BoxConstraints(
@@ -232,7 +234,7 @@ class _MoveableBackgroundImageExampleState
         LoadingDialog.instance.hide();
 
         if (!context.mounted) return;
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
@@ -310,7 +312,9 @@ class _MoveableBackgroundImageExampleState
                         captureOnlyBackgroundImageArea: false,
                         outputFormat: OutputFormat.png,
 
-                        /// Set the pixel ratio manually. You can also set this value higher than the device pixel ratio for higher quality.
+                        /// Set the pixel ratio manually. You can also set this
+                        /// value higher than the device pixel ratio for higher
+                        /// quality.
                         customPixelRatio: max(
                             2000 / MediaQuery.of(context).size.width,
                             MediaQuery.of(context).devicePixelRatio),
@@ -394,9 +398,13 @@ class _MoveableBackgroundImageExampleState
                             PaintingEditorTheme(background: Colors.transparent),
 
                         /// Optionally remove background
-                        /// cropRotateEditor: CropRotateEditorTheme(background: Colors.transparent),
-                        /// filterEditor: FilterEditorTheme(background: Colors.transparent),
-                        /// blurEditor: BlurEditorTheme(background: Colors.transparent),
+                        /// cropRotateEditor:
+                        ///   CropRotateEditorTheme(background:
+                        ///                                 Colors.transparent),
+                        /// filterEditor:
+                        ///   FilterEditorTheme(background: Colors.transparent),
+                        /// blurEditor:
+                        ///   BlurEditorTheme(background: Colors.transparent),
                       ),
                       stickerEditorConfigs: StickerEditorConfigs(
                         enabled: false,

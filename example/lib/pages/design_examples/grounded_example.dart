@@ -6,24 +6,26 @@ import 'package:example/widgets/demo_build_stickers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-
 // Package imports:
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pro_image_editor/designs/grounded/utils/grounded_configs.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
+import 'package:pro_image_editor/designs/grounded/utils/grounded_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
 import '../../utils/example_helper.dart';
 
+/// The grounded design example
 class GroundedDesignExample extends StatefulWidget {
-  final String url;
-
+  /// Creates a new [GroundedDesignExample] widget.
   const GroundedDesignExample({
     super.key,
     required this.url,
   });
+
+  /// The URL of the image to display.
+  final String url;
 
   @override
   State<GroundedDesignExample> createState() => _GroundedDesignExampleState();

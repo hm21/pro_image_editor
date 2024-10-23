@@ -8,7 +8,9 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// The example how to use the round cropper
 class RoundCropperExample extends StatefulWidget {
+  /// Creates a new [RoundCropperExample] widget.
   const RoundCropperExample({super.key});
 
   @override
@@ -29,7 +31,7 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
 
         bool initialized = false;
 
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>

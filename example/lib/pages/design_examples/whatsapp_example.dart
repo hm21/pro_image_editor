@@ -5,22 +5,24 @@ import 'dart:math';
 import 'package:example/widgets/demo_build_stickers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/designs/whatsapp/whatsapp.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
 import '../../utils/example_helper.dart';
 
+/// The WhatsApp design example
 class WhatsAppExample extends StatefulWidget {
-  final String url;
-
+  /// Creates a new [WhatsAppExample] widget.
   const WhatsAppExample({
     super.key,
     required this.url,
   });
+
+  /// The URL of the image to display.
+  final String url;
 
   @override
   State<WhatsAppExample> createState() => _WhatsAppExampleState();
@@ -38,15 +40,27 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
 
   /// Opens the WhatsApp sticker editor.
   ///
-  /// This method removes the keyboard handler, then depending on the design mode specified in the [configs] parameter of the widget, it either opens the WhatsAppStickerPage directly or shows it as a modal bottom sheet.
+  /// This method removes the keyboard handler, then depending on the design
+  /// mode specified in the [configs] parameter of the widget, it either opens
+  /// the WhatsAppStickerPage directly or shows it as a modal bottom sheet.
   ///
-  /// If the design mode is set to [ImageEditorDesignModeE.material], the WhatsAppStickerPage is opened directly using [_openPage()]. Otherwise, it is displayed as a modal bottom sheet with specific configurations such as transparent background, black barrier color, and controlled scrolling.
+  /// If the design mode is set to [ImageEditorDesignModeE.material], the
+  /// WhatsAppStickerPage is opened directly using [_openPage()]. Otherwise,
+  /// it is displayed as a modal bottom sheet with specific configurations
+  /// such as transparent background, black barrier color, and controlled
+  /// scrolling.
   ///
-  /// After the page is opened and a layer is returned, the keyboard handler is added back. If no layer is returned or the widget is not mounted, the method returns early.
+  /// After the page is opened and a layer is returned, the keyboard handler
+  /// is added back. If no layer is returned or the widget is not mounted,
+  /// the method returns early.
   ///
-  /// If the returned layer's runtime type is not StickerLayerData, the layer's scale is set to the initial scale specified in [emojiEditorConfigs] of the [configs] parameter. Regardless, the layer's offset is set to the center of the image.
+  /// If the returned layer's runtime type is not StickerLayerData, the layer's
+  /// scale is set to the initial scale specified in [emojiEditorConfigs] of
+  /// the [configs] parameter. Regardless, the layer's offset is set to the
+  /// center of the image.
   ///
-  /// Finally, the layer is added, the UI is updated, and the widget's [onUpdateUI] callback is called if provided.
+  /// Finally, the layer is added, the UI is updated, and the widget's
+  /// [onUpdateUI] callback is called if provided.
   void openWhatsAppStickerEditor(ProImageEditorState editor) async {
     editor.removeKeyEventListener();
 
@@ -197,11 +211,11 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
             filterEditorConfigs: FilterEditorConfigs(
               filterList: [
                 const FilterModel(
-                  name: "None",
+                  name: 'None',
                   filters: [],
                 ),
                 FilterModel(
-                  name: "Pop",
+                  name: 'Pop',
                   filters: [
                     ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
                     ColorFilterAddons.saturation(0.1),
@@ -209,7 +223,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                   ],
                 ),
                 FilterModel(
-                  name: "B&W",
+                  name: 'B&W',
                   filters: [
                     ColorFilterAddons.grayscale(),
                     ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
@@ -217,20 +231,20 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
                   ],
                 ),
                 FilterModel(
-                  name: "Cool",
+                  name: 'Cool',
                   filters: [
                     ColorFilterAddons.addictiveColor(0, 0, 20),
                   ],
                 ),
                 FilterModel(
-                  name: "Chrome",
+                  name: 'Chrome',
                   filters: [
                     ColorFilterAddons.contrast(0.15),
                     ColorFilterAddons.saturation(0.2),
                   ],
                 ),
                 FilterModel(
-                  name: "Film",
+                  name: 'Film',
                   filters: [
                     ColorFilterAddons.brightness(.05),
                     ColorFilterAddons.saturation(-0.03),
@@ -332,7 +346,7 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
 
   List<ReactiveCustomWidget> _buildPaintEditorBody(
     PaintingEditorState paintEditor,
-    Stream rebuildStream,
+    Stream<dynamic> rebuildStream,
   ) {
     return [
       ReactiveCustomWidget(
@@ -368,7 +382,9 @@ class _WhatsAppExampleState extends State<WhatsAppExample>
   }
 
   List<ReactiveCustomWidget> _buildTextEditorBody(
-      TextEditorState textEditor, Stream rebuildStream) {
+    TextEditorState textEditor,
+    Stream<dynamic> rebuildStream,
+  ) {
     return [
       /// Color-Picker
       if (_useMaterialDesign)

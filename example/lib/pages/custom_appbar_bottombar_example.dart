@@ -14,7 +14,23 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../utils/example_helper.dart';
 
+/// A widget that demonstrates a custom app bar and bottom bar layout.
+///
+/// The [CustomAppbarBottombarExample] widget is a stateful widget that provides
+/// an example of how to implement a custom app bar at the top and a custom
+/// bottom bar at the bottom of the screen. This is useful in applications
+/// where a unique layout or custom controls are needed in both the app bar
+/// and the bottom bar.
+///
+/// The state for this widget is managed by the
+/// [_CustomAppbarBottombarExampleState] class.
+///
+/// Example usage:
+/// ```dart
+/// CustomAppbarBottombarExample();
+/// ```
 class CustomAppbarBottombarExample extends StatefulWidget {
+  /// Creates a new [CustomAppbarBottombarExample] widget.
   const CustomAppbarBottombarExample({super.key});
 
   @override
@@ -22,6 +38,10 @@ class CustomAppbarBottombarExample extends StatefulWidget {
       _CustomAppbarBottombarExampleState();
 }
 
+/// The state for the [CustomAppbarBottombarExample] widget.
+///
+/// This class manages the layout and behavior of the custom app bar and
+/// bottom bar within the [CustomAppbarBottombarExample] widget.
 class _CustomAppbarBottombarExampleState
     extends State<CustomAppbarBottombarExample>
     with ExampleHelperState<CustomAppbarBottombarExample> {
@@ -108,7 +128,7 @@ class _CustomAppbarBottombarExampleState
         LoadingDialog.instance.hide();
 
         if (!context.mounted) return;
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => _buildEditor()),
         );
       },
@@ -697,18 +717,19 @@ class _CustomAppbarBottombarExampleState
                       ),
                       onPressed: editor.openEmojiEditor,
                     ),
-                    /* Be careful with the sticker editor. It's important you add 
-                             your own logic how to load items in `stickerEditorConfigs`.
-                              FlatIconTextButton(
-                                key: const ValueKey('open-sticker-editor-btn'),
-                                label: Text('Sticker', style: bottomTextStyle),
-                                icon: const Icon(
-                                  Icons.layers_outlined,
-                                  size: 22.0,
-                                  color: Colors.white,
-                                ),
-                                onPressed: editor.openStickerEditor,
-                              ), */
+                    /* Be careful with the sticker editor. It's important you 
+                    add your own logic how to load items in 
+                    `stickerEditorConfigs`.
+                      FlatIconTextButton(
+                        key: const ValueKey('open-sticker-editor-btn'),
+                        label: Text('Sticker', style: bottomTextStyle),
+                        icon: const Icon(
+                          Icons.layers_outlined,
+                          size: 22.0,
+                          color: Colors.white,
+                        ),
+                        onPressed: editor.openStickerEditor,
+                      ), */
                   ],
                 ),
               ),

@@ -8,13 +8,30 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// A widget that demonstrates a standalone feature or functionality.
+///
+/// The [StandaloneExample] widget is a stateful widget intended to showcase
+/// a feature or functionality that works independently, without relying on
+/// external factors. It can be used as an isolated example within a project.
+///
+/// The state for this widget is managed by the [_StandaloneExampleState] class.
+///
+/// Example usage:
+/// ```dart
+/// StandaloneExample();
+/// ```
 class StandaloneExample extends StatefulWidget {
+  /// Creates a new [StandaloneExample] widget.
   const StandaloneExample({super.key});
 
   @override
   State<StandaloneExample> createState() => _StandaloneExampleState();
 }
 
+/// The state for the [StandaloneExample] widget.
+///
+/// This class manages the behavior and state related to the standalone feature
+/// within the [StandaloneExample] widget.
 class _StandaloneExampleState extends State<StandaloneExample>
     with ExampleHelperState<StandaloneExample> {
   final _cropRotateEditorKey = GlobalKey<CropRotateEditorState>();
@@ -47,7 +64,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
                         AssetImage(ExampleConstants.of(context)!.demoAssetPath),
                         context);
                     if (!context.mounted) return;
-                    Navigator.of(context).push(
+                    await Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => _buildPaintingEditor()),
                     );
@@ -66,7 +83,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
 
                     bool initialized = false;
 
-                    Navigator.of(context).push(
+                    await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) {
                         if (!initialized) {
                           initialized = true;
@@ -91,7 +108,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
                         AssetImage(ExampleConstants.of(context)!.demoAssetPath),
                         context);
                     if (!context.mounted) return;
-                    Navigator.of(context).push(
+                    await Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => _buildFilterEditor()),
                     );
@@ -107,7 +124,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
                         AssetImage(ExampleConstants.of(context)!.demoAssetPath),
                         context);
                     if (!context.mounted) return;
-                    Navigator.of(context).push(
+                    await Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => _buildTuneEditor()),
                     );
@@ -123,7 +140,7 @@ class _StandaloneExampleState extends State<StandaloneExample>
                         AssetImage(ExampleConstants.of(context)!.demoAssetPath),
                         context);
                     if (!context.mounted) return;
-                    Navigator.of(context).push(
+                    await Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (context) => _buildBlurEditor()),
                     );
@@ -151,9 +168,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
           designMode: platformDesignMode,
           imageGenerationConfigs: const ImageGenerationConfigs(
 
-              /// If your users paint a lot in a short time, you should disable this
-              /// flag because it will overload the isolated thread which delay the final result
-              /// generateImageInBackground: true,
+              /// If your users paint a lot in a short time, you should disable
+              /// this flag because it will overload the isolated thread which
+              /// delay the final result generateImageInBackground: true,
               ),
         ),
         onImageEditingStarted: onImageEditingStarted,
@@ -174,8 +191,9 @@ class _StandaloneExampleState extends State<StandaloneExample>
           designMode: platformDesignMode,
           imageGenerationConfigs: const ImageGenerationConfigs(
 
-              /// If your users change a lot stuff in a short time, you should disable this
-              /// flag because it will overload the isolated thread which delay the final result.
+              /// If your users change a lot stuff in a short time, you should
+              /// disable this flag because it will overload the isolated
+              /// thread which delay the final result.
               /// generateImageInBackground: true,
               ),
         ),

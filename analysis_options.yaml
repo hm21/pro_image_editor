@@ -9,6 +9,7 @@ analyzer:
 
 linter:
   rules:
+    - unnecessary_library_name
     - public_member_api_docs
     - annotate_overrides
     - avoid_empty_else

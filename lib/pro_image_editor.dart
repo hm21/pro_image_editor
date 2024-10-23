@@ -1,6 +1,6 @@
 // ignore_for_file: directives_ordering
 
-library pro_image_editor;
+library;
 
 /// Emoji
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'

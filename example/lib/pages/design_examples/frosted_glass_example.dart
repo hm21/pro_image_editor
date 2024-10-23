@@ -5,22 +5,24 @@ import 'dart:math';
 import 'package:example/widgets/demo_build_stickers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
 import '../../utils/example_helper.dart';
 
+/// The frosted glass design example
 class FrostedGlassExample extends StatefulWidget {
-  final String url;
-
+  /// Creates a new [FrostedGlassExample] widget.
   const FrostedGlassExample({
     super.key,
     required this.url,
   });
+
+  /// The URL of the image to display.
+  final String url;
 
   @override
   State<FrostedGlassExample> createState() => _FrostedGlassExampleState();
@@ -244,7 +246,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
 
   List<ReactiveCustomWidget> _buildMainBodyWidgets(
     ProImageEditorState editor,
-    Stream rebuildStream,
+    Stream<dynamic> rebuildStream,
   ) {
     return [
       if (editor.selectedLayerIndex < 0)
@@ -260,7 +262,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
 
   List<ReactiveCustomWidget> _buildPaintEditorBody(
     PaintingEditorState paintEditor,
-    Stream rebuildStream,
+    Stream<dynamic> rebuildStream,
   ) {
     return [
       /// Appbar
@@ -283,7 +285,7 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
 
   List<ReactiveCustomWidget> _buildTuneEditorBody(
     TuneEditorState tuneEditor,
-    Stream rebuildStream,
+    Stream<dynamic> rebuildStream,
   ) {
     return [
       /// Appbar
@@ -303,7 +305,9 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
   }
 
   List<ReactiveCustomWidget> _buildTextEditorBody(
-      TextEditorState textEditor, Stream rebuildStream) {
+    TextEditorState textEditor,
+    Stream<dynamic> rebuildStream,
+  ) {
     return [
       /// Background
       ReactiveCustomWidget(

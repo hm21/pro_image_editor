@@ -11,7 +11,9 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../utils/example_constants.dart';
 import 'whatsapp_example.dart';
 
+/// The design example widget
 class DesignExample extends StatefulWidget {
+  /// Creates a new [DesignExample] widget.
   const DesignExample({super.key});
 
   @override
@@ -113,7 +115,7 @@ class _DesignExampleState extends State<DesignExample>
     LoadingDialog.instance.hide();
 
     if (mounted) {
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => example,
         ),

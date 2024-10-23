@@ -9,13 +9,16 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../../utils/example_helper.dart';
 
+/// The custom design example
 class HighlyConfigurableExample extends StatefulWidget {
-  final String url;
-
+  /// Creates a new [HighlyConfigurableExample] widget.
   const HighlyConfigurableExample({
     super.key,
     required this.url,
   });
+
+  /// The URL of the image to display.
+  final String url;
 
   @override
   State<HighlyConfigurableExample> createState() =>
@@ -40,7 +43,8 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             loadingDialogMsg: 'Please wait...',
             closeEditorWarningTitle: 'Close Image Editor?',
             closeEditorWarningMessage:
-                'Are you sure you want to close the Image Editor? Your changes will not be saved.',
+                'Are you sure you want to close the Image Editor? Your changes '
+                'will not be saved.',
             closeEditorWarningConfirmBtn: 'OK',
             closeEditorWarningCancelBtn: 'Cancel',
           ),

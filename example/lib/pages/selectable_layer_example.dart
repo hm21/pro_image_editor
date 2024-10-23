@@ -8,13 +8,32 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// A widget that demonstrates a selectable layer functionality.
+///
+/// The [SelectableLayerExample] widget is a stateful widget that allows users
+/// to interact with and select different layers within an editor or a similar
+/// application. This feature is commonly used in image or graphic editors
+/// where users can manipulate individual layers.
+///
+/// The state for this widget is managed by the [_SelectableLayerExampleState]
+/// class.
+///
+/// Example usage:
+/// ```dart
+/// SelectableLayerExample();
+/// ```
 class SelectableLayerExample extends StatefulWidget {
+  /// Creates a new [SelectableLayerExample] widget.
   const SelectableLayerExample({super.key});
 
   @override
   State<SelectableLayerExample> createState() => _SelectableLayerExampleState();
 }
 
+/// The state for the [SelectableLayerExample] widget.
+///
+/// This class manages the behavior and state related to the selectable layers
+/// within the [SelectableLayerExample] widget.
 class _SelectableLayerExampleState extends State<SelectableLayerExample>
     with ExampleHelperState<SelectableLayerExample> {
   @override
@@ -24,7 +43,7 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
         await precacheImage(
             AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
         if (!context.mounted) return;
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => _buildEditor(),
@@ -59,8 +78,10 @@ class _SelectableLayerExampleState extends State<SelectableLayerExample>
           /// Choose between `auto`, `enabled` and `disabled`.
           ///
           /// Mode `auto`:
-          /// Automatically determines if the layer is selectable based on the device type.
-          /// If the device is a desktop-device, the layer is selectable; otherwise, the layer is not selectable.
+          /// Automatically determines if the layer is selectable based on the
+          /// device type.
+          /// If the device is a desktop-device, the layer is selectable;
+          /// otherwise, the layer is not selectable.
           selectable: LayerInteractionSelectable.enabled,
           initialSelected: true,
         ),

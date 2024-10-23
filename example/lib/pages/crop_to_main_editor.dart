@@ -10,7 +10,22 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../utils/example_helper.dart';
 
+/// A widget that demonstrates cropping functionality in the main editor.
+///
+/// The [CropToMainEditorExample] widget is a stateful widget that provides an
+/// example of how to implement cropping within a main editor interface, such as
+/// an image editor. This can be used to allow users to select and crop a
+/// portion of an image or other content.
+///
+/// The state for this widget is managed by the [_CropToMainEditorExampleState]
+/// class.
+///
+/// Example usage:
+/// ```dart
+/// CropToMainEditorExample();
+/// ```
 class CropToMainEditorExample extends StatefulWidget {
+  /// Creates a new [CropToMainEditorExample] widget.
   const CropToMainEditorExample({super.key});
 
   @override
@@ -18,6 +33,10 @@ class CropToMainEditorExample extends StatefulWidget {
       _CropToMainEditorExampleState();
 }
 
+/// The state for the [CropToMainEditorExample] widget.
+///
+/// This class manages the logic and state required for cropping functionality
+/// within the [CropToMainEditorExample] widget.
 class _CropToMainEditorExampleState extends State<CropToMainEditorExample>
     with ExampleHelperState<CropToMainEditorExample> {
   final ProImageEditorConfigs _editorConfigs = ProImageEditorConfigs(

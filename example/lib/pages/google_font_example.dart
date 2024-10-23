@@ -15,7 +15,9 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// The google font example
 class GoogleFontExample extends StatefulWidget {
+  /// Creates a new [GoogleFontExample] widget.
   const GoogleFontExample({super.key});
 
   @override
@@ -31,7 +33,7 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
         await precacheImage(
             AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
         if (!context.mounted) return;
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => _buildEditor(),
           ),
