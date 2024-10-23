@@ -276,11 +276,9 @@ class ContentRecorderController {
         useThumbnailSize,
       );
       if (isOutputSizeTooLarge) {
-        outputRatio = min(
-          _maxOutputDimension(useThumbnailSize).width /
-              imageInfos.renderedSize.width,
-          _maxOutputDimension(useThumbnailSize).height /
-              imageInfos.renderedSize.height,
+        outputRatio = max(
+          _maxOutputDimension(useThumbnailSize).width / boundary.size.width,
+          _maxOutputDimension(useThumbnailSize).height / boundary.size.height,
         );
       }
 
@@ -294,8 +292,10 @@ class ContentRecorderController {
             ? imageInfos.cropRectSize.aspectRatio
             : 1 / imageInfos.cropRectSize.aspectRatio;
 
-        Size convertedImgSize =
-            Size(image.width.toDouble(), image.height.toDouble());
+        Size convertedImgSize = Size(
+          image.width.toDouble(),
+          image.height.toDouble(),
+        );
 
         double convertedImgWidth = convertedImgSize.width;
         double convertedImgHeight = convertedImgSize.height;
@@ -323,9 +323,10 @@ class ContentRecorderController {
           Paint(),
         );
 
-        image = await recorder
-            .endRecording()
-            .toImage(cropWidth.ceil(), cropHeight.ceil());
+        image = await recorder.endRecording().toImage(
+              cropWidth.ceil(),
+              cropHeight.ceil(),
+            );
       }
 
       return image;
