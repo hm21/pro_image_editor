@@ -130,7 +130,7 @@ class ExportStateHistory {
           'filters': element.filters,
         if (_configs.exportTuneAdjustments &&
             element.tuneAdjustments.isNotEmpty)
-          'tune': element.tuneAdjustments.map((item) => item.toMap()),
+          'tune': element.tuneAdjustments.map((item) => item.toMap()).toList(),
         'blur': element.blur,
         if (transformConfigsMap.isNotEmpty) 'transform': transformConfigsMap,
       });
