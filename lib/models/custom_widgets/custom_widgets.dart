@@ -10,6 +10,7 @@ export 'custom_widgets_filter_editor.dart';
 export 'custom_widgets_main_editor.dart';
 export 'custom_widgets_paint_editor.dart';
 export 'custom_widgets_text_editor.dart';
+export 'custom_widgets_tune_editor.dart';
 
 /// The `ImageEditorCustomWidgets` class encapsulates custom widget components
 /// that can be used within various parts of the application's user interface.
@@ -27,6 +28,7 @@ class ImageEditorCustomWidgets {
     this.cropRotateEditor = const CustomWidgetsCropRotateEditor(),
     this.filterEditor = const CustomWidgetsFilterEditor(),
     this.blurEditor = const CustomWidgetsBlurEditor(),
+    this.tuneEditor = const CustomWidgetsTuneEditor(),
     this.layerInteraction = const CustomWidgetsLayerInteraction(),
   });
 
@@ -44,6 +46,9 @@ class ImageEditorCustomWidgets {
 
   /// The filter editor instance.
   final CustomWidgetsFilterEditor filterEditor;
+
+  /// The tune editor instance.
+  final CustomWidgetsTuneEditor tuneEditor;
 
   /// The blur editor instance.
   final CustomWidgetsBlurEditor blurEditor;
@@ -131,6 +136,7 @@ class ImageEditorCustomWidgets {
     CustomWidgetsTextEditor? textEditor,
     CustomWidgetsCropRotateEditor? cropRotateEditor,
     CustomWidgetsFilterEditor? filterEditor,
+    CustomWidgetsTuneEditor? tuneEditor,
     CustomWidgetsBlurEditor? blurEditor,
     Widget Function(String message, ProImageEditorConfigs configs)?
         loadingDialog,
@@ -143,6 +149,7 @@ class ImageEditorCustomWidgets {
       textEditor: textEditor ?? this.textEditor,
       cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
       filterEditor: filterEditor ?? this.filterEditor,
+      tuneEditor: tuneEditor ?? this.tuneEditor,
       blurEditor: blurEditor ?? this.blurEditor,
       loadingDialog: loadingDialog ?? this.loadingDialog,
       circularProgressIndicator:

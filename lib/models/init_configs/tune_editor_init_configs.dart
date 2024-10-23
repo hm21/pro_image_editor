@@ -1,18 +1,18 @@
 // Project imports:
 import 'editor_init_configs.dart';
 
-/// Configuration class for initializing the filter editor.
+/// Configuration class for initializing the tune editor.
 ///
 /// This class extends [EditorInitConfigs] and adds a parameter to determine
 /// whether to return the image as a Uint8List when closing the editor.
-class FilterEditorInitConfigs extends EditorInitConfigs {
-  /// Creates a new instance of [FilterEditorInitConfigs].
+class TuneEditorInitConfigs extends EditorInitConfigs {
+  /// Creates a new instance of [TuneEditorInitConfigs].
   ///
   /// The [theme] parameter specifies the theme data for the editor.
   /// The [convertToUint8List] parameter determines whether to return the image
   /// as a Uint8List when closing the editor.
   /// The other parameters are inherited from [EditorInitConfigs].
-  const FilterEditorInitConfigs({
+  const TuneEditorInitConfigs({
     super.transformConfigs,
     super.configs,
     super.callbacks,

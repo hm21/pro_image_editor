@@ -19,6 +19,7 @@ import 'paint_editor_configs.dart';
 import 'state_history_configs.dart';
 import 'sticker_editor_configs.dart';
 import 'text_editor_configs.dart';
+import 'tune_editor_configs.dart';
 
 export '../../utils/design_mode.dart';
 export '../../utils/pro_image_editor_mode.dart';
@@ -39,6 +40,7 @@ export 'paint_editor_configs.dart';
 export 'state_history_configs.dart';
 export 'sticker_editor_configs.dart';
 export 'text_editor_configs.dart';
+export 'tune_editor_configs.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -101,6 +103,7 @@ class ProImageEditorConfigs {
     this.textEditorConfigs = const TextEditorConfigs(),
     this.cropRotateEditorConfigs = const CropRotateEditorConfigs(),
     this.filterEditorConfigs = const FilterEditorConfigs(),
+    this.tuneEditorConfigs = const TuneEditorConfigs(),
     this.blurEditorConfigs = const BlurEditorConfigs(),
     this.emojiEditorConfigs = const EmojiEditorConfigs(),
     this.stickerEditorConfigs,
@@ -146,6 +149,9 @@ class ProImageEditorConfigs {
   /// Configuration options for the Filter Editor.
   final FilterEditorConfigs filterEditorConfigs;
 
+  /// Configuration options for the tune Editor.
+  final TuneEditorConfigs tuneEditorConfigs;
+
   /// Configuration options for the Blur Editor.
   final BlurEditorConfigs blurEditorConfigs;
 
@@ -182,6 +188,7 @@ class ProImageEditorConfigs {
     TextEditorConfigs? textEditorConfigs,
     CropRotateEditorConfigs? cropRotateEditorConfigs,
     FilterEditorConfigs? filterEditorConfigs,
+    TuneEditorConfigs? tuneEditorConfigs,
     BlurEditorConfigs? blurEditorConfigs,
     EmojiEditorConfigs? emojiEditorConfigs,
     StickerEditorConfigs? stickerEditorConfigs,
@@ -205,6 +212,7 @@ class ProImageEditorConfigs {
       cropRotateEditorConfigs:
           cropRotateEditorConfigs ?? this.cropRotateEditorConfigs,
       filterEditorConfigs: filterEditorConfigs ?? this.filterEditorConfigs,
+      tuneEditorConfigs: tuneEditorConfigs ?? this.tuneEditorConfigs,
       blurEditorConfigs: blurEditorConfigs ?? this.blurEditorConfigs,
       emojiEditorConfigs: emojiEditorConfigs ?? this.emojiEditorConfigs,
       stickerEditorConfigs: stickerEditorConfigs ?? this.stickerEditorConfigs,

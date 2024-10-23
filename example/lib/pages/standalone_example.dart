@@ -98,6 +98,22 @@ class _StandaloneExampleState extends State<StandaloneExample>
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.tune_rounded),
+                  title: const Text('Tune-Adjustment-Editor'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await precacheImage(
+                        AssetImage(ExampleConstants.of(context)!.demoAssetPath),
+                        context);
+                    if (!context.mounted) return;
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => _buildTuneEditor()),
+                    );
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.blur_on),
                   title: const Text('Blur-Editor'),
                   trailing: const Icon(Icons.chevron_right),
@@ -174,6 +190,22 @@ class _StandaloneExampleState extends State<StandaloneExample>
     return FilterEditor.asset(
       ExampleConstants.of(context)!.demoAssetPath,
       initConfigs: FilterEditorInitConfigs(
+        theme: ThemeData.dark(),
+        convertToUint8List: true,
+        onImageEditingStarted: onImageEditingStarted,
+        onImageEditingComplete: onImageEditingComplete,
+        onCloseEditor: onCloseEditor,
+        configs: ProImageEditorConfigs(
+          designMode: platformDesignMode,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTuneEditor() {
+    return TuneEditor.asset(
+      ExampleConstants.of(context)!.demoAssetPath,
+      initConfigs: TuneEditorInitConfigs(
         theme: ThemeData.dark(),
         convertToUint8List: true,
         onImageEditingStarted: onImageEditingStarted,

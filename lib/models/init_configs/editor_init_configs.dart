@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/modules/filter_editor/types/filter_matrix.dart';
 import '../../pro_image_editor.dart';
 import '../crop_rotate_editor/transform_factors.dart';
+import '../tune_editor/tune_adjustment_matrix.dart';
 
 /// Configuration class for initializing the image editor.
 ///
@@ -35,6 +36,7 @@ abstract class EditorInitConfigs {
     this.mainBodySize,
     this.transformConfigs,
     this.appliedFilters = const [],
+    this.appliedTuneAdjustments = const [],
     this.appliedBlurFactor = 0,
     this.layers,
     this.onCloseEditor,
@@ -57,6 +59,9 @@ abstract class EditorInitConfigs {
 
   /// The list of applied filters.
   final FilterMatrix appliedFilters;
+
+  /// The list of applied tune adjustments.
+  final List<TuneAdjustmentMatrix> appliedTuneAdjustments;
 
   /// The applied blur factor.
   final double appliedBlurFactor;

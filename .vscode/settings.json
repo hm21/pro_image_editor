@@ -16,5 +16,8 @@
         "unawaited",
         "uvac",
         "uvdc"
-    ]
+    ],
+    "diffEditor.experimental.showEmptyDecorations": true,
+    "diffEditor.hideUnchangedRegions.enabled": false,
+    "editor.minimap.showMarkSectionHeaders": true
 }

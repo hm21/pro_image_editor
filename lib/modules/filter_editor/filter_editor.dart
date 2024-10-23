@@ -24,8 +24,7 @@ export 'utils/filter_generator/filter_model.dart';
 export 'utils/filter_generator/filter_presets.dart';
 export 'widgets/filter_editor_item_list.dart';
 
-/// The `FilterEditor` widget allows users to editing images with painting
-/// tools.
+/// The `FilterEditor` widget allows users to editing images with filters
 ///
 /// You can create a `FilterEditor` using one of the factory methods provided:
 /// - `FilterEditor.file`: Loads an image from a file.
@@ -322,6 +321,7 @@ class FilterEditorState extends State<FilterEditor>
                         configs: configs,
                         image: editorImage,
                         filters: _getActiveFilters(),
+                        tuneAdjustments: appliedTuneAdjustments,
                         blurFactor: appliedBlurFactor,
                       );
                     }),

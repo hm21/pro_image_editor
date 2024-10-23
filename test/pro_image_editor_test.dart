@@ -211,14 +211,17 @@ void main() {
               onImageEditingComplete: (Uint8List bytes) async {},
             ),
             configs: ProImageEditorConfigs(
+              paintEditorConfigs: const PaintEditorConfigs(enabled: false),
+              textEditorConfigs: const TextEditorConfigs(enabled: false),
+              cropRotateEditorConfigs:
+                  const CropRotateEditorConfigs(enabled: false),
               emojiEditorConfigs: const EmojiEditorConfigs(
                 enabled: false,
               ),
               stickerEditorConfigs: StickerEditorConfigs(
                 enabled: true,
-                buildStickers: (setLayer, scrollController) => Container(
-                  key: widgetKey,
-                ),
+                buildStickers: (setLayer, scrollController) =>
+                    Container(key: widgetKey),
               ),
               imageEditorTheme: ImageEditorTheme(
                 stickerEditor: StickerEditorTheme(
@@ -230,7 +233,6 @@ void main() {
           ),
         ),
       );
-
       final openBtn = find.byKey(const ValueKey('open-sticker-editor-btn'));
       expect(openBtn, findsOneWidget);
       await tester.tap(openBtn);
@@ -256,6 +258,10 @@ void main() {
               onImageEditingComplete: (Uint8List bytes) async {},
             ),
             configs: ProImageEditorConfigs(
+              paintEditorConfigs: const PaintEditorConfigs(enabled: false),
+              textEditorConfigs: const TextEditorConfigs(enabled: false),
+              cropRotateEditorConfigs:
+                  const CropRotateEditorConfigs(enabled: false),
               emojiEditorConfigs: const EmojiEditorConfigs(
                 enabled: false,
               ),

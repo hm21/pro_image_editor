@@ -13,6 +13,7 @@ class ExportEditorConfigs {
     this.exportText = true,
     this.exportCropRotate = true,
     this.exportFilter = true,
+    this.exportTuneAdjustments = true,
     this.exportEmoji = true,
     this.exportSticker = true,
   });
@@ -41,6 +42,11 @@ class ExportEditorConfigs {
   ///
   /// Defaults to `true`.
   final bool exportFilter;
+
+  /// Whether to export the applied tune adjustments.
+  ///
+  /// Defaults to `true`.
+  final bool exportTuneAdjustments;
 
   /// Whether to export the emojis.
   ///

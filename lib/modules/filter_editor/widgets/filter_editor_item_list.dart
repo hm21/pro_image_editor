@@ -3,6 +3,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/models/tune_editor/tune_adjustment_matrix.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
@@ -18,6 +19,7 @@ class FilterEditorItemList extends StatefulWidget {
     super.key,
     required this.editorImage,
     this.activeFilters,
+    this.activeTuneAdjustments = const [],
     this.blurFactor,
     this.itemScaleFactor,
     this.transformConfigs,
@@ -49,6 +51,9 @@ class FilterEditorItemList extends StatefulWidget {
   /// If provided, this list contains the history of active filters applied to
   /// the image.
   final FilterMatrix? activeFilters;
+
+  /// Specifies the list of active tune adjustments state histories.
+  final List<TuneAdjustmentMatrix> activeTuneAdjustments;
 
   /// Specifies the blur factor.
   final double? blurFactor;
@@ -287,6 +292,7 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
                     ...(widget.activeFilters ?? []),
                     ...filter.filters,
                   ],
+                  tuneAdjustments: widget.activeTuneAdjustments,
                   configs: widget.configs,
                   blurFactor: widget.blurFactor ?? 0,
                 ),

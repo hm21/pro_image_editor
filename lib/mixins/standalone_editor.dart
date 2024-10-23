@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/mixins/converted_callbacks.dart';
+import 'package:pro_image_editor/models/tune_editor/tune_adjustment_matrix.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../models/crop_rotate_editor/transform_factors.dart';
 import '../models/init_configs/editor_init_configs.dart';
@@ -59,6 +60,10 @@ mixin StandaloneEditorState<T extends StatefulWidget,
 
   /// Returns the applied filters.
   FilterMatrix get appliedFilters => initConfigs.appliedFilters;
+
+  /// Returns the applied tune adjustments.
+  List<TuneAdjustmentMatrix> get appliedTuneAdjustments =>
+      initConfigs.appliedTuneAdjustments;
 
   /// Returns the body size with layers.
   Size? get mainBodySize => initConfigs.mainBodySize;

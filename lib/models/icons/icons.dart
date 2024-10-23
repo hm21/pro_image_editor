@@ -10,6 +10,7 @@ import 'icons_layer_interaction.dart';
 import 'icons_painting_editor.dart';
 import 'icons_sticker_editor.dart';
 import 'icons_text_editor.dart';
+import 'icons_tune_editor.dart';
 
 export 'icons_blur_editor.dart';
 export 'icons_crop_rotate_editor.dart';
@@ -19,6 +20,7 @@ export 'icons_layer_interaction.dart';
 export 'icons_painting_editor.dart';
 export 'icons_sticker_editor.dart';
 export 'icons_text_editor.dart';
+export 'icons_tune_editor.dart';
 
 /// Customizable icons for the Image Editor component.
 class ImageEditorIcons {
@@ -94,6 +96,7 @@ class ImageEditorIcons {
     this.textEditor = const IconsTextEditor(),
     this.cropRotateEditor = const IconsCropRotateEditor(),
     this.filterEditor = const IconsFilterEditor(),
+    this.tuneEditor = const IconsTuneEditor(),
     this.blurEditor = const IconsBlurEditor(),
     this.emojiEditor = const IconsEmojiEditor(),
     this.stickerEditor = const IconsStickerEditor(),
@@ -140,6 +143,9 @@ class ImageEditorIcons {
   /// Icons for the Filter Editor component.
   final IconsFilterEditor filterEditor;
 
+  /// Icons for the tune Editor component.
+  final IconsTuneEditor tuneEditor;
+
   /// Icons for the Blur Editor component.
   final IconsBlurEditor blurEditor;
 
@@ -170,6 +176,7 @@ class ImageEditorIcons {
     IconsTextEditor? textEditor,
     IconsCropRotateEditor? cropRotateEditor,
     IconsFilterEditor? filterEditor,
+    IconsTuneEditor? tuneEditor,
     IconsBlurEditor? blurEditor,
     IconsEmojiEditor? emojiEditor,
     IconsStickerEditor? stickerEditor,
@@ -187,6 +194,7 @@ class ImageEditorIcons {
       textEditor: textEditor ?? this.textEditor,
       cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
       filterEditor: filterEditor ?? this.filterEditor,
+      tuneEditor: tuneEditor ?? this.tuneEditor,
       blurEditor: blurEditor ?? this.blurEditor,
       emojiEditor: emojiEditor ?? this.emojiEditor,
       stickerEditor: stickerEditor ?? this.stickerEditor,

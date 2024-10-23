@@ -95,7 +95,8 @@ class _DesignExampleState extends State<DesignExample>
       },
       leading: const Icon(Icons.palette_outlined),
       title: const Text('Multiple designs'),
-      subtitle: const Text('WhatsApp, Frosted-Glass or custom design'),
+      subtitle:
+          const Text('Grounded, WhatsApp, Frosted-Glass or custom design'),
       trailing: const Icon(Icons.chevron_right),
     );
   }

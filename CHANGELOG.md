@@ -1,21 +1,28 @@
 # Changelog
 
+## 6.0.0
+- **FEAT**(Tune-Editor): Introduced the new "Tune" editor, enabling users to adjust image contrast, saturation, and brightness for enhanced control over image tuning.
+
+- **CHORE**(Dependency): Update `image` dependency to version `4.3.0`.
+- **CHORE**(Dependency): Update `vibration` dependency to version `2.0.1`.
+- **CHORE**(Dependency): Update `mime` dependency to version `2.0.0`.
+
 ## 5.4.2
-- **Fix**(Painting-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolve issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
+- **FIX**(Painting-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolve issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
 
 ## 5.4.1
-- **Feat**(Emoji-Editor): Update the emoji-editor to version `3.1.0` with custom view order configuration support.
+- **FEAT**(Emoji-Editor): Update the emoji-editor to version `3.1.0` with custom view order configuration support.
 
 ## 5.4.0
-- **Feat**(Filter): Filter-preview widgets are now animated with a default fadeInUp effect.
-- **Feat**(Layer-Interaction): Toolbars will no longer hide by default when interacting with a layer. To restore the previous behavior, set `hideToolbarOnInteraction` to true in the `layerInteraction` settings.
-- **Feat**(Design): Introduced a new design theme called "Grounded".
+- **FEAT**(Filter): Filter-preview widgets are now animated with a default fadeInUp effect.
+- **FEAT**(Layer-Interaction): Toolbars will no longer hide by default when interacting with a layer. To restore the previous behavior, set `hideToolbarOnInteraction` to true in the `layerInteraction` settings.
+- **FEAT**(Design): Introduced a new design theme called "Grounded".
 
 ## 5.3.0
-- **Feat**(Custom-Widgets): add custom widgets to replace layer interaction buttons (edit, remove, rotateScale)
+- **FEAT**(Custom-Widgets): add custom widgets to replace layer interaction buttons (edit, remove, rotateScale)
 
 ## 5.2.3
-- **Fix**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolve issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
+- **FIX**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolve issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
 
 ## 5.2.2
 - **FIX**(Frosted-Glass): Resolve issue that loading-dialog didn't use the text from the i18n class.

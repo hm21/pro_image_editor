@@ -1,4 +1,5 @@
 // Project imports:
+import 'package:pro_image_editor/models/tune_editor/tune_adjustment_matrix.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../../models/crop_rotate_editor/transform_factors.dart';
 import '../../../models/multi_threading/thread_capture_model.dart';
@@ -14,6 +15,10 @@ class StateManager {
 
   /// Get the list of filters from the current image editor changes.
   FilterMatrix get activeFilters => stateHistory[position].filters;
+
+  /// Get the list of tune adjustments from the current image editor changes.
+  List<TuneAdjustmentMatrix> get activeTuneAdjustments =>
+      stateHistory[position].tuneAdjustments;
 
   /// Get the transformConfigurations from the crop/ rotate editor.
   TransformConfigs get transformConfigs =>

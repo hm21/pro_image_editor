@@ -13,6 +13,7 @@ import 'package:pro_image_editor/models/import_export/import_state_history_confi
 import 'package:pro_image_editor/models/layer/layer.dart';
 import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_addons.dart';
 import '../history/state_history.dart';
+import '../tune_editor/tune_adjustment_matrix.dart';
 import 'utils/export_import_version.dart';
 
 /// This class represents the state history of an imported editor session.
@@ -61,6 +62,7 @@ class ImportStateHistory {
         layers.add(Layer.fromMap(layer, stickers));
       }
 
+      List<TuneAdjustmentMatrix> tuneAdjustments = [];
       List<List<double>> filters = [];
       if (version == ExportImportVersion.version_1_0_0) {
         for (var el in List.from(el['filters'] ?? [])) {
@@ -74,6 +76,7 @@ class ImportStateHistory {
           filters.addAll(filterMatrix);
         }
       } else {
+        /// convert filters
         List<List<double>> filterList = [];
         for (var el in List.from(el['filters'] ?? [])) {
           List<double> filtersRaw = [];
@@ -86,6 +89,13 @@ class ImportStateHistory {
         }
 
         filters = filterList;
+
+        /// convert tune adjustments
+        List<TuneAdjustmentMatrix> tuneList = List.from(el['tune'] ?? [])
+            .map((el) => TuneAdjustmentMatrix.fromMap(el))
+            .toList();
+
+        tuneAdjustments = tuneList;
       }
 
       stateHistory.add(
@@ -93,6 +103,7 @@ class ImportStateHistory {
           blur: blur,
           layers: layers,
           filters: filters,
+          tuneAdjustments: tuneAdjustments,
           transformConfigs:
               el['transform'] != null && Map.from(el['transform']).isNotEmpty
                   ? TransformConfigs.fromMap(el['transform'])

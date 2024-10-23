@@ -2329,6 +2329,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             children: [
               FilteredImage(
                 filters: appliedFilters,
+                tuneAdjustments: appliedTuneAdjustments,
                 blurFactor: appliedBlurFactor,
                 configs: configs,
                 width: _imgWidth,
@@ -2379,6 +2380,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   configs: configs,
                   image: editorImage,
                   filters: appliedFilters,
+                  tuneAdjustments: appliedTuneAdjustments,
                   blurFactor: appliedBlurFactor,
                 ),
               ),
@@ -2430,6 +2432,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           configs: configs,
           image: editorImage,
           filters: appliedFilters,
+          tuneAdjustments: appliedTuneAdjustments,
           blurFactor: appliedBlurFactor,
         ),
       ),

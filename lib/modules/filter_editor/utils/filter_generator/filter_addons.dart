@@ -344,4 +344,147 @@ class ColorFilterAddons {
   static List<double> opacity(double value) {
     return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, value, 0];
   }
+
+  /// Generates an exposure adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the exposure of an image
+  /// by the specified value.
+  ///
+  /// Parameters:
+  /// - [value]: The exposure adjustment factor, where positive values increase
+  ///   exposure (brighten the image) and negative values decrease exposure
+  ///   (darken the image).
+  static List<double> exposure(double value) {
+    // Exposure adjustment affects all color channels uniformly.
+    double exposureFactor = pow(2, value).toDouble();
+    return [
+      exposureFactor, 0, 0, 0, 0, // Red channel
+      0, exposureFactor, 0, 0, 0, // Green channel
+      0, 0, exposureFactor, 0, 0, // Blue channel
+      0, 0, 0, 1, 0 // Alpha channel (no change)
+    ];
+  }
+
+  /// Generates a sharpness adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the sharpness of an image
+  /// by blending a high-contrast version of the image with the original.
+  ///
+  /// Parameters:
+  /// - [value]: The sharpness adjustment factor, where positive values increase
+  ///   sharpness and negative values decrease sharpness.
+  static List<double> sharpness(double value) {
+    // This sharpness adjustment works similarly to contrast but blends with
+    //the original image.
+    double factor = 1 + value * 2;
+    return [
+      factor,
+      0,
+      0,
+      0,
+      -(factor - 1) * 128,
+      0,
+      factor,
+      0,
+      0,
+      -(factor - 1) * 128,
+      0,
+      0,
+      factor,
+      0,
+      -(factor - 1) * 128,
+      0,
+      0,
+      0,
+      1,
+      0
+    ];
+  }
+
+  /// Generates a fade effect filter matrix.
+  ///
+  /// This method returns a color matrix that reduces contrast and desaturates
+  /// the image, creating a faded effect.
+  ///
+  /// Parameters:
+  /// - [value]: The intensity of the fade effect, where higher values make the
+  ///   image more faded (less contrast and saturation).
+  static List<double> fade(double value) {
+    if (value == 0) {
+      return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
+    }
+
+    double fadeValue = 1 - value; // The amount of color to preserve
+    const double lumR = 0.3086; // Standard luminance for red
+    const double lumG = 0.6094; // Standard luminance for green
+    const double lumB = 0.082; // Standard luminance for blue
+
+    return [
+      fadeValue + value * lumR, // Red channel influence fades towards grayscale
+      value * lumG, // Green channel influence fades towards grayscale
+      value * lumB, // Blue channel influence fades towards grayscale
+      0,
+      0,
+      value *
+          lumR, // Red channel fades towards grayscale in the green component
+      fadeValue + value * lumG, // Green channel fades
+      value * lumB, // Blue channel fades
+      0,
+      0,
+      value * lumR, // Red channel fades towards grayscale in the blue component
+      value * lumG, // Green channel fades
+      fadeValue + value * lumB, // Blue channel fades
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ];
+  }
+
+  /// Generates a luminance adjustment filter matrix.
+  ///
+  /// This method returns a color matrix that adjusts the brightness of an image
+  /// based on human perception of color intensity.
+  ///
+  /// Parameters:
+  /// - [value]: The luminance adjustment factor, where higher values increase
+  ///   brightness and lower values decrease brightness.
+  static List<double> luminance(double value) {
+    if (value == 0) {
+      return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
+    }
+
+    const double lumR = 0.2126;
+    const double lumG = 0.7152;
+    const double lumB = 0.0722;
+
+    // Calculate how much luminance (grayscale) effect to apply
+    double adjustedValue = 1 - value;
+
+    return [
+      lumR * value + adjustedValue, // Red channel luminance adjustment
+      lumG * value, // Green channel luminance adjustment
+      lumB * value, // Blue channel luminance adjustment
+      0,
+      0, // No offset; luminance is handled by the matrix
+      lumR * value, // Red channel luminance
+      lumG * value + adjustedValue, // Green channel luminance adjustment
+      lumB * value, // Blue channel luminance adjustment
+      0,
+      0,
+      lumR * value, // Red channel luminance
+      lumG * value, // Green channel luminance
+      lumB * value + adjustedValue, // Blue channel luminance adjustment
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ];
+  }
 }

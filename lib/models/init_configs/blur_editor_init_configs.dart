@@ -21,6 +21,7 @@ class BlurEditorInitConfigs extends EditorInitConfigs {
     super.mainImageSize,
     super.mainBodySize,
     super.appliedFilters,
+    super.appliedTuneAdjustments,
     super.appliedBlurFactor,
     super.onCloseEditor,
     super.onImageEditingComplete,

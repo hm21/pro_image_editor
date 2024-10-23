@@ -188,6 +188,11 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
                 ),
               ),
             ),
+            tuneEditor: CustomWidgetsTuneEditor(
+              appBar: (filterEditor, rebuildStream) => null,
+              bottomBar: (filterEditor, rebuildStream) => null,
+              bodyItems: _buildTuneEditorBody,
+            ),
             filterEditor: CustomWidgetsFilterEditor(
               slider:
                   (editorState, rebuildStream, value, onChanged, onChangeEnd) =>
@@ -272,6 +277,27 @@ class _FrostedGlassExampleState extends State<FrostedGlassExample>
       ReactiveCustomWidget(
         stream: rebuildStream,
         builder: (_) => FrostedGlassPaintBottomBar(paintEditor: paintEditor),
+      ),
+    ];
+  }
+
+  List<ReactiveCustomWidget> _buildTuneEditorBody(
+    TuneEditorState tuneEditor,
+    Stream rebuildStream,
+  ) {
+    return [
+      /// Appbar
+      ReactiveCustomWidget(
+        stream: rebuildStream,
+        builder: (_) {
+          return FrostedGlassTuneAppbar(tuneEditor: tuneEditor);
+        },
+      ),
+
+      /// Bottombar
+      ReactiveCustomWidget(
+        stream: rebuildStream,
+        builder: (_) => FrostedGlassTuneBottombar(tuneEditor: tuneEditor),
       ),
     ];
   }

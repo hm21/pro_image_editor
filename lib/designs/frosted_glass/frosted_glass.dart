@@ -11,3 +11,5 @@ export 'frosted_glass_sticker_editor.dart';
 export 'frosted_glass_text_appbar.dart';
 export 'frosted_glass_text_bottombar.dart';
 export 'frosted_glass_text_size_slider.dart';
+export 'frosted_glass_tune_appbar.dart';
+export 'frosted_glass_tune_bottombar.dart';

@@ -22,6 +22,7 @@ import '../../models/history/last_layer_interaction_position.dart';
 import '../../models/import_export/export_state_history.dart';
 import '../../models/import_export/utils/export_import_version.dart';
 import '../../models/theme/theme_draggable_sheet.dart';
+import '../../models/tune_editor/tune_adjustment_matrix.dart';
 import '../../plugins/defer_pointer/defer_pointer.dart';
 import '../../pro_image_editor.dart';
 import '../../utils/content_recorder.dart/content_recorder.dart';
@@ -405,6 +406,7 @@ class ProImageEditorState extends State<ProImageEditor>
         blur: 0,
         layers: [],
         filters: [],
+        tuneAdjustments: [],
       ));
     }
 
@@ -506,6 +508,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// state.
   /// - [filters]: An optional list of filter states to be included in the new
   /// state.
+  /// - [tuneAdjustments]: An optional list of tune adjustments states to be
+  /// included in the new state.
   /// - [blur]: An optional blur state to be included in the new state.
   /// - [heroScreenshotRequired]: A flag indicating whether a hero screenshot
   /// is required.
@@ -517,6 +521,7 @@ class ProImageEditorState extends State<ProImageEditor>
   ///   newLayer: additionalLayer,
   ///   transformConfigs: currentTransformConfigs,
   ///   filters: currentFilters,
+  ///   tuneAdjustments: currentTuneAdjustments
   ///   blur: currentBlurState,
   ///   heroScreenshotRequired: false,
   /// );
@@ -526,6 +531,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Layer? newLayer,
     TransformConfigs? transformConfigs,
     FilterMatrix? filters,
+    List<TuneAdjustmentMatrix>? tuneAdjustments,
     double? blur,
     bool heroScreenshotRequired = false,
     bool blockCaptureScreenshot = false,
@@ -543,6 +549,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 ? [...activeLayerList, newLayer]
                 : activeLayerList),
         filters: filters ?? stateManager.activeFilters,
+        tuneAdjustments: tuneAdjustments ?? stateManager.activeTuneAdjustments,
       ),
     );
     if (!blockCaptureScreenshot) {
@@ -701,6 +708,7 @@ class ProImageEditorState extends State<ProImageEditor>
         blur: 0,
         layers: [],
         filters: [],
+        tuneAdjustments: [],
       ),
     );
 
@@ -1161,6 +1169,7 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: stateManager.transformConfigs,
           appliedBlurFactor: stateManager.activeBlur,
           appliedFilters: stateManager.activeFilters,
+          appliedTuneAdjustments: stateManager.activeTuneAdjustments,
         ),
       ),
       duration: const Duration(milliseconds: 150),
@@ -1234,6 +1243,7 @@ class ProImageEditorState extends State<ProImageEditor>
           enableFakeHero: true,
           appliedBlurFactor: stateManager.activeBlur,
           appliedFilters: stateManager.activeFilters,
+          appliedTuneAdjustments: stateManager.activeTuneAdjustments,
           onDone: (transformConfigs, fitToScreenFactor, imageInfos) async {
             List<Layer> updatedLayers = LayerTransformGenerator(
               layers: stateManager.activeLayers,
@@ -1271,6 +1281,55 @@ class ProImageEditorState extends State<ProImageEditor>
     });
   }
 
+  /// Opens the tune editor.
+  ///
+  /// This method opens the Tune Editor page, allowing the user to make tune
+  /// adjustments (such as brightness, contrast, etc.) to the current image.
+  ///
+  /// If tune adjustments are made, they are added to the editor's history
+  /// and the UI is updated accordingly. If the operation is canceled or no
+  /// adjustments are made, the current state remains unchanged.
+  void openTuneEditor({
+    bool enableHero = true,
+  }) async {
+    if (!mounted) return;
+    List<TuneAdjustmentMatrix>? tuneAdjustments = await openPage(
+      HeroMode(
+        enabled: enableHero,
+        child: TuneEditor.autoSource(
+          key: tuneEditor,
+          file: editorImage.file,
+          byteArray: editorImage.byteArray,
+          assetPath: editorImage.assetPath,
+          networkUrl: editorImage.networkUrl,
+          initConfigs: TuneEditorInitConfigs(
+            theme: _theme,
+            configs: configs,
+            callbacks: callbacks,
+            transformConfigs: stateManager.transformConfigs,
+            layers: activeLayers,
+            mainImageSize: sizesManager.decodedImageSize,
+            mainBodySize: sizesManager.bodySize,
+            convertToUint8List: false,
+            appliedBlurFactor: stateManager.activeBlur,
+            appliedFilters: stateManager.activeFilters,
+            appliedTuneAdjustments: stateManager.activeTuneAdjustments,
+          ),
+        ),
+      ),
+    );
+
+    if (tuneAdjustments == null) return;
+
+    addHistory(
+      tuneAdjustments: tuneAdjustments,
+      heroScreenshotRequired: true,
+    );
+
+    setState(() {});
+    mainEditorCallbacks?.handleUpdateUI();
+  }
+
   /// Opens the filter editor.
   ///
   /// This method allows the user to apply filters to the current image and
@@ -1301,6 +1360,7 @@ class ProImageEditorState extends State<ProImageEditor>
           convertToUint8List: false,
           appliedBlurFactor: stateManager.activeBlur,
           appliedFilters: stateManager.activeFilters,
+          appliedTuneAdjustments: stateManager.activeTuneAdjustments,
         ),
       ),
     );
@@ -1337,6 +1397,7 @@ class ProImageEditorState extends State<ProImageEditor>
           convertToUint8List: false,
           appliedBlurFactor: stateManager.activeBlur,
           appliedFilters: stateManager.activeFilters,
+          appliedTuneAdjustments: stateManager.activeTuneAdjustments,
         ),
       ),
     );
@@ -1793,6 +1854,7 @@ class ProImageEditorState extends State<ProImageEditor>
             blur: 0,
             filters: [],
             layers: [],
+            tuneAdjustments: [],
           ),
           ...import.stateHistory
         ];
@@ -1814,6 +1876,7 @@ class ProImageEditorState extends State<ProImageEditor>
         if (import.configs.mergeMode == ImportEditorMergeMode.merge) {
           el.layers.insertAll(0, stateHistory.last.layers);
           el.filters.insertAll(0, stateHistory.last.filters);
+          el.tuneAdjustments.insertAll(0, stateHistory.last.tuneAdjustments);
         }
       }
 
@@ -2220,6 +2283,19 @@ class ProImageEditorState extends State<ProImageEditor>
                                     ),
                                     onPressed: openCropRotateEditor,
                                   ),
+                                if (tuneEditorConfigs.enabled)
+                                  FlatIconTextButton(
+                                    key: const ValueKey('open-tune-editor-btn'),
+                                    label: Text(
+                                        i18n.tuneEditor.bottomNavigationBarText,
+                                        style: bottomTextStyle),
+                                    icon: Icon(
+                                      icons.tuneEditor.bottomNavBar,
+                                      size: bottomIconSize,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: openTuneEditor,
+                                  ),
                                 if (filterEditorConfigs.enabled)
                                   FlatIconTextButton(
                                     key: const ValueKey(
@@ -2561,6 +2637,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 configs: configs,
                 image: editorImage,
                 filters: stateManager.activeFilters,
+                tuneAdjustments: stateManager.activeTuneAdjustments,
                 blurFactor: stateManager.activeBlur,
               ),
             ),

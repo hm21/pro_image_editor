@@ -1008,6 +1008,7 @@ class PaintingEditorState extends State<PaintingEditor>
                                     configs: configs,
                                     image: editorImage,
                                     filters: appliedFilters,
+                                    tuneAdjustments: appliedTuneAdjustments,
                                     blurFactor: appliedBlurFactor,
                                   ),
                                 )

@@ -166,6 +166,15 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                           icon: Icon(widget.editor.configs.icons
                               .cropRotateEditor.bottomNavBar),
                         ),
+                      if (widget.editor.configs.tuneEditorConfigs.enabled)
+                        IconButton(
+                          tooltip: widget.editor.configs.i18n.tuneEditor
+                              .bottomNavigationBarText,
+                          onPressed: () =>
+                              widget.editor.openTuneEditor(enableHero: false),
+                          icon: Icon(widget
+                              .editor.configs.icons.tuneEditor.bottomNavBar),
+                        ),
                       if (widget.editor.configs.filterEditorConfigs.enabled)
                         IconButton(
                           tooltip: widget.editor.configs.i18n.filterEditor

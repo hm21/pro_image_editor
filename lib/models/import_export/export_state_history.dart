@@ -128,13 +128,16 @@ class ExportStateHistory {
         if (layers.isNotEmpty) 'layers': layers,
         if (_configs.exportFilter && element.filters.isNotEmpty)
           'filters': element.filters,
+        if (_configs.exportTuneAdjustments &&
+            element.tuneAdjustments.isNotEmpty)
+          'tune': element.tuneAdjustments.map((item) => item.toMap()),
         'blur': element.blur,
         if (transformConfigsMap.isNotEmpty) 'transform': transformConfigsMap,
       });
     }
 
     return {
-      'version': ExportImportVersion.version_2_0_0,
+      'version': ExportImportVersion.version_3_0_0,
       'position': _configs.historySpan == ExportHistorySpan.current ||
               _configs.historySpan == ExportHistorySpan.currentAndForward
           ? 0

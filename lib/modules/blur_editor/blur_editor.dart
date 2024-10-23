@@ -300,6 +300,7 @@ class BlurEditorState extends State<BlurEditor>
                         configs: configs,
                         image: editorImage,
                         filters: appliedFilters,
+                        tuneAdjustments: appliedTuneAdjustments,
                         blurFactor: blurFactor,
                       );
                     }),

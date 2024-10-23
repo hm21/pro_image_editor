@@ -198,6 +198,18 @@ class GroundedMainBarState extends State<GroundedMainBar>
                             ),
                             onPressed: widget.editor.openCropRotateEditor,
                           ),
+                        if (tuneEditorConfigs.enabled)
+                          FlatIconTextButton(
+                            spacing: 7,
+                            label: Text(i18n.tuneEditor.bottomNavigationBarText,
+                                style: _bottomTextStyle),
+                            icon: Icon(
+                              icons.tuneEditor.bottomNavBar,
+                              size: _bottomIconSize,
+                              color: _foreGroundColor,
+                            ),
+                            onPressed: widget.editor.openTuneEditor,
+                          ),
                         if (filterEditorConfigs.enabled)
                           FlatIconTextButton(
                             spacing: 7,

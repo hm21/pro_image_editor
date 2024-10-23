@@ -7,6 +7,7 @@ import 'i18n_layer_interaction.dart';
 import 'i18n_painting_editor.dart';
 import 'i18n_sticker_editor.dart';
 import 'i18n_text_editor.dart';
+import 'i18n_tune_editor.dart';
 import 'i18n_various.dart';
 
 export 'i18n_blur_editor.dart';
@@ -17,6 +18,7 @@ export 'i18n_layer_interaction.dart';
 export 'i18n_painting_editor.dart';
 export 'i18n_sticker_editor.dart';
 export 'i18n_text_editor.dart';
+export 'i18n_tune_editor.dart';
 export 'i18n_various.dart';
 
 /// The `I18n` class provides internationalization settings for the image editor
@@ -143,6 +145,7 @@ class I18n {
     this.paintEditor = const I18nPaintingEditor(),
     this.textEditor = const I18nTextEditor(),
     this.cropRotateEditor = const I18nCropRotateEditor(),
+    this.tuneEditor = const I18nTuneEditor(),
     this.filterEditor = const I18nFilterEditor(),
     this.blurEditor = const I18nBlurEditor(),
     this.emojiEditor = const I18nEmojiEditor(),
@@ -171,6 +174,9 @@ class I18n {
 
   /// Translations and messages specific to the filter editor.
   final I18nFilterEditor filterEditor;
+
+  /// Translations and messages specific to the tune editor.
+  final I18nTuneEditor tuneEditor;
 
   /// Translations and messages specific to the blur editor.
   final I18nBlurEditor blurEditor;
@@ -218,6 +224,7 @@ class I18n {
     I18nLayerInteraction? layerInteraction,
     I18nTextEditor? textEditor,
     I18nFilterEditor? filterEditor,
+    I18nTuneEditor? tuneEditor,
     I18nBlurEditor? blurEditor,
     I18nEmojiEditor? emojiEditor,
     I18nStickerEditor? stickerEditor,
@@ -235,6 +242,7 @@ class I18n {
       various: various ?? this.various,
       layerInteraction: layerInteraction ?? this.layerInteraction,
       textEditor: textEditor ?? this.textEditor,
+      tuneEditor: tuneEditor ?? this.tuneEditor,
       filterEditor: filterEditor ?? this.filterEditor,
       blurEditor: blurEditor ?? this.blurEditor,
       emojiEditor: emojiEditor ?? this.emojiEditor,

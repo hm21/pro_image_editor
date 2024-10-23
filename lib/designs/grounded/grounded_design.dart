@@ -9,3 +9,4 @@ export 'grounded_painting_bar.dart';
 export 'grounded_sticker_editor.dart';
 export 'grounded_text_bar.dart';
 export 'grounded_text_size_slider.dart';
+export 'grounded_tune_bar.dart';

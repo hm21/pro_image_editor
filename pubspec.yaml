@@ -1,6 +1,6 @@
 name: pro_image_editor
 description: "A Flutter image editor: Seamlessly enhance your images with user-friendly editing features."
-version: 5.4.2
+version: 6.0.0
 homepage: https://github.com/hm21/pro_image_editor/
 repository: https://github.com/hm21/pro_image_editor/
 issue_tracker: https://github.com/hm21/pro_image_editor/issues/
@@ -40,9 +40,9 @@ dependencies:
 
   emoji_picker_flutter: ">=3.1.0 <3.2.0"
   http: ^1.2.2
-  image: ^4.2.0
-  vibration: ^2.0.0
-  mime: ^1.0.6
+  image: ^4.3.0
+  mime: ^2.0.0
+  vibration: ^2.0.1
 
 dev_dependencies:
   flutter_test:

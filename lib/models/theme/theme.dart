@@ -1,7 +1,5 @@
 // Flutter imports:
 import 'package:flutter/services.dart';
-// Project imports:
-import 'package:pro_image_editor/models/theme/theme_sticker_editor.dart';
 
 import 'theme_adaptive_dialog.dart';
 import 'theme_blur_editor.dart';
@@ -13,8 +11,10 @@ import 'theme_layer_interaction.dart';
 import 'theme_loading_dialog.dart';
 import 'theme_painting_editor.dart';
 import 'theme_shared_values.dart';
+import 'theme_sticker_editor.dart';
 import 'theme_sub_editor_page.dart';
 import 'theme_text_editor.dart';
+import 'theme_tune_editor.dart';
 import 'types/theme_types.dart';
 
 export 'theme_adaptive_dialog.dart';
@@ -30,6 +30,7 @@ export 'theme_shared_values.dart';
 export 'theme_sticker_editor.dart';
 export 'theme_sub_editor_page.dart';
 export 'theme_text_editor.dart';
+export 'theme_tune_editor.dart';
 
 /// The `ImageEditorTheme` class defines the overall theme for the image editor
 /// in your Flutter application. It includes themes for various editor
@@ -107,6 +108,7 @@ class ImageEditorTheme {
     this.textEditor = const TextEditorTheme(),
     this.cropRotateEditor = const CropRotateEditorTheme(),
     this.filterEditor = const FilterEditorTheme(),
+    this.tuneEditor = const TuneEditorTheme(),
     this.blurEditor = const BlurEditorTheme(),
     this.emojiEditor = const EmojiEditorTheme(),
     this.stickerEditor = const StickerEditorTheme(),
@@ -140,6 +142,9 @@ class ImageEditorTheme {
 
   /// Theme for the filter editor.
   final FilterEditorTheme filterEditor;
+
+  /// Theme for the tune editor.
+  final TuneEditorTheme tuneEditor;
 
   /// Theme for the blur editor.
   final BlurEditorTheme blurEditor;

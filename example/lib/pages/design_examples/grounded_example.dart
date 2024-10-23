@@ -294,6 +294,21 @@ class _GroundedDesignExampleState extends State<GroundedDesignExample>
                 ),
               ),
             ),
+            tuneEditor: CustomWidgetsTuneEditor(
+              appBar: (editor, rebuildStream) => null,
+              bottomBar: (editorState, rebuildStream) {
+                return ReactiveCustomWidget(
+                  builder: (context) {
+                    return GroundedTuneBar(
+                      configs: editorState.configs,
+                      callbacks: editorState.callbacks,
+                      editor: editorState,
+                    );
+                  },
+                  stream: rebuildStream,
+                );
+              },
+            ),
             filterEditor: CustomWidgetsFilterEditor(
               slider:
                   (editorState, rebuildStream, value, onChanged, onChangeEnd) =>

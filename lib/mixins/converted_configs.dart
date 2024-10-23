@@ -24,6 +24,9 @@ mixin ImageEditorConvertedConfigs {
   /// Returns the configuration options for the filter editor.
   FilterEditorConfigs get filterEditorConfigs => configs.filterEditorConfigs;
 
+  /// Returns the configuration options for the tune editor.
+  TuneEditorConfigs get tuneEditorConfigs => configs.tuneEditorConfigs;
+
   /// Returns the configuration options for the blur editor.
   BlurEditorConfigs get blurEditorConfigs => configs.blurEditorConfigs;
 
