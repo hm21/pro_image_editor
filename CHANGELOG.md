@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.0.2
+- **FIX**(Recorder): Resolve issue where the editor would incorrectly capture drawing boundaries if the user set `captureOnlyDrawingBounds` to `true`. This resolves issue [#249](https://github.com/hm21/pro_image_editor/issues/249)
+
 ## 6.0.1
 - **FIX**(Generation-Configs): Removed unnecessary assert for `captureOnlyBackgroundImageArea` and `captureOnlyDrawingBounds`, which was blocking certain combinations for generating transparent images. Details discussed [here](https://github.com/hm21/pro_image_editor/issues/210#issuecomment-2433847115).
 
@@ -14,7 +17,7 @@
 - **FIX**(Example): Resolve all linting issues in the example code.
 
 ## 5.4.2
-- **FIX**(Painting-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolve issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
+- **FIX**(Painting-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolves issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
 
 ## 5.4.1
 - **FEAT**(Emoji-Editor): Update the emoji-editor to version `3.1.0` with custom view order configuration support.
@@ -28,7 +31,7 @@
 - **FEAT**(Custom-Widgets): add custom widgets to replace layer interaction buttons (edit, remove, rotateScale)
 
 ## 5.2.3
-- **FIX**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolve issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
+- **FIX**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolves issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
 
 ## 5.2.2
 - **FIX**(Frosted-Glass): Resolve issue that loading-dialog didn't use the text from the i18n class.
@@ -221,7 +224,7 @@ Introduced a new loading dialog as a singleton class.
 
 ## 4.0.5
 
-- **FIX**(text-editor): Resolve misapplication of secondary color. This resolve issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
+- **FIX**(text-editor): Resolve misapplication of secondary color. This resolves issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
 - **FIX**(text-editor): Resolve issue where text styles (bold/italic/underline) are not saved in history. This resolves issue [#118](https://github.com/hm21/pro_image_editor/discussions/118).
 
 
@@ -244,7 +247,7 @@ Introduced a new loading dialog as a singleton class.
 
 ## 4.0.1
 
-- **FIX**(import-history): Resolve incorrect multiple importing from state history. This resolve issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
+- **FIX**(import-history): Resolve incorrect multiple importing from state history. This resolves issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
 
 
 ## 4.0.0
@@ -270,12 +273,12 @@ Introduced a new loading dialog as a singleton class.
 ## 3.0.14
 
 - **FEAT**(custom-widget): Add custom widgets to the line-width bottomsheet in the Paint Editor, which was requested in [#103](https://github.com/hm21/pro_image_editor/discussions/103).
-- **FIX**(sticker-export-import) Fix the issue that the sticker size change after export/import them. This resolve issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).
+- **FIX**(sticker-export-import) Fix the issue that the sticker size change after export/import them. This resolves issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).
 
 
 ## 3.0.13
 
-- **FIX**(state-history): Resolve incorrect import/export from transform-configs. This resolve issue [#102](https://github.com/hm21/pro_image_editor/discussions/102).
+- **FIX**(state-history): Resolve incorrect import/export from transform-configs. This resolves issue [#102](https://github.com/hm21/pro_image_editor/discussions/102).
 
 
 ## 3.0.12

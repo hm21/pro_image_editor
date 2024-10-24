@@ -2149,38 +2149,34 @@ class ProImageEditorState extends State<ProImageEditor>
 
                     /// Build layer stack
                     _buildLayers(),
-
-                    if (widget.configs.imageGenerationConfigs
-                        .captureOnlyBackgroundImageArea)
-                      Hero(
-                        tag: 'crop_layer_painter_hero',
-                        child: CustomPaint(
-                          foregroundPainter: imageGenerationConfigs
-                                  .captureOnlyBackgroundImageArea
-                              ? CropLayerPainter(
-                                  opacity: imageEditorTheme
-                                      .outsideCaptureAreaLayerOpacity,
-                                  backgroundColor: imageEditorTheme.background,
-                                  imgRatio:
-                                      stateManager.transformConfigs.isNotEmpty
-                                          ? stateManager.transformConfigs
-                                              .cropRect.size.aspectRatio
-                                          : sizesManager
-                                              .decodedImageSize.aspectRatio,
-                                  isRoundCropper:
-                                      cropRotateEditorConfigs.roundCropper,
-                                  is90DegRotated: stateManager
-                                      .transformConfigs.is90DegRotated,
-                                )
-                              : null,
-                          child: const SizedBox.expand(),
-                        ),
-                      ),
                   ],
                 ),
               ),
             ),
           ),
+          if (widget
+              .configs.imageGenerationConfigs.captureOnlyBackgroundImageArea)
+            Hero(
+              tag: 'crop_layer_painter_hero',
+              child: CustomPaint(
+                foregroundPainter: imageGenerationConfigs
+                        .captureOnlyBackgroundImageArea
+                    ? CropLayerPainter(
+                        opacity:
+                            imageEditorTheme.outsideCaptureAreaLayerOpacity,
+                        backgroundColor: imageEditorTheme.background,
+                        imgRatio: stateManager.transformConfigs.isNotEmpty
+                            ? stateManager
+                                .transformConfigs.cropRect.size.aspectRatio
+                            : sizesManager.decodedImageSize.aspectRatio,
+                        isRoundCropper: cropRotateEditorConfigs.roundCropper,
+                        is90DegRotated:
+                            stateManager.transformConfigs.is90DegRotated,
+                      )
+                    : null,
+                child: const SizedBox.expand(),
+              ),
+            ),
 
           /// Build helper stuff
           if (!_processFinalImage) ...[
