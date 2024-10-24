@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.0.1
+- **FIX**(Generation-Configs): Removed unnecessary assert for `captureOnlyBackgroundImageArea` and `captureOnlyDrawingBounds`, which was blocking certain combinations for generating transparent images. Details discussed [here](https://github.com/hm21/pro_image_editor/issues/210#issuecomment-2433847115).
+
 ## 6.0.0
 - **FEAT**(Tune-Editor): Introduced the new "Tune" editor, enabling users to adjust image contrast, saturation, and brightness for enhanced control over image tuning.
 

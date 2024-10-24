@@ -48,10 +48,6 @@ class ImageGenerationConfigs {
   })  : assert(jpegQuality > 0 && jpegQuality <= 100,
             'jpegQuality must be between 1 and 100'),
         assert(
-            captureOnlyDrawingBounds || !captureOnlyBackgroundImageArea,
-            'When [captureOnlyDrawingBounds] is true must '
-            '[captureOnlyBackgroundImageArea] be false'),
-        assert(
             pngLevel >= 0 && pngLevel <= 9, 'pngLevel must be between 0 and 9'),
         assert(customPixelRatio == null || customPixelRatio > 0,
             'customPixelRatio must be greater than 0');
