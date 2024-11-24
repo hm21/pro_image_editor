@@ -120,7 +120,7 @@ class ImportStateHistory {
       lastScreenSize: map['lastScreenSize'] != null
           ? Size(map['lastScreenSize']?['width'] ?? 0,
               map['lastScreenSize']?['height'] ?? 0)
-          : Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
+          : Size.zero,
       stateHistory: stateHistory,
       configs: configs,
       version: version,
