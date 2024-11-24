@@ -27,6 +27,7 @@ class ExportStateHistory {
     required this.stateHistory,
     required this.imageInfos,
     required this.imgSize,
+    required this.lastScreenSize,
     required this.editorPosition,
     required this.contentRecorderCtrl,
     required this.context,
@@ -45,6 +46,12 @@ class ExportStateHistory {
   /// This [Size] object specifies the dimensions of the image being edited,
   /// providing a reference for transformations and layout adjustments.
   final Size imgSize;
+
+  /// The size of the screen the last time the editor was used.
+  /// 
+  /// This [Size] object specifies the dimensions of the screen the last time
+  /// the editor was used, providing a reference for transformations and layout
+  final Size lastScreenSize;
 
   /// The list of editor state history entries.
   ///
@@ -147,6 +154,10 @@ class ExportStateHistory {
       'imgSize': {
         'width': imageInfos.rawSize.width,
         'height': imageInfos.rawSize.height,
+      },
+      'lastScreenSize': {
+        'width': lastScreenSize.width,
+        'height': lastScreenSize.height,
       },
     };
   }

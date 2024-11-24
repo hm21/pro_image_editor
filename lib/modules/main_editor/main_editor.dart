@@ -1816,15 +1816,16 @@ class ProImageEditorState extends State<ProImageEditor>
     /// Recalculate position and size
     if (import.configs.recalculateSizeAndPosition ||
         import.version == ExportImportVersion.version_1_0_0) {
-      Size imgSize = import.imgSize / (_imageInfos?.pixelRatio ?? 1);
       for (EditorStateHistory el in import.stateHistory) {
         for (Layer layer in el.layers) {
           if (import.configs.recalculateSizeAndPosition) {
             // Calculate scaling factors for width and height
             double scaleWidth =
-                sizesManager.decodedImageSize.width / imgSize.width;
+                sizesManager.lastScreenSize.width /
+                  import.lastScreenSize.width;
             double scaleHeight =
-                sizesManager.decodedImageSize.height / imgSize.height;
+                sizesManager.lastScreenSize.height /
+                  import.lastScreenSize.height;
 
             if (scaleWidth == 0 || scaleWidth.isInfinite) scaleWidth = 1;
             if (scaleHeight == 0 || scaleHeight.isInfinite) scaleHeight = 1;
@@ -1924,6 +1925,7 @@ class ProImageEditorState extends State<ProImageEditor>
       stateHistory: stateManager.stateHistory,
       imageInfos: _imageInfos!,
       imgSize: sizesManager.decodedImageSize,
+      lastScreenSize: sizesManager.lastScreenSize,
       editorPosition: stateManager.position,
       configs: configs,
       contentRecorderCtrl: _controllers.screenshot,
