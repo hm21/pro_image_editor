@@ -31,6 +31,7 @@ class ImportStateHistory {
   ImportStateHistory._({
     required this.editorPosition,
     required this.imgSize,
+    required this.lastRenderedImgSize,
     required this.stateHistory,
     required this.configs,
     required this.version,
@@ -116,6 +117,10 @@ class ImportStateHistory {
       editorPosition: map['position'],
       imgSize:
           Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
+      lastRenderedImgSize: map['lastRenderedImgSize'] != null
+          ? Size(map['lastRenderedImgSize']?['width'] ?? 0,
+              map['lastRenderedImgSize']?['height'] ?? 0)
+          : Size.zero,
       stateHistory: stateHistory,
       configs: configs,
       version: version,
@@ -135,6 +140,9 @@ class ImportStateHistory {
 
   /// The size of the imported image.
   final Size imgSize;
+
+  /// The size of the last used screen.
+  final Size lastRenderedImgSize;
 
   /// The state history of each editor state in the session.
   final List<EditorStateHistory> stateHistory;

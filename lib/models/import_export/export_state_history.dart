@@ -148,6 +148,10 @@ class ExportStateHistory {
         'width': imageInfos.rawSize.width,
         'height': imageInfos.rawSize.height,
       },
+      'lastRenderedImgSize': {
+        'width': imageInfos.renderedSize.width,
+        'height': imageInfos.renderedSize.height,
+      },
     };
   }
 
