@@ -12,6 +12,9 @@ import 'package:pro_image_editor/models/crop_rotate_editor/transform_factors.dar
 import 'package:pro_image_editor/models/import_export/import_state_history_configs.dart';
 import 'package:pro_image_editor/models/layer/layer.dart';
 import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_addons.dart';
+import 'package:pro_image_editor/utils/parser/double_parser.dart';
+import 'package:pro_image_editor/utils/parser/int_parser.dart';
+import 'package:pro_image_editor/utils/parser/size_parser.dart';
 import '../history/state_history.dart';
 import '../tune_editor/tune_adjustment_matrix.dart';
 import 'utils/export_import_version.dart';
@@ -42,85 +45,52 @@ class ImportStateHistory {
     Map<String, dynamic> map, {
     ImportEditorConfigs configs = const ImportEditorConfigs(),
   }) {
-    List<EditorStateHistory> stateHistory = [];
-    List<Uint8List> stickers = [];
+    /// Initialize default values
+    final version =
+        map['version'] as String? ?? ExportImportVersion.version_1_0_0;
+    final stateHistory = <EditorStateHistory>[];
+    final stickers = (map['stickers'] as List<dynamic>? ?? [])
+        .map((sticker) => Uint8List.fromList(List.from(sticker)))
+        .toList();
+    final lastRenderedImgSize = safeParseSize(map['lastRenderedImgSize']);
 
-    String version =
-        (map['version'] as String?) ?? ExportImportVersion.version_1_0_0;
+    /// Parse history
+    for (final historyItem in (map['history'] as List<dynamic>? ?? [])) {
+      /// Layers
+      final layers = (historyItem['layers'] as List<dynamic>? ?? [])
+          .map((layer) => Layer.fromMap(layer, stickers))
+          .toList();
 
-    for (var sticker in List.from(map['stickers'] ?? [])) {
-      stickers.add(Uint8List.fromList(List.from(sticker)));
-    }
+      /// Blur
+      final blur = safeParseDouble(historyItem['blur']);
 
-    for (var el in List.from(map['history'] ?? [])) {
-      double blur = 0;
-      List<Layer> layers = [];
+      /// Filters
+      final filters = _parseFilters(historyItem['filters'], version);
 
-      if (el['blur'] != null) {
-        blur = double.tryParse((el['blur'] ?? '0').toString()) ?? 0;
-      }
-      for (var layer in List.from(el['layers'] ?? [])) {
-        layers.add(Layer.fromMap(layer, stickers));
-      }
+      /// Tune Adjustments
+      final tuneAdjustments = (historyItem['tune'] as List<dynamic>? ?? [])
+          .map((tune) => TuneAdjustmentMatrix.fromMap(tune))
+          .toList();
 
-      List<TuneAdjustmentMatrix> tuneAdjustments = [];
-      List<List<double>> filters = [];
-      if (version == ExportImportVersion.version_1_0_0) {
-        for (var el in List.from(el['filters'] ?? [])) {
-          List<List<double>> filterMatrix = List.from(el['filters'] ?? []);
-          double opacity =
-              double.tryParse((el['opacity'] ?? '1').toString()) ?? 1;
-          if (opacity != 1) {
-            filterMatrix.add(ColorFilterAddons.opacity(opacity));
-          }
+      /// Transformations
+      final transformConfigs = historyItem['transform'] != null &&
+              Map.from(historyItem['transform']).isNotEmpty
+          ? TransformConfigs.fromMap(historyItem['transform'])
+          : TransformConfigs.empty();
 
-          filters.addAll(filterMatrix);
-        }
-      } else {
-        /// convert filters
-        List<List<double>> filterList = [];
-        for (var el in List.from(el['filters'] ?? [])) {
-          List<double> filtersRaw = [];
-
-          for (var raw in List.from(el)) {
-            filtersRaw.add(raw);
-          }
-
-          filterList.add(filtersRaw);
-        }
-
-        filters = filterList;
-
-        /// convert tune adjustments
-        List<TuneAdjustmentMatrix> tuneList = List.from(el['tune'] ?? [])
-            .map((el) => TuneAdjustmentMatrix.fromMap(el))
-            .toList();
-
-        tuneAdjustments = tuneList;
-      }
-
-      stateHistory.add(
-        EditorStateHistory(
-          blur: blur,
-          layers: layers,
-          filters: filters,
-          tuneAdjustments: tuneAdjustments,
-          transformConfigs:
-              el['transform'] != null && Map.from(el['transform']).isNotEmpty
-                  ? TransformConfigs.fromMap(el['transform'])
-                  : TransformConfigs.empty(),
-        ),
-      );
+      stateHistory.add(EditorStateHistory(
+        blur: blur,
+        layers: layers,
+        filters: filters,
+        tuneAdjustments: tuneAdjustments,
+        transformConfigs: transformConfigs,
+      ));
     }
 
     return ImportStateHistory._(
-      editorPosition: map['position'],
-      imgSize:
-          Size(map['imgSize']?['width'] ?? 0, map['imgSize']?['height'] ?? 0),
-      lastRenderedImgSize: map['lastRenderedImgSize'] != null
-          ? Size(map['lastRenderedImgSize']?['width'] ?? 0,
-              map['lastRenderedImgSize']?['height'] ?? 0)
-          : Size.zero,
+      editorPosition: safeParseInt(map['position']),
+      imgSize: safeParseSize(map['imgSize']),
+      lastRenderedImgSize: lastRenderedImgSize,
       stateHistory: stateHistory,
       configs: configs,
       version: version,
@@ -133,6 +103,27 @@ class ImportStateHistory {
     ImportEditorConfigs configs = const ImportEditorConfigs(),
   }) {
     return ImportStateHistory.fromMap(jsonDecode(json), configs: configs);
+  }
+
+  /// Helper to parse filters
+  static List<List<double>> _parseFilters(dynamic filtersData, String version) {
+    if (filtersData == null) return [];
+
+    switch (version) {
+      case ExportImportVersion.version_1_0_0:
+        return (filtersData as List<dynamic>).expand((el) {
+          final filterMatrix = List<List<double>>.from(el['filters'] ?? []);
+          final opacity = safeParseDouble(el['opacity'], fallback: 1);
+          if (opacity != 1) {
+            filterMatrix.add(ColorFilterAddons.opacity(opacity));
+          }
+          return filterMatrix;
+        }).toList();
+      default:
+        return (filtersData as List<dynamic>)
+            .map((el) => List<double>.from(el))
+            .toList();
+    }
   }
 
   /// The position of the editor.

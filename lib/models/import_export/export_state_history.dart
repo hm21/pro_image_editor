@@ -137,7 +137,7 @@ class ExportStateHistory {
     }
 
     return {
-      'version': ExportImportVersion.version_3_0_0,
+      'version': ExportImportVersion.version_3_0_1,
       'position': _configs.historySpan == ExportHistorySpan.current ||
               _configs.historySpan == ExportHistorySpan.currentAndForward
           ? 0

@@ -1,6 +1,6 @@
 /// A map representing the demo data for file import history.
 Map<String, dynamic> importHistoryDemoData = {
-  'version': '3.0.0',
+  'version': '3.0.1',
   'position': 6,
   'history': [
     {
