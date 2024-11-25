@@ -583,5 +583,6 @@ Map<String, dynamic> importHistoryDemoData = {
       'blur': 0.0
     }
   ],
-  'imgSize': {'width': 1024.0, 'height': 1792.0}
+  'imgSize': {'width': 1024.0, 'height': 1792.0},
+  'lastRenderedImgSize': {'width': 1024.0, 'height': 1792.0}
 };
