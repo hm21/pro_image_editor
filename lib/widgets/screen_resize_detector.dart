@@ -76,8 +76,8 @@ class _ScreenResizeDetectorState extends State<ScreenResizeDetector> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       Size newSize = Size(
-        constraints.biggest.width - _safeArea.horizontal,
-        constraints.biggest.height - _safeArea.vertical,
+        constraints.biggest.width,
+        constraints.biggest.height,
       );
 
       if (newSize != _lastContentSize) {
