@@ -5,10 +5,10 @@ import 'package:flutter/widgets.dart';
 class SubEditorPageTheme {
   /// Creates a [SubEditorPageTheme].
   ///
-  /// The [enforceSizeFromMainEditor] defaults to `false`.
+  /// The [enforceSizeFromMainEditor] defaults to `true`.
   /// The [barrierDismissible] defaults to `false`.
   const SubEditorPageTheme({
-    this.enforceSizeFromMainEditor = false,
+    this.enforceSizeFromMainEditor = true,
     this.barrierDismissible = false,
     this.borderRadius,
     this.positionTop,
