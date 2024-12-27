@@ -619,7 +619,7 @@ class _NumberPickerListTileState extends State<NumberPickerListTile> {
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           child: Column(
             children: [
               Row(
@@ -770,7 +770,7 @@ class _TextPickerListTileState<T> extends State<TextPickerListTile<T>> {
       builder: (BuildContext context) {
         return Container(
           height: 250,
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           child: Column(
             children: [
               Row(

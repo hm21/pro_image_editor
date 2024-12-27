@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:example/widgets/not_found_example.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +40,8 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
+      builder: BotToastInit(),
+      navigatorObservers: [BotToastNavigatorObserver()],
       debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {
         int index = kImageEditorExamples
