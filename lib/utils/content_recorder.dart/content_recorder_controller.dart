@@ -107,7 +107,7 @@ class ContentRecorderController {
       return null;
     }
 
-    outputFormat ??= _configs.imageGenerationConfigs.outputFormat;
+    outputFormat ??= _configs.imageGeneration.outputFormat;
     image ??= await _getRenderedImage(imageInfos: imageInfos);
     id ??= generateUniqueId();
     onImageCaptured?.call(image);
@@ -133,9 +133,9 @@ class ContentRecorderController {
     required String id,
     OutputFormat? format,
   }) async {
-    format ??= _configs.imageGenerationConfigs.outputFormat;
+    format ??= _configs.imageGeneration.outputFormat;
 
-    if (_configs.imageGenerationConfigs.generateInsideSeparateThread) {
+    if (_configs.imageGeneration.generateInsideSeparateThread) {
       try {
         if (!kIsWeb) {
           // Run in dart native the thread isolated.
@@ -211,7 +211,7 @@ class ContentRecorderController {
   Future<Uint8List?> _captureWithMainThread({
     required ui.Image image,
   }) async {
-    if (_configs.imageGenerationConfigs.captureOnlyDrawingBounds) {
+    if (_configs.imageGeneration.captureOnlyDrawingBounds) {
       image = await dartUiRemoveTransparentImgAreas(image) ?? image;
     }
 
@@ -262,7 +262,7 @@ class ContentRecorderController {
       BuildContext? context = widgetKey.currentContext;
 
       double outputRatio = imageInfos.pixelRatio;
-      if (!_configs.imageGenerationConfigs.captureOnlyDrawingBounds &&
+      if (!_configs.imageGeneration.captureOnlyDrawingBounds &&
           context != null &&
           context.mounted) {
         outputRatio =
@@ -276,26 +276,26 @@ class ContentRecorderController {
         useThumbnailSize,
       );
       if (isOutputSizeTooLarge) {
-        outputRatio = min(
-          _maxOutputDimension(useThumbnailSize).width /
-              imageInfos.renderedSize.width,
-          _maxOutputDimension(useThumbnailSize).height /
-              imageInfos.renderedSize.height,
+        outputRatio = max(
+          _maxOutputDimension(useThumbnailSize).width / boundary.size.width,
+          _maxOutputDimension(useThumbnailSize).height / boundary.size.height,
         );
       }
 
       double pixelRatio =
-          _configs.imageGenerationConfigs.customPixelRatio ?? outputRatio;
+          _configs.imageGeneration.customPixelRatio ?? outputRatio;
 
       ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
 
-      if (_configs.imageGenerationConfigs.captureOnlyBackgroundImageArea) {
+      if (_configs.imageGeneration.captureOnlyBackgroundImageArea) {
         double cropRectRatio = !imageInfos.isRotated
             ? imageInfos.cropRectSize.aspectRatio
             : 1 / imageInfos.cropRectSize.aspectRatio;
 
-        Size convertedImgSize =
-            Size(image.width.toDouble(), image.height.toDouble());
+        Size convertedImgSize = Size(
+          image.width.toDouble(),
+          image.height.toDouble(),
+        );
 
         double convertedImgWidth = convertedImgSize.width;
         double convertedImgHeight = convertedImgSize.height;
@@ -323,9 +323,10 @@ class ContentRecorderController {
           Paint(),
         );
 
-        image = await recorder
-            .endRecording()
-            .toImage(cropWidth.ceil(), cropHeight.ceil());
+        image = await recorder.endRecording().toImage(
+              cropWidth.ceil(),
+              cropHeight.ceil(),
+            );
       }
 
       return image;
@@ -350,8 +351,8 @@ class ContentRecorderController {
   /// Retrieves the maximum output dimension for image generation from the
   /// configuration.
   Size _maxOutputDimension(bool useThumbnailSize) => !useThumbnailSize
-      ? _configs.imageGenerationConfigs.maxOutputSize
-      : _configs.imageGenerationConfigs.maxThumbnailSize;
+      ? _configs.imageGeneration.maxOutputSize
+      : _configs.imageGeneration.maxThumbnailSize;
 
   /// Checks if the output size exceeds the maximum allowable dimensions.
   bool _isOutputSizeTooLarge(
@@ -425,8 +426,8 @@ class ContentRecorderController {
     Size? targetSize,
     Widget? widget,
   }) async {
-    if (!_configs.imageGenerationConfigs.generateImageInBackground ||
-        !_configs.imageGenerationConfigs.generateInsideSeparateThread) {
+    if (!_configs.imageGeneration.generateImageInBackground ||
+        !_configs.imageGeneration.generateInsideSeparateThread) {
       return;
     }
 
@@ -528,13 +529,12 @@ class ContentRecorderController {
             lookupMimeType('', headerBytes: bytes) ?? 'Unknown';
         List<String> sp = contentType.split('/');
         bool formatIsCorrect = sp.length > 1 &&
-            (_configs.imageGenerationConfigs.outputFormat.name == sp[1] ||
+            (_configs.imageGeneration.outputFormat.name == sp[1] ||
                 (sp[1] == 'jpeg' &&
-                    _configs.imageGenerationConfigs.outputFormat ==
-                        OutputFormat.jpg));
+                    _configs.imageGeneration.outputFormat == OutputFormat.jpg));
 
         double outputRatio = imageInfos.pixelRatio;
-        if (!_configs.imageGenerationConfigs.captureOnlyDrawingBounds &&
+        if (!_configs.imageGeneration.captureOnlyDrawingBounds &&
             context != null &&
             context.mounted) {
           outputRatio = max(
@@ -547,7 +547,7 @@ class ContentRecorderController {
         );
         if (!formatIsCorrect || isOutputSizeTooLarge) {
           final ui.Image image = await decodeImageFromList(originalImageBytes);
-          if (_configs.imageGenerationConfigs.generateInsideSeparateThread) {
+          if (_configs.imageGeneration.generateInsideSeparateThread) {
             if (kIsWeb || isOutputSizeTooLarge) {
               /// currently in the web flutter decode the image wrong so we need
               /// to recapture it.
@@ -628,12 +628,12 @@ class ContentRecorderController {
   Future<Uint8List> _encodeImage(ui.Image image) async {
     return await encodeImage(
       image: await _convertFlutterUiToImage(image),
-      outputFormat: _configs.imageGenerationConfigs.outputFormat,
-      singleFrame: _configs.imageGenerationConfigs.singleFrame,
-      jpegQuality: _configs.imageGenerationConfigs.jpegQuality,
-      jpegChroma: _configs.imageGenerationConfigs.jpegChroma,
-      pngFilter: _configs.imageGenerationConfigs.pngFilter,
-      pngLevel: _configs.imageGenerationConfigs.pngLevel,
+      outputFormat: _configs.imageGeneration.outputFormat,
+      singleFrame: _configs.imageGeneration.singleFrame,
+      jpegQuality: _configs.imageGeneration.jpegQuality,
+      jpegChroma: _configs.imageGeneration.jpegChroma,
+      pngFilter: _configs.imageGeneration.pngFilter,
+      pngLevel: _configs.imageGeneration.pngLevel,
     );
   }
 
@@ -656,13 +656,13 @@ class ContentRecorderController {
     return ImageConvertThreadRequest(
       id: id,
       generateOnlyImageBounds:
-          _configs.imageGenerationConfigs.captureOnlyDrawingBounds,
+          _configs.imageGeneration.captureOnlyDrawingBounds,
       outputFormat: format,
-      jpegChroma: _configs.imageGenerationConfigs.jpegChroma,
-      jpegQuality: _configs.imageGenerationConfigs.jpegQuality,
-      pngFilter: _configs.imageGenerationConfigs.pngFilter,
-      pngLevel: _configs.imageGenerationConfigs.pngLevel,
-      singleFrame: _configs.imageGenerationConfigs.singleFrame,
+      jpegChroma: _configs.imageGeneration.jpegChroma,
+      jpegQuality: _configs.imageGeneration.jpegQuality,
+      pngFilter: _configs.imageGeneration.pngFilter,
+      pngLevel: _configs.imageGeneration.pngLevel,
+      singleFrame: _configs.imageGeneration.singleFrame,
       image: await _convertFlutterUiToImage(image),
     );
   }
@@ -685,12 +685,12 @@ class ContentRecorderController {
     return ThreadRequest(
       id: id,
       image: await _convertFlutterUiToImage(image),
-      outputFormat: _configs.imageGenerationConfigs.outputFormat,
-      singleFrame: _configs.imageGenerationConfigs.singleFrame,
-      jpegQuality: _configs.imageGenerationConfigs.jpegQuality,
-      jpegChroma: _configs.imageGenerationConfigs.jpegChroma,
-      pngFilter: _configs.imageGenerationConfigs.pngFilter,
-      pngLevel: _configs.imageGenerationConfigs.pngLevel,
+      outputFormat: _configs.imageGeneration.outputFormat,
+      singleFrame: _configs.imageGeneration.singleFrame,
+      jpegQuality: _configs.imageGeneration.jpegQuality,
+      jpegChroma: _configs.imageGeneration.jpegChroma,
+      pngFilter: _configs.imageGeneration.pngFilter,
+      pngLevel: _configs.imageGeneration.pngLevel,
     );
   }
 }

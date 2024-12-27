@@ -86,8 +86,6 @@ Future<Uint8List> encodeImage({
     case OutputFormat.ico:
       bytes = img.encodeIco(image, singleFrame: singleFrame);
       break;
-    default:
-      throw ArgumentError('Unsupported output format: $outputFormat');
   }
   return bytes;
 }

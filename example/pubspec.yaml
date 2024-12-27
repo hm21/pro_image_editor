@@ -14,27 +14,34 @@ dependencies:
   pro_image_editor:
     path: ../
     
-  intl: ^0.19.0
-  cupertino_icons: ^1.0.2
-  file_picker: ^8.0.0+1
-  google_fonts: ^6.2.0
-  image: ^4.2.0
-  firebase_core: ^2.32.0
-  firebase_storage: ^11.7.7
-  supabase_flutter: ^2.5.3
-  image_picker: ^1.1.1
-  mime: ^1.0.5
-  url_launcher: ^6.2.6
+  intl: ^0.20.1
+  cupertino_icons: ^1.0.8
+  file_picker: 8.1.4
+  google_fonts: ^6.2.1
+  image: ^4.4.0
+  firebase_core: ^3.8.1
+  firebase_storage: ^12.3.7
+  supabase_flutter: ^2.8.1
+  image_picker: ^1.1.2
+  mime: ^2.0.0
+  url_launcher: ^6.3.1
+  flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   import_sorter: ^4.6.0
+  
+dependency_overrides: 
+  # Fix conflict with supabase
+  mime: ^2.0.0
 
 flutter:
   uses-material-design: true
   assets:
     - assets/demo.png
+    - assets/frame.png
+    - assets/frame1.png
     - assets/google_fonts/

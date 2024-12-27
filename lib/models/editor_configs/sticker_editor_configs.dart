@@ -1,6 +1,12 @@
 // Flutter imports:
 import 'package:flutter/widgets.dart';
 
+import '../icons/sticker_editor_icons.dart';
+import '../styles/sticker_editor_style.dart';
+
+export '../icons/sticker_editor_icons.dart';
+export '../styles/sticker_editor_style.dart';
+
 /// Configuration options for a sticker editor.
 ///
 /// `StickerEditorConfigs` allows you to define various settings for a sticker
@@ -23,11 +29,13 @@ class StickerEditorConfigs {
   /// By default, the editor is disabled (if not specified), and other
   /// properties are set to reasonable defaults.
   const StickerEditorConfigs({
-    required this.buildStickers,
+    this.buildStickers,
     this.initWidth = 100,
     this.minScale = double.negativeInfinity,
     this.maxScale = double.infinity,
     this.enabled = false,
+    this.style = const StickerEditorStyle(),
+    this.icons = const StickerEditorIcons(),
   })  : assert(initWidth > 0, 'initWidth must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
@@ -51,13 +59,45 @@ class StickerEditorConfigs {
   /// returns a Widget. The function parameter `setLayer` is used to set a
   /// layer in the editor. This callback allows for customizing the appearance
   /// and behavior of stickers in the editor.
-  final BuildStickers buildStickers;
+  final BuildStickers? buildStickers;
 
   /// The minimum scale factor from the layer.
   final double minScale;
 
   /// The maximum scale factor from the layer.
   final double maxScale;
+
+  /// Style configuration for the sticker editor.
+  final StickerEditorStyle style;
+
+  /// Icons used in the sticker editor.
+  final StickerEditorIcons icons;
+
+  /// Creates a copy of this `StickerEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [StickerEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  StickerEditorConfigs copyWith({
+    bool? enabled,
+    double? initWidth,
+    BuildStickers? buildStickers,
+    double? minScale,
+    double? maxScale,
+    StickerEditorStyle? style,
+    StickerEditorIcons? icons,
+  }) {
+    return StickerEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      initWidth: initWidth ?? this.initWidth,
+      buildStickers: buildStickers ?? this.buildStickers,
+      minScale: minScale ?? this.minScale,
+      maxScale: maxScale ?? this.maxScale,
+      style: style ?? this.style,
+      icons: icons ?? this.icons,
+    );
+  }
 }
 
 /// A typedef representing a function signature for building sticker widgets.

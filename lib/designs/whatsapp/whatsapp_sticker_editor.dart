@@ -47,7 +47,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   void initState() {
     _searchCtrl = TextEditingController();
     _searchFocus = FocusNode();
-    if (widget.configs.stickerEditorConfigs == null) {
+    if (!widget.configs.stickerEditor.enabled) {
       whatsAppTemporaryStickerMode = WhatsAppStickerMode.emoji;
     }
     super.initState();
@@ -86,7 +86,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                         configs: widget.configs,
                       ),
                     ),
-                    if (widget.configs.stickerEditorConfigs != null)
+                    if (widget.configs.stickerEditor.enabled)
                       Offstage(
                         offstage: whatsAppTemporaryStickerMode !=
                             WhatsAppStickerMode.sticker,
@@ -132,7 +132,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                 }
               },
               icon: Icon(
-                widget.configs.icons.backButton,
+                widget.configs.mainEditor.icons.backButton,
                 color: Colors.white,
               ),
             ),
@@ -142,7 +142,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
               ),
               onPressed: () {},
               icon: Icon(
-                widget.configs.icons.stickerEditor.bottomNavBar,
+                widget.configs.stickerEditor.icons.bottomNavBar,
                 color: Colors.white,
               ),
             ),
@@ -171,7 +171,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                         color: Colors.white,
                       ),
                     ),
-                    if (widget.configs.stickerEditorConfigs != null)
+                    if (widget.configs.stickerEditor.enabled)
                       Align(
                         alignment: Alignment.center,
                         child: SegmentedButton(
@@ -235,13 +235,12 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
       ),
       AnimatedSwitcher(
         duration: const Duration(milliseconds: 180),
-        reverseDuration: widget.configs.stickerEditorConfigs != null
-            ? null
-            : const Duration(),
+        reverseDuration:
+            widget.configs.stickerEditor.enabled ? null : const Duration(),
         switchInCurve: Curves.easeInOut,
         transitionBuilder: (child, animation) => FadeTransition(
           opacity: animation,
-          child: widget.configs.stickerEditorConfigs != null
+          child: widget.configs.stickerEditor.enabled
               ? SizeTransition(
                   sizeFactor: animation,
                   axisAlignment: -1,
@@ -259,15 +258,14 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: AnimatedSwitcher(
           duration: Duration(
-              milliseconds:
-                  widget.configs.stickerEditorConfigs != null ? 160 : 0),
+              milliseconds: widget.configs.stickerEditor.enabled ? 160 : 0),
           switchInCurve: Curves.easeInOut,
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
             child: child,
           ),
           child: _activeSearch
-              ? (widget.configs.stickerEditorConfigs != null
+              ? (widget.configs.stickerEditor.enabled
                   ? Row(
                       children: [
                         Expanded(
@@ -290,12 +288,12 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
                         icon: const Icon(Icons.search),
                         color: Colors.white,
                       ),
-                      if (widget.configs.stickerEditorConfigs != null)
+                      if (widget.configs.stickerEditor.enabled)
                         _buildCupertinoSegments(),
                       IconButton(
                         onPressed: null,
                         icon: Icon(
-                          widget.configs.icons.stickerEditor.bottomNavBar,
+                          widget.configs.stickerEditor.icons.bottomNavBar,
                           color: Colors.white,
                         ),
                       ),
@@ -323,14 +321,14 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
         WhatsAppStickerMode.emoji: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Icon(
-            widget.configs.icons.emojiEditor.bottomNavBar,
+            widget.configs.emojiEditor.icons.bottomNavBar,
             color: Colors.white,
           ),
         ),
         WhatsAppStickerMode.sticker: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Icon(
-            widget.configs.icons.stickerEditor.bottomNavBar,
+            widget.configs.stickerEditor.icons.bottomNavBar,
             color: Colors.white,
           ),
         ),

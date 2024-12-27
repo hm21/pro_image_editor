@@ -3,8 +3,11 @@
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/extensions/color_extension.dart';
 
 // Project imports:
+import '../../utils/parser/double_parser.dart';
+import '../../utils/parser/int_parser.dart';
 import '../../utils/unique_id_generator.dart';
 import '../paint_editor/painted_model.dart';
 import 'layer_background_mode.dart';
@@ -21,6 +24,8 @@ class Layer {
   /// The [scale] parameter sets the scale factor of the widget (default is 1).
   /// The [flipX] parameter controls horizontal flipping (default is false).
   /// The [flipY] parameter controls vertical flipping (default is false).
+  /// The [enableInteraction] parameter controls if a user can interact with
+  /// the layer
   Layer({
     String? id,
     Offset? offset,
@@ -28,6 +33,7 @@ class Layer {
     double? scale,
     bool? flipX,
     bool? flipY,
+    bool? enableInteraction,
   }) {
     key = GlobalKey();
     // Initialize properties with provided values or defaults.
@@ -37,6 +43,7 @@ class Layer {
     this.scale = scale ?? 1;
     this.flipX = flipX ?? false;
     this.flipY = flipY ?? false;
+    this.enableInteraction = enableInteraction ?? true;
   }
 
   /// Factory constructor for creating a Layer instance from a map and a list
@@ -49,34 +56,31 @@ class Layer {
     Layer layer = Layer(
       flipX: map['flipX'] ?? false,
       flipY: map['flipY'] ?? false,
-      offset: Offset(map['x'] ?? 0, map['y'] ?? 0),
-      rotation: map['rotation'] ?? 0,
-      scale: map['scale'] ?? 1,
+      enableInteraction: map['enableInteraction'] ?? true,
+      offset: Offset(safeParseDouble(map['x']), safeParseDouble(map['y'])),
+      rotation: safeParseDouble(map['rotation']),
+      scale: safeParseDouble(map['scale'], fallback: 1),
     );
 
     /// Determines the layer type from the map and returns the appropriate
     /// LayerData subclass.
     switch (map['type']) {
       case 'text':
-
-        /// Returns a TextLayerData instance when type is 'text'.
+        // Returns a TextLayerData instance when type is 'text'.
         return TextLayerData.fromMap(layer, map);
       case 'emoji':
-
-        /// Returns an EmojiLayerData instance when type is 'emoji'.
+        // Returns an EmojiLayerData instance when type is 'emoji'.
         return EmojiLayerData.fromMap(layer, map);
+      case 'paint':
       case 'painting':
-
-        /// Returns a PaintingLayerData instance when type is 'painting'.
-        return PaintingLayerData.fromMap(layer, map);
+        // Returns a PaintLayerData instance when type is 'paint'.
+        return PaintLayerData.fromMap(layer, map);
       case 'sticker':
-
-        /// Returns a StickerLayerData instance when type is 'sticker',
-        /// utilizing the stickers list.
+        // Returns a StickerLayerData instance when type is 'sticker',
+        // utilizing the stickers list.
         return StickerLayerData.fromMap(layer, map, stickers);
       default:
-
-        /// Returns the base Layer instance when type is unrecognized.
+        // Returns the base Layer instance when type is unrecognized.
         return layer;
     }
   }
@@ -94,6 +98,9 @@ class Layer {
   /// Flags to control horizontal and vertical flipping.
   late bool flipX, flipY;
 
+  /// Flag to enable or disable the user interaction with the layer.
+  late bool enableInteraction;
+
   /// A unique identifier for the layer.
   late String id;
 
@@ -110,6 +117,7 @@ class Layer {
       'scale': scale,
       'flipX': flipX,
       'flipY': flipY,
+      'enableInteraction': enableInteraction,
       'type': 'default',
     };
   }
@@ -148,6 +156,7 @@ class TextLayerData extends Layer {
     super.id,
     super.flipX,
     super.flipY,
+    super.enableInteraction,
   });
 
   /// Factory constructor for creating a TextLayerData instance from a Layer
@@ -199,10 +208,10 @@ class TextLayerData extends Layer {
 
     /// Optional properties for text styling from the map.
     String? fontFamily = map['fontFamily'] as String?;
-    double? wordSpacing = map['wordSpacing'] as double?;
-    double? height = map['height'] as double?;
-    double? letterSpacing = map['letterSpacing'] as double?;
-    int? fontWeight = map['fontWeight'] as int?;
+    double? wordSpacing = tryParseDouble(map['wordSpacing']);
+    double? height = tryParseDouble(map['height']);
+    double? letterSpacing = tryParseDouble(map['letterSpacing']);
+    int? fontWeight = tryParseInt(map['fontWeight']);
     String? fontStyle = map['fontStyle'] as String?;
     String? decoration = map['decoration'] as String?;
 
@@ -211,6 +220,7 @@ class TextLayerData extends Layer {
     return TextLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
+      enableInteraction: layer.enableInteraction,
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
@@ -278,8 +288,8 @@ class TextLayerData extends Layer {
       ...super.toMap(),
       'text': text,
       'colorMode': LayerBackgroundMode.values[colorMode?.index ?? 0].name,
-      'color': color.value,
-      'background': background.value,
+      'color': color.toHex(),
+      'background': background.toHex(),
       'colorPickerPosition': colorPickerPosition ?? 0,
       'align': align.name,
       'fontScale': fontScale,
@@ -326,6 +336,7 @@ class EmojiLayerData extends Layer {
     super.id,
     super.flipX,
     super.flipY,
+    super.enableInteraction,
   });
 
   /// Factory constructor for creating an EmojiLayerData instance from a Layer
@@ -336,6 +347,7 @@ class EmojiLayerData extends Layer {
     return EmojiLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
+      enableInteraction: layer.enableInteraction,
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
@@ -356,16 +368,16 @@ class EmojiLayerData extends Layer {
   }
 }
 
-/// A class representing a layer with custom painting content.
+/// A class representing a layer with custom paint content.
 ///
-/// PaintingLayerData is a subclass of [Layer] that allows you to display
+/// PaintLayerData is a subclass of [Layer] that allows you to display
 /// custom-painted content on a canvas. You can specify the painted item and
 /// its raw size, along with optional properties like offset, rotation,
 /// scale, and more.
 ///
 /// Example usage:
 /// ```dart
-/// PaintingLayerData(
+/// PaintLayerData(
 ///   item: CustomPaintedItem(),
 ///   rawSize: Size(200.0, 150.0),
 ///   offset: Offset(50.0, 50.0),
@@ -373,12 +385,12 @@ class EmojiLayerData extends Layer {
 ///   scale: 1.5,
 /// );
 /// ```
-class PaintingLayerData extends Layer {
-  /// Creates an instance of PaintingLayerData.
+class PaintLayerData extends Layer {
+  /// Creates an instance of PaintLayerData.
   ///
   /// The [item] and [rawSize] parameters are required, and other properties
   /// are optional.
-  PaintingLayerData({
+  PaintLayerData({
     required this.item,
     required this.rawSize,
     required this.opacity,
@@ -388,23 +400,25 @@ class PaintingLayerData extends Layer {
     super.id,
     super.flipX,
     super.flipY,
+    super.enableInteraction,
   });
 
-  /// Factory constructor for creating a PaintingLayerData instance from a
+  /// Factory constructor for creating a PaintLayerData instance from a
   /// Layer and a map.
-  factory PaintingLayerData.fromMap(Layer layer, Map<String, dynamic> map) {
-    /// Constructs and returns a PaintingLayerData instance with properties
+  factory PaintLayerData.fromMap(Layer layer, Map<String, dynamic> map) {
+    /// Constructs and returns a PaintLayerData instance with properties
     /// derived from the layer and map.
-    return PaintingLayerData(
+    return PaintLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
+      enableInteraction: layer.enableInteraction,
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
-      opacity: map['opacity'] ?? 1.0,
+      opacity: safeParseDouble(map['opacity'], fallback: 1.0),
       rawSize: Size(
-        map['rawSize']?['w'] ?? 0,
-        map['rawSize']?['h'] ?? 0,
+        safeParseDouble(map['rawSize']?['w'], fallback: 0),
+        safeParseDouble(map['rawSize']?['h'], fallback: 0),
       ),
       item: PaintedModel.fromMap(map['item'] ?? {}),
     );
@@ -432,7 +446,7 @@ class PaintingLayerData extends Layer {
         'h': rawSize.height,
       },
       'opacity': opacity,
-      'type': 'painting',
+      'type': 'paint',
     };
   }
 }
@@ -463,6 +477,7 @@ class StickerLayerData extends Layer {
     super.id,
     super.flipX,
     super.flipY,
+    super.enableInteraction,
   });
 
   /// Factory constructor for creating a StickerLayerData instance from a
@@ -473,7 +488,7 @@ class StickerLayerData extends Layer {
     List<Uint8List> stickers,
   ) {
     /// Determines the position of the sticker in the list.
-    int stickerPosition = (map['listPosition'] as int?) ?? -1;
+    int stickerPosition = safeParseInt(map['listPosition'], fallback: -1);
 
     /// Widget to display a sticker or a placeholder if not found.
     Widget sticker = kDebugMode
@@ -498,6 +513,7 @@ class StickerLayerData extends Layer {
     return StickerLayerData(
       flipX: layer.flipX,
       flipY: layer.flipY,
+      enableInteraction: layer.enableInteraction,
       offset: layer.offset,
       rotation: layer.rotation,
       scale: layer.scale,
@@ -535,6 +551,7 @@ class StickerLayerData extends Layer {
     String? id,
     bool? flipX,
     bool? flipY,
+    bool? enableInteraction,
   }) {
     return StickerLayerData(
       sticker: sticker ?? this.sticker,
@@ -544,6 +561,7 @@ class StickerLayerData extends Layer {
       id: id ?? this.id,
       flipX: flipX ?? this.flipX,
       flipY: flipY ?? this.flipY,
+      enableInteraction: enableInteraction ?? this.enableInteraction,
     );
   }
 }

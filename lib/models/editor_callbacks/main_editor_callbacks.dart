@@ -18,7 +18,8 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     this.onUpdateLayer,
     this.onRemoveLayer,
     this.onOpenSubEditor,
-    this.onCloseSubEditor,
+    this.onStartCloseSubEditor,
+    this.onEndCloseSubEditor,
     this.onScaleStart,
     this.onScaleUpdate,
     this.onScaleEnd,
@@ -54,11 +55,26 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
   /// sub-editor.
   final ValueChanged<SubEditor>? onOpenSubEditor;
 
-  /// A callback function that is triggered when a sub-editor is closed.
+  /// A callback that is triggered when a sub-editor finishes closing.
   ///
-  /// The [SubEditor] parameter provides information about the closed
-  /// sub-editor.
-  final ValueChanged<SubEditor>? onCloseSubEditor;
+  /// The [onEndCloseSubEditor] callback is triggered when a sub-editor has
+  /// fully closed. It receives the [SubEditor] that was closed as its argument,
+  /// allowing the parent widget to respond accordingly, such as cleaning up
+  /// resources or updating the UI.
+  ///
+  /// This can be `null` if no action is required when the sub-editor closes.
+  final ValueChanged<SubEditor>? onEndCloseSubEditor;
+
+  /// A callback that is triggered when a sub-editor starts to close.
+  ///
+  /// The [onStartCloseSubEditor] callback is triggered when the process of
+  /// closing a sub-editor begins. It receives the [SubEditor] that is about
+  /// to close as its argument, allowing the parent widget to take any necessary
+  /// actions, such as preparing the UI for the transition or saving state.
+  ///
+  /// This can be `null` if no action is required at the start of the close
+  /// process.
+  final ValueChanged<SubEditor>? onStartCloseSubEditor;
 
   /// A callback function that is triggered when the user `tap` on the body.
   final Function()? onTap;
@@ -209,12 +225,29 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     handleUpdateUI();
   }
 
-  /// Handles the closing of a sub-editor.
+  /// Handles the process when a sub-editor finishes closing.
   ///
-  /// This method calls the [onCloseSubEditor] callback with the provided
-  /// [subEditor] and then calls [handleUpdateUI].
-  void handleCloseSubEditor(SubEditor subEditor) {
-    onCloseSubEditor?.call(subEditor);
+  /// The [handleEndCloseSubEditor] method is called when a sub-editor has
+  /// fully closed. It first triggers the [onEndCloseSubEditor] callback,
+  /// if it has been provided, and then calls [handleUpdateUI] to update
+  /// the user interface after the sub-editor has closed.
+  ///
+  /// * [subEditor] - The sub-editor that has finished closing.
+  void handleEndCloseSubEditor(SubEditor subEditor) {
+    onEndCloseSubEditor?.call(subEditor);
+    handleUpdateUI();
+  }
+
+  /// Handles the process when a sub-editor starts closing.
+  ///
+  /// The [handleStartCloseSubEditor] method is called when a sub-editor begins
+  /// the process of closing. It first triggers the [onStartCloseSubEditor]
+  /// callback, if it has been provided, and then calls [handleUpdateUI] to
+  /// update the user interface as the sub-editor starts to close.
+  ///
+  /// * [subEditor] - The sub-editor that is starting to close.
+  void handleStartCloseSubEditor(SubEditor subEditor) {
+    onStartCloseSubEditor?.call(subEditor);
     handleUpdateUI();
   }
 

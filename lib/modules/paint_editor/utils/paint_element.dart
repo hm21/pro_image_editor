@@ -5,7 +5,7 @@ import 'dart:ui';
 import '../../../models/paint_editor/painted_model.dart';
 import 'paint_editor_enum.dart';
 
-/// Represents an element within the painting editor.
+/// Represents an element within the paint-editor.
 class PaintElement {
   /// Draws an element on a canvas based on the specified mode and parameters.
   ///
@@ -21,7 +21,7 @@ class PaintElement {
   /// - `freeStyleHighPerformance`: Controls high-performance for free-style
   ///   drawing.
   /// - `item` Represents a unit of shape or drawing information used in
-  ///   painting.
+  ///   paint-items.
   void drawElement({
     required Canvas canvas,
     required Size size,

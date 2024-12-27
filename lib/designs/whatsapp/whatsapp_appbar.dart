@@ -70,7 +70,7 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
                   IconButton(
                     tooltip: widget.configs.i18n.cancel,
                     onPressed: widget.onClose,
-                    icon: Icon(widget.configs.icons.closeEditor),
+                    icon: Icon(widget.configs.mainEditor.icons.closeEditor),
                     style: whatsAppButtonStyle,
                   ),
                   const Spacer(),
@@ -88,24 +88,25 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
                         ? IconButton(
                             tooltip: widget.configs.i18n.undo,
                             onPressed: widget.onTapUndo,
-                            icon: Icon(widget.configs.icons.undoAction),
+                            icon: Icon(
+                                widget.configs.mainEditor.icons.undoAction),
                             style: whatsAppButtonStyle,
                           )
                         : const SizedBox.shrink(),
                   ),
-                  if (widget.configs.cropRotateEditorConfigs.enabled) ...[
+                  if (widget.configs.cropRotateEditor.enabled) ...[
                     gap,
                     IconButton(
                       tooltip: widget.configs.i18n.cropRotateEditor
                           .bottomNavigationBarText,
                       onPressed: widget.onTapCropRotateEditor,
                       icon: Icon(
-                          widget.configs.icons.cropRotateEditor.bottomNavBar),
+                          widget.configs.cropRotateEditor.icons.bottomNavBar),
                       style: whatsAppButtonStyle,
                     ),
                   ],
-                  if (widget.configs.stickerEditorConfigs?.enabled == true ||
-                      widget.configs.emojiEditorConfigs.enabled) ...[
+                  if (widget.configs.stickerEditor.enabled ||
+                      widget.configs.emojiEditor.enabled) ...[
                     gap,
                     IconButton(
                       key: const ValueKey('whatsapp-open-sticker-editor-btn'),
@@ -113,28 +114,27 @@ class _WhatsAppAppBarState extends State<WhatsAppAppBar> {
                           .configs.i18n.stickerEditor.bottomNavigationBarText,
                       onPressed: widget.onTapStickerEditor,
                       icon:
-                          Icon(widget.configs.icons.stickerEditor.bottomNavBar),
+                          Icon(widget.configs.stickerEditor.icons.bottomNavBar),
                       style: whatsAppButtonStyle,
                     ),
                   ],
-                  if (widget.configs.textEditorConfigs.enabled) ...[
+                  if (widget.configs.textEditor.enabled) ...[
                     gap,
                     IconButton(
                       tooltip: widget
                           .configs.i18n.textEditor.bottomNavigationBarText,
                       onPressed: widget.onTapTextEditor,
-                      icon: Icon(widget.configs.icons.textEditor.bottomNavBar),
+                      icon: Icon(widget.configs.textEditor.icons.bottomNavBar),
                       style: whatsAppButtonStyle,
                     ),
                   ],
-                  if (widget.configs.paintEditorConfigs.enabled) ...[
+                  if (widget.configs.paintEditor.enabled) ...[
                     gap,
                     IconButton(
                       tooltip: widget
                           .configs.i18n.paintEditor.bottomNavigationBarText,
                       onPressed: widget.onTapPaintEditor,
-                      icon: Icon(
-                          widget.configs.icons.paintingEditor.bottomNavBar),
+                      icon: Icon(widget.configs.paintEditor.icons.bottomNavBar),
                       style: whatsAppButtonStyle,
                     ),
                   ],

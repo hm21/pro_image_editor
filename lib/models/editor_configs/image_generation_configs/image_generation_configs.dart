@@ -32,6 +32,7 @@ class ImageGenerationConfigs {
   const ImageGenerationConfigs({
     this.captureOnlyBackgroundImageArea = true,
     this.allowEmptyEditCompletion = true,
+    this.enableUseOriginalBytes = true,
     this.generateInsideSeparateThread = true,
     this.generateImageInBackground = !kIsWeb || !kDebugMode,
     this.captureOnlyDrawingBounds = true,
@@ -47,10 +48,6 @@ class ImageGenerationConfigs {
     this.maxThumbnailSize = const Size(100, 100),
   })  : assert(jpegQuality > 0 && jpegQuality <= 100,
             'jpegQuality must be between 1 and 100'),
-        assert(
-            captureOnlyDrawingBounds || !captureOnlyBackgroundImageArea,
-            'When [captureOnlyDrawingBounds] is true must '
-            '[captureOnlyBackgroundImageArea] be false'),
         assert(
             pngLevel >= 0 && pngLevel <= 9, 'pngLevel must be between 0 and 9'),
         assert(customPixelRatio == null || customPixelRatio > 0,
@@ -72,7 +69,7 @@ class ImageGenerationConfigs {
   final bool captureOnlyBackgroundImageArea;
 
   /// Determines whether to capture only the content within the boundaries of
-  /// the painting when editing is complete.
+  /// the drawings when editing is complete.
   ///
   /// If set to `true`, editing completion will result in cropping all content
   /// outside the image boundaries.
@@ -116,6 +113,16 @@ class ImageGenerationConfigs {
   ///
   /// <img src="https://github.com/hm21/pro_image_editor/blob/stable/assets/schema_callbacks.jpeg?raw=true" alt="Schema" height="500px" />
   final bool allowEmptyEditCompletion;
+
+  /// When disabled, this flag allows the editor to re-record the original
+  /// image even if there are no changes made. This is useful when
+  /// the editor use `bodyItemsRecorded` inside `customWidgets`.
+  ///
+  /// If `true`, the editor will skip re-recording when no changes are
+  /// detected, optimizing performance.
+  ///
+  /// **Default**: `true`
+  final bool enableUseOriginalBytes;
 
   /// The pixel ratio of the image relative to the content.
   ///
@@ -182,6 +189,7 @@ class ImageGenerationConfigs {
   ImageGenerationConfigs copyWith({
     bool? captureOnlyBackgroundImageArea,
     bool? allowEmptyEditCompletion,
+    bool? enableUseOriginalBytes,
     bool? generateInsideSeparateThread,
     bool? generateImageInBackground,
     bool? captureOnlyDrawingBounds,
@@ -202,6 +210,8 @@ class ImageGenerationConfigs {
           captureOnlyBackgroundImageArea ?? this.captureOnlyBackgroundImageArea,
       allowEmptyEditCompletion:
           allowEmptyEditCompletion ?? this.allowEmptyEditCompletion,
+      enableUseOriginalBytes:
+          enableUseOriginalBytes ?? this.enableUseOriginalBytes,
       generateInsideSeparateThread:
           generateInsideSeparateThread ?? this.generateInsideSeparateThread,
       generateImageInBackground:

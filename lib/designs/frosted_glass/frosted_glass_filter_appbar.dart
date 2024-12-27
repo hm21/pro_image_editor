@@ -49,7 +49,7 @@ class FrostedGlassFilterAppbar extends StatelessWidget {
                     tooltip: filterEditor.configs.i18n.cancel,
                     onPressed: filterEditor.close,
                     icon: Icon(
-                      filterEditor.configs.icons.closeEditor,
+                      filterEditor.filterEditorConfigs.icons.backButton,
                       color: Colors.white,
                     ),
                   ),
@@ -62,7 +62,7 @@ class FrostedGlassFilterAppbar extends StatelessWidget {
                     tooltip: filterEditor.configs.i18n.done,
                     onPressed: filterEditor.done,
                     icon: Icon(
-                      filterEditor.configs.icons.doneIcon,
+                      filterEditor.filterEditorConfigs.icons.applyChanges,
                       color: Colors.white,
                     ),
                   ),

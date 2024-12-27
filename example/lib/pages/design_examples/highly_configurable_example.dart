@@ -9,13 +9,16 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../../utils/example_helper.dart';
 
+/// The custom design example
 class HighlyConfigurableExample extends StatefulWidget {
-  final String url;
-
+  /// Creates a new [HighlyConfigurableExample] widget.
   const HighlyConfigurableExample({
     super.key,
     required this.url,
   });
+
+  /// The URL of the image to display.
+  final String url;
 
   @override
   State<HighlyConfigurableExample> createState() =>
@@ -40,11 +43,12 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             loadingDialogMsg: 'Please wait...',
             closeEditorWarningTitle: 'Close Image Editor?',
             closeEditorWarningMessage:
-                'Are you sure you want to close the Image Editor? Your changes will not be saved.',
+                'Are you sure you want to close the Image Editor? Your changes '
+                'will not be saved.',
             closeEditorWarningConfirmBtn: 'OK',
             closeEditorWarningCancelBtn: 'Cancel',
           ),
-          paintEditor: I18nPaintingEditor(
+          paintEditor: I18nPaintEditor(
             bottomNavigationBarText: 'Paint',
             freestyle: 'Freestyle',
             arrow: 'Arrow',
@@ -127,6 +131,22 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
               xProII: 'Pro II',
             ),
           ),
+          tuneEditor: I18nTuneEditor(
+            bottomNavigationBarText: 'Tune',
+            back: 'Back',
+            done: 'Done',
+            brightness: 'Brightness',
+            contrast: 'Contrast',
+            saturation: 'Saturation',
+            exposure: 'Exposure',
+            hue: 'Hue',
+            temperature: 'Temperature',
+            sharpness: 'Sharpness',
+            fade: 'Fade',
+            luminance: 'Luminance',
+            undo: 'Undo',
+            redo: 'Redo',
+          ),
           blurEditor: I18nBlurEditor(
             bottomNavigationBarText: 'Blur',
             back: 'Back',
@@ -145,42 +165,135 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
           remove: 'Remove',
           doneLoadingMsg: 'Changes are being applied',
         ),
-        helperLines: const HelperLines(
+        helperLines: const HelperLineConfigs(
           showVerticalLine: true,
           showHorizontalLine: true,
           showRotateLine: true,
           hitVibration: true,
-        ),
-        customWidgets: const ImageEditorCustomWidgets(),
-        imageEditorTheme: const ImageEditorTheme(
-          helperLine: HelperLineTheme(
+          style: HelperLineStyle(
             horizontalColor: Color.fromARGB(255, 15, 196, 60),
             verticalColor: Color.fromARGB(255, 15, 196, 60),
             rotateColor: Color.fromARGB(255, 231, 255, 11),
           ),
-          paintingEditor: PaintingEditorTheme(
-            appBarBackgroundColor: Color.fromARGB(255, 20, 99, 189),
-            lineWidthBottomSheetColor: Colors.green,
-            appBarForegroundColor: Color(0xFFE1E1E1),
+        ),
+        mainEditor: const MainEditorConfigs(
+          style: MainEditorStyle(
+            background: Color.fromARGB(255, 255, 169, 169),
+            appBarColor: Color.fromARGB(255, 126, 14, 6),
+            appBarBackground: Color.fromARGB(255, 255, 211, 77),
+            bottomBarBackground: Colors.purple,
+            uiOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: Color.fromARGB(66, 60, 65, 41),
+              statusBarIconBrightness: Brightness.light,
+              systemNavigationBarIconBrightness: Brightness.light,
+              statusBarBrightness: Brightness.dark,
+              systemNavigationBarColor: Color.fromARGB(255, 255, 139, 216),
+            ),
+          ),
+          icons: MainEditorIcons(
+            closeEditor: Icons.clear,
+            doneIcon: Icons.save_outlined,
+            applyChanges: Icons.check_circle_outlined,
+            backButton: Icons.arrow_back,
+            undoAction: Icons.turn_left_outlined,
+            redoAction: Icons.turn_right_outlined,
+            removeElementZone: Icons.delete_forever_outlined,
+          ),
+        ),
+        paintEditor: const PaintEditorConfigs(
+          enabled: true,
+          hasOptionFreeStyle: true,
+          hasOptionArrow: true,
+          hasOptionLine: true,
+          hasOptionRect: true,
+          hasOptionCircle: true,
+          hasOptionDashLine: true,
+          canToggleFill: true,
+          canChangeLineWidth: true,
+          initialFill: true,
+          freeStyleHighPerformanceScaling: true,
+          initialPaintMode: PaintModeE.freeStyle,
+          style: PaintEditorStyle(
+            appBarColor: Color(0xFFE1E1E1),
+            appBarBackground: Color.fromARGB(255, 20, 99, 189),
+            lineWidthBottomSheetBackground: Colors.green,
             background: Color.fromARGB(255, 255, 249, 196),
-            bottomBarColor: Color.fromARGB(255, 136, 0, 84),
-            bottomBarActiveItemColor: Color.fromARGB(255, 46, 0, 58),
+            bottomBarBackground: Colors.blueGrey,
+            bottomBarActiveItemColor: Color.fromARGB(255, 154, 0, 192),
             bottomBarInactiveItemColor: Color.fromARGB(255, 223, 255, 210),
             initialStrokeWidth: 5.0,
             initialColor: Color.fromARGB(255, 8, 170, 49),
           ),
-          textEditor: TextEditorTheme(
-            appBarBackgroundColor: Color.fromARGB(255, 0, 17, 255),
-            appBarForegroundColor: Color(0xFFE1E1E1),
+          icons: PaintEditorIcons(
+            bottomNavBar: Icons.palette,
+            lineWeight: Icons.line_weight_rounded,
+            freeStyle: Icons.roundabout_left,
+            arrow: Icons.arrow_downward_rounded,
+            line: Icons.horizontal_rule,
+            fill: Icons.format_color_fill,
+            noFill: Icons.format_color_reset,
+            rectangle: Icons.crop_free,
+            circle: Icons.lens_outlined,
+            dashLine: Icons.power_input,
+          ),
+        ),
+        textEditor: TextEditorConfigs(
+          enabled: true,
+          canToggleTextAlign: true,
+          canToggleBackgroundMode: true,
+          initFontSize: 24.0,
+          initialTextAlign: TextAlign.center,
+          initialBackgroundColorMode: LayerBackgroundMode.background,
+          showSelectFontStyleBottomBar: true,
+          style: const TextEditorStyle(
+            appBarBackground: Color.fromARGB(255, 0, 17, 255),
+            appBarColor: Color(0xFFE1E1E1),
+            bottomBarBackground: Colors.blueGrey,
             background: Color.fromARGB(155, 255, 194, 252),
             inputHintColor: Color.fromARGB(255, 255, 0, 0),
             inputCursorColor: Color.fromARGB(255, 15, 182, 0),
           ),
-          cropRotateEditor: CropRotateEditorTheme(
-            appBarBackgroundColor: Color.fromARGB(255, 85, 0, 0),
-            appBarForegroundColor: Color(0xFFE1E1E1),
-            bottomBarBackgroundColor: Color.fromARGB(255, 136, 0, 84),
-            bottomBarForegroundColor: Color.fromARGB(255, 223, 255, 210),
+          icons: const TextEditorIcons(
+            bottomNavBar: Icons.title,
+            alignLeft: Icons.align_horizontal_left_rounded,
+            alignCenter: Icons.align_horizontal_center_rounded,
+            alignRight: Icons.align_horizontal_right_rounded,
+            backgroundMode: Icons.dashboard,
+            fontScale: Icons.text_increase_rounded,
+            resetFontScale: Icons.restore,
+          ),
+          customTextStyles: [
+            GoogleFonts.roboto(),
+            GoogleFonts.averiaLibre(),
+            GoogleFonts.lato(),
+            GoogleFonts.comicNeue(),
+            GoogleFonts.actor(),
+            GoogleFonts.odorMeanChey(),
+            GoogleFonts.nabla(),
+          ],
+        ),
+        cropRotateEditor: const CropRotateEditorConfigs(
+          enabled: true,
+          canRotate: true,
+          canChangeAspectRatio: true,
+          initAspectRatio: 0.0,
+          aspectRatios: [
+            AspectRatioItem(text: 'Free', value: null),
+            AspectRatioItem(text: 'Original', value: 0.0),
+            AspectRatioItem(text: '1*1', value: 1.0 / 1.0),
+            AspectRatioItem(text: '3*2', value: 3.0 / 2.0),
+            AspectRatioItem(text: '2*3', value: 2.0 / 3.0),
+            AspectRatioItem(text: '4*3', value: 4.0 / 3.0),
+            AspectRatioItem(text: '3*4', value: 3.0 / 4.0),
+            AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
+            AspectRatioItem(text: '9*16', value: 9.0 / 16.0),
+            AspectRatioItem(text: '3*5.5', value: 3.0 / 5.5),
+          ],
+          style: CropRotateEditorStyle(
+            appBarBackground: Color.fromARGB(255, 85, 0, 0),
+            appBarColor: Color(0xFFE1E1E1),
+            bottomBarBackground: Color.fromARGB(255, 136, 0, 84),
+            bottomBarColor: Color.fromARGB(255, 223, 255, 210),
             background: Color.fromARGB(255, 255, 203, 203),
             cropCornerColor: Color.fromARGB(255, 0, 212, 195),
             aspectRatioSheetBackgroundColor: Colors.green,
@@ -188,18 +301,151 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             cropOverlayColor: Colors.orange,
             helperLineColor: Colors.blue,
           ),
-          filterEditor: FilterEditorTheme(
-            appBarBackgroundColor: Color.fromARGB(255, 82, 0, 82),
-            appBarForegroundColor: Color(0xFFE1E1E1),
+          icons: CropRotateEditorIcons(
+            bottomNavBar: Icons.crop_free_rounded,
+            rotate: Icons.rotate_left,
+            aspectRatio: Icons.crop,
+            flip: Icons.swap_horiz,
+            reset: Icons.reset_tv,
+          ),
+        ),
+        tuneEditor: TuneEditorConfigs(
+          enabled: true,
+          showLayers: true,
+          tuneAdjustmentOptions: [
+            const TuneAdjustmentItem(
+              id: 'brightness',
+              icon: Icons.brightness_4_outlined,
+              label: 'Brightness',
+              min: -0.5,
+              max: 0.5,
+              divisions: 200,
+              labelMultiplier: 200,
+              toMatrix: ColorFilterAddons.brightness,
+            ),
+            const TuneAdjustmentItem(
+              id: 'contrast',
+              icon: Icons.contrast,
+              label: 'Contrast',
+              min: -0.5,
+              max: 0.5,
+              divisions: 200,
+              labelMultiplier: 200,
+              toMatrix: ColorFilterAddons.contrast,
+            ),
+            const TuneAdjustmentItem(
+              id: 'saturation',
+              icon: Icons.water_drop_outlined,
+              label: 'Saturation',
+              min: -0.5,
+              max: .5,
+              divisions: 200,
+              labelMultiplier: 200,
+              toMatrix: ColorFilterAddons.saturation,
+            ),
+            const TuneAdjustmentItem(
+              id: 'exposure',
+              icon: Icons.exposure,
+              label: 'Exposure',
+              min: -1,
+              max: 1,
+              divisions: 200,
+              toMatrix: ColorFilterAddons.exposure,
+            ),
+            const TuneAdjustmentItem(
+              id: 'hue',
+              icon: Icons.color_lens_outlined,
+              label: 'Hue',
+              min: -0.25,
+              max: .25,
+              divisions: 400,
+              labelMultiplier: 400,
+              toMatrix: ColorFilterAddons.hue,
+            ),
+            TuneAdjustmentItem(
+              id: 'temperature',
+              icon: Icons.thermostat_outlined,
+              label: 'Temperature',
+              min: -0.5,
+              max: .5,
+              divisions: 200,
+              labelMultiplier: 200,
+              toMatrix: (value) {
+                double r = value > 0 ? 1 : 1 + value;
+                double b = value < 0 ? 1 : 1 - value;
+                return ColorFilterAddons.rgbScale(r, 1, b);
+              },
+            ),
+            const TuneAdjustmentItem(
+              id: 'sharpness',
+              icon: Icons.shutter_speed,
+              label: 'Sharpness',
+              min: 0,
+              max: 1,
+              divisions: 100,
+              toMatrix: ColorFilterAddons.sharpness,
+            ),
+            const TuneAdjustmentItem(
+              id: 'luminance',
+              icon: Icons.light_mode_outlined,
+              label: 'Luminance',
+              min: -1,
+              max: 1,
+              divisions: 200,
+              toMatrix: ColorFilterAddons.luminance,
+            ),
+            const TuneAdjustmentItem(
+              id: 'fade',
+              icon: Icons.blur_off_outlined,
+              label: 'Fade',
+              min: -1,
+              max: 1,
+              divisions: 200,
+              toMatrix: ColorFilterAddons.fade,
+            ),
+          ],
+          style: const TuneEditorStyle(
+            appBarBackground: Color.fromARGB(255, 160, 34, 160),
+            appBarColor: Color(0xFFE1E1E1),
+            background: Color.fromARGB(255, 0, 83, 32),
+            bottomBarBackground: Color.fromARGB(255, 0, 136, 136),
+            bottomBarActiveItemColor: Color.fromARGB(255, 173, 231, 25),
+            bottomBarInactiveItemColor: Color.fromARGB(255, 255, 210, 216),
+          ),
+          icons: const TuneEditorIcons(
+            bottomNavBar: Icons.filter_b_and_w_outlined,
+          ),
+        ),
+        filterEditor: FilterEditorConfigs(
+          enabled: true,
+          filterList: presetFiltersList,
+          style: const FilterEditorStyle(
+            appBarBackground: Color.fromARGB(255, 82, 0, 82),
+            appBarColor: Color(0xFFE1E1E1),
             previewTextColor: Color.fromARGB(255, 255, 0, 0),
             background: Color.fromARGB(255, 83, 78, 0),
           ),
-          blurEditor: BlurEditorTheme(
+          icons: const FilterEditorIcons(
+            bottomNavBar: Icons.tungsten,
+          ),
+        ),
+        blurEditor: const BlurEditorConfigs(
+          enabled: true,
+          maxBlur: 20.0,
+          style: BlurEditorStyle(
             appBarBackgroundColor: Color.fromARGB(255, 56, 0, 0),
             appBarForegroundColor: Color(0xFFE1E1E1),
             background: Color.fromARGB(255, 187, 214, 255),
           ),
-          emojiEditor: EmojiEditorTheme(
+          icons: BlurEditorIcons(
+            bottomNavBar: Icons.blur_linear_outlined,
+          ),
+        ),
+        emojiEditor: const EmojiEditorConfigs(
+          enabled: true,
+          initScale: 2.0,
+          checkPlatformCompatibility: true,
+          style: EmojiEditorStyle(
             bottomActionBarConfig: BottomActionBarConfig(
               buttonIconColor: Colors.blue,
               backgroundColor: Colors.red,
@@ -217,133 +463,25 @@ class _HighlyConfigurableExampleState extends State<HighlyConfigurableExample>
             ),
             textStyle: TextStyle(fontFamilyFallback: ['Apple Color Emoji']),
           ),
-          stickerEditor: StickerEditorTheme(),
-          background: Color.fromARGB(255, 255, 169, 169),
-          appBarBackgroundColor: Color.fromARGB(255, 255, 211, 77),
-          appBarForegroundColor: Colors.black,
-          bottomBarBackgroundColor: Colors.purple,
-          loadingDialogTheme:
-              LoadingDialogTheme(textColor: Color.fromARGB(255, 225, 255, 200)),
-          uiOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Color.fromARGB(66, 60, 65, 41),
-            statusBarIconBrightness: Brightness.light,
-            systemNavigationBarIconBrightness: Brightness.light,
-            statusBarBrightness: Brightness.dark,
-            systemNavigationBarColor: Color.fromARGB(255, 255, 139, 216),
-          ),
-        ),
-        icons: const ImageEditorIcons(
-          paintingEditor: IconsPaintingEditor(
-            bottomNavBar: Icons.palette,
-            lineWeight: Icons.line_weight_rounded,
-            freeStyle: Icons.roundabout_left,
-            arrow: Icons.arrow_downward_rounded,
-            line: Icons.horizontal_rule,
-            fill: Icons.format_color_fill,
-            noFill: Icons.format_color_reset,
-            rectangle: Icons.crop_free,
-            circle: Icons.lens_outlined,
-            dashLine: Icons.power_input,
-          ),
-          textEditor: IconsTextEditor(
-            bottomNavBar: Icons.title,
-            alignLeft: Icons.align_horizontal_left_rounded,
-            alignCenter: Icons.align_horizontal_center_rounded,
-            alignRight: Icons.align_horizontal_right_rounded,
-            backgroundMode: Icons.dashboard,
-            fontScale: Icons.text_increase_rounded,
-            resetFontScale: Icons.restore,
-          ),
-          cropRotateEditor: IconsCropRotateEditor(
-            bottomNavBar: Icons.crop_free_rounded,
-            rotate: Icons.rotate_left,
-            aspectRatio: Icons.crop,
-            flip: Icons.swap_horiz,
-            reset: Icons.reset_tv,
-          ),
-          filterEditor: IconsFilterEditor(
-            bottomNavBar: Icons.filter_b_and_w_outlined,
-          ),
-          blurEditor: IconsBlurEditor(
-            bottomNavBar: Icons.blur_linear_outlined,
-          ),
-          emojiEditor: IconsEmojiEditor(
+          icons: EmojiEditorIcons(
             bottomNavBar: Icons.face_4_outlined,
           ),
-          stickerEditor: IconsStickerEditor(
-            bottomNavBar: Icons.layers_outlined,
+        ),
+
+        dialogConfigs: const DialogConfigs(
+          style: DialogStyle(
+            loadingDialog: LoadingDialogStyle(
+              textColor: Color.fromARGB(255, 225, 255, 200),
+            ),
           ),
-          closeEditor: Icons.clear,
-          doneIcon: Icons.save_outlined,
-          applyChanges: Icons.check_circle_outlined,
-          backButton: Icons.arrow_back,
-          undoAction: Icons.turn_left_outlined,
-          redoAction: Icons.turn_right_outlined,
-          removeElementZone: Icons.delete_forever_outlined,
         ),
-        paintEditorConfigs: const PaintEditorConfigs(
-          enabled: true,
-          hasOptionFreeStyle: true,
-          hasOptionArrow: true,
-          hasOptionLine: true,
-          hasOptionRect: true,
-          hasOptionCircle: true,
-          hasOptionDashLine: true,
-          canToggleFill: true,
-          canChangeLineWidth: true,
-          initialFill: true,
-          freeStyleHighPerformanceScaling: true,
-          initialPaintMode: PaintModeE.freeStyle,
-        ),
-        textEditorConfigs: TextEditorConfigs(
-          enabled: true,
-          canToggleTextAlign: true,
-          canToggleBackgroundMode: true,
-          initFontSize: 24.0,
-          initialTextAlign: TextAlign.center,
-          initialBackgroundColorMode: LayerBackgroundMode.background,
-          showSelectFontStyleBottomBar: true,
-          customTextStyles: [
-            GoogleFonts.roboto(),
-            GoogleFonts.averiaLibre(),
-            GoogleFonts.lato(),
-            GoogleFonts.comicNeue(),
-            GoogleFonts.actor(),
-            GoogleFonts.odorMeanChey(),
-            GoogleFonts.nabla(),
-          ],
-        ),
-        cropRotateEditorConfigs: const CropRotateEditorConfigs(
-          enabled: true,
-          canRotate: true,
-          canChangeAspectRatio: true,
-          initAspectRatio: 0.0,
-          aspectRatios: [
-            AspectRatioItem(text: 'Free', value: null),
-            AspectRatioItem(text: 'Original', value: 0.0),
-            AspectRatioItem(text: '1*1', value: 1.0 / 1.0),
-            AspectRatioItem(text: '3*2', value: 3.0 / 2.0),
-            AspectRatioItem(text: '2*3', value: 2.0 / 3.0),
-            AspectRatioItem(text: '4*3', value: 4.0 / 3.0),
-            AspectRatioItem(text: '3*4', value: 3.0 / 4.0),
-            AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
-            AspectRatioItem(text: '9*16', value: 9.0 / 16.0),
-            AspectRatioItem(text: '3*5.5', value: 3.0 / 5.5),
-          ],
-        ),
-        filterEditorConfigs: FilterEditorConfigs(
-          enabled: true,
-          filterList: presetFiltersList,
-        ),
-        blurEditorConfigs: const BlurEditorConfigs(
-          enabled: true,
-          maxBlur: 20.0,
-        ),
-        emojiEditorConfigs: const EmojiEditorConfigs(
-          enabled: true,
-          initScale: 2.0,
-          checkPlatformCompatibility: true,
-        ),
+
+        /// stickerEditor: StickerEditorConfigs(
+        ///   style: StickerEditorStyle()
+        ///   icons: StickerEditorIcons(
+        ///     bottomNavBar: Icons.layers_outlined,
+        ///   ),
+        /// ),
         heroTag: 'hero',
         theme: ThemeData(
           useMaterial3: true,

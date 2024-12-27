@@ -4,8 +4,15 @@ import 'package:flutter/material.dart';
 // Project imports:
 import '../crop_rotate_editor/aspect_ratio_item.dart';
 import '../crop_rotate_editor/rotate_direction.dart';
+import '../custom_widgets/crop_rotate_editor_widgets.dart';
+import '../icons/crop_rotate_editor_icons.dart';
+import '../styles/crop_rotate_editor_style.dart';
+import 'utils/editor_safe_area.dart';
 
 export '../crop_rotate_editor/rotate_direction.dart';
+export '../custom_widgets/crop_rotate_editor_widgets.dart';
+export '../icons/crop_rotate_editor_icons.dart';
+export '../styles/crop_rotate_editor_style.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -41,6 +48,7 @@ class CropRotateEditorConfigs {
     this.reverseMouseScroll = false,
     this.reverseDragDirection = false,
     this.roundCropper = false,
+    this.provideImageInfos = false,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
@@ -64,6 +72,10 @@ class CropRotateEditorConfigs {
       AspectRatioItem(text: '16*9', value: 16.0 / 9.0),
       AspectRatioItem(text: '9*16', value: 9.0 / 16.0)
     ],
+    this.safeArea = const EditorSafeArea(),
+    this.style = const CropRotateEditorStyle(),
+    this.icons = const CropRotateEditorIcons(),
+    this.widgets = const CropRotateEditorWidgets(),
   })  : assert(maxScale >= 1, 'maxScale must be greater than or equal to 1'),
         assert(desktopCornerDragArea > 0,
             'desktopCornerDragArea must be positive'),
@@ -108,6 +120,14 @@ class CropRotateEditorConfigs {
   ///
   /// The round cropper only supports an aspect ratio of 1.
   final bool roundCropper;
+
+  /// A boolean flag that determines whether the `imageInfos` parameter
+  /// should be included in the `onDone` callback.
+  ///
+  /// When set to `true`, the `imageInfos` parameter will be provided in the
+  /// `onDone` callback of the crop editor, containing detailed information
+  /// about the edited image. If set to `false`, `imageInfos` will be `null`.
+  final bool provideImageInfos;
 
   /// The initial aspect ratio for cropping.
   ///
@@ -165,4 +185,98 @@ class CropRotateEditorConfigs {
   /// Defines the size of the draggable area on corners of the crop rectangle
   /// for mobile devices.
   final double mobileCornerDragArea;
+
+  /// Defines the safe area configuration for the editor.
+  final EditorSafeArea safeArea;
+
+  /// Style configuration for the crop and rotate editor.
+  final CropRotateEditorStyle style;
+
+  /// Icons used in the crop and rotate editor.
+  final CropRotateEditorIcons icons;
+
+  /// Widgets associated with the crop and rotate editor.
+  final CropRotateEditorWidgets widgets;
+
+  /// Creates a copy of this `CropRotateEditorConfigs` object with the given
+  /// fields replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [CropRotateEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  CropRotateEditorConfigs copyWith({
+    bool? enabled,
+    bool? canRotate,
+    bool? canFlip,
+    bool? canChangeAspectRatio,
+    bool? canReset,
+    bool? transformLayers,
+    bool? enableDoubleTap,
+    bool? reverseMouseScroll,
+    bool? reverseDragDirection,
+    bool? roundCropper,
+    bool? provideImageInfos,
+    double? initAspectRatio,
+    double? maxScale,
+    double? mouseScaleFactor,
+    double? doubleTapScaleFactor,
+    List<AspectRatioItem>? aspectRatios,
+    Duration? animationDuration,
+    Duration? cropDragAnimationDuration,
+    Duration? fadeInOutsideCropAreaAnimationDuration,
+    Duration? opacityOutsideCropAreaDuration,
+    Curve? rotateAnimationCurve,
+    Curve? scaleAnimationCurve,
+    Curve? cropDragAnimationCurve,
+    Curve? fadeInOutsideCropAreaAnimationCurve,
+    RotateDirection? rotateDirection,
+    double? desktopCornerDragArea,
+    double? mobileCornerDragArea,
+    EditorSafeArea? safeArea,
+    CropRotateEditorStyle? style,
+    CropRotateEditorIcons? icons,
+    CropRotateEditorWidgets? widgets,
+  }) {
+    return CropRotateEditorConfigs(
+      safeArea: safeArea ?? this.safeArea,
+      provideImageInfos: provideImageInfos ?? this.provideImageInfos,
+      enabled: enabled ?? this.enabled,
+      canRotate: canRotate ?? this.canRotate,
+      canFlip: canFlip ?? this.canFlip,
+      canChangeAspectRatio: canChangeAspectRatio ?? this.canChangeAspectRatio,
+      canReset: canReset ?? this.canReset,
+      transformLayers: transformLayers ?? this.transformLayers,
+      enableDoubleTap: enableDoubleTap ?? this.enableDoubleTap,
+      reverseMouseScroll: reverseMouseScroll ?? this.reverseMouseScroll,
+      reverseDragDirection: reverseDragDirection ?? this.reverseDragDirection,
+      roundCropper: roundCropper ?? this.roundCropper,
+      initAspectRatio: initAspectRatio ?? this.initAspectRatio,
+      maxScale: maxScale ?? this.maxScale,
+      mouseScaleFactor: mouseScaleFactor ?? this.mouseScaleFactor,
+      doubleTapScaleFactor: doubleTapScaleFactor ?? this.doubleTapScaleFactor,
+      aspectRatios: aspectRatios ?? this.aspectRatios,
+      animationDuration: animationDuration ?? this.animationDuration,
+      cropDragAnimationDuration:
+          cropDragAnimationDuration ?? this.cropDragAnimationDuration,
+      fadeInOutsideCropAreaAnimationDuration:
+          fadeInOutsideCropAreaAnimationDuration ??
+              this.fadeInOutsideCropAreaAnimationDuration,
+      opacityOutsideCropAreaDuration:
+          opacityOutsideCropAreaDuration ?? this.opacityOutsideCropAreaDuration,
+      rotateAnimationCurve: rotateAnimationCurve ?? this.rotateAnimationCurve,
+      scaleAnimationCurve: scaleAnimationCurve ?? this.scaleAnimationCurve,
+      cropDragAnimationCurve:
+          cropDragAnimationCurve ?? this.cropDragAnimationCurve,
+      fadeInOutsideCropAreaAnimationCurve:
+          fadeInOutsideCropAreaAnimationCurve ??
+              this.fadeInOutsideCropAreaAnimationCurve,
+      rotateDirection: rotateDirection ?? this.rotateDirection,
+      desktopCornerDragArea:
+          desktopCornerDragArea ?? this.desktopCornerDragArea,
+      mobileCornerDragArea: mobileCornerDragArea ?? this.mobileCornerDragArea,
+      style: style ?? this.style,
+      icons: icons ?? this.icons,
+      widgets: widgets ?? this.widgets,
+    );
+  }
 }

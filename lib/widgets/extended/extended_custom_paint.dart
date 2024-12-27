@@ -2,12 +2,12 @@
 import 'package:flutter/widgets.dart';
 
 /// [ExtendedCustomPaint] is a stateful widget that allows you to use
-/// custom painting within a widget. It extends the functionality of
-/// [CustomPaint] by providing methods to update the painting properties
+/// custom paint within a widget. It extends the functionality of
+/// [CustomPaint] by providing methods to update the paint properties
 /// without rebuilding the child widget.
 ///
 /// This is useful for scenarios where you need to dynamically update
-/// painting properties such as the [painter], [foregroundPainter],
+/// paint properties such as the [painter], [foregroundPainter],
 /// [isComplex], and [willChange] flags without affecting the child widget.
 ///
 /// The [initIsComplex] and [initWillChange] parameters set the initial values
@@ -26,10 +26,10 @@ class ExtendedCustomPaint extends StatefulWidget {
     required this.child,
   });
 
-  /// Initial value for whether the painting is complex.
+  /// Initial value for whether the paint-item is complex.
   final bool initIsComplex;
 
-  /// Initial value for whether the painting will change.
+  /// Initial value for whether the paint-item will change.
   final bool initWillChange;
 
   /// Initial custom painter for the foreground.
@@ -45,13 +45,13 @@ class ExtendedCustomPaint extends StatefulWidget {
   State<ExtendedCustomPaint> createState() => ExtendedCustomPaintState();
 }
 
-/// The state for [ExtendedCustomPaint], managing the painting logic and
+/// The state for [ExtendedCustomPaint], managing the paint logic and
 /// properties.
 class ExtendedCustomPaintState extends State<ExtendedCustomPaint> {
-  /// Indicates whether the painting is complex.
+  /// Indicates whether the paint-item is complex.
   late bool isComplex;
 
-  /// Determines if the painting will change.
+  /// Determines if the paint-item will change.
   late bool willChange;
 
   /// The painter used for drawing on the foreground.
@@ -81,10 +81,10 @@ class ExtendedCustomPaintState extends State<ExtendedCustomPaint> {
   }
 
   /// Updates the properties of the [CustomPaint] widget and triggers a
-  /// rebuild of the painting without affecting the child widget.
+  /// rebuild of the paint without affecting the child widget.
   ///
-  /// [isComplex] - Optional new value for whether the painting is complex.
-  /// [willChange] - Optional new value for whether the painting will change.
+  /// [isComplex] - Optional new value for whether the paint is complex.
+  /// [willChange] - Optional new value for whether the paint will change.
   /// [foregroundPainter] - Optional new foreground painter.
   /// [painter] - Optional new painter.
   void update({

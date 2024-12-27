@@ -100,7 +100,7 @@ class _LayerStackState extends State<LayerStack> {
     // Determine whether to cut content outside the image area based on widget
     // settings.
     _cutOutsideImageArea = widget.cutOutsideImageArea ??
-        widget.configs.imageGenerationConfigs.captureOnlyBackgroundImageArea;
+        widget.configs.imageGeneration.captureOnlyBackgroundImageArea;
     super.initState();
   }
 
@@ -135,22 +135,21 @@ class _LayerStackState extends State<LayerStack> {
                 }).toList()),
           ),
         ),
-        if (widget
-            .configs.imageGenerationConfigs.captureOnlyBackgroundImageArea)
+        if (widget.configs.imageGeneration.captureOnlyBackgroundImageArea)
           RepaintBoundary(
             child: Hero(
               tag: 'crop_layer_painter_hero',
               child: CustomPaint(
                 foregroundPainter: _cutOutsideImageArea
                     ? CropLayerPainter(
-                        opacity: widget.configs.imageEditorTheme
+                        opacity: widget.configs.mainEditor.style
                             .outsideCaptureAreaLayerOpacity,
                         backgroundColor:
-                            widget.configs.imageEditorTheme.background,
+                            widget.configs.cropRotateEditor.style.background,
                         imgRatio: transformConfigs?.cropRect.size.aspectRatio ??
                             widget.transformHelper.mainImageSize.aspectRatio,
                         isRoundCropper:
-                            widget.configs.cropRotateEditorConfigs.roundCropper,
+                            widget.configs.cropRotateEditor.roundCropper,
                         is90DegRotated:
                             transformConfigs?.is90DegRotated ?? false,
                       )

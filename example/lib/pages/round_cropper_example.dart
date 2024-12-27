@@ -1,14 +1,16 @@
 // Flutter imports:
+import 'package:example/common/example_constants.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
-import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// The example how to use the round cropper
 class RoundCropperExample extends StatefulWidget {
+  /// Creates a new [RoundCropperExample] widget.
   const RoundCropperExample({super.key});
 
   @override
@@ -20,55 +22,33 @@ class _RoundCropperExampleState extends State<RoundCropperExample>
   final _cropRotateEditorKey = GlobalKey<CropRotateEditorState>();
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        await precacheImage(
-            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
-        if (!context.mounted) return;
+  void initState() {
+    preCacheImage(assetPath: kImageEditorExampleAssetPath);
 
-        bool initialized = false;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                LayoutBuilder(builder: (context, constraints) {
-              if (!initialized) {
-                initialized = true;
-                Future.delayed(const Duration(milliseconds: 1), () {
-                  _cropRotateEditorKey.currentState!.enableFakeHero = true;
-                  setState(() {});
-                });
-              }
-              return _buildEditor();
-            }),
-          ),
-        );
-      },
-      leading: const Icon(Icons.supervised_user_circle_outlined),
-      title: const Text('Round Cropper'),
-      trailing: const Icon(Icons.chevron_right),
-    );
+    super.initState();
   }
 
-  Widget _buildEditor() {
+  @override
+  Widget build(BuildContext context) {
+    if (!isPreCached) return const PrepareImageWidget();
+
     return CropRotateEditor.asset(
-      ExampleConstants.of(context)!.demoAssetPath,
+      kImageEditorExampleAssetPath,
       key: _cropRotateEditorKey,
       initConfigs: CropRotateEditorInitConfigs(
-        theme: ThemeData.dark(),
+        theme: Theme.of(context),
         convertToUint8List: true,
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
-        onCloseEditor: onCloseEditor,
+        onCloseEditor: () => onCloseEditor(enablePop: !isDesktopMode(context)),
+        enableCloseButton: !isDesktopMode(context),
         configs: ProImageEditorConfigs(
           designMode: platformDesignMode,
-          imageGenerationConfigs: const ImageGenerationConfigs(
+          imageGeneration: const ImageGenerationConfigs(
             outputFormat: OutputFormat.png,
             pngFilter: PngFilter.average,
           ),
-          cropRotateEditorConfigs: const CropRotateEditorConfigs(
+          cropRotateEditor: const CropRotateEditorConfigs(
             roundCropper: true,
             canChangeAspectRatio: false,
             initAspectRatio: 1,

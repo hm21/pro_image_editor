@@ -17,13 +17,13 @@ void main() {
     theme: ThemeData.light(),
     enableFakeHero: false,
     configs: const ProImageEditorConfigs(
-      cropRotateEditorConfigs: CropRotateEditorConfigs(
+      cropRotateEditor: CropRotateEditorConfigs(
         animationDuration: Duration.zero,
         cropDragAnimationDuration: Duration.zero,
         fadeInOutsideCropAreaAnimationDuration: Duration.zero,
         opacityOutsideCropAreaDuration: Duration.zero,
       ),
-      imageGenerationConfigs: ImageGenerationConfigs(
+      imageGeneration: ImageGenerationConfigs(
         generateImageInBackground: false,
         generateInsideSeparateThread: false,
       ),

@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/theme/theme_layer_interaction.dart';
+import 'package:pro_image_editor/models/styles/layer_interaction_style.dart';
 
 /// A custom painter for rendering the border of a layer interaction area.
 ///
@@ -34,7 +34,7 @@ class LayerInteractionBorderPainter extends CustomPainter {
   ///
   /// This theme provides color, opacity, and other styling options for the
   /// layer border, ensuring it matches the overall design of the application.
-  final ThemeLayerInteraction theme;
+  final LayerInteractionStyle theme;
 
   /// The style of the layer interaction border.
   ///
@@ -54,7 +54,6 @@ class LayerInteractionBorderPainter extends CustomPainter {
       case LayerInteractionBorderStyle.dotted:
         _drawDottedBorder(canvas, size);
         break;
-      default:
     }
   }
 

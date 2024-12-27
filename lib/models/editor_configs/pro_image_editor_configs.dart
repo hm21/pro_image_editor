@@ -1,14 +1,13 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/common/editor_various_constants.dart';
 
 // Project imports:
 import '../../utils/design_mode.dart';
-import '../custom_widgets/custom_widgets.dart';
 import '../i18n/i18n.dart';
-import '../icons/icons.dart';
-import '../theme/theme.dart';
 import 'blur_editor_configs.dart';
 import 'crop_rotate_editor_configs.dart';
+import 'dialog_configs.dart';
 import 'emoji_editor_configs.dart';
 import 'filter_editor_configs.dart';
 import 'helper_lines_configs.dart';
@@ -16,29 +15,32 @@ import 'image_generation_configs/image_generation_configs.dart';
 import 'layer_interaction_configs.dart';
 import 'main_editor_configs.dart';
 import 'paint_editor_configs.dart';
+import 'progress_indicator_configs.dart';
 import 'state_history_configs.dart';
 import 'sticker_editor_configs.dart';
 import 'text_editor_configs.dart';
+import 'tune_editor_configs.dart';
 
 export '../../utils/design_mode.dart';
 export '../../utils/pro_image_editor_mode.dart';
 export '../crop_rotate_editor/aspect_ratio_item.dart';
-export '../custom_widgets/custom_widgets.dart';
 export '../i18n/i18n.dart';
-export '../icons/icons.dart';
 export '../layer/layer_background_mode.dart';
-export '../theme/theme.dart';
 export 'blur_editor_configs.dart';
 export 'crop_rotate_editor_configs.dart';
+export 'dialog_configs.dart';
 export 'emoji_editor_configs.dart';
 export 'filter_editor_configs.dart';
 export 'helper_lines_configs.dart';
 export 'image_generation_configs/image_generation_configs.dart';
 export 'layer_interaction_configs.dart';
+export 'main_editor_configs.dart';
 export 'paint_editor_configs.dart';
+export 'progress_indicator_configs.dart';
 export 'state_history_configs.dart';
 export 'sticker_editor_configs.dart';
 export 'text_editor_configs.dart';
+export 'tune_editor_configs.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -53,12 +55,6 @@ class ProImageEditorConfigs {
   ///   default, it uses an empty `HelperLines` instance.
   /// - The `layerInteraction` specifies options for the layer interaction
   ///   behavior.
-  /// - The `customWidgets` specifies custom widgets to be used in the Image
-  ///   Editor. By default, it uses an empty `CustomWidgets` instance.
-  /// - The `imageEditorTheme` sets the theme for the Image Editor. By
-  ///   default, it uses an empty `ImageEditorTheme` instance.
-  /// - The `icons` specifies the icons to be used in the Image Editor. By
-  ///   default, it uses an empty `ImageEditorIcons` instance.
   /// - The `mainEditorConfigs` configures the Main Editor. By default, it
   ///   uses an empty `MainEditorConfigs` instance.
   /// - The `paintEditorConfigs` configures the Paint Editor. By default, it
@@ -87,23 +83,23 @@ class ProImageEditorConfigs {
   ///   to use when opening editors in modal bottom sheets.
   const ProImageEditorConfigs({
     this.theme,
-    this.heroTag = 'Pro-Image-Editor-Hero',
+    this.heroTag = kImageEditorHeroTag,
     this.i18n = const I18n(),
-    this.helperLines = const HelperLines(),
-    this.layerInteraction = const LayerInteraction(),
-    this.customWidgets = const ImageEditorCustomWidgets(),
-    this.imageEditorTheme = const ImageEditorTheme(),
-    this.icons = const ImageEditorIcons(),
-    this.stateHistoryConfigs = const StateHistoryConfigs(),
-    this.imageGenerationConfigs = const ImageGenerationConfigs(),
-    this.mainEditorConfigs = const MainEditorConfigs(),
-    this.paintEditorConfigs = const PaintEditorConfigs(),
-    this.textEditorConfigs = const TextEditorConfigs(),
-    this.cropRotateEditorConfigs = const CropRotateEditorConfigs(),
-    this.filterEditorConfigs = const FilterEditorConfigs(),
-    this.blurEditorConfigs = const BlurEditorConfigs(),
-    this.emojiEditorConfigs = const EmojiEditorConfigs(),
-    this.stickerEditorConfigs,
+    this.mainEditor = const MainEditorConfigs(),
+    this.paintEditor = const PaintEditorConfigs(),
+    this.textEditor = const TextEditorConfigs(),
+    this.cropRotateEditor = const CropRotateEditorConfigs(),
+    this.filterEditor = const FilterEditorConfigs(),
+    this.tuneEditor = const TuneEditorConfigs(),
+    this.blurEditor = const BlurEditorConfigs(),
+    this.emojiEditor = const EmojiEditorConfigs(),
+    this.stickerEditor = const StickerEditorConfigs(),
+    this.stateHistory = const StateHistoryConfigs(),
+    this.imageGeneration = const ImageGenerationConfigs(),
+    this.helperLines = const HelperLineConfigs(),
+    this.layerInteraction = const LayerInteractionConfigs(),
+    this.dialogConfigs = const DialogConfigs(),
+    this.progressIndicatorConfigs = const ProgressIndicatorConfigs(),
     this.designMode = ImageEditorDesignModeE.material,
   });
 
@@ -117,50 +113,97 @@ class ProImageEditorConfigs {
   final I18n i18n;
 
   /// Configuration options for helper lines in the Image Editor.
-  final HelperLines helperLines;
+  final HelperLineConfigs helperLines;
 
   /// Configuration options for the layer interaction behavior.
-  final LayerInteraction layerInteraction;
-
-  /// Custom widgets to be used in the Image Editor.
-  final ImageEditorCustomWidgets customWidgets;
-
-  /// Theme settings for the Image Editor.
-  final ImageEditorTheme imageEditorTheme;
-
-  /// Icons to be used in the Image Editor.
-  final ImageEditorIcons icons;
+  final LayerInteractionConfigs layerInteraction;
 
   /// Configuration options for the main Editor.
-  final MainEditorConfigs mainEditorConfigs;
+  final MainEditorConfigs mainEditor;
 
   /// Configuration options for the Paint Editor.
-  final PaintEditorConfigs paintEditorConfigs;
+  final PaintEditorConfigs paintEditor;
 
   /// Configuration options for the Text Editor.
-  final TextEditorConfigs textEditorConfigs;
+  final TextEditorConfigs textEditor;
 
   /// Configuration options for the Crop and Rotate Editor.
-  final CropRotateEditorConfigs cropRotateEditorConfigs;
+  final CropRotateEditorConfigs cropRotateEditor;
 
   /// Configuration options for the Filter Editor.
-  final FilterEditorConfigs filterEditorConfigs;
+  final FilterEditorConfigs filterEditor;
+
+  /// Configuration options for the tune Editor.
+  final TuneEditorConfigs tuneEditor;
 
   /// Configuration options for the Blur Editor.
-  final BlurEditorConfigs blurEditorConfigs;
+  final BlurEditorConfigs blurEditor;
 
   /// Configuration options for the Emoji Editor.
-  final EmojiEditorConfigs emojiEditorConfigs;
+  final EmojiEditorConfigs emojiEditor;
 
   /// Configuration options for the Sticker Editor.
-  final StickerEditorConfigs? stickerEditorConfigs;
+  final StickerEditorConfigs stickerEditor;
 
   /// The design mode for the Image Editor.
   final ImageEditorDesignModeE designMode;
 
   /// Holds the configurations related to state history management.
-  final StateHistoryConfigs stateHistoryConfigs;
+  final StateHistoryConfigs stateHistory;
 
   /// Holds the configurations related to image generation.
-  final ImageGenerationConfigs imageGenerationConfigs;
+  final ImageGenerationConfigs imageGeneration;
+
+  /// Configuration for the loading dialog used in the editor.
+  final DialogConfigs dialogConfigs;
+
+  /// Configuration for customizing progress indicators.
+  final ProgressIndicatorConfigs progressIndicatorConfigs;
+
+  /// Creates a copy of this `ProImageEditorConfigs` object with the given
+  /// fields replaced with new values.
+  ProImageEditorConfigs copyWith({
+    ThemeData? theme,
+    String? heroTag,
+    I18n? i18n,
+    HelperLineConfigs? helperLines,
+    LayerInteractionConfigs? layerInteraction,
+    StateHistoryConfigs? stateHistory,
+    ImageGenerationConfigs? imageGeneration,
+    MainEditorConfigs? mainEditor,
+    PaintEditorConfigs? paintEditor,
+    TextEditorConfigs? textEditor,
+    CropRotateEditorConfigs? cropRotateEditor,
+    FilterEditorConfigs? filterEditor,
+    TuneEditorConfigs? tuneEditor,
+    BlurEditorConfigs? blurEditor,
+    EmojiEditorConfigs? emojiEditor,
+    StickerEditorConfigs? stickerEditor,
+    ImageEditorDesignModeE? designMode,
+    DialogConfigs? dialogConfigs,
+    ProgressIndicatorConfigs? progressIndicatorConfigs,
+  }) {
+    return ProImageEditorConfigs(
+      theme: theme ?? this.theme,
+      heroTag: heroTag ?? this.heroTag,
+      i18n: i18n ?? this.i18n,
+      helperLines: helperLines ?? this.helperLines,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
+      stateHistory: stateHistory ?? this.stateHistory,
+      imageGeneration: imageGeneration ?? this.imageGeneration,
+      mainEditor: mainEditor ?? this.mainEditor,
+      paintEditor: paintEditor ?? this.paintEditor,
+      textEditor: textEditor ?? this.textEditor,
+      cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      filterEditor: filterEditor ?? this.filterEditor,
+      tuneEditor: tuneEditor ?? this.tuneEditor,
+      blurEditor: blurEditor ?? this.blurEditor,
+      emojiEditor: emojiEditor ?? this.emojiEditor,
+      stickerEditor: stickerEditor ?? this.stickerEditor,
+      designMode: designMode ?? this.designMode,
+      dialogConfigs: dialogConfigs ?? this.dialogConfigs,
+      progressIndicatorConfigs:
+          progressIndicatorConfigs ?? this.progressIndicatorConfigs,
+    );
+  }
 }

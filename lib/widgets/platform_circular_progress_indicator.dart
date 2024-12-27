@@ -27,7 +27,8 @@ class _PlatformCircularProgressIndicatorState
   @override
   Widget build(BuildContext context) {
     // Conditionally choose the progress indicator based on the platform.
-    return widget.configs.customWidgets.circularProgressIndicator ??
+    return widget.configs.progressIndicatorConfigs.widgets
+            .circularProgressIndicator ??
         (widget.configs.designMode == ImageEditorDesignModeE.material
             ? const CircularProgressIndicator()
             : const CupertinoActivityIndicator());

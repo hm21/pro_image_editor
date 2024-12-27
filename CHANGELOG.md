@@ -1,5 +1,104 @@
 # Changelog
 
+## 7.0.0
+### Changed
+- **File Structure Update**:
+  - Moved `custom widgets`, `icons`, and `theme` files into the `configs` directory for better organization.
+  - Renamed all `theme` files to `styles` to better reflect their purpose.
+
+### Breaking Changes
+- File renaming and restructuring require updates to your configuration file:
+  - `custom widgets`, `icons`, and `theme` files are now located directly in the `configs` directory of the editor.
+  - All theme classes are renamed to end with `Style` for consistency.
+
+  
+For more details on why these breaking changes were made and what improvements they bring, check out that [GitHub discussion](https://github.com/hm21/pro_image_editor/discussions/298).
+
+
+
+## 6.2.3
+- **FIX**(layer): Resolve issue that layer reposition correctly after screen rotation. This resolves issue [#283](https://github.com/hm21/pro_image_editor/issues/283)
+
+## 6.2.2
+- **Fix**(version): Set minimum Flutter version to `3.27.0`. This resolves issue [#287](https://github.com/hm21/pro_image_editor/issues/287)
+
+## 6.2.1
+- **FIX**(lint): Resolve lint issues after upgrading to Flutter `3.27.0`
+
+## 6.2.0
+- **FEAT**(Main-Editor): Added `updateBackgroundImage` method to update the editor's background image.
+
+## 6.1.6
+- **STYLE**: Format dart code 
+
+## 6.1.5
+- **FIX**(import): Fixed an issue where imported layers didn't scale correctly on different screen sizes. This resolves issue [#272](https://github.com/hm21/pro_image_editor/issues/272)
+
+## 6.1.4
+- **FIX**(zoom): Fixed an issue where the minimum zoom level setting had no effect, ensuring proper enforcement of zoom boundaries in the viewer. This resolves issue [#266](https://github.com/hm21/pro_image_editor/issues/266)
+
+## 6.1.3
+- **FIX**(keyboard): resolve issue that escape key throw an error when the context menu is open. This resolves issue [#260](https://github.com/hm21/pro_image_editor/issues/260)
+
+## 6.1.2
+- **STYLE(AppBar)**: moved close action to AppBar's leading parameter for improved layout consistency.
+- **STYLE(AppBar)**: updated IconButtons to use default 8-point all-around padding, enhancing visual balance.
+- **STYLE(AppBar)**: adjusted loading indicator padding to a multiple of 2 to align with design system standards.
+
+## 6.1.1
+- **FIX**(CustomWidgets): resolve issue preventing user from using custom widget `removeLayerArea`.
+
+## 6.1.0
+- **FEAT**(Layer): Introduce the `enableInteraction` configuration in the `Layer` class to toggle interaction capabilities.
+- **FEAT**(CustomWidgets): Add `bodyItemsRecorded` to all editors which can direct generate the final image. This option enables the recording of custom body widgets, enhancing frame functionality.
+- **DOC**(Frame): Add an example how users can add a frame.
+
+## 6.0.2
+- **FIX**(Recorder): Resolve issue where the editor would incorrectly capture drawing boundaries if the user set `captureOnlyDrawingBounds` to `true`. This resolves issue [#249](https://github.com/hm21/pro_image_editor/issues/249)
+
+## 6.0.1
+- **FIX**(Generation-Configs): Removed unnecessary assert for `captureOnlyBackgroundImageArea` and `captureOnlyDrawingBounds`, which was blocking certain combinations for generating transparent images. Details discussed [here](https://github.com/hm21/pro_image_editor/issues/210#issuecomment-2433847115).
+
+## 6.0.0
+- **FEAT**(Tune-Editor): Introduced the new "Tune" editor, enabling users to adjust image contrast, saturation, and brightness for enhanced control over image tuning.
+
+- **CHORE**(Dependency): Update `image` dependency to version `4.3.0`.
+- **CHORE**(Dependency): Update `vibration` dependency to version `2.0.1`.
+- **CHORE**(Dependency): Update `mime` dependency to version `2.0.0`.
+
+- **FIX**(Example): Resolve the issue where the `movable_background_image` example displays the helper lines in the wrong position.
+- **FIX**(Example): Resolve all linting issues in the example code.
+
+## 5.4.2
+- **FIX**(Paint-Editor): Resolve issue where undo-redo action capturing the incorrect image. This resolves issue [#239](https://github.com/hm21/pro_image_editor/issues/239)
+
+## 5.4.1
+- **FEAT**(Emoji-Editor): Update the emoji-editor to version `3.1.0` with custom view order configuration support.
+
+## 5.4.0
+- **FEAT**(Filter): Filter-preview widgets are now animated with a default fadeInUp effect.
+- **FEAT**(Layer-Interaction): Toolbars will no longer hide by default when interacting with a layer. To restore the previous behavior, set `hideToolbarOnInteraction` to true in the `layerInteraction` settings.
+- **FEAT**(Design): Introduced a new design theme called "Grounded".
+
+## 5.3.0
+- **FEAT**(Custom-Widgets): add custom widgets to replace layer interaction buttons (edit, remove, rotateScale)
+
+## 5.2.3
+- **FIX**(Import): Ensure imported numbers are type-safe even if int and double are incorrect. This resolves issue [#221](https://github.com/hm21/pro_image_editor/issues/221)
+
+## 5.2.2
+- **FIX**(Frosted-Glass): Resolve issue that loading-dialog didn't use the text from the i18n class.
+
+## 5.2.1
+- **REFACTOR**(vars): remove deprecated variables
+
+## 5.2.0
+- **BREAKING** **FEAT**(Callback): Added the `ImageInfos` parameter to the `onDone` callback in the crop-rotate-editor.
+- **FEAT**(Config): Add `copyWith` method to all config classes.
+- **DOCS**(Example): Add an example how to start with the crop-rotate-editor and move than to the main-editor.
+- **CHORE**(Dependency): Update `emoji_picker_flutter` dependency to version `3.0.0`.
+- **CHORE**(Dependency): Update `vibration` dependency to version `2.0.0`.
+- **CHORE**(Dependency): Update `mime` dependency to version `1.0.6`.
 
 ## 5.1.4
 - **FIX**(Crop-Editor): Ensure the editor respect the maximum output size.
@@ -178,7 +277,7 @@ Introduced a new loading dialog as a singleton class.
 
 ## 4.0.5
 
-- **FIX**(text-editor): Resolve misapplication of secondary color. This resolve issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
+- **FIX**(text-editor): Resolve misapplication of secondary color. This resolves issue [#105](https://github.com/hm21/pro_image_editor/discussions/105).
 - **FIX**(text-editor): Resolve issue where text styles (bold/italic/underline) are not saved in history. This resolves issue [#118](https://github.com/hm21/pro_image_editor/discussions/118).
 
 
@@ -201,7 +300,7 @@ Introduced a new loading dialog as a singleton class.
 
 ## 4.0.1
 
-- **FIX**(import-history): Resolve incorrect multiple importing from state history. This resolve issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
+- **FIX**(import-history): Resolve incorrect multiple importing from state history. This resolves issue [#106](https://github.com/hm21/pro_image_editor/discussions/106).
 
 
 ## 4.0.0
@@ -227,12 +326,12 @@ Introduced a new loading dialog as a singleton class.
 ## 3.0.14
 
 - **FEAT**(custom-widget): Add custom widgets to the line-width bottomsheet in the Paint Editor, which was requested in [#103](https://github.com/hm21/pro_image_editor/discussions/103).
-- **FIX**(sticker-export-import) Fix the issue that the sticker size change after export/import them. This resolve issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).
+- **FIX**(sticker-export-import) Fix the issue that the sticker size change after export/import them. This resolves issue [#83](https://github.com/hm21/pro_image_editor/discussions/83).
 
 
 ## 3.0.13
 
-- **FIX**(state-history): Resolve incorrect import/export from transform-configs. This resolve issue [#102](https://github.com/hm21/pro_image_editor/discussions/102).
+- **FIX**(state-history): Resolve incorrect import/export from transform-configs. This resolves issue [#102](https://github.com/hm21/pro_image_editor/discussions/102).
 
 
 ## 3.0.12
@@ -336,7 +435,7 @@ configs: ProImageEditorConfigs(
   - More theme and configuration options
   - Hero animation for image and layers
   - Round "cropper" for profile pictures
-- **FEAT**: Painting-Editor
+- **FEAT**: Paint-Editor
   - Standalone drawing of signatures or paintings
 - **FEAT**: Emoji-Editor
   - Infinite scrolling through all categories
@@ -623,7 +722,7 @@ configs: ProImageEditorConfigs(
 
 ## 1.0.0
 
-- **FEAT**: PaintingEditor
+- **FEAT**: PaintEditor
 - **FEAT**: TextEditor
 - **FEAT**: CropRotateEditor
 - **FEAT**: FilterEditor

@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
-import '../utils/example_constants.dart';
+import '../common/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// The image-format-convert example
 class ImageFormatConvertExample extends StatefulWidget {
+  /// Creates a new [ImageFormatConvertExample] widget.
   const ImageFormatConvertExample({super.key});
 
   @override
@@ -49,29 +51,17 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        await precacheImage(
-            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => _buildEditor(),
-          ),
-        );
-      },
-      leading: const Icon(Icons.compare_outlined),
-      title: const Text('Change output format'),
-      subtitle: const Text('Choose the output format like jpg or png'),
-      trailing: const Icon(Icons.chevron_right),
-    );
+  void initState() {
+    preCacheImage(assetPath: kImageEditorExampleAssetPath);
+    super.initState();
   }
 
-  Widget _buildEditor() {
+  @override
+  Widget build(BuildContext context) {
+    if (!isPreCached) return const PrepareImageWidget();
+
     return ProImageEditor.asset(
-      ExampleConstants.of(context)!.demoAssetPath,
+      kImageEditorExampleAssetPath,
       callbacks: ProImageEditorCallbacks(
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: (bytes) async {
@@ -83,11 +73,14 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
 
           setGenerationTime();
         },
-        onCloseEditor: onCloseEditor,
+        onCloseEditor: () => onCloseEditor(enablePop: !isDesktopMode(context)),
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        imageGenerationConfigs: const ImageGenerationConfigs(
+        mainEditor: MainEditorConfigs(
+          enableCloseButton: !isDesktopMode(context),
+        ),
+        imageGeneration: const ImageGenerationConfigs(
           /// Choose the output format below
           outputFormat: kIsWeb ? OutputFormat.png : OutputFormat.tiff,
           pngFilter: PngFilter.none,

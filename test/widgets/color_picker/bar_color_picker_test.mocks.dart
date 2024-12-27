@@ -28,7 +28,6 @@ import 'package:pro_image_editor/widgets/color_picker/color_picker_configs.dart'
 // ignore_for_file: avoid_setters_without_getters
 // ignore_for_file: comment_references
 // ignore_for_file: deprecated_member_use
-// ignore_for_file: deprecated_member_use_from_same_package
 // ignore_for_file: implementation_imports
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 // ignore_for_file: prefer_const_constructors
@@ -298,48 +297,6 @@ class MockBarColorPicker extends _i1.Mock implements _i6.BarColorPicker {
             [],
             {
               #joiner: joiner,
-              #minLevel: minLevel,
-            },
-          ),
-        ),
-      ) as String);
-
-  @override
-  String toStringDeep({
-    String? prefixLineOne = r'',
-    String? prefixOtherLines,
-    _i4.DiagnosticLevel? minLevel = _i4.DiagnosticLevel.debug,
-  }) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #toStringDeep,
-          [],
-          {
-            #prefixLineOne: prefixLineOne,
-            #prefixOtherLines: prefixOtherLines,
-            #minLevel: minLevel,
-          },
-        ),
-        returnValue: _i8.dummyValue<String>(
-          this,
-          Invocation.method(
-            #toStringDeep,
-            [],
-            {
-              #prefixLineOne: prefixLineOne,
-              #prefixOtherLines: prefixOtherLines,
-              #minLevel: minLevel,
-            },
-          ),
-        ),
-        returnValueForMissingStub: _i8.dummyValue<String>(
-          this,
-          Invocation.method(
-            #toStringDeep,
-            [],
-            {
-              #prefixLineOne: prefixLineOne,
-              #prefixOtherLines: prefixOtherLines,
               #minLevel: minLevel,
             },
           ),

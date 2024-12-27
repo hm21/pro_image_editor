@@ -1,6 +1,3 @@
-// Dart imports:
-import 'dart:math';
-
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -15,6 +12,10 @@ Future<ImageInfos> decodeImageInfos({
   TransformConfigs? configs,
 }) async {
   var decodedImage = await decodeImageFromList(bytes);
+  Size rawSize = Size(
+    decodedImage.width.toDouble(),
+    decodedImage.height.toDouble(),
+  );
 
   bool rotated = configs?.is90DegRotated == true;
   int w = decodedImage.width;
@@ -25,15 +26,25 @@ Future<ImageInfos> decodeImageInfos({
     h = h ~/ configs.scaleUser;
   }
 
-  double widthRatio = (rotated ? h : w).toDouble() / screenSize.width;
-  double heightRatio = (rotated ? w : h).toDouble() / screenSize.height;
-  double pixelRatio = max(heightRatio, widthRatio);
+  /// If the image is rotated we also flip the width/ height
+  if (rotated) {
+    int hX = h;
+    h = w;
+    w = hX;
+  }
 
-  Size renderedSize =
-      Size(w.toDouble() / pixelRatio, h.toDouble() / pixelRatio);
+  double widthRatio = w.toDouble() / screenSize.width;
+  double heightRatio = h.toDouble() / screenSize.height;
+
+  bool imageFitToHeight =
+      screenSize.aspectRatio > Size(w.toDouble(), h.toDouble()).aspectRatio;
+
+  double pixelRatio = imageFitToHeight ? heightRatio : widthRatio;
+
+  Size renderedSize = rawSize / pixelRatio;
 
   return ImageInfos(
-    rawSize: Size(w.toDouble(), h.toDouble()),
+    rawSize: rawSize,
     renderedSize: renderedSize,
     cropRectSize: configs != null && configs.isNotEmpty
         ? configs.cropRect.size

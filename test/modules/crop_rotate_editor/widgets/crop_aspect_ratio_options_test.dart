@@ -25,8 +25,7 @@ void main() {
               aspectRatio: 1.0,
               originalAspectRatio: 1.0,
               configs: ProImageEditorConfigs(
-                  cropRotateEditorConfigs:
-                      CropRotateEditorConfigs(aspectRatios: [
+                  cropRotateEditor: CropRotateEditorConfigs(aspectRatios: [
                 AspectRatioItem(text: ratioText, value: 1),
               ])),
             ),

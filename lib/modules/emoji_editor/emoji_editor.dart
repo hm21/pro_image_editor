@@ -57,7 +57,7 @@ class EmojiEditorState extends State<EmojiEditor>
 
   @override
   void initState() {
-    _textStyle = imageEditorTheme.emojiEditor.textStyle;
+    _textStyle = emojiEditorConfigs.style.textStyle;
 
     _controller = EmojiTextEditingController(emojiTextStyle: _textStyle);
 
@@ -97,13 +97,13 @@ class EmojiEditorState extends State<EmojiEditor>
       emojiSet: emojiEditorConfigs.emojiSet,
       checkPlatformCompatibility: emojiEditorConfigs.checkPlatformCompatibility,
       emojiTextStyle: _textStyle,
-      emojiViewConfig: imageEditorTheme.emojiEditor.emojiViewConfig ??
+      emojiViewConfig: emojiEditorConfigs.style.emojiViewConfig ??
           EmojiViewConfig(
             gridPadding: EdgeInsets.zero,
             horizontalSpacing: 0,
             verticalSpacing: 0,
             recentsLimit: 28,
-            backgroundColor: imageEditorBackgroundColor,
+            backgroundColor: kImageEditorBackground,
             buttonMode: designMode == ImageEditorDesignModeE.cupertino
                 ? ButtonMode.CUPERTINO
                 : ButtonMode.MATERIAL,
@@ -112,14 +112,13 @@ class EmojiEditorState extends State<EmojiEditor>
             emojiSizeMax: 32,
             replaceEmojiOnLimitExceed: false,
           ),
-      swapCategoryAndBottomBar:
-          imageEditorTheme.emojiEditor.swapCategoryAndBottomBar,
-      skinToneConfig: imageEditorTheme.emojiEditor.skinToneConfig,
-      categoryViewConfig: imageEditorTheme.emojiEditor.categoryViewConfig ??
+      viewOrderConfig: emojiEditorConfigs.style.viewOrderConfig,
+      skinToneConfig: emojiEditorConfigs.style.skinToneConfig,
+      categoryViewConfig: emojiEditorConfigs.style.categoryViewConfig ??
           CategoryViewConfig(
             initCategory: Category.RECENT,
-            backgroundColor: imageEditorTheme.emojiEditor.backgroundColor,
-            indicatorColor: imageEditorPrimaryColor,
+            backgroundColor: emojiEditorConfigs.style.backgroundColor,
+            indicatorColor: kImageEditorPrimaryColor,
             iconColorSelected: Colors.white,
             iconColor: const Color(0xFF9E9E9E),
             tabIndicatorAnimDuration: kTabScrollDuration,
@@ -149,11 +148,11 @@ class EmojiEditorState extends State<EmojiEditor>
               flagIcon: Icons.flag_outlined,
             ),
           ),
-      bottomActionBarConfig: imageEditorTheme.emojiEditor.bottomActionBarConfig,
-      searchViewConfig: imageEditorTheme.emojiEditor.searchViewConfig ??
+      bottomActionBarConfig: emojiEditorConfigs.style.bottomActionBarConfig,
+      searchViewConfig: emojiEditorConfigs.style.searchViewConfig ??
           SearchViewConfig(
-            backgroundColor: imageEditorTheme.emojiEditor.backgroundColor,
-            buttonIconColor: imageEditorTextColor,
+            backgroundColor: emojiEditorConfigs.style.backgroundColor,
+            buttonIconColor: kImageEditorTextColor,
             customSearchView: (
               config,
               state,
@@ -200,6 +199,7 @@ class EmojiEditorState extends State<EmojiEditor>
             },
             () {},
             () {},
+            () {},
           ),
         );
       }
@@ -220,7 +220,7 @@ class EmojiEditorState extends State<EmojiEditor>
               showSearchBar: showSearchBar,
               scrollController: widget.scrollController,
               i18nEmojiEditor: widget.configs.i18n.emojiEditor,
-              themeEmojiEditor: widget.configs.imageEditorTheme.emojiEditor,
+              emojiEditorStyle: widget.configs.emojiEditor.style,
             );
           },
         ),

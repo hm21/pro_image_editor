@@ -9,7 +9,7 @@ const double kDefaultOuterRadius = 10.0;
 
 /// Gets the foreground color based on [backgroundColor]
 Color? foregroundColor(Color? backgroundColor) {
-  return backgroundColor == null || backgroundColor.alpha == 0
+  return backgroundColor == null || backgroundColor.a == 0
       ? null
       : backgroundColor.computeLuminance() >= 0.5
           ? Colors.black

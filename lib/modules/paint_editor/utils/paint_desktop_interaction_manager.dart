@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 /// to keyboard
 /// and mouse events on desktop platforms.
 class PaintDesktopInteractionManager {
-  /// Manages desktop interactions for painting functionality.
+  /// Manages desktop interactions for paint functionality.
   /// Creates an instance of [PaintDesktopInteractionManager].
   ///
   /// [context] is the build context used for interactions.

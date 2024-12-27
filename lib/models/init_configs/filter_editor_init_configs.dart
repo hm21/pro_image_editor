@@ -20,6 +20,7 @@ class FilterEditorInitConfigs extends EditorInitConfigs {
     super.mainBodySize,
     super.layers,
     super.appliedFilters,
+    super.appliedTuneAdjustments,
     super.appliedBlurFactor,
     super.onCloseEditor,
     super.onImageEditingComplete,

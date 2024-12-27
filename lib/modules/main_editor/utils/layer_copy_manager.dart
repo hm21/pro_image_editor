@@ -8,7 +8,7 @@ import 'package:pro_image_editor/models/layer/layer.dart';
 ///
 /// The `LayerManager` provides methods for copying layers to create new
 /// instances of the same type. It supports various types of layers, including
-/// text, emoji, painting, and sticker layers.
+/// text, emoji, paint, and sticker layers.
 class LayerCopyManager {
   /// Copy a layer to create a new instance of the same type.
   ///
@@ -21,8 +21,8 @@ class LayerCopyManager {
       return createCopyTextLayer(layer);
     } else if (layer is EmojiLayerData) {
       return createCopyEmojiLayer(layer);
-    } else if (layer is PaintingLayerData) {
-      return createCopyPaintingLayer(layer);
+    } else if (layer is PaintLayerData) {
+      return createCopyPaintLayer(layer);
     } else if (layer is StickerLayerData) {
       return createCopyStickerLayer(layer);
     } else {
@@ -42,8 +42,18 @@ class LayerCopyManager {
       text: layer.text,
       align: layer.align,
       fontScale: layer.fontScale,
-      background: Color(layer.background.value),
-      color: Color(layer.color.value),
+      background: Color.from(
+        red: layer.background.r,
+        green: layer.background.g,
+        blue: layer.background.b,
+        alpha: layer.background.a,
+      ),
+      color: Color.from(
+        red: layer.color.r,
+        green: layer.color.g,
+        blue: layer.color.b,
+        alpha: layer.color.a,
+      ),
       colorMode: layer.colorMode,
       colorPickerPosition: layer.colorPickerPosition,
       offset: Offset(layer.offset.dx, layer.offset.dy),
@@ -53,6 +63,7 @@ class LayerCopyManager {
       flipX: layer.flipX,
       flipY: layer.flipY,
       customSecondaryColor: layer.customSecondaryColor,
+      enableInteraction: layer.enableInteraction,
     );
   }
 
@@ -66,6 +77,7 @@ class LayerCopyManager {
       scale: layer.scale,
       flipX: layer.flipX,
       flipY: layer.flipY,
+      enableInteraction: layer.enableInteraction,
     );
   }
 
@@ -79,12 +91,13 @@ class LayerCopyManager {
       scale: layer.scale,
       flipX: layer.flipX,
       flipY: layer.flipY,
+      enableInteraction: layer.enableInteraction,
     );
   }
 
-  /// Create a copy of a PaintingLayerData instance.
-  PaintingLayerData createCopyPaintingLayer(PaintingLayerData layer) {
-    return PaintingLayerData(
+  /// Create a copy of a PaintLayerData instance.
+  PaintLayerData createCopyPaintLayer(PaintLayerData layer) {
+    return PaintLayerData(
       id: layer.id,
       offset: Offset(layer.offset.dx, layer.offset.dy),
       rotation: layer.rotation,
@@ -94,6 +107,7 @@ class LayerCopyManager {
       item: layer.item.copy(),
       rawSize: layer.rawSize,
       opacity: layer.opacity,
+      enableInteraction: layer.enableInteraction,
     );
   }
 }

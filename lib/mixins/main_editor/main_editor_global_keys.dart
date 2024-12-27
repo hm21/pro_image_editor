@@ -8,12 +8,13 @@ import '../../modules/emoji_editor/emoji_editor.dart';
 import '../../modules/filter_editor/filter_editor.dart';
 import '../../modules/paint_editor/paint_editor.dart';
 import '../../modules/text_editor/text_editor.dart';
+import '../../modules/tune_editor/tune_editor.dart';
 
 /// Mixin which contains all global keys for the main-editor
 mixin MainEditorGlobalKeys {
-  /// A GlobalKey for the Painting Editor, used to access and control the state
-  /// of the painting editor.
-  final paintingEditor = GlobalKey<PaintingEditorState>();
+  /// A GlobalKey for the Paint Editor, used to access and control the state
+  /// of the paint editor.
+  final paintEditor = GlobalKey<PaintEditorState>();
 
   /// A GlobalKey for the Text Editor, used to access and control the state of
   /// the text editor.
@@ -26,6 +27,10 @@ mixin MainEditorGlobalKeys {
   /// A GlobalKey for the Filter Editor, used to access and control the state
   /// of the filter editor.
   final filterEditor = GlobalKey<FilterEditorState>();
+
+  /// A GlobalKey for the Tune Editor, used to access and control the state of
+  /// the tune editor.
+  final tuneEditor = GlobalKey<TuneEditorState>();
 
   /// A GlobalKey for the Blur Editor, used to access and control the state of
   /// the blur editor.

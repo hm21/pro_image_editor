@@ -24,6 +24,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     required this.editorCenterY,
     required this.configs,
     required this.layerData,
+    this.onContextMenuToggled,
     this.onTapDown,
     this.onTapUp,
     this.onTap,
@@ -57,6 +58,9 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
   /// Data for the layer.
   final Layer layerData;
+
+  /// Callback when the context menu open/close
+  final Function(bool isOpen)? onContextMenuToggled;
 
   /// Callback when a tap down event occurs.
   final Function()? onTapDown;
@@ -141,7 +145,7 @@ class _LayerWidgetState extends State<LayerWidget>
       case const (StickerLayerData):
         _layerType = _LayerType.sticker;
         break;
-      case const (PaintingLayerData):
+      case const (PaintLayerData):
         _layerType = _LayerType.canvas;
         break;
       default:
@@ -157,8 +161,10 @@ class _LayerWidgetState extends State<LayerWidget>
     if (_checkHitIsOutsideInCanvas()) return;
     final Offset clickPosition = details.globalPosition;
 
+    widget.onContextMenuToggled?.call(true);
+
     // Show a popup menu at the click position
-    showMenu<String>(
+    showMenu(
       context: context,
       position: RelativeRect.fromLTRB(
         clickPosition.dx,
@@ -167,13 +173,13 @@ class _LayerWidgetState extends State<LayerWidget>
         clickPosition.dy + 1.0, // Adding a small value to avoid zero height
       ),
       items: <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'remove',
           child: Row(
             children: [
-              Icon(Icons.delete_outline),
-              SizedBox(width: 4),
-              Text('Remove'),
+              const Icon(Icons.delete_outline),
+              const SizedBox(width: 4),
+              Text(i18n.layerInteraction.remove),
             ],
           ),
         ),
@@ -182,6 +188,7 @@ class _LayerWidgetState extends State<LayerWidget>
       if (selectedValue != null) {
         widget.onRemoveTap?.call();
       }
+      widget.onContextMenuToggled?.call(false);
     });
   }
 
@@ -207,7 +214,7 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _checkHitIsOutsideInCanvas() {
     return _layerType == _LayerType.canvas &&
-        !(_layer as PaintingLayerData).item.hit;
+        !(_layer as PaintLayerData).item.hit;
   }
 
   /// Calculates the transformation matrix for the layer's position and
@@ -245,6 +252,7 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Build the content with possible transformations
   Widget _buildPosition() {
     Matrix4 transformMatrix = _calcTransformMatrix();
+
     return Hero(
       key: _layerKey,
       createRectTween: (begin, end) => RectTween(begin: begin, end: end),
@@ -252,61 +260,61 @@ class _LayerWidgetState extends State<LayerWidget>
       child: Transform(
         transform: transformMatrix,
         alignment: Alignment.center,
-        child: Stack(
-          children: [
-            LayerInteractionHelperWidget(
-              layerData: widget.layerData,
-              configs: configs,
-              callbacks: callbacks,
-              selected: widget.selected,
-              onEditLayer: widget.onEditTap,
-              isInteractive: widget.isInteractive,
-              onScaleRotateDown: (details) {
-                widget.onScaleRotateDown
-                    ?.call(details, context.size ?? Size.zero);
+        child: IgnorePointer(
+          ignoring: !widget.layerData.enableInteraction,
+          child: LayerInteractionHelperWidget(
+            layerData: widget.layerData,
+            configs: configs,
+            callbacks: callbacks,
+            selected: widget.selected,
+            onEditLayer: widget.onEditTap,
+            isInteractive:
+                widget.isInteractive && widget.layerData.enableInteraction,
+            onScaleRotateDown: (details) {
+              widget.onScaleRotateDown
+                  ?.call(details, context.size ?? Size.zero);
+            },
+            onScaleRotateUp: widget.onScaleRotateUp,
+            onRemoveLayer: widget.onRemoveTap,
+            child: MouseRegion(
+              hitTestBehavior: HitTestBehavior.translucent,
+              cursor: _showMoveCursor
+                  ? layerInteraction.style.hoverCursor
+                  : MouseCursor.defer,
+              onEnter: (event) {
+                if (_layerType != _LayerType.canvas) {
+                  setState(() {
+                    _showMoveCursor = true;
+                  });
+                }
               },
-              onScaleRotateUp: widget.onScaleRotateUp,
-              onRemoveLayer: widget.onRemoveTap,
-              child: MouseRegion(
-                hitTestBehavior: HitTestBehavior.translucent,
-                cursor: _showMoveCursor
-                    ? imageEditorTheme.layerInteraction.hoverCursor
-                    : MouseCursor.defer,
-                onEnter: (event) {
-                  if (_layerType != _LayerType.canvas) {
-                    setState(() {
-                      _showMoveCursor = true;
-                    });
-                  }
-                },
-                onExit: (event) {
-                  if (_layerType == _LayerType.canvas) {
-                    (widget.layerData as PaintingLayerData).item.hit = false;
-                  } else {
-                    setState(() {
-                      _showMoveCursor = false;
-                    });
-                  }
-                },
-                child: GestureDetector(
+              onExit: (event) {
+                if (_layerType == _LayerType.canvas) {
+                  (widget.layerData as PaintLayerData).item.hit = false;
+                } else {
+                  setState(() {
+                    _showMoveCursor = false;
+                  });
+                }
+              },
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+                onTap: _onTap,
+                child: Listener(
                   behavior: HitTestBehavior.translucent,
-                  onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-                  onTap: _onTap,
-                  child: Listener(
-                    behavior: HitTestBehavior.translucent,
-                    onPointerDown: _onPointerDown,
-                    onPointerUp: _onPointerUp,
-                    child: Padding(
-                      padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
-                      child: FittedBox(
-                        child: _buildContent(),
-                      ),
+                  onPointerDown: _onPointerDown,
+                  onPointerUp: _onPointerUp,
+                  child: Padding(
+                    padding: EdgeInsets.all(widget.selected ? 7.0 : 0),
+                    child: FittedBox(
+                      child: _buildContent(),
                     ),
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -386,7 +394,7 @@ class _LayerWidgetState extends State<LayerWidget>
       child: Text(
         layer.emoji.toString(),
         textAlign: TextAlign.center,
-        style: imageEditorTheme.emojiEditor.textStyle.copyWith(
+        style: emojiEditorConfigs.style.textStyle.copyWith(
           fontSize: textEditorConfigs.initFontSize * _layer.scale,
         ),
       ),
@@ -397,7 +405,7 @@ class _LayerWidgetState extends State<LayerWidget>
   Widget _buildSticker() {
     var layer = _layer as StickerLayerData;
     return SizedBox(
-      width: (stickerEditorConfigs?.initWidth ?? 100) * layer.scale,
+      width: stickerEditorConfigs.initWidth * layer.scale,
       child: FittedBox(
         fit: BoxFit.contain,
         child: layer.sticker,
@@ -407,7 +415,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
   /// Build the canvas widget
   Widget _buildCanvas() {
-    var layer = _layer as PaintingLayerData;
+    var layer = _layer as PaintLayerData;
     return Padding(
       // Better hit detection for mobile devices
       padding: EdgeInsets.all(isDesktop ? 0 : 15),
@@ -418,7 +426,7 @@ class _LayerWidgetState extends State<LayerWidget>
             size: layer.size,
             willChange: false,
             isComplex: layer.item.mode == PaintModeE.freeStyle,
-            painter: DrawPainting(
+            painter: DrawPaintItem(
               item: layer.item,
               scale: widget.layerData.scale,
               selected: widget.selected,

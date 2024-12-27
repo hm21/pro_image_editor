@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -132,7 +134,25 @@ class LayerInteractionHelperWidget extends StatefulWidget
 class _LayerInteractionHelperWidgetState
     extends State<LayerInteractionHelperWidget>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
+  final _rebuildStream = StreamController.broadcast();
+
   bool _tooltipVisible = true;
+
+  @override
+  void dispose() {
+    _rebuildStream.close();
+    super.dispose();
+  }
+
+  @override
+  void setState(void Function() fn) {
+    _rebuildStream.add(null);
+    super.setState(fn);
+  }
+
+  void toggleTooltipVisibility(bool state) {
+    setState(() => _tooltipVisible = state);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,83 +165,107 @@ class _LayerInteractionHelperWidgetState
       return DeferPointer(child: widget.child);
     }
     return TooltipVisibility(
-      visible:
-          _tooltipVisible && imageEditorTheme.layerInteraction.showTooltips,
+      visible: _tooltipVisible && layerInteraction.style.showTooltips,
       child: DeferPointer(
         child: Stack(
           children: [
             Container(
               margin: EdgeInsets.all(
-                imageEditorTheme.layerInteraction.buttonRadius +
-                    imageEditorTheme.layerInteraction.strokeWidth * 2,
+                layerInteraction.style.buttonRadius +
+                    layerInteraction.style.strokeWidth * 2,
               ),
               child: CustomPaint(
                 foregroundPainter: LayerInteractionBorderPainter(
-                  theme: imageEditorTheme.layerInteraction,
-                  borderStyle: imageEditorTheme.layerInteraction.borderStyle,
+                  theme: layerInteraction.style,
+                  borderStyle: layerInteraction.style.borderStyle,
                 ),
                 child: widget.child,
               ),
             ),
-            Positioned(
-              top: 0,
-              left: 0,
-              child: LayerInteractionButton(
-                toggleTooltipVisibility: (val) =>
-                    setState(() => _tooltipVisible = val),
-                rotation: -widget.layerData.rotation,
-                onTap: widget.onRemoveLayer,
-                buttonRadius: imageEditorTheme.layerInteraction.buttonRadius,
-                cursor: imageEditorTheme.layerInteraction.removeCursor,
-                icon: icons.layerInteraction.remove,
-                tooltip: i18n.layerInteraction.remove,
-                color: imageEditorTheme.layerInteraction.buttonRemoveColor,
-                background:
-                    imageEditorTheme.layerInteraction.buttonRemoveBackground,
-              ),
-            ),
+            _buildRemoveIcon(),
             if (widget.layerData.runtimeType == TextLayerData ||
                 (widget.layerData.runtimeType == StickerLayerData &&
                     widget.callbacks.stickerEditorCallbacks?.onTapEditSticker !=
                         null))
-              Positioned(
-                top: 0,
-                right: 0,
-                child: LayerInteractionButton(
-                  toggleTooltipVisibility: (val) =>
-                      setState(() => _tooltipVisible = val),
-                  rotation: -widget.layerData.rotation,
-                  onTap: widget.onEditLayer,
-                  buttonRadius: imageEditorTheme.layerInteraction.buttonRadius,
-                  cursor: imageEditorTheme.layerInteraction.editCursor,
-                  icon: icons.layerInteraction.edit,
-                  tooltip: i18n.layerInteraction.edit,
-                  color: imageEditorTheme.layerInteraction.buttonEditTextColor,
-                  background: imageEditorTheme
-                      .layerInteraction.buttonEditTextBackground,
-                ),
-              ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: LayerInteractionButton(
-                toggleTooltipVisibility: (val) =>
-                    setState(() => _tooltipVisible = val),
-                rotation: -widget.layerData.rotation,
-                onScaleRotateDown: widget.onScaleRotateDown,
-                onScaleRotateUp: widget.onScaleRotateUp,
-                buttonRadius: imageEditorTheme.layerInteraction.buttonRadius,
-                cursor: imageEditorTheme.layerInteraction.rotateScaleCursor,
-                icon: icons.layerInteraction.rotateScale,
-                tooltip: i18n.layerInteraction.rotateScale,
-                color: imageEditorTheme.layerInteraction.buttonScaleRotateColor,
-                background: imageEditorTheme
-                    .layerInteraction.buttonScaleRotateBackground,
-              ),
-            ),
+              _buildEditIcon(),
+            _buildRotateScaleIcon(),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildRotateScaleIcon() {
+    return layerInteraction.widgets.rotateScaleIcon?.call(
+          _rebuildStream.stream,
+          (value) => widget.onScaleRotateDown?.call(value),
+          (value) => widget.onScaleRotateUp?.call(value),
+          toggleTooltipVisibility,
+          -widget.layerData.rotation,
+        ) ??
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: LayerInteractionButton(
+            toggleTooltipVisibility: toggleTooltipVisibility,
+            rotation: -widget.layerData.rotation,
+            onScaleRotateDown: widget.onScaleRotateDown,
+            onScaleRotateUp: widget.onScaleRotateUp,
+            buttonRadius: layerInteraction.style.buttonRadius,
+            cursor: layerInteraction.style.rotateScaleCursor,
+            icon: layerInteraction.icons.rotateScale,
+            tooltip: i18n.layerInteraction.rotateScale,
+            color: layerInteraction.style.buttonScaleRotateColor,
+            background: layerInteraction.style.buttonScaleRotateBackground,
+          ),
+        );
+  }
+
+  Widget _buildEditIcon() {
+    return layerInteraction.widgets.editIcon?.call(
+          _rebuildStream.stream,
+          () => widget.onEditLayer?.call(),
+          toggleTooltipVisibility,
+          -widget.layerData.rotation,
+        ) ??
+        Positioned(
+          top: 0,
+          right: 0,
+          child: LayerInteractionButton(
+            toggleTooltipVisibility: toggleTooltipVisibility,
+            rotation: -widget.layerData.rotation,
+            onTap: widget.onEditLayer,
+            buttonRadius: layerInteraction.style.buttonRadius,
+            cursor: layerInteraction.style.editCursor,
+            icon: layerInteraction.icons.edit,
+            tooltip: i18n.layerInteraction.edit,
+            color: layerInteraction.style.buttonEditTextColor,
+            background: layerInteraction.style.buttonEditTextBackground,
+          ),
+        );
+  }
+
+  Widget _buildRemoveIcon() {
+    return layerInteraction.widgets.removeIcon?.call(
+          _rebuildStream.stream,
+          () => widget.onRemoveLayer?.call(),
+          toggleTooltipVisibility,
+          -widget.layerData.rotation,
+        ) ??
+        Positioned(
+          top: 0,
+          left: 0,
+          child: LayerInteractionButton(
+            toggleTooltipVisibility: toggleTooltipVisibility,
+            rotation: -widget.layerData.rotation,
+            onTap: widget.onRemoveLayer,
+            buttonRadius: layerInteraction.style.buttonRadius,
+            cursor: layerInteraction.style.removeCursor,
+            icon: layerInteraction.icons.remove,
+            tooltip: i18n.layerInteraction.remove,
+            color: layerInteraction.style.buttonRemoveColor,
+            background: layerInteraction.style.buttonRemoveBackground,
+          ),
+        );
   }
 }

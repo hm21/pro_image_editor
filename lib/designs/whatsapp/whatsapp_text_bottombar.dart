@@ -107,8 +107,8 @@ class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
                       ? const Icon(Icons.color_lens)
                       : Text(
                           'Aa',
-                          style: widget.configs.textEditorConfigs
-                              .customTextStyles?.first,
+                          style:
+                              widget.configs.textEditor.customTextStyles?.first,
                         ),
                   style: IconButton.styleFrom(backgroundColor: Colors.black38),
                 ),

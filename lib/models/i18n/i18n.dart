@@ -4,9 +4,10 @@ import 'i18n_crop_rotate_editor.dart';
 import 'i18n_emoji_editor.dart';
 import 'i18n_filter_editor.dart';
 import 'i18n_layer_interaction.dart';
-import 'i18n_painting_editor.dart';
+import 'i18n_paint_editor.dart';
 import 'i18n_sticker_editor.dart';
 import 'i18n_text_editor.dart';
+import 'i18n_tune_editor.dart';
 import 'i18n_various.dart';
 
 export 'i18n_blur_editor.dart';
@@ -14,9 +15,10 @@ export 'i18n_crop_rotate_editor.dart';
 export 'i18n_emoji_editor.dart';
 export 'i18n_filter_editor.dart';
 export 'i18n_layer_interaction.dart';
-export 'i18n_painting_editor.dart';
+export 'i18n_paint_editor.dart';
 export 'i18n_sticker_editor.dart';
 export 'i18n_text_editor.dart';
+export 'i18n_tune_editor.dart';
 export 'i18n_various.dart';
 
 /// The `I18n` class provides internationalization settings for the image editor
@@ -30,8 +32,8 @@ export 'i18n_various.dart';
 ///   various: I18nVarious(
 ///     // Define various translations...
 ///   ),
-///   paintEditor: I18nPaintingEditor(
-///     // Define painting editor translations...
+///   paintEditor: I18nPaintEditor(
+///     // Define paint editor translations...
 ///   ),
 ///   textEditor: I18nTextEditor(
 ///     // Define text editor translations...
@@ -60,7 +62,7 @@ export 'i18n_various.dart';
 ///
 /// - `various`: Translations and messages for various parts of the editor.
 ///
-/// - `paintEditor`: Translations and messages specific to the painting editor.
+/// - `paintEditor`: Translations and messages specific to the paint editor.
 ///
 /// - `textEditor`: Translations and messages specific to the text editor.
 ///
@@ -92,8 +94,8 @@ export 'i18n_various.dart';
 ///   various: I18nVarious(
 ///     // Define various translations...
 ///   ),
-///   paintEditor: I18nPaintingEditor(
-///     // Define painting editor translations...
+///   paintEditor: I18nPaintEditor(
+///     // Define paint editor translations...
 ///   ),
 ///   // Access other translations and messages...
 /// );
@@ -123,8 +125,8 @@ class I18n {
   ///   various: I18nVarious(
   ///     // Custom translations and settings for various components
   ///   ),
-  ///   paintEditor: I18nPaintingEditor(
-  ///     // Custom translations and settings for the Painting Editor
+  ///   paintEditor: I18nPaintEditor(
+  ///     // Custom translations and settings for the Paint Editor
   ///   ),
   ///   textEditor: I18nTextEditor(
   ///     // Custom translations and settings for the Text Editor
@@ -140,9 +142,10 @@ class I18n {
   /// ```
   const I18n({
     this.layerInteraction = const I18nLayerInteraction(),
-    this.paintEditor = const I18nPaintingEditor(),
+    this.paintEditor = const I18nPaintEditor(),
     this.textEditor = const I18nTextEditor(),
     this.cropRotateEditor = const I18nCropRotateEditor(),
+    this.tuneEditor = const I18nTuneEditor(),
     this.filterEditor = const I18nFilterEditor(),
     this.blurEditor = const I18nBlurEditor(),
     this.emojiEditor = const I18nEmojiEditor(),
@@ -157,8 +160,8 @@ class I18n {
     this.doneLoadingMsg = 'Changes are being applied',
   });
 
-  /// Translations and messages specific to the painting editor.
-  final I18nPaintingEditor paintEditor;
+  /// Translations and messages specific to the paint editor.
+  final I18nPaintEditor paintEditor;
 
   /// Translations and messages for various parts of the editor.
   final I18nVarious various;
@@ -171,6 +174,9 @@ class I18n {
 
   /// Translations and messages specific to the filter editor.
   final I18nFilterEditor filterEditor;
+
+  /// Translations and messages specific to the tune editor.
+  final I18nTuneEditor tuneEditor;
 
   /// Translations and messages specific to the blur editor.
   final I18nBlurEditor blurEditor;
@@ -205,4 +211,51 @@ class I18n {
 
   /// Text for the "Remove" action.
   final String remove;
+
+  /// Creates a copy of this `I18n` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [I18n] with some properties updated while keeping the
+  /// others unchanged.
+  I18n copyWith({
+    I18nPaintEditor? paintEditor,
+    I18nVarious? various,
+    I18nLayerInteraction? layerInteraction,
+    I18nTextEditor? textEditor,
+    I18nFilterEditor? filterEditor,
+    I18nTuneEditor? tuneEditor,
+    I18nBlurEditor? blurEditor,
+    I18nEmojiEditor? emojiEditor,
+    I18nStickerEditor? stickerEditor,
+    I18nCropRotateEditor? cropRotateEditor,
+    String? doneLoadingMsg,
+    String? importStateHistoryMsg,
+    String? cancel,
+    String? undo,
+    String? redo,
+    String? done,
+    String? remove,
+  }) {
+    return I18n(
+      paintEditor: paintEditor ?? this.paintEditor,
+      various: various ?? this.various,
+      layerInteraction: layerInteraction ?? this.layerInteraction,
+      textEditor: textEditor ?? this.textEditor,
+      tuneEditor: tuneEditor ?? this.tuneEditor,
+      filterEditor: filterEditor ?? this.filterEditor,
+      blurEditor: blurEditor ?? this.blurEditor,
+      emojiEditor: emojiEditor ?? this.emojiEditor,
+      stickerEditor: stickerEditor ?? this.stickerEditor,
+      cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      doneLoadingMsg: doneLoadingMsg ?? this.doneLoadingMsg,
+      importStateHistoryMsg:
+          importStateHistoryMsg ?? this.importStateHistoryMsg,
+      cancel: cancel ?? this.cancel,
+      undo: undo ?? this.undo,
+      redo: redo ?? this.redo,
+      done: done ?? this.done,
+      remove: remove ?? this.remove,
+    );
+  }
 }

@@ -7,15 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 // Project imports:
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_controller.dart';
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/painting_canvas.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/paint_canvas.dart';
 
 void main() {
-  group('PaintingCanvas Tests', () {
+  group('PaintCanvas Tests', () {
     testWidgets(
-        'Handles gestures and updates painting in paintings with start/stop offsets',
+        'Handles gestures and updates paint-items with start/stop offsets',
         (WidgetTester tester) async {
-      final GlobalKey<PaintingCanvasState> canvasKey = GlobalKey();
-      PaintingController ctrl = PaintingController(
+      final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
+      PaintController ctrl = PaintController(
         color: Colors.red,
         mode: PaintModeE.arrow,
         fill: false,
@@ -26,7 +26,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaintingCanvas(
+            body: PaintCanvas(
               key: canvasKey,
               drawAreaSize: const Size(1000, 1000),
               paintCtrl: ctrl,
@@ -60,10 +60,10 @@ void main() {
       expect(ctrl.canUndo, isTrue);
     });
 
-    testWidgets('Handles gestures and updates painting in freestyle-paintings',
+    testWidgets('Handles gestures and updates paint-items in freestyle-mode',
         (WidgetTester tester) async {
-      final GlobalKey<PaintingCanvasState> canvasKey = GlobalKey();
-      PaintingController ctrl = PaintingController(
+      final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
+      PaintController ctrl = PaintController(
         color: Colors.red,
         mode: PaintModeE.freeStyle,
         fill: false,
@@ -74,7 +74,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaintingCanvas(
+            body: PaintCanvas(
               key: canvasKey,
               drawAreaSize: const Size(1000, 1000),
               paintCtrl: ctrl,
@@ -107,7 +107,7 @@ void main() {
     });
 
     testWidgets('Performs undo and redo actions', (WidgetTester tester) async {
-      PaintingController ctrl = PaintingController(
+      PaintController ctrl = PaintController(
         color: Colors.red,
         mode: PaintModeE.arrow,
         fill: false,
@@ -119,7 +119,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaintingCanvas(
+            body: PaintCanvas(
               drawAreaSize: const Size(200, 200),
               paintCtrl: ctrl,
             ),

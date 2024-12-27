@@ -36,13 +36,12 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.configs.textEditorConfigs.customTextStyles == null) {
+    if (widget.configs.textEditor.customTextStyles == null) {
       return const SizedBox.shrink();
     }
 
     return Container(
-      color:
-          widget.configs.imageEditorTheme.textEditor.bottomBarBackgroundColor,
+      color: widget.configs.textEditor.style.bottomBarBackground,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 14),
         scrollDirection: Axis.horizontal,
@@ -50,8 +49,8 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
           constraints:
               BoxConstraints(minWidth: MediaQuery.of(context).size.width),
           child: Row(
-            mainAxisAlignment: widget
-                .configs.imageEditorTheme.textEditor.bottomBarMainAxisAlignment,
+            mainAxisAlignment:
+                widget.configs.textEditor.style.bottomBarMainAxisAlignment,
             children: _buildIconButtons(),
           ),
         ),
@@ -60,7 +59,7 @@ class _TextEditorBottomBarState extends State<TextEditorBottomBar> {
   }
 
   List<Widget> _buildIconButtons() {
-    var items = widget.configs.textEditorConfigs.customTextStyles!;
+    var items = widget.configs.textEditor.customTextStyles!;
     return List.generate(
       items.length,
       (index) {

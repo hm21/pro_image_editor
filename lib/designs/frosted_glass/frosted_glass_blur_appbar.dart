@@ -53,7 +53,7 @@ class FrostedGlassBlurAppbar extends StatelessWidget {
                     tooltip: blurEditor.configs.i18n.cancel,
                     onPressed: blurEditor.close,
                     icon: Icon(
-                      blurEditor.configs.icons.closeEditor,
+                      blurEditor.blurEditorConfigs.icons.backButton,
                       color: Colors.white,
                     ),
                   ),
@@ -66,7 +66,7 @@ class FrostedGlassBlurAppbar extends StatelessWidget {
                     tooltip: blurEditor.configs.i18n.done,
                     onPressed: blurEditor.done,
                     icon: Icon(
-                      blurEditor.configs.icons.doneIcon,
+                      blurEditor.blurEditorConfigs.icons.applyChanges,
                       color: Colors.white,
                     ),
                   ),

@@ -14,10 +14,12 @@ import 'fake/fake_image.dart';
 
 void main() {
   ProImageEditorConfigs configs = const ProImageEditorConfigs(
-    customWidgets: ImageEditorCustomWidgets(
-      circularProgressIndicator: SizedBox.shrink(),
+    progressIndicatorConfigs: ProgressIndicatorConfigs(
+      widgets: ProgressIndicatorWidgets(
+        circularProgressIndicator: SizedBox.shrink(),
+      ),
     ),
-    imageGenerationConfigs: ImageGenerationConfigs(
+    imageGeneration: ImageGenerationConfigs(
       generateInsideSeparateThread: false,
       generateImageInBackground: false,
     ),
@@ -93,7 +95,7 @@ void main() {
   });
 
   group('ProImageEditor open subeditors', () {
-    testWidgets('ProImageEditor opens PaintingEditor',
+    testWidgets('ProImageEditor opens PaintEditor',
         (WidgetTester tester) async {
       final key = GlobalKey<ProImageEditorState>();
       await tester.pumpWidget(
@@ -109,12 +111,12 @@ void main() {
         ),
       );
 
-      final openBtn = find.byKey(const ValueKey('open-painting-editor-btn'));
+      final openBtn = find.byKey(const ValueKey('open-paint-editor-btn'));
       expect(openBtn, findsOneWidget);
       await tester.tap(openBtn);
 
       await tester.pumpAndSettle();
-      expect(find.byType(PaintingEditor), findsOneWidget);
+      expect(find.byType(PaintEditor), findsOneWidget);
     });
 
     testWidgets('ProImageEditor opens TextEditor', (WidgetTester tester) async {
@@ -211,17 +213,17 @@ void main() {
               onImageEditingComplete: (Uint8List bytes) async {},
             ),
             configs: ProImageEditorConfigs(
-              emojiEditorConfigs: const EmojiEditorConfigs(
+              paintEditor: const PaintEditorConfigs(enabled: false),
+              textEditor: const TextEditorConfigs(enabled: false),
+              cropRotateEditor: const CropRotateEditorConfigs(enabled: false),
+              emojiEditor: const EmojiEditorConfigs(
                 enabled: false,
               ),
-              stickerEditorConfigs: StickerEditorConfigs(
+              stickerEditor: StickerEditorConfigs(
                 enabled: true,
-                buildStickers: (setLayer, scrollController) => Container(
-                  key: widgetKey,
-                ),
-              ),
-              imageEditorTheme: ImageEditorTheme(
-                stickerEditor: StickerEditorTheme(
+                buildStickers: (setLayer, scrollController) =>
+                    Container(key: widgetKey),
+                style: StickerEditorStyle(
                   editorBoxConstraintsBuilder: (context, configs) =>
                       expectedConstraints,
                 ),
@@ -230,50 +232,6 @@ void main() {
           ),
         ),
       );
-
-      final openBtn = find.byKey(const ValueKey('open-sticker-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      // Wait for the modal bottom sheet animation to complete
-      await tester.pump(); // Start the animation
-      await tester.pump(const Duration(seconds: 1)); // Wait for it to finish
-
-      expect(find.byKey(widgetKey), findsOneWidget);
-      expect(
-        tester.getRect(find.byKey(widgetKey)).width,
-        expectedConstraints.maxWidth,
-      );
-    });
-
-    testWidgets('ProImageEditor opens StickerEditor with global constraints',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ProImageEditor.memory(
-            fakeMemoryImage,
-            callbacks: ProImageEditorCallbacks(
-              onImageEditingComplete: (Uint8List bytes) async {},
-            ),
-            configs: ProImageEditorConfigs(
-              emojiEditorConfigs: const EmojiEditorConfigs(
-                enabled: false,
-              ),
-              stickerEditorConfigs: StickerEditorConfigs(
-                enabled: true,
-                buildStickers: (setLayer, scrollController) => Container(
-                  key: widgetKey,
-                ),
-              ),
-              imageEditorTheme: ImageEditorTheme(
-                editorBoxConstraintsBuilder: (context, configs) =>
-                    expectedConstraints,
-              ),
-            ),
-          ),
-        ),
-      );
-
       final openBtn = find.byKey(const ValueKey('open-sticker-editor-btn'));
       expect(openBtn, findsOneWidget);
       await tester.tap(openBtn);
@@ -296,44 +254,11 @@ void main() {
           home: ProImageEditor.memory(
             fakeMemoryImage,
             configs: ProImageEditorConfigs(
-              imageEditorTheme: ImageEditorTheme(
-                  emojiEditor: EmojiEditorTheme(
-                editorBoxConstraintsBuilder: (context, configs) =>
-                    expectedConstraints,
-              )),
-            ),
-            callbacks: ProImageEditorCallbacks(
-              onImageEditingComplete: (Uint8List bytes) async {},
-            ),
-          ),
-        ),
-      );
-
-      final openBtn = find.byKey(const ValueKey('open-emoji-editor-btn'));
-      expect(openBtn, findsOneWidget);
-      await tester.tap(openBtn);
-
-      // Wait for the modal bottom sheet animation to complete
-      await tester.pump(); // Start the animation
-      await tester.pump(const Duration(seconds: 1)); // Wait for it to finish
-
-      expect(find.byType(EmojiEditor), findsOneWidget);
-      expect(
-        tester.getRect(find.byType(EmojiEditor)).width,
-        expectedConstraints.maxWidth,
-      );
-    });
-
-    testWidgets('ProImageEditor opens EmojiEditor with global constraints',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ProImageEditor.memory(
-            fakeMemoryImage,
-            configs: ProImageEditorConfigs(
-              imageEditorTheme: ImageEditorTheme(
-                editorBoxConstraintsBuilder: (context, configs) =>
-                    expectedConstraints,
+              emojiEditor: EmojiEditorConfigs(
+                style: EmojiEditorStyle(
+                  editorBoxConstraintsBuilder: (context, configs) =>
+                      expectedConstraints,
+                ),
               ),
             ),
             callbacks: ProImageEditorCallbacks(

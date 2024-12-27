@@ -116,7 +116,7 @@ class OutsideGestureDetector extends StatelessWidget {
               throw FlutterError(
                 'Incorrect GestureDetector arguments.\n'
                 'Simultaneously having a vertical drag gesture recognizer, a '
-                'horizontal drag gesture recognizer, and a $recognizer gesture'
+                'horizontal drag gesture recognizer, and a $recognizer gesture '
                 'recognizer  will result in the $recognizer gesture recognizer '
                 'being ignored, since the other two will catch all drags.',
               );

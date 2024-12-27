@@ -1,8 +1,11 @@
 // Project imports:
-import '../../pro_image_editor.dart';
+
+import 'emoji_editor_configs.dart';
 
 export 'package:emoji_picker_flutter/emoji_picker_flutter.dart'
     show CategoryEmoji, defaultEmojiSet;
+export '../icons/emoji_editor_icons.dart';
+export '../styles/emoji_editor_style.dart';
 
 /// Configuration options for an emoji editor.
 ///
@@ -32,6 +35,8 @@ class EmojiEditorConfigs {
     this.maxScale = double.infinity,
     this.checkPlatformCompatibility = true,
     this.emojiSet = defaultEmojiSet,
+    this.style = const EmojiEditorStyle(),
+    this.icons = const EmojiEditorIcons(),
   })  : assert(initScale > 0, 'initScale must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
@@ -53,4 +58,39 @@ class EmojiEditorConfigs {
 
   /// The maximum scale factor from the layer.
   final double maxScale;
+
+  /// Style configuration for the emoji editor.
+  final EmojiEditorStyle style;
+
+  /// Icons used in the emoji editor.
+  final EmojiEditorIcons icons;
+
+  /// Creates a copy of this `EmojiEditorConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [EmojiEditorConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  EmojiEditorConfigs copyWith({
+    bool? enabled,
+    double? initScale,
+    bool? checkPlatformCompatibility,
+    List<CategoryEmoji>? emojiSet,
+    double? minScale,
+    double? maxScale,
+    EmojiEditorStyle? style,
+    EmojiEditorIcons? icons,
+  }) {
+    return EmojiEditorConfigs(
+      enabled: enabled ?? this.enabled,
+      initScale: initScale ?? this.initScale,
+      checkPlatformCompatibility:
+          checkPlatformCompatibility ?? this.checkPlatformCompatibility,
+      emojiSet: emojiSet ?? this.emojiSet,
+      minScale: minScale ?? this.minScale,
+      maxScale: maxScale ?? this.maxScale,
+      style: style ?? this.style,
+      icons: icons ?? this.icons,
+    );
+  }
 }

@@ -3,16 +3,33 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+/// A widget that demonstrates the building of sticker categories and displays
+/// them in a scrollable grid layout. It also allows interaction with stickers
+/// to be set in an image editor layer.
 class DemoBuildStickers extends StatelessWidget {
-  final Function(Widget) setLayer;
-  final ScrollController scrollController;
-
+  /// Creates a [DemoBuildStickers] widget.
+  ///
+  /// [setLayer] is a callback function to set the selected sticker widget in
+  /// the editor.
+  /// [scrollController] controls the scroll behavior of the sticker list.
+  /// [categoryColor] defines the background color of the category bar.
   DemoBuildStickers({
     super.key,
     required this.setLayer,
     required this.scrollController,
+    this.categoryColor = const Color(0xFF424242),
   });
 
+  /// Callback function to set the selected sticker in the image editor layer.
+  final Function(Widget) setLayer;
+
+  /// Controls the scroll behavior of the sticker grid.
+  final ScrollController scrollController;
+
+  /// Color for the category selection bar.
+  final Color categoryColor;
+
+  /// Titles for the sticker categories.
   final List<String> demoTitles = [
     'Recent',
     'Favorites',
@@ -57,7 +74,7 @@ class DemoBuildStickers extends StatelessWidget {
         ),
         Container(
           height: 50,
-          color: Colors.grey.shade800,
+          color: categoryColor,
           child: Row(
             children: [
               IconButton(
@@ -144,7 +161,7 @@ class DemoBuildStickers extends StatelessWidget {
               LoadingDialog.instance.show(
                 context,
                 configs: const ProImageEditorConfigs(),
-                theme: ThemeData.dark(),
+                theme: Theme.of(context),
               );
 
               await precacheImage(NetworkImage(url), context);

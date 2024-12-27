@@ -7,53 +7,57 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../utils/example_helper.dart';
 
+/// A widget that provides an example of managing and displaying stickers.
+///
+/// The [StickersExample] widget is a stateful widget that demonstrates how to
+/// work with stickers, possibly within an image editor or a related feature.
+///
+/// The state for this widget is managed by the [_StickersExampleState] class.
+///
+/// Example usage:
+/// ```dart
+/// StickersExample();
+/// ```
 class StickersExample extends StatefulWidget {
+  /// Creates a new [StickersExample] widget.
   const StickersExample({super.key});
 
   @override
   State<StickersExample> createState() => _StickersExampleState();
 }
 
+/// The state for the [StickersExample] widget.
+///
+/// This class manages the behavior and state related to the stickers within
+/// the [StickersExample] widget.
 class _StickersExampleState extends State<StickersExample>
     with ExampleHelperState<StickersExample> {
   final String _url = 'https://picsum.photos/id/176/2000';
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        LoadingDialog.instance.show(
-          context,
-          configs: const ProImageEditorConfigs(),
-          theme: ThemeData.dark(),
-        );
-        await precacheImage(NetworkImage(_url), context);
-        LoadingDialog.instance.hide();
-        if (!context.mounted) return;
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => _buildEditor(),
-          ),
-        );
-      },
-      leading: const Icon(Icons.image_outlined),
-      title: const Text('Custom Stickers'),
-      trailing: const Icon(Icons.chevron_right),
-    );
+  void initState() {
+    preCacheImage(networkUrl: _url);
+    super.initState();
   }
 
-  Widget _buildEditor() {
+  @override
+  Widget build(BuildContext context) {
+    if (!isPreCached) return const PrepareImageWidget();
+
     return ProImageEditor.network(
       _url,
       callbacks: ProImageEditorCallbacks(
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
-        onCloseEditor: onCloseEditor,
+        onCloseEditor: () => onCloseEditor(enablePop: !isDesktopMode(context)),
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        blurEditorConfigs: const BlurEditorConfigs(enabled: false),
-        stickerEditorConfigs: StickerEditorConfigs(
+        blurEditor: const BlurEditorConfigs(enabled: false),
+        mainEditor: MainEditorConfigs(
+          enableCloseButton: !isDesktopMode(context),
+        ),
+        stickerEditor: StickerEditorConfigs(
           enabled: true,
           buildStickers: (setLayer, scrollController) {
             return ClipRRect(
@@ -78,7 +82,7 @@ class _StickersExampleState extends State<StickersExample>
                       LoadingDialog.instance.show(
                         context,
                         configs: const ProImageEditorConfigs(),
-                        theme: ThemeData.dark(),
+                        theme: Theme.of(context),
                       );
                       await precacheImage(
                           NetworkImage(
@@ -102,18 +106,38 @@ class _StickersExampleState extends State<StickersExample>
   }
 }
 
+/// A widget that represents a sticker in the UI.
+///
+/// The [Sticker] widget is a stateful widget that takes an `index` parameter
+/// to
+/// identify the specific sticker. The state for this widget is managed by the
+/// [StickerState] class.
+///
+/// Example usage:
+/// ```dart
+/// Sticker(index: 1);
+/// ```
 class Sticker extends StatefulWidget {
-  final int index;
-
+  /// Creates a new [Sticker] widget.
+  ///
+  /// The [index] parameter is required and represents the position or
+  /// identifier
+  /// of the sticker in a collection.
   const Sticker({
     super.key,
     required this.index,
   });
 
+  /// The index representing the position of the sticker.
+  final int index;
+
   @override
   State<Sticker> createState() => StickerState();
 }
 
+/// The state for the [Sticker] widget.
+///
+/// This class manages the state and behavior of the [Sticker] widget.
 class StickerState extends State<Sticker> {
   @override
   Widget build(BuildContext context) {

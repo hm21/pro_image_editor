@@ -51,4 +51,20 @@ class StateHistoryConfigs {
 
   /// Holds the initial state history of the Image Editor.
   final ImportStateHistory? initStateHistory;
+
+  /// Creates a copy of this `StateHistoryConfigs` object with the given fields
+  /// replaced with new values.
+  ///
+  /// The [copyWith] method allows you to create a new instance of
+  /// [StateHistoryConfigs] with some properties updated while keeping the
+  /// others unchanged.
+  StateHistoryConfigs copyWith({
+    int? stateHistoryLimit,
+    ImportStateHistory? initStateHistory,
+  }) {
+    return StateHistoryConfigs(
+      stateHistoryLimit: stateHistoryLimit ?? this.stateHistoryLimit,
+      initStateHistory: initStateHistory ?? this.initStateHistory,
+    );
+  }
 }

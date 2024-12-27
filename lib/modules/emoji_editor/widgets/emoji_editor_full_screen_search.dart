@@ -109,7 +109,7 @@ class EmojiEditorFullScreenSearchViewState
             emojiBoxPosition,
             emoji,
             emojiSize,
-            null, // Todo: check if we can provide the category
+            null,
             widget.config,
             _onSkinTonedEmojiSelected,
             links[emoji.emoji]!,

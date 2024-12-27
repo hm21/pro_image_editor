@@ -8,16 +8,16 @@ import 'package:network_image_mock/network_image_mock.dart';
 // Project imports:
 import 'package:pro_image_editor/models/init_configs/paint_editor_init_configs.dart';
 import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/painting_canvas.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/paint_canvas.dart';
 import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart';
 import '../../fake/fake_image.dart';
 
 void main() {
-  group('PaintingEditor Tests', () {
+  group('PaintEditor Tests', () {
     testWidgets('Initializes with memory constructor',
         (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.memory(
+        home: PaintEditor.memory(
           fakeMemoryImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
@@ -25,13 +25,13 @@ void main() {
         ),
       ));
 
-      expect(find.byType(PaintingEditor), findsOneWidget);
+      expect(find.byType(PaintEditor), findsOneWidget);
     });
     testWidgets('Initializes with network constructor',
         (WidgetTester tester) async {
       await mockNetworkImagesFor(() async {
         await tester.pumpWidget(MaterialApp(
-          home: PaintingEditor.network(
+          home: PaintEditor.network(
             fakeNetworkImage,
             initConfigs: PaintEditorInitConfigs(
               theme: ThemeData(),
@@ -39,26 +39,13 @@ void main() {
           ),
         ));
 
-        expect(find.byType(PaintingEditor), findsOneWidget);
+        expect(find.byType(PaintEditor), findsOneWidget);
       });
-    });
-    testWidgets('Initializes with file constructor',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.file(
-          fakeFileImage,
-          initConfigs: PaintEditorInitConfigs(
-            theme: ThemeData(),
-          ),
-        ),
-      ));
-
-      expect(find.byType(PaintingEditor), findsOneWidget);
     });
 
     testWidgets('should render BarColorPicker', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.memory(
+        home: PaintEditor.memory(
           fakeMemoryImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
@@ -68,9 +55,9 @@ void main() {
 
       expect(find.byType(BarColorPicker), findsOneWidget);
     });
-    testWidgets('should render PaintingCanvas', (WidgetTester tester) async {
+    testWidgets('should render Canvas', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.memory(
+        home: PaintEditor.memory(
           fakeMemoryImage,
           initConfigs: PaintEditorInitConfigs(
             theme: ThemeData(),
@@ -78,12 +65,12 @@ void main() {
         ),
       ));
 
-      expect(find.byType(PaintingCanvas), findsOneWidget);
+      expect(find.byType(PaintCanvas), findsOneWidget);
     });
-    testWidgets('should change painting-mode', (WidgetTester tester) async {
-      var key = GlobalKey<PaintingEditorState>();
+    testWidgets('should change paint-mode', (WidgetTester tester) async {
+      var key = GlobalKey<PaintEditorState>();
       await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.memory(
+        home: PaintEditor.memory(
           fakeMemoryImage,
           key: key,
           initConfigs: PaintEditorInitConfigs(
@@ -103,9 +90,9 @@ void main() {
       expect(key.currentState!.paintMode, PaintModeE.arrow);
     });
     testWidgets('should change stroke width', (WidgetTester tester) async {
-      var key = GlobalKey<PaintingEditorState>();
+      var key = GlobalKey<PaintEditorState>();
       await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.memory(
+        home: PaintEditor.memory(
           fakeMemoryImage,
           key: key,
           initConfigs: PaintEditorInitConfigs(
@@ -121,9 +108,9 @@ void main() {
       }
     });
     testWidgets('should toggle fill state', (WidgetTester tester) async {
-      var key = GlobalKey<PaintingEditorState>();
+      var key = GlobalKey<PaintEditorState>();
       await tester.pumpWidget(MaterialApp(
-        home: PaintingEditor.memory(
+        home: PaintEditor.memory(
           fakeMemoryImage,
           key: key,
           initConfigs: PaintEditorInitConfigs(

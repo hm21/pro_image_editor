@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/models/i18n/i18n_emoji_editor.dart';
-import 'package:pro_image_editor/models/theme/theme.dart';
 import 'package:pro_image_editor/modules/emoji_editor/utils/emoji_state_manager.dart';
 
+import '../../../models/styles/emoji_editor_style.dart';
 import '../../../utils/pro_image_editor_mode.dart';
 import 'emoji_cell_extended.dart';
 
@@ -38,7 +38,7 @@ class ProEmojiPickerView extends EmojiPickerView {
     required VoidCallback showSearchBar,
     required this.scrollController,
     required this.i18nEmojiEditor,
-    required this.themeEmojiEditor,
+    required this.emojiEditorStyle,
     super.key,
   }) : super(config, state, showSearchBar);
 
@@ -56,10 +56,10 @@ class ProEmojiPickerView extends EmojiPickerView {
 
   /// Theme settings for the emoji editor.
   ///
-  /// This [EmojiEditorTheme] object contains styling options for the emoji
+  /// This [EmojiEditorStyle] object contains styling options for the emoji
   /// picker, enabling customization of colors, fonts, and other visual
   /// aspects.
-  final EmojiEditorTheme themeEmojiEditor;
+  final EmojiEditorStyle emojiEditorStyle;
 
   @override
   State<ProEmojiPickerView> createState() => _DefaultEmojiPickerViewState();
@@ -134,19 +134,19 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
 
     _activeTabChange = true;
 
-    if (widget.themeEmojiEditor.scrollToDuration.inMilliseconds == 0) {
+    if (widget.emojiEditorStyle.scrollToDuration.inMilliseconds == 0) {
       _scrollController.jumpTo(offset);
       _tabController.animateTo(index);
     } else {
       _scrollController.animateTo(
         offset,
-        duration: widget.themeEmojiEditor.scrollToDuration,
+        duration: widget.emojiEditorStyle.scrollToDuration,
         curve: Curves.easeInOut,
       );
 
       _tabController.animateTo(
         index,
-        duration: widget.themeEmojiEditor.scrollToDuration,
+        duration: widget.emojiEditorStyle.scrollToDuration,
         curve: Curves.easeInOut,
       );
     }
@@ -154,7 +154,7 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
     Future.delayed(
         Duration(
           milliseconds:
-              max(widget.themeEmojiEditor.scrollToDuration.inMilliseconds, 200),
+              max(widget.emojiEditorStyle.scrollToDuration.inMilliseconds, 200),
         ), () {
       _activeTabChange = false;
     });
@@ -278,23 +278,28 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
           _setEmojiTextStyle();
 
           return EmojiContainer(
-            color: widget.themeEmojiEditor.backgroundColor,
+            color: widget.emojiEditorStyle.backgroundColor,
             buttonMode: widget.config.emojiViewConfig.buttonMode,
             child: Column(
               children: [
-                // Category view or bottom search bar
-                widget.config.swapCategoryAndBottomBar
-                    ? _buildSearchBar()
-                    : _buildCategoryView(),
-
-                // Emoji view
-                _buildEmojiView(),
-
-                // Bottom Search Bar or Category view
-                widget.config.swapCategoryAndBottomBar
-                    ? _buildCategoryView()
-                    : _buildSearchBar(),
-              ],
+                widget.config.viewOrderConfig.top,
+                widget.config.viewOrderConfig.middle,
+                widget.config.viewOrderConfig.bottom,
+              ].map(
+                (item) {
+                  switch (item) {
+                    case EmojiPickerItem.categoryBar:
+                      // Category view
+                      return _buildCategoryView();
+                    case EmojiPickerItem.emojiView:
+                      // Emoji view
+                      return _buildEmojiView();
+                    case EmojiPickerItem.searchBar:
+                      // Search Bar
+                      return _buildSearchBar();
+                  }
+                },
+              ).toList(),
             ),
           );
         },
@@ -309,12 +314,12 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
       if (page.emoji.isNotEmpty) {
         pages.addAll([
           SliverPadding(
-            padding: widget.themeEmojiEditor.categoryTitlePadding,
+            padding: widget.emojiEditorStyle.categoryTitlePadding,
             sliver: SliverToBoxAdapter(
               child: Text(
                 _i18nCategoryName(page.category),
                 key: _itemKeys[i],
-                style: widget.themeEmojiEditor.categoryTitleStyle,
+                style: widget.emojiEditorStyle.categoryTitleStyle,
               ),
             ),
           ),

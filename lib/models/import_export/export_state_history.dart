@@ -10,7 +10,6 @@ import 'package:flutter/widgets.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 import '../../utils/content_recorder.dart/content_recorder_controller.dart';
-import '../history/state_history.dart';
 import 'utils/export_import_version.dart';
 
 /// Class responsible for exporting the state history of the editor.
@@ -129,13 +128,16 @@ class ExportStateHistory {
         if (layers.isNotEmpty) 'layers': layers,
         if (_configs.exportFilter && element.filters.isNotEmpty)
           'filters': element.filters,
+        if (_configs.exportTuneAdjustments &&
+            element.tuneAdjustments.isNotEmpty)
+          'tune': element.tuneAdjustments.map((item) => item.toMap()).toList(),
         'blur': element.blur,
         if (transformConfigsMap.isNotEmpty) 'transform': transformConfigsMap,
       });
     }
 
     return {
-      'version': ExportImportVersion.version_2_0_0,
+      'version': ExportImportVersion.version_3_0_1,
       'position': _configs.historySpan == ExportHistorySpan.current ||
               _configs.historySpan == ExportHistorySpan.currentAndForward
           ? 0
@@ -145,6 +147,10 @@ class ExportStateHistory {
       'imgSize': {
         'width': imageInfos.rawSize.width,
         'height': imageInfos.rawSize.height,
+      },
+      'lastRenderedImgSize': {
+        'width': imageInfos.renderedSize.width,
+        'height': imageInfos.renderedSize.height,
       },
     };
   }
@@ -189,7 +195,7 @@ class ExportStateHistory {
     required ImageInfos imageInfos,
   }) async {
     for (var layer in element.layers) {
-      if ((_configs.exportPainting && layer.runtimeType == PaintingLayerData) ||
+      if ((_configs.exportPaint && layer.runtimeType == PaintLayerData) ||
           (_configs.exportText && layer.runtimeType == TextLayerData) ||
           (_configs.exportEmoji && layer.runtimeType == EmojiLayerData)) {
         layers.add(layer.toMap());
@@ -197,9 +203,7 @@ class ExportStateHistory {
           layer.runtimeType == StickerLayerData) {
         layers.add((layer as StickerLayerData).toStickerMap(stickers.length));
 
-        double imageWidth =
-            (editorConfigs.stickerEditorConfigs?.initWidth ?? 100) *
-                layer.scale;
+        double imageWidth = editorConfigs.stickerEditor.initWidth * layer.scale;
         Size targetSize = Size(
             imageWidth,
             MediaQuery.of(context).size.height /

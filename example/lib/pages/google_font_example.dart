@@ -1,5 +1,3 @@
-// ignore_for_file: depend_on_referenced_packages
-
 // Dart imports:
 import 'dart:io';
 
@@ -12,10 +10,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
-import '../utils/example_constants.dart';
+import '../common/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// The google font example
 class GoogleFontExample extends StatefulWidget {
+  /// Creates a new [GoogleFontExample] widget.
   const GoogleFontExample({super.key});
 
   @override
@@ -24,39 +24,55 @@ class GoogleFontExample extends StatefulWidget {
 
 class _GoogleFontExampleState extends State<GoogleFontExample>
     with ExampleHelperState<GoogleFontExample> {
+  bool _ignorePlatformIssue = false;
+
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        await precacheImage(
-            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
-        if (!context.mounted) return;
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => _buildEditor(),
-          ),
-        );
-      },
-      leading: const Icon(Icons.emoji_emotions_outlined),
-      title: const Text('Google-Font Emojis'),
-      subtitle: !kIsWeb && Platform.isWindows
-          ? const Text('Windows didn\'t support "GoogleFonts.notoColorEmoji".')
-          : null,
-      trailing: const Icon(Icons.chevron_right),
-    );
+  void initState() {
+    preCacheImage(assetPath: kImageEditorExampleAssetPath);
+    super.initState();
   }
 
-  Widget _buildEditor() {
+  @override
+  Widget build(BuildContext context) {
+    if (!kIsWeb && Platform.isWindows && !_ignorePlatformIssue) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Column(
+          spacing: 16,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _ignorePlatformIssue = true;
+                });
+              },
+              child: const Text('Ignore Error'),
+            ),
+            Expanded(
+              child: ErrorWidget(
+                'Windows didn\'t support "GoogleFonts.notoColorEmoji"',
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (!isPreCached) {
+      return const PrepareImageWidget();
+    }
+
     return ProImageEditor.asset(
-      ExampleConstants.of(context)!.demoAssetPath,
+      kImageEditorExampleAssetPath,
       callbacks: ProImageEditorCallbacks(
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
-        onCloseEditor: onCloseEditor,
+        onCloseEditor: () => onCloseEditor(enablePop: !isDesktopMode(context)),
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        textEditorConfigs: TextEditorConfigs(
+        mainEditor: MainEditorConfigs(
+          enableCloseButton: !isDesktopMode(context),
+        ),
+        textEditor: TextEditorConfigs(
           showSelectFontStyleBottomBar: true,
           customTextStyles: [
             GoogleFonts.roboto(),
@@ -68,14 +84,13 @@ class _GoogleFontExampleState extends State<GoogleFontExample>
             GoogleFonts.nabla(),
           ],
         ),
-        imageEditorTheme: ImageEditorTheme(
-            emojiEditor: EmojiEditorTheme(
-          textStyle: DefaultEmojiTextStyle.copyWith(
-            fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
-          ),
-        )),
-        emojiEditorConfigs: const EmojiEditorConfigs(
+        emojiEditor: EmojiEditorConfigs(
           checkPlatformCompatibility: false,
+          style: EmojiEditorStyle(
+            textStyle: DefaultEmojiTextStyle.copyWith(
+              fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
+            ),
+          ),
         ),
       ),
     );

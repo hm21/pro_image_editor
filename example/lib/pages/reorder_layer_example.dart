@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/common/example_constants.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -6,51 +7,62 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
-import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 
+/// A widget that demonstrates the ability to reorder layers within a UI.
+///
+/// The [ReorderLayerExample] widget is a stateful widget that allows users
+/// to reorder different layers, typically used in applications like image
+/// or graphic editors. This feature enables users to adjust the stacking
+/// order of layers for better control over the composition.
+///
+/// The state for this widget is managed by the [_ReorderLayerExampleState]
+/// class.
+///
+/// Example usage:
+/// ```dart
+/// ReorderLayerExample();
+/// ```
 class ReorderLayerExample extends StatefulWidget {
+  /// Creates a new [ReorderLayerExample] widget.
   const ReorderLayerExample({super.key});
 
   @override
   State<ReorderLayerExample> createState() => _ReorderLayerExampleState();
 }
 
+/// The state for the [ReorderLayerExample] widget.
+///
+/// This class manages the logic and state required for reordering layers
+/// within the [ReorderLayerExample] widget.
 class _ReorderLayerExampleState extends State<ReorderLayerExample>
     with ExampleHelperState<ReorderLayerExample> {
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        await precacheImage(
-            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => _buildEditor(),
-          ),
-        );
-      },
-      leading: const Icon(Icons.sort),
-      title: const Text('Reorder layer level'),
-      trailing: const Icon(Icons.chevron_right),
-    );
+  void initState() {
+    preCacheImage(assetPath: kImageEditorExampleAssetPath);
+    super.initState();
   }
 
-  Widget _buildEditor() {
+  @override
+  Widget build(BuildContext context) {
+    if (!isPreCached) return const PrepareImageWidget();
+
     return ProImageEditor.asset(
-      ExampleConstants.of(context)!.demoAssetPath,
+      kImageEditorExampleAssetPath,
       key: editorKey,
       callbacks: ProImageEditorCallbacks(
         onImageEditingStarted: onImageEditingStarted,
         onImageEditingComplete: onImageEditingComplete,
-        onCloseEditor: onCloseEditor,
+        onCloseEditor: () => onCloseEditor(enablePop: !isDesktopMode(context)),
       ),
       configs: ProImageEditorConfigs(
+        helperLines: const HelperLineConfigs(
+          hitVibration: false,
+        ),
         designMode: platformDesignMode,
-        customWidgets: ImageEditorCustomWidgets(
-          mainEditor: CustomWidgetsMainEditor(
+        mainEditor: MainEditorConfigs(
+          enableCloseButton: !isDesktopMode(context),
+          widgets: MainEditorWidgets(
             bodyItems: (editor, rebuildStream) {
               return [
                 ReactiveCustomWidget(
@@ -104,20 +116,53 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
   }
 }
 
+/// A widget that provides a sheet for reordering layers.
+///
+/// The [ReorderLayerSheet] widget allows users to view and reorder a list of
+/// layers within an application. It is typically used in scenarios where the
+/// user needs to manage the stacking order of different layers, such as in
+/// an image or graphic editor.
+///
+/// This widget requires a list of [Layer] objects and a [ReorderCallback]
+/// function to handle the reorder logic.
+///
+/// The state for this widget is managed by the [_ReorderLayerSheetState] class.
+///
+/// Example usage:
+/// ```dart
+/// ReorderLayerSheet(
+///   layers: myLayers,
+///   onReorder: (oldIndex, newIndex) { /* reorder logic */ },
+/// );
+/// ```
 class ReorderLayerSheet extends StatefulWidget {
-  final List<Layer> layers;
-  final ReorderCallback onReorder;
-
+  /// Creates a new [ReorderLayerSheet] widget.
+  ///
+  /// The [layers] parameter is required and represents the list of layers
+  /// that can be reordered. The [onReorder] callback is required to handle
+  /// the logic when layers are reordered.
   const ReorderLayerSheet({
     super.key,
     required this.layers,
     required this.onReorder,
   });
 
+  /// A list of [Layer] objects that can be reordered by the user.
+  final List<Layer> layers;
+
+  /// A callback that is triggered when the user reorders the layers.
+  /// This function receives the [oldIndex] and [newIndex] to indicate
+  /// how the layers were reordered.
+  final ReorderCallback onReorder;
+
   @override
   State<ReorderLayerSheet> createState() => _ReorderLayerSheetState();
 }
 
+/// The state for the [ReorderLayerSheet] widget.
+///
+/// This class manages the logic and state required for displaying and
+/// interacting with the reorderable list of layers.
 class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
   @override
   Widget build(BuildContext context) {
@@ -146,17 +191,17 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
                       (layer as EmojiLayerData).emoji,
                       style: const TextStyle(fontSize: 24),
                     )
-                  : layer.runtimeType == PaintingLayerData
+                  : layer.runtimeType == PaintLayerData
                       ? SizedBox(
                           height: 40,
                           child: FittedBox(
                             alignment: Alignment.centerLeft,
                             child: CustomPaint(
-                              size: (layer as PaintingLayerData).size,
+                              size: (layer as PaintLayerData).size,
                               willChange: true,
                               isComplex:
                                   layer.item.mode == PaintModeE.freeStyle,
-                              painter: DrawPainting(
+                              painter: DrawPaintItem(
                                 item: layer.item,
                                 scale: layer.scale,
                                 enabledHitDetection: false,

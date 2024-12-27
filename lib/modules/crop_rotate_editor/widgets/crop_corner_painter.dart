@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import '../../../models/theme/theme.dart';
+import '../../../models/styles/crop_rotate_editor_style.dart';
 
 /// A custom painter for drawing crop corners and interaction elements.
 ///
@@ -46,9 +46,7 @@ class CropCornerPainter extends CustomPainter {
     required this.viewRect,
     required this.screenSize,
     required this.scaleFactor,
-    required this.imageEditorTheme,
-    required this.cornerLength,
-    required this.cornerThickness,
+    required this.style,
     required this.rotationScaleFactor,
   });
 
@@ -72,9 +70,9 @@ class CropCornerPainter extends CustomPainter {
 
   /// The theme settings for the image editor.
   ///
-  /// This [ImageEditorTheme] object provides style configurations for the
+  /// This [CropRotateEditorStyle] object provides style configurations for the
   /// elements drawn by this painter, such as colors and line thicknesses.
-  final ImageEditorTheme imageEditorTheme;
+  final CropRotateEditorStyle style;
 
   /// Whether to draw circles at the crop corners.
   ///
@@ -99,18 +97,6 @@ class CropCornerPainter extends CustomPainter {
   /// This double value represents the opacity level for interaction effects,
   /// such as highlighting or accentuating elements during user actions.
   final double interactionOpacity;
-
-  /// The length of the crop corner lines.
-  ///
-  /// This double value determines how long the lines at the corners of the
-  /// crop rectangle are drawn, affecting their visual appearance.
-  final double cornerLength;
-
-  /// The thickness of the crop corner lines.
-  ///
-  /// This double value determines the thickness of the lines at the corners
-  /// of the crop rectangle, influencing their visual prominence.
-  final double cornerThickness;
 
   /// The width of the helper lines.
   ///
@@ -199,8 +185,8 @@ class CropCornerPainter extends CustomPainter {
     }
 
     Color interpolatedColor = Color.lerp(
-      imageEditorTheme.cropRotateEditor.background,
-      imageEditorTheme.cropRotateEditor.cropOverlayColor,
+      style.background,
+      style.cropOverlayColor,
       fadeInOpacity,
     )!;
 
@@ -212,8 +198,8 @@ class CropCornerPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color =
-            interpolatedColor.withOpacity((opacity + fadeInFactor).clamp(0, 1))
+        ..color = interpolatedColor.withValues(
+            alpha: (opacity + fadeInFactor).clamp(0, 1))
         ..style = PaintingStyle.fill,
     );
   }
@@ -224,9 +210,9 @@ class CropCornerPainter extends CustomPainter {
   }) {
     Path path = Path();
 
-    double width = cornerThickness / rotationScaleFactor;
+    double width = style.cropCornerThickness / rotationScaleFactor;
     if (!drawCircle) {
-      double length = cornerLength / rotationScaleFactor;
+      double length = style.cropCornerLength / rotationScaleFactor;
 
       /// Top-Left
       path
@@ -254,8 +240,7 @@ class CropCornerPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = imageEditorTheme.cropRotateEditor.cropCornerColor
-              .withOpacity(fadeInOpacity)
+          ..color = style.cropCornerColor.withValues(alpha: fadeInOpacity)
           ..style = PaintingStyle.fill,
       );
     } else {
@@ -315,8 +300,7 @@ class CropCornerPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = imageEditorTheme.cropRotateEditor.cropCornerColor
-              .withOpacity(fadeInOpacity)
+          ..color = style.cropCornerColor.withValues(alpha: fadeInOpacity)
           ..strokeWidth = width
           ..strokeCap = StrokeCap.round
           ..style = PaintingStyle.stroke,
@@ -368,8 +352,8 @@ class CropCornerPainter extends CustomPainter {
     }
 
     final cornerPaint = Paint()
-      ..color = imageEditorTheme.cropRotateEditor.helperLineColor
-          .withOpacity(fadeInOpacity * interactionOpacity)
+      ..color = style.helperLineColor
+          .withValues(alpha: fadeInOpacity * interactionOpacity)
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, cornerPaint);
   }
@@ -385,8 +369,7 @@ class CropCornerPainter extends CustomPainter {
         oldDelegate.viewRect != viewRect ||
         oldDelegate.screenSize != screenSize ||
         oldDelegate.scaleFactor != scaleFactor ||
-        oldDelegate.imageEditorTheme != imageEditorTheme ||
-        oldDelegate.cornerLength != cornerLength ||
+        oldDelegate.style != style ||
         oldDelegate.rotationScaleFactor != rotationScaleFactor;
   }
 
@@ -401,9 +384,7 @@ class CropCornerPainter extends CustomPainter {
       viewRect: viewRect,
       screenSize: screenSize,
       scaleFactor: scaleFactor,
-      imageEditorTheme: imageEditorTheme,
-      cornerLength: cornerLength,
-      cornerThickness: cornerThickness,
+      style: style,
       rotationScaleFactor: rotationScaleFactor,
     );
   }

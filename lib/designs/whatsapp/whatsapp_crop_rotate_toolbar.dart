@@ -59,13 +59,11 @@ class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
 
   Widget _buildMaterialToolbar() {
     var style = TextStyle(
-      color: widget
-          .configs.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
+      color: widget.configs.cropRotateEditor.style.appBarColor,
     );
 
     return BottomAppBar(
-      color: widget
-          .configs.imageEditorTheme.cropRotateEditor.appBarBackgroundColor,
+      color: widget.configs.cropRotateEditor.style.appBarBackground,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,9 +78,8 @@ class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
           IconButton(
             onPressed: widget.onRotate,
             tooltip: widget.configs.i18n.cropRotateEditor.rotate,
-            icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
-            color: widget.configs.imageEditorTheme.cropRotateEditor
-                .appBarForegroundColor,
+            icon: Icon(widget.configs.cropRotateEditor.icons.rotate),
+            color: widget.configs.cropRotateEditor.style.appBarColor,
           ),
           TextButton(
             onPressed: widget.onDone,
@@ -99,8 +96,7 @@ class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
   Widget _buildCupertinoToolbar() {
     var padding = const EdgeInsets.symmetric(vertical: 8, horizontal: 16);
     var style = TextStyle(
-      color: widget
-          .configs.imageEditorTheme.cropRotateEditor.appBarForegroundColor,
+      color: widget.configs.cropRotateEditor.style.appBarColor,
       fontSize: 16,
     );
 
@@ -117,9 +113,8 @@ class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
               IconButton(
                 onPressed: widget.onRotate,
                 tooltip: widget.configs.i18n.cropRotateEditor.rotate,
-                icon: Icon(widget.configs.icons.cropRotateEditor.rotate),
-                color: widget.configs.imageEditorTheme.cropRotateEditor
-                    .appBarForegroundColor,
+                icon: Icon(widget.configs.cropRotateEditor.icons.rotate),
+                color: widget.configs.cropRotateEditor.style.appBarColor,
               ),
               CupertinoButton(
                 onPressed: widget.onReset,
@@ -132,9 +127,8 @@ class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
               IconButton(
                 onPressed: widget.openAspectRatios,
                 tooltip: widget.configs.i18n.cropRotateEditor.ratio,
-                icon: Icon(widget.configs.icons.cropRotateEditor.aspectRatio),
-                color: widget.configs.imageEditorTheme.cropRotateEditor
-                    .appBarForegroundColor,
+                icon: Icon(widget.configs.cropRotateEditor.icons.aspectRatio),
+                color: widget.configs.cropRotateEditor.style.appBarColor,
               ),
             ],
           ),

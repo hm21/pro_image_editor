@@ -138,7 +138,7 @@ class _TransformedContentGeneratorState
   Widget _buildCropPainter({required Widget child}) {
     CutOutsideArea clipper = CutOutsideArea(configs: widget.transformConfigs);
 
-    if (widget.configs.cropRotateEditorConfigs.roundCropper) {
+    if (widget.configs.cropRotateEditor.roundCropper) {
       return ClipOval(clipper: clipper, child: child);
     } else {
       return ClipRect(clipper: clipper, child: child);

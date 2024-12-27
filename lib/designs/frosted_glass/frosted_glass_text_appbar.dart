@@ -49,7 +49,7 @@ class FrostedGlassTextAppbar extends StatelessWidget {
                     tooltip: textEditor.configs.i18n.cancel,
                     onPressed: textEditor.close,
                     icon: Icon(
-                      textEditor.configs.icons.closeEditor,
+                      textEditor.mainEditorConfigs.icons.closeEditor,
                       color: Colors.white,
                     ),
                   ),
@@ -66,16 +66,18 @@ class FrostedGlassTextAppbar extends StatelessWidget {
                         tooltip: textEditor.i18n.textEditor.textAlign,
                         onPressed: textEditor.toggleTextAlign,
                         icon: Icon(textEditor.align == TextAlign.left
-                            ? textEditor.icons.textEditor.alignLeft
+                            ? textEditor.textEditorConfigs.icons.alignLeft
                             : textEditor.align == TextAlign.right
-                                ? textEditor.icons.textEditor.alignRight
-                                : textEditor.icons.textEditor.alignCenter),
+                                ? textEditor.textEditorConfigs.icons.alignRight
+                                : textEditor
+                                    .textEditorConfigs.icons.alignCenter),
                       ),
                       const SizedBox(width: 3),
                       IconButton(
                         tooltip: textEditor.i18n.textEditor.backgroundMode,
                         onPressed: textEditor.toggleBackgroundMode,
-                        icon: Icon(textEditor.icons.textEditor.backgroundMode),
+                        icon: Icon(
+                            textEditor.textEditorConfigs.icons.backgroundMode),
                       ),
                     ],
                   ),
@@ -89,7 +91,7 @@ class FrostedGlassTextAppbar extends StatelessWidget {
                     tooltip: textEditor.configs.i18n.done,
                     onPressed: textEditor.done,
                     icon: Icon(
-                      textEditor.configs.icons.doneIcon,
+                      textEditor.textEditorConfigs.icons.applyChanges,
                       color: Colors.white,
                     ),
                   ),

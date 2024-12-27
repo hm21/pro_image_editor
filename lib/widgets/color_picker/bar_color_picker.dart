@@ -3,6 +3,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/extensions/color_extension.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -212,9 +213,9 @@ class _BarColorPickerState extends State<BarColorPicker>
 
   /// Calculates the Euclidean distance between two colors.
   double _calculateColorDistance(Color color1, Color color2) {
-    num r = color1.red - color2.red;
-    num g = color1.green - color2.green;
-    num b = color1.blue - color2.blue;
+    num r = color1.r - color2.r;
+    num g = color1.g - color2.g;
+    num b = color1.b - color2.b;
 
     return sqrt(r * r + g * g + b * b);
   }
@@ -411,12 +412,12 @@ class _BarColorPickerState extends State<BarColorPicker>
     switch (widget.pickMode) {
       case PickMode.color:
         final Color colorAtPosition = _getColorAtPosition(gradient, percent);
-        widget.colorListener(colorAtPosition.value);
+        widget.colorListener(colorAtPosition.toHex());
         break;
       case PickMode.grey:
         final channel = (0xff * percent).toInt();
         widget.colorListener(
-            Color.fromARGB(0xff, channel, channel, channel).value);
+            Color.fromARGB(0xff, channel, channel, channel).toHex());
         break;
     }
   }

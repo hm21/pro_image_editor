@@ -133,7 +133,7 @@ class CropLayerPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = backgroundColor.withOpacity(opacity)
+        ..color = backgroundColor.withValues(alpha: opacity)
         ..style = PaintingStyle.fill,
     );
   }

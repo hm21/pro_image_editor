@@ -156,11 +156,11 @@ class DesktopInteractionManager {
     required Layer? activeLayer,
   }) {
     if (activeLayer == null) return;
-    double factor = activeLayer is PaintingLayerData
+    double factor = activeLayer is PaintLayerData
         ? 0.1
         : activeLayer is TextLayerData
             ? 0.15
-            : configs.textEditorConfigs.initFontSize / 50;
+            : configs.textEditor.initFontSize / 50;
     if (zoomIn) {
       activeLayer
         ..scale -= factor
@@ -191,11 +191,11 @@ class DesktopInteractionManager {
           activeLayer.rotation += 0.087266;
         }
       } else {
-        double factor = activeLayer is PaintingLayerData
+        double factor = activeLayer is PaintLayerData
             ? 0.1
             : activeLayer is TextLayerData
                 ? 0.15
-                : configs.textEditorConfigs.initFontSize / 50;
+                : configs.textEditor.initFontSize / 50;
         if (event.scrollDelta.dy > 0) {
           activeLayer
             ..scale -= factor

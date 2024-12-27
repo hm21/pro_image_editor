@@ -4,7 +4,7 @@ import 'editor_init_configs.dart';
 /// Configuration class for initializing the paint editor.
 ///
 /// This class extends [EditorInitConfigs] and adds specific parameters related
-/// to painting functionality.
+/// to paint functionality.
 class PaintEditorInitConfigs extends EditorInitConfigs {
   /// Creates a new instance of [PaintEditorInitConfigs].
   ///
@@ -20,6 +20,7 @@ class PaintEditorInitConfigs extends EditorInitConfigs {
     super.mainImageSize,
     super.mainBodySize,
     super.appliedFilters,
+    super.appliedTuneAdjustments,
     super.appliedBlurFactor,
     super.onCloseEditor,
     super.onImageEditingComplete,

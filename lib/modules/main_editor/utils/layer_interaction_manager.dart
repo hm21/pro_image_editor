@@ -144,8 +144,9 @@ class LayerInteractionManager {
     required ScaleUpdateDetails details,
     required Layer activeLayer,
     required Size editorSize,
+    required double appBarHeight,
     required bool configEnabledHitVibration,
-    required ThemeLayerInteraction layerTheme,
+    required LayerInteractionStyle layerTheme,
   }) {
     Offset layerOffset = Offset(
       activeLayer.offset.dx,
@@ -161,7 +162,7 @@ class LayerInteractionManager {
 
     Offset touchPositionFromCenter = Offset(
           realDx - editorSize.width / 2,
-          realDy - editorSize.height / 2,
+          realDy - editorSize.height / 2 - appBarHeight,
         ) -
         layerOffset;
 
@@ -520,26 +521,25 @@ class LayerInteractionManager {
   }
 
   void _setMinMaxScaleFactor(ProImageEditorConfigs configs, Layer layer) {
-    if (layer is PaintingLayerData) {
+    if (layer is PaintLayerData) {
       layer.scale = layer.scale.clamp(
-        configs.paintEditorConfigs.minScale,
-        configs.paintEditorConfigs.maxScale,
+        configs.paintEditor.minScale,
+        configs.paintEditor.maxScale,
       );
     } else if (layer is TextLayerData) {
       layer.scale = layer.scale.clamp(
-        configs.textEditorConfigs.minScale,
-        configs.textEditorConfigs.maxScale,
+        configs.textEditor.minScale,
+        configs.textEditor.maxScale,
       );
     } else if (layer is EmojiLayerData) {
       layer.scale = layer.scale.clamp(
-        configs.emojiEditorConfigs.minScale,
-        configs.emojiEditorConfigs.maxScale,
+        configs.emojiEditor.minScale,
+        configs.emojiEditor.maxScale,
       );
-    } else if (layer is StickerLayerData &&
-        configs.stickerEditorConfigs != null) {
+    } else if (layer is StickerLayerData) {
       layer.scale = layer.scale.clamp(
-        configs.stickerEditorConfigs!.minScale,
-        configs.stickerEditorConfigs!.maxScale,
+        configs.stickerEditor.minScale,
+        configs.stickerEditor.maxScale,
       );
     }
   }

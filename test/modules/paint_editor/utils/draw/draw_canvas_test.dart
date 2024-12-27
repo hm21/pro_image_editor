@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 // Project imports:
 import 'package:pro_image_editor/models/paint_editor/painted_model.dart';
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/draw_painting.dart';
+import 'package:pro_image_editor/modules/paint_editor/widgets/draw_paint_item.dart';
 
 void main() {
   testWidgets('DrawCanvas should handle hit testing for different modes',
@@ -38,7 +38,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: CustomPaint(
-              painter: DrawPainting(
+              painter: DrawPaintItem(
                 item: paintedModel,
                 scale: 1.0,
                 enabledHitDetection: true,

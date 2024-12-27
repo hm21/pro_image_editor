@@ -1,4 +1,5 @@
 // Project imports:
+import 'package:pro_image_editor/models/custom_widgets/utils/custom_widgets_typedef.dart';
 import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_appbar.dart';
 import 'package:pro_image_editor/widgets/custom_widgets/reactive_custom_widget.dart';
 
@@ -20,6 +21,7 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
   ///     super.appBar,
   ///     super.bottomBar,
   ///     super.bodyItems,
+  ///     super.bodyItemsRecorded,
   ///   });
   /// }
   /// ```
@@ -27,6 +29,7 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
     this.appBar,
     this.bottomBar,
     this.bodyItems,
+    this.bodyItemsRecorded,
   });
 
   /// A custom app bar widget.
@@ -58,23 +61,21 @@ abstract class CustomWidgetsStandaloneEditor<EditorState> {
   final ReactiveCustomWidget? Function(
       EditorState editorState, Stream<void> rebuildStream)? bottomBar;
 
-  /// Add custom widgets at a specific position inside the body.
-  ///
-  /// **Example:**
-  /// ```dart
-  /// bodyItems: (editor, rebuildStream) => [
-  ///   ReactiveCustomWidget(
-  ///     stream: rebuildStream,
-  ///     builder: (_) => Container(
-  ///       width: 100,
-  ///       height: 100,
-  ///       color: Colors.red,
-  ///     ),
-  ///   ),
-  /// ],
-  /// ```
-  final List<ReactiveCustomWidget> Function(
-    EditorState editorState,
-    Stream<void> rebuildStream,
-  )? bodyItems;
+  /// {@macro customBodyItem}
+  final CustomBodyItems<EditorState>? bodyItems;
+
+  /// {@macro customBodyItemRecorded}
+  final CustomBodyItems<EditorState>? bodyItemsRecorded;
+
+  /// An abstract method to enforce implementation of the `copyWith` method
+  /// in all subclasses.
+  CustomWidgetsStandaloneEditor<EditorState> copyWith({
+    ReactiveCustomAppbar? Function(
+            EditorState editorState, Stream<void> rebuildStream)?
+        appBar,
+    ReactiveCustomWidget? Function(
+            EditorState editorState, Stream<void> rebuildStream)?
+        bottomBar,
+    CustomBodyItems<EditorState>? bodyItems,
+  });
 }

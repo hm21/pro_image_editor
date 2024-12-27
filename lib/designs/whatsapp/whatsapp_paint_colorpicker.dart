@@ -7,15 +7,15 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-/// A stateless widget that provides a color picker for painting in the
+/// A stateless widget that provides a color picker for paint in the
 /// WhatsApp theme.
 ///
-/// This widget allows users to select colors for painting operations within
-/// a painting editor, using a design inspired by WhatsApp.
+/// This widget allows users to select colors for paint operations within
+/// a paint editor, using a design inspired by WhatsApp.
 class WhatsappPaintColorpicker extends StatelessWidget {
   /// Creates a [WhatsappPaintColorpicker] widget.
   ///
-  /// This color picker lets users select colors for painting within a painting
+  /// This color picker lets users select colors for paint within a paint
   /// editor, integrating seamlessly with the WhatsApp theme.
   ///
   /// Example:
@@ -29,11 +29,11 @@ class WhatsappPaintColorpicker extends StatelessWidget {
     required this.paintEditor,
   });
 
-  /// The state of the painting editor associated with this color picker.
+  /// The state of the paint editor associated with this color picker.
   ///
-  /// This state allows the color picker to interact with the painting editor,
-  /// providing necessary controls to manage painting color selections.
-  final PaintingEditorState paintEditor;
+  /// This state allows the color picker to interact with the paint editor,
+  /// providing necessary controls to manage paint color selections.
+  final PaintEditorState paintEditor;
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +61,7 @@ class WhatsappPaintColorpicker extends StatelessWidget {
         thumbColor: Colors.white,
         cornerRadius: 10,
         pickMode: PickMode.color,
-        initialColor:
-            paintEditor.configs.imageEditorTheme.paintingEditor.initialColor,
+        initialColor: paintEditor.configs.paintEditor.style.initialColor,
         colorListener: (int value) {
           paintEditor.colorChanged(Color(value));
         },

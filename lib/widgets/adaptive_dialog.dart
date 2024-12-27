@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/utils/design_mode.dart';
-import '../models/theme/theme.dart';
+
+import '../models/styles/adaptive_dialog_style.dart';
 
 /// A dialog that adapts its appearance based on the design mode.
 class AdaptiveDialog extends StatefulWidget {
@@ -15,7 +16,7 @@ class AdaptiveDialog extends StatefulWidget {
   /// The [actions] is a list of [AdaptiveDialogAction] widgets to include as
   /// buttons.
   /// The [brightness] controls the brightness of the dialog.
-  /// The [imageEditorTheme] is the theme specific to the image editor.
+  /// The [style] is the theme specific to the image editor.
   const AdaptiveDialog({
     super.key,
     required this.designMode,
@@ -23,7 +24,7 @@ class AdaptiveDialog extends StatefulWidget {
     required this.content,
     required this.actions,
     required this.brightness,
-    required this.imageEditorTheme,
+    required this.style,
   });
 
   /// The design mode to determine the appearance of the dialog.
@@ -42,7 +43,7 @@ class AdaptiveDialog extends StatefulWidget {
   final Brightness brightness;
 
   /// Theme from the image editor.
-  final ImageEditorTheme imageEditorTheme;
+  final AdaptiveDialogStyle style;
 
   @override
   State<AdaptiveDialog> createState() => _AdaptiveDialogState();
@@ -58,17 +59,13 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
         data: CupertinoTheme.of(context).copyWith(
           brightness: widget.brightness,
           primaryColor: widget.brightness == Brightness.dark
-              ? widget.imageEditorTheme.adaptiveDialogTheme
-                  .cupertinoPrimaryColorDark
-              : widget.imageEditorTheme.adaptiveDialogTheme
-                  .cupertinoPrimaryColorLight,
+              ? widget.style.cupertinoPrimaryColorDark
+              : widget.style.cupertinoPrimaryColorLight,
           textTheme: CupertinoTextThemeData(
             textStyle: TextStyle(
               color: widget.brightness == Brightness.dark
-                  ? widget.imageEditorTheme.adaptiveDialogTheme
-                      .cupertinoPrimaryColorDark
-                  : widget.imageEditorTheme.adaptiveDialogTheme
-                      .cupertinoPrimaryColorLight,
+                  ? widget.style.cupertinoPrimaryColorDark
+                  : widget.style.cupertinoPrimaryColorLight,
             ),
           ),
         ),

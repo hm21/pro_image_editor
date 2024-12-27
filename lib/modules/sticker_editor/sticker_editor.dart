@@ -52,9 +52,14 @@ class StickerEditorState extends State<StickerEditor>
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      widget.configs.stickerEditor.buildStickers != null,
+      '`buildStickers` is required',
+    );
+
     return ExtendedPopScope(
-      child: widget.configs.stickerEditorConfigs!
-          .buildStickers(setLayer, widget.scrollController),
+      child: widget.configs.stickerEditor.buildStickers!(
+          setLayer, widget.scrollController),
     );
   }
 

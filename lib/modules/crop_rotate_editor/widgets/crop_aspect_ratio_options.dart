@@ -69,7 +69,7 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 24,
-                color: widget.configs.imageEditorTheme.cropRotateEditor
+                color: widget.configs.cropRotateEditor.style
                     .aspectRatioSheetForegroundColor,
               ),
             ),
@@ -81,11 +81,10 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
                 primary: false,
                 shrinkWrap: true,
                 controller: _scrollCtrl,
-                itemCount:
-                    widget.configs.cropRotateEditorConfigs.aspectRatios.length,
+                itemCount: widget.configs.cropRotateEditor.aspectRatios.length,
                 itemBuilder: (context, index) {
-                  var item = widget
-                      .configs.cropRotateEditorConfigs.aspectRatios[index];
+                  var item =
+                      widget.configs.cropRotateEditor.aspectRatios[index];
                   return ListTile(
                     leading: SizedBox(
                       height: 38,
@@ -103,7 +102,7 @@ class _CropAspectRatioOptionsState extends State<CropAspectRatioOptions> {
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
-                        color: widget.configs.imageEditorTheme.cropRotateEditor
+                        color: widget.configs.cropRotateEditor.style
                             .aspectRatioSheetForegroundColor,
                       ),
                     ),

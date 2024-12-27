@@ -68,7 +68,8 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                       child: IconButton(
                         tooltip: widget.editor.configs.i18n.cancel,
                         onPressed: widget.editor.closeEditor,
-                        icon: Icon(widget.editor.configs.icons.closeEditor),
+                        icon: Icon(
+                            widget.editor.mainEditorConfigs.icons.closeEditor),
                         color: _foregroundColor,
                       ),
                     ),
@@ -83,7 +84,7 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                             tooltip: widget.editor.configs.i18n.undo,
                             onPressed: widget.editor.undoAction,
                             icon: Icon(
-                              widget.editor.configs.icons.undoAction,
+                              widget.editor.mainEditorConfigs.icons.undoAction,
                               color: widget.editor.canUndo
                                   ? _foregroundColor
                                   : _foregroundColor.withAlpha(80),
@@ -94,7 +95,7 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                             tooltip: widget.editor.configs.i18n.redo,
                             onPressed: widget.editor.redoAction,
                             icon: Icon(
-                              widget.editor.configs.icons.redoAction,
+                              widget.editor.mainEditorConfigs.icons.redoAction,
                               color: widget.editor.canRedo
                                   ? _foregroundColor
                                   : _foregroundColor.withAlpha(80),
@@ -111,7 +112,7 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                         tooltip: widget.editor.configs.i18n.done,
                         onPressed: widget.editor.doneEditing,
                         icon: Icon(
-                          widget.editor.configs.icons.doneIcon,
+                          widget.editor.mainEditorConfigs.icons.doneIcon,
                           color: _foregroundColor,
                         ),
                       ),
@@ -140,15 +141,15 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                     spacing: 12,
                     alignment: WrapAlignment.center,
                     children: [
-                      if (widget.editor.configs.paintEditorConfigs.enabled)
+                      if (widget.editor.configs.paintEditor.enabled)
                         IconButton(
                           tooltip: widget.editor.configs.i18n.paintEditor
                               .bottomNavigationBarText,
-                          onPressed: widget.editor.openPaintingEditor,
-                          icon: Icon(widget.editor.configs.icons.paintingEditor
-                              .bottomNavBar),
+                          onPressed: widget.editor.openPaintEditor,
+                          icon: Icon(widget
+                              .editor.paintEditorConfigs.icons.bottomNavBar),
                         ),
-                      if (widget.editor.configs.textEditorConfigs.enabled)
+                      if (widget.editor.configs.textEditor.enabled)
                         IconButton(
                           tooltip: widget.editor.configs.i18n.textEditor
                               .bottomNavigationBarText,
@@ -156,35 +157,43 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                             duration: const Duration(milliseconds: 150),
                           ),
                           icon: Icon(widget
-                              .editor.configs.icons.textEditor.bottomNavBar),
+                              .editor.textEditorConfigs.icons.bottomNavBar),
                         ),
-                      if (widget.editor.configs.cropRotateEditorConfigs.enabled)
+                      if (widget.editor.configs.cropRotateEditor.enabled)
                         IconButton(
                           tooltip: widget.editor.configs.i18n.cropRotateEditor
                               .bottomNavigationBarText,
                           onPressed: widget.editor.openCropRotateEditor,
-                          icon: Icon(widget.editor.configs.icons
-                              .cropRotateEditor.bottomNavBar),
+                          icon: Icon(widget.editor.cropRotateEditorConfigs.icons
+                              .bottomNavBar),
                         ),
-                      if (widget.editor.configs.filterEditorConfigs.enabled)
+                      if (widget.editor.configs.tuneEditor.enabled)
+                        IconButton(
+                          tooltip: widget.editor.configs.i18n.tuneEditor
+                              .bottomNavigationBarText,
+                          onPressed: () =>
+                              widget.editor.openTuneEditor(enableHero: false),
+                          icon: Icon(widget
+                              .editor.tuneEditorConfigs.icons.bottomNavBar),
+                        ),
+                      if (widget.editor.configs.filterEditor.enabled)
                         IconButton(
                           tooltip: widget.editor.configs.i18n.filterEditor
                               .bottomNavigationBarText,
                           onPressed: widget.editor.openFilterEditor,
                           icon: Icon(widget
-                              .editor.configs.icons.filterEditor.bottomNavBar),
+                              .editor.filterEditorConfigs.icons.bottomNavBar),
                         ),
-                      if (widget.editor.configs.blurEditorConfigs.enabled)
+                      if (widget.editor.configs.blurEditor.enabled)
                         IconButton(
                           tooltip: widget.editor.configs.i18n.blurEditor
                               .bottomNavigationBarText,
                           onPressed: widget.editor.openBlurEditor,
                           icon: Icon(widget
-                              .editor.configs.icons.blurEditor.bottomNavBar),
+                              .editor.blurEditorConfigs.icons.bottomNavBar),
                         ),
-                      if (widget.editor.configs.stickerEditorConfigs?.enabled ==
-                              true ||
-                          widget.editor.configs.emojiEditorConfigs.enabled)
+                      if (widget.editor.configs.stickerEditor.enabled ||
+                          widget.editor.configs.emojiEditor.enabled)
                         IconButton(
                           key: const ValueKey(
                               'whatsapp-open-sticker-editor-btn'),
@@ -192,7 +201,7 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
                               .bottomNavigationBarText,
                           onPressed: widget.openStickerEditor,
                           icon: Icon(widget
-                              .editor.configs.icons.stickerEditor.bottomNavBar),
+                              .editor.stickerEditorConfigs.icons.bottomNavBar),
                         ),
                     ],
                   ),

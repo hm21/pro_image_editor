@@ -33,6 +33,7 @@ class ExtendedInteractiveViewer extends StatefulWidget {
     super.key,
     required this.child,
     this.enableInteraction = true,
+    required this.boundaryMargin,
     required this.enableZoom,
     required this.minScale,
     required this.maxScale,
@@ -40,6 +41,9 @@ class ExtendedInteractiveViewer extends StatefulWidget {
     required this.onInteractionUpdate,
     required this.onInteractionEnd,
   });
+
+  /// A margin for the visible boundaries of the child.
+  final EdgeInsets boundaryMargin;
 
   /// The child widget to be displayed and interacted with.
   final Widget child;
@@ -186,6 +190,7 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer> {
     }
 
     return InteractiveViewer(
+      boundaryMargin: widget.boundaryMargin,
       transformationController: _transformCtrl,
       panEnabled: _enableInteraction,
       scaleEnabled: _enableInteraction,

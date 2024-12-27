@@ -10,8 +10,8 @@ import 'package:pro_image_editor/modules/paint_editor/utils/paint_controller.dar
 import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
 
 void main() {
-  test('PaintingController initializes with correct values', () {
-    final controller = PaintingController(
+  test('PaintController initializes with correct values', () {
+    final controller = PaintController(
       strokeWidth: 2.0,
       color: Colors.red,
       mode: PaintModeE.line,
@@ -26,8 +26,8 @@ void main() {
     expect(controller.fill, false);
   });
 
-  test('Add and retrieve painted models in painting history', () {
-    final controller = PaintingController(
+  test('Add and retrieve painted models in paint history', () {
+    final controller = PaintController(
       strokeWidth: 2.0,
       color: Colors.red,
       mode: PaintModeE.line,
@@ -46,11 +46,11 @@ void main() {
 
     controller.addPaintInfo(paintedModel);
 
-    expect(controller.activePaintings, [paintedModel]);
+    expect(controller.activePaintItemList, [paintedModel]);
   });
 
-  test('Undo and redo painting actions', () {
-    final controller = PaintingController(
+  test('Undo and redo paint actions', () {
+    final controller = PaintController(
       strokeWidth: 2.0,
       color: Colors.red,
       mode: PaintModeE.line,
@@ -79,11 +79,11 @@ void main() {
       ..addPaintInfo(paintedModel1)
       ..addPaintInfo(paintedModel2)
       ..undo();
-    expect(controller.activePaintings, [paintedModel1]);
+    expect(controller.activePaintItemList, [paintedModel1]);
     expect(controller.historyPosition, 1);
 
     controller.redo();
-    expect(controller.activePaintings, [paintedModel1, paintedModel2]);
+    expect(controller.activePaintItemList, [paintedModel1, paintedModel2]);
     expect(controller.historyPosition, 2);
   });
 }

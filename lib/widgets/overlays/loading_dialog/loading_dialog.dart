@@ -65,8 +65,8 @@ class LoadingDialog extends ChangeNotifier {
           /// Remove the overlay after the animation is done.
           _removeOverlay();
         },
-        child: configs.customWidgets.loadingDialog != null
-            ? configs.customWidgets.loadingDialog!(message!, configs)
+        child: configs.dialogConfigs.widgets.loadingDialog != null
+            ? configs.dialogConfigs.widgets.loadingDialog!(message!, configs)
             : Stack(
                 children: [
                   _buildBackdrop(context, isDismissible),
@@ -182,15 +182,15 @@ class LoadingDialog extends ChangeNotifier {
         brightness: theme.brightness,
         primaryColor: theme.brightness == Brightness.dark
             ? configs
-                .imageEditorTheme.loadingDialogTheme.cupertinoPrimaryColorDark
+                .dialogConfigs.style.loadingDialog.cupertinoPrimaryColorDark
             : configs
-                .imageEditorTheme.loadingDialogTheme.cupertinoPrimaryColorLight,
+                .dialogConfigs.style.loadingDialog.cupertinoPrimaryColorLight,
         textTheme: CupertinoTextThemeData(
           textStyle: TextStyle(
             color: theme.brightness == Brightness.dark
-                ? configs.imageEditorTheme.loadingDialogTheme
-                    .cupertinoPrimaryColorDark
-                : configs.imageEditorTheme.loadingDialogTheme
+                ? configs
+                    .dialogConfigs.style.loadingDialog.cupertinoPrimaryColorDark
+                : configs.dialogConfigs.style.loadingDialog
                     .cupertinoPrimaryColorLight,
           ),
         ),
@@ -235,7 +235,7 @@ class LoadingDialog extends ChangeNotifier {
                   configs.designMode,
                 ).copyWith(
                   fontSize: 16,
-                  color: configs.imageEditorTheme.loadingDialogTheme.textColor,
+                  color: configs.dialogConfigs.style.loadingDialog.textColor,
                 ),
                 textAlign: TextAlign.start,
               ),

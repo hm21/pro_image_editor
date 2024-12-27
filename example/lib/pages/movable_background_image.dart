@@ -5,7 +5,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 // Flutter imports:
-import 'package:example/pages/pick_image_example.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,30 +17,41 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 // Project imports:
 import '../utils/example_helper.dart';
 import '../utils/pixel_transparent_painter.dart';
+import '../widgets/material_icon_button.dart';
 import 'reorder_layer_example.dart';
 
-class MoveableBackgroundImageExample extends StatefulWidget {
-  const MoveableBackgroundImageExample({super.key});
+/// The example for movableBackground
+class MovableBackgroundImageExample extends StatefulWidget {
+  /// Creates a new [MovableBackgroundImageExample] widget.
+  const MovableBackgroundImageExample({super.key});
 
   @override
-  State<MoveableBackgroundImageExample> createState() =>
-      _MoveableBackgroundImageExampleState();
+  State<MovableBackgroundImageExample> createState() =>
+      _MovableBackgroundImageExampleState();
 }
 
-class _MoveableBackgroundImageExampleState
-    extends State<MoveableBackgroundImageExample>
-    with ExampleHelperState<MoveableBackgroundImageExample> {
+class _MovableBackgroundImageExampleState
+    extends State<MovableBackgroundImageExample>
+    with ExampleHelperState<MovableBackgroundImageExample> {
   late final ScrollController _bottomBarScrollCtrl;
-  late Uint8List _transparentBytes;
+  Uint8List? _transparentBytes;
   double _transparentAspectRatio = -1;
+
+  final String _imageUrl =
+      'https://picsum.photos/id/${Random().nextInt(200)}/2000';
 
   /// Better sense of scale when we start with a large number
   final double _initScale = 20;
+
+  /// set the aspect ratio from your image.
+  final double _imgRatio = 1;
 
   final _bottomTextStyle = const TextStyle(fontSize: 10.0, color: Colors.white);
 
   @override
   void initState() {
+    preCacheImage(networkUrl: _imageUrl);
+    _createTransparentImage(_imgRatio);
     _bottomBarScrollCtrl = ScrollController();
     super.initState();
   }
@@ -96,7 +106,7 @@ class _MoveableBackgroundImageExampleState
     }
 
     if (!kIsWeb && Platform.isIOS) {
-      showCupertinoModalPopup(
+      await showCupertinoModalPopup(
         context: context,
         builder: (BuildContext context) => CupertinoTheme(
           data: const CupertinoThemeData(),
@@ -136,7 +146,7 @@ class _MoveableBackgroundImageExampleState
         ),
       );
     } else {
-      showModalBottomSheet(
+      await showModalBottomSheet(
         context: context,
         showDragHandle: true,
         constraints: BoxConstraints(
@@ -210,216 +220,185 @@ class _MoveableBackgroundImageExampleState
             kBottomNavigationBarHeight -
             MediaQuery.of(context).padding.vertical,
       );
+
+  void _openReorderSheet(ProImageEditorState editor) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ReorderLayerSheet(
+          layers: editor.activeLayers,
+          onReorder: (oldIndex, newIndex) {
+            editor.moveLayerListPosition(
+              oldIndex: oldIndex,
+              newIndex: newIndex,
+            );
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        LoadingDialog.instance.show(
-          context,
-          configs: const ProImageEditorConfigs(),
-          theme: ThemeData.dark(),
-        );
-        double imgRatio = 1; // set the aspect ratio from your image.
+    if (_transparentBytes == null || !isPreCached) {
+      return const PrepareImageWidget();
+    }
 
-        await _createTransparentImage(_editorSize.aspectRatio);
-
-        if (!context.mounted) return;
-
-        String imageUrl =
-            'https://picsum.photos/id/${Random().nextInt(200)}/2000';
-        await precacheImage(NetworkImage(imageUrl), context);
-
-        LoadingDialog.instance.hide();
-
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                LayoutBuilder(builder: (context, constraints) {
-              return CustomPaint(
-                size: Size(constraints.maxWidth, constraints.maxHeight),
-                painter: const PixelTransparentPainter(
-                  primary: Colors.white,
-                  secondary: Color(0xFFE2E2E2),
-                ),
-                child: ProImageEditor.memory(
-                  _transparentBytes,
-                  key: editorKey,
-                  callbacks: ProImageEditorCallbacks(
-                    onImageEditingStarted: onImageEditingStarted,
-                    onImageEditingComplete: onImageEditingComplete,
-                    onCloseEditor: onCloseEditor,
-                    mainEditorCallbacks: MainEditorCallbacks(
-                      onAfterViewInit: () {
-                        editorKey.currentState!.addLayer(
-                          StickerLayerData(
-                            offset: Offset.zero,
-                            scale: _initScale,
-                            sticker: Image.network(
-                              imageUrl,
-                              width: _editorSize.width,
-                              height: _editorSize.height,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                return AnimatedSwitcher(
-                                  layoutBuilder:
-                                      (currentChild, previousChildren) {
-                                    return SizedBox(
-                                      width: 120,
-                                      height: 120,
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        alignment: Alignment.center,
-                                        children: <Widget>[
-                                          ...previousChildren,
-                                          if (currentChild != null)
-                                            currentChild,
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                  duration: const Duration(milliseconds: 200),
-                                  child: loadingProgress == null
-                                      ? child
-                                      : Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                                : null,
-                                          ),
-                                        ),
-                                );
-                              },
-                            ),
-                          ),
+    return LayoutBuilder(builder: (context, constraints) {
+      return CustomPaint(
+        size: Size(constraints.maxWidth, constraints.maxHeight),
+        painter: const PixelTransparentPainter(
+          primary: Colors.white,
+          secondary: Color(0xFFE2E2E2),
+        ),
+        child: ProImageEditor.memory(
+          _transparentBytes!,
+          key: editorKey,
+          callbacks: ProImageEditorCallbacks(
+            onImageEditingStarted: onImageEditingStarted,
+            onImageEditingComplete: onImageEditingComplete,
+            onCloseEditor: () =>
+                onCloseEditor(enablePop: !isDesktopMode(context)),
+            mainEditorCallbacks: MainEditorCallbacks(
+              onAfterViewInit: () {
+                editorKey.currentState!.addLayer(
+                  StickerLayerData(
+                    offset: Offset.zero,
+                    scale: _initScale,
+                    sticker: Image.network(
+                      _imageUrl,
+                      width: _editorSize.width,
+                      height: _editorSize.height,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        return AnimatedSwitcher(
+                          layoutBuilder: (currentChild, previousChildren) {
+                            return SizedBox(
+                              width: 120,
+                              height: 120,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  ...previousChildren,
+                                  if (currentChild != null) currentChild,
+                                ],
+                              ),
+                            );
+                          },
+                          duration: const Duration(milliseconds: 200),
+                          child: loadingProgress == null
+                              ? child
+                              : Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
                         );
                       },
                     ),
                   ),
-                  configs: ProImageEditorConfigs(
-                      designMode: platformDesignMode,
-                      imageGenerationConfigs: ImageGenerationConfigs(
-                        captureOnlyDrawingBounds: true,
-                        captureOnlyBackgroundImageArea: false,
-                        outputFormat: OutputFormat.png,
-
-                        /// Set the pixel ratio manually. You can also set this value higher than the device pixel ratio for higher quality.
-                        customPixelRatio: max(
-                            2000 / MediaQuery.of(context).size.width,
-                            MediaQuery.of(context).devicePixelRatio),
-                      ),
-
-                      /// Crop-Rotate, Filter and Blur editors are not supported
-                      cropRotateEditorConfigs:
-                          const CropRotateEditorConfigs(enabled: false),
-                      filterEditorConfigs:
-                          const FilterEditorConfigs(enabled: false),
-                      blurEditorConfigs:
-                          const BlurEditorConfigs(enabled: false),
-                      customWidgets: ImageEditorCustomWidgets(
-                          mainEditor: CustomWidgetsMainEditor(
-                        bodyItems: (editor, rebuildStream) {
-                          return [
-                            ReactiveCustomWidget(
-                              stream: rebuildStream,
-                              builder: (_) => editor.selectedLayerIndex >= 0 ||
-                                      editor.isSubEditorOpen
-                                  ? const SizedBox.shrink()
-                                  : Positioned(
-                                      bottom: 20,
-                                      left: 0,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.lightBlue.shade200,
-                                          borderRadius: const BorderRadius.only(
-                                            topRight: Radius.circular(100),
-                                            bottomRight: Radius.circular(100),
-                                          ),
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            showModalBottomSheet(
-                                              context: context,
-                                              builder: (context) {
-                                                return ReorderLayerSheet(
-                                                  layers: editor.activeLayers,
-                                                  onReorder:
-                                                      (oldIndex, newIndex) {
-                                                    editor
-                                                        .moveLayerListPosition(
-                                                      oldIndex: oldIndex,
-                                                      newIndex: newIndex,
-                                                    );
-                                                    Navigator.pop(context);
-                                                  },
-                                                );
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.reorder,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                            ),
-                          ];
-                        },
-                        bottomBar: (editor, rebuildStream, key) =>
-                            editor.selectedLayerIndex < 0
-                                ? ReactiveCustomWidget(
-                                    stream: rebuildStream,
-                                    key: key,
-                                    builder: (_) => _bottomNavigationBar(
-                                      editor,
-                                      constraints,
-                                    ),
-                                  )
-                                : null,
-                      )),
-                      imageEditorTheme: const ImageEditorTheme(
-                        uiOverlayStyle: SystemUiOverlayStyle(
-                          statusBarColor: Colors.black,
-                        ),
-                        background: Colors.transparent,
-                        paintingEditor:
-                            PaintingEditorTheme(background: Colors.transparent),
-
-                        /// Optionally remove background
-                        /// cropRotateEditor: CropRotateEditorTheme(background: Colors.transparent),
-                        /// filterEditor: FilterEditorTheme(background: Colors.transparent),
-                        /// blurEditor: BlurEditorTheme(background: Colors.transparent),
-                      ),
-                      stickerEditorConfigs: StickerEditorConfigs(
-                        enabled: false,
-                        initWidth: (_editorSize.aspectRatio > imgRatio
-                                ? _editorSize.height
-                                : _editorSize.width) /
-                            _initScale,
-                        buildStickers: (setLayer, scrollController) {
-                          // Optionally your code to pick layers
-                          return const SizedBox();
-                        },
-                      )),
-                ),
-              );
-            }),
+                );
+              },
+            ),
           ),
-        );
-      },
-      leading: const Icon(Icons.pan_tool_alt_outlined),
-      title: const Text('Movable background image'),
-      subtitle: const Text('Includes how to add multiple images.'),
-      trailing: const Icon(Icons.chevron_right),
-    );
+          configs: ProImageEditorConfigs(
+            designMode: platformDesignMode,
+            imageGeneration: ImageGenerationConfigs(
+              captureOnlyDrawingBounds: true,
+              captureOnlyBackgroundImageArea: false,
+              outputFormat: OutputFormat.png,
+
+              /// Set the pixel ratio manually. You can also set this
+              /// value higher than the device pixel ratio for higher
+              /// quality.
+              customPixelRatio: max(2000 / MediaQuery.of(context).size.width,
+                  MediaQuery.of(context).devicePixelRatio),
+            ),
+            mainEditor: MainEditorConfigs(
+              enableCloseButton: !isDesktopMode(context),
+              widgets: MainEditorWidgets(
+                bodyItems: (editor, rebuildStream) {
+                  return [
+                    ReactiveCustomWidget(
+                      stream: rebuildStream,
+                      builder: (_) => editor.selectedLayerIndex >= 0 ||
+                              editor.isSubEditorOpen
+                          ? const SizedBox.shrink()
+                          : Positioned(
+                              bottom: 20,
+                              left: 0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.lightBlue.shade200,
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(100),
+                                    bottomRight: Radius.circular(100),
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => _openReorderSheet(editor),
+                                  icon: const Icon(
+                                    Icons.reorder,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                    ),
+                  ];
+                },
+                bottomBar: (editor, rebuildStream, key) => ReactiveCustomWidget(
+                  stream: rebuildStream,
+                  key: key,
+                  builder: (_) => _bottomNavigationBar(
+                    editor,
+                    constraints,
+                  ),
+                ),
+              ),
+              style: const MainEditorStyle(
+                uiOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.black,
+                ),
+                background: Colors.transparent,
+              ),
+            ),
+            paintEditor: const PaintEditorConfigs(
+              style: PaintEditorStyle(
+                uiOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.black,
+                ),
+                background: Colors.transparent,
+              ),
+            ),
+
+            /// Crop-Rotate, Filter and Blur editors are not supported
+            cropRotateEditor: const CropRotateEditorConfigs(enabled: false),
+            filterEditor: const FilterEditorConfigs(enabled: false),
+            blurEditor: const BlurEditorConfigs(enabled: false),
+
+            stickerEditor: StickerEditorConfigs(
+              enabled: false,
+              initWidth: (_editorSize.aspectRatio > _imgRatio
+                      ? _editorSize.height
+                      : _editorSize.width) /
+                  _initScale,
+              buildStickers: (setLayer, scrollController) {
+                // Optionally your code to pick layers
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _bottomNavigationBar(
@@ -466,7 +445,7 @@ class _MoveableBackgroundImageExampleState
                         size: 22.0,
                         color: Colors.white,
                       ),
-                      onPressed: editor.openPaintingEditor,
+                      onPressed: editor.openPaintEditor,
                     ),
                     FlatIconTextButton(
                       label: Text('Text', style: _bottomTextStyle),

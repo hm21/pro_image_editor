@@ -295,7 +295,7 @@ mixin CropAreaHistory
     screenshotHistoryPosition = history.length - 1;
   }
 
-  /// Undoes the last action performed in the painting editor.
+  /// Undoes the last action performed in the crop-rotate editor.
   void undoAction() {
     if (canUndo) {
       setState(() {
@@ -310,7 +310,7 @@ mixin CropAreaHistory
     }
   }
 
-  /// Redoes the previously undone action in the painting editor.
+  /// Redoes the previously undone action in the crop-rotate editor.
   void redoAction() {
     if (canRedo) {
       setState(() {

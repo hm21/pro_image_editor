@@ -7,6 +7,7 @@ import 'main_editor_callbacks.dart';
 import 'paint_editor_callbacks.dart';
 import 'sticker_editor_callbacks.dart';
 import 'text_editor_callbacks.dart';
+import 'tune_editor_callbacks.dart';
 
 export 'blur_editor_callbacks.dart';
 export 'crop_rotate_editor_callbacks.dart';
@@ -16,6 +17,7 @@ export 'main_editor_callbacks.dart';
 export 'paint_editor_callbacks.dart';
 export 'sticker_editor_callbacks.dart';
 export 'text_editor_callbacks.dart';
+export 'tune_editor_callbacks.dart';
 export 'utils/sub_editors_name.dart';
 
 /// A class representing callbacks for the Image Editor.
@@ -34,6 +36,7 @@ class ProImageEditorCallbacks {
     this.blurEditorCallbacks,
     this.emojiEditorCallbacks,
     this.stickerEditorCallbacks,
+    this.tuneEditorCallbacks,
   });
 
   /// A callback function that is triggered when the image generation is
@@ -100,4 +103,7 @@ class ProImageEditorCallbacks {
 
   /// Callbacks from the sticker editor.
   final StickerEditorCallbacks? stickerEditorCallbacks;
+
+  /// Callbacks from the tune editor.
+  final TuneEditorCallbacks? tuneEditorCallbacks;
 }

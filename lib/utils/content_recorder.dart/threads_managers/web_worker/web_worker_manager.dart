@@ -24,10 +24,10 @@ class WebWorkerManager extends ThreadManager {
 
   @override
   void init(ProImageEditorConfigs configs) {
-    processorConfigs = configs.imageGenerationConfigs.processorConfigs;
+    processorConfigs = configs.imageGeneration.processorConfigs;
 
     int processors = getNumberOfProcessors(
-      configs: configs.imageGenerationConfigs.processorConfigs,
+      configs: configs.imageGeneration.processorConfigs,
       deviceNumberOfProcessors: _deviceNumberOfProcessors(),
     );
 

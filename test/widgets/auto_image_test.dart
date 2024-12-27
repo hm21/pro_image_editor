@@ -33,20 +33,6 @@ void main() {
       expect(find.byType(Image), findsOneWidget);
     });
 
-    testWidgets('displays image from file', (WidgetTester tester) async {
-      when(mockEditorImage.type).thenReturn(EditorImageType.file);
-      when(mockEditorImage.file).thenReturn(fakeFileImage);
-
-      await tester.pumpWidget(
-        AutoImage(
-          mockEditorImage,
-          configs: const ProImageEditorConfigs(),
-        ),
-      );
-
-      expect(find.byType(Image), findsOneWidget);
-    });
-
     testWidgets('displays image from network', (WidgetTester tester) async {
       await mockNetworkImagesFor(() async {
         when(mockEditorImage.type).thenReturn(EditorImageType.network);

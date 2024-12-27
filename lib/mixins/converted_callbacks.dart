@@ -46,4 +46,10 @@ mixin ImageEditorConvertedCallbacks {
   /// This getter returns the callback functions specific to the blur editor,
   /// allowing interaction with blur-related actions and events.
   BlurEditorCallbacks? get blurEditorCallbacks => callbacks.blurEditorCallbacks;
+
+  /// Provides access to the tune editor callbacks.
+  ///
+  /// This getter returns the callback functions specific to the tune editor,
+  /// enabling interaction with tune-related actions and events.
+  TuneEditorCallbacks? get tuneEditorCallbacks => callbacks.tuneEditorCallbacks;
 }

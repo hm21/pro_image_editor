@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:example/common/example_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,11 +8,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:
-import '../utils/example_constants.dart';
 import '../utils/example_helper.dart';
 import '../utils/import_history_demo_data.dart';
 
+/// The import export example
 class ImportExportExample extends StatefulWidget {
+  /// Creates a new [ImportExportExample] widget.
   const ImportExportExample({super.key});
 
   @override
@@ -21,63 +23,34 @@ class ImportExportExample extends StatefulWidget {
 class _ImportExportExampleState extends State<ImportExportExample>
     with ExampleHelperState<ImportExportExample> {
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () async {
-        await precacheImage(
-            AssetImage(ExampleConstants.of(context)!.demoAssetPath), context);
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => _buildEditor(),
-          ),
-        );
-      },
-      leading: const Icon(Icons.import_export_outlined),
-      title: const Text('Import and Export state history'),
-      trailing: const Icon(Icons.chevron_right),
-    );
+  void initState() {
+    preCacheImage(assetPath: kImageEditorExampleAssetPath);
+    super.initState();
   }
 
-  Widget _buildEditor() {
+  @override
+  Widget build(BuildContext context) {
+    if (!isPreCached) return const PrepareImageWidget();
+
     return Stack(
       children: [
         ProImageEditor.asset(
-          ExampleConstants.of(context)!.demoAssetPath,
+          kImageEditorExampleAssetPath,
           key: editorKey,
           callbacks: ProImageEditorCallbacks(
             onImageEditingStarted: onImageEditingStarted,
             onImageEditingComplete: onImageEditingComplete,
-            onCloseEditor: onCloseEditor,
+            onCloseEditor: () =>
+                onCloseEditor(enablePop: !isDesktopMode(context)),
           ),
           configs: ProImageEditorConfigs(
-              imageGenerationConfigs: const ImageGenerationConfigs(
-                generateImageInBackground: false,
-              ),
-              designMode: platformDesignMode,
-              imageEditorTheme: ImageEditorTheme(
-                emojiEditor: kIsWeb
-                    ? EmojiEditorTheme(
-                        textStyle: DefaultEmojiTextStyle.copyWith(
-                          fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
-                        ),
-                      )
-                    : const EmojiEditorTheme(),
-              ),
-              emojiEditorConfigs: const EmojiEditorConfigs(
-                checkPlatformCompatibility: !kIsWeb,
-              ),
-              stateHistoryConfigs: StateHistoryConfigs(
-                initStateHistory: ImportStateHistory.fromMap(
-                  importHistoryDemoData,
-                  configs: const ImportEditorConfigs(
-                    recalculateSizeAndPosition: true,
-                  ),
-                ),
-              ),
-              customWidgets:
-                  ImageEditorCustomWidgets(mainEditor: CustomWidgetsMainEditor(
+            imageGeneration: const ImageGenerationConfigs(
+              generateImageInBackground: false,
+            ),
+            designMode: platformDesignMode,
+            mainEditor: MainEditorConfigs(
+              enableCloseButton: !isDesktopMode(context),
+              widgets: MainEditorWidgets(
                 bodyItems: (editor, rebuildStream) {
                   return [
                     ReactiveCustomWidget(
@@ -113,7 +86,26 @@ class _ImportExportExampleState extends State<ImportExportExample>
                         stream: rebuildStream),
                   ];
                 },
-              ))),
+              ),
+            ),
+            emojiEditor: EmojiEditorConfigs(
+                checkPlatformCompatibility: !kIsWeb,
+                style: kIsWeb
+                    ? EmojiEditorStyle(
+                        textStyle: DefaultEmojiTextStyle.copyWith(
+                          fontFamily: GoogleFonts.notoColorEmoji().fontFamily,
+                        ),
+                      )
+                    : const EmojiEditorStyle()),
+            stateHistory: StateHistoryConfigs(
+              initStateHistory: ImportStateHistory.fromMap(
+                importHistoryDemoData,
+                configs: const ImportEditorConfigs(
+                  recalculateSizeAndPosition: true,
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );

@@ -37,7 +37,7 @@ Future<Uint8List?> generateHighQualityImage(
 }) async {
   var recorder = ContentRecorderController(
     configs: ProImageEditorConfigs(
-      imageGenerationConfigs: configs.copyWith(
+      imageGeneration: configs.copyWith(
         processorConfigs: configs.processorConfigs.copyWith(
           processorMode: ProcessorMode.minimum,
         ),
