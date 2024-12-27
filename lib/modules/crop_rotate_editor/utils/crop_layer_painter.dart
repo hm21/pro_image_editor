@@ -29,6 +29,8 @@ class CropLayerPainter extends CustomPainter {
     required this.is90DegRotated,
     required this.backgroundColor,
     required this.opacity,
+    this.interactiveViewerScale = 1,
+    this.interactiveViewerOffset = Offset.zero,
   });
 
   /// The aspect ratio of the image.
@@ -61,24 +63,35 @@ class CropLayerPainter extends CustomPainter {
   /// adjustable transparency to enhance the visual experience.
   final double opacity;
 
+  /// The current scale factor of the InteractiveViewer.
+  final double interactiveViewerScale;
+
+  /// The current offset of the InteractiveViewer relative to its
+  /// initial position.
+  final Offset interactiveViewerOffset;
+
   @override
   void paint(Canvas canvas, Size size) {
     if (opacity == 0 || imgRatio <= 0) return;
-    _drawDarkenOutside(canvas: canvas, size: size);
+    _drawDarkenOutside(canvas: canvas, rawSize: size);
   }
 
   void _drawDarkenOutside({
     required Canvas canvas,
-    required Size size,
+    required Size rawSize,
   }) {
+    Size size = rawSize * interactiveViewerScale;
+    var center = Offset(
+          size.width / 2,
+          size.height / 2,
+        ) +
+        interactiveViewerOffset;
+
     Path path = Path()
       // FillType "evenOdd" is important for the canvas web renderer
       ..fillType = PathFillType.evenOdd
       ..addRect(Rect.fromCenter(
-        center: Offset(
-          size.width / 2,
-          size.height / 2,
-        ),
+        center: center,
         width: size.width,
         height: size.height,
       ));
@@ -88,10 +101,7 @@ class CropLayerPainter extends CustomPainter {
     double w = 0;
     double h = 0;
 
-    size = Size(
-      size.width,
-      size.height,
-    );
+    size = Size(size.width, size.height);
 
     if (size.aspectRatio > ratio) {
       h = size.height;
@@ -105,7 +115,7 @@ class CropLayerPainter extends CustomPainter {
       Path rectPath = Path()
         ..addOval(
           Rect.fromCenter(
-            center: Offset(size.width / 2, size.height / 2),
+            center: center,
             width: w,
             height: h,
           ),
@@ -118,7 +128,7 @@ class CropLayerPainter extends CustomPainter {
       Path rectPath = Path()
         ..addRect(
           Rect.fromCenter(
-            center: Offset(size.width / 2, size.height / 2),
+            center: center,
             width: w,
             height: h,
           ),
@@ -145,6 +155,8 @@ class CropLayerPainter extends CustomPainter {
         oldDelegate.is90DegRotated != is90DegRotated ||
         oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.opacity != opacity ||
+        oldDelegate.interactiveViewerScale != interactiveViewerScale ||
+        oldDelegate.interactiveViewerOffset != interactiveViewerOffset ||
         oldDelegate.is90DegRotated != is90DegRotated;
   }
 }

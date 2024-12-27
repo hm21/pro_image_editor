@@ -75,7 +75,7 @@ class _ReorderLayerExampleState extends State<ReorderLayerExample>
                               left: 0,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.lightBlue.shade200,
+                                  color: Colors.blue.shade700,
                                   borderRadius: const BorderRadius.only(
                                     topRight: Radius.circular(100),
                                     bottomRight: Radius.circular(100),

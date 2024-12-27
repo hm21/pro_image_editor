@@ -3,16 +3,14 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 
-// Flutter imports:
+import 'package:bot_toast/bot_toast.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
-// Package imports:
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:bot_toast/bot_toast.dart';
 
 import '../utils/pixel_transparent_painter.dart';
 

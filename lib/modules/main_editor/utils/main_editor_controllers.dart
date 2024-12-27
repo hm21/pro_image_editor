@@ -17,6 +17,7 @@ class MainEditorControllers {
     layerHeroResetCtrl = StreamController.broadcast();
     removeBtnCtrl = StreamController.broadcast();
     uiLayerCtrl = StreamController.broadcast();
+    cropLayerPainterCtrl = StreamController.broadcast();
     screenshot = ContentRecorderController(configs: configs);
   }
 
@@ -35,6 +36,9 @@ class MainEditorControllers {
   /// Controller which updates only the UI from the layers.
   late final StreamController<void> uiLayerCtrl;
 
+  /// Controller which updates only the UI from the crop-layer-painter.
+  late final StreamController<void> cropLayerPainterCtrl;
+
   /// Controller for capturing screenshots of the editor content.
   late final ContentRecorderController screenshot;
 
@@ -44,6 +48,7 @@ class MainEditorControllers {
     helperLineCtrl.close();
     layerHeroResetCtrl.close();
     removeBtnCtrl.close();
+    cropLayerPainterCtrl.close();
     screenshot.destroy();
     uiLayerCtrl.close();
   }

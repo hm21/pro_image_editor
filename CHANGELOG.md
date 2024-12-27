@@ -1,5 +1,8 @@
 # Changelog
 
+## 7.0.1
+- **Fix**(zoom): Corrected the layer rotation calculation when the user drags the rotation button. This resolves issue [#266](https://github.com/hm21/pro_image_editor/issues/266)
+
 ## 7.0.0
 ### Changed
 - **File Structure Update**:

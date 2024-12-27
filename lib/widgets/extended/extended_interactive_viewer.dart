@@ -160,6 +160,11 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer> {
     }
   }
 
+  /// Reset the transformations
+  void reset() {
+    _transformCtrl.value = Matrix4.identity();
+  }
+
   /// The factor by which the current transformation is scaled.
   /// Returns the maximum scale factor applied on any axis.
   double get scaleFactor {

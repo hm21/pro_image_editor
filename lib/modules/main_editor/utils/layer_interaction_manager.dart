@@ -148,21 +148,22 @@ class LayerInteractionManager {
     required bool configEnabledHitVibration,
     required LayerInteractionStyle layerTheme,
   }) {
+    Size activeSize = rotateScaleLayerSizeHelper!;
+
     Offset layerOffset = Offset(
       activeLayer.offset.dx,
       activeLayer.offset.dy,
     );
-    Size activeSize = rotateScaleLayerSizeHelper!;
 
     double realDx =
-        (details.focalPoint.dx - editorScaleOffset.dx) / editorScaleFactor;
+        (details.localFocalPoint.dx - editorScaleOffset.dx) / editorScaleFactor;
 
     double realDy =
-        (details.focalPoint.dy - editorScaleOffset.dy) / editorScaleFactor;
+        (details.localFocalPoint.dy - editorScaleOffset.dy) / editorScaleFactor;
 
     Offset touchPositionFromCenter = Offset(
           realDx - editorSize.width / 2,
-          realDy - editorSize.height / 2 - appBarHeight,
+          realDy - editorSize.height / 2,
         ) -
         layerOffset;
 
@@ -185,7 +186,7 @@ class LayerInteractionManager {
     activeLayer.rotation =
         touchPositionFromCenter.direction - atan(1 / activeSize.aspectRatio);
 
-    if (editorScaleFactor > 1) return;
+    if (editorScaleFactor != 1) return;
     checkRotationLine(
       activeLayer: activeLayer,
       editorSize: editorSize,

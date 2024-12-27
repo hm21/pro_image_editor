@@ -53,13 +53,47 @@ class _ZoomExampleState extends State<ZoomExample>
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        mainEditor: MainEditorConfigs(
-          enableZoom: true,
-          editorMinScale: 0.8,
-          editorMaxScale: 5,
-          boundaryMargin: const EdgeInsets.all(100),
-          enableCloseButton: !isDesktopMode(context),
+        layerInteraction: LayerInteractionConfigs(
+          selectable: LayerInteractionSelectable.enabled,
         ),
+        mainEditor: MainEditorConfigs(
+            enableZoom: true,
+            editorMinScale: 0.8,
+            editorMaxScale: 5,
+            boundaryMargin: const EdgeInsets.all(100),
+            enableCloseButton: !isDesktopMode(context),
+            widgets: MainEditorWidgets(
+              bodyItems: (editor, rebuildStream) {
+                return [
+                  ReactiveCustomWidget(
+                    stream: rebuildStream,
+                    builder: (_) =>
+                        editor.selectedLayerIndex >= 0 || editor.isSubEditorOpen
+                            ? const SizedBox.shrink()
+                            : Positioned(
+                                bottom: 20,
+                                left: 0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade700,
+                                    borderRadius: const BorderRadius.only(
+                                      topRight: Radius.circular(100),
+                                      bottomRight: Radius.circular(100),
+                                    ),
+                                  ),
+                                  child: IconButton(
+                                    onPressed: editor.resetZoom,
+                                    icon: const Icon(
+                                      Icons.zoom_out_map_rounded,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                  ),
+                ];
+              },
+            )),
         paintEditor: const PaintEditorConfigs(
           enableZoom: true,
           editorMinScale: 0.8,

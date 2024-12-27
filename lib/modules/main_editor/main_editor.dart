@@ -875,6 +875,12 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleScaleStart(details);
   }
 
+  /// Resets the zoom and pan of the image editor.
+  void resetZoom() {
+    _interactiveViewer.currentState?.reset();
+    _controllers.cropLayerPainterCtrl.add(null);
+  }
+
   /// Handle updates during scaling.
   ///
   /// This method is called during a scaling operation and updates the selected
@@ -2046,7 +2052,6 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     var foregroundColor = mainEditorConfigs.style.appBarColor;
-
     return selectedLayerIndex >= 0 &&
             configs.layerInteraction.hideToolbarOnInteraction
         ? null
@@ -2173,14 +2178,18 @@ class ProImageEditorState extends State<ProImageEditor>
 
                 _controllers.uiLayerCtrl.add(null);
               },
-              onInteractionUpdate:
-                  callbacks.mainEditorCallbacks?.onEditorZoomScaleUpdate,
+              onInteractionUpdate: (details) {
+                callbacks.mainEditorCallbacks?.onEditorZoomScaleUpdate
+                    ?.call(details);
+                _controllers.cropLayerPainterCtrl.add(null);
+              },
               onInteractionEnd: (details) {
                 callbacks.mainEditorCallbacks?.onEditorZoomScaleEnd
                     ?.call(details);
                 layerInteractionManager.freeStyleHighPerformanceEditorZoom =
                     false;
                 _controllers.uiLayerCtrl.add(null);
+                _controllers.cropLayerPainterCtrl.add(null);
               },
               child: ContentRecorder(
                 key: const ValueKey('main-editor-content-recorder'),
@@ -2207,24 +2216,36 @@ class ProImageEditorState extends State<ProImageEditor>
           if (imageGenerationConfigs.captureOnlyBackgroundImageArea)
             Hero(
               tag: 'crop_layer_painter_hero',
-              child: CustomPaint(
-                foregroundPainter: imageGenerationConfigs
-                        .captureOnlyBackgroundImageArea
-                    ? CropLayerPainter(
-                        opacity: mainEditorConfigs
-                            .style.outsideCaptureAreaLayerOpacity,
-                        backgroundColor: mainEditorConfigs.style.background,
-                        imgRatio: stateManager.transformConfigs.isNotEmpty
-                            ? stateManager
-                                .transformConfigs.cropRect.size.aspectRatio
-                            : sizesManager.decodedImageSize.aspectRatio,
-                        isRoundCropper: cropRotateEditorConfigs.roundCropper,
-                        is90DegRotated:
-                            stateManager.transformConfigs.is90DegRotated,
-                      )
-                    : null,
-                child: const SizedBox.expand(),
-              ),
+              child: StreamBuilder(
+                  stream: _controllers.cropLayerPainterCtrl.stream,
+                  builder: (context, snapshot) {
+                    return CustomPaint(
+                      foregroundPainter: imageGenerationConfigs
+                              .captureOnlyBackgroundImageArea
+                          ? CropLayerPainter(
+                              opacity: mainEditorConfigs
+                                  .style.outsideCaptureAreaLayerOpacity,
+                              backgroundColor:
+                                  mainEditorConfigs.style.background,
+                              imgRatio: stateManager.transformConfigs.isNotEmpty
+                                  ? stateManager.transformConfigs.cropRect.size
+                                      .aspectRatio
+                                  : sizesManager.decodedImageSize.aspectRatio,
+                              isRoundCropper:
+                                  cropRotateEditorConfigs.roundCropper,
+                              is90DegRotated:
+                                  stateManager.transformConfigs.is90DegRotated,
+                              interactiveViewerScale: _interactiveViewer
+                                      .currentState?.scaleFactor ??
+                                  1.0,
+                              interactiveViewerOffset:
+                                  _interactiveViewer.currentState?.offset ??
+                                      Offset.zero,
+                            )
+                          : null,
+                      child: const SizedBox.expand(),
+                    );
+                  }),
             ),
 
           /// Build helper stuff

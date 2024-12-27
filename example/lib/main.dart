@@ -102,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
+      value: SystemUiOverlayStyle.light,
       child: ExtendedPopScope(
         child: Scaffold(
           body: Builder(builder: (_) {
@@ -226,70 +226,72 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildMobileExamples() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Examples',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              RichText(
-                text: TextSpan(
-                  style: const TextStyle(color: Colors.white),
-                  children: [
-                    const TextSpan(text: 'Check out the example code '),
-                    TextSpan(
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = _openCodeInGithub,
-                      text: 'here',
-                      style: const TextStyle(color: Colors.blue),
-                    ),
-                    const TextSpan(text: '.'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        Flexible(
-          child: Scrollbar(
-            controller: _scrollCtrl,
-            thumbVisibility: true,
-            trackVisibility: true,
-            child: SingleChildScrollView(
-              controller: _scrollCtrl,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: ListTile.divideTiles(
-                  context: context,
-                  tiles: kImageEditorExamples.map(
-                    (example) => ListTile(
-                      onTap: () {
-                        Navigator.of(context).pushNamed(
-                          example.path,
-                        );
-                      },
-                      leading: Icon(example.icon),
-                      title: Text(example.name),
-                      trailing: const Icon(Icons.chevron_right_rounded),
-                    ),
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Examples',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
                   ),
-                ).toList(),
+                ),
+                RichText(
+                  text: TextSpan(
+                    style: const TextStyle(color: Colors.white),
+                    children: [
+                      const TextSpan(text: 'Check out the example code '),
+                      TextSpan(
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = _openCodeInGithub,
+                        text: 'here',
+                        style: const TextStyle(color: Colors.blue),
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Flexible(
+            child: Scrollbar(
+              controller: _scrollCtrl,
+              thumbVisibility: true,
+              trackVisibility: true,
+              child: SingleChildScrollView(
+                controller: _scrollCtrl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: ListTile.divideTiles(
+                    context: context,
+                    tiles: kImageEditorExamples.map(
+                      (example) => ListTile(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            example.path,
+                          );
+                        },
+                        leading: Icon(example.icon),
+                        title: Text(example.name),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                      ),
+                    ),
+                  ).toList(),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
