@@ -11,7 +11,6 @@ import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:bot_toast/bot_toast.dart';
 
 import '../utils/pixel_transparent_painter.dart';
 
@@ -132,47 +131,6 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
     }
   }
 
-  Future<void> _downloadImage() async {
-    try {
-      var cancelLoading = BotToast.showLoading(); //popup a loading toast
-
-      List<String> contentSp = _contentType.split('/');
-
-      String fileName = 'pro_image_editor_'
-          '${DateTime.now().millisecondsSinceEpoch}'
-          '.${contentSp.length == 2 ? contentSp[1] : 'jpeg'}';
-
-      if (kIsWeb || Platform.isWindows || Platform.isLinux) {
-        final filePath = await FileSaver.instance.saveFile(
-          name: fileName,
-          bytes: _imageBytes,
-        );
-        BotToast.showText(
-          text: 'Image saved at: $filePath',
-          duration: const Duration(seconds: 7),
-        );
-      } else {
-        // Check for access permission
-        final hasAccess = await Gal.hasAccess();
-        if (!hasAccess) {
-          await Gal.requestAccess();
-        }
-
-        await Gal.putImageBytes(
-          _imageBytes,
-          name: fileName,
-        );
-        BotToast.showText(
-          text: 'Image saved',
-          duration: const Duration(seconds: 7),
-        );
-      }
-      cancelLoading();
-    } catch (e) {
-      debugPrint('Error downloading image: $e');
-    }
-  }
-
   @override
   void initState() {
     _generationTime = widget.generationTime;
@@ -245,10 +203,6 @@ class _PreviewImgPageState extends State<PreviewImgPage> {
                 if (_generationTime != null) _buildGenerationInfos(),
               ],
             ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _downloadImage,
-            child: const Icon(Icons.download),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: _downloadImage,

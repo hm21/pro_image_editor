@@ -53,9 +53,6 @@ class _ZoomExampleState extends State<ZoomExample>
       ),
       configs: ProImageEditorConfigs(
         designMode: platformDesignMode,
-        layerInteraction: LayerInteractionConfigs(
-          selectable: LayerInteractionSelectable.enabled,
-        ),
         mainEditor: MainEditorConfigs(
             enableZoom: true,
             editorMinScale: 0.8,
