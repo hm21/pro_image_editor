@@ -1,14 +1,13 @@
-// ignore_for_file: avoid_web_libraries_in_flutter
+import 'dart:js_interop' as js;
 
-// Dart imports:
-import 'dart:html' as html;
-import 'dart:js' as js;
+import 'package:web/web.dart' as web;
 
-// Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread_manager.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/web_worker/web_worker_thread.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/utils/processor_helper.dart';
+import '/models/editor_configs/pro_image_editor_configs.dart';
+import '/utils/content_recorder.dart/threads_managers/threads/thread_manager.dart';
+import '/utils/content_recorder.dart/threads_managers/web_worker/web_worker_thread.dart';
+import '/utils/content_recorder.dart/utils/processor_helper.dart';
+import '../../../../common/editor_web_constants.dart';
+import 'web_utils.dart';
 
 /// Manages web workers for background processing tasks.
 ///
@@ -20,7 +19,8 @@ class WebWorkerManager extends ThreadManager {
   final List<WebWorkerThread> threads = [];
 
   /// Indicates whether web workers are supported by the browser.
-  final bool supportWebWorkers = html.Worker.supported;
+  late final bool supportWebWorkers =
+      web.Worker(jsify(kImageEditorWebWorkerPath)!).isDefinedAndNotNull;
 
   @override
   void init(ProImageEditorConfigs configs) {
@@ -33,6 +33,7 @@ class WebWorkerManager extends ThreadManager {
 
     for (var i = 0; i < processors && !isDestroyed; i++) {
       threads.add(WebWorkerThread(
+        coreNumber: i + 1,
         onMessage: (message) {
           int i = tasks.indexWhere((el) => el.taskId == message.id);
           if (i >= 0) tasks[i].bytes$.complete(message.bytes);
@@ -43,9 +44,6 @@ class WebWorkerManager extends ThreadManager {
 
   /// Retrieves the number of processors available on the device.
   int _deviceNumberOfProcessors() {
-    var hardwareConcurrency = js.context['navigator']?['hardwareConcurrency'];
-    return hardwareConcurrency != null && hardwareConcurrency.runtimeType is int
-        ? hardwareConcurrency as int
-        : 1;
+    return web.window.navigator.hardwareConcurrency;
   }
 }

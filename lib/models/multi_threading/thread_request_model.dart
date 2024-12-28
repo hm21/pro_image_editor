@@ -2,8 +2,7 @@
 import 'package:image/image.dart' as img;
 import 'package:image/image.dart' show JpegChroma, PngFilter;
 
-// Project imports:
-import 'package:pro_image_editor/models/editor_configs/image_generation_configs/output_formats.dart';
+import '../editor_configs/image_generation_configs/output_formats.dart';
 
 /// Represents an image object sent from the main thread.
 class ImageConvertThreadRequest extends ThreadRequest {

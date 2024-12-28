@@ -6,9 +6,9 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 // Project imports:
-import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
-import 'package:pro_image_editor/models/multi_threading/thread_response_model.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/utils/encode_image.dart';
+import '/models/multi_threading/thread_request_model.dart';
+import '/models/multi_threading/thread_response_model.dart';
+import '/utils/content_recorder.dart/utils/encode_image.dart';
 
 /// Converts an image to PNG format and finds the bounding box of
 /// non-transparent areas.

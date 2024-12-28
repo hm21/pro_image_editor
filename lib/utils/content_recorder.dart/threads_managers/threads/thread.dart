@@ -18,6 +18,7 @@ abstract class Thread {
   /// [readyState] completer, and calls the [init] method to set up the thread.
   Thread({
     required this.onMessage,
+    required this.coreNumber,
   }) {
     id = generateUniqueId();
     readyState = Completer();
@@ -32,6 +33,9 @@ abstract class Thread {
 
   /// Number of active tasks currently being processed by the isolate.
   int activeTasks = 0;
+
+  /// Number from the used processor core.
+  final int coreNumber;
 
   /// Callback function for handling messages received from the isolate.
   final Function(ThreadResponse) onMessage;

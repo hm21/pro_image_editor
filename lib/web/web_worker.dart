@@ -1,25 +1,29 @@
 // dart compile js -o lib/web/web_worker.dart.js lib/web/web_worker.dart
+// dart compile wasm -o lib/web/web_worker.dart.wasm lib/web/web_worker.dart
 
-// ignore_for_file: avoid_web_libraries_in_flutter
 // ignore_for_file: argument_type_not_assignable
 
 // Dart imports:
 import 'dart:async';
-import 'dart:html' as html;
+import 'dart:js_interop' as js;
 import 'dart:typed_data';
 
-// Package imports:
 import 'package:image/image.dart' as img;
+import 'package:web/web.dart' as web;
 
-// Project imports:
-import 'package:pro_image_editor/models/editor_configs/image_generation_configs/output_formats.dart';
-import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/utils/convert_raw_image.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/utils/encode_image.dart';
+import '/models/editor_configs/image_generation_configs/output_formats.dart';
+import '/models/multi_threading/thread_request_model.dart';
+import '/utils/content_recorder.dart/threads_managers/web_worker/web_utils.dart';
+import '/utils/content_recorder.dart/utils/convert_raw_image.dart';
+import '/utils/content_recorder.dart/utils/encode_image.dart';
 
 void main() {
   WebWorkerManager();
 }
+
+/// The global scope for the dedicated web worker.
+@js.JS('self')
+external web.DedicatedWorkerGlobalScope get workerScope;
 
 /// Manages the web workers for the application.
 class WebWorkerManager {
@@ -28,20 +32,17 @@ class WebWorkerManager {
     _init();
   }
 
-  /// The global scope for the dedicated web worker.
-  final workerScope = html.DedicatedWorkerGlobalScope.instance;
-
   /// Initializes the web worker manager by setting up message listeners.
   void _init() {
-    workerScope.onMessage.listen((dynamic event) async {
-      var data = event.data;
+    workerScope.onmessage = (web.MessageEvent event) {
+      var data = dartify(event.data);
 
       switch (data?['mode']) {
         case 'convert':
-          await _handleConvert(data);
+          _handleConvert(data);
           break;
         case 'encode':
-          await _handleEncode(data);
+          _handleEncode(data);
           break;
         case 'destroyActiveTasks':
           _handleDestroyActiveTasks(data['ignoreTaskId'] as String);
@@ -52,14 +53,13 @@ class WebWorkerManager {
         default:
           break;
       }
-    });
+    }.toJS;
   }
 
   /// A map to keep track of ongoing tasks and their corresponding completers.
   Map<String, Completer<void>> tasks = {};
 
   Future<void> _handleConvert(dynamic data) async {
-    final workerScope = html.DedicatedWorkerGlobalScope.instance;
     String id = data['id'] as String;
     var imageData = data['image'] ?? {};
 
@@ -68,10 +68,10 @@ class WebWorkerManager {
     ImageConvertThreadRequest image =
         _parseImageFromMainThread(id, imageData, data);
     await convertRawImage(image, destroy$: destroy$).then((res) {
-      workerScope.postMessage({
+      workerScope.postMessage(jsify({
         'bytes': res.bytes,
         'id': res.id,
-      });
+      }));
     }).whenComplete(() {
       if (tasks[id]?.isCompleted != true) {
         tasks[id]?.complete(null);
@@ -81,7 +81,6 @@ class WebWorkerManager {
   }
 
   Future<void> _handleEncode(dynamic data) async {
-    final workerScope = html.DedicatedWorkerGlobalScope.instance;
     String id = data['id'] as String;
     var imageData = data['image'] ?? {};
 
@@ -95,10 +94,10 @@ class WebWorkerManager {
       image: _parseImage(imageData),
     );
 
-    workerScope.postMessage({
+    workerScope.postMessage(jsify({
       'bytes': bytes,
       'id': id,
-    });
+    }));
   }
 
   void _handleDestroyActiveTasks(String ignoreTaskId) {
