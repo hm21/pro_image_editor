@@ -21,7 +21,6 @@ import 'package:pro_image_editor/widgets/extended/extended_transform_scale.dart'
 import 'package:pro_image_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import 'package:pro_image_editor/widgets/outside_gestures/outside_gesture_listener.dart';
 import 'package:pro_image_editor/widgets/screen_resize_detector.dart';
-import 'package:universal_platform/universal_platform.dart';
 import '../../mixins/converted_configs.dart';
 import '../../mixins/extended_loop.dart';
 import '../../mixins/standalone_editor.dart';
@@ -1954,7 +1953,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   appBar: _buildAppBar(constraints),
                   body: Center(
                     child: SizedBox(
-                      width: UniversalPlatform.isAndroid
+                      width: !kIsWeb && Platform.isAndroid
                           ? constraints.maxWidth * 0.9
                           : constraints.maxWidth,
                       child: _buildBody(),
