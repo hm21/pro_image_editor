@@ -43,6 +43,7 @@ dependencies:
   image: ^4.3.0
   mime: ^2.0.0
   vibration: ^2.0.1
+  universal_platform: ^1.1.0
 
 dev_dependencies:
   flutter_test:
