@@ -1,7 +1,5 @@
-// Flutter imports:
 import 'package:flutter/material.dart';
 
-// Project imports:
 import '../crop_rotate_editor/aspect_ratio_item.dart';
 import '../crop_rotate_editor/rotate_direction.dart';
 import '../custom_widgets/crop_rotate_editor_widgets.dart';
@@ -76,6 +74,7 @@ class CropRotateEditorConfigs {
     this.style = const CropRotateEditorStyle(),
     this.icons = const CropRotateEditorIcons(),
     this.widgets = const CropRotateEditorWidgets(),
+    this.maxWidthFactor,
   })  : assert(maxScale >= 1, 'maxScale must be greater than or equal to 1'),
         assert(desktopCornerDragArea > 0,
             'desktopCornerDragArea must be positive'),
@@ -85,6 +84,10 @@ class CropRotateEditorConfigs {
             'In roundCropper mode, initAspectRatio must be 1.'),
         assert(
             mobileCornerDragArea > 0, 'mobileCornerDragArea must be positive'),
+        assert(
+            maxWidthFactor == null ||
+                (maxWidthFactor > 0 && maxWidthFactor <= 1),
+            'maxWidthFactor must be greater than 0 and less than 1'),
         assert(doubleTapScaleFactor > 1,
             'doubleTapScaleFactor must be greater than 1');
 
@@ -142,6 +145,20 @@ class CropRotateEditorConfigs {
 
   /// The scaling factor applied when double-tapping.
   final double doubleTapScaleFactor;
+
+  /// Specifies the maximum width factor for scaling the content.
+  ///
+  /// - **Android**: The default value is `0.9`. This setting resolves an issue
+  ///  related to the back button functionality, as outlined in
+  ///  [GitHub Issue #303](https://github.com/hm21/pro_image_editor/issues/303).
+  ///
+  /// - **Other Platforms**: The default value is `1.0`, which allows the
+  ///  content to utilize the full available width without any scaling
+  ///  adjustment.
+  ///
+  /// This property can be customized to fine-tune the scaling behavior based
+  /// on the specific requirements of the platform or application context.
+  final double? maxWidthFactor;
 
   /// The allowed aspect ratios for cropping.
   ///

@@ -1,11 +1,14 @@
 # Changelog
 
+## 7.1.1
+- **FIX**(android): Resolve crop-drag conflicts with navigation gestures on android. This resolves issue [#303](https://github.com/hm21/pro_image_editor/issues/303)
+
 ## 7.1.0
-- **Feat**(Wasm): Replaced the `dart:html` and `dart:js` packages with `package:web` and `dart:js_interop` to enable WebAssembly (Wasm) support. 
+- **FEAT**(Wasm): Replaced the `dart:html` and `dart:js` packages with `package:web` and `dart:js_interop` to enable WebAssembly (Wasm) support. 
 The current Flutter version `3.27.1` has an open issue with the `ColorFiltered` widget. As a result, the tune and filter editor will not function in Wasm. Once Flutter resolves this issue, the editor should work without requiring further updates.
 
 ## 7.0.1
-- **Fix**(zoom): Corrected the layer rotation calculation when the user drags the rotation button. This resolves issue [#266](https://github.com/hm21/pro_image_editor/issues/266)
+- **FIX**(zoom): Corrected the layer rotation calculation when the user drags the rotation button. This resolves issue [#266](https://github.com/hm21/pro_image_editor/issues/266)
 
 ## 7.0.0
 ### Changed

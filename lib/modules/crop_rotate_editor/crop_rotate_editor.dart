@@ -1953,9 +1953,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   appBar: _buildAppBar(constraints),
                   body: Center(
                     child: SizedBox(
-                      width: !kIsWeb && Platform.isAndroid
-                          ? constraints.maxWidth * 0.9
-                          : constraints.maxWidth,
+                      width: constraints.maxWidth *
+                          (cropRotateEditorConfigs.maxWidthFactor ??
+                              (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
                       child: _buildBody(),
                     ),
                   ),
