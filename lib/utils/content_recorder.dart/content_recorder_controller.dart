@@ -15,7 +15,7 @@ import '../../models/multi_threading/thread_request_model.dart';
 import '../unique_id_generator.dart';
 import 'threads_managers/isolate/isolate_manager.dart';
 import 'threads_managers/web_worker/web_worker_manager_dummy.dart'
-    if (dart.library.html) 'threads_managers/web_worker/web_worker_manager.dart';
+    if (dart.library.js_interop) 'threads_managers/web_worker/web_worker_manager.dart';
 import 'utils/dart_ui_remove_transparent_image_areas.dart';
 import 'utils/encode_image.dart';
 

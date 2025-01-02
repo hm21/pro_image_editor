@@ -16,10 +16,10 @@ class IsolateThread extends Thread {
   ///
   /// [onMessage] is a callback that is triggered when a message is received
   /// by the thread.
-  /// [coreNumber] specifies the number of cores allocated to the thread.
+  /// [coreNumber] specifies the number of the used processor core.
   IsolateThread({
     required super.onMessage,
-    required this.coreNumber,
+    required super.coreNumber,
   });
 
   /// The isolate used for offloading image processing tasks.
@@ -30,9 +30,6 @@ class IsolateThread extends Thread {
 
   /// The port used to receive messages from the isolate.
   late ReceivePort receivePort;
-
-  /// Number of processor cores available for the isolate to utilize.
-  final int coreNumber;
 
   @override
   void init() async {

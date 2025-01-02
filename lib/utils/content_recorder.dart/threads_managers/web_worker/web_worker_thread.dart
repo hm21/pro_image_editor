@@ -2,16 +2,17 @@
 
 // Dart imports:
 import 'dart:async';
-import 'dart:html' as html;
-import 'dart:typed_data';
+import 'dart:js_interop' as js;
 
-// Flutter imports:
-import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart';
+// ignore: depend_on_referenced_packages
+import 'package:web/web.dart' as web;
 
-// Project imports:
-import 'package:pro_image_editor/models/multi_threading/thread_request_model.dart';
-import 'package:pro_image_editor/models/multi_threading/thread_response_model.dart';
-import 'package:pro_image_editor/utils/content_recorder.dart/threads_managers/threads/thread.dart';
+import '/models/multi_threading/thread_request_model.dart';
+import '/models/multi_threading/thread_response_model.dart';
+import '/utils/content_recorder.dart/threads_managers/threads/thread.dart';
+import '../../../../common/editor_web_constants.dart';
+import 'web_utils.dart';
 
 /// A class representing a web worker thread.
 ///
@@ -24,36 +25,40 @@ class WebWorkerThread extends Thread {
   /// from the web worker.
   WebWorkerThread({
     required super.onMessage,
+    required super.coreNumber,
   });
 
-  /// The URL of the web worker script.
-  ///
-  /// This URL points to the JavaScript file that will be loaded by the
-  /// [html.Worker] instance to run the web worker's code.
-  final String _workerUrl =
-      'assets/packages/pro_image_editor/lib/web/web_worker.dart.js';
-
-  /// The [html.Worker] instance managing the web worker.
+  /// The [web.Worker] instance managing the web worker.
   ///
   /// This is the web worker instance that executes the worker script
   /// and communicates with the main thread.
-  late final html.Worker worker;
+  late final web.Worker worker;
 
   @override
   void init() {
     try {
-      if (html.Worker.supported) {
-        worker = html.Worker(_workerUrl);
-        worker.onMessage.listen((event) {
-          var data = event.data;
+      worker = web.Worker(
+        kImageEditorWebWorkerPath.toJS,
+        web.WorkerOptions(
+          name: 'PIE-Thread-$coreNumber',
+        ),
+      );
+
+      if (worker.isDefinedAndNotNull) {
+        worker.onmessage = (web.MessageEvent event) {
+          var data = dartify(event.data);
           if (data?['id'] != null) {
             activeTasks--;
+            List<dynamic>? bytes = data['bytes'] as List<dynamic>?;
             onMessage(ThreadResponse(
-              bytes: data['bytes'] as Uint8List?,
+              bytes: bytes != null
+                  ? Uint8List.fromList(List.castFrom<dynamic, int>(bytes))
+                  : null,
               id: data['id'] as String,
             ));
           }
-        });
+        }.toJS;
+
         readyState.complete(true);
         isReady = true;
       } else {
@@ -69,8 +74,7 @@ class WebWorkerThread extends Thread {
   @override
   void send(ThreadRequest data) {
     activeTasks++;
-
-    worker.postMessage({
+    worker.postMessage(jsify({
       'mode': data is ImageConvertThreadRequest ? 'convert' : 'encode',
       'id': data.id,
       'generateOnlyImageBounds': data is ImageConvertThreadRequest
@@ -98,21 +102,21 @@ class WebWorkerThread extends Thread {
         // 'palette': data.image.palette,
         // 'backgroundColor': data.image.backgroundColor,
       }
-    });
+    }));
   }
 
   @override
   void destroyActiveTasks(String ignoreTaskId) async {
-    worker.postMessage({
+    worker.postMessage(jsify({
       'mode': 'destroyActiveTasks',
       'ignoreTaskId': ignoreTaskId,
-    });
+    }));
   }
 
   @override
   void destroy() {
     worker
-      ..postMessage({'mode': 'kill'})
+      ..postMessage(jsify({'mode': 'kill'}))
       ..terminate();
   }
 }

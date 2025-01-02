@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 // Project imports:
-import 'package:pro_image_editor/pro_image_editor.dart';
+import '/models/editor_configs/image_generation_configs/output_formats.dart';
 import 'encoder/jpeg_encoder.dart';
 
 /// Encodes an image into the specified format and returns the encoded data.
