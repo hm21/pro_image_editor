@@ -16,7 +16,7 @@ import '/core/utils/decode_image.dart';
 import '/core/utils/unique_id_generator.dart';
 import '../managers/isolate/isolate_manager.dart';
 import '../managers/web_worker/web_worker_manager_dummy.dart'
-    if (dart.library.js_interop) 'threads_managers/web_worker/web_worker_manager.dart';
+    if (dart.library.js_interop) '../managers/web_worker/web_worker_manager.dart';
 import '../utils/dart_ui_remove_transparent_image_areas.dart';
 import '../utils/encode_image.dart';
 
