@@ -1,12 +1,12 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
-import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
-import '../../models/editor_configs/pro_image_editor_configs.dart';
+import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
+import '/core/models/editor_configs/pro_image_editor_configs.dart';
+import '/designs/frosted_glass/frosted_glass.dart';
+import '/features/emoji_editor/emoji_editor.dart';
 
 /// A widget that provides an interface for selecting and editing emojis in the
 /// ProImageEditor.
@@ -137,7 +137,7 @@ class _GroundedEmojiEditorState extends State<GroundedEmojiEditor> {
   /// It switches between a Cupertino-style search bar or a Material-style one
   /// depending on the design mode in [ProImageEditorConfigs].
   Widget _buildSearchBar() {
-    if (widget.configs.designMode == ImageEditorDesignModeE.cupertino) {
+    if (widget.configs.designMode == ImageEditorDesignMode.cupertino) {
       return ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(

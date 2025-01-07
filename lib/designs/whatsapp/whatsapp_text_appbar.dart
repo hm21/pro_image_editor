@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'utils/whatsapp_appbar_button_style.dart';
+import 'styles/whatsapp_appbar_button_style.dart';
 import 'whatsapp_done_btn.dart';
 
 /// Represents the app bar for the text-editor in the WhatsApp theme.
@@ -77,7 +77,7 @@ class _WhatsAppTextAppBarState extends State<WhatsAppTextAppBar> {
             ),
             Align(
               alignment:
-                  widget.configs.designMode == ImageEditorDesignModeE.cupertino
+                  widget.configs.designMode == ImageEditorDesignMode.cupertino
                       ? Alignment.centerLeft
                       : Alignment.centerRight,
               child: WhatsAppDoneBtn(

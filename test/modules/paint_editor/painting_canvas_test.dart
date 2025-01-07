@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-
-// Project imports:
-import 'package:pro_image_editor/modules/paint_editor/utils/paint_controller.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/paint_canvas.dart';
+import 'package:pro_image_editor/features/paint_editor/controllers/paint_controller.dart';
+import 'package:pro_image_editor/features/paint_editor/enums/paint_editor_enum.dart';
+import 'package:pro_image_editor/features/paint_editor/widgets/paint_canvas.dart';
 
 void main() {
   group('PaintCanvas Tests', () {
@@ -17,7 +15,7 @@ void main() {
       final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
       PaintController ctrl = PaintController(
         color: Colors.red,
-        mode: PaintModeE.arrow,
+        mode: PaintMode.arrow,
         fill: false,
         strokeWidth: 1,
         strokeMultiplier: 1,
@@ -54,7 +52,7 @@ void main() {
       await gesture.up();
 
       // Assuming the paintMode didn't change
-      expect(ctrl.mode, PaintModeE.arrow);
+      expect(ctrl.mode, PaintMode.arrow);
 
       // Assuming the gesture creates an undoable action
       expect(ctrl.canUndo, isTrue);
@@ -65,7 +63,7 @@ void main() {
       final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
       PaintController ctrl = PaintController(
         color: Colors.red,
-        mode: PaintModeE.freeStyle,
+        mode: PaintMode.freeStyle,
         fill: false,
         strokeWidth: 1,
         strokeMultiplier: 1,
@@ -100,7 +98,7 @@ void main() {
       await gesture.up();
 
       // Assuming the paintMode didn't change
-      expect(ctrl.mode, PaintModeE.freeStyle);
+      expect(ctrl.mode, PaintMode.freeStyle);
 
       // Assuming the gesture creates an undoable action
       expect(ctrl.canUndo, isTrue);
@@ -109,7 +107,7 @@ void main() {
     testWidgets('Performs undo and redo actions', (WidgetTester tester) async {
       PaintController ctrl = PaintController(
         color: Colors.red,
-        mode: PaintModeE.arrow,
+        mode: PaintMode.arrow,
         fill: false,
         strokeWidth: 1,
         strokeMultiplier: 1,

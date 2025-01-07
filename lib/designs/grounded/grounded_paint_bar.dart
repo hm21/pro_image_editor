@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
 import 'grounded_design.dart';
-import 'utils/grounded_configs.dart';
 
 /// A widget that provides the paint toolbar for the ProImageEditor.
 ///
@@ -92,14 +91,14 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
   }
 
   Widget _buildFunctions(BoxConstraints constraints) {
-    Color getColor(PaintModeE mode) {
+    Color getColor(PaintMode mode) {
       return widget.editor.paintMode == mode
           ? paintEditorConfigs.style.bottomBarActiveItemColor
           : paintEditorConfigs.style.bottomBarInactiveItemColor;
     }
 
     return BottomAppBar(
-      height: GROUNDED_SUB_BAR_HEIGHT,
+      height: kGroundedSubBarHeight,
       color: paintEditorConfigs.style.bottomBarBackground,
       padding: EdgeInsets.zero,
       child: Align(
@@ -109,7 +108,7 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: FadeInUp(
-            duration: GROUNDED_FADE_IN_DURATION,
+            duration: kGroundedFadeInDuration,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -125,15 +124,15 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
                       i18n.paintEditor.moveAndZoom,
                       style: TextStyle(
                         fontSize: 10.0,
-                        color: getColor(PaintModeE.moveAndZoom),
+                        color: getColor(PaintMode.moveAndZoom),
                       ),
                     ),
                     icon: Icon(
                       paintEditorConfigs.icons.moveAndZoom,
-                      color: getColor(PaintModeE.moveAndZoom),
+                      color: getColor(PaintMode.moveAndZoom),
                     ),
                     onPressed: () {
-                      widget.editor.setMode(PaintModeE.moveAndZoom);
+                      widget.editor.setMode(PaintMode.moveAndZoom);
                     },
                   ),
                   _buildDivider(),
@@ -145,8 +144,8 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
                         widget.editor.paintModes[index];
                     Color color = getColor(item.mode);
                     return FadeInUp(
-                      duration: GROUNDED_FADE_IN_DURATION * 1.5,
-                      delay: GROUNDED_FADE_IN_STAGGER_DELAY * (index + 2),
+                      duration: kGroundedFadeInDuration * 1.5,
+                      delay: kGroundedFadeInStaggerDelay * (index + 2),
                       child: FlatIconTextButton(
                         label: Text(
                           item.label,
@@ -235,8 +234,8 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
             child: child,
           ),
         ),
-        child: widget.editor.paintMode == PaintModeE.rect ||
-                widget.editor.paintMode == PaintModeE.circle
+        child: widget.editor.paintMode == PaintMode.rect ||
+                widget.editor.paintMode == PaintMode.circle
             ? Center(
                 child: FlatIconTextButton(
                   label: Text(

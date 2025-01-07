@@ -3,13 +3,10 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Package imports:
 import 'package:flutter_test/flutter_test.dart';
-
-// Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/models/init_configs/crop_rotate_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/crop_rotate_editor/crop_rotate_editor.dart';
+import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/core/models/init_configs/crop_rotate_editor_init_configs.dart';
+import 'package:pro_image_editor/features/crop_rotate_editor/crop_rotate_editor.dart';
 import '../../fake/fake_image.dart';
 
 void main() {

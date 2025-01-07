@@ -6,8 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
-import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart';
+import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/shared/widgets/color_picker/bar_color_picker.dart';
 
 @GenerateNiceMocks([MockSpec<BarColorPicker>()])
 void main() {

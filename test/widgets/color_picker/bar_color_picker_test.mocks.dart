@@ -18,9 +18,9 @@ import 'package:mockito/src/dummies.dart' as _i8;
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart' as _i3;
 
-import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart'
+import 'package:pro_image_editor/shared/widgets/color_picker/bar_color_picker.dart'
     as _i6;
-import 'package:pro_image_editor/widgets/color_picker/color_picker_configs.dart'
+import 'package:pro_image_editor/shared/widgets/color_picker/color_picker_configs.dart'
     as _i7;
 
 // ignore_for_file: type=lint

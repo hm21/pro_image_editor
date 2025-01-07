@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 
-import '../../modules/crop_rotate_editor/widgets/crop_aspect_ratio_button.dart';
-import 'utils/grounded_configs.dart';
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
+import '/designs/grounded/grounded_design.dart';
+import '/pro_image_editor.dart';
+import '../../features/crop_rotate_editor/widgets/crop_aspect_ratio_button.dart';
 
 /// A widget that provides controls for cropping and rotating an image in the
 /// ProImageEditor.
@@ -93,7 +92,7 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
 
   Widget _buildFunctions(BoxConstraints constraints) {
     return BottomAppBar(
-      height: GROUNDED_SUB_BAR_HEIGHT,
+      height: kGroundedSubBarHeight,
       color: cropRotateEditorConfigs.style.bottomBarBackground,
       padding: EdgeInsets.zero,
       child: Align(
@@ -103,7 +102,7 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: FadeInUp(
-            duration: GROUNDED_FADE_IN_DURATION,
+            duration: kGroundedFadeInDuration,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -119,8 +118,8 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
                       bool isSelected =
                           widget.editor.activeAspectRatio == item.value;
                       return FadeInUp(
-                        duration: GROUNDED_FADE_IN_DURATION * 1.5,
-                        delay: GROUNDED_FADE_IN_STAGGER_DELAY * (index + 2),
+                        duration: kGroundedFadeInDuration * 1.5,
+                        delay: kGroundedFadeInStaggerDelay * (index + 2),
                         child: FlatIconTextButton(
                           label: Text(
                             item.text,

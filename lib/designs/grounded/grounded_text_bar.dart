@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
 import 'grounded_design.dart';
-import 'utils/grounded_configs.dart';
 
 /// A widget that provides a toolbar for text editing in the ProImageEditor.
 ///
@@ -88,7 +87,7 @@ class _GroundedTextBarState extends State<GroundedTextBar>
 
   Widget _buildFunctions(BoxConstraints constraints) {
     return BottomAppBar(
-      height: GROUNDED_SUB_BAR_HEIGHT,
+      height: kGroundedSubBarHeight,
       color: textEditorConfigs.style.bottomBarBackground,
       padding: EdgeInsets.zero,
       child: Align(
@@ -98,7 +97,7 @@ class _GroundedTextBarState extends State<GroundedTextBar>
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: FadeInUp(
-            duration: GROUNDED_FADE_IN_DURATION,
+            duration: kGroundedFadeInDuration,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -115,8 +114,8 @@ class _GroundedTextBarState extends State<GroundedTextBar>
                       bool isSelected = selected.hashCode == item.hashCode;
 
                       return FadeInUp(
-                        duration: GROUNDED_FADE_IN_DURATION * 1.5,
-                        delay: GROUNDED_FADE_IN_STAGGER_DELAY * (index + 2),
+                        duration: kGroundedFadeInDuration * 1.5,
+                        delay: kGroundedFadeInStaggerDelay * (index + 2),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: IconButton(

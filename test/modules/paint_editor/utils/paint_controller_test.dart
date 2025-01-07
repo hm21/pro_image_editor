@@ -3,18 +3,16 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-
-// Project imports:
-import 'package:pro_image_editor/models/paint_editor/painted_model.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/paint_controller.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
+import 'package:pro_image_editor/core/models/paint_editor/painted_model.dart';
+import 'package:pro_image_editor/features/paint_editor/controllers/paint_controller.dart';
+import 'package:pro_image_editor/features/paint_editor/enums/paint_editor_enum.dart';
 
 void main() {
   test('PaintController initializes with correct values', () {
     final controller = PaintController(
       strokeWidth: 2.0,
       color: Colors.red,
-      mode: PaintModeE.line,
+      mode: PaintMode.line,
       fill: false,
       strokeMultiplier: 1,
       opacity: 1,
@@ -22,7 +20,7 @@ void main() {
 
     expect(controller.strokeWidth, 2.0);
     expect(controller.color, Colors.red);
-    expect(controller.mode, PaintModeE.line);
+    expect(controller.mode, PaintMode.line);
     expect(controller.fill, false);
   });
 
@@ -30,7 +28,7 @@ void main() {
     final controller = PaintController(
       strokeWidth: 2.0,
       color: Colors.red,
-      mode: PaintModeE.line,
+      mode: PaintMode.line,
       fill: false,
       strokeMultiplier: 1,
       opacity: 1,
@@ -38,7 +36,7 @@ void main() {
 
     final paintedModel = PaintedModel(
       color: Colors.blue,
-      mode: PaintModeE.rect,
+      mode: PaintMode.rect,
       offsets: [const Offset(0, 0), const Offset(50, 50)],
       strokeWidth: 3.0,
       opacity: 1,
@@ -53,7 +51,7 @@ void main() {
     final controller = PaintController(
       strokeWidth: 2.0,
       color: Colors.red,
-      mode: PaintModeE.line,
+      mode: PaintMode.line,
       fill: false,
       strokeMultiplier: 1,
       opacity: 1,
@@ -61,7 +59,7 @@ void main() {
 
     final paintedModel1 = PaintedModel(
       color: Colors.blue,
-      mode: PaintModeE.rect,
+      mode: PaintMode.rect,
       offsets: [const Offset(0, 0), const Offset(50, 50)],
       strokeWidth: 3.0,
       opacity: 1.0,
@@ -69,7 +67,7 @@ void main() {
 
     final paintedModel2 = PaintedModel(
       color: Colors.green,
-      mode: PaintModeE.circle,
+      mode: PaintMode.circle,
       offsets: [const Offset(20, 20), const Offset(70, 70)],
       strokeWidth: 2.5,
       opacity: 1.0,

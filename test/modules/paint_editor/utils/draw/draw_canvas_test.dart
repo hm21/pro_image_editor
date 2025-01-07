@@ -4,23 +4,21 @@ import 'package:flutter/rendering.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-
-// Project imports:
-import 'package:pro_image_editor/models/paint_editor/painted_model.dart';
-import 'package:pro_image_editor/modules/paint_editor/utils/paint_editor_enum.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/draw_paint_item.dart';
+import 'package:pro_image_editor/core/models/paint_editor/painted_model.dart';
+import 'package:pro_image_editor/features/paint_editor/enums/paint_editor_enum.dart';
+import 'package:pro_image_editor/features/paint_editor/widgets/draw_paint_item.dart';
 
 void main() {
   testWidgets('DrawCanvas should handle hit testing for different modes',
       (WidgetTester tester) async {
     // Define a list of modes to test
     final paintModes = [
-      PaintModeE.line,
-      PaintModeE.dashLine,
-      PaintModeE.arrow,
-      PaintModeE.freeStyle,
-      PaintModeE.rect,
-      PaintModeE.circle,
+      PaintMode.line,
+      PaintMode.dashLine,
+      PaintMode.arrow,
+      PaintMode.freeStyle,
+      PaintMode.rect,
+      PaintMode.circle,
     ];
 
     for (final mode in paintModes) {

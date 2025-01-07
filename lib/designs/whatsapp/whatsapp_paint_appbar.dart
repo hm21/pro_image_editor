@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'utils/whatsapp_appbar_button_style.dart';
+import 'styles/whatsapp_appbar_button_style.dart';
 import 'whatsapp_done_btn.dart';
 
 /// Represents the app bar for the paint functionality in the WhatsApp theme.
@@ -56,7 +56,7 @@ class _WhatsAppPaintAppBarState extends State<WhatsAppPaintAppBar> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (widget.configs.designMode == ImageEditorDesignModeE.cupertino)
+            if (widget.configs.designMode == ImageEditorDesignMode.cupertino)
               _buildDoneBtn(),
             const Spacer(),
             gap,
@@ -86,7 +86,7 @@ class _WhatsAppPaintAppBarState extends State<WhatsAppPaintAppBar> {
                     ),
             ),
             gap,
-            if (widget.configs.designMode == ImageEditorDesignModeE.material)
+            if (widget.configs.designMode == ImageEditorDesignMode.material)
               _buildDoneBtn()
             else
               IconButton(

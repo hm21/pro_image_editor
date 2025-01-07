@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/layer_widget.dart';
+import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 
 void main() {
   testWidgets('LayerWidget test', (WidgetTester tester) async {

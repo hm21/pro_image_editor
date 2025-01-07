@@ -1,10 +1,9 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Project imports:
-import 'package:pro_image_editor/designs/whatsapp/whatsapp_color_picker.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/utils/pro_image_editor_icons.dart';
+import '/core/ui/pro_image_editor_icons.dart';
+import '/designs/whatsapp/whatsapp_color_picker.dart';
+import '/pro_image_editor.dart';
 
 /// Represents the bottom bar for the paint functionality in the WhatsApp theme.
 ///
@@ -100,7 +99,7 @@ class _WhatsAppPaintBottomBarState extends State<WhatsAppPaintBottomBar> {
   bool _showColorPicker = true;
 
   bool get _isMaterial =>
-      widget.configs.designMode == ImageEditorDesignModeE.material;
+      widget.configs.designMode == ImageEditorDesignMode.material;
 
   @override
   Widget build(BuildContext context) {

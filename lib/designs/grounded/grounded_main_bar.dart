@@ -1,12 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 
-import 'utils/grounded_configs.dart';
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
+import '/designs/grounded/grounded_design.dart';
+import '/pro_image_editor.dart';
 
 /// A widget that provides the main bottom navigation bar for the
 /// ProImageEditor.
@@ -114,7 +113,7 @@ class GroundedMainBarState extends State<GroundedMainBar>
 
   Widget _buildFunctions(BoxConstraints constraints) {
     return BottomAppBar(
-      height: GROUNDED_SUB_BAR_HEIGHT,
+      height: kGroundedSubBarHeight,
       color: mainEditorConfigs.style.bottomBarBackground,
       padding: EdgeInsets.zero,
       clipBehavior: Clip.none,

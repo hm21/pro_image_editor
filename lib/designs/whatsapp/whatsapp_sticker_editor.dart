@@ -6,10 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_callbacks/pro_image_editor_callbacks.dart';
-import 'package:pro_image_editor/modules/emoji_editor/emoji_editor.dart';
-import 'package:pro_image_editor/modules/sticker_editor/sticker_editor.dart';
-import '../../models/editor_configs/pro_image_editor_configs.dart';
+import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
+import '/core/models/editor_configs/pro_image_editor_configs.dart';
+import '/features/emoji_editor/emoji_editor.dart';
+import '/features/sticker_editor/sticker_editor.dart';
 
 /// Represents the temporary sticker mode for WhatsApp.
 ///
@@ -70,7 +70,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
         body: SafeArea(
           child: Column(
             children: [
-              if (widget.configs.designMode == ImageEditorDesignModeE.material)
+              if (widget.configs.designMode == ImageEditorDesignMode.material)
                 ..._buildMaterialHeader()
               else
                 ..._buildCupertinoHeader(),
@@ -337,7 +337,7 @@ class _WhatsAppStickerPageState extends State<WhatsAppStickerPage> {
   }
 
   Widget _buildSearchBar() {
-    if (widget.configs.designMode == ImageEditorDesignModeE.cupertino) {
+    if (widget.configs.designMode == ImageEditorDesignMode.cupertino) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
         child: Row(

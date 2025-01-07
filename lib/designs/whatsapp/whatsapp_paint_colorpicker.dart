@@ -43,11 +43,11 @@ class WhatsappPaintColorpicker extends StatelessWidget {
       child: BarColorPicker(
         configs: paintEditor.configs,
         borderWidth:
-            paintEditor.configs.designMode == ImageEditorDesignModeE.material
+            paintEditor.configs.designMode == ImageEditorDesignMode.material
                 ? 0
                 : 2,
         showThumb:
-            paintEditor.configs.designMode == ImageEditorDesignModeE.material,
+            paintEditor.configs.designMode == ImageEditorDesignMode.material,
         length: min(
           200,
           MediaQuery.of(context).size.height -

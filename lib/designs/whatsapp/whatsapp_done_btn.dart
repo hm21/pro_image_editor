@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import '/core/models/editor_configs/pro_image_editor_configs.dart';
 
 /// Represents the "Done" button for the WhatsApp theme.
 class WhatsAppDoneBtn extends StatefulWidget {
@@ -30,7 +30,7 @@ class WhatsAppDoneBtn extends StatefulWidget {
 
 class _WhatsAppDoneBtnState extends State<WhatsAppDoneBtn> {
   bool get isMaterial =>
-      widget.configs.designMode == ImageEditorDesignModeE.material;
+      widget.configs.designMode == ImageEditorDesignMode.material;
 
   @override
   Widget build(BuildContext context) {

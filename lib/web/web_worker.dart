@@ -8,14 +8,12 @@ import 'dart:async';
 import 'dart:js_interop' as js;
 import 'dart:typed_data';
 
-import 'package:image/image.dart' as img;
 import 'package:web/web.dart' as web;
 
-import '/models/editor_configs/image_generation_configs/output_formats.dart';
-import '/models/multi_threading/thread_request_model.dart';
-import '/utils/content_recorder.dart/threads_managers/web_worker/web_utils.dart';
-import '/utils/content_recorder.dart/utils/convert_raw_image.dart';
-import '/utils/content_recorder.dart/utils/encode_image.dart';
+import '/core/models/multi_threading/thread_web_request_model.dart';
+import '/shared/services/content_recorder/managers/web_worker/web_utils.dart';
+import '/shared/services/content_recorder/utils/convert_raw_image.dart';
+import '/shared/services/content_recorder/utils/encode_image.dart';
 
 void main() {
   WebWorkerManager();
@@ -35,17 +33,23 @@ class WebWorkerManager {
   /// Initializes the web worker manager by setting up message listeners.
   void _init() {
     workerScope.onmessage = (web.MessageEvent event) {
-      var data = dartify(event.data);
+      final jsMode = jsGetProperty(event.data as js.JSObject, 'mode');
+      String? mode = (jsMode as js.JSString).toDart;
 
-      switch (data?['mode']) {
+      switch (mode) {
         case 'convert':
+          var data = ThreadWebRequest.fromJs(event.data);
           _handleConvert(data);
           break;
         case 'encode':
+          var data = ThreadWebRequest.fromJs(event.data);
           _handleEncode(data);
           break;
         case 'destroyActiveTasks':
-          _handleDestroyActiveTasks(data['ignoreTaskId'] as String);
+          final jsIgnoreTaskId =
+              jsGetProperty(event.data as js.JSObject, 'ignoreTaskId');
+          String? ignoreTaskId = (jsIgnoreTaskId as js.JSString).toDart;
+          _handleDestroyActiveTasks(ignoreTaskId);
           break;
         case 'kill':
           workerScope.close();
@@ -59,15 +63,16 @@ class WebWorkerManager {
   /// A map to keep track of ongoing tasks and their corresponding completers.
   Map<String, Completer<void>> tasks = {};
 
-  Future<void> _handleConvert(dynamic data) async {
-    String id = data['id'] as String;
-    var imageData = data['image'] ?? {};
+  Future<void> _handleConvert(ThreadWebRequest data) async {
+    String id = data.id;
 
     var destroy$ = Completer();
     tasks[id] = destroy$;
-    ImageConvertThreadRequest image =
-        _parseImageFromMainThread(id, imageData, data);
-    await convertRawImage(image, destroy$: destroy$).then((res) {
+
+    await convertRawImage(
+      data.toConvertThreadRequest(),
+      destroy$: destroy$,
+    ).then((res) {
       workerScope.postMessage(jsify({
         'bytes': res.bytes,
         'id': res.id,
@@ -80,18 +85,18 @@ class WebWorkerManager {
     });
   }
 
-  Future<void> _handleEncode(dynamic data) async {
-    String id = data['id'] as String;
-    var imageData = data['image'] ?? {};
+  Future<void> _handleEncode(ThreadWebRequest data) async {
+    String id = data.id;
+    var imageData = data.image;
 
     Uint8List bytes = await encodeImage(
-      jpegChroma: _getJpegChroma(data),
-      jpegQuality: _getJpgQuality(data),
-      pngFilter: _getPngFilter(data),
-      pngLevel: _getPngLevel(data),
-      singleFrame: _getSingleFrame(data),
-      outputFormat: _getOutputFormat(data),
-      image: _parseImage(imageData),
+      jpegChroma: data.jpegChroma,
+      jpegQuality: data.jpegQuality,
+      pngFilter: data.pngFilter,
+      pngLevel: data.pngLevel,
+      singleFrame: data.singleFrame,
+      outputFormat: data.outputFormat,
+      image: imageData,
     );
 
     workerScope.postMessage(jsify({
@@ -107,67 +112,4 @@ class WebWorkerManager {
       }
     });
   }
-
-  ImageConvertThreadRequest _parseImageFromMainThread(
-      String id, dynamic imageData, dynamic data) {
-    return ImageConvertThreadRequest(
-      id: id,
-      generateOnlyImageBounds:
-          (data['generateOnlyImageBounds'] as bool?) ?? true,
-      jpegChroma: _getJpegChroma(data),
-      jpegQuality: _getJpgQuality(data),
-      pngFilter: _getPngFilter(data),
-      pngLevel: _getPngLevel(data),
-      singleFrame: _getSingleFrame(data),
-      outputFormat: _getOutputFormat(data),
-      image: _parseImage(imageData),
-    );
-  }
-
-  img.Image _parseImage(dynamic imageData) {
-    return img.Image.fromBytes(
-      bytes: imageData['buffer'],
-      width: imageData['width'],
-      height: imageData['height'],
-      textData: imageData['textData'],
-      frameDuration: imageData['frameDuration'] ?? 0,
-      frameIndex: imageData['frameIndex'] ?? 0,
-      loopCount: imageData['loopCount'] ?? 0,
-      numChannels: imageData['numChannels'],
-      rowStride: imageData['rowStride'],
-      frameType: imageData['frameType'] == null
-          ? img.FrameType.sequence
-          : img.FrameType.values
-              .firstWhere((el) => el.name == imageData['frameType']),
-      format: imageData['format'] == null
-          ? img.Format.uint8
-          : img.Format.values
-              .firstWhere((el) => el.name == imageData['format']),
-    );
-  }
-
-  img.JpegChroma _getJpegChroma(dynamic imageData) {
-    return imageData['jpegChroma'] == null
-        ? img.JpegChroma.yuv444
-        : img.JpegChroma.values
-            .firstWhere((el) => el.name == imageData['jpegChroma']);
-  }
-
-  img.PngFilter _getPngFilter(dynamic imageData) {
-    return imageData['pngFilter'] == null
-        ? img.PngFilter.none
-        : img.PngFilter.values
-            .firstWhere((el) => el.name == imageData['pngFilter']);
-  }
-
-  OutputFormat _getOutputFormat(dynamic imageData) {
-    return imageData['outputFormat'] == null
-        ? OutputFormat.jpg
-        : OutputFormat.values
-            .firstWhere((el) => el.name == imageData['outputFormat']);
-  }
-
-  int _getJpgQuality(dynamic data) => (data['jpegQuality'] as int?) ?? 100;
-  int _getPngLevel(dynamic data) => (data['pngLevel'] as int?) ?? 6;
-  bool _getSingleFrame(dynamic data) => (data['singleFrame'] as bool?) ?? false;
 }

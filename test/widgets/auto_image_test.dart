@@ -6,11 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:network_image_mock/network_image_mock.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/widgets/auto_image.dart';
 
-// Project imports:
-import 'package:pro_image_editor/models/editor_image.dart';
-import 'package:pro_image_editor/widgets/auto_image.dart';
 import '../fake/fake_image.dart';
 import 'auto_image_test.mocks.dart';
 

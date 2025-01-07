@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/models/editor_configs/pro_image_editor_configs.dart';
+import '/core/models/editor_configs/pro_image_editor_configs.dart';
 
 /// A widget that represents the bottom action bar in the image editor.
 ///

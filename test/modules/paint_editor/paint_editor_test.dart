@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
+import 'package:pro_image_editor/core/models/init_configs/paint_editor_init_configs.dart';
+import 'package:pro_image_editor/features/paint_editor/paint_editor.dart';
+import 'package:pro_image_editor/features/paint_editor/widgets/paint_canvas.dart';
+import 'package:pro_image_editor/shared/widgets/color_picker/bar_color_picker.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/init_configs/paint_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/paint_editor/paint_editor.dart';
-import 'package:pro_image_editor/modules/paint_editor/widgets/paint_canvas.dart';
-import 'package:pro_image_editor/widgets/color_picker/bar_color_picker.dart';
 import '../../fake/fake_image.dart';
 
 void main() {
@@ -80,14 +80,14 @@ void main() {
       ));
 
       /// Test if paintModes will change correctly
-      key.currentState!.setMode(PaintModeE.freeStyle);
-      expect(key.currentState!.paintMode, PaintModeE.freeStyle);
+      key.currentState!.setMode(PaintMode.freeStyle);
+      expect(key.currentState!.paintMode, PaintMode.freeStyle);
 
-      key.currentState!.setMode(PaintModeE.dashLine);
-      expect(key.currentState!.paintMode, PaintModeE.dashLine);
+      key.currentState!.setMode(PaintMode.dashLine);
+      expect(key.currentState!.paintMode, PaintMode.dashLine);
 
-      key.currentState!.setMode(PaintModeE.arrow);
-      expect(key.currentState!.paintMode, PaintModeE.arrow);
+      key.currentState!.setMode(PaintMode.arrow);
+      expect(key.currentState!.paintMode, PaintMode.arrow);
     });
     testWidgets('should change stroke width', (WidgetTester tester) async {
       var key = GlobalKey<PaintEditorState>();

@@ -50,7 +50,7 @@ class WhatsAppCropRotateToolbar extends StatefulWidget {
 class _WhatsAppCropRotateToolbar extends State<WhatsAppCropRotateToolbar> {
   @override
   Widget build(BuildContext context) {
-    if (widget.configs.designMode == ImageEditorDesignModeE.material) {
+    if (widget.configs.designMode == ImageEditorDesignMode.material) {
       return _buildMaterialToolbar();
     } else {
       return _buildCupertinoToolbar();

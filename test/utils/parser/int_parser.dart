@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pro_image_editor/utils/parser/int_parser.dart';
+import 'package:pro_image_editor/core/utils/parser/int_parser.dart';
 
 void main() {
   group('safeParseInt', () {

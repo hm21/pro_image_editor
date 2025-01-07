@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/core/models/init_configs/blur_editor_init_configs.dart';
+import 'package:pro_image_editor/features/blur_editor/blur_editor.dart';
 
 // Project imports:
-import 'package:pro_image_editor/models/init_configs/blur_editor_init_configs.dart';
-import 'package:pro_image_editor/modules/blur_editor/blur_editor.dart';
 import '../fake/fake_image.dart';
 
 void main() {

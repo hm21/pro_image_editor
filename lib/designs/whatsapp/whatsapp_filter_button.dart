@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/filter_editor/utils/filter_generator/filter_model.dart';
+import '/features/filter_editor/utils/filter_generator/filter_model.dart';
 
 /// Represents the button for applying filters in the WhatsApp theme.
 ///

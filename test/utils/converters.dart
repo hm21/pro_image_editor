@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 
 // Project imports:
-import 'package:pro_image_editor/utils/converters.dart';
+import 'package:pro_image_editor/core/utils/converters.dart';
 import '../fake/fake_image.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-export '/modules/main_editor/utils/whatsapp_helper.dart';
+export '../../features/main_editor/helpers/whats_app_helper.dart';
 export 'whatsapp_appbar.dart';
 export 'whatsapp_crop_rotate_toolbar.dart';
 export 'whatsapp_filter_button.dart';

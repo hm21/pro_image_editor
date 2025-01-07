@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-
-// Project imports:
-import 'package:pro_image_editor/modules/text_editor/text_editor.dart';
+import 'package:pro_image_editor/features/text_editor/text_editor.dart';
 
 void main() {
   group('TextEditor Tests', () {

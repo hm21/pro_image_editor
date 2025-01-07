@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
-import 'package:pro_image_editor/designs/grounded/utils/grounded_configs.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
+import '/designs/grounded/grounded_design.dart';
 
 /// A widget that represents the blur control bar in the image editor.
 ///
@@ -59,7 +59,7 @@ class _GroundedBlurBarState extends State<GroundedBlurBar>
     return Container(
       color: blurEditorConfigs.style.appBarBackgroundColor,
       child: FadeInUp(
-        duration: GROUNDED_FADE_IN_DURATION,
+        duration: kGroundedFadeInDuration,
         child: Slider(
           onChanged: (value) {
             widget.editor.setBlurFactor(value);

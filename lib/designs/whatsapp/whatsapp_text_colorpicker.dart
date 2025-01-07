@@ -49,11 +49,11 @@ class WhatsappTextColorpicker extends StatelessWidget {
         child: BarColorPicker(
           configs: textEditor.configs,
           borderWidth:
-              textEditor.configs.designMode == ImageEditorDesignModeE.material
+              textEditor.configs.designMode == ImageEditorDesignMode.material
                   ? 0
                   : 2,
           showThumb:
-              textEditor.configs.designMode == ImageEditorDesignModeE.material,
+              textEditor.configs.designMode == ImageEditorDesignMode.material,
           length: min(
             200,
             MediaQuery.of(context).size.height -

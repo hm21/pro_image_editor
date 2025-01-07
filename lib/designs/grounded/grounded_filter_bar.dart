@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
-import 'package:pro_image_editor/designs/grounded/utils/grounded_configs.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
+
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
+import '/designs/grounded/grounded_design.dart';
+import '/pro_image_editor.dart';
 
 /// A widget that represents a filter bar in the image editor.
 ///
@@ -111,7 +111,7 @@ class _GroundedFilterBarState extends State<GroundedFilterBar>
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: FilterEditorItemList(
-              listHeight: GROUNDED_SUB_BAR_HEIGHT,
+              listHeight: kGroundedSubBarHeight,
               previewImageSize: const Size(48, 48),
               borderRadius: BorderRadius.circular(2),
               mainBodySize: widget.editor.getMinimumSize(

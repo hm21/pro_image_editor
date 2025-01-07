@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/core/models/init_configs/filter_editor_init_configs.dart';
+import 'package:pro_image_editor/features/filter_editor/filter_editor.dart';
+import 'package:pro_image_editor/features/filter_editor/widgets/filtered_image.dart';
 
 // Project imports:
-import 'package:pro_image_editor/modules/filter_editor/widgets/filtered_image.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 import '../fake/fake_image.dart';
 
 void main() {

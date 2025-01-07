@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
-import 'package:pro_image_editor/designs/grounded/utils/grounded_configs.dart';
-import 'package:pro_image_editor/mixins/converted_configs.dart';
-import 'package:pro_image_editor/mixins/editor_configs_mixin.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
+
+import '/core/mixins/converted_configs.dart';
+import '/core/mixins/editor_configs_mixin.dart';
+import '/designs/grounded/grounded_design.dart';
+import '/pro_image_editor.dart';
 
 /// A widget that represents a grounded tune adjustment bar for the editor.
 ///
@@ -88,7 +88,7 @@ class _GroundedTuneBarState extends State<GroundedTuneBar>
       color: mainEditorConfigs.style.bottomBarBackground,
       width: double.infinity,
       child: FadeInUp(
-        duration: GROUNDED_FADE_IN_DURATION,
+        duration: kGroundedFadeInDuration,
         child: Column(
           children: [
             ConstrainedBox(

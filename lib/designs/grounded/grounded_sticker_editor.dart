@@ -140,7 +140,7 @@ class _GroundedStickerEditorState extends State<GroundedStickerEditor> {
   /// Depending on the design mode specified in [ProImageEditorConfigs], either
   /// a Cupertino-style or Material-style search bar is displayed.
   Widget _buildSearchBar() {
-    if (widget.configs.designMode == ImageEditorDesignModeE.cupertino) {
+    if (widget.configs.designMode == ImageEditorDesignMode.cupertino) {
       return ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(

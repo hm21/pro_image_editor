@@ -3,11 +3,11 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/designs/grounded/utils/grounded_configs.dart';
+import 'package:pro_image_editor/designs/grounded/constants/grounded_constants.dart';
 
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_image_editor/widgets/animated/fade_in_left.dart';
+import '/shared/widgets/animated/fade_in_left.dart';
 
 /// A widget that provides a slider for adjusting the text size in the
 /// ProImageEditor.
@@ -35,7 +35,7 @@ class GroundedTextSizeSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FadeInLeft(
-      duration: GROUNDED_FADE_IN_DURATION * 2,
+      duration: kGroundedFadeInDuration * 2,
       child: Align(
         alignment: Alignment.centerRight,
         child: Container(

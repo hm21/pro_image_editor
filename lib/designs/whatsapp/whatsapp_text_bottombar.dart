@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'package:pro_image_editor/designs/whatsapp/whatsapp_color_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import '../../modules/text_editor/widgets/text_editor_bottom_bar.dart';
+import '../../features/text_editor/widgets/text_editor_bottom_bar.dart';
 
 /// A stateful widget that represents the bottom bar for text editing in the
 /// WhatsApp theme.
@@ -87,7 +87,7 @@ class _WhatsAppTextBottomBarState extends State<WhatsAppTextBottomBar> {
       left: _space,
       right: 0,
       height: 40,
-      child: widget.configs.designMode == ImageEditorDesignModeE.cupertino
+      child: widget.configs.designMode == ImageEditorDesignMode.cupertino
           ? TextEditorBottomBar(
               configs: widget.configs,
               selectedStyle: widget.selectedStyle,
