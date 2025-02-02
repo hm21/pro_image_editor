@@ -66,6 +66,8 @@ class ImageGenerationConfigs {
   /// **Note:** If you disable this flag, it may require more performance to
   /// generate the image, especially on high resolution images in a large
   /// screen, cuz the editor need to find the bounding box by itself.
+  ///
+  /// By default, this property is set to `true`.
   final bool captureOnlyBackgroundImageArea;
 
   /// Determines whether to capture only the content within the boundaries of
