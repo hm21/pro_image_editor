@@ -24,23 +24,28 @@ class MyApp extends StatelessWidget {
       title: 'Image Picker Example',
       theme: ThemeData(primarySwatch: Colors.blue),
       debugShowCheckedModeBanner: false,
-      home: const ImagePickerScreen(),
+      home: const EditorTest(),
     );
   }
 }
 
-class ImagePickerScreen extends StatefulWidget {
-  const ImagePickerScreen({super.key});
+class EditorTest extends StatefulWidget {
+  const EditorTest({super.key});
 
   @override
-  State<ImagePickerScreen> createState() => _ImagePickerScreenState();
+  State<EditorTest> createState() => _EditorTestState();
 }
 
-class _ImagePickerScreenState extends State<ImagePickerScreen> {
+class _EditorTestState extends State<EditorTest> {
+  final _testAreaKey = GlobalKey();
+
   bool _showOriginal = false;
+  bool _enableQuickExample = true;
+
+  int _testCount = 0;
+
   Uint8List? _imageBytes;
   Uint8List? _originalBytes;
-  int _testCount = 0;
 
   @override
   void initState() {
@@ -56,7 +61,33 @@ class _ImagePickerScreenState extends State<ImagePickerScreen> {
     setState(() {});
   }
 
-  void _openEditor() async {
+  // Captures the widget wrapped in RepaintBoundary and converts it to PNG bytes
+  Future<void> _captureQuick() async {
+    try {
+      // Find the RenderRepaintBoundary from the global key.
+      RenderRepaintBoundary boundary = _testAreaKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+
+      // Capture the image with an appropriate pixel ratio.
+      double pixelRatio = 500 / MediaQuery.sizeOf(context).width;
+      pixelRatio = (pixelRatio * 1000).round() / 1000;
+      print(pixelRatio);
+      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+
+      // Convert the captured image to PNG bytes.
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      _setImage(pngBytes);
+      await Future.delayed(const Duration(milliseconds: 200));
+      _checkRecapture();
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
+  void _captureWithEditor() async {
     _showOriginal = false;
 
     final editor = GlobalKey<ProImageEditorState>();
@@ -122,78 +153,135 @@ class _ImagePickerScreenState extends State<ImagePickerScreen> {
               },
             ),
             onImageEditingComplete: (Uint8List bytes) async {
-              if (bytes.isNotEmpty) {
-                _testCount++;
-                var decodedImage = await decodeImageFromList(bytes);
-                print(
-                  Size(
-                    decodedImage.width.toDouble(),
-                    decodedImage.height.toDouble(),
-                  ),
-                );
-                setState(() => _imageBytes = bytes);
-              }
+              _setImage(bytes);
 
               if (context.mounted) Navigator.pop(context);
             },
           ),
         ),
       ),
-    ).whenComplete(() async {
-      if (_testCount % 10 != 0) {
-        _openEditor();
+    ).whenComplete(_checkRecapture);
+  }
+
+  void _setImage(Uint8List bytes) {
+    if (bytes.isNotEmpty) {
+      _testCount++;
+      _imageBytes = bytes;
+      _logSize();
+
+      setState(() {});
+    }
+  }
+
+  void _logSize() async {
+    var decodedImage = await decodeImageFromList(_imageBytes!);
+    print(
+      Size(
+        decodedImage.width.toDouble(),
+        decodedImage.height.toDouble(),
+      ),
+    );
+  }
+
+  void _checkRecapture() {
+    if (_testCount % 10 != 0) {
+      if (_enableQuickExample) {
+        _captureQuick();
+      } else {
+        _captureWithEditor();
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Image Picker Example'),
-        actions: [
-          IconButton(
-            onPressed: () => setState(() {
-              _showOriginal = !_showOriginal;
-            }),
-            tooltip: _showOriginal ? 'Hide Original' : 'Show Original',
-            icon: Icon(_showOriginal ? Icons.visibility : Icons.visibility_off),
-          ),
-          IconButton(
-            onPressed: () => setState(() {
-              _imageBytes = _originalBytes;
-              _testCount = 0;
-              _showOriginal = true;
-            }),
-            tooltip: 'Reset',
-            icon: const Icon(Icons.restore),
-          ),
+        appBar: _buildAppBar(),
+        body: _buildBody(),
+        floatingActionButton: _buildFloatingAction());
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text('Bugfix'),
+      actions: [
+        IconButton(
+          onPressed: () => setState(() {
+            _showOriginal = !_showOriginal;
+          }),
+          tooltip: _showOriginal ? 'Hide Original' : 'Show Original',
+          icon: Icon(_showOriginal ? Icons.visibility : Icons.visibility_off),
+        ),
+        IconButton(
+          onPressed: () => setState(() {
+            _imageBytes = _originalBytes;
+            _testCount = 0;
+            _enableQuickExample = !_enableQuickExample;
+            _showOriginal = false;
+          }),
+          tooltip:
+              _enableQuickExample ? 'Use Image-Editor' : 'Use Quick-Example',
+          icon: Icon(_enableQuickExample ? Icons.speed : Icons.image),
+        ),
+        IconButton(
+          onPressed: () => setState(() {
+            _imageBytes = _originalBytes;
+            _testCount = 0;
+            _showOriginal = false;
+          }),
+          tooltip: 'Reset',
+          icon: const Icon(Icons.restore),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBody() {
+    return Container(
+      color: Colors.lightBlue,
+      child: Stack(
+        children: [
+          if (_imageBytes == null)
+            const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            )
+          else
+            _buildEditedImage(),
+          _buildOriginal()
         ],
       ),
-      body: Container(
-        color: Colors.lightBlue,
-        child: Stack(
-          children: [
-            Center(
-              child: _imageBytes != null
-                  ? Image.memory(_imageBytes!)
-                  : const Text('No image selected.'),
-            ),
-            if (_showOriginal && _originalBytes != null)
-              Center(
-                child: Image.memory(
-                  _originalBytes!,
-                ),
-              )
-          ],
+    );
+  }
+
+  Widget _buildEditedImage() {
+    return Center(
+      child: RepaintBoundary(
+        key: _testAreaKey,
+        child: Image.memory(
+          _imageBytes!,
+          fit: BoxFit.cover,
         ),
       ),
-      floatingActionButton: _imageBytes == null
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _openEditor,
-              label: const Text('+ 10 Edits'),
-            ),
     );
+  }
+
+  Widget _buildOriginal() {
+    if (_showOriginal && _originalBytes != null) {
+      return Center(
+        child: Image.memory(
+          _originalBytes!,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget? _buildFloatingAction() {
+    return _imageBytes == null
+        ? null
+        : FloatingActionButton.extended(
+            onPressed: _enableQuickExample ? _captureQuick : _captureWithEditor,
+            label: const Text('+ 10 Edits'),
+          );
   }
 }
