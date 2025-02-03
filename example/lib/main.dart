@@ -39,7 +39,7 @@ class _EditorTestState extends State<EditorTest> {
   final _testAreaKey = GlobalKey();
 
   bool _showOriginal = false;
-  bool _enableQuickExample = true;
+  bool _enableQuickExample = false;
 
   int _testCount = 0;
 
@@ -189,7 +189,7 @@ class _EditorTestState extends State<EditorTest> {
   }
 
   void _checkRecapture() {
-    if (_testCount % 100 != 0) {
+    if (_testCount % 10 != 0) {
       if (_enableQuickExample) {
         _captureQuick();
       } else {
