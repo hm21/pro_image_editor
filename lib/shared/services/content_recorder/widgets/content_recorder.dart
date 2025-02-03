@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Project imports:
+import '/shared/widgets/extended/repaint/extended_repaint_boundary.dart';
 import '../controllers/content_recorder_controller.dart';
 
 export '../widgets/record_invisible_widget.dart';
@@ -53,7 +54,7 @@ class ContentRecorderState extends State<ContentRecorder> {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
+    return ExtendedRepaintBoundary(
       key: _controller.containerKey,
       child: widget.child,
     );

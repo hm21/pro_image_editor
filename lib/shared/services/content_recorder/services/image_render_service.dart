@@ -2,10 +2,10 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 import '/core/models/editor_configs/image_generation_configs/image_generation_configs.dart';
 import '/shared/utils/decode_image.dart';
+import '/shared/widgets/extended/repaint/extended_render_repaint_boundary.dart';
 
 /// Service for rendering images from widgets or custom canvases.
 /// This service captures and processes images from the widget tree,
@@ -62,8 +62,8 @@ class ImageRenderService {
         retryHelper++;
       }
 
-      RenderRepaintBoundary boundary =
-          findRenderObject as RenderRepaintBoundary;
+      ExtendedRenderRepaintBoundary boundary =
+          findRenderObject as ExtendedRenderRepaintBoundary;
       BuildContext? context = widgetKey.currentContext;
 
       // Determine pixel ratio
@@ -91,16 +91,15 @@ class ImageRenderService {
       double pixelRatio = configs.customPixelRatio ?? outputRatio;
 
       // Capture image
-      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
-
-      // Crop background image area if required
-      if (configs.captureOnlyDrawingBounds) {
-        image = await _cropBackgroundImageArea(image, imageInfos);
-      }
+      ui.Image image = await _convertToDartUiImage(
+        boundary,
+        imageInfos,
+        pixelRatio,
+      );
 
       return image;
     } catch (e) {
-      debugPrint('Failed to read image data');
+      debugPrint('Failed to read image data: ${e.toString()}');
       return null;
     }
   }
@@ -148,48 +147,51 @@ class ImageRenderService {
   /// cropping details.
   ///
   /// Returns a new `ui.Image` cropped to the appropriate dimensions.
-  Future<ui.Image> _cropBackgroundImageArea(
-    ui.Image image,
+  Future<ui.Image> _convertToDartUiImage(
+    ExtendedRenderRepaintBoundary boundary,
     ImageInfos imageInfos,
+    double pixelRatio,
   ) async {
+    // If cropping is not required, return the image directly
+    if (!configs.captureOnlyDrawingBounds) {
+      return boundary.toImage(pixelRatio: pixelRatio);
+    }
+
+    /// Start calculate the "real" image bounding
+    double imageWidth = boundary.size.width;
+    double imageHeight = boundary.size.height;
+
     double cropRectRatio = !imageInfos.isRotated
         ? imageInfos.cropRectSize.aspectRatio
         : 1 / imageInfos.cropRectSize.aspectRatio;
 
-    Size convertedImgSize = Size(
-      image.width.toDouble(),
-      image.height.toDouble(),
-    );
+    Size convertedImgSize = Size(imageWidth, imageHeight);
 
     double convertedImgWidth = convertedImgSize.width;
     double convertedImgHeight = convertedImgSize.height;
 
     if (convertedImgSize.aspectRatio > cropRectRatio) {
       // Fit to height
-      convertedImgSize =
-          Size(convertedImgHeight * cropRectRatio, convertedImgHeight);
+      convertedImgSize = Size(
+        convertedImgHeight * cropRectRatio,
+        convertedImgHeight,
+      );
     } else {
       // Fit to width
-      convertedImgSize =
-          Size(convertedImgWidth, convertedImgWidth / cropRectRatio);
+      convertedImgSize = Size(
+        convertedImgWidth,
+        convertedImgWidth / cropRectRatio,
+      );
     }
 
     double cropWidth = convertedImgSize.width;
     double cropHeight = convertedImgSize.height;
-    double cropX = max(0, image.width.toDouble() - cropWidth) / 2;
-    double cropY = max(0, image.height.toDouble() - cropHeight) / 2;
+    double cropX = max(0, imageWidth - cropWidth) / 2;
+    double cropY = max(0, imageHeight - cropHeight) / 2;
 
-    ui.PictureRecorder recorder = ui.PictureRecorder();
-    Canvas(recorder).drawImageRect(
-      image,
-      Rect.fromLTWH(cropX, cropY, cropWidth, cropHeight),
-      Rect.fromLTWH(0, 0, cropWidth, cropHeight),
-      Paint(),
+    return boundary.toImage(
+      rect: Rect.fromLTWH(cropX, cropY, cropWidth, cropHeight),
+      pixelRatio: pixelRatio,
     );
-
-    return await recorder.endRecording().toImage(
-          cropWidth.ceil(),
-          cropHeight.ceil(),
-        );
   }
 }

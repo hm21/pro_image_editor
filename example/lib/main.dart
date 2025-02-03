@@ -5,11 +5,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/widgets/extended/repaint/extended_render_repaint_boundary.dart';
+import 'package:pro_image_editor/shared/widgets/extended/repaint/extended_repaint_boundary.dart';
 
 void main() {
   runApp(const MyApp());
@@ -58,21 +57,23 @@ class _EditorTestState extends State<EditorTest> {
         await fetchImageAsUint8List('https://picsum.photos/id/230/500');
     _imageBytes = _originalBytes;
 
+    _logSize();
+
     setState(() {});
   }
 
-  // Captures the widget wrapped in RepaintBoundary and converts it to PNG bytes
+  /// Captures the widget wrapped in ExtendedRepaintBoundary and converts it to
+  /// PNG bytes
   Future<void> _captureQuick() async {
     try {
-      // Find the RenderRepaintBoundary from the global key.
-      RenderRepaintBoundary boundary = _testAreaKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
+      // Find the ExtendedRenderRepaintBoundary from the global key.
+      ExtendedRenderRepaintBoundary boundary = _testAreaKey.currentContext!
+          .findRenderObject() as ExtendedRenderRepaintBoundary;
 
       // Capture the image with an appropriate pixel ratio.
       double pixelRatio = 500 / MediaQuery.sizeOf(context).width;
       pixelRatio = (pixelRatio * 1000).round() / 1000;
-      print(pixelRatio);
-      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+      ui.Image image = await boundary.toImage();
 
       // Convert the captured image to PNG bytes.
       ByteData? byteData =
@@ -130,8 +131,9 @@ class _EditorTestState extends State<EditorTest> {
             imageGeneration: ImageGenerationConfigs(
               generateImageInBackground: false,
               /*  allowEmptyEditCompletion: true,
-                    captureOnlyBackgroundImageArea: true,
-                    captureOnlyDrawingBounds: true, */
+                  captureOnlyBackgroundImageArea: true,
+                  captureOnlyDrawingBounds: true,
+               */
             ),
           ),
           callbacks: ProImageEditorCallbacks(
@@ -160,7 +162,10 @@ class _EditorTestState extends State<EditorTest> {
           ),
         ),
       ),
-    ).whenComplete(_checkRecapture);
+    ).whenComplete(() async {
+      await Future.delayed(const Duration(milliseconds: 200));
+      _checkRecapture();
+    });
   }
 
   void _setImage(Uint8List bytes) {
@@ -176,15 +181,15 @@ class _EditorTestState extends State<EditorTest> {
   void _logSize() async {
     var decodedImage = await decodeImageFromList(_imageBytes!);
     print(
-      Size(
+      'Image-Size: ${Size(
         decodedImage.width.toDouble(),
         decodedImage.height.toDouble(),
-      ),
+      )}',
     );
   }
 
   void _checkRecapture() {
-    if (_testCount % 10 != 0) {
+    if (_testCount % 100 != 0) {
       if (_enableQuickExample) {
         _captureQuick();
       } else {
@@ -255,11 +260,20 @@ class _EditorTestState extends State<EditorTest> {
 
   Widget _buildEditedImage() {
     return Center(
-      child: RepaintBoundary(
-        key: _testAreaKey,
-        child: Image.memory(
-          _imageBytes!,
-          fit: BoxFit.cover,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          child: ExtendedRepaintBoundary(
+            key: _testAreaKey,
+            child: SizedBox(
+              width: 500,
+              height: 500,
+              child: Image.memory(
+                _imageBytes!,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -268,8 +282,16 @@ class _EditorTestState extends State<EditorTest> {
   Widget _buildOriginal() {
     if (_showOriginal && _originalBytes != null) {
       return Center(
-        child: Image.memory(
-          _originalBytes!,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: 500,
+            height: 500,
+            child: Image.memory(
+              _originalBytes!,
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
       );
     }

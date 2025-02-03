@@ -131,10 +131,6 @@ class ContentRecorderController {
 
     if (image == null) return null;
 
-    var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (byteData == null) return null;
-    return byteData.buffer.asUint8List();
-
     return await _imageConverterService.convert(
       image: image,
       id: id,
