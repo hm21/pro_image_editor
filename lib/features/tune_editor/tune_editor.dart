@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/core/utils/size_utils.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
@@ -468,8 +469,10 @@ class TuneEditorState extends State<TuneEditor>
             stream: uiStream.stream,
             builder: (context, snapshot) {
               return FilteredWidget(
-                width: getMinimumSize(mainImageSize, editorBodySize).width,
-                height: getMinimumSize(mainImageSize, editorBodySize).height,
+                width:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+                height:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
                 videoPlayer: videoController?.videoPlayer,
@@ -485,8 +488,8 @@ class TuneEditorState extends State<TuneEditor>
   Widget _buildLayers() {
     return LayerStack(
       transformHelper: TransformHelper(
-        mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
-        mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
+        mainBodySize: getValidSizeOrDefault(mainBodySize, editorBodySize),
+        mainImageSize: getValidSizeOrDefault(mainImageSize, editorBodySize),
         editorBodySize: editorBodySize,
         transformConfigs: initialTransformConfigs,
       ),

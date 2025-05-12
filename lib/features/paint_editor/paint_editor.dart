@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/core/utils/size_utils.dart';
 import 'package:pro_image_editor/shared/mixins/editor_zoom.mixin.dart';
 
 import '/core/constants/image_constants.dart';
@@ -657,23 +658,17 @@ class PaintEditorState extends State<PaintEditor>
         child: Theme(
           data: theme.copyWith(
               tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true)),
-          child: SafeArea(
-            top: paintEditorConfigs.safeArea.top,
-            bottom: paintEditorConfigs.safeArea.bottom,
-            left: paintEditorConfigs.safeArea.left,
-            right: paintEditorConfigs.safeArea.right,
-            child: RecordInvisibleWidget(
-              controller: screenshotCtrl,
-              child: LayoutBuilder(builder: (context, constraints) {
-                return Scaffold(
-                  resizeToAvoidBottomInset: false,
-                  backgroundColor: paintEditorConfigs.style.background,
-                  appBar: _buildAppBar(constraints),
-                  body: _buildBody(),
-                  bottomNavigationBar: _buildBottomBar(),
-                );
-              }),
-            ),
+          child: RecordInvisibleWidget(
+            controller: screenshotCtrl,
+            child: LayoutBuilder(builder: (context, constraints) {
+              return Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: paintEditorConfigs.style.background,
+                appBar: _buildAppBar(constraints),
+                body: _buildBody(),
+                bottomNavigationBar: _buildBottomBar(),
+              );
+            }),
           ),
         ),
       ),
@@ -719,28 +714,26 @@ class PaintEditorState extends State<PaintEditor>
   /// Builds the main body of the paint editor.
   /// Returns a [Widget] representing the editor's body.
   Widget _buildBody() {
-    return SafeArea(
-      child: LayoutBuilder(builder: (context, constraints) {
-        editorBodySize = constraints.biggest;
-        return Theme(
-          data: theme,
-          child: Material(
-            color:
-                initConfigs.convertToUint8List && initConfigs.convertToUint8List
-                    ? paintEditorConfigs.style.background
-                    : Colors.transparent,
-            textStyle: platformTextStyle(context, designMode),
-            child: Stack(
-              alignment: Alignment.center,
-              fit: StackFit.expand,
-              children: _fakeHeroBytes != null
-                  ? _buildFakeHero()
-                  : _buildInteractiveContent(),
-            ),
+    return LayoutBuilder(builder: (context, constraints) {
+      editorBodySize = constraints.biggest;
+      return Theme(
+        data: theme,
+        child: Material(
+          color:
+              initConfigs.convertToUint8List && initConfigs.convertToUint8List
+                  ? paintEditorConfigs.style.background
+                  : Colors.transparent,
+          textStyle: platformTextStyle(context, designMode),
+          child: Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            children: _fakeHeroBytes != null
+                ? _buildFakeHero()
+                : _buildInteractiveContent(),
           ),
-        );
-      }),
-    );
+        ),
+      );
+    });
   }
 
   List<Widget> _buildFakeHero() {
@@ -822,10 +815,10 @@ class PaintEditorState extends State<PaintEditor>
                         configs: configs,
                         layers: layers!,
                         transformHelper: TransformHelper(
-                          mainBodySize:
-                              getMinimumSize(mainBodySize, editorBodySize),
-                          mainImageSize:
-                              getMinimumSize(mainImageSize, editorBodySize),
+                          mainBodySize: getValidSizeOrDefault(
+                              mainBodySize, editorBodySize),
+                          mainImageSize: getValidSizeOrDefault(
+                              mainImageSize, editorBodySize),
                           editorBodySize: editorBodySize,
                           transformConfigs: initialTransformConfigs,
                         ),
@@ -861,8 +854,8 @@ class PaintEditorState extends State<PaintEditor>
       configs: configs,
       transformConfigs: initialTransformConfigs ?? TransformConfigs.empty(),
       child: FilteredWidget(
-        width: getMinimumSize(mainImageSize, editorBodySize).width,
-        height: getMinimumSize(mainImageSize, editorBodySize).height,
+        width: getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+        height: getValidSizeOrDefault(mainImageSize, editorBodySize).height,
         configs: configs,
         image: editorImage,
         videoPlayer: videoController?.videoPlayer,

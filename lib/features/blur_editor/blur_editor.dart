@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/core/utils/size_utils.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
@@ -296,9 +297,9 @@ class BlurEditorState extends State<BlurEditor>
                   LayerStack(
                     transformHelper: TransformHelper(
                       mainBodySize:
-                          getMinimumSize(mainBodySize, editorBodySize),
+                          getValidSizeOrDefault(mainBodySize, editorBodySize),
                       mainImageSize:
-                          getMinimumSize(mainImageSize, editorBodySize),
+                          getValidSizeOrDefault(mainImageSize, editorBodySize),
                       transformConfigs: initialTransformConfigs,
                       editorBodySize: editorBodySize,
                     ),
@@ -333,8 +334,10 @@ class BlurEditorState extends State<BlurEditor>
             stream: _uiBlurStream.stream,
             builder: (context, snapshot) {
               return FilteredWidget(
-                width: getMinimumSize(mainImageSize, editorBodySize).width,
-                height: getMinimumSize(mainImageSize, editorBodySize).height,
+                width:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+                height:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
                 videoPlayer: videoController?.videoPlayer,

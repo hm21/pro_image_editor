@@ -303,17 +303,7 @@ mixin StandaloneEditorState<T extends StatefulWidget,
     super.dispose();
   }
 
-  /// Gets the minimum size between two sizes.
-  ///
-  /// This method returns the smaller of two sizes, ensuring that the resulting
-  /// size is neither null nor empty.
-  Size getMinimumSize(Size? a, Size b) {
-    return a == null || a.isEmpty
-        ? b.isEmpty
-            ? const Size(1, 1)
-            : b
-        : a;
-  }
+
 
   Future<Uint8List> _createTransparentImage() async {
     if (_transparentImageBytes != null) return _transparentImageBytes!;

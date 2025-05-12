@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pro_image_editor/core/utils/size_utils.dart';
 
 import '/core/constants/image_constants.dart';
 import '/core/mixins/converted_callbacks.dart';
@@ -311,9 +312,9 @@ class FilterEditorState extends State<FilterEditor>
                   LayerStack(
                     transformHelper: TransformHelper(
                       mainBodySize:
-                          getMinimumSize(mainBodySize, editorBodySize),
+                          getValidSizeOrDefault(mainBodySize, editorBodySize),
                       mainImageSize:
-                          getMinimumSize(mainImageSize, editorBodySize),
+                          getValidSizeOrDefault(mainImageSize, editorBodySize),
                       editorBodySize: editorBodySize,
                       transformConfigs: initialTransformConfigs,
                     ),
@@ -348,8 +349,10 @@ class FilterEditorState extends State<FilterEditor>
             stream: _uiFilterStream.stream,
             builder: (context, snapshot) {
               return FilteredWidget(
-                width: getMinimumSize(mainImageSize, editorBodySize).width,
-                height: getMinimumSize(mainImageSize, editorBodySize).height,
+                width:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).width,
+                height:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize).height,
                 configs: configs,
                 image: editorImage,
                 videoPlayer: videoController?.videoPlayer,
@@ -406,8 +409,10 @@ class FilterEditorState extends State<FilterEditor>
             ),
             StatefulBuilder(builder: (context, setStateFilterList) {
               return FilterEditorItemList(
-                mainBodySize: getMinimumSize(mainBodySize, editorBodySize),
-                mainImageSize: getMinimumSize(mainImageSize, editorBodySize),
+                mainBodySize:
+                    getValidSizeOrDefault(mainBodySize, editorBodySize),
+                mainImageSize:
+                    getValidSizeOrDefault(mainImageSize, editorBodySize),
                 editorImage: editorImage,
                 image: editorImage != null
                     ? null

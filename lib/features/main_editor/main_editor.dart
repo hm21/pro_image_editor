@@ -1300,36 +1300,28 @@ class ProImageEditorState extends State<ProImageEditor>
 
           animation.addStatusListener(animationStatusListener);
           if (mainEditorConfigs.style.subEditorPage.requireReposition) {
-            return SafeArea(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned(
-                    top: mainEditorConfigs.style.subEditorPage.positionTop,
-                    left: mainEditorConfigs.style.subEditorPage.positionLeft,
-                    right: mainEditorConfigs.style.subEditorPage.positionRight,
-                    bottom:
-                        mainEditorConfigs.style.subEditorPage.positionBottom,
-                    child: Center(
-                      child: Container(
-                        width: mainEditorConfigs
-                                .style.subEditorPage.enforceSizeFromMainEditor
-                            ? sizesManager.editorSize.width
-                            : null,
-                        height: mainEditorConfigs
-                                .style.subEditorPage.enforceSizeFromMainEditor
-                            ? sizesManager.editorSize.height
-                            : null,
-                        clipBehavior: Clip.hardEdge,
-                        decoration: BoxDecoration(
-                          borderRadius: mainEditorConfigs
-                              .style.subEditorPage.borderRadius,
-                        ),
-                        child: page,
-                      ),
-                    ),
+            return Positioned(
+              top: mainEditorConfigs.style.subEditorPage.positionTop,
+              left: mainEditorConfigs.style.subEditorPage.positionLeft,
+              right: mainEditorConfigs.style.subEditorPage.positionRight,
+              bottom: mainEditorConfigs.style.subEditorPage.positionBottom,
+              child: Center(
+                child: Container(
+                  width: mainEditorConfigs
+                          .style.subEditorPage.enforceSizeFromMainEditor
+                      ? sizesManager.editorSize.width
+                      : null,
+                  height: mainEditorConfigs
+                          .style.subEditorPage.enforceSizeFromMainEditor
+                      ? sizesManager.editorSize.height
+                      : null,
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        mainEditorConfigs.style.subEditorPage.borderRadius,
                   ),
-                ],
+                  child: page,
+                ),
               ),
             );
           } else {
@@ -2202,22 +2194,16 @@ class ProImageEditorState extends State<ProImageEditor>
               value: mainEditorConfigs.style.uiOverlayStyle,
               child: Theme(
                 data: _theme,
-                child: SafeArea(
-                  top: mainEditorConfigs.safeArea.top,
-                  bottom: mainEditorConfigs.safeArea.bottom,
-                  left: mainEditorConfigs.safeArea.left,
-                  right: mainEditorConfigs.safeArea.right,
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    sizesManager.editorSize = constraints.biggest;
-                    return Scaffold(
-                      backgroundColor: mainEditorConfigs.style.background,
-                      resizeToAvoidBottomInset: false,
-                      appBar: _buildAppBar(),
-                      body: _buildBody(),
-                      bottomNavigationBar: _buildBottomNavBar(),
-                    );
-                  }),
-                ),
+                child: LayoutBuilder(builder: (context, constraints) {
+                  sizesManager.editorSize = constraints.biggest;
+                  return Scaffold(
+                    backgroundColor: mainEditorConfigs.style.background,
+                    resizeToAvoidBottomInset: false,
+                    appBar: _buildAppBar(),
+                    body: _buildBody(),
+                    bottomNavigationBar: _buildBottomNavBar(),
+                  );
+                }),
               ),
             ),
           ),
