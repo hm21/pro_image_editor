@@ -58,6 +58,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'decoration': 'd',
   'interaction': 'in',
   'meta': 'm',
+  'boxConstraints': 'bx',
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',

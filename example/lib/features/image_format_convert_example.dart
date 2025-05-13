@@ -96,7 +96,7 @@ class _ImageFormatConvertExampleState extends State<ImageFormatConvertExample>
         ),
         imageGeneration: const ImageGenerationConfigs(
           /// Choose the output format below
-          outputFormat: kIsWeb ? OutputFormat.png : OutputFormat.tiff,
+          outputFormat: OutputFormat.png,
           pngFilter: PngFilter.none,
           pngLevel: 6,
           jpegChroma: JpegChroma.yuv444,

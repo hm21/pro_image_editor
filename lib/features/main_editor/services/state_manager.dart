@@ -155,7 +155,7 @@ class StateManager {
   ThreadCaptureState? get activeScreenshot {
     var historyPos = _historyPointer - 1;
 
-    return screenshots.length > historyPos && historyPos > 0
+    return screenshots.length > historyPos && historyPos >= 0
         ? screenshots[historyPos]
         : null;
   }

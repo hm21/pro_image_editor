@@ -40,6 +40,7 @@ class WidgetLayer extends Layer {
     this.exportConfigs = const WidgetLayerExportConfigs(),
     super.isDeleted,
     super.meta,
+    super.boxConstraints,
   });
 
   /// Factory constructor for creating a WidgetLayer instance from a

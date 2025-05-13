@@ -264,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          const Divider(height: 1),
+          const Divider(height: 10, thickness: 0),
           Flexible(
             child: Scrollbar(
               controller: _scrollCtrl,
@@ -275,21 +275,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children: ListTile.divideTiles(
-                    context: context,
-                    tiles: kImageEditorExamples.map(
-                      (example) => ListTile(
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            example.path,
-                          );
-                        },
-                        leading: Icon(example.icon),
-                        title: Text(example.name),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                      ),
-                    ),
-                  ).toList(),
+                  children: kImageEditorExamples
+                      .map(
+                        (example) => ListTile(
+                          onTap: () {
+                            Navigator.of(context).pushNamed(
+                              example.path,
+                            );
+                          },
+                          leading: Icon(example.icon),
+                          title: Text(example.name),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
             ),

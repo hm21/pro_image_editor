@@ -1,5 +1,7 @@
 import 'utils/custom_widgets_typedef.dart';
 
+export '/shared/widgets/layer/models/layer_item_interaction.dart';
+
 /// A class that defines a layer of interaction for custom widgets,
 /// allowing editing, removing, and rotating/scaling actions.
 ///

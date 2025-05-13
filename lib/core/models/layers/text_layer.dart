@@ -43,6 +43,7 @@ class TextLayer extends Layer {
     super.interaction,
     super.isDeleted,
     super.meta,
+    super.boxConstraints,
   });
 
   /// Factory constructor for creating a TextLayer instance from a Layer
