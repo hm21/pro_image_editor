@@ -1,6 +1,6 @@
 # Changelog
 
-## 9.7.4
+## 9.8.2
  - **FIX**(Main-Editor & Paint-Editor): Remove Safe areas and fix the main editor size calculation to prevent layers shiftting
 
 ## 9.7.3
