@@ -73,7 +73,6 @@ class PaintEditorConfigs extends ZoomConfigs {
     this.enableFreeStyleHighPerformanceHero = false,
     this.initialPaintMode = PaintMode.freeStyle,
     this.censorConfigs = const CensorConfigs(),
-    this.safeArea = const EditorSafeArea(),
     this.style = const PaintEditorStyle(),
     this.icons = const PaintEditorIcons(),
     this.widgets = const PaintEditorWidgets(),
@@ -176,9 +175,6 @@ class PaintEditorConfigs extends ZoomConfigs {
   /// The maximum scale factor from the layer.
   final double maxScale;
 
-  /// Defines the safe area configuration for the editor.
-  final EditorSafeArea safeArea;
-
   /// Style configuration for the paint editor.
   final PaintEditorStyle style;
 
@@ -263,7 +259,6 @@ class PaintEditorConfigs extends ZoomConfigs {
       censorConfigs: censorConfigs ?? this.censorConfigs,
       minScale: minScale ?? this.minScale,
       maxScale: maxScale ?? this.maxScale,
-      safeArea: safeArea ?? this.safeArea,
       style: style ?? this.style,
       icons: icons ?? this.icons,
       widgets: widgets ?? this.widgets,

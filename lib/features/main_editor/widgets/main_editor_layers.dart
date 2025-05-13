@@ -244,7 +244,8 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
 
   /// Builds a single layer widget
   Widget _buildLayerWidget(MapEntry<int, Layer> entry) {
-    var bodySize = getValidSizeOrDefault(widget.sizesManager.bodySize, editorBodySize);
+    var bodySize = 
+      getValidSizeOrDefault(widget.sizesManager.bodySize, editorBodySize);
 
     int index = entry.key;
     Layer layer = entry.value;

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:pro_image_editor/core/models/editor_configs/utils/editor_safe_area.dart';
 
 import '/features/crop_rotate_editor/models/transform_factors.dart';
 import '/shared/utils/decode_image.dart';
@@ -30,7 +29,6 @@ class MainEditorConfigs extends ZoomConfigs {
     this.style = const MainEditorStyle(),
     this.icons = const MainEditorIcons(),
     this.widgets = const MainEditorWidgets(),
-    this.safeArea = const EditorSafeArea(),
   });
 
   /// Determines whether the close button is displayed on the widget.
@@ -58,9 +56,6 @@ class MainEditorConfigs extends ZoomConfigs {
   /// Widgets associated with the main editor.
   final MainEditorWidgets widgets;
 
-  /// Defines the safe area configuration for the editor.
-  final EditorSafeArea safeArea;
-
   /// Creates a copy of this `MainEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -82,7 +77,6 @@ class MainEditorConfigs extends ZoomConfigs {
     double? doubleTapZoomFactor,
     Duration? doubleTapZoomDuration,
     Curve? doubleTapZoomCurve,
-    EditorSafeArea? safeArea,
   }) {
     return MainEditorConfigs(
       enableCloseButton: enableCloseButton ?? this.enableCloseButton,
@@ -100,7 +94,6 @@ class MainEditorConfigs extends ZoomConfigs {
           doubleTapZoomDuration ?? this.doubleTapZoomDuration,
       doubleTapZoomCurve: doubleTapZoomCurve ?? this.doubleTapZoomCurve,
       boundaryMargin: boundaryMargin ?? this.boundaryMargin,
-      safeArea: safeArea ?? this.safeArea,
     );
   }
 }
