@@ -18,6 +18,7 @@ class I18nPaintEditor {
     this.dashLine = 'Dash line',
     this.polygon = 'Polygon',
     this.blur = 'Blur',
+    this.cross = 'Cross',
     this.pixelate = 'Pixelate',
     this.lineWidth = 'Line width',
     this.eraser = 'Eraser',
@@ -71,6 +72,9 @@ class I18nPaintEditor {
 
   /// Text for the "Blur" paint mode.
   final String blur;
+
+  /// Text for the "Cross" paint mode.
+  final String cross;
 
   /// Text for the "Pixelate" paint mode.
   final String pixelate;
@@ -135,6 +139,7 @@ class I18nPaintEditor {
     String? dashLine,
     String? polygon,
     String? blur,
+    String? cross,
     String? pixelate,
     String? eraser,
     String? lineWidth,
@@ -163,6 +168,7 @@ class I18nPaintEditor {
       dashLine: dashLine ?? this.dashLine,
       polygon: polygon ?? this.polygon,
       blur: blur ?? this.blur,
+      cross: cross ?? this.cross,
       pixelate: pixelate ?? this.pixelate,
       eraser: eraser ?? this.eraser,
       lineWidth: lineWidth ?? this.lineWidth,

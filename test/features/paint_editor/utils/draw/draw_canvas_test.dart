@@ -18,6 +18,7 @@ void main() {
       PaintMode.freeStyle,
       PaintMode.rect,
       PaintMode.circle,
+      PaintMode.cross,
     ];
 
     for (final mode in paintModes) {

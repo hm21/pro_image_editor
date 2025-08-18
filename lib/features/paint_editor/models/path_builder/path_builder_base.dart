@@ -4,6 +4,7 @@ import '../../enums/paint_editor_enum.dart';
 import '../painted_model.dart';
 import 'path_builder_arrow.dart';
 import 'path_builder_circle.dart';
+import 'path_builder_cross.dart';
 import 'path_builder_dash_line.dart';
 import 'path_builder_freestyle.dart';
 import 'path_builder_line.dart';
@@ -41,6 +42,8 @@ abstract class PathBuilderBase {
         return PathBuilderPolygon(item: item, scale: scale);
       case PaintMode.freeStyle:
         return PathBuilderFreestyle(item: item, scale: scale);
+      case PaintMode.cross:
+        return PathBuilderCross(item: item, scale: scale);
       default:
         throw ArgumentError('${item.mode} is not a valid PaintMode');
     }

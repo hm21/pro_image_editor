@@ -278,6 +278,12 @@ class PaintEditorState extends State<PaintEditor>
             icon: paintEditorConfigs.icons.circle,
             label: i18n.paintEditor.circle,
           ),
+        if (paintEditorConfigs.enableModeBlur)
+          PaintModeBottomBarItem(
+            mode: PaintMode.cross,
+            icon: paintEditorConfigs.icons.cross,
+            label: i18n.paintEditor.cross,
+          ),
         if (paintEditorConfigs.enableModeDashLine)
           PaintModeBottomBarItem(
             mode: PaintMode.dashLine,
@@ -676,7 +682,8 @@ class PaintEditorState extends State<PaintEditor>
         rawLayer.mode == PaintMode.arrow ||
         ((rawLayer.mode == PaintMode.polygon ||
                 rawLayer.mode == PaintMode.rect ||
-                rawLayer.mode == PaintMode.circle) &&
+                rawLayer.mode == PaintMode.circle ||
+                rawLayer.mode == PaintMode.cross) &&
             !rawLayer.fill);
 
     // Scale and offset the offsets of the paint layer

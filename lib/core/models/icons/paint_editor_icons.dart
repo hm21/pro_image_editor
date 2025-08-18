@@ -48,6 +48,7 @@ class PaintEditorIcons {
     this.lineWeight = Icons.line_weight_rounded,
     this.freeStyle = Icons.edit,
     this.arrow = Icons.arrow_right_alt_outlined,
+    this.cross = Icons.church_outlined,
     this.line = Icons.horizontal_rule,
     this.fill = Icons.format_color_fill,
     this.noFill = Icons.format_color_reset,
@@ -112,6 +113,9 @@ class PaintEditorIcons {
   /// The icon for the blur drawing tool.
   final IconData blur;
 
+  /// The icon for the cross drawing tool.
+  final IconData cross;
+
   /// The icon for the pixelate drawing tool.
   final IconData pixelate;
 
@@ -149,6 +153,7 @@ class PaintEditorIcons {
     IconData? noFill,
     IconData? rectangle,
     IconData? circle,
+    IconData? cross,
     IconData? dashLine,
     IconData? polygon,
     IconData? blur,
@@ -171,6 +176,7 @@ class PaintEditorIcons {
       noFill: noFill ?? this.noFill,
       rectangle: rectangle ?? this.rectangle,
       circle: circle ?? this.circle,
+      cross: cross ?? this.cross,
       dashLine: dashLine ?? this.dashLine,
       polygon: polygon ?? this.polygon,
       blur: blur ?? this.blur,

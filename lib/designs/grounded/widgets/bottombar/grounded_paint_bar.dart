@@ -235,7 +235,8 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
           ),
         ),
         child: widget.editor.paintMode == PaintMode.rect ||
-                widget.editor.paintMode == PaintMode.circle
+                widget.editor.paintMode == PaintMode.circle ||
+                widget.editor.paintMode == PaintMode.cross
             ? Center(
                 child: FlatIconTextButton(
                   label: Text(

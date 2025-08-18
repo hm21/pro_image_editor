@@ -121,12 +121,14 @@ class PaintedModel {
   /// This getter returns `true` if the [mode] is one of the following:
   /// - [PaintMode.circle]: A circular shape that can be filled.
   /// - [PaintMode.rect]: A rectangular shape that can be filled.
+  /// - [PaintMode.cross]: A cross shape that can be filled.
   /// - [PaintMode.polygon]: A polygonal shape that can be filled.
   ///
   /// Returns `false` for other paint modes that do not support filling.
   bool get canBeFilled {
     return mode == PaintMode.circle ||
         mode == PaintMode.rect ||
+        mode == PaintMode.cross ||
         mode == PaintMode.polygon;
   }
 

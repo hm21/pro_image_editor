@@ -63,6 +63,7 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
     this.enableModeDashLine = true,
     this.enableModePolygon = true,
     this.enableModeBlur = true,
+    this.enableModeCross = true,
     this.enableModePixelate = true,
     this.enableModeEraser = true,
     this.showToggleFillButton = true,
@@ -135,6 +136,9 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
 
   /// Indicating whether the blur drawing option is enabled.
   final bool enableModeBlur;
+
+  /// Indicating whether the cross drawing option is enabled.
+  final bool enableModeCross;
 
   /// Indicating whether the pixelate drawing option is enabled.
   ///
@@ -232,6 +236,7 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
     bool? enableModeDashLine,
     bool? enableModePolygon,
     bool? enableModeBlur,
+    bool? enableModeCross,
     bool? enableModePixelate,
     bool? enableModeEraser,
     bool? showToggleFillButton,
@@ -278,6 +283,7 @@ class PaintEditorConfigs extends ZoomConfigs implements BaseEditorLayerConfigs {
       enableModeDashLine: enableModeDashLine ?? this.enableModeDashLine,
       enableModePolygon: enableModePolygon ?? this.enableModePolygon,
       enableModeBlur: enableModeBlur ?? this.enableModeBlur,
+      enableModeCross: enableModeCross ?? this.enableModeCross,
       enableModePixelate: enableModePixelate ?? this.enableModePixelate,
       enableModeEraser: enableModeEraser ?? this.enableModeEraser,
       showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,

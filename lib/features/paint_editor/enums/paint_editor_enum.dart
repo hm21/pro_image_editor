@@ -33,4 +33,7 @@ enum PaintMode {
 
   /// Creates an area that will pixelate the background.
   pixelate,
+
+  /// Creates a cross item.
+  cross,
 }
