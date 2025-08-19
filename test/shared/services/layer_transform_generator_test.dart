@@ -22,6 +22,9 @@ TransformConfigs _configs({
     cropEditorScreenRatio: 1,
     cropRect: const Rect.fromLTWH(0, 0, 110, 100),
     originalSize: const Size(300, 300),
+    tiltRotate: 0,
+    tiltHorizontal: 0,
+    tiltVertical: 0,
   );
 }
 

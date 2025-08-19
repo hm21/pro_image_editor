@@ -19,6 +19,8 @@ import '/features/crop_rotate_editor/widgets/outside_gestures/crop_rotate_gestur
 import '/features/crop_rotate_editor/widgets/outside_gestures/outside_gesture_listener.dart';
 import '/plugins/defer_pointer/defer_pointer.dart';
 import '/pro_image_editor.dart';
+import '/shared/extensions/double_extension.dart';
+import '/shared/extensions/matrix_extension.dart';
 import '/shared/mixins/extended_loop.dart';
 import '/shared/services/content_recorder/widgets/record_invisible_widget.dart';
 import '/shared/services/layer_transform_generator.dart';
@@ -30,7 +32,6 @@ import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../../shared/extensions/double_extension.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
 import 'enums/crop_area_part.dart';
 import 'enums/crop_rotate_angle_side.dart';
@@ -42,6 +43,7 @@ import 'widgets/crop_corner_painter.dart';
 import 'widgets/outside_gestures/outside_gesture_behavior.dart';
 
 export 'enums/crop_mode.enum.dart';
+export 'enums/tilt_mode_enum.dart';
 export 'widgets/crop_aspect_ratio_options.dart';
 
 /// The `CropRotateEditor` widget allows users to editing images with crop, flip
@@ -453,6 +455,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       setInitHistory(initialTransformConfigs!);
     }
+
+    tiltRotate = initialTransformConfigs?.tiltRotate ?? 0;
+    tiltHorizontal = initialTransformConfigs?.tiltHorizontal ?? 0;
+    tiltVertical = initialTransformConfigs?.tiltVertical ?? 0;
 
     // Initialize fake hero settings
     enableFakeHero = initConfigs.enableFakeHero;
@@ -903,6 +909,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
             flipY: flipY,
             offset: translate,
             cropMode: cropMode,
+            tiltRotate: tiltRotate,
+            tiltHorizontal: tiltHorizontal,
+            tiltVertical: tiltVertical,
           ),
         );
       }
@@ -958,6 +967,29 @@ class CropRotateEditorState extends State<CropRotateEditor>
     calcFitToScreen();
 
     cropRotateEditorCallbacks?.handleRotateStart(rotateAnimation.value);
+  }
+
+  /// Updates the tilt value for the given [mode].
+  ///
+  /// - [mode]: The [TiltMode] to update (horizontal, vertical, rotate).
+  /// - [value]: The new tilt value in radians.
+  /// - [updateStateHistory]: If true, the change is added to history.
+  ///
+  /// After updating, the widget state is rebuilt.
+  void tilt(TiltMode mode, double value, {bool updateStateHistory = true}) {
+    switch (mode) {
+      case TiltMode.horizontal:
+        tiltHorizontal = value;
+        break;
+      case TiltMode.vertical:
+        tiltVertical = value;
+        break;
+      case TiltMode.rotate:
+        tiltRotate = value;
+        break;
+    }
+    if (updateStateHistory) addHistory();
+    setState(() {});
   }
 
   @override
@@ -2195,6 +2227,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
             onFlip: flip,
             onOpenAspectRatioOptions: openAspectRatioOptions,
             onReset: reset,
+            onTiltChangeUpdate: (mode, val) =>
+                tilt(mode, val, updateStateHistory: false),
+            onTiltChangeEnd: tilt,
+            tiltHorizontal: tiltHorizontal,
+            tiltVertical: tiltVertical,
+            tiltRotate: tiltRotate,
           )
         : null;
   }
@@ -2254,12 +2292,14 @@ class CropRotateEditorState extends State<CropRotateEditor>
                         child: _buildRotationScaleTransform(
                           child: _buildPaintContainer(
                             child: _buildCropPainter(
-                              child: _buildUserScaleTransform(
-                                child: _buildTranslate(
-                                  child: DeferPointer(
-                                    child: _buildEventListener(
-                                      child: _buildGestureDetector(
-                                        child: _buildImage(),
+                              child: _buildTiltTransform(
+                                child: _buildUserScaleTransform(
+                                  child: _buildTranslate(
+                                    child: DeferPointer(
+                                      child: _buildEventListener(
+                                        child: _buildGestureDetector(
+                                          child: _buildImage(),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2374,6 +2414,21 @@ class CropRotateEditorState extends State<CropRotateEditor>
           child: child,
         );
       },
+      child: child,
+    );
+  }
+
+  Widget _buildTiltTransform({required Widget child}) {
+    if (tiltRotate == 0 && tiltVertical == 0 && tiltHorizontal == 0) {
+      return child;
+    }
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity().tilt(
+        rotate: tiltRotate,
+        horizontal: tiltHorizontal,
+        vertical: tiltVertical,
+      ),
       child: child,
     );
   }

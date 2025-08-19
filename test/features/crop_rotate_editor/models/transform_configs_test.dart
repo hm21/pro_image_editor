@@ -65,6 +65,9 @@ void main() {
         flipY: false,
         offset: const Offset(7, 8),
         cropMode: CropMode.rectangular,
+        tiltRotate: 0,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
       final map = config.toMap();
       expect(map['angle'], 0.5);
@@ -98,6 +101,9 @@ void main() {
           flipX: false,
           flipY: false,
           offset: Offset.zero,
+          tiltRotate: 0,
+          tiltHorizontal: 0,
+          tiltVertical: 0,
         );
         expect(config.is90DegRotated, i.isOdd);
       }
@@ -116,6 +122,9 @@ void main() {
           flipX: false,
           flipY: false,
           offset: Offset.zero,
+          tiltRotate: 0,
+          tiltHorizontal: 0,
+          tiltVertical: 0,
         );
         expect(config.angleToTurns(), i);
       }
@@ -133,6 +142,9 @@ void main() {
         flipX: false,
         flipY: false,
         offset: Offset.zero,
+        tiltRotate: 0,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
       expect(config.scale, 6);
     });
@@ -150,6 +162,9 @@ void main() {
         flipY: false,
         offset: const Offset(5, 6),
         cropMode: CropMode.oval,
+        tiltRotate: 0,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
       final config2 = config1.copyWith();
       final config3 = TransformConfigs.empty();
@@ -170,6 +185,9 @@ void main() {
         flipX: false,
         flipY: false,
         offset: const Offset(10, 20),
+        tiltRotate: 0,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
       final offset = config.getCropStartOffset(const Size(400, 400));
       expect(offset.dx, isNonNegative);
@@ -188,6 +206,9 @@ void main() {
         flipX: false,
         flipY: false,
         offset: Offset.zero,
+        tiltRotate: 0,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
       final size = config.getCropSize(const Size(400, 800));
       expect(size.width, 100);

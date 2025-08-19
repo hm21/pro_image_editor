@@ -1,7 +1,10 @@
 // Flutter imports:
 import 'package:flutter/services.dart';
 
-import '../../constants/editor_style_constants.dart';
+import '/core/constants/editor_style_constants.dart';
+import 'tilt_style.dart';
+
+export 'tilt_style.dart';
 
 /// The `CropRotateEditorStyle` class defines the styles for the crop and rotate
 /// editor in the image editor.
@@ -61,6 +64,7 @@ class CropRotateEditorStyle {
     this.cropOverlayColor = const Color(0xFF000000),
     this.bottomBarBackground = kImageEditorAppBarBackground,
     this.bottomBarColor = kImageEditorAppBarColor,
+    this.tiltStyle = const TiltStyle(),
     this.aspectRatioSheetBackgroundColor = const Color(0xFF303030),
     this.aspectRatioSheetForegroundColor = const Color(0xFFFAFAFA),
     this.cropCornerLength = 36,
@@ -95,6 +99,9 @@ class CropRotateEditorStyle {
   /// Color from the helper lines when moving the image.
   final Color helperLineColor;
 
+  /// The style configuration for the tilt functionality.
+  final TiltStyle tiltStyle;
+
   /// This refers to the overlay area atop the image when the cropping area is
   /// smaller than the image.
   ///
@@ -127,6 +134,7 @@ class CropRotateEditorStyle {
     Color? background,
     Color? cropCornerColor,
     Color? helperLineColor,
+    TiltStyle? tiltStyle,
     Color? cropOverlayColor,
     double? cropCornerLength,
     double? cropCornerThickness,
@@ -144,6 +152,7 @@ class CropRotateEditorStyle {
       background: background ?? this.background,
       cropCornerColor: cropCornerColor ?? this.cropCornerColor,
       helperLineColor: helperLineColor ?? this.helperLineColor,
+      tiltStyle: tiltStyle ?? this.tiltStyle,
       cropOverlayColor: cropOverlayColor ?? this.cropOverlayColor,
       cropCornerLength: cropCornerLength ?? this.cropCornerLength,
       cropCornerThickness: cropCornerThickness ?? this.cropCornerThickness,

@@ -2,9 +2,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-// Project imports:
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
+import '../../extensions/matrix_extension.dart';
 
 /// A [StatelessWidget] that applies transformations to its [child] widget
 /// based on provided transformation and editor configurations.
@@ -160,12 +160,16 @@ class TransformedContentGenerator extends StatelessWidget {
     final scale = _transformConfigs.scaleUser;
 
     // If no pan *and* no scale, just return child
-    if (offset == Offset.zero && scale == 1.0) {
+    if (offset == Offset.zero && scale == 1.0 && !_transformConfigs.isTilted) {
       return child;
     }
 
     // Combine translate + scale into one matrix
-    final matrix = Matrix4.identity()
+    final matrix = Matrix4.identity().tilt(
+      rotate: transformConfigs.tiltRotate,
+      vertical: transformConfigs.tiltVertical,
+      horizontal: transformConfigs.tiltHorizontal,
+    )
       ..scaleByDouble(scale, scale, scale, 1.0)
       ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0);
 

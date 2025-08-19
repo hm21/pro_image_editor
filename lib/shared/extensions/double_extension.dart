@@ -67,4 +67,10 @@ extension DoubleExtension on double {
 
     return safeParseDouble(toStringAsFixed(decimals));
   }
+
+  /// Converts degrees to radians.
+  double get degToRad => this * (pi / 180.0);
+
+  /// Converts radians to degrees.
+  double get radToDeg => this * (180.0 / pi);
 }
