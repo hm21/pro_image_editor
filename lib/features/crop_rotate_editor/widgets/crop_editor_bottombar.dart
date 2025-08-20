@@ -107,7 +107,8 @@ class _CropEditorBottombarState extends State<CropEditorBottombar> {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedSize(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.ease,
             child: _isTiltMode
                 ? _buildTiltSlider()
                 : const SizedBox(width: double.infinity),

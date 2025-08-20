@@ -371,6 +371,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fadeInOpacity: _painterOpacity,
             style: cropRotateEditorConfigs.style,
             drawCircle: cropMode == CropMode.oval,
+            tiltRotate: tiltRotate,
+            tiltHorizontal: tiltHorizontal,
+            tiltVertical: tiltVertical,
           )
         : null;
   }
@@ -989,6 +992,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
         break;
     }
     if (updateStateHistory) addHistory();
+    cropPainterKey.currentState?.update(
+      foregroundPainter: cropPainter,
+      isComplex: showWidgets,
+      willChange: showWidgets,
+    );
     setState(() {});
   }
 
@@ -2246,6 +2254,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
               !event.oldContentSize.isEmpty) {
             _isScreenResized = true;
           }
+          _painterOpacity = 0;
 
           if (editorBodySize != event.newContentSize) {
             editorBodySize = event.newContentSize;
@@ -2258,10 +2267,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
         },
         onResizeEnd: (event) {
           if (_imageNeedDecode) _decodeImage();
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            _setCropRectBounding();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             _updateAllStates();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              _painterOpacity = 1;
+              _setCropRectBounding();
+              _updateAllStates();
+            });
           });
+          WidgetsBinding.instance.scheduleFrame();
         },
         child: Stack(
           children: [
@@ -2292,12 +2308,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
                         child: _buildRotationScaleTransform(
                           child: _buildPaintContainer(
                             child: _buildCropPainter(
-                              child: _buildTiltTransform(
-                                child: _buildUserScaleTransform(
-                                  child: _buildTranslate(
-                                    child: DeferPointer(
-                                      child: _buildEventListener(
-                                        child: _buildGestureDetector(
+                              child: _buildUserScaleTransform(
+                                child: _buildTranslate(
+                                  child: DeferPointer(
+                                    child: _buildEventListener(
+                                      child: _buildGestureDetector(
+                                        child: _buildTiltTransform(
                                           child: _buildImage(),
                                         ),
                                       ),
@@ -2467,7 +2483,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       key: cropPainterKey,
       initIsComplex: showWidgets,
       initWillChange: showWidgets,
-      initForegroundPainter: cropPainter?.copy(),
+      initForegroundPainter: cropPainter?.copyWith(),
       child: child,
     );
   }

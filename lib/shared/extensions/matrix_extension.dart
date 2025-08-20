@@ -7,7 +7,7 @@ extension MatrixExtension on Matrix4 {
   /// The entry at row=3, col=2 is set to a small value (0.001) to
   /// simulate depth perspective.
   Matrix4 perspective() {
-    return Matrix4.identity()..setEntry(3, 2, 0.001);
+    return this..setEntry(3, 2, 0.001);
   }
 
   /// Applies tilt and rotation transforms to this [Matrix4].

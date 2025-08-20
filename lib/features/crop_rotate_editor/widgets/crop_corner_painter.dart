@@ -5,7 +5,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import '../../../core/models/styles/crop_rotate/crop_rotate_editor_style.dart';
+import '/core/models/styles/crop_rotate/crop_rotate_editor_style.dart';
+import '/shared/extensions/matrix_extension.dart';
 
 /// A custom painter for drawing crop corners and interaction elements.
 ///
@@ -48,6 +49,9 @@ class CropCornerPainter extends CustomPainter {
     required this.scaleFactor,
     required this.style,
     required this.rotationScaleFactor,
+    required this.tiltRotate,
+    required this.tiltHorizontal,
+    required this.tiltVertical,
   });
 
   /// The rectangle defining the crop area.
@@ -110,6 +114,15 @@ class CropCornerPainter extends CustomPainter {
   /// for dynamic resizing based on zoom levels or screen sizes.
   final double scaleFactor;
 
+  /// The current rotation angle in radians around the Z axis.
+  final double tiltRotate;
+
+  /// The current tilt in radians around the Y axis (left/right).
+  final double tiltHorizontal;
+
+  /// The current tilt in radians around the X axis (up/down).
+  final double tiltVertical;
+
   /// The factor for scaling elements based on rotation.
   ///
   /// This double value influences how elements are scaled when the image is
@@ -137,53 +150,59 @@ class CropCornerPainter extends CustomPainter {
     double cropWidth = _cropOffsetRight - _cropOffsetLeft;
     double cropHeight = _cropOffsetBottom - _cropOffsetTop;
 
+    final imageCenter = Offset(
+      size.width / 2 + offset.dx * scaleFactor,
+      size.height / 2 + offset.dy * scaleFactor,
+    );
     Path path = Path()
       // FillType "evenOdd" is important for the canvas web renderer
       ..fillType = PathFillType.evenOdd
       ..addRect(Rect.fromCenter(
-        center: Offset(
-          size.width / 2 + offset.dx * scaleFactor,
-          size.height / 2 + offset.dy * scaleFactor,
-        ),
-        width: size.width * scaleFactor,
-        height: size.height * scaleFactor,
+        center: imageCenter,
+        width: size.width,
+        height: size.height,
       ));
+
+    // Build the crop rect or circle
+    Path cropPath = Path();
+    final cropRectCenter = Offset(
+      cropWidth / 2 + _cropOffsetLeft,
+      cropHeight / 2 + _cropOffsetTop,
+    );
+    final cropRect = Rect.fromCenter(
+      center: cropRectCenter,
+      width: cropWidth,
+      height: cropHeight,
+    );
     if (drawCircle) {
-      /// Create a path for the current rectangle
-      Path circlePath = Path()
-        ..addOval(
-          Rect.fromCenter(
-            center: Offset(
-              cropWidth / 2 + _cropOffsetLeft,
-              cropHeight / 2 + _cropOffsetTop,
-            ),
-            width: cropWidth,
-            height: cropHeight,
-          ),
-        );
-
-      /// Subtract the area of the current rectangle from the path for the
-      /// entire canvas
-      path = Path.combine(PathOperation.difference, path, circlePath);
+      cropPath.addOval(cropRect);
     } else {
-      /// Create a path for the current rectangle
-      Path rectPath = Path()
-        ..addRect(
-          Rect.fromCenter(
-            center: Offset(
-              cropWidth / 2 + _cropOffsetLeft,
-              cropHeight / 2 + _cropOffsetTop,
-            ),
-            width: cropWidth,
-            height: cropHeight,
-          ),
-        );
-
-      /// Subtract the area of the current rectangle from the path for the
-      /// entire canvas
-      path = Path.combine(PathOperation.difference, path, rectPath);
+      cropPath.addRect(cropRect);
     }
 
+    /// Apply tilt / rotation
+    final Matrix4 transform = Matrix4.identity()
+      // Translate to center before applying transformations
+      ..translateByDouble(imageCenter.dx, imageCenter.dy, 0, 1.0)
+      // Apply perspective tilt (vertical + horizontal)
+      ..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1.0)
+      ..multiply(
+        Matrix4.identity()
+          ..tilt(
+            rotate: tiltRotate,
+            horizontal: tiltHorizontal,
+            vertical: tiltVertical,
+          ),
+      )
+      // Translate back
+      ..translateByDouble(-imageCenter.dx, -imageCenter.dy, 0, 1.0);
+
+    path = path.transform(transform.storage);
+
+    // Subtract cropPath from background
+    path = Path.combine(PathOperation.difference, path, cropPath);
+
+    /// Colors
     Color interpolatedColor = Color.lerp(
       style.background,
       style.cropOverlayColor,
@@ -199,7 +218,8 @@ class CropCornerPainter extends CustomPainter {
       path,
       Paint()
         ..color = interpolatedColor.withValues(
-            alpha: (opacity + fadeInFactor).clamp(0, 1))
+          alpha: (opacity + fadeInFactor).clamp(0, 1),
+        )
         ..style = PaintingStyle.fill,
     );
   }
@@ -370,22 +390,28 @@ class CropCornerPainter extends CustomPainter {
         oldDelegate.screenSize != screenSize ||
         oldDelegate.scaleFactor != scaleFactor ||
         oldDelegate.style != style ||
-        oldDelegate.rotationScaleFactor != rotationScaleFactor;
+        oldDelegate.rotationScaleFactor != rotationScaleFactor ||
+        oldDelegate.tiltRotate != tiltRotate ||
+        oldDelegate.tiltHorizontal != tiltHorizontal ||
+        oldDelegate.tiltVertical != tiltVertical;
   }
 
   /// Create a copy of the [CropCornerPainter].
-  CropCornerPainter copy() {
+  CropCornerPainter copyWith({double? fadeInOpacity}) {
     return CropCornerPainter(
       drawCircle: drawCircle,
       offset: offset,
       cropRect: cropRect,
-      fadeInOpacity: fadeInOpacity,
+      fadeInOpacity: fadeInOpacity ?? this.fadeInOpacity,
       interactionOpacity: interactionOpacity,
       viewRect: viewRect,
       screenSize: screenSize,
       scaleFactor: scaleFactor,
       style: style,
       rotationScaleFactor: rotationScaleFactor,
+      tiltRotate: tiltRotate,
+      tiltHorizontal: tiltHorizontal,
+      tiltVertical: tiltVertical,
     );
   }
 }
