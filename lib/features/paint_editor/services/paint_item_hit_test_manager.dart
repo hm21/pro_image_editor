@@ -56,11 +56,11 @@ class PaintItemHitTestManager {
     final start = item.offsets[0]! * scaleFactor;
     final end = item.offsets[1]! * scaleFactor;
 
+    final rect = Rect.fromPoints(start, end);
     if (isRoundArea) {
-      final path = Path()..addOval(Rect.fromPoints(start, end));
+      final path = Path()..addOval(rect);
       return path.contains(position);
     } else {
-      final rect = Rect.fromPoints(start, end);
       return rect.contains(position);
     }
   }

@@ -19,17 +19,13 @@ class PaintedModel {
     keyConverter ??= (String key) => key;
 
     /// List to hold offset points for the paint.
-    List<Offset> offsets = [];
+    final offsets = List.from(map[keyConverter('offsets')] ?? [])
+        .map((el) => Offset(safeParseDouble(el['x']), safeParseDouble(el['y'])))
+        .toList();
 
-    /// Iterate over the offsets in the map and add them to the list.
-    for (var el in List.from(map[keyConverter('offsets')])) {
-      offsets.add(
-        Offset(
-          safeParseDouble(el['x']),
-          safeParseDouble(el['y']),
-        ),
-      );
-    }
+    final erasedOffsets = List.from(map[keyConverter('erasedOffsets')] ?? [])
+        .map((el) => Offset(safeParseDouble(el['x']), safeParseDouble(el['y'])))
+        .toList();
 
     /// Constructs and returns a PaintedModel instance with properties
     /// derived from the map.
@@ -37,6 +33,7 @@ class PaintedModel {
       mode: PaintMode.values
           .firstWhere((element) => element.name == map[keyConverter!('mode')]),
       offsets: offsets,
+      erasedOffsets: erasedOffsets,
       color: Color(map[keyConverter('color')]),
       strokeWidth:
           safeParseDouble(map[keyConverter('strokeWidth')], fallback: 1),
@@ -59,6 +56,7 @@ class PaintedModel {
     GlobalKey? key,
     required this.mode,
     required this.offsets,
+    required this.erasedOffsets,
     required this.color,
     required this.strokeWidth,
     required this.opacity,
@@ -93,6 +91,13 @@ class PaintedModel {
   /// For shapes like circles and rectangles, it contains two points.
   /// For [FreeStyle], it contains a list of points.
   List<Offset?> offsets;
+
+  /// A list of offset points that have been erased from the painted content.
+  ///
+  /// This list contains the coordinates where eraser tool operations have been
+  /// applied, allowing the system to track which areas of the painted content
+  /// have been removed.
+  List<Offset> erasedOffsets;
 
   /// A boolean indicating whether the drawn shape should be filled.
   bool fill;
@@ -144,7 +149,8 @@ class PaintedModel {
   PaintedModel copy() {
     return PaintedModel(
       mode: mode,
-      offsets: offsets,
+      offsets: [...offsets],
+      erasedOffsets: [...erasedOffsets],
       color: color,
       strokeWidth: strokeWidth,
       fill: fill,
@@ -158,23 +164,25 @@ class PaintedModel {
     int maxDecimalPlaces = kMaxSafeDecimalPlaces,
     bool enableMinify = false,
   }) {
-    /// List to hold the offset points as maps.
-    List<Map<String, num>> offsetMaps = [];
-
-    /// Iterate over the offsets and add them to the list as maps.
-    for (var offset in offsets) {
-      if (offset != null) {
-        offsetMaps.add({
-          'x': offset.dx.roundSmart(maxDecimalPlaces),
-          'y': offset.dy.roundSmart(maxDecimalPlaces),
-        });
-      }
-    }
+    final offsetMaps = offsets
+        .whereType<Offset>() // filters out nulls if offsets is List<Offset?>
+        .map((o) => {
+              'x': o.dx.roundSmart(maxDecimalPlaces),
+              'y': o.dy.roundSmart(maxDecimalPlaces),
+            })
+        .toList();
+    final erasedOffsetsMaps = erasedOffsets
+        .map((o) => {
+              'x': o.dx.roundSmart(maxDecimalPlaces),
+              'y': o.dy.roundSmart(maxDecimalPlaces),
+            })
+        .toList();
 
     /// Returns a map representation of the PaintedModel instance.
     return {
       'mode': mode.name,
       'offsets': offsetMaps,
+      'erasedOffsets': erasedOffsetsMaps,
       'color': color.toHex(),
       'strokeWidth': strokeWidth.roundSmart(maxDecimalPlaces),
       'opacity': opacity.roundSmart(maxDecimalPlaces),
@@ -192,6 +200,7 @@ class PaintedModel {
         hit,
         id,
         Object.hashAll(offsets),
+        Object.hashAll(erasedOffsets),
       );
 
   @override
@@ -216,7 +225,8 @@ class PaintedModel {
         other.strokeWidth == strokeWidth &&
         other.opacity == opacity &&
         other.fill == fill &&
-        areOffsetsEqual(other.offsets, offsets);
+        areOffsetsEqual(other.offsets, offsets) &&
+        areOffsetsEqual(other.erasedOffsets, erasedOffsets);
   }
 
   /// Creates a copy of this `PaintedModel` with the given fields replaced by
@@ -228,6 +238,7 @@ class PaintedModel {
     double? strokeWidth,
     double? opacity,
     List<Offset?>? offsets,
+    List<Offset>? erasedOffsets,
     bool? fill,
     bool? hit,
   }) {
@@ -236,6 +247,7 @@ class PaintedModel {
       mode: mode ?? this.mode,
       color: color ?? this.color,
       offsets: offsets ?? this.offsets,
+      erasedOffsets: erasedOffsets ?? this.erasedOffsets,
       opacity: opacity ?? this.opacity,
       strokeWidth: strokeWidth ?? this.strokeWidth,
       fill: fill ?? this.fill,

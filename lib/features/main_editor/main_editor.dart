@@ -1537,6 +1537,8 @@ class ProImageEditorState extends State<ProImageEditor>
     String lastLayerId = '';
     for (var i = 0; i < result.layers.length; i++) {
       final layer = result.layers[i];
+      final oldIndex = activeLayers.indexWhere((el) => el.id == layer.id);
+
       final duplicatedLayer = _layerCopyManager.duplicateLayer(
         layer,
         offset: Offset.zero,
@@ -1544,6 +1546,7 @@ class ProImageEditorState extends State<ProImageEditor>
       lastLayerId = duplicatedLayer.id;
       addLayer(
         duplicatedLayer,
+        removeLayerIndex: oldIndex,
         blockSelectLayer: true,
         blockCaptureScreenshot: true,
         autoCorrectZoomOffset: false,

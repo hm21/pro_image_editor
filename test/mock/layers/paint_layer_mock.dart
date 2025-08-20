@@ -9,6 +9,7 @@ PaintLayer paintLayerMock = PaintLayer(
   item: PaintedModel(
     mode: PaintMode.arrow,
     offsets: [const Offset(10, 20), const Offset(150, 300)],
+    erasedOffsets: [],
     color: Colors.teal,
     strokeWidth: 3.4,
     opacity: 1,

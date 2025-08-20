@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../../enums/paint_editor_enum.dart';
 import '../painted_model.dart';
 import 'path_builder_arrow.dart';
@@ -71,10 +72,56 @@ abstract class PathBuilderBase {
   Path build();
 
   /// Draws the built path to the given canvas using the current painter.
-  void draw(Canvas canvas) {
+  void draw({
+    required Canvas canvas,
+    required Size size,
+    required PaintEditorConfigs configs,
+  }) {
     if (offsets.length <= 1) return;
     build();
-    canvas.drawPath(path, painter);
+
+    final eraserMode = configs.eraserMode;
+    final eraserSize = configs.eraserSize;
+
+    if (eraserMode == EraserMode.object || item.erasedOffsets.isEmpty) {
+      canvas.drawPath(path, painter);
+      return;
+    }
+
+    final strokeWidth = item.strokeWidth;
+    final doubleStrokeWidth = item.strokeWidth * 2;
+    canvas
+      ..saveLayer(
+        Rect.fromLTWH(
+          -strokeWidth,
+          -strokeWidth,
+          size.width + doubleStrokeWidth,
+          size.height + doubleStrokeWidth,
+        ),
+        Paint(),
+      )
+      ..drawPath(path, painter);
+
+    // build erase path from offsets
+    final erasePaint = Paint()
+      ..blendMode = BlendMode.clear
+      ..isAntiAlias = true;
+
+    final erasePath = Path();
+    for (final o in item.erasedOffsets) {
+      erasePath.addOval(
+        Rect.fromCircle(
+          center: o * scale,
+          // eraser size
+          radius: eraserSize * scale,
+        ),
+      );
+    }
+
+    // apply erase
+    canvas
+      ..drawPath(erasePath, erasePaint)
+      ..restore();
   }
 
   /// Performs hit testing.

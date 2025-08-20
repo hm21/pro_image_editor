@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.5.0
+- **FEAT**(eraser): The eraser in the PaintEditor now removes only partial areas of the painting by default, instead of the entire object. This behavior can be adjusted in the PaintEditorConfigs using `eraserMode` and `eraserSize`.
+
 ## 11.4.1
 - **REFACTOR**(flutter): Fix deprecated APIs after upgrading to flutter `3.35.0`.
 

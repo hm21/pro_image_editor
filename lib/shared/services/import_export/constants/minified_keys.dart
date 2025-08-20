@@ -79,6 +79,7 @@ const Map<String, String> kMinifiedLayerInteractionKeys = {
 const Map<String, String> kMinifiedPaintKeys = {
   'mode': 'm',
   'offsets': 'o',
+  'erasedOffsets': 'eo',
   'color': 'c',
   'strokeWidth': 's',
   'opacity': 't',

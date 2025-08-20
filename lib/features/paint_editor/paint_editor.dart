@@ -27,6 +27,7 @@ import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../filter_editor/widgets/filtered_widget.dart';
+import '../main_editor/services/layer_copy_manager.dart';
 import 'controllers/paint_controller.dart';
 import 'models/paint_editor_response_model.dart';
 import 'services/paint_desktop_interaction_manager.dart';
@@ -565,9 +566,17 @@ class PaintEditorState extends State<PaintEditor>
 
         final scale = _layerStackTransformHelper.scale;
 
-        final originalLayers = widget.initConfigs.layers ?? [];
-        final newLayers = activeHistory.layers.where((layer) =>
-            originalLayers.indexWhere((el) => el.id == layer.id) < 0);
+        final originalLayers =
+            (widget.initConfigs.layers ?? []).whereType<PaintLayer>().toList();
+        final newLayers =
+            activeHistory.layers.whereType<PaintLayer>().where((layer) {
+          return originalLayers.indexWhere(
+                (el) =>
+                    el.id == layer.id &&
+                    listEquals(el.item.erasedOffsets, layer.item.erasedOffsets),
+              ) <
+              0;
+        });
         final transformedLayers = newLayers.map((layer) {
           return layer
             ..offset *= scale
@@ -659,6 +668,7 @@ class PaintEditorState extends State<PaintEditor>
     PaintedModel layer = PaintedModel(
       mode: rawLayer.mode,
       offsets: [...rawLayer.offsets],
+      erasedOffsets: [...rawLayer.erasedOffsets],
       color: rawLayer.color,
       strokeWidth: rawLayer.strokeWidth,
       fill: rawLayer.fill,
@@ -1033,8 +1043,38 @@ class PaintEditorState extends State<PaintEditor>
           takeScreenshot();
         });
       },
-      onStart: () {
+      onRemovePartialStart: () {
+        LayerCopyManager copyManager = LayerCopyManager();
+
+        final updatedList =
+            activeHistory.layers.whereType<PaintLayer>().map((layer) {
+          return copyManager.createCopyPaintLayer(layer);
+        });
+
+        while (canRedo) {
+          stateHistory.removeLast();
+        }
+        stateHistory.add(PaintEditorResponse(
+          layers: [...updatedList],
+          removedLayers: [...activeHistory.removedLayers],
+        ));
+        historyPointer++;
+        setState(() {});
+        WidgetsBinding.instance.drawFrame();
+      },
+      onRemovePartialEnd: (hasRemovedAreas) {
+        if (!hasRemovedAreas) {
+          historyPointer--;
+          stateHistory.removeLast();
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          takeScreenshot();
+        });
+      },
+      onRefresh: () {
         rebuildController.add(null);
+        _layerStackStream.add(null);
       },
       onCreated: (rawLayer) {
         _uiAppbarStream.add(null);

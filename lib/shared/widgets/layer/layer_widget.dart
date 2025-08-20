@@ -418,6 +418,7 @@ class _LayerWidgetState extends State<LayerWidget>
           onHitChanged: (state) {
             _lastHitState.value = state;
           },
+          paintEditorConfigs: widget.configs.paintEditor,
         );
       case LayerWidgetType.censor:
         content = LayerWidgetCensorItem(

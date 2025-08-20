@@ -34,3 +34,21 @@ enum PaintMode {
   /// Creates an area that will pixelate the background.
   pixelate,
 }
+
+/// Defines the available erasing modes.
+///
+/// The [EraserMode] determines how the eraser tool behaves when
+/// applied to an image or canvas.
+enum EraserMode {
+  /// Erases entire objects or shapes at once.
+  ///
+  /// Useful when the goal is to remove a complete element without
+  /// affecting its surrounding parts.
+  object,
+
+  /// Erases only the selected portion of an object or area.
+  ///
+  /// Useful for fine-grained control when you want to erase
+  /// part of an element rather than removing it entirely.
+  partial,
+}

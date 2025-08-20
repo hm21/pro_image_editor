@@ -19,6 +19,7 @@ void main() {
           fill: false,
           mode: PaintMode.rect,
           offsets: [const Offset(0, 0), const Offset(200, 200)],
+          erasedOffsets: [],
           opacity: 1,
         ),
       );

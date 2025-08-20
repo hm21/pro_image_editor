@@ -26,6 +26,7 @@ void main() {
         color: const Color(0xFFFF0000),
         mode: mode,
         offsets: [const Offset(0, 0), const Offset(50, 50)],
+        erasedOffsets: [],
         strokeWidth: 5.0,
         fill: true,
         opacity: 1,

@@ -186,6 +186,7 @@ void main() {
         item: PaintedModel(
           mode: PaintMode.arrow,
           offsets: [Offset.zero, const Offset(50, 50)],
+          erasedOffsets: [],
           color: Colors.amber,
           strokeWidth: 10,
           opacity: 0.8,

@@ -287,6 +287,7 @@ void main() {
         PaintedModel(
           mode: PaintMode.rect,
           offsets: [const Offset(0, 0), const Offset(100, 100)],
+          erasedOffsets: [],
           color: Colors.red,
           strokeWidth: 5,
           opacity: 1,
@@ -309,6 +310,7 @@ void main() {
           PaintedModel(
             mode: PaintMode.rect,
             offsets: [const Offset(0, 0), const Offset(100, 100)],
+            erasedOffsets: [],
             color: Colors.red,
             strokeWidth: 5,
             opacity: 1,
@@ -342,6 +344,7 @@ void main() {
           PaintedModel(
             mode: PaintMode.rect,
             offsets: [const Offset(0, 0), const Offset(100, 100)],
+            erasedOffsets: [],
             color: Colors.red,
             strokeWidth: 5,
             opacity: 1,

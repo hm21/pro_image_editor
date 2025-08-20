@@ -11,6 +11,7 @@ void main() {
         Offset.zero,
         const Offset(50, 50),
       ],
+      erasedOffsets: [],
       opacity: 1,
       strokeWidth: 5,
     );
@@ -63,6 +64,7 @@ void main() {
             {'x': 5.0, 'y': 68},
             {'x': 70, 'y': 5.0}
           ],
+          'erasedOffsets': [],
           'color': 4294901760,
           'strokeWidth': 10.0,
           'opacity': 1.0,

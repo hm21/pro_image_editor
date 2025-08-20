@@ -94,6 +94,7 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
           child: LayerWidgetPaintItem(
             willChange: true,
             layer: _layer,
+            paintEditorConfigs: _configs.paintEditor,
           ),
         ),
       ),

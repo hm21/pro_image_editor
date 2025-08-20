@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '/core/models/layers/paint_layer.dart';
 import '/features/paint_editor/enums/paint_editor_enum.dart';
 import '/features/paint_editor/widgets/draw_paint_item.dart';
@@ -16,6 +17,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
     this.enableHitDetection = false,
     this.willChange = false,
     this.onHitChanged,
+    required this.paintEditorConfigs,
   });
 
   /// The paint layer represented by this widget.
@@ -34,6 +36,9 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
   /// Whether hit detection is enabled for this layer.
   final bool enableHitDetection;
+
+  /// Configuration settings for the paint editor.
+  final PaintEditorConfigs paintEditorConfigs;
 
   /// Callback function that is triggered when a hit status changes.
   ///
@@ -55,6 +60,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
           selected: isSelected,
           enabledHitDetection: enableHitDetection,
           onHitChanged: onHitChanged,
+          paintEditorConfigs: paintEditorConfigs,
         ),
       ),
     );
