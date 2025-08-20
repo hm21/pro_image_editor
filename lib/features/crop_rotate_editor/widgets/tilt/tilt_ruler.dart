@@ -128,25 +128,21 @@ class _TiltRulerState extends State<TiltRuler> {
     }
     debugPaintPointersEnabled = false;
 
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: print,
-      child: Container(
-        color: widget.configs.style.background.withAlpha(120),
-        height: _style.barHeight,
-        child: ScrollConfiguration(
-          behavior: _DragScrollBehavior(),
-          child: NotificationListener<ScrollNotification>(
-            onNotification: onScroll,
-            child: MouseRegion(
-              cursor: _style.cursor,
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  _buildTickMarks(),
-                  _buildIndicator(),
-                ],
-              ),
+    return Container(
+      color: widget.configs.style.background.withAlpha(120),
+      height: _style.barHeight,
+      child: ScrollConfiguration(
+        behavior: _DragScrollBehavior(),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: onScroll,
+          child: MouseRegion(
+            cursor: _style.cursor,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                _buildTickMarks(),
+                _buildIndicator(),
+              ],
             ),
           ),
         ),
