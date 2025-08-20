@@ -2338,9 +2338,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                                     child: DeferPointer(
                                       child: _buildEventListener(
                                         child: _buildGestureDetector(
-                                          child: _buildTiltTransform(
-                                            child: _buildImage(),
-                                          ),
+                                          child: _buildImage(),
                                         ),
                                       ),
                                     ),
@@ -2562,15 +2560,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
-              FilteredWidget(
-                filters: appliedFilters,
-                tuneAdjustments: appliedTuneAdjustments,
-                blurFactor: appliedBlurFactor,
-                configs: configs,
-                width: _imgWidth,
-                height: _imgHeight,
-                image: editorImage,
-                videoPlayer: videoController?.videoPlayer,
+              _buildTiltTransform(
+                child: FilteredWidget(
+                  filters: appliedFilters,
+                  tuneAdjustments: appliedTuneAdjustments,
+                  blurFactor: appliedBlurFactor,
+                  configs: configs,
+                  width: _imgWidth,
+                  height: _imgHeight,
+                  image: editorImage,
+                  videoPlayer: videoController?.videoPlayer,
+                ),
               ),
               if (cropRotateEditorConfigs.showLayers &&
                   cropRotateEditorConfigs.enableTransformLayers &&

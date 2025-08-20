@@ -165,13 +165,14 @@ class TransformedContentGenerator extends StatelessWidget {
     }
 
     // Combine translate + scale into one matrix
-    final matrix = Matrix4.identity().tilt(
-      rotate: transformConfigs.tiltRotate,
-      vertical: transformConfigs.tiltVertical,
-      horizontal: transformConfigs.tiltHorizontal,
-    )
+    final matrix = Matrix4.identity()
       ..scaleByDouble(scale, scale, scale, 1.0)
-      ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0);
+      ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0)
+      ..tilt(
+        rotate: transformConfigs.tiltRotate,
+        vertical: transformConfigs.tiltVertical,
+        horizontal: transformConfigs.tiltHorizontal,
+      );
 
     return Transform(
       alignment: Alignment.center,
