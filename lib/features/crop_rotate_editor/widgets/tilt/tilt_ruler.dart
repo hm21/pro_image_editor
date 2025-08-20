@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '/core/models/editor_configs/crop_rotate_editor/crop_rotate_editor_configs.dart';
 
@@ -125,22 +126,27 @@ class _TiltRulerState extends State<TiltRuler> {
         widget.onChangeEnd,
       );
     }
+    debugPaintPointersEnabled = false;
 
-    return Container(
-      color: widget.configs.style.background.withAlpha(120),
-      height: _style.barHeight,
-      child: ScrollConfiguration(
-        behavior: _DragScrollBehavior(),
-        child: NotificationListener<ScrollNotification>(
-          onNotification: onScroll,
-          child: MouseRegion(
-            cursor: _style.cursor,
-            child: Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                _buildTickMarks(),
-                _buildIndicator(),
-              ],
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: print,
+      child: Container(
+        color: widget.configs.style.background.withAlpha(120),
+        height: _style.barHeight,
+        child: ScrollConfiguration(
+          behavior: _DragScrollBehavior(),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: onScroll,
+            child: MouseRegion(
+              cursor: _style.cursor,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  _buildTickMarks(),
+                  _buildIndicator(),
+                ],
+              ),
             ),
           ),
         ),

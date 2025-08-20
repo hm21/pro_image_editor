@@ -36,11 +36,13 @@ import '../filter_editor/widgets/filtered_widget.dart';
 import 'enums/crop_area_part.dart';
 import 'enums/crop_rotate_angle_side.dart';
 import 'mixins/crop_area_history.dart';
+import 'providers/tilt_provider.dart';
 import 'services/crop_desktop_interaction_manager.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/rotate_angle.dart';
 import 'widgets/crop_corner_painter.dart';
 import 'widgets/outside_gestures/outside_gesture_behavior.dart';
+import 'widgets/tilt/tilt_ruler_chooser.dart';
 
 export 'enums/crop_mode.enum.dart';
 export 'enums/tilt_mode_enum.dart';
@@ -354,6 +356,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   double _rotationScaleFactor = 1;
 
+  /// Returns the current mouse cursor style.
+  MouseCursor get _cursor => _mouseCursor;
+
+  Size _bodySize = Size.zero;
+  bool _isVideoPlayerReady = true;
+
+  int _tiltResetCount = 0;
+  bool _isTiltEditorActive = false;
+  TiltMode _tiltMode = TiltMode.rotate;
+
   @override
   CropCornerPainter? get cropPainter {
     return showWidgets
@@ -377,11 +389,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
           )
         : null;
   }
-
-  /// Returns the current mouse cursor style.
-  MouseCursor get _cursor => _mouseCursor;
-
-  bool _isVideoPlayerReady = true;
 
   @override
   void initState() {
@@ -980,6 +987,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
   ///
   /// After updating, the widget state is rebuilt.
   void tilt(TiltMode mode, double value, {bool updateStateHistory = true}) {
+    _tiltMode = mode;
+
     switch (mode) {
       case TiltMode.horizontal:
         tiltHorizontal = value;
@@ -1117,9 +1126,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         translate.dx * scaleFactor,
         translate.dy * scaleFactor,
       );
-      if (translate.dx.isNaN || translate.dx.isInfinite) {
-        throw ArgumentError('Hmmm');
-      }
+
       _setOffsetLimits();
     }
   }
@@ -2151,43 +2158,72 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      key: _editorContentKey,
-      top: cropRotateEditorConfigs.safeArea.top,
-      bottom: cropRotateEditorConfigs.safeArea.bottom,
-      left: cropRotateEditorConfigs.safeArea.left,
-      right: cropRotateEditorConfigs.safeArea.right,
-      child: RecordInvisibleWidget(
-        controller: screenshotCtrl,
-        child: ExtendedPopScope(
-          onPopInvokedWithResult: (didPop, _) {
-            _showFakeHero = true;
-            _updateAllStates();
-          },
-          child: LayoutBuilder(builder: (context, constraints) {
-            return AnnotatedRegion<SystemUiOverlayStyle>(
-              value: cropRotateEditorConfigs.style.uiOverlayStyle,
-              child: Theme(
-                data: theme.copyWith(
-                    tooltipTheme:
-                        theme.tooltipTheme.copyWith(preferBelow: true)),
-                child: Scaffold(
-                  resizeToAvoidBottomInset: false,
-                  backgroundColor: cropRotateEditorConfigs.style.background,
-                  appBar: _buildAppBar(constraints),
-                  body: Center(
-                    child: SizedBox(
-                      width: constraints.maxWidth *
-                          (cropRotateEditorConfigs.maxWidthFactor ??
-                              (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
-                      child: _buildBody(),
+    return TiltProvider(
+      onTiltChangeUpdate: (mode, val) =>
+          tilt(mode, val, updateStateHistory: false),
+      onTiltChangeEnd: tilt,
+      onToggleTiltBar: (isVisible) => setState(() {
+        _isTiltEditorActive = isVisible;
+      }),
+      onUpdateResetCount: () {
+        _tiltResetCount++;
+        setState(() {});
+      },
+      tiltResetCount: _tiltResetCount,
+      tiltHorizontal: tiltHorizontal,
+      tiltVertical: tiltVertical,
+      tiltRotate: tiltRotate,
+      cropRotateConfigs: cropRotateEditorConfigs,
+      i18n: i18n.cropRotateEditor,
+      isTiltEditorVisible: _isTiltEditorActive,
+      tiltMode: _tiltMode,
+      child: SafeArea(
+        key: _editorContentKey,
+        top: cropRotateEditorConfigs.safeArea.top,
+        bottom: cropRotateEditorConfigs.safeArea.bottom,
+        left: cropRotateEditorConfigs.safeArea.left,
+        right: cropRotateEditorConfigs.safeArea.right,
+        child: RecordInvisibleWidget(
+          controller: screenshotCtrl,
+          child: ExtendedPopScope(
+            onPopInvokedWithResult: (didPop, _) {
+              _showFakeHero = true;
+              _updateAllStates();
+            },
+            child: LayoutBuilder(builder: (context, constraints) {
+              _bodySize = constraints.biggest;
+              return AnnotatedRegion<SystemUiOverlayStyle>(
+                value: cropRotateEditorConfigs.style.uiOverlayStyle,
+                child: Theme(
+                  data: theme.copyWith(
+                      tooltipTheme:
+                          theme.tooltipTheme.copyWith(preferBelow: true)),
+                  child: Scaffold(
+                    resizeToAvoidBottomInset: false,
+                    backgroundColor: cropRotateEditorConfigs.style.background,
+                    appBar: _buildAppBar(constraints),
+                    body: Stack(
+                      children: [
+                        Center(
+                          child: SizedBox(
+                            width: constraints.maxWidth *
+                                (cropRotateEditorConfigs.maxWidthFactor ??
+                                    (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
+                            child: _buildBody(),
+                          ),
+                        ),
+                        const Align(
+                          alignment: Alignment.bottomCenter,
+                          child: TiltRulerChooser(),
+                        )
+                      ],
                     ),
+                    bottomNavigationBar: _buildBottomAppBar(),
                   ),
-                  bottomNavigationBar: _buildBottomAppBar(),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -2235,86 +2271,76 @@ class CropRotateEditorState extends State<CropRotateEditor>
             onFlip: flip,
             onOpenAspectRatioOptions: openAspectRatioOptions,
             onReset: reset,
-            onTiltChangeUpdate: (mode, val) =>
-                tilt(mode, val, updateStateHistory: false),
-            onTiltChangeEnd: tilt,
-            tiltHorizontal: tiltHorizontal,
-            tiltVertical: tiltVertical,
-            tiltRotate: tiltRotate,
           )
         : null;
   }
 
   Widget _buildBody() {
-    return SafeArea(
-      child: ScreenResizeDetector(
-        ignoreSafeArea: false,
-        onResizeUpdate: (event) {
-          if (event.oldContentSize != event.newContentSize &&
-              !event.oldContentSize.isEmpty) {
-            _isScreenResized = true;
-          }
-          _painterOpacity = 0;
+    return _buildTiltBarScaleHelper(
+      child: SafeArea(
+        child: ScreenResizeDetector(
+          ignoreSafeArea: false,
+          onResizeUpdate: (event) {
+            if (event.oldContentSize != event.newContentSize &&
+                !event.oldContentSize.isEmpty) {
+              _isScreenResized = true;
+            }
 
-          if (editorBodySize != event.newContentSize) {
-            editorBodySize = event.newContentSize;
-            cropPainterKey.currentState?.setForegroundPainter(cropPainter);
-          }
-          cropEditorScreenRatio = Size(
-            editorBodySize.width - _screenPadding * 2,
-            editorBodySize.height - _screenPadding * 2,
-          ).aspectRatio;
-        },
-        onResizeEnd: (event) {
-          if (_imageNeedDecode) _decodeImage();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            _updateAllStates();
+            if (editorBodySize != event.newContentSize) {
+              editorBodySize = event.newContentSize;
+              cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+            }
+            cropEditorScreenRatio = Size(
+              editorBodySize.width - _screenPadding * 2,
+              editorBodySize.height - _screenPadding * 2,
+            ).aspectRatio;
+          },
+          onResizeEnd: (event) {
+            if (_imageNeedDecode) _decodeImage();
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              _painterOpacity = 1;
               _setCropRectBounding();
               _updateAllStates();
             });
-          });
-          WidgetsBinding.instance.scheduleFrame();
-        },
-        child: Stack(
-          children: [
-            if (_showFakeHero)
-              _buildFakeHero()
-            else if (!_imageSizeIsDecoded && initConfigs.convertToUint8List)
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: FittedBox(
-                    child: PlatformCircularProgressIndicator(configs: configs),
+            WidgetsBinding.instance.scheduleFrame();
+          },
+          child: Stack(
+            children: [
+              if (_showFakeHero)
+                _buildFakeHero()
+              else if (!_imageSizeIsDecoded && initConfigs.convertToUint8List)
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: FittedBox(
+                      child:
+                          PlatformCircularProgressIndicator(configs: configs),
+                    ),
                   ),
                 ),
-              ),
-            AnimatedOpacity(
-              duration: !initConfigs.convertToUint8List
-                  ? Duration.zero
-                  : const Duration(milliseconds: 160),
-              opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
-              child: HeroMode(
-                enabled: false,
-                child: _buildMouseCursor(
-                  child: DeferredPointerHandler(
-                    child: _buildRotationTransform(
-                      child: _buildFlipTransform(
-                        child: _buildRotationScaleTransform(
-                          child: _buildPaintContainer(
-                            child: _buildCropPainter(
-                              child: _buildUserScaleTransform(
-                                child: _buildTranslate(
-                                  child: DeferPointer(
-                                    child: _buildEventListener(
-                                      child: _buildGestureDetector(
-                                        child: _buildTiltTransform(
-                                          child: _buildImage(),
+              AnimatedOpacity(
+                duration: !initConfigs.convertToUint8List
+                    ? Duration.zero
+                    : const Duration(milliseconds: 160),
+                opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
+                child: HeroMode(
+                  enabled: false,
+                  child: _buildMouseCursor(
+                    child: DeferredPointerHandler(
+                      child: _buildRotationTransform(
+                        child: _buildFlipTransform(
+                          child: _buildRotationScaleTransform(
+                            child: _buildPaintContainer(
+                              child: _buildCropPainter(
+                                child: _buildUserScaleTransform(
+                                  child: _buildTranslate(
+                                    child: DeferPointer(
+                                      child: _buildEventListener(
+                                        child: _buildGestureDetector(
+                                          child: _buildTiltTransform(
+                                            child: _buildImage(),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -2329,11 +2355,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   ),
                 ),
               ),
-            ),
-            if (cropRotateEditorConfigs.widgets.bodyItems != null)
-              ...cropRotateEditorConfigs.widgets.bodyItems!(
-                  this, rebuildController.stream),
-          ],
+              if (cropRotateEditorConfigs.widgets.bodyItems != null)
+                ...cropRotateEditorConfigs.widgets.bodyItems!(
+                    this, rebuildController.stream),
+            ],
+          ),
         ),
       ),
     );
@@ -2454,6 +2480,26 @@ class CropRotateEditorState extends State<CropRotateEditor>
       key: userScaleKey,
       initScale: userScaleFactor,
       alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Widget _buildTiltBarScaleHelper({required Widget child}) {
+    final barHeight = cropRotateEditorConfigs.style.tiltStyle.barHeight;
+
+    double factor = _isTiltEditorActive
+        ? 1 / _bodySize.height * (_bodySize.height - barHeight)
+        : 1.0;
+
+    return TweenAnimationBuilder<double>(
+      duration: cropRotateEditorConfigs.animationDuration,
+      tween: Tween<double>(begin: 1.0, end: factor),
+      curve: cropRotateEditorConfigs.scaleAnimationCurve,
+      builder: (_, scale, __) => Transform.scale(
+        alignment: Alignment.topCenter,
+        scale: scale,
+        child: child,
+      ),
       child: child,
     );
   }
