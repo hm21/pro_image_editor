@@ -1858,14 +1858,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
         ];
 
     // 3. Check if fully inside
-    bool inside = corners().every((c) => imagePath.contains(c));
-
-    if (inside) return;
-
-    Offset topLeftCorner() => corners()[0];
-    Offset topRightCorner() => corners()[1];
-    Offset bottomLeftCorner() => corners()[2];
-    Offset bottomRightCorner() => corners()[3];
+    if (corners().every(imagePath.contains)) return;
 
     final cropPadding = Offset(
       (imgW - cropRect.width) / 2,
@@ -1893,46 +1886,52 @@ class CropRotateEditorState extends State<CropRotateEditor>
       return nearestPoint;
     }
 
-    /// Ensure Top-Left is inside.
-    if (!imagePath.contains(topLeftCorner())) {
-      final nearestPoint = findNearestPoint(topLeftCorner());
-      if (nearestPoint != null) {
-        translate = (-nearestPoint + cropPadding) / scale;
-      }
+    // Map corner index → correction offset
+    final corrections = {
+      // top-left
+      0: cropPadding,
+      // top-right
+      1: Offset(-cropPadding.dx, cropPadding.dy) + Offset(imgW, 0),
+      // bottom-left
+      2: Offset(cropPadding.dx, -cropPadding.dy) + Offset(0, imgH),
+      // bottom-right
+      3: Offset(-cropPadding.dx, -cropPadding.dy) + Offset(imgW, imgH),
+    };
+    const tolerance = 1.0;
+    // 4. Correct corners by update translate
+    for (int i = 0; i < 4; i++) {
+      final corner = corners()[i];
+      if (imagePath.contains(corner)) continue;
+
+      final nearest = findNearestPoint(corner);
+      if (nearest == null) continue;
+
+      translate = ((-nearest + corrections[i]!) / scale);
     }
 
-    /// Ensure Top-Right is inside.
-    if (!imagePath.contains(topRightCorner())) {
-      final nearestPoint = findNearestPoint(topRightCorner());
-      if (nearestPoint != null) {
-        translate = (-nearestPoint +
-                Offset(-cropPadding.dx, cropPadding.dy) +
-                Offset(imgW, 0)) /
-            scale;
-      }
-    }
+    // 5. If correction failed try to rescale
+    double scaleHelper = 1;
 
-    /// Ensure Bottom-Left is inside.
-    if (!imagePath.contains(bottomLeftCorner())) {
-      final nearestPoint = findNearestPoint(bottomLeftCorner());
-      if (nearestPoint != null) {
-        translate = (-nearestPoint +
-                Offset(cropPadding.dx, -cropPadding.dy) +
-                Offset(0, imgH)) /
-            scale;
-      }
-    }
+    for (int i = 0; i < 4; i++) {
+      final corner = corners()[i];
+      if (imagePath.contains(corner)) continue;
 
-    /// Ensure Bottom-Right is inside.
-    if (!imagePath.contains(bottomRightCorner())) {
-      final nearestPoint = findNearestPoint(bottomRightCorner());
-      if (nearestPoint != null) {
-        translate = (-nearestPoint +
-                Offset(-cropPadding.dx, -cropPadding.dy) +
-                Offset(imgW, imgH)) /
-            scale;
+      final nearest = findNearestPoint(corner);
+      if (nearest == null) continue;
+      Offset distance = corner - nearest;
+      if (distance.dx.abs() > tolerance || distance.dy.abs() > tolerance) {
+        scaleHelper = max(
+          max(
+            scaleHelper,
+            (imgW + distance.dx.abs()) / imgW,
+          ),
+          (imgH + distance.dy.abs()) / imgH,
+        );
+
+        break;
       }
     }
+    userScaleFactor *= scaleHelper;
   }
 
   void _mouseScroll(PointerSignalEvent event) async {

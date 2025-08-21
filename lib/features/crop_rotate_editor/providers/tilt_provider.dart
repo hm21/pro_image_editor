@@ -118,7 +118,8 @@ class TiltProvider extends InheritedWidget {
   void reset() {
     onTiltChangeUpdate(TiltMode.rotate, 0);
     onTiltChangeUpdate(TiltMode.horizontal, 0);
-    onTiltChangeEnd(TiltMode.vertical, 0);
+    onTiltChangeUpdate(TiltMode.vertical, 0);
+    onTiltChangeEnd(tiltMode, 0);
     onUpdateResetCount();
   }
 
