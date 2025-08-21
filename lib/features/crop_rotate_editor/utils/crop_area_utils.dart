@@ -3,6 +3,13 @@ import 'dart:ui';
 import '../enums/crop_area_part.dart';
 import '../enums/crop_mode.enum.dart';
 
+/// Determines which part of the crop area the user is interacting with
+/// based on the pointer position, crop rectangle, zoom, and crop mode.
+///
+/// Returns a [CropAreaPart] enum indicating whether the pointer is:
+/// - inside the crop area
+/// - on one of the edges or corners
+/// - or outside (`none`).
 CropAreaPart determineCropAreaPart({
   required Offset localPosition,
   required Offset translate,
@@ -132,6 +139,11 @@ CropAreaPart determineCropAreaPart({
   }
 }
 
+/// Converts a pointer position into crop-relative coordinates,
+/// accounting for zoom and centering relative to the rendered image.
+///
+/// This transformation ensures that hit detection operates in the same
+/// coordinate space as the crop rectangle.
 Offset convertCropHitPoint({
   required double zoom,
   required Offset position,
