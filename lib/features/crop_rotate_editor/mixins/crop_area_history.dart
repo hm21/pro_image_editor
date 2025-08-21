@@ -166,21 +166,21 @@ mixin CropAreaHistory
   /// This flag tracks the horizontal flip state, affecting how the image is
   /// rendered during transformations.
   @protected
-  bool flipX = false;
+  bool isFlipX = false;
 
   /// Indicates whether the image is flipped vertically.
   ///
   /// This flag tracks the vertical flip state, affecting how the image is
   /// rendered during transformations.
   @protected
-  bool flipY = false;
+  bool isFlipY = false;
 
   /// Indicates whether the editor has been initialized.
   ///
   /// This boolean flag tracks whether the editor has completed its
   /// initialization process, allowing for safe application of transformations.
   @protected
-  bool initialized = false;
+  bool isInitialized = false;
 
   /// The current crop rectangle applied to the image.
   ///
@@ -191,15 +191,15 @@ mixin CropAreaHistory
 
   /// The current rotation angle in radians around the Z axis.
   @protected
-  double tiltRotate = 0.0;
+  double tiltRotateAngle = 0.0;
 
   /// The current tilt in radians around the Y axis (left/right).
   @protected
-  double tiltHorizontal = 0.0;
+  double tiltHorizontalAngle = 0.0;
 
   /// The current tilt in radians around the X axis (up/down).
   @protected
-  double tiltVertical = 0.0;
+  double tiltVerticalAngle = 0.0;
 
   set cropRect(Rect value) {
     _cropRect = value;
@@ -292,7 +292,7 @@ mixin CropAreaHistory
 
   /// Adds the current transformation to the history.
   void addHistory({double? scaleRotation, double? angle}) {
-    if (!initialized) return;
+    if (!isInitialized) return;
     cleanForwardChanges();
     history.add(
       TransformConfigs(
@@ -303,13 +303,13 @@ mixin CropAreaHistory
         scaleUser: userScaleFactor,
         scaleRotation: scaleRotation ?? scaleAnimation.value,
         aspectRatio: aspectRatio,
-        flipX: flipX,
-        flipY: flipY,
+        flipX: isFlipX,
+        flipY: isFlipY,
         offset: translate,
         cropMode: cropMode,
-        tiltRotate: tiltRotate,
-        tiltHorizontal: tiltHorizontal,
-        tiltVertical: tiltVertical,
+        tiltRotate: tiltRotateAngle,
+        tiltHorizontal: tiltHorizontalAngle,
+        tiltVertical: tiltVerticalAngle,
       ),
     );
     screenshotHistoryPosition++;
@@ -356,11 +356,11 @@ mixin CropAreaHistory
 
   /// Sets parameters based on the active history.
   void _setParametersFromHistory() {
-    flipX = activeHistory.flipX;
-    flipY = activeHistory.flipY;
-    tiltRotate = activeHistory.tiltRotate;
-    tiltHorizontal = activeHistory.tiltHorizontal;
-    tiltVertical = activeHistory.tiltVertical;
+    isFlipX = activeHistory.flipX;
+    isFlipY = activeHistory.flipY;
+    tiltRotateAngle = activeHistory.tiltRotate;
+    tiltHorizontalAngle = activeHistory.tiltHorizontal;
+    tiltVerticalAngle = activeHistory.tiltVertical;
     translate = activeHistory.offset;
     userScaleFactor = activeHistory.scaleUser;
     cropRect = activeHistory.cropRect;
@@ -408,13 +408,13 @@ mixin CropAreaHistory
   void reset({
     bool skipAddHistory = false,
   }) {
-    initialized = false;
-    flipX = false;
-    flipY = false;
+    isInitialized = false;
+    isFlipX = false;
+    isFlipY = false;
     translate = Offset.zero;
-    tiltRotate = 0;
-    tiltHorizontal = 0;
-    tiltVertical = 0;
+    tiltRotateAngle = 0;
+    tiltHorizontalAngle = 0;
+    tiltVerticalAngle = 0;
     setCropMode(
       cropRotateEditorConfigs.initialCropMode,
       updateHistory: false,
@@ -443,7 +443,7 @@ mixin CropAreaHistory
     calcCropRect();
     calcFitToScreen();
 
-    initialized = true;
+    isInitialized = true;
     if (!skipAddHistory) {
       addHistory(scaleRotation: 1, angle: 0);
     }

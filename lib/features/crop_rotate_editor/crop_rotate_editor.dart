@@ -38,6 +38,7 @@ import 'enums/crop_rotate_angle_side.dart';
 import 'mixins/crop_area_history.dart';
 import 'providers/tilt_provider.dart';
 import 'services/crop_desktop_interaction_manager.dart';
+import 'utils/crop_area_utils.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/rotate_angle.dart';
 import 'widgets/crop_corner_painter.dart';
@@ -383,9 +384,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fadeInOpacity: _painterOpacity,
             style: cropRotateEditorConfigs.style,
             drawCircle: cropMode == CropMode.oval,
-            tiltRotate: tiltRotate,
-            tiltHorizontal: tiltHorizontal,
-            tiltVertical: tiltVertical,
+            tiltRotate: tiltRotateAngle,
+            tiltHorizontal: tiltHorizontalAngle,
+            tiltVertical: tiltVerticalAngle,
           )
         : null;
   }
@@ -453,8 +454,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
     if (initialTransformConfigs != null &&
         initialTransformConfigs!.isNotEmpty) {
       rotationCount = (initialTransformConfigs!.angle * 2 / pi).abs().toInt();
-      flipX = initialTransformConfigs!.flipX;
-      flipY = initialTransformConfigs!.flipY;
+      isFlipX = initialTransformConfigs!.flipX;
+      isFlipY = initialTransformConfigs!.flipY;
       translate = initialTransformConfigs!.offset;
       userScaleFactor = initialTransformConfigs!.scaleUser;
       aspectRatio = initialTransformConfigs!.aspectRatio;
@@ -466,9 +467,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
       setInitHistory(initialTransformConfigs!);
     }
 
-    tiltRotate = initialTransformConfigs?.tiltRotate ?? 0;
-    tiltHorizontal = initialTransformConfigs?.tiltHorizontal ?? 0;
-    tiltVertical = initialTransformConfigs?.tiltVertical ?? 0;
+    tiltRotateAngle = initialTransformConfigs?.tiltRotate ?? 0;
+    tiltHorizontalAngle = initialTransformConfigs?.tiltHorizontal ?? 0;
+    tiltVerticalAngle = initialTransformConfigs?.tiltVertical ?? 0;
 
     // Initialize fake hero settings
     enableFakeHero = initConfigs.enableFakeHero;
@@ -478,7 +479,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     cropRotateEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       cropRotateEditorCallbacks?.onAfterViewInit?.call();
-      initialized = true;
+      isInitialized = true;
       if (initialTransformConfigs != null &&
           initialTransformConfigs!.isNotEmpty &&
           initialTransformConfigs!.aspectRatio < 0) {
@@ -687,8 +688,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
         double dx = offset.dy * sinAngle + offset.dx * cosAngle;
         double dy = offset.dy * cosAngle - offset.dx * sinAngle;
 
-        dx *= (flipX ? -1 : 1);
-        dy *= (flipY ? -1 : 1);
+        dx *= (isFlipX ? -1 : 1);
+        dy *= (isFlipY ? -1 : 1);
 
         Offset startOffset = translate;
         Offset targetOffset = translate += Offset(dx, dy);
@@ -915,13 +916,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
             scaleUser: userScaleFactor,
             scaleRotation: scaleAnimation.value,
             aspectRatio: aspectRatio,
-            flipX: flipX,
-            flipY: flipY,
+            flipX: isFlipX,
+            flipY: isFlipY,
             offset: translate,
             cropMode: cropMode,
-            tiltRotate: tiltRotate,
-            tiltHorizontal: tiltHorizontal,
-            tiltVertical: tiltVertical,
+            tiltRotate: tiltRotateAngle,
+            tiltHorizontal: tiltHorizontalAngle,
+            tiltVertical: tiltVerticalAngle,
           ),
         );
       }
@@ -945,11 +946,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// Flip the image horizontally
   void flip() {
     if (rotationCount % 2 != 0) {
-      flipY = !flipY;
+      isFlipY = !isFlipY;
     } else {
-      flipX = !flipX;
+      isFlipX = !isFlipX;
     }
-    cropRotateEditorCallbacks?.handleFlip(flipX, flipY);
+    cropRotateEditorCallbacks?.handleFlip(isFlipX, isFlipY);
     addHistory();
     _updateAllStates();
   }
@@ -991,15 +992,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     switch (mode) {
       case TiltMode.horizontal:
-        tiltHorizontal = value;
+        tiltHorizontalAngle = value;
         break;
       case TiltMode.vertical:
-        tiltVertical = value;
+        tiltVerticalAngle = value;
         break;
       case TiltMode.rotate:
-        tiltRotate = value;
+        tiltRotateAngle = value;
         break;
     }
+    _setOffsetLimits();
     if (updateStateHistory) addHistory();
     cropPainterKey.currentState?.update(
       foregroundPainter: cropPainter,
@@ -1251,121 +1253,15 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   CropAreaPart _determineCropAreaPart(Offset localPosition) {
-    Offset offset =
-        _getRealHitPoint(zoom: userScaleFactor, position: localPosition) +
-            translate * userScaleFactor;
-    double dx = offset.dx;
-    double dy = offset.dy;
-    if (cropMode == CropMode.oval) {
-      double halfWidth = cropRect.width / 2;
-      double halfHeight = cropRect.height / 2;
-      double halfInteractiveCornerArea = _interactiveCornerArea / 2;
-
-      // Normalize against expanded ellipse for hit area
-      double ellipseHitX = dx / (halfWidth + halfInteractiveCornerArea);
-      double ellipseHitY = dy / (halfHeight + halfInteractiveCornerArea);
-      bool isWithinHitArea =
-          (ellipseHitX * ellipseHitX + ellipseHitY * ellipseHitY) <= 1;
-
-      // Normalize against exact ellipse for inside check
-      double normalizedX = dx / (halfWidth - halfInteractiveCornerArea);
-      double normalizedY = dy / (halfHeight - halfInteractiveCornerArea);
-      bool isInsideEllipse =
-          (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
-
-      if (isWithinHitArea) {
-        double cursorAreaHitWidth = halfWidth * 0.5;
-        double cursorAreaHitHeight = halfHeight * 0.5;
-
-        bool nearTopEdge = dy < -cursorAreaHitHeight;
-        bool nearBottomEdge = dy > cursorAreaHitHeight;
-        bool nearLeftEdge = dx < -cursorAreaHitWidth;
-        bool nearRightEdge = dx > cursorAreaHitWidth;
-
-        if (isInsideEllipse) {
-          return CropAreaPart.inside;
-        }
-        // Bottom Left
-        else if (nearBottomEdge && nearLeftEdge) {
-          return CropAreaPart.bottomLeft;
-        }
-        // Bottom Right
-        else if (nearBottomEdge && nearRightEdge) {
-          return CropAreaPart.bottomRight;
-        }
-        // Top Left
-        else if (nearTopEdge && nearLeftEdge) {
-          return CropAreaPart.topLeft;
-        }
-        // Top Right
-        else if (nearTopEdge && nearRightEdge) {
-          return CropAreaPart.topRight;
-        }
-        // Bottom
-        else if (nearBottomEdge) {
-          return CropAreaPart.bottom;
-        }
-        // Top
-        else if (nearTopEdge) {
-          return CropAreaPart.top;
-        }
-        // Left
-        else if (nearLeftEdge) {
-          return CropAreaPart.left;
-        }
-        // Right
-        else if (nearRightEdge) {
-          return CropAreaPart.right;
-        }
-
-        return CropAreaPart.inside;
-      } else {
-        return CropAreaPart.none;
-      }
-    }
-
-    Rect rect = Rect.fromCenter(
-      center: cropRect.center - translate,
-      width: cropRect.width + _interactiveCornerArea,
-      height: cropRect.height + _interactiveCornerArea,
+    return determineCropAreaPart(
+      localPosition: localPosition,
+      translate: translate,
+      interactiveCornerArea: _interactiveCornerArea,
+      userScaleFactor: userScaleFactor,
+      cropRect: cropRect,
+      cropMode: cropMode,
+      renderedImageSize: _renderedImgConstraints.biggest,
     );
-
-    double halfCropWidth = rect.width / 2;
-    double halfCropHeight = rect.height / 2;
-
-    double left = dx + halfCropWidth;
-    double right = dx - halfCropWidth;
-    double top = dy + halfCropHeight;
-    double bottom = dy - halfCropHeight;
-
-    bool nearLeftEdge = left.abs() <= _interactiveCornerArea;
-    bool nearRightEdge = right.abs() <= _interactiveCornerArea;
-    bool nearTopEdge = top.abs() <= _interactiveCornerArea;
-    bool nearBottomEdge = bottom.abs() <= _interactiveCornerArea;
-
-    if (rect.contains(localPosition)) {
-      if (nearLeftEdge && nearTopEdge) {
-        return CropAreaPart.topLeft;
-      } else if (nearRightEdge && nearTopEdge) {
-        return CropAreaPart.topRight;
-      } else if (nearLeftEdge && nearBottomEdge) {
-        return CropAreaPart.bottomLeft;
-      } else if (nearRightEdge && nearBottomEdge) {
-        return CropAreaPart.bottomRight;
-      } else if (nearLeftEdge) {
-        return CropAreaPart.left;
-      } else if (nearRightEdge) {
-        return CropAreaPart.right;
-      } else if (nearTopEdge) {
-        return CropAreaPart.top;
-      } else if (nearBottomEdge) {
-        return CropAreaPart.bottom;
-      } else {
-        return CropAreaPart.inside;
-      }
-    } else {
-      return CropAreaPart.none;
-    }
   }
 
   void _zoomOutside() async {
@@ -1435,8 +1331,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _startingTranslate = translate;
     // Calculate the center offset point from the old zoomed view
     _startingCenterOffset = _startingTranslate +
-        _getRealHitPoint(
-                position: details.localFocalPoint, zoom: userScaleFactor) /
+        convertCropHitPoint(
+              position: details.localFocalPoint,
+              zoom: userScaleFactor,
+              renderedImageSize: _renderedImgConstraints.biggest,
+            ) /
             userScaleFactor;
 
     if (!_scaleStarted) {
@@ -1509,9 +1408,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
     } else {
       if (_currentCropAreaPart != CropAreaPart.none &&
           _currentCropAreaPart != CropAreaPart.inside) {
-        Offset offset = _getRealHitPoint(
+        Offset offset = convertCropHitPoint(
               zoom: _startingPinchScale,
               position: details.localFocalPoint,
+              renderedImageSize: _renderedImgConstraints.biggest,
             ) +
             _startingTranslate * _startingPinchScale;
 
@@ -1763,8 +1663,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       if (_activePointers <= 0) {
         _scaleStarted = false;
         loopWithTransitionTiming(
-          (double curveT) {
-            _interactionOpacityProgress = 1 - 1 * curveT;
+          (double t) {
+            _interactionOpacityProgress = 1 - 1 * t;
             cropPainterKey.currentState!.setForegroundPainter(cropPainter);
           },
           mounted: mounted,
@@ -1809,6 +1709,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       );
 
       Offset startOffset = translate;
+
       Offset targetOffset = startOffset -
           Offset(
                 (startCropRect.left -
@@ -1822,24 +1723,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
               2;
 
       await loopWithTransitionTiming(
-        (double curveT) {
-          userScaleFactor = lerpDouble(startZoom, targetZoom, curveT)!;
+        (double t) {
+          userScaleFactor = lerpDouble(startZoom, targetZoom, t)!;
 
-          translate = Offset(
-            startOffset.dx +
-                (targetOffset.dx - startOffset.dx) *
-                    (targetCropRect.width / cropRect.width) *
-                    curveT,
-            startOffset.dy +
-                (targetOffset.dy - startOffset.dy) *
-                    (targetCropRect.height / cropRect.height) *
-                    curveT,
-          );
+          translate = Offset.lerp(startOffset, targetOffset,
+                  targetCropRect.width / cropRect.width * t) ??
+              translate;
 
-          cropRect = interpolatedRect(startCropRect, targetCropRect, curveT);
+          cropRect = interpolatedRect(startCropRect, targetCropRect, t);
           _setOffsetLimits(
             rect: _ratio < 0
-                ? interpolatedRect(initRect, targetCropRect, curveT)
+                ? interpolatedRect(initRect, targetCropRect, t)
                 : null,
           );
         },
@@ -1867,16 +1761,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   void _handleDoubleTap() async {
-    double clampValue(double value, double min, double max) {
-      if (value < min) {
-        return min;
-      } else if (value > max) {
-        return max;
-      } else {
-        return value;
-      }
-    }
-
     if (!cropRotateEditorConfigs.enableDoubleTap || _blockInteraction) return;
     _blockInteraction = true;
 
@@ -1886,42 +1770,30 @@ class CropRotateEditorState extends State<CropRotateEditor>
     double startZoom = userScaleFactor;
     double targetZoom =
         zoomInside ? cropRotateEditorConfigs.doubleTapScaleFactor : 1;
+
+    double renderedImgWidth = _renderedImgConstraints.maxWidth;
+    double renderedImgHeight = _renderedImgConstraints.maxHeight;
+
     Offset startOffset = translate;
 
-    Offset targetOffset = zoomInside
-        ? (translate -
-            Offset(
-              _doubleTapDetails.localPosition.dx -
-                  _renderedImgConstraints.maxWidth / 2,
-              _doubleTapDetails.localPosition.dy -
-                  _renderedImgConstraints.maxHeight / 2,
-            ))
-        : Offset.zero;
+    final Offset imageCenter = Offset(renderedImgWidth, renderedImgHeight) / 2;
+    final Offset tapDelta = _doubleTapDetails.localPosition - imageCenter;
+    Offset targetOffset = zoomInside ? (translate - tapDelta) : Offset.zero;
 
-    double maxOffsetX =
-        (_renderedImgConstraints.maxWidth * targetZoom - _viewRect.width) /
-            2 /
-            targetZoom;
-    double maxOffsetY =
-        (_renderedImgConstraints.maxHeight * targetZoom - _viewRect.height) /
-            2 /
-            targetZoom;
+    double maxOffsetX = (renderedImgWidth - _viewRect.width / targetZoom) / 2;
+    double maxOffsetY = (renderedImgHeight - _viewRect.height / targetZoom) / 2;
 
-    /// direct double clamp trigger an error on android samsung s10 so better
-    /// use own solution to clamp
     targetOffset = Offset(
-      clampValue(targetOffset.dx, -maxOffsetX, maxOffsetX),
-      clampValue(targetOffset.dy, -maxOffsetY, maxOffsetY),
+      targetOffset.dx.clamp(-maxOffsetX, maxOffsetX),
+      targetOffset.dy.clamp(-maxOffsetY, maxOffsetY),
     );
 
     await loopWithTransitionTiming(
-      (double curveT) {
-        userScaleFactor = startZoom + (targetZoom - startZoom) * curveT;
-        translate = startOffset +
-            (targetOffset - startOffset) *
-                targetZoom /
-                userScaleFactor *
-                curveT;
+      (double t) {
+        userScaleFactor = lerpDouble(startZoom, targetZoom, t)!;
+        translate = Offset.lerp(
+                startOffset, targetOffset, targetZoom / userScaleFactor * t) ??
+            translate;
       },
       mounted: mounted,
       duration: cropRotateEditorConfigs.animationDuration,
@@ -1930,39 +1802,136 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     userScaleFactor = targetZoom;
     translate = targetOffset;
+
     _setOffsetLimits();
     addHistory();
     _blockInteraction = false;
   }
 
   void _setOffsetLimits({Rect? rect}) {
-    Rect r = rect ?? _viewRect;
+    final cropRect = rect ?? _viewRect;
+    final imgW = _renderedImgConstraints.maxWidth;
+    final imgH = _renderedImgConstraints.maxHeight;
 
-    double cropWidth = r.width;
-    double cropHeight = r.height;
+    // 1. Build tilted image path
+    final imageCenter = Offset(imgW, imgH) / 2;
+    final outsideRect = Rect.fromLTWH(0, 0, imgW, imgH);
 
-    double minX =
-        (_renderedImgConstraints.maxWidth * userScaleFactor - cropWidth) /
-            2 /
-            userScaleFactor;
-    double minY =
-        (_renderedImgConstraints.maxHeight * userScaleFactor - cropHeight) /
-            2 /
-            userScaleFactor;
+    final scale = userScaleFactor;
+    Path imagePath = Path()..addRect(outsideRect);
 
-    Offset offset = translate;
+    final matrix = Matrix4.identity()
+      ..translateByDouble(imageCenter.dx, imageCenter.dy, 0.0, 1.0)
+      ..scaleByDouble(scale, scale, scale, 1.0)
+      ..multiply(
+        Matrix4.identity()
+          ..tilt(
+            rotate: tiltRotateAngle,
+            horizontal: tiltHorizontalAngle,
+            vertical: tiltVerticalAngle,
+          ),
+      )
+      ..translateByDouble(-imageCenter.dx, -imageCenter.dy, 0.0, 1.0);
 
-    if (offset.dx > minX) {
-      translate = Offset(minX, translate.dy);
+    imagePath = imagePath.transform(matrix.storage);
+
+    // 2. Crop rect corners
+    final halfCrop = cropRect.size / 2;
+    Offset translateScaled() => translate * scale;
+    List<Offset> corners() => [
+          // Top-Left
+          imageCenter +
+              Offset(-halfCrop.width, -halfCrop.height) -
+              translateScaled(),
+          // Top-Right
+          imageCenter +
+              Offset(halfCrop.width, -halfCrop.height) -
+              translateScaled(),
+          // Bottom-Left
+          imageCenter +
+              Offset(-halfCrop.width, halfCrop.height) -
+              translateScaled(),
+          // Bottom-Right
+          imageCenter +
+              Offset(halfCrop.width, halfCrop.height) -
+              translateScaled(),
+        ];
+
+    // 3. Check if fully inside
+    bool inside = corners().every((c) => imagePath.contains(c));
+
+    if (inside) return;
+
+    Offset topLeftCorner() => corners()[0];
+    Offset topRightCorner() => corners()[1];
+    Offset bottomLeftCorner() => corners()[2];
+    Offset bottomRightCorner() => corners()[3];
+
+    final cropPadding = Offset(
+      (imgW - cropRect.width) / 2,
+      (imgH - cropRect.height) / 2,
+    );
+
+    Offset? findNearestPoint(Offset point) {
+      // Convert Path to a polygon (list of points along the edges)
+      final pathMetrics = imagePath.computeMetrics();
+      Offset? nearestPoint;
+      double minDist = double.infinity;
+
+      for (final metric in pathMetrics) {
+        final length = metric.length;
+        for (double t = 0; t < length; t += 1.0) {
+          final pos = metric.getTangentForOffset(t)!.position;
+          final dist = (pos - point).distance;
+          if (dist < minDist) {
+            minDist = dist;
+            nearestPoint = pos;
+          }
+        }
+      }
+
+      return nearestPoint;
     }
-    if (offset.dx < -minX) {
-      translate = Offset(-minX, translate.dy);
+
+    /// Ensure Top-Left is inside.
+    if (!imagePath.contains(topLeftCorner())) {
+      final nearestPoint = findNearestPoint(topLeftCorner());
+      if (nearestPoint != null) {
+        translate = (-nearestPoint + cropPadding) / scale;
+      }
     }
-    if (offset.dy > minY) {
-      translate = Offset(translate.dx, minY);
+
+    /// Ensure Top-Right is inside.
+    if (!imagePath.contains(topRightCorner())) {
+      final nearestPoint = findNearestPoint(topRightCorner());
+      if (nearestPoint != null) {
+        translate = (-nearestPoint +
+                Offset(-cropPadding.dx, cropPadding.dy) +
+                Offset(imgW, 0)) /
+            scale;
+      }
     }
-    if (offset.dy < -minY) {
-      translate = Offset(translate.dx, -minY);
+
+    /// Ensure Bottom-Left is inside.
+    if (!imagePath.contains(bottomLeftCorner())) {
+      final nearestPoint = findNearestPoint(bottomLeftCorner());
+      if (nearestPoint != null) {
+        translate = (-nearestPoint +
+                Offset(cropPadding.dx, -cropPadding.dy) +
+                Offset(0, imgH)) /
+            scale;
+      }
+    }
+
+    /// Ensure Bottom-Right is inside.
+    if (!imagePath.contains(bottomRightCorner())) {
+      final nearestPoint = findNearestPoint(bottomRightCorner());
+      if (nearestPoint != null) {
+        translate = (-nearestPoint +
+                Offset(-cropPadding.dx, -cropPadding.dy) +
+                Offset(imgW, imgH)) /
+            scale;
+      }
     }
   }
 
@@ -1991,7 +1960,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       // Calculate the center offset point from the old zoomed view
       Offset centerOffset = translate +
-          _getRealHitPoint(zoom: startZoom, position: event.localPosition) /
+          convertCropHitPoint(
+                zoom: startZoom,
+                position: event.localPosition,
+                renderedImageSize: _renderedImgConstraints.biggest,
+              ) /
               startZoom;
       // Calculate the center offset point from the new zoomed view
       Offset centerZoomOffset = centerOffset * startZoom / newZoom;
@@ -2015,11 +1988,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
     SystemMouseCursor getCornerCursor(int cursorNo) {
       int no = cursorNo;
 
-      if (flipX && !flipY) {
+      if (isFlipX && !isFlipY) {
         no += cursorNo == 0 || cursorNo == 2 ? 1 : -1;
-      } else if (!flipX && flipY) {
+      } else if (!isFlipX && isFlipY) {
         no -= cursorNo == 0 || cursorNo == 2 ? 1 : -1;
-      } else if (flipX && flipY) {
+      } else if (isFlipX && isFlipY) {
         no += cursorNo == 0 || cursorNo == 2 ? 2 : -2;
       }
 
@@ -2054,11 +2027,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
     SystemMouseCursor getSideCursor(int cursorNo) {
       int no = cursorNo;
 
-      if (flipX && !flipY) {
+      if (isFlipX && !isFlipY) {
         no += cursorNo == 0 || cursorNo == 2 ? 2 : 0;
-      } else if (!flipX && flipY) {
+      } else if (!isFlipX && isFlipY) {
         no -= cursorNo == 0 || cursorNo == 2 ? 0 : 2;
-      } else if (flipX && flipY) {
+      } else if (isFlipX && isFlipY) {
         no += cursorNo == 0 || cursorNo == 2 ? 2 : -2;
       }
 
@@ -2137,25 +2110,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
         : getSideCursor(cursorNumber - 4);
   }
 
-  Offset _getRealHitPoint({
-    required double zoom,
-    required Offset position,
-  }) {
-    double imgW = _renderedImgConstraints.maxWidth;
-    double imgH = _renderedImgConstraints.maxHeight;
-
-    // Calculate the transformed local position of the pointer
-    Offset transformedLocalPosition = position * zoom;
-    // Calculate the size of the transformed image
-    Size transformedImgSize = Size(imgW, imgH) * zoom;
-
-    // Calculate the center offset point from the old zoomed view
-    return Offset(
-      transformedLocalPosition.dx - transformedImgSize.width / 2,
-      transformedLocalPosition.dy - transformedImgSize.height / 2,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return TiltProvider(
@@ -2170,9 +2124,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
         setState(() {});
       },
       tiltResetCount: _tiltResetCount,
-      tiltHorizontal: tiltHorizontal,
-      tiltVertical: tiltVertical,
-      tiltRotate: tiltRotate,
+      tiltHorizontal: tiltHorizontalAngle,
+      tiltVertical: tiltVerticalAngle,
+      tiltRotate: tiltRotateAngle,
       cropRotateConfigs: cropRotateEditorConfigs,
       i18n: i18n.cropRotateEditor,
       isTiltEditorVisible: _isTiltEditorActive,
@@ -2429,20 +2383,20 @@ class CropRotateEditorState extends State<CropRotateEditor>
   Widget _buildFlipTransform({required Widget child}) {
     if (!cropRotateEditorConfigs.enableFlipAnimation) {
       return Transform.flip(
-        flipX: flipX,
-        flipY: flipY,
+        flipX: isFlipX,
+        flipY: isFlipY,
         child: child,
       );
     }
 
     return TweenAnimationBuilder<double>(
       duration: cropRotateEditorConfigs.animationDuration,
-      tween: Tween<double>(begin: 1.0, end: flipX ? -1.0 : 1.0),
+      tween: Tween<double>(begin: 1.0, end: isFlipX ? -1.0 : 1.0),
       curve: cropRotateEditorConfigs.flipAnimationCurve,
       builder: (context, scaleX, child) {
         return TweenAnimationBuilder<double>(
           duration: cropRotateEditorConfigs.animationDuration,
-          tween: Tween<double>(begin: 1.0, end: flipY ? -1.0 : 1.0),
+          tween: Tween<double>(begin: 1.0, end: isFlipY ? -1.0 : 1.0),
           curve: cropRotateEditorConfigs.flipAnimationCurve,
           builder: (context, scaleY, child) {
             return Transform(
@@ -2459,15 +2413,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Widget _buildTiltTransform({required Widget child}) {
-    if (tiltRotate == 0 && tiltVertical == 0 && tiltHorizontal == 0) {
+    if (tiltRotateAngle == 0 &&
+        tiltVerticalAngle == 0 &&
+        tiltHorizontalAngle == 0) {
       return child;
     }
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity().tilt(
-        rotate: tiltRotate,
-        horizontal: tiltHorizontal,
-        vertical: tiltVertical,
+        rotate: tiltRotateAngle,
+        horizontal: tiltHorizontalAngle,
+        vertical: tiltVerticalAngle,
       ),
       child: child,
     );

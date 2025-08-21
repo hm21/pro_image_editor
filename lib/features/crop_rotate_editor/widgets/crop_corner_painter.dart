@@ -154,14 +154,15 @@ class CropCornerPainter extends CustomPainter {
       size.width / 2 + offset.dx * scaleFactor,
       size.height / 2 + offset.dy * scaleFactor,
     );
+    final outsideRect = Rect.fromCenter(
+      center: imageCenter,
+      width: size.width,
+      height: size.height,
+    );
     Path path = Path()
       // FillType "evenOdd" is important for the canvas web renderer
       ..fillType = PathFillType.evenOdd
-      ..addRect(Rect.fromCenter(
-        center: imageCenter,
-        width: size.width,
-        height: size.height,
-      ));
+      ..addRect(outsideRect);
 
     // Build the crop rect or circle
     Path cropPath = Path();
@@ -170,7 +171,9 @@ class CropCornerPainter extends CustomPainter {
       cropHeight / 2 + _cropOffsetTop,
     );
     final cropRect = Rect.fromCenter(
-      center: cropRectCenter,
+      /// Correction Offset is important that [PathOperation.difference] will
+      /// not crash.
+      center: cropRectCenter + const Offset(0.01, 0.01),
       width: cropWidth,
       height: cropHeight,
     );
@@ -198,7 +201,6 @@ class CropCornerPainter extends CustomPainter {
       ..translateByDouble(-imageCenter.dx, -imageCenter.dy, 0, 1.0);
 
     path = path.transform(transform.storage);
-
     // Subtract cropPath from background
     path = Path.combine(PathOperation.difference, path, cropPath);
 

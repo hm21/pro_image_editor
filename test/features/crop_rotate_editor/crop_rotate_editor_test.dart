@@ -169,7 +169,7 @@ void main() {
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-flip-btn')));
       await tester.pumpAndSettle();
-      expect(key.currentState!.flipX, isTrue);
+      expect(key.currentState!.isFlipX, isTrue);
     });
 
     testWidgets('handles zoom correctly', (WidgetTester tester) async {
@@ -189,7 +189,7 @@ void main() {
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-flip-btn')));
       await tester.pumpAndSettle();
-      expect(key.currentState!.flipX, isTrue);
+      expect(key.currentState!.isFlipX, isTrue);
 
       await tester
           .tap(find.byKey(const ValueKey('crop-rotate-editor-rotate-btn')));
@@ -201,7 +201,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(key.currentState!.rotationCount == 0, isTrue);
-      expect(key.currentState!.flipX, isFalse);
+      expect(key.currentState!.isFlipX, isFalse);
       expect(key.currentState!.userScaleFactor, equals(1));
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
