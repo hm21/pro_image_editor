@@ -1812,6 +1812,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     final cropRect = rect ?? _viewRect;
     final imgW = _renderedImgConstraints.maxWidth;
     final imgH = _renderedImgConstraints.maxHeight;
+    if (imgW == 0.0 || imgH == 0.0) return;
 
     // 1. Build tilted image path
     final imageCenter = Offset(imgW, imgH) / 2;
