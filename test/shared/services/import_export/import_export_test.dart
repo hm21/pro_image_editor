@@ -186,6 +186,9 @@ void main() {
           flipX: false,
           flipY: false,
           offset: Offset.zero,
+          tiltRotate: 0,
+          tiltHorizontal: 0,
+          tiltVertical: 0,
         );
 
         editor.addHistory(transformConfigs: transformConfigs);

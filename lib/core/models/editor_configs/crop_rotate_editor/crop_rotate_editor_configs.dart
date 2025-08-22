@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 import '/features/crop_rotate_editor/models/aspect_ratio_item.dart';
 import '/features/crop_rotate_editor/models/rotate_direction.dart';
-import '../custom_widgets/crop_rotate_editor_widgets.dart';
-import '../icons/crop_rotate_editor_icons.dart';
-import '../styles/crop_rotate_editor_style.dart';
-import 'utils/editor_safe_area.dart';
+import '../../custom_widgets/crop_rotate_editor/crop_rotate_editor_widgets.dart';
+import '../../icons/crop_rotate_editor_icons.dart';
+import '../../styles/crop_rotate/crop_rotate_editor_style.dart';
+import '../utils/editor_safe_area.dart';
+import 'tilt_configs.dart';
+
 export '/features/crop_rotate_editor/models/rotate_direction.dart';
 export '/features/crop_rotate_editor/models/transform_configs.dart';
-export '../custom_widgets/crop_rotate_editor_widgets.dart';
-export '../icons/crop_rotate_editor_icons.dart';
-export '../styles/crop_rotate_editor_style.dart';
+export '../../custom_widgets/crop_rotate_editor/crop_rotate_editor_widgets.dart';
+export '../../icons/crop_rotate_editor_icons.dart';
+export '../../styles/crop_rotate/crop_rotate_editor_style.dart';
+export 'tilt_configs.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -51,6 +54,7 @@ class CropRotateEditorConfigs {
     this.enableFlipAnimation = true,
     this.showLayers = true,
     this.initAspectRatio,
+    this.tiltConfigs = const TiltConfigs(),
     this.rotateAnimationCurve = Curves.decelerate,
     this.scaleAnimationCurve = Curves.decelerate,
     this.cropDragAnimationCurve = Curves.decelerate,
@@ -129,6 +133,9 @@ class CropRotateEditorConfigs {
   /// This determines the default cropping behavior or aspect ratio that will be
   /// presented to the user before any manual adjustments are made.
   final CropMode initialCropMode;
+
+  /// Configuration settings for the tilt functionality.
+  final TiltConfigs tiltConfigs;
 
   /// A boolean flag that determines whether the `imageInfos` parameter
   /// should be included in the `onDone` callback.
@@ -243,6 +250,7 @@ class CropRotateEditorConfigs {
     bool? invertMouseScroll,
     bool? invertDragDirection,
     CropMode? initialCropMode,
+    TiltConfigs? tiltConfigs,
     bool? enableProvideImageInfos,
     double? initAspectRatio,
     double? maxScale,
@@ -282,6 +290,7 @@ class CropRotateEditorConfigs {
       invertMouseScroll: invertMouseScroll ?? this.invertMouseScroll,
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,
+      tiltConfigs: tiltConfigs ?? this.tiltConfigs,
       enableProvideImageInfos:
           enableProvideImageInfos ?? this.enableProvideImageInfos,
       initAspectRatio: initAspectRatio ?? this.initAspectRatio,

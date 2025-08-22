@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pro_image_editor/core/models/styles/crop_rotate_editor_style.dart';
+import 'package:pro_image_editor/core/models/styles/crop_rotate/crop_rotate_editor_style.dart';
 import 'package:pro_image_editor/features/crop_rotate_editor/widgets/crop_corner_painter.dart';
 
 void main() {
@@ -24,6 +24,9 @@ void main() {
         fadeInOpacity: 0.5,
         rotationScaleFactor: 1.0,
         scaleFactor: 1.0,
+        tiltRotate: 12,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
 
       final painter2 = CropCornerPainter(
@@ -37,6 +40,9 @@ void main() {
         interactionOpacity: 0,
         rotationScaleFactor: 1.0,
         scaleFactor: 1.0,
+        tiltRotate: 12,
+        tiltHorizontal: 0,
+        tiltVertical: 0,
       );
 
       expect(painter1.shouldRepaint(painter2), isTrue);

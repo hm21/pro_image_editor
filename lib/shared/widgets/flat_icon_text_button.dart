@@ -23,11 +23,8 @@ class FlatIconTextButton extends TextButton {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              icon,
-              SizedBox(height: spacing),
-              label,
-            ],
+            spacing: spacing,
+            children: [icon, label],
           ),
         );
 }
