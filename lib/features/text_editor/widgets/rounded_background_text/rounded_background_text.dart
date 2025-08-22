@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../utils/rounded_background_painter.dart';
@@ -110,5 +111,28 @@ class RoundedBackgroundText extends StatelessWidget {
         ),
       );
     });
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(DiagnosticsProperty<InlineSpan>('text', text))
+      ..add(EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null))
+      ..add(
+          ColorProperty('backgroundColor', backgroundColor, defaultValue: null))
+      ..add(DoubleProperty('maxTextWidth', maxTextWidth))
+      ..add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 0))
+      ..add(FlagProperty(
+        'enableHitBoxCorrection',
+        value: enableHitBoxCorrection,
+        ifTrue: 'hitBoxCorrection enabled',
+      ))
+      ..add(FlagProperty(
+        'hasOnHitTestResult',
+        value: onHitTestResult != null,
+        ifTrue: 'callback set',
+      ));
   }
 }

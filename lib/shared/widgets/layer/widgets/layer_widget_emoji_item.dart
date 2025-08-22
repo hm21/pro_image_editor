@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/enums/design_mode.dart';
@@ -44,5 +45,11 @@ class LayerWidgetEmojiItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    layer.debugFillProperties(properties);
   }
 }

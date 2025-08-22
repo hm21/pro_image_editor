@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
@@ -212,5 +213,34 @@ class _RoundedBackgroundTextFieldState
         onSubmitted: widget.onSubmitted,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(DiagnosticsProperty<TextEditorConfigs>('configs', widget.configs))
+      ..add(DiagnosticsProperty<TextStyle>('style', widget.style))
+      ..add(EnumProperty<TextAlign>('textAlign', widget.textAlign))
+      ..add(ColorProperty('backgroundColor', widget.backgroundColor))
+      ..add(DoubleProperty('maxTextWidth', widget.maxTextWidth))
+      ..add(DoubleProperty('cursorWidth', widget.cursorWidth))
+      ..add(DoubleProperty('cursorHeight', widget.cursorHeight,
+          defaultValue: null))
+      ..add(DiagnosticsProperty<Radius>('cursorRadius', widget.cursorRadius,
+          defaultValue: null))
+      ..add(StringProperty('hint', widget.hint))
+      ..add(DiagnosticsProperty<TextStyle>('hintStyle', widget.hintStyle,
+          defaultValue: null))
+      ..add(FlagProperty('autofocus',
+          value: widget.autofocus, ifTrue: 'autofocus enabled'))
+      ..add(FlagProperty('hasOnChanged',
+          value: widget.onChanged != null, ifTrue: 'onChanged set'))
+      ..add(FlagProperty('hasOnEditingComplete',
+          value: widget.onEditingComplete != null,
+          ifTrue: 'onEditingComplete set'))
+      ..add(FlagProperty('hasOnSubmitted',
+          value: widget.onSubmitted != null, ifTrue: 'onSubmitted set'));
   }
 }

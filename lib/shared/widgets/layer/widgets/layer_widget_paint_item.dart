@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
@@ -64,5 +65,11 @@ class LayerWidgetPaintItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    layer.debugFillProperties(properties);
   }
 }

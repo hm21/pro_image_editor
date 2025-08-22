@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '/core/constants/int_constants.dart';
@@ -270,5 +271,22 @@ class TextLayer extends Layer {
       if (paintLayer.maxTextWidth != maxTextWidth)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(EnumProperty<LayerBackgroundMode>('colorMode', colorMode))
+      ..add(ColorProperty('color', color))
+      ..add(ColorProperty('background', background))
+      ..add(DiagnosticsProperty<bool>(
+          'customSecondaryColor', customSecondaryColor))
+      ..add(EnumProperty<TextAlign>('align', align))
+      ..add(DoubleProperty('fontScale', fontScale))
+      ..add(DoubleProperty('maxTextWidth', maxTextWidth))
+      ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
+      ..add(DiagnosticsProperty<bool>('hasHit', hit));
   }
 }

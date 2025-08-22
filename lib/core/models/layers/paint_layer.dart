@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '/core/constants/int_constants.dart';
@@ -143,5 +144,15 @@ class PaintLayer extends Layer {
         },
       if (paintLayer.opacity != opacity) 'opacity': opacity,
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('opacity', opacity))
+      ..add(DiagnosticsProperty<Size>('rawSize', rawSize))
+      ..add(DiagnosticsProperty<Size>('size', size));
+    item.debugFillProperties(properties);
   }
 }

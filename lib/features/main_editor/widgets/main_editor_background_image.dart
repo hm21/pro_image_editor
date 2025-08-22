@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
@@ -81,5 +82,52 @@ class MainEditorBackgroundImage extends StatelessWidget {
               ),
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(StringProperty('heroTag', heroTag))
+      ..add(FlagProperty(
+        'isInitialized',
+        value: isInitialized,
+        ifTrue: 'initialized',
+        ifFalse: 'not initialized',
+        showName: true,
+      ))
+      ..add(DiagnosticsProperty<bool>(
+        'isTransformed',
+        stateManager.transformConfigs.isEmpty,
+      ))
+      ..add(IntProperty(
+        'activeFiltersCount',
+        stateManager.activeFilters.length,
+      ))
+      ..add(IntProperty(
+        'activeTuneAdjustmentsCount',
+        stateManager.activeTuneAdjustments.length,
+      ))
+      ..add(DoubleProperty('blurFactor', stateManager.activeBlur))
+      ..add(
+        DiagnosticsProperty('imageSize', sizesManager.decodedImageSize),
+      )
+      ..add(
+        DiagnosticsProperty<EditorImage>('editorImage', editorImage),
+      )
+      ..add(
+        DiagnosticsProperty<StateManager>('stateManager', stateManager),
+      )
+      ..add(
+        DiagnosticsProperty<SizesManager>('sizesManager', sizesManager),
+      )
+      ..add(
+        DiagnosticsProperty<ProImageEditorConfigs>('configs', configs),
+      )
+      ..add(DiagnosticsProperty<GlobalKey<ColorFilterGeneratorState>>(
+        'backgroundImageColorFilterKey',
+        backgroundImageColorFilterKey,
+      ));
   }
 }

@@ -2630,4 +2630,58 @@ class CropRotateEditorState extends State<CropRotateEditor>
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      // General configuration
+      ..add(DiagnosticsProperty<CropRotateEditorInitConfigs>(
+          'initConfigs', widget.initConfigs))
+      ..add(
+          DiagnosticsProperty<EditorImage?>('editorImage', widget.editorImage))
+      ..add(DiagnosticsProperty<ProVideoController?>(
+          'videoController', widget.videoController))
+
+      // Crop/Transform state
+      ..add(
+          DiagnosticsProperty<TransformConfigs>('activeHistory', activeHistory))
+      ..add(IntProperty('rotationCount', rotationCount))
+      ..add(FlagProperty('flipX', value: flipX, ifTrue: 'flipped X'))
+      ..add(FlagProperty('flipY', value: flipY, ifTrue: 'flipped Y'))
+      ..add(DoubleProperty('aspectRatio', aspectRatio))
+      ..add(EnumProperty<CropMode>('cropMode', cropMode))
+      ..add(DoubleProperty('userScaleFactor', userScaleFactor))
+      ..add(DoubleProperty('oldScaleFactor', oldScaleFactor))
+      ..add(DoubleProperty('rotationScaleFactor', _rotationScaleFactor))
+      ..add(DiagnosticsProperty<Offset>('translate', translate))
+      ..add(DiagnosticsProperty<Rect>('cropRect', cropRect))
+      ..add(DiagnosticsProperty<Rect>('viewRect', _viewRect))
+
+      // Status flags
+      ..add(FlagProperty('showFakeHero',
+          value: _showFakeHero, ifTrue: 'showing fake hero'))
+      ..add(FlagProperty('enableFakeHero',
+          value: enableFakeHero, ifTrue: 'fake hero enabled'))
+      ..add(FlagProperty('imageNeedDecode',
+          value: _imageNeedDecode, ifTrue: 'image needs decode'))
+      ..add(FlagProperty('imageSizeIsDecoded',
+          value: _imageSizeIsDecoded, ifTrue: 'image size decoded'))
+      ..add(FlagProperty('interactionActive',
+          value: _interactionActive, ifTrue: 'interaction active'))
+      ..add(FlagProperty('scaleStarted',
+          value: _scaleStarted, ifTrue: 'scale started'))
+
+      // Sizes
+      ..add(DiagnosticsProperty<Size>('editorBodySize', editorBodySize))
+      ..add(DiagnosticsProperty<Size>('mainImageSize', _mainImageSize))
+      ..add(DiagnosticsProperty<Size>('renderedImgSize', _renderedImgSize))
+      ..add(DiagnosticsProperty<BoxConstraints>(
+          'renderedImgConstraints', _renderedImgConstraints))
+
+      // Input
+      ..add(DiagnosticsProperty<MouseCursor>('mouseCursor', _mouseCursor))
+      ..add(IntProperty('activePointers', _activePointers));
+  }
 }

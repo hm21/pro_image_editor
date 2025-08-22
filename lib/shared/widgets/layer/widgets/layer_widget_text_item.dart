@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/text_editor_configs.dart';
@@ -68,5 +69,11 @@ class LayerWidgetTextItem extends StatelessWidget {
           ) ??
           style,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    layer.debugFillProperties(properties);
   }
 }

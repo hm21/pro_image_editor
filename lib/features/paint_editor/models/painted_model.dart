@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '/core/constants/int_constants.dart';
@@ -253,5 +254,36 @@ class PaintedModel {
       fill: fill ?? this.fill,
       hit: hit ?? this.hit,
     );
+  }
+
+  /// Fills the given [DiagnosticPropertiesBuilder] with properties of this
+  /// PaintedModel for debugging and development tools.
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    // Core identity
+    properties
+      ..add(StringProperty('id', id))
+      ..add(EnumProperty<PaintMode>('mode', mode))
+
+      // Paint attributes
+      ..add(ColorProperty('color', color))
+      ..add(DoubleProperty('strokeWidth', strokeWidth))
+      ..add(DoubleProperty('opacity', opacity))
+
+      // Flags
+      ..add(DiagnosticsProperty<bool>('fill', fill))
+      ..add(DiagnosticsProperty<bool>('hit', hit))
+      ..add(DiagnosticsProperty<bool>('isCensorArea', isCensorArea))
+      ..add(DiagnosticsProperty<bool>('canBeFilled', canBeFilled))
+
+      // Collections (show sizes instead of dumping all Offsets)
+      ..add(IntProperty('offsetsCount', offsets.length))
+      ..add(IntProperty('erasedOffsetsCount', erasedOffsets.length));
+
+    if (offsets.isNotEmpty && offsets.first != null) {
+      properties.add(DiagnosticsProperty<Offset>('firstOffset', offsets.first));
+    }
+    if (offsets.isNotEmpty && offsets.last != null) {
+      properties.add(DiagnosticsProperty<Offset>('lastOffset', offsets.last));
+    }
   }
 }

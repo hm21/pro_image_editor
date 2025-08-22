@@ -61,7 +61,8 @@ class EmojiCellExtended extends StatelessWidget {
       child: InkWell(
         onTap: () => onEmojiSelected(categoryEmoji?.category, emoji),
         onLongPress: () {
-          final renderBox = context.findRenderObject() as RenderBox;
+          final renderBox = context.findRenderObject() as RenderBox?;
+          if (renderBox == null) return;
           final emojiBoxPosition = renderBox.localToGlobal(Offset.zero);
           onSkinToneDialogRequested?.call(
             emojiBoxPosition,

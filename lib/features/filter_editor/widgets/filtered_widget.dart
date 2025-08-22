@@ -2,6 +2,7 @@
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -114,5 +115,24 @@ class FilteredWidget extends StatelessWidget {
       height: height,
       configs: configs,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(DoubleProperty('width', width))
+      ..add(DoubleProperty('height', height))
+      ..add(DiagnosticsProperty<FilterMatrix>('filters', filters))
+      ..add(IterableProperty<TuneAdjustmentMatrix>(
+          'tuneAdjustments', tuneAdjustments))
+      ..add(DoubleProperty('blurFactor', blurFactor))
+      ..add(EnumProperty<BoxFit>('fit', fit))
+      ..add(FlagProperty('enableCachedSize',
+          value: enableCachedSize, ifTrue: 'cached size enabled'))
+      ..add(DiagnosticsProperty<EditorImage?>('image', image))
+      ..add(FlagProperty('hasVideoPlayer',
+          value: videoPlayer != null, ifTrue: 'video player set'));
   }
 }

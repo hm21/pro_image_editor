@@ -121,6 +121,10 @@ class LayerInteractionManager {
   /// Flag indicating if the scaling tool is active.
   bool _activeScale = false;
 
+  /// Tracks whether any layer has been transformed (moved, scaled, rotated)
+  /// during the current editing session.
+  bool layerWasTransformed = false;
+
   /// Checks if there are any selected layers.
   ///
   /// Returns `true` if the list of selected layer IDs is not empty,
@@ -585,7 +589,9 @@ class LayerInteractionManager {
     );
 
     bool hasMultiSelection = selectedLayers.length > 1;
-
+    if (!layerWasTransformed) {
+      layerWasTransformed = selectedLayers.isNotEmpty;
+    }
     for (Layer layer in selectedLayers) {
       if (!layer.interaction.enableMove) continue;
 
@@ -729,6 +735,9 @@ class LayerInteractionManager {
         configs.layerInteraction.enableMobilePinchRotate;
 
     if (enableMobilePinchScale || enableMobilePinchRotate) {
+      if (!layerWasTransformed) {
+        layerWasTransformed = selectedLayers.isNotEmpty;
+      }
       for (Layer layer in selectedLayers) {
         if (layer.interaction.enableScale && enableMobilePinchScale) {
           layer.scale = _getLayerBaseScale(layer.id) * detail.scale;
@@ -855,6 +864,7 @@ class LayerInteractionManager {
 
     selectedLayersScaleStart.clear();
     enabledHitDetection = true;
+    layerWasTransformed = false;
     showHorizontalHelperLine = false;
     showVerticalHelperLine = false;
     showRotationHelperLine = false;

@@ -1248,6 +1248,14 @@ class ProImageEditorState extends State<ProImageEditor>
       if (!_layerDragSelectionService.isActive) {
         interactiveViewer.currentState?.onScaleEnd(details);
       }
+
+      /// On mobile when layers are not selectable we check if a layer was
+      /// transformed.
+      if (!isDesktop &&
+          layerInteractionManager.layerWasTransformed &&
+          layerInteraction.selectable != LayerInteractionSelectable.enabled) {
+        _takeScreenshot(replaceLastScreenshot: true);
+      }
     } else {
       /// At this point, we only create a screenshot since the new history
       /// entry was already added in [_onScaleStart].

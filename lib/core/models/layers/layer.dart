@@ -228,7 +228,7 @@ class Layer {
     bool enableMinify = false,
   }) {
     return {
-      'id': layer.id,
+      'id': id,
       if (layer.offset.dx != offset.dx)
         'x': offset.dx.roundSmart(maxDecimalPlaces),
       if (layer.offset.dy != offset.dy)
@@ -333,5 +333,26 @@ class Layer {
         boxConstraints.hashCode ^
         meta.hashCode ^
         groupId.hashCode;
+  }
+
+  /// Fills the given [DiagnosticPropertiesBuilder] with properties of this
+  /// layer for debugging and development tools.
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties
+      ..add(StringProperty('id', id))
+      ..add(StringProperty('groupId', groupId))
+      ..add(DoubleProperty('rotation', rotation))
+      ..add(DoubleProperty('scale', scale))
+      ..add(DiagnosticsProperty<bool>('flipX', flipX))
+      ..add(DiagnosticsProperty<bool>('flipY', flipY))
+      ..add(DiagnosticsProperty<Offset>('offset', offset))
+      ..add(DiagnosticsProperty<Map<String, dynamic>>('meta', meta))
+      ..add(
+          DiagnosticsProperty<BoxConstraints>('boxConstraints', boxConstraints))
+      ..add(DiagnosticsProperty<LayerInteraction>('interaction', interaction))
+      ..add(FlagProperty('isEmojiLayer', value: isEmojiLayer, ifTrue: 'true'))
+      ..add(FlagProperty('isPaintLayer', value: isPaintLayer, ifTrue: 'true'))
+      ..add(FlagProperty('isWidgetLayer', value: isWidgetLayer, ifTrue: 'true'))
+      ..add(FlagProperty('isTextLayer', value: isTextLayer, ifTrue: 'true'));
   }
 }

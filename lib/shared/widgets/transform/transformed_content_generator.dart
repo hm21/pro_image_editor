@@ -180,6 +180,28 @@ class TransformedContentGenerator extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(DiagnosticsProperty<TransformConfigs>(
+          'transformConfigs', transformConfigs))
+      ..add(FlagProperty('isVideoPlayer',
+          value: isVideoPlayer, ifTrue: 'video player'))
+      ..add(DoubleProperty('angle', transformConfigs.angle))
+      ..add(FlagProperty('flipX',
+          value: transformConfigs.flipX, ifTrue: 'flipped X'))
+      ..add(FlagProperty('flipY',
+          value: transformConfigs.flipY, ifTrue: 'flipped Y'))
+      ..add(DoubleProperty('scaleUser', transformConfigs.scaleUser))
+      ..add(DiagnosticsProperty<Offset>('offset', transformConfigs.offset))
+      ..add(EnumProperty<CropMode>('cropMode', transformConfigs.cropMode))
+      ..add(DiagnosticsProperty<Rect>('cropRect', transformConfigs.cropRect))
+      ..add(DiagnosticsProperty<Size>(
+          'originalSize', transformConfigs.originalSize));
+  }
 }
 
 /// A [CustomClipper] that defines the clipping area based on provided

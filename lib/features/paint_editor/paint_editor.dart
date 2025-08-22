@@ -1090,4 +1090,35 @@ class PaintEditorState extends State<PaintEditor>
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(
+          DiagnosticsProperty<EditorImage?>('editorImage', widget.editorImage))
+      ..add(DiagnosticsProperty<ProVideoController?>(
+          'videoController', widget.videoController))
+      ..add(DiagnosticsProperty<PaintEditorInitConfigs>(
+          'initConfigs', widget.initConfigs))
+      ..add(FlagProperty('paintOnly',
+          value: widget.paintOnly, ifTrue: 'paint-only mode'))
+      ..add(DiagnosticsProperty<PaintController>('paintCtrl', paintCtrl))
+      ..add(FlagProperty('_isFillMode',
+          value: _isFillMode, ifTrue: 'fill mode enabled'))
+      ..add(FlagProperty('isActive', value: isActive, ifTrue: 'drawing active'))
+      ..add(EnumProperty<PaintMode>('paintMode', paintMode))
+      ..add(ColorProperty('activeColor', activeColor))
+      ..add(DoubleProperty('strokeWidth', strokeWidth))
+      ..add(DoubleProperty('opacity', opacity))
+      ..add(IntProperty('historyPointer', historyPointer))
+      ..add(IntProperty('stateHistoryLength', stateHistory.length))
+      ..add(FlagProperty('canUndo', value: canUndo, ifTrue: 'can undo'))
+      ..add(FlagProperty('canRedo', value: canRedo, ifTrue: 'can redo'))
+      ..add(FlagProperty('_enableZoom',
+          value: _enableZoom, ifTrue: 'zoom enabled'))
+      ..add(FlagProperty('hasFakeHeroBytes',
+          value: _fakeHeroBytes != null, ifTrue: 'fake hero set'));
+  }
 }

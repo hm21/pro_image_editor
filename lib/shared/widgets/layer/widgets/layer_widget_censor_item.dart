@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/paint_editor/censor_configs.dart';
@@ -40,5 +41,11 @@ class LayerWidgetCensorItem extends StatelessWidget {
       default:
         throw UnimplementedError();
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    layer.debugFillProperties(properties);
   }
 }

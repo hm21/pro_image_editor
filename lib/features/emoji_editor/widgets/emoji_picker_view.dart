@@ -127,10 +127,13 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
 
   void _scrollToItem(int index) {
     final GlobalKey key = _itemKeys[index]!;
-    final RenderBox renderBox =
-        key.currentContext?.findRenderObject() as RenderBox;
-    final position = renderBox.localToGlobal(Offset.zero,
-        ancestor: context.findRenderObject());
+    final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final position = renderBox.localToGlobal(
+      Offset.zero,
+      ancestor: context.findRenderObject(),
+    );
 
     final offset = position.dy + _scrollController.offset - _searchBarHeight;
 
@@ -171,7 +174,8 @@ class _DefaultEmojiPickerViewState extends State<ProEmojiPickerView>
       final context = key!.currentContext;
 
       if (context == null) continue;
-      final renderBox = context.findRenderObject() as RenderBox;
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox == null) return;
 
       final position = renderBox.localToGlobal(
         Offset.zero,

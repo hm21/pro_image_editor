@@ -522,4 +522,43 @@ class TuneEditorState extends State<TuneEditor>
       selectedIndex: selectedIndex,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<TuneEditorInitConfigs>(
+        'initConfigs',
+        widget.initConfigs,
+      ))
+      ..add(DiagnosticsProperty<EditorImage?>(
+        'editorImage',
+        widget.editorImage,
+      ))
+      ..add(DiagnosticsProperty<ProVideoController?>(
+        'videoController',
+        widget.videoController,
+      ))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(IterableProperty<TuneAdjustmentItem>(
+        'tuneAdjustmentList',
+        tuneAdjustmentList,
+      ))
+      ..add(IterableProperty<TuneAdjustmentMatrix>(
+        'tuneAdjustmentMatrix',
+        tuneAdjustmentMatrix,
+      ))
+      ..add(FlagProperty(
+        'canUndo',
+        value: canUndo,
+        ifTrue: 'can undo',
+        ifFalse: 'cannot undo',
+      ))
+      ..add(FlagProperty(
+        'canRedo',
+        value: canRedo,
+        ifTrue: 'can redo',
+        ifFalse: 'cannot redo',
+      ));
+  }
 }

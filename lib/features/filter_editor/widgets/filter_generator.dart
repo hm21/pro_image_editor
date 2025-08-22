@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../tune_editor/models/tune_adjustment_matrix.dart';
@@ -76,5 +77,17 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
       colorFilter: ColorFilter.matrix(_combinedMatrix),
       child: widget.child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(DiagnosticsProperty<FilterMatrix>('filters', widget.filters))
+      ..add(IterableProperty<TuneAdjustmentMatrix>(
+          'tuneAdjustments', widget.tuneAdjustments))
+      ..add(
+          DiagnosticsProperty<List<double>>('combinedMatrix', _combinedMatrix));
   }
 }

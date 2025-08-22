@@ -450,4 +450,42 @@ class FilterEditorState extends State<FilterEditor>
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FilterEditorInitConfigs>(
+        'initConfigs',
+        widget.initConfigs,
+      ))
+      ..add(DiagnosticsProperty<EditorImage?>(
+        'editorImage',
+        widget.editorImage,
+      ))
+      ..add(DiagnosticsProperty<ProVideoController?>(
+        'videoController',
+        widget.videoController,
+      ))
+      ..add(DiagnosticsProperty<FilterModel>(
+        'selectedFilter',
+        _selectedFilter,
+      ))
+      ..add(DoubleProperty(
+        'filterOpacity',
+        _filterOpacity,
+      ))
+      ..add(IterableProperty<TuneAdjustmentMatrix>(
+        'appliedTuneAdjustments',
+        appliedTuneAdjustments,
+      ))
+      ..add(DoubleProperty(
+        'appliedBlurFactor',
+        appliedBlurFactor,
+      ))
+      ..add(IterableProperty<List<double>>(
+        'appliedFilters',
+        appliedFilters,
+      ));
+  }
 }

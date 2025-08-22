@@ -1,6 +1,7 @@
 // Dart imports:
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/mixins/converted_callbacks.dart';
@@ -454,5 +455,25 @@ class TextEditorState extends State<TextEditor>
       maxWidth: _maxTextWidth ?? double.infinity,
       cursorWidth: _cursorWidth,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(StringProperty('heroTag', widget.heroTag))
+      ..add(DoubleProperty('scaleFactor', widget.scaleFactor))
+      ..add(DiagnosticsProperty<TextLayer?>('layer', widget.layer))
+      ..add(DiagnosticsProperty<ThemeData>('theme', widget.theme))
+      ..add(DiagnosticsProperty<TextAlign>('align', align))
+      ..add(DiagnosticsProperty<TextStyle>(
+          'selectedTextStyle', selectedTextStyle))
+      ..add(EnumProperty<LayerBackgroundMode>(
+          'backgroundColorMode', backgroundColorMode))
+      ..add(DoubleProperty('fontScale', _fontScale))
+      ..add(ColorProperty('primaryColor', primaryColor))
+      ..add(ColorProperty('secondaryColor', secondaryColor))
+      ..add(DiagnosticsProperty<Size>('editorBodySize', editorBodySize));
   }
 }

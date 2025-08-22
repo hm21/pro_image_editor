@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '/core/constants/int_constants.dart';
 import 'layer.dart';
 
@@ -96,5 +98,11 @@ class EmojiLayer extends Layer {
       ),
       if ((layer as EmojiLayer).emoji != emoji) 'emoji': emoji,
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('emoji', emoji));
   }
 }

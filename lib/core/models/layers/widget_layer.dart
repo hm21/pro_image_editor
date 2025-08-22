@@ -210,4 +210,13 @@ class WidgetLayer extends Layer {
       exportConfigs: exportConfigs ?? this.exportConfigs,
     )..groupId = groupId ?? this.groupId;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<WidgetLayerExportConfigs>(
+      'exportConfigs',
+      exportConfigs,
+    ));
+  }
 }

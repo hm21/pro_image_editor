@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/pro_image_editor.dart';
@@ -224,5 +225,23 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+
+    properties
+      ..add(DiagnosticsProperty<PaintLayer>('layer', widget.layer))
+      ..add(
+          DiagnosticsProperty<ProImageEditorConfigs>('configs', widget.configs))
+      ..add(EnumProperty<PaintMode>('mode', _paintItem.mode))
+      ..add(ColorProperty('color', _paintItem.color))
+      ..add(DoubleProperty('strokeWidth', _paintItem.strokeWidth))
+      ..add(DoubleProperty('opacity', _layer.opacity))
+      ..add(FlagProperty('fill', value: _paintItem.fill, ifTrue: 'filled'))
+      ..add(FlagProperty('canBeFilled',
+          value: _paintItem.canBeFilled, ifTrue: 'can be filled'))
+      ..add(DiagnosticsProperty<Size>('rawSize', _layer.rawSize));
   }
 }
