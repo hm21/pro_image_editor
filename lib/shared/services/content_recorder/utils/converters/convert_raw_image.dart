@@ -16,159 +16,32 @@ import '../encoder/encode_image.dart';
 ///
 /// Returns a [ResponseFromThread] containing the PNG byte data.
 @pragma('vm:entry-point')
-Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
-    {Completer<void>? destroy$}) async {
+Future<ThreadResponse> convertRawImage(
+  ImageConvertThreadRequest res, {
+  Completer<void>? destroy$,
+}) async {
   try {
-    Future<void> healthCheck() async {
-      await Future.delayed(const Duration(microseconds: 10));
-      if (destroy$?.isCompleted == true) {
-        throw ArgumentError('Kill thread');
-      }
-    }
-
-    /// Finds the bounding box of the non-transparent area in the given [image].
-    ///
-    /// Returns a [BoundingBox] object representing the coordinates and
-    /// dimensions of the bounding box.
-    Future<_BoundingBox> findBoundingBox(img.Image image) async {
-      int left = image.width;
-      int right = 0;
-      int top = image.height;
-      int bottom = 0;
-      if (res.generateOnlyImageBounds == true) {
-        bool found = false;
-        // Find top boundary
-        for (int y = 0; y < image.height && !found; y++) {
-          for (int x = 0; x < image.width; x++) {
-            var pixel = image.getPixel(x, y);
-            if (pixel.a != 0) {
-              top = y;
-              found = true;
-              break;
-            }
-          }
-        }
-
-        await healthCheck();
-
-        found = false;
-        // Find bottom boundary
-        for (int y = image.height - 1; y >= top && !found; y--) {
-          for (int x = 0; x < image.width; x++) {
-            var pixel = image.getPixel(x, y);
-            if (pixel.a != 0) {
-              bottom = y;
-              found = true;
-              break;
-            }
-          }
-        }
-        bottom = bottom.clamp(top, image.height);
-
-        await healthCheck();
-
-        found = false;
-        // Find left boundary
-        for (int x = 0; x < image.width && !found; x++) {
-          for (int y = top; y <= bottom; y++) {
-            var pixel = image.getPixel(x, y);
-            if (pixel.a != 0) {
-              left = x;
-              found = true;
-              break;
-            }
-          }
-        }
-        left = left.clamp(0, image.width);
-
-        await healthCheck();
-
-        found = false;
-        // Find right boundary
-        for (int x = image.width - 1; x >= left && !found; x--) {
-          for (int y = top; y <= bottom; y++) {
-            var pixel = image.getPixel(x, y);
-            if (pixel.a != 0) {
-              right = x;
-              found = true;
-              break;
-            }
-          }
-        }
-        right = right.clamp(left, image.width);
-      } else {
-        left = 0;
-        top = 0;
-        right = image.width;
-        bottom = image.height;
-      }
-      final width = right - left + 1;
-      final height = bottom - top + 1;
-
-      return _BoundingBox(left, top, width, height);
-    }
-
-    // Crop the image to the bounding box
-    Future<img.Image> resizeCropRect(
-      img.Image src, {
-      required int left,
-      required int top,
-      required int width,
-      required int height,
-      num radius = 0,
-      bool antialias = true,
-    }) async {
-      // Make sure crop rectangle is within the range of the src image.
-      left = left.clamp(0, src.width - 1).ceil();
-      top = top.clamp(0, src.height - 1).ceil();
-      if (left + width > src.width) {
-        width = src.width - left;
-      }
-      if (top + height > src.height) {
-        height = src.height - top;
-      }
-
-      img.Image? firstFrame;
-      final numFrames = src.numFrames;
-      for (var i = 0; i < numFrames; ++i) {
-        final frame = src.frames[i];
-        final dst = firstFrame?.addFrame() ??
-            img.Image.fromResized(frame,
-                width: width, height: height, noAnimation: true);
-        firstFrame ??= dst;
-
-        for (int y = 0; y < height; y++) {
-          int topY = top + y;
-          for (int x = 0; x < width; x++) {
-            var pixel = frame.getPixel(left + x, topY);
-            dst.setPixelRgba(x, y, pixel.r, pixel.g, pixel.b, pixel.a);
-          }
-
-          if (y % 100 == 0) {
-            await healthCheck();
-          }
-        }
-      }
-
-      return firstFrame!;
-    }
-
     // Find the bounding box of the non-transparent area
-    final bbox = await findBoundingBox(res.image);
+    final bbox = await _findBoundingBox(
+      image: res.image,
+      destroy$: destroy$,
+      generateOnlyImageBounds: res.generateOnlyImageBounds,
+    );
 
-    await healthCheck();
+    await _healthCheck(destroy$);
 
     final croppedImage = res.generateOnlyImageBounds == true
-        ? await resizeCropRect(
+        ? await _resizeCropRect(
             res.image,
             left: bbox.left,
             top: bbox.top,
             width: bbox.width,
             height: bbox.height,
+            destroy$: destroy$,
           )
         : res.image;
 
-    await healthCheck();
+    await _healthCheck(destroy$);
 
     Uint8List bytes = await encodeImage(
       image: croppedImage,
@@ -182,16 +55,144 @@ Future<ThreadResponse> convertRawImage(ImageConvertThreadRequest res,
       destroy$: destroy$,
     );
 
-    return ThreadResponse(
-      bytes: bytes,
-      id: res.id,
-    );
+    return ThreadResponse(bytes: bytes, id: res.id);
   } catch (e) {
-    return ThreadResponse(
-      bytes: null,
-      id: res.id,
-    );
+    return ThreadResponse(bytes: null, id: res.id);
   }
+}
+
+Future<void> _healthCheck(Completer<void>? destroy$) async {
+  await Future.delayed(const Duration(microseconds: 10));
+  if (destroy$?.isCompleted == true) {
+    throw ArgumentError('Kill thread');
+  }
+}
+
+/// Finds the bounding box of the non-transparent area in the given [image].
+///
+/// Returns a [BoundingBox] object representing the coordinates and
+/// dimensions of the bounding box.
+Future<_BoundingBox> _findBoundingBox({
+  required img.Image image,
+  required Completer<void>? destroy$,
+  required bool? generateOnlyImageBounds,
+}) async {
+  int left = image.width;
+  int right = 0;
+  int top = image.height;
+  int bottom = 0;
+  if (generateOnlyImageBounds == true) {
+    // Find top boundary
+    outer:
+    for (int y = 0; y < image.height; y++) {
+      for (int x = 0; x < image.width; x++) {
+        var pixel = image.getPixel(x, y);
+        if (pixel.a != 0) {
+          top = y;
+          break outer;
+        }
+      }
+    }
+
+    await _healthCheck(destroy$);
+
+    // Find bottom boundary
+    outer:
+    for (int y = image.height - 1; y >= top; y--) {
+      for (int x = 0; x < image.width; x++) {
+        var pixel = image.getPixel(x, y);
+        if (pixel.a != 0) {
+          bottom = y.clamp(top, image.height);
+          break outer;
+        }
+      }
+    }
+
+    await _healthCheck(destroy$);
+
+    // Find left boundary
+    outer:
+    for (int x = 0; x < image.width; x++) {
+      for (int y = top; y <= bottom; y++) {
+        var pixel = image.getPixel(x, y);
+        if (pixel.a != 0) {
+          left = x.clamp(0, image.width);
+          break outer;
+        }
+      }
+    }
+
+    await _healthCheck(destroy$);
+
+    // Find right boundary
+    outer:
+    for (int x = image.width - 1; x >= left; x--) {
+      for (int y = top; y <= bottom; y++) {
+        var pixel = image.getPixel(x, y);
+        if (pixel.a != 0) {
+          right = x.clamp(left, image.width);
+          break outer;
+        }
+      }
+    }
+  } else {
+    left = 0;
+    top = 0;
+    right = image.width;
+    bottom = image.height;
+  }
+  final width = right - left + 1;
+  final height = bottom - top + 1;
+
+  return _BoundingBox(left, top, width, height);
+}
+
+/// Crop the image to the bounding box
+Future<img.Image> _resizeCropRect(
+  img.Image src, {
+  required int left,
+  required int top,
+  required int width,
+  required int height,
+  Completer<void>? destroy$,
+}) async {
+  // Make sure crop rectangle is within the range of the src image.
+  left = left.clamp(0, src.width - 1).ceil();
+  top = top.clamp(0, src.height - 1).ceil();
+  if (left + width > src.width) {
+    width = src.width - left;
+  }
+  if (top + height > src.height) {
+    height = src.height - top;
+  }
+
+  img.Image? firstFrame;
+  final numFrames = src.numFrames;
+  for (var i = 0; i < numFrames; ++i) {
+    final frame = src.frames[i];
+    final dst = firstFrame?.addFrame() ??
+        img.Image.fromResized(
+          frame,
+          width: width,
+          height: height,
+          noAnimation: true,
+        );
+    firstFrame ??= dst;
+
+    for (int y = 0; y < height; y++) {
+      int topY = top + y;
+      for (int x = 0; x < width; x++) {
+        var pixel = frame.getPixel(left + x, topY);
+        dst.setPixelRgba(x, y, pixel.r, pixel.g, pixel.b, pixel.a);
+      }
+
+      if (y % 100 == 0) {
+        await _healthCheck(destroy$);
+      }
+    }
+  }
+
+  return firstFrame!;
 }
 
 /// Represents a bounding box in terms of its position (left and top) and size

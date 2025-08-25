@@ -30,6 +30,7 @@ class PaintEditorStyle {
     this.initialColor = const Color(0xffff0000),
     this.editSheetShowDragHandle = true,
     this.editSheetBackgroundColor = const Color(0xFF121B22),
+    this.editSheetColor = kImageEditorAppBarColor,
     this.editSheetPreviewAreaColor = const Color(0xFF1E2D3C),
     this.editSheetPreviewAreaRadius = 7.0,
   })  : assert(initialStrokeWidth > 0, 'initialStrokeWidth must be positive'),
@@ -81,6 +82,9 @@ class PaintEditorStyle {
   /// The background color of the edit sheet.
   final Color editSheetBackgroundColor;
 
+  /// The text color of the edit sheet.
+  final Color editSheetColor;
+
   /// The background color of the preview area inside the edit sheet.
   final Color editSheetPreviewAreaColor;
 
@@ -113,6 +117,7 @@ class PaintEditorStyle {
     Color? initialColor,
     bool? editSheetShowDragHandle,
     Color? editSheetBackgroundColor,
+    Color? editSheetColor,
     Color? editSheetPreviewAreaColor,
     double? editSheetPreviewAreaRadius,
     SystemUiOverlayStyle? uiOverlayStyle,
@@ -141,6 +146,7 @@ class PaintEditorStyle {
           editSheetShowDragHandle ?? this.editSheetShowDragHandle,
       editSheetBackgroundColor:
           editSheetBackgroundColor ?? this.editSheetBackgroundColor,
+      editSheetColor: editSheetColor ?? this.editSheetColor,
       editSheetPreviewAreaColor:
           editSheetPreviewAreaColor ?? this.editSheetPreviewAreaColor,
       editSheetPreviewAreaRadius:

@@ -32,6 +32,7 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
   late final PaintLayer _layer = widget.layer;
 
   PaintedModel get _paintItem => _layer.item;
+  late final _style = _configs.paintEditor.style;
 
   void _setFillState(bool enableFill) {
     _layer.item = _paintItem.copyWith(fill: enableFill);
@@ -56,19 +57,24 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
   @override
   Widget build(BuildContext context) {
     return ExtendedPopScope(
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shrinkWrap: true,
-        children: [
-          _buildPainting(),
-          _buildBarColorPicker(),
-          const SizedBox(height: 24),
-          _buildOpacity(),
-          _buildStrokeWidthSlider(),
-          if (_paintItem.canBeFilled) _buildFillItem(),
-          const SizedBox(height: 8),
-          _buildAction(),
-        ],
+      child: DefaultTextStyle(
+        style: DefaultTextStyle.of(context).style.copyWith(
+              color: _style.editSheetColor,
+            ),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shrinkWrap: true,
+          children: [
+            _buildPainting(),
+            _buildBarColorPicker(),
+            const SizedBox(height: 24),
+            _buildOpacity(),
+            _buildStrokeWidthSlider(),
+            if (_paintItem.canBeFilled) _buildFillItem(),
+            const SizedBox(height: 8),
+            _buildAction(),
+          ],
+        ),
       ),
     );
   }
@@ -81,10 +87,8 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: _configs.paintEditor.style.editSheetPreviewAreaColor,
-        borderRadius: BorderRadius.circular(
-          _configs.paintEditor.style.editSheetPreviewAreaRadius,
-        ),
+        color: _style.editSheetPreviewAreaColor,
+        borderRadius: BorderRadius.circular(_style.editSheetPreviewAreaRadius),
       ),
       padding: const EdgeInsets.all(7),
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
