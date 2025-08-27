@@ -18,7 +18,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     initialPlay: false,
     isAudioSupported: true,
     minTrimDuration: Duration(seconds: 5),
-    maxTrimDuration: Duration(seconds: 15),
+    // maxTrimDuration: Duration(seconds: 15),
   );
 
   /// Indicates whether a seek operation is in progress.

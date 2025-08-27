@@ -933,11 +933,35 @@ class ProImageEditorState extends State<ProImageEditor>
         pixelRatio: initSize.width / sizesManager.editorSize.width,
         isRotated: false,
       );
+
       sizesManager.originalImageSize ??= _imageInfos!.rawSize;
       sizesManager.decodedImageSize = _imageInfos!.renderedSize;
+
+      bool shouldImportHistory =
+          stateHistoryConfigs.initStateHistory != null && !_isInitialized;
       _isInitialized = true;
       _isImageNotDecoded = false;
       if (mounted) setState(() {});
+
+      if (shouldImportHistory) {
+        bool showLoadingDialog = i18n.importStateHistoryMsg.isNotEmpty;
+
+        if (showLoadingDialog) {
+          LoadingDialog.instance.show(
+            context,
+            theme: _theme,
+            configs: configs,
+            message: i18n.importStateHistoryMsg,
+          );
+        }
+        await importStateHistory(stateHistoryConfigs.initStateHistory!);
+        if (showLoadingDialog) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            LoadingDialog.instance.hide();
+          });
+        }
+      }
+
       return;
     }
 

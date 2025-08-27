@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.5.3
+- **FIX**(video-editor): Fixed issue where state history import didn't work in the video editor. Resolves video-editor discussion [#50](https://github.com/hm21/pro_video_editor/discussions/50).
+
 ## 11.5.2
 - **FEAT**(style): Add missing `editSheetColor` to paint-editor styles.
 
