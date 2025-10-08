@@ -37,6 +37,7 @@ class PaintEditorWidgets
     this.editFillSwitch,
     this.editActionButtons,
     this.editBottomSheet,
+    this.editLayer,
   });
 
   /// Custom close button in the paint-editor to close the line-width bottom
@@ -117,6 +118,9 @@ class PaintEditorWidgets
 
   /// A callback function that returns a widget for editing a [PaintLayer].
   final Widget Function(PaintLayer layer)? editBottomSheet;
+
+  /// A callback function that allows the user to edit a [PaintLayer].
+  final Future<PaintLayer> Function(PaintLayer layer)? editLayer;
 
   @override
   PaintEditorWidgets copyWith({

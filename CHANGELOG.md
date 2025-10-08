@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.7.1
+- **FEAT**(paint-editor): Add support for custom paint layer editing via `widgets.editLayer` callback in `PaintEditorWidgets`.
+
 ## 11.7.0
 - **FEAT**(sub-editors): Add `enableGesturePop` config to all sub-editors to control whether user back navigation (hardware back button, predictive back swipe) is allowed.
 
