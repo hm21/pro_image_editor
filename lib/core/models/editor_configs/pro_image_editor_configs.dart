@@ -20,7 +20,9 @@ import 'state_history_configs.dart';
 import 'sticker_editor_configs.dart';
 import 'text_editor_configs.dart';
 import 'tune_editor_configs.dart';
-import 'video_editor_configs.dart';
+import 'video/audio_editor_configs.dart';
+import 'video/clips_editor_configs.dart';
+import 'video/video_editor_configs.dart';
 
 export '/features/crop_rotate_editor/models/aspect_ratio_item.dart';
 export '/shared/utils/platform_info.dart';
@@ -42,6 +44,9 @@ export 'state_history_configs.dart';
 export 'sticker_editor_configs.dart';
 export 'text_editor_configs.dart';
 export 'tune_editor_configs.dart';
+export 'video/audio_editor_configs.dart';
+export 'video/clips_editor_configs.dart';
+export 'video/video_editor_configs.dart';
 
 /// A class representing configuration options for the Image Editor.
 class ProImageEditorConfigs {
@@ -102,6 +107,8 @@ class ProImageEditorConfigs {
     this.dialogConfigs = const DialogConfigs(),
     this.progressIndicatorConfigs = const ProgressIndicatorConfigs(),
     this.videoEditor = const VideoEditorConfigs(),
+    this.audioEditor = const AudioEditorConfigs(),
+    this.clipsEditor = const ClipsEditorConfigs(),
     this.designMode = ImageEditorDesignMode.material,
   });
 
@@ -165,6 +172,12 @@ class ProImageEditorConfigs {
   /// Configurations for video editing
   final VideoEditorConfigs videoEditor;
 
+  /// Configurations for audio editing
+  final AudioEditorConfigs audioEditor;
+
+  /// Configurations for video clips editing
+  final ClipsEditorConfigs clipsEditor;
+
   /// Creates a copy of this `ProImageEditorConfigs` object with the given
   /// fields replaced with new values.
   ProImageEditorConfigs copyWith({
@@ -188,6 +201,8 @@ class ProImageEditorConfigs {
     DialogConfigs? dialogConfigs,
     ProgressIndicatorConfigs? progressIndicatorConfigs,
     VideoEditorConfigs? videoEditor,
+    AudioEditorConfigs? audioEditor,
+    ClipsEditorConfigs? clipsEditor,
   }) {
     return ProImageEditorConfigs(
       theme: theme ?? this.theme,
@@ -211,6 +226,8 @@ class ProImageEditorConfigs {
       progressIndicatorConfigs:
           progressIndicatorConfigs ?? this.progressIndicatorConfigs,
       videoEditor: videoEditor ?? this.videoEditor,
+      audioEditor: audioEditor ?? this.audioEditor,
+      clipsEditor: clipsEditor ?? this.clipsEditor,
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:example/shared/widgets/video_progress_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -128,10 +127,8 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
           ? const VideoInitializingWidget()
           : ProImageEditor.video(
               proVideoController!,
-              callbacks: ProImageEditorCallbacks(
-                onCompleteWithParameters: generateVideo,
-                onCloseEditor: onCloseEditor,
-                videoEditorCallbacks: VideoEditorCallbacks(
+              callbacks: callbacks.copyWith(
+                videoEditorCallbacks: callbacks.videoEditorCallbacks!.copyWith(
                   onPause: _player.pause,
                   onPlay: _player.play,
                   onMuteToggle: (isMuted) {
@@ -145,46 +142,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
                   onTrimSpanEnd: _seekToPosition,
                 ),
               ),
-              configs: ProImageEditorConfigs(
-                dialogConfigs: DialogConfigs(
-                  widgets: DialogWidgets(
-                    loadingDialog: (message, configs) =>
-                        VideoProgressAlert(taskId: taskId),
-                  ),
-                ),
-                mainEditor: MainEditorConfigs(
-                  widgets: MainEditorWidgets(
-                    removeLayerArea: (
-                      removeAreaKey,
-                      editor,
-                      rebuildStream,
-                      isLayerBeingTransformed,
-                    ) =>
-                        VideoEditorRemoveArea(
-                      removeAreaKey: removeAreaKey,
-                      editor: editor,
-                      rebuildStream: rebuildStream,
-                      isLayerBeingTransformed: isLayerBeingTransformed,
-                    ),
-                  ),
-                ),
-                paintEditor: const PaintEditorConfigs(
-                  tools: [
-                    PaintMode.freeStyle,
-                    PaintMode.arrow,
-                    PaintMode.line,
-                    PaintMode.rect,
-                    PaintMode.circle,
-                    PaintMode.dashLine,
-                    PaintMode.polygon,
-                    // Blur and pixelate are not supported.
-                    // PaintMode.pixelate,
-                    // PaintMode.blur,
-                    PaintMode.eraser,
-                  ],
-                ),
-                videoEditor: videoConfigs,
-              ),
+              configs: configs,
             ),
     );
   }

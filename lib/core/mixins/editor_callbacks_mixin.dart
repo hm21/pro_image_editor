@@ -45,6 +45,14 @@ mixin SimpleCallbacksAccessState<T extends StatefulWidget> on State<T> {
   /// Returns the blur editor callbacks.
   BlurEditorCallbacks? get blurEditorCallbacks => callbacks.blurEditorCallbacks;
 
+  /// Returns the audio editor callbacks.
+  AudioEditorCallbacks? get audioEditorCallbacks =>
+      callbacks.audioEditorCallbacks;
+
+  /// Returns the clips editor callbacks.
+  ClipsEditorCallbacks? get clipsEditorCallbacks =>
+      callbacks.clipsEditorCallbacks;
+
   /// A callback function that will be called when the editing is done,
   /// and it returns the edited image as a Uint8List.
   ///

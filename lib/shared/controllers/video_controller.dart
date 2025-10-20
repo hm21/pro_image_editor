@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 
+import '/core/models/editor_callbacks/audio_editor_callbacks.dart';
 import '/core/models/editor_callbacks/video_editor_callbacks.dart';
-import '/core/models/editor_configs/video_editor_configs.dart';
+import '/core/models/editor_configs/video/video_editor_configs.dart';
 import '/core/models/video/trim_duration_span_model.dart';
+import '/features/audio_editor/models/audio_track.dart';
 
 /// Controls video playback and trimming for the video editor.
 class ProVideoController {
@@ -16,10 +18,18 @@ class ProVideoController {
     required this.initialResolution,
     required this.fileSize,
     this.bitrate,
+    this.audioTrack,
+    this.audioTrackStartTime,
     List<ImageProvider>? thumbnails,
   }) {
     this.thumbnails = thumbnails;
   }
+
+  /// The currently selected audio track.
+  AudioTrack? audioTrack;
+
+  /// The start time of the audio track within the video.
+  Duration? audioTrackStartTime;
 
   /// The video player widget.
   final Widget videoPlayer;
@@ -62,11 +72,15 @@ class ProVideoController {
   set thumbnails(List<ImageProvider>? value) =>
       thumbnailsNotifier.value = value;
 
+  late AudioEditorCallbacks Function() _callbacksAudioFunction;
   late VideoEditorCallbacks Function() _callbacksFunction;
   late VideoEditorConfigs Function() _configsFunction;
 
   /// Returns the configured video editor callbacks.
   VideoEditorCallbacks get callbacks => _callbacksFunction();
+
+  /// Returns the configured audio editor callbacks.
+  AudioEditorCallbacks get callbacksAudio => _callbacksAudioFunction();
 
   /// Returns the video editor configuration settings.
   VideoEditorConfigs get configs => _configsFunction();
@@ -113,9 +127,11 @@ class ProVideoController {
 
   /// Initializes the controller with provided callback and config functions.
   void initialize({
+    required AudioEditorCallbacks Function() callbacksAudioFunction,
     required VideoEditorCallbacks Function() callbacksFunction,
     required VideoEditorConfigs Function() configsFunction,
   }) {
+    _callbacksAudioFunction = callbacksAudioFunction;
     _callbacksFunction = callbacksFunction;
     _configsFunction = configsFunction;
   }
@@ -143,18 +159,26 @@ class ProVideoController {
   void play() {
     isPlayingNotifier.value = true;
     callbacks.onPlay?.call();
+    if (audioTrack?.audio != null) {
+      callbacksAudio.onPlay?.call(
+        audioTrack!.audio,
+        audioTrackStartTime ?? Duration.zero,
+      );
+    }
   }
 
   /// Pauses video playback and triggers the pause callback.
   void pause() {
     isPlayingNotifier.value = false;
     callbacks.onPause?.call();
+    callbacksAudio.onStop?.call(audioTrack?.audio);
   }
 
   /// Sets the mute state and triggers the mute toggle callback.
   void setMuteState(bool isMuted) {
     isMutedNotifier.value = isMuted;
     callbacks.onMuteToggle?.call(isMuted);
+    callbacksAudio.onMuteToggle?.call(isMuted);
   }
 
   /// Updates the trim span and triggers the trim update callback.

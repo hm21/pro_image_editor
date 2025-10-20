@@ -11,6 +11,7 @@ export 'core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 /// Configs and Callbacks
 export 'core/enums/editor_mode.dart';
 export 'core/models/editor_configs/pro_image_editor_configs.dart';
+export 'core/models/editor_audio.dart';
 export 'core/models/editor_image.dart';
 export 'core/models/history/state_history.dart';
 
@@ -18,7 +19,7 @@ export 'core/models/history/state_history.dart';
 export '/shared/controllers/video_controller.dart';
 export '/shared/widgets/video/export_prebuild/video_editor_prebuild_widgets.dart';
 export '/core/models/editor_callbacks/video_editor_callbacks.dart';
-export '/core/models/editor_configs/video_editor_configs.dart';
+export 'core/models/editor_configs/video/video_editor_configs.dart';
 export '/core/models/video/trim_duration_span_model.dart';
 
 /// Import/Export state history

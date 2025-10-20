@@ -1,5 +1,7 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/features/preview/preview_video.dart';
+import 'package:example/shared/widgets/video_progress_alert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -14,7 +16,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
 
   /// Video editor configuration settings.
   late final VideoEditorConfigs videoConfigs = const VideoEditorConfigs(
-    initialMuted: true,
+    initialMuted: false,
     initialPlay: false,
     isAudioSupported: true,
     minTrimDuration: Duration(seconds: 5),
@@ -57,10 +59,132 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   /// it allows tracking each task individually.
   final taskId = DateTime.now().microsecondsSinceEpoch.toString();
 
+  final _audioPlayer = AudioPlayer();
+
+  /// Callback options for the Image Editor.
+  @protected
+  late final callbacks = ProImageEditorCallbacks(
+    onCompleteWithParameters: generateVideo,
+    onCloseEditor: onCloseEditor,
+    audioEditorCallbacks: AudioEditorCallbacks(
+      onPlay: (audio, startTime) async {
+        Source source;
+        if (audio.hasAssetPath) {
+          source = AssetSource(audio.assetPath!);
+        } else if (audio.hasFile) {
+          source = DeviceFileSource(audio.file!.path);
+        } else if (audio.hasNetworkUrl) {
+          source = UrlSource(audio.networkUrl!);
+        } else {
+          source = BytesSource(audio.bytes!);
+        }
+
+        await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+        await _audioPlayer.play(source, position: startTime);
+      },
+      onStop: (audio) async {
+        return _audioPlayer.pause();
+      },
+      onMuteToggle: (isMuted) async {
+        // You can also pause or play the audio instantly, or set the volume to
+        // zero. Some other audio players may support mute directly.
+        if (isMuted) {
+          await _audioPlayer.setVolume(0);
+        } else {
+          await _audioPlayer.setVolume(1);
+        }
+      },
+      onStartTimeChange: (startTime) async {
+        await _audioPlayer.seek(startTime);
+      },
+    ),
+    videoEditorCallbacks: VideoEditorCallbacks(),
+  );
+
+  /// Configuration options for the Image Editor.
+  late final configs = ProImageEditorConfigs(
+    dialogConfigs: DialogConfigs(
+      widgets: DialogWidgets(
+        loadingDialog: (message, configs) => VideoProgressAlert(taskId: taskId),
+      ),
+    ),
+    mainEditor: MainEditorConfigs(
+      tools: [
+        SubEditorMode.videoClips,
+        SubEditorMode.audio,
+        SubEditorMode.paint,
+        SubEditorMode.text,
+        SubEditorMode.cropRotate,
+        SubEditorMode.tune,
+        SubEditorMode.filter,
+        SubEditorMode.blur,
+        SubEditorMode.emoji,
+      ],
+      widgets: MainEditorWidgets(
+        removeLayerArea: (
+          removeAreaKey,
+          editor,
+          rebuildStream,
+          isLayerBeingTransformed,
+        ) =>
+            VideoEditorRemoveArea(
+          removeAreaKey: removeAreaKey,
+          editor: editor,
+          rebuildStream: rebuildStream,
+          isLayerBeingTransformed: isLayerBeingTransformed,
+        ),
+      ),
+    ),
+    paintEditor: const PaintEditorConfigs(
+      tools: [
+        PaintMode.freeStyle,
+        PaintMode.arrow,
+        PaintMode.line,
+        PaintMode.rect,
+        PaintMode.circle,
+        PaintMode.dashLine,
+        PaintMode.polygon,
+        // Blur and pixelate are not supported.
+        // PaintMode.pixelate,
+        // PaintMode.blur,
+        PaintMode.eraser,
+      ],
+    ),
+    audioEditor: AudioEditorConfigs(
+      audioTracks: [
+        AudioTrack(
+          id: 'track_1',
+          title: 'Summer Vibes',
+          subtitle: 'Beach Band',
+          duration: const Duration(seconds: 10),
+          image: EditorImage.network('https://picsum.photos/200/200?random=1'),
+          audio: EditorAudio.asset('audio1.mp3'),
+        ),
+        AudioTrack(
+          id: 'track_2',
+          title: 'Night Drive',
+          subtitle: 'Synthwave Artist',
+          duration: const Duration(seconds: 59),
+          image: EditorImage.network('https://picsum.photos/200/200?random=2'),
+          audio: EditorAudio.asset('audio2.wav'),
+        ),
+        AudioTrack(
+          id: 'track_4',
+          title: 'Electronic Pulse',
+          subtitle: 'EDM Producer',
+          duration: const Duration(seconds: 34),
+          image: EditorImage.network('https://picsum.photos/200/200?random=3'),
+          audio: EditorAudio.asset('audio3.wav'),
+        ),
+      ],
+    ),
+    videoEditor: videoConfigs,
+  );
+
   @override
   void dispose() {
     proVideoController?.dispose();
-
+    _audioPlayer.dispose();
     super.dispose();
   }
 

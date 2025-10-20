@@ -53,4 +53,10 @@ enum SubEditorMode {
 
   /// The sticker editor.
   sticker,
+
+  /// The video-audio editor.
+  audio,
+
+  /// The video-clips editor.
+  videoClips,
 }

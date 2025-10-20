@@ -2,8 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/core/models/editor_callbacks/audio_editor_callbacks.dart';
 import 'package:pro_image_editor/core/models/editor_callbacks/video_editor_callbacks.dart';
-import 'package:pro_image_editor/core/models/editor_configs/video_editor_configs.dart';
+import 'package:pro_image_editor/core/models/editor_configs/video/video_editor_configs.dart';
 import 'package:pro_image_editor/core/models/video/trim_duration_span_model.dart';
 import 'package:pro_image_editor/shared/controllers/video_controller.dart';
 
@@ -38,6 +39,8 @@ class DummyCallbacks extends VideoEditorCallbacks {
       };
 }
 
+class DummyAudioCallbacks extends AudioEditorCallbacks {}
+
 class DummyConfigs extends VideoEditorConfigs {
   @override
   bool get initialPlay => false;
@@ -65,6 +68,7 @@ void main() {
         initialResolution: dummyResolution,
         fileSize: dummyFileSize,
       )..initialize(
+          callbacksAudioFunction: DummyAudioCallbacks.new,
           callbacksFunction: () => callbacks,
           configsFunction: () => configs,
         );

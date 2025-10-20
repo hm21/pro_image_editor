@@ -25,6 +25,12 @@ enum SubEditor {
   /// Represents the Tune sub-editor.
   tune,
 
+  /// Represents the Audio sub-editor.
+  audio,
+
+  /// Represents the Clips sub-editor.
+  clips,
+
   /// Represents an unknown sub-editor.
   unknown,
 }

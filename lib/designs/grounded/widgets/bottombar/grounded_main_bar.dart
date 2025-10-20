@@ -319,6 +319,9 @@ class GroundedMainBarState extends State<GroundedMainBar>
                 ),
                 onPressed: _openStickerEditor,
               );
+            case SubEditorMode.audio:
+            case SubEditorMode.videoClips:
+              return null; // TODO:
           }
         })
         .whereType<Widget>()

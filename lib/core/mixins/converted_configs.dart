@@ -34,6 +34,12 @@ mixin ImageEditorConvertedConfigs {
   /// Returns the configuration options for the sticker editor.
   StickerEditorConfigs get stickerEditorConfigs => configs.stickerEditor;
 
+  /// Returns the configuration options for the audio editor.
+  AudioEditorConfigs get audioEditorConfigs => configs.audioEditor;
+
+  /// Returns the configuration options for the clips editor.
+  ClipsEditorConfigs get clipsEditorConfigs => configs.clipsEditor;
+
   /// Returns the design mode for the image editor.
   ImageEditorDesignMode get designMode => configs.designMode;
 

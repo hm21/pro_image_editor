@@ -245,6 +245,9 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
             case SubEditorMode.sticker:
               return null;
+            case SubEditorMode.audio:
+            case SubEditorMode.videoClips:
+              return null; // TODO:
           }
         })
         .whereType<Widget>()

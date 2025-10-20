@@ -8,8 +8,6 @@ import '/core/platform/io/io_helper.dart';
 import '/shared/utils/converters.dart';
 import '/shared/utils/file_constructor_utils.dart';
 
-/// Flutter EditorImage Class Documentation
-///
 /// The `EditorImage` class represents an image with multiple sources, including
 /// bytes, file, network URL, and asset path. It provides flexibility for
 /// loading images from various sources in a Flutter application.
@@ -99,6 +97,26 @@ class EditorImage {
           'At least one of bytes, file, networkUrl, or assetPath must not '
           'be null.',
         );
+
+  /// Creates an [EditorImage] from raw memory bytes.
+  factory EditorImage.memory(Uint8List bytes) {
+    return EditorImage(byteArray: bytes);
+  }
+
+  /// Creates an [EditorImage] from a network URL.
+  factory EditorImage.network(String networkUrl) {
+    return EditorImage(networkUrl: networkUrl);
+  }
+
+  /// Creates an [EditorImage] from an asset path.
+  factory EditorImage.asset(String assetPath) {
+    return EditorImage(assetPath: assetPath);
+  }
+
+  /// Creates an [EditorImage] from a local file.
+  factory EditorImage.file(dynamic file) {
+    return EditorImage(file: file);
+  }
 
   /// A byte array representing the image data.
   Uint8List? byteArray;

@@ -46,6 +46,8 @@ class MainEditorBottombar extends StatelessWidget {
     required this.openBlurEditor,
     required this.openEmojiEditor,
     required this.openStickerEditor,
+    required this.openAudioEditor,
+    required this.openClipsEditor,
   });
 
   /// Manages the main editor's controllers.
@@ -87,6 +89,12 @@ class MainEditorBottombar extends StatelessWidget {
   /// Callback for opening the sticker editor.
   final Function() openStickerEditor;
 
+  /// Callback for opening the audio editor.
+  final Function() openAudioEditor;
+
+  /// Callback for opening the clips editor.
+  final Function() openClipsEditor;
+
   final double _bottomIconSize = 22.0;
   Color get _foregroundColor => configs.mainEditor.style.bottomBarColor;
   TextStyle get _bottomTextStyle => TextStyle(
@@ -117,8 +125,8 @@ class MainEditorBottombar extends StatelessWidget {
                           sizesManager.lastScreenSize.width != 0
                               ? sizesManager.lastScreenSize.width
                               : constraints.maxWidth,
-                          600),
-                      maxWidth: 600,
+                          700),
+                      maxWidth: 700,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -213,6 +221,20 @@ class MainEditorBottombar extends StatelessWidget {
                 label: configs.i18n.stickerEditor.bottomNavigationBarText,
                 icon: configs.stickerEditor.icons.bottomNavBar,
                 onPressed: openStickerEditor,
+              );
+            case SubEditorMode.audio:
+              return _buildActionButton(
+                key: const ValueKey('open-audio-editor-btn'),
+                label: configs.i18n.audioEditor.bottomNavigationBarText,
+                icon: configs.audioEditor.icons.bottomNavBar,
+                onPressed: openAudioEditor,
+              );
+            case SubEditorMode.videoClips:
+              return _buildActionButton(
+                key: const ValueKey('open-clips-editor-btn'),
+                label: configs.i18n.clipsEditor.bottomNavigationBarText,
+                icon: configs.clipsEditor.icons.bottomNavBar,
+                onPressed: openClipsEditor,
               );
           }
         })

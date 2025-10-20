@@ -573,6 +573,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     widget.videoController!.initialize(
       configsFunction: () => configs.videoEditor,
+      callbacksAudioFunction: () =>
+          callbacks.audioEditorCallbacks ?? const AudioEditorCallbacks(),
       callbacksFunction: () =>
           callbacks.videoEditorCallbacks ?? VideoEditorCallbacks(),
     );

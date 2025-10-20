@@ -39,4 +39,12 @@ mixin MainEditorGlobalKeys {
   /// A GlobalKey for the Emoji Editor, used to access and control the state of
   /// the emoji editor.
   final emojiEditor = GlobalKey<EmojiEditorState>();
+
+  /// A GlobalKey for the Audio Editor, used to access and control the state of
+  /// the audio editor.
+  final audioEditor = GlobalKey<EmojiEditorState>();
+
+  /// A GlobalKey for the Clips Editor, used to access and control the state of
+  /// the clips editor.
+  final clipsEditor = GlobalKey<EmojiEditorState>();
 }

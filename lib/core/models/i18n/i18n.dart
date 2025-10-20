@@ -1,5 +1,7 @@
 // Project imports:
+import 'i18n_audio_editor.dart';
 import 'i18n_blur_editor.dart';
+import 'i18n_clips_editor.dart';
 import 'i18n_crop_rotate_editor.dart';
 import 'i18n_emoji_editor.dart';
 import 'i18n_filter_editor.dart';
@@ -10,7 +12,9 @@ import 'i18n_text_editor.dart';
 import 'i18n_tune_editor.dart';
 import 'i18n_various.dart';
 
+export 'i18n_audio_editor.dart';
 export 'i18n_blur_editor.dart';
+export 'i18n_clips_editor.dart';
 export 'i18n_crop_rotate_editor.dart';
 export 'i18n_emoji_editor.dart';
 export 'i18n_filter_editor.dart';
@@ -150,6 +154,8 @@ class I18n {
     this.blurEditor = const I18nBlurEditor(),
     this.emojiEditor = const I18nEmojiEditor(),
     this.stickerEditor = const I18nStickerEditor(),
+    this.audioEditor = const I18nAudioEditor(),
+    this.clipsEditor = const I18nClipsEditor(),
     this.various = const I18nVarious(),
     this.importStateHistoryMsg = 'Initialize Editor',
     this.cancel = 'Cancel',
@@ -190,6 +196,12 @@ class I18n {
   /// Translations and messages specific to the crop and rotate editor.
   final I18nCropRotateEditor cropRotateEditor;
 
+  /// Translations and messages specific to the audio editor.
+  final I18nAudioEditor audioEditor;
+
+  /// Translations and messages specific to the video clips editor.
+  final I18nClipsEditor clipsEditor;
+
   /// Message displayed while changes are being applied.
   final String doneLoadingMsg;
 
@@ -229,6 +241,8 @@ class I18n {
     I18nEmojiEditor? emojiEditor,
     I18nStickerEditor? stickerEditor,
     I18nCropRotateEditor? cropRotateEditor,
+    I18nAudioEditor? audioEditor,
+    I18nClipsEditor? clipsEditor,
     String? doneLoadingMsg,
     String? importStateHistoryMsg,
     String? cancel,
@@ -248,6 +262,8 @@ class I18n {
       emojiEditor: emojiEditor ?? this.emojiEditor,
       stickerEditor: stickerEditor ?? this.stickerEditor,
       cropRotateEditor: cropRotateEditor ?? this.cropRotateEditor,
+      audioEditor: audioEditor ?? this.audioEditor,
+      clipsEditor: clipsEditor ?? this.clipsEditor,
       doneLoadingMsg: doneLoadingMsg ?? this.doneLoadingMsg,
       importStateHistoryMsg:
           importStateHistoryMsg ?? this.importStateHistoryMsg,

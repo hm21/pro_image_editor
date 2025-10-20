@@ -36,6 +36,7 @@ dependencies:
 
   # Video-Editing
   pro_video_editor: ^0.2.3
+  audioplayers: ^6.5.1
   ### Choose one player below
   video_player: ^2.10.0
   chewie: ^1.12.1
@@ -54,8 +55,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/demo.png
-    - assets/demo.mp4
-    - assets/frame.png
-    - assets/frame1.png
+    - assets/
     - assets/google_fonts/
