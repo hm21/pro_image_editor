@@ -4,8 +4,24 @@ class I18nClipsEditor {
   /// internationalization settings.
   const I18nClipsEditor({
     this.bottomNavigationBarText = 'Clips',
+    this.done = 'Done',
+    this.back = 'Back',
+    this.remove = 'Remove',
+    this.addVideoClip = 'Add Video-Clip',
   });
 
   /// Text for the bottom navigation bar item that opens the Editor.
   final String bottomNavigationBarText;
+
+  /// Text for the "Done" button.
+  final String done;
+
+  /// Text for the "Remove" button.
+  final String remove;
+
+  /// Text for the "Back" button.
+  final String back;
+
+  /// Text for the "Add Video-Clip" button.
+  final String addVideoClip;
 }

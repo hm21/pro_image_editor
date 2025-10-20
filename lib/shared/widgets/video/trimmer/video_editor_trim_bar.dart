@@ -16,7 +16,10 @@ import 'video_editor_trim_thumbnail_bar.dart';
 /// This allows users to select and adjust the trim duration of the video.
 class VideoEditorTrimBar extends StatefulWidget {
   /// Creates a [VideoEditorTrimBar] widget.
-  const VideoEditorTrimBar({super.key});
+  const VideoEditorTrimBar({super.key, this.initialTrimSpan});
+
+  /// The initial trim range applied when the editor is opened.
+  final TrimDurationSpan? initialTrimSpan;
 
   @override
   State<VideoEditorTrimBar> createState() => _VideoEditorTrimBarState();
@@ -52,10 +55,38 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+
+      _applyInitialTrimSpan();
+    });
+  }
+
+  void _applyInitialTrimSpan() {
+    if (widget.initialTrimSpan == null) {
+      // Default to maximum allowed trim
+      _trimStart = 0.0;
       _trimEnd = _maxTrimPercentage;
       _updateTrimSpan();
-      _isUpdatingTrimBar = false;
-    });
+      return;
+    }
+
+    final startUs = widget.initialTrimSpan!.start.inMicroseconds.toDouble();
+    final endUs = widget.initialTrimSpan!.end.inMicroseconds.toDouble();
+
+    // Convert to normalized range (0–1)
+    _trimStart = startUs / _videoDuration;
+    _trimEnd = endUs / _videoDuration;
+
+    // Enforce trim limits
+    _trimStart = _trimStart.clamp(0.0, 1.0 - _minTrimPercentage);
+    _trimEnd = _trimEnd.clamp(_trimStart + _minTrimPercentage, 1.0);
+
+    // Ensure it doesn't exceed max duration
+    final spanDuration = _trimEnd - _trimStart;
+    if (spanDuration > _maxTrimPercentage) {
+      _trimEnd = _trimStart + _maxTrimPercentage;
+    }
+
+    _updateTrimSpan();
   }
 
   @override

@@ -21,6 +21,7 @@ class ProVideoController {
     this.audioTrack,
     this.audioTrackStartTime,
     List<ImageProvider>? thumbnails,
+    this.initialTrimSpan,
   }) {
     this.thumbnails = thumbnails;
   }
@@ -94,15 +95,19 @@ class ProVideoController {
   /// Notifies listeners of the current mute state.
   late final isMutedNotifier = ValueNotifier<bool>(configs.initialMuted);
 
+  /// The initial trim range applied when the editor is opened.
+  final TrimDurationSpan? initialTrimSpan;
+
   /// Notifies listeners of the selected trim duration span.
   late final trimDurationSpanNotifier = ValueNotifier<TrimDurationSpan>(
-    TrimDurationSpan(
-      start: Duration.zero,
-      end: configs.maxTrimDuration == null ||
-              configs.maxTrimDuration! > videoDuration
-          ? videoDuration
-          : configs.maxTrimDuration!,
-    ),
+    initialTrimSpan ??
+        TrimDurationSpan(
+          start: Duration.zero,
+          end: configs.maxTrimDuration == null ||
+                  configs.maxTrimDuration! > videoDuration
+              ? videoDuration
+              : configs.maxTrimDuration!,
+        ),
   );
 
   /// Notifier that indicates whether the trim time span UI should be shown.

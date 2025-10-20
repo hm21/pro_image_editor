@@ -32,7 +32,8 @@ import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.
 import '/shared/widgets/screen_resize_detector.dart';
 import '../audio_editor/audio_editor_page.dart';
 import '../audio_editor/models/audio_editor_response.dart';
-import '../clips_editor/clips_editor_page.dart';
+import '../clips_editor/models/video_clip.dart';
+import '../clips_editor/pages/clips_editor_page.dart';
 import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_generator.dart';
 import '../paint_editor/models/paint_editor_response_model.dart';
@@ -2027,6 +2028,21 @@ class ProImageEditorState extends State<ProImageEditor>
         'This editor can only be opened when editing videos, not images.',
       );
     }
+    _videoController!.pause();
+
+    if (!mounted) return;
+    List<VideoClip>? response = await openPage(
+      ClipsEditorPage(
+        key: audioEditor,
+        configs: configs,
+        callbacks: callbacks,
+        theme: _theme,
+        videoDuration: _videoController.videoDuration,
+      ),
+      duration: Duration.zero,
+    );
+    // TODO: update video-controller with new video-clips
+    debugPrint(response?.toString());
   }
 
   /// Moves a layer in the list to a new position.

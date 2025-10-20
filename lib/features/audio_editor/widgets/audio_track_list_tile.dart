@@ -79,11 +79,11 @@ class AudioTrackListTile extends StatelessWidget {
     if (audioTrack.image == null) {
       return _buildDefaultIcon();
     }
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
-      child: SizedBox(
+      child: Container(
         // Important that progress-spinner will not overflow.
+        color: configs.audioEditor.style.audioTrackImageBackground,
         width: 50,
         height: 50,
         child: AutoImage(
@@ -117,8 +117,6 @@ class AudioTrackListTile extends StatelessWidget {
   Widget _buildTrailing(BuildContext context) {
     String text = audioTrack.formattedDuration;
 
-    return Text(
-      text,
-    );
+    return Text(text);
   }
 }

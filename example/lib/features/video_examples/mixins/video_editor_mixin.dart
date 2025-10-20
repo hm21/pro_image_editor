@@ -2,10 +2,12 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/features/preview/preview_video.dart';
 import 'package:example/shared/widgets/video_progress_alert.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
+import 'package:pro_image_editor/features/clips_editor/models/video_clip.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
@@ -61,6 +63,10 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
 
   final _audioPlayer = AudioPlayer();
 
+  final Map<String, Uint8List> _cachedKeyFrames = {};
+  final Map<String, List<Uint8List>> _cachedKeyFrameList = {};
+  final List<VideoClip> _initialVideoClips = [];
+
   /// Callback options for the Image Editor.
   @protected
   late final callbacks = ProImageEditorCallbacks(
@@ -96,6 +102,89 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       },
       onStartTimeChange: (startTime) async {
         await _audioPlayer.seek(startTime);
+      },
+    ),
+    clipsEditorCallbacks: ClipsEditorCallbacks(
+      onReadKeyFrame: (source) async {
+        if (_cachedKeyFrames.containsKey(source.id)) {
+          return _cachedKeyFrames[source.id]!;
+        }
+
+        final result = await ProVideoEditor.instance.getKeyFrames(
+          KeyFramesConfigs(
+            video: EditorVideo.autoSource(
+              assetPath: source.clip.assetPath,
+              byteArray: source.clip.bytes,
+              file: source.clip.file,
+              networkUrl: source.clip.networkUrl,
+            ),
+            outputSize: const Size.square(200),
+            boxFit: ThumbnailBoxFit.cover,
+            maxOutputFrames: 1,
+            outputFormat: ThumbnailFormat.jpeg,
+          ),
+        );
+        _cachedKeyFrames[source.id] = result.first;
+        return result.first;
+      },
+      onReadKeyFrames: (source) async {
+        if (_cachedKeyFrameList.containsKey(source.id)) {
+          return _cachedKeyFrameList[source.id]!;
+        }
+
+        final result = await ProVideoEditor.instance.getKeyFrames(
+          KeyFramesConfigs(
+            video: EditorVideo.autoSource(
+              assetPath: source.clip.assetPath,
+              byteArray: source.clip.bytes,
+              file: source.clip.file,
+              networkUrl: source.clip.networkUrl,
+            ),
+            outputSize: const Size.square(200),
+            boxFit: ThumbnailBoxFit.cover,
+            maxOutputFrames: thumbnailCount,
+            outputFormat: ThumbnailFormat.jpeg,
+          ),
+        );
+        _cachedKeyFrameList[source.id] = result;
+        return result;
+      },
+      onAddClip: () async {
+        // Open video picker
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.video,
+          allowMultiple: false,
+        );
+
+        // User cancelled picker
+        if (result == null || result.files.isEmpty) return null;
+
+        final file = result.files.single;
+        final path = file.path;
+        if (path == null) return null;
+
+        // Extract file name for display
+        final name = file.name;
+        final title = name.split('.').first;
+        final meta = await ProVideoEditor.instance.getMetadata(
+          EditorVideo.file(path),
+        );
+
+        // Create and return your video clip
+        return VideoClip(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: title,
+          clip: EditorVideoClip.file(path),
+          duration: meta.duration,
+        );
+      },
+      onBuildPlayer: () {
+        // TODO: Return video player for only video-clips
+        return Container(
+          width: 200,
+          height: 200,
+          color: Colors.red,
+        );
       },
     ),
     videoEditorCallbacks: VideoEditorCallbacks(),
@@ -178,6 +267,9 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         ),
       ],
     ),
+    clipsEditor: ClipsEditorConfigs(
+      clips: _initialVideoClips,
+    ),
     videoEditor: videoConfigs,
   );
 
@@ -233,6 +325,23 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       if (proVideoController != null) {
         proVideoController!.thumbnails = thumbnails;
       }
+
+      _initialVideoClips.add(
+        VideoClip(
+          id: '001',
+          title: 'My awesome video',
+          // subtitle: 'Optional',
+          duration: videoMetadata.duration,
+          image: EditorImage.memory(thumbnailList.first),
+          thumbnails: temporaryThumbnails,
+          clip: EditorVideoClip.autoSource(
+            assetPath: video.assetPath,
+            bytes: video.byteArray,
+            file: video.file,
+            networkUrl: video.networkUrl,
+          ),
+        ),
+      );
     });
   }
 

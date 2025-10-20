@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:example/core/constants/example_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:video_player/video_player.dart';
 
-import '/core/constants/example_constants.dart';
 import '../mixins/video_editor_mixin.dart';
 import '../widgets/video_initializing_widget.dart';
 

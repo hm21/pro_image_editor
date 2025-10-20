@@ -60,7 +60,7 @@ class AudioEditorPageState extends State<AudioEditorPage>
   final _selectedTrackNotifier = ValueNotifier<AudioTrack?>(null);
 
   double _pageFadeOpacity = 0.0;
-  final Duration _pageFadeDuration = Duration(milliseconds: 300);
+  final Duration _pageFadeDuration = const Duration(milliseconds: 300);
 
   @override
   void initState() {
@@ -230,7 +230,7 @@ class AudioEditorPageState extends State<AudioEditorPage>
           duration: _pageFadeDuration,
           opacity: _pageFadeOpacity,
           child: Container(
-            color: Colors.black26,
+            color: Colors.black45,
             child: ValueListenableBuilder(
                 valueListenable: _selectedTrackNotifier,
                 builder: (_, selectedTrack, __) {

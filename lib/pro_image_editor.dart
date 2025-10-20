@@ -13,6 +13,7 @@ export 'core/enums/editor_mode.dart';
 export 'core/models/editor_configs/pro_image_editor_configs.dart';
 export 'core/models/editor_audio.dart';
 export 'core/models/editor_image.dart';
+export 'core/models/editor_video_clip.dart';
 export 'core/models/history/state_history.dart';
 
 /// Video editing

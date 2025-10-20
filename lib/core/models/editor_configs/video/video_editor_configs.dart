@@ -25,6 +25,7 @@ class VideoEditorConfigs {
     this.isAudioSupported = true,
     this.enablePlayButton = false,
     this.enableEstimatedFileSize = false,
+    this.enableTrimBar = true,
     this.controlsPosition = VideoEditorControlPosition.top,
     this.minTrimDuration = const Duration(seconds: 7),
     this.maxTrimDuration,
@@ -76,6 +77,13 @@ class VideoEditorConfigs {
   /// limits. That mean the displayed estimated file size could be wrong.
   final bool enableEstimatedFileSize;
 
+  /// Determines whether the trim bar should be visible in the editor.
+  ///
+  /// When `true`, a trim bar is displayed, allowing the user to adjust
+  /// the start and end positions of the selected audio or video segment.
+  /// When `false`, the trim bar is hidden.
+  final bool enableTrimBar;
+
   /// Minimum scale factor for the trim bar.
   final double trimBarMinScale;
 
@@ -117,6 +125,7 @@ class VideoEditorConfigs {
     bool? isAudioSupported,
     bool? enablePlayButton,
     bool? enableEstimatedFileSize,
+    bool? enableTrimBar,
     double? trimBarMinScale,
     double? trimBarMaxScale,
     Duration? playTimeSmoothingDuration,
@@ -139,6 +148,7 @@ class VideoEditorConfigs {
       enablePlayButton: enablePlayButton ?? this.enablePlayButton,
       enableEstimatedFileSize:
           enableEstimatedFileSize ?? this.enableEstimatedFileSize,
+      enableTrimBar: enableTrimBar ?? this.enableTrimBar,
       trimBarMinScale: trimBarMinScale ?? this.trimBarMinScale,
       trimBarMaxScale: trimBarMaxScale ?? this.trimBarMaxScale,
       playTimeSmoothingDuration:

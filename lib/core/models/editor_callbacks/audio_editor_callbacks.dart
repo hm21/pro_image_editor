@@ -31,4 +31,23 @@ class AudioEditorCallbacks {
   ///
   /// Provides the updated [startTime] of the track within the video.
   final Future<void> Function(Duration startTime)? onStartTimeChange;
+
+  /// Creates a copy with modified editor callbacks.
+  AudioEditorCallbacks copyWith({
+    Future<void> Function(EditorAudio audio, Duration startTime)? onPlay,
+    Future<void> Function(EditorAudio? audio)? onStop,
+    Function()? onDone,
+    Function()? onCloseEditor,
+    Future<void> Function(bool isMuted)? onMuteToggle,
+    Future<void> Function(Duration startTime)? onStartTimeChange,
+  }) {
+    return AudioEditorCallbacks(
+      onPlay: onPlay ?? this.onPlay,
+      onStop: onStop ?? this.onStop,
+      onDone: onDone ?? this.onDone,
+      onCloseEditor: onCloseEditor ?? this.onCloseEditor,
+      onMuteToggle: onMuteToggle ?? this.onMuteToggle,
+      onStartTimeChange: onStartTimeChange ?? this.onStartTimeChange,
+    );
+  }
 }
