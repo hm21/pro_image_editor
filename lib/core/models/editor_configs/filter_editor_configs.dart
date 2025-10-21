@@ -1,7 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
-// Project imports:
 import '/features/filter_editor/utils/filter_generator/filter_model.dart';
 
 import '../custom_widgets/filter_editor_widgets.dart';
@@ -36,11 +32,6 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
   /// filters.
   const FilterEditorConfigs({
     this.enableGesturePop = true,
-    @Deprecated(
-      'Use tools inside MainEditorConfigs instead, e.g. tools: '
-      '[SubEditorMode.filter]',
-    )
-    this.enabled = true,
     this.showLayers = true,
     this.filterList,
     this.safeArea = const EditorSafeArea(),
@@ -54,13 +45,6 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
   /// {@macro enableGesturePop}
   @override
   final bool enableGesturePop;
-
-  /// Indicates whether the filter editor is enabled.
-  @Deprecated(
-    'Use tools inside MainEditorConfigs instead, e.g. tools: '
-    '[SubEditorMode.filter]',
-  )
-  final bool enabled;
 
   /// Show also layers in the editor.
   final bool showLayers;
@@ -102,7 +86,6 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
   /// others unchanged.
   FilterEditorConfigs copyWith({
     bool? enableGesturePop,
-    bool? enabled,
     bool? showLayers,
     List<FilterModel>? filterList,
     Duration? fadeInUpDuration,
@@ -115,7 +98,6 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
     return FilterEditorConfigs(
       enableGesturePop: enableGesturePop ?? this.enableGesturePop,
       safeArea: safeArea ?? this.safeArea,
-      enabled: enabled ?? this.enabled,
       showLayers: showLayers ?? this.showLayers,
       filterList: filterList ?? this.filterList,
       fadeInUpDuration: fadeInUpDuration ?? this.fadeInUpDuration,

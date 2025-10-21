@@ -1,6 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -193,7 +190,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
         .map((tool) {
           switch (tool) {
             case SubEditorMode.paint:
-              if (!paintEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -209,7 +205,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.text:
-              if (!textEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -225,7 +220,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.cropRotate:
-              if (!cropRotateEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -241,7 +235,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.tune:
-              if (!tuneEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -257,7 +250,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.filter:
-              if (!filterEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -273,7 +265,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.blur:
-              if (!blurEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -289,7 +280,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.emoji:
-              if (!emojiEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(
@@ -305,7 +295,6 @@ class GroundedMainBarState extends State<GroundedMainBar>
               );
 
             case SubEditorMode.sticker:
-              if (!stickerEditorConfigs.enabled) return null;
               return FlatIconTextButton(
                 spacing: 7,
                 label: Text(

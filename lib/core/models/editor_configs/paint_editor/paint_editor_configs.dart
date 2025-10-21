@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
 import 'package:flutter/widgets.dart';
 
 import '/features/paint_editor/enums/paint_editor_enum.dart';
@@ -29,11 +27,6 @@ class PaintEditorConfigs extends ZoomConfigs
   /// By default, the editor is enabled, and most drawing tools are enabled.
   /// Other properties are set to reasonable defaults.
   const PaintEditorConfigs({
-    @Deprecated(
-      'Use tools inside MainEditorConfigs instead, e.g. tools: '
-      '[SubEditorMode.paint]',
-    )
-    this.enabled = true,
     super.enableZoom,
     super.editorMinScale,
     super.editorMaxScale,
@@ -46,26 +39,6 @@ class PaintEditorConfigs extends ZoomConfigs
     this.layerFractionalOffset = const Offset(-0.5, -0.5),
     this.enableGesturePop = true,
     this.enableEdit = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.freeStyle]')
-    this.enableModeFreeStyle = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.arrow]')
-    this.enableModeArrow = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.line]')
-    this.enableModeLine = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.rect]')
-    this.enableModeRect = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.circle]')
-    this.enableModeCircle = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.dashLine]')
-    this.enableModeDashLine = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.polygon]')
-    this.enableModePolygon = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.blur]')
-    this.enableModeBlur = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.pixelate]')
-    this.enableModePixelate = true,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.eraser]')
-    this.enableModeEraser = true,
     this.tools = const [
       PaintMode.moveAndZoom,
       PaintMode.freeStyle,
@@ -126,59 +99,8 @@ class PaintEditorConfigs extends ZoomConfigs
   @override
   final bool enableGesturePop;
 
-  /// Indicates whether the paint editor is enabled.
-  @Deprecated(
-    'Use tools inside MainEditorConfigs instead, e.g. tools: '
-    '[SubEditorMode.paint]',
-  )
-  final bool enabled;
-
   /// Indicating whether created layers can be edited.
   final bool enableEdit;
-
-  /// Indicating whether the free-style drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.freeStyle]')
-  final bool enableModeFreeStyle;
-
-  /// Indicating whether the arrow drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.arrow]')
-  final bool enableModeArrow;
-
-  /// Indicating whether the line drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.line]')
-  final bool enableModeLine;
-
-  /// Indicating whether the rectangle drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.rect]')
-  final bool enableModeRect;
-
-  /// Indicating whether the circle drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.circle]')
-  final bool enableModeCircle;
-
-  /// Indicating whether the dash line drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.dashLine]')
-  final bool enableModeDashLine;
-
-  /// Indicating whether the polygon drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.polygon]')
-  final bool enableModePolygon;
-
-  /// Indicating whether the blur drawing option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.blur]')
-  final bool enableModeBlur;
-
-  /// Indicating whether the pixelate drawing option is enabled.
-  ///
-  /// **IMPORTANT**: This mode is only supported when using the Impeller
-  /// rendering engine. On all other platforms, it will automatically be
-  /// set to `false`.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.pixelate]')
-  final bool enableModePixelate;
-
-  /// Indicating whether the eraser option is enabled.
-  @Deprecated('Use tools instead, e.g. tools: [PaintMode.eraser]')
-  final bool enableModeEraser;
 
   /// Defines which paint tools are available in the editor.
   ///
@@ -288,28 +210,7 @@ class PaintEditorConfigs extends ZoomConfigs
   PaintEditorConfigs copyWith({
     Offset? layerFractionalOffset,
     bool? enableGesturePop,
-    bool? enabled,
     bool? enableEdit,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.freeStyle]')
-    bool? enableModeFreeStyle,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.arrow]')
-    bool? enableModeArrow,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.line]')
-    bool? enableModeLine,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.rect]')
-    bool? enableModeRect,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.circle]')
-    bool? enableModeCircle,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.dashLine]')
-    bool? enableModeDashLine,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.polygon]')
-    bool? enableModePolygon,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.blur]')
-    bool? enableModeBlur,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.pixelate]')
-    bool? enableModePixelate,
-    @Deprecated('Use tools instead, e.g. tools: [PaintMode.eraser]')
-    bool? enableModeEraser,
     bool? showToggleFillButton,
     bool? showLineWidthAdjustmentButton,
     bool? showOpacityAdjustmentButton,
@@ -348,18 +249,7 @@ class PaintEditorConfigs extends ZoomConfigs
       layerFractionalOffset:
           layerFractionalOffset ?? this.layerFractionalOffset,
       enableGesturePop: enableGesturePop ?? this.enableGesturePop,
-      enabled: enabled ?? this.enabled,
       enableEdit: enableEdit ?? this.enableEdit,
-      enableModeFreeStyle: enableModeFreeStyle ?? this.enableModeFreeStyle,
-      enableModeArrow: enableModeArrow ?? this.enableModeArrow,
-      enableModeLine: enableModeLine ?? this.enableModeLine,
-      enableModeRect: enableModeRect ?? this.enableModeRect,
-      enableModeCircle: enableModeCircle ?? this.enableModeCircle,
-      enableModeDashLine: enableModeDashLine ?? this.enableModeDashLine,
-      enableModePolygon: enableModePolygon ?? this.enableModePolygon,
-      enableModeBlur: enableModeBlur ?? this.enableModeBlur,
-      enableModePixelate: enableModePixelate ?? this.enableModePixelate,
-      enableModeEraser: enableModeEraser ?? this.enableModeEraser,
       tools: tools ?? this.tools,
       showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,
       showLineWidthAdjustmentButton:

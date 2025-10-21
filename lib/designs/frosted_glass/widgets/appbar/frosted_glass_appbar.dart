@@ -1,6 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
 // Flutter imports:
 import 'package:flutter/material.dart';
 
@@ -172,7 +169,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
         .map((tool) {
           switch (tool) {
             case SubEditorMode.paint:
-              if (!widget.editor.configs.paintEditor.enabled) return null;
               return IconButton(
                 tooltip: widget
                     .editor.configs.i18n.paintEditor.bottomNavigationBarText,
@@ -181,7 +177,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
 
             case SubEditorMode.text:
-              if (!widget.editor.configs.textEditor.enabled) return null;
               return IconButton(
                 tooltip: widget
                     .editor.configs.i18n.textEditor.bottomNavigationBarText,
@@ -192,7 +187,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
 
             case SubEditorMode.cropRotate:
-              if (!widget.editor.configs.cropRotateEditor.enabled) return null;
               return IconButton(
                 tooltip: widget.editor.configs.i18n.cropRotateEditor
                     .bottomNavigationBarText,
@@ -202,7 +196,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
 
             case SubEditorMode.tune:
-              if (!widget.editor.configs.tuneEditor.enabled) return null;
               return IconButton(
                 tooltip: widget
                     .editor.configs.i18n.tuneEditor.bottomNavigationBarText,
@@ -212,7 +205,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
 
             case SubEditorMode.filter:
-              if (!widget.editor.configs.filterEditor.enabled) return null;
               return IconButton(
                 tooltip: widget
                     .editor.configs.i18n.filterEditor.bottomNavigationBarText,
@@ -222,7 +214,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
 
             case SubEditorMode.blur:
-              if (!widget.editor.configs.blurEditor.enabled) return null;
               return IconButton(
                 tooltip: widget
                     .editor.configs.i18n.blurEditor.bottomNavigationBarText,
@@ -231,10 +222,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
               );
 
             case SubEditorMode.emoji:
-              if (!(widget.editor.configs.stickerEditor.enabled ||
-                  widget.editor.configs.emojiEditor.enabled)) {
-                return null;
-              }
               return IconButton(
                 key: const ValueKey('whatsapp-open-sticker-editor-btn'),
                 tooltip: widget

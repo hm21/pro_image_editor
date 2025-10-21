@@ -1,6 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
 import 'package:flutter/widgets.dart';
 
 import '/core/models/layers/layer.dart';
@@ -40,11 +37,6 @@ class StickerEditorConfigs
     this.initWidth = 100,
     this.minScale = double.negativeInfinity,
     this.maxScale = double.infinity,
-    @Deprecated(
-      'Use tools inside MainEditorConfigs instead, e.g. tools: '
-      '[SubEditorMode.sticker]',
-    )
-    this.enabled = true,
     this.style = const StickerEditorStyle(),
     this.icons = const StickerEditorIcons(),
   })  : assert(initWidth > 0, 'initWidth must be positive'),
@@ -58,17 +50,6 @@ class StickerEditorConfigs
   /// {@macro enableGesturePop}
   @override
   final bool enableGesturePop;
-
-  /// Indicates whether the sticker editor is enabled.
-  ///
-  /// When set to `true`, the sticker editor is active and users can interact
-  /// with it.
-  /// If `false`, the editor is disabled and does not respond to user inputs.
-  @Deprecated(
-    'Use tools inside MainEditorConfigs instead, e.g. tools: '
-    '[SubEditorMode.sticker]',
-  )
-  final bool enabled;
 
   /// The initial width of the stickers in the editor.
   ///
@@ -105,7 +86,6 @@ class StickerEditorConfigs
   StickerEditorConfigs copyWith({
     Offset? layerFractionalOffset,
     bool? enableGesturePop,
-    bool? enabled,
     double? initWidth,
     StickerBuilder? builder,
     double? minScale,
@@ -117,7 +97,6 @@ class StickerEditorConfigs
       layerFractionalOffset:
           layerFractionalOffset ?? this.layerFractionalOffset,
       enableGesturePop: enableGesturePop ?? this.enableGesturePop,
-      enabled: enabled ?? this.enabled,
       initWidth: initWidth ?? this.initWidth,
       builder: builder ?? this.builder,
       minScale: minScale ?? this.minScale,

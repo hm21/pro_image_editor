@@ -1,7 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
-// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -59,8 +55,7 @@ class _FrostedGlassStickerPageState extends State<FrostedGlassStickerPage> {
   late FocusNode _searchFocus;
 
   late final bool _isStickerEditorEnabled =
-      widget.configs.stickerEditor.enabled &&
-          widget.configs.mainEditor.tools.contains(SubEditorMode.sticker);
+      widget.configs.mainEditor.tools.contains(SubEditorMode.sticker);
 
   @override
   void initState() {

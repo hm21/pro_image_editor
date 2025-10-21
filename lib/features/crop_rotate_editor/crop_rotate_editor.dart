@@ -1,7 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
-// Dart imports:
 import 'dart:math';
 import 'dart:ui';
 
@@ -466,20 +462,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
     // Perform post-frame initialization
     cropRotateEditorCallbacks?.onInit?.call();
-
-    // TODO: Remove when releasing version 12.0.0.
-    tools.removeWhere((el) {
-      switch (el) {
-        case CropRotateTool.rotate:
-          return !cropRotateEditorConfigs.showRotateButton;
-        case CropRotateTool.flip:
-          return !cropRotateEditorConfigs.showFlipButton;
-        case CropRotateTool.aspectRatio:
-          return !cropRotateEditorConfigs.showAspectRatioButton;
-        case CropRotateTool.reset:
-          return !cropRotateEditorConfigs.showResetButton;
-      }
-    });
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       cropRotateEditorCallbacks?.onAfterViewInit?.call();

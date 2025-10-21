@@ -1,7 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
-// Flutter imports:
 import 'package:flutter/widgets.dart';
 
 // Project imports:
@@ -42,11 +38,6 @@ class TextEditorConfigs
     this.layerFractionalOffset = const Offset(-0.5, -0.5),
     this.enableGesturePop = true,
     this.enableSuggestions = true,
-    @Deprecated(
-      'Use tools inside MainEditorConfigs instead, e.g. tools: '
-      '[SubEditorMode.text]',
-    )
-    this.enabled = true,
     this.enableEdit = true,
     this.enableAutocorrect = true,
     this.showSelectFontStyleBottomBar = false,
@@ -83,13 +74,6 @@ class TextEditorConfigs
   /// {@macro enableGesturePop}
   @override
   final bool enableGesturePop;
-
-  /// Indicates whether the text editor is enabled.
-  @Deprecated(
-    'Use tools inside MainEditorConfigs instead, e.g. tools: '
-    '[SubEditorMode.text]',
-  )
-  final bool enabled;
 
   /// Indicating whether created layers can be edited.
   final bool enableEdit;
@@ -200,7 +184,6 @@ class TextEditorConfigs
   TextEditorConfigs copyWith({
     Offset? layerFractionalOffset,
     bool? enableGesturePop,
-    bool? enabled,
     bool? enableEdit,
     bool? showSelectFontStyleBottomBar,
     bool? enableMainEditorZoomFactor,
@@ -230,7 +213,6 @@ class TextEditorConfigs
           layerFractionalOffset ?? this.layerFractionalOffset,
       enableGesturePop: enableGesturePop ?? this.enableGesturePop,
       safeArea: safeArea ?? this.safeArea,
-      enabled: enabled ?? this.enabled,
       enableEdit: enableEdit ?? this.enableEdit,
       showSelectFontStyleBottomBar:
           showSelectFontStyleBottomBar ?? this.showSelectFontStyleBottomBar,

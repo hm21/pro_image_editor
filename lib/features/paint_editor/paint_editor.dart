@@ -1,6 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-// TODO: Remove the deprecated values when releasing version 12.0.0.
-
 import 'dart:async';
 import 'dart:math';
 
@@ -328,7 +325,7 @@ class PaintEditorState extends State<PaintEditor>
     });
 
     /// Preload pixelate shader if enabled and supported
-    if (paintEditorConfigs.enableModePixelate &&
+    if (paintEditorConfigs.tools.contains(PaintMode.pixelate) &&
         ShaderManager.instance.isShaderFilterSupported) {
       ShaderManager.instance.loadShader(ShaderMode.pixelate);
     }
@@ -362,57 +359,49 @@ class PaintEditorState extends State<PaintEditor>
     PaintModeHelper? buildPaintModeHelper(PaintMode mode) {
       switch (mode) {
         case PaintMode.freeStyle:
-          if (!paintEditorConfigs.enableModeFreeStyle) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.freeStyle,
             label: i18n.paintEditor.freestyle,
           );
 
         case PaintMode.arrow:
-          if (!paintEditorConfigs.enableModeArrow) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.arrow,
             label: i18n.paintEditor.arrow,
           );
 
         case PaintMode.line:
-          if (!paintEditorConfigs.enableModeLine) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.line,
             label: i18n.paintEditor.line,
           );
 
         case PaintMode.rect:
-          if (!paintEditorConfigs.enableModeRect) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.rectangle,
             label: i18n.paintEditor.rectangle,
           );
 
         case PaintMode.circle:
-          if (!paintEditorConfigs.enableModeCircle) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.circle,
             label: i18n.paintEditor.circle,
           );
 
         case PaintMode.dashLine:
-          if (!paintEditorConfigs.enableModeDashLine) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.dashLine,
             label: i18n.paintEditor.dashLine,
           );
 
         case PaintMode.polygon:
-          if (!paintEditorConfigs.enableModePolygon) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.polygon,
             label: i18n.paintEditor.polygon,
           );
 
         case PaintMode.pixelate:
-          if (!paintEditorConfigs.enableModePixelate ||
-              !ShaderManager.instance.isShaderFilterSupported) {
+          if (!ShaderManager.instance.isShaderFilterSupported) {
             return null;
           }
           return PaintModeHelper(
@@ -421,14 +410,12 @@ class PaintEditorState extends State<PaintEditor>
           );
 
         case PaintMode.blur:
-          if (!paintEditorConfigs.enableModeBlur) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.blur,
             label: i18n.paintEditor.blur,
           );
 
         case PaintMode.eraser:
-          if (!paintEditorConfigs.enableModeEraser) return null;
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.eraser,
             label: i18n.paintEditor.eraser,
