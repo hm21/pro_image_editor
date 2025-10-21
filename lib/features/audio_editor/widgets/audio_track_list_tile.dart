@@ -40,7 +40,7 @@ class AudioTrackListTile extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildAudioTile(context),
-        if (audioTrack.duration > videoDuration) _buildAudioTimeSpanSelector(),
+        if (isSelected) _buildAudioTimeSpanSelector(),
       ],
     );
   }
@@ -48,7 +48,9 @@ class AudioTrackListTile extends StatelessWidget {
   Widget _buildAudioTimeSpanSelector() {
     // TODO: Implement span selector with waveform.
     // onChangeStartTime
-    return const SizedBox.shrink();
+    return configs.audioEditor.widgets.audioWave
+            ?.call(audioTrack, onChangeStartTime) ??
+        const SizedBox.shrink();
   }
 
   Widget _buildAudioTile(BuildContext context) {

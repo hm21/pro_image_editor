@@ -48,6 +48,7 @@ export 'features/tune_editor/tune_editor.dart';
 export '/shared/utils/debounce.dart';
 export '/features/main_editor/services/state_manager.dart';
 export '/features/tune_editor/models/tune_adjustment_matrix.dart';
+export '/features/clips_editor/models/video_clip.dart';
 
 /// Editors
 export 'features/main_editor/main_editor.dart';

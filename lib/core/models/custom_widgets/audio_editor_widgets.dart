@@ -26,6 +26,15 @@ typedef AudioEditorTrackBuilder = Widget Function(
   AudioTrackTapCallback? onTap,
 );
 
+/// A typedef for building custom audio waveform widgets in the audio editor.
+///
+/// This function type is used to create custom visual representations of audio
+/// waveforms within the audio editor interface.
+typedef AudioEditorWaveBuilder = Widget Function(
+  AudioTrack audioTrack,
+  Function(Duration startTime)? updateStartTime,
+);
+
 /// A collection of customizable widgets used in the audio editor UI.
 ///
 /// Provides optional builders for the app bar, bottom bar, and
@@ -36,6 +45,7 @@ class AudioEditorWidgets {
     this.audioTrackItem,
     this.appBar,
     this.bottomBar,
+    this.audioWave,
   });
 
   /// Builder for a custom reactive app bar in the audio editor.
@@ -56,16 +66,24 @@ class AudioEditorWidgets {
   /// triggered when the user selects a specific timestamp.
   final AudioEditorTrackBuilder? audioTrackItem;
 
+  /// Builder for displaying the waveform visualization of an audio track.
+  ///
+  /// Called with an [AudioTrack] and the current waveform data to render
+  /// a custom visual representation of the audio signal.
+  final AudioEditorWaveBuilder? audioWave;
+
   /// Returns a copy of this object with the provided overrides.
   AudioEditorWidgets copyWith({
     AudioEditorTrackBuilder? audioTrackItem,
     AudioEditorAppBarBuilder? appBar,
     AudioEditorBottomBarBuilder? bottomBar,
+    AudioEditorWaveBuilder? audioWave,
   }) {
     return AudioEditorWidgets(
       audioTrackItem: audioTrackItem ?? this.audioTrackItem,
       appBar: appBar ?? this.appBar,
       bottomBar: bottomBar ?? this.bottomBar,
+      audioWave: audioWave ?? this.audioWave,
     );
   }
 }

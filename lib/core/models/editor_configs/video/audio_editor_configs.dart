@@ -6,6 +6,7 @@ import '../utils/base_sub_editor_configs.dart';
 import '../utils/editor_safe_area.dart';
 
 export '/features/audio_editor/models/audio_track.dart';
+export '../../custom_widgets/audio_editor_widgets.dart';
 export '../../icons/audio_editor_icons.dart';
 export '../../styles/audio_editor_style.dart';
 
