@@ -1,4 +1,4 @@
-import '../editor_audio.dart';
+import '/features/audio_editor/models/audio_track.dart';
 
 /// Callbacks triggered by the audio editor when interacting with tracks.
 class AudioEditorCallbacks {
@@ -12,11 +12,11 @@ class AudioEditorCallbacks {
     this.onStartTimeChange,
   });
 
-  /// Invoked when the editor requests to play the given [EditorAudio].
-  final Future<void> Function(EditorAudio audio, Duration startTime)? onPlay;
+  /// Invoked when the editor requests to play the given [AudioTrack].
+  final Future<void> Function(AudioTrack audio)? onPlay;
 
   /// Invoked when the editor requests to stop playback.
-  final Future<void> Function(EditorAudio? audio)? onStop;
+  final Future<void> Function(AudioTrack? audio)? onStop;
 
   /// Invoked when the user completes the editor workflow.
   final Function()? onDone;
@@ -34,8 +34,8 @@ class AudioEditorCallbacks {
 
   /// Creates a copy with modified editor callbacks.
   AudioEditorCallbacks copyWith({
-    Future<void> Function(EditorAudio audio, Duration startTime)? onPlay,
-    Future<void> Function(EditorAudio? audio)? onStop,
+    Future<void> Function(AudioTrack audio)? onPlay,
+    Future<void> Function(AudioTrack? audio)? onStop,
     Function()? onDone,
     Function()? onCloseEditor,
     Future<void> Function(bool isMuted)? onMuteToggle,

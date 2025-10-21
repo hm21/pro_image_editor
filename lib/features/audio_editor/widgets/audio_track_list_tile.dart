@@ -29,7 +29,7 @@ class AudioTrackListTile extends StatelessWidget {
   final bool isSelected;
 
   /// Callback when the tile is tapped.
-  final Function(Duration startTime)? onTap;
+  final Function()? onTap;
 
   /// Callback when the startTime changed.
   final Function(Duration startTime)? onChangeStartTime;
@@ -73,7 +73,7 @@ class AudioTrackListTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           trailing: _buildTrailing(context),
-          onTap: onTap == null ? null : () => onTap!(Duration.zero),
+          onTap: onTap,
         );
   }
 

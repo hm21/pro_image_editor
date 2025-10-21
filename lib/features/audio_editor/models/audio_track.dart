@@ -4,13 +4,14 @@ import '/core/models/editor_image.dart';
 /// Model representing an audio track with metadata.
 class AudioTrack {
   /// Creates an instance of [AudioTrack].
-  const AudioTrack({
+  AudioTrack({
     required this.id,
     required this.title,
     required this.subtitle,
     required this.duration,
     required this.audio,
     this.image,
+    this.startTime,
   });
 
   /// Unique identifier for the audio track.
@@ -31,6 +32,16 @@ class AudioTrack {
   /// Audio source that should be played for this track.
   final EditorAudio audio;
 
+  /// The start time of the selected audio track in the video.
+  Duration? startTime;
+
+  /// Returns a formatted duration string (e.g., "3:45").
+  String get formattedDuration {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '${minutes.toString()}:${seconds.toString().padLeft(2, '0')}';
+  }
+
   /// Creates a copy of this [AudioTrack] with the given fields replaced.
   AudioTrack copyWith({
     String? id,
@@ -39,6 +50,7 @@ class AudioTrack {
     Duration? duration,
     EditorImage? image,
     EditorAudio? audio,
+    Duration? startTime,
   }) {
     return AudioTrack(
       id: id ?? this.id,
@@ -47,14 +59,8 @@ class AudioTrack {
       duration: duration ?? this.duration,
       image: image ?? this.image,
       audio: audio ?? this.audio,
+      startTime: startTime ?? this.startTime,
     );
-  }
-
-  /// Returns a formatted duration string (e.g., "3:45").
-  String get formattedDuration {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '${minutes.toString()}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -66,7 +72,9 @@ class AudioTrack {
         other.title == title &&
         other.subtitle == subtitle &&
         other.duration == duration &&
-        other.image == image;
+        other.image == image &&
+        other.audio == audio &&
+        other.startTime == startTime;
   }
 
   @override
@@ -75,6 +83,8 @@ class AudioTrack {
         title.hashCode ^
         subtitle.hashCode ^
         duration.hashCode ^
-        image.hashCode;
+        image.hashCode ^
+        audio.hashCode ^
+        startTime.hashCode;
   }
 }

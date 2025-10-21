@@ -5,6 +5,7 @@ import '/core/models/editor_callbacks/video_editor_callbacks.dart';
 import '/core/models/editor_configs/video/video_editor_configs.dart';
 import '/core/models/video/trim_duration_span_model.dart';
 import '/features/audio_editor/models/audio_track.dart';
+import '/features/clips_editor/models/video_clip.dart';
 
 /// Controls video playback and trimming for the video editor.
 class ProVideoController {
@@ -19,18 +20,21 @@ class ProVideoController {
     required this.fileSize,
     this.bitrate,
     this.audioTrack,
-    this.audioTrackStartTime,
+    this.clips,
     List<ImageProvider>? thumbnails,
     this.initialTrimSpan,
   }) {
     this.thumbnails = thumbnails;
   }
 
+  /// The list of video clips to be loaded or edited in the current session.
+  ///
+  /// Each [VideoClip] contains metadata such as source, duration, and
+  /// transformation settings. Can be `null` if no clips are loaded yet.
+  List<VideoClip>? clips;
+
   /// The currently selected audio track.
   AudioTrack? audioTrack;
-
-  /// The start time of the audio track within the video.
-  Duration? audioTrackStartTime;
 
   /// The video player widget.
   final Widget videoPlayer;
@@ -165,10 +169,7 @@ class ProVideoController {
     isPlayingNotifier.value = true;
     callbacks.onPlay?.call();
     if (audioTrack?.audio != null) {
-      callbacksAudio.onPlay?.call(
-        audioTrack!.audio,
-        audioTrackStartTime ?? Duration.zero,
-      );
+      callbacksAudio.onPlay?.call(audioTrack!);
     }
   }
 
@@ -176,7 +177,7 @@ class ProVideoController {
   void pause() {
     isPlayingNotifier.value = false;
     callbacks.onPause?.call();
-    callbacksAudio.onStop?.call(audioTrack?.audio);
+    callbacksAudio.onStop?.call(audioTrack);
   }
 
   /// Sets the mute state and triggers the mute toggle callback.

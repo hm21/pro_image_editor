@@ -11,6 +11,7 @@ import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/widgets/extended/extended_pop_scope.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 import '../models/video_clip.dart';
+import '../models/video_clip_editor_response.dart';
 import '../widgets/clips_editor_app_bar.dart';
 import '../widgets/clips_editor_list_tile.dart';
 import 'clips_editor_edit_page.dart';
@@ -53,7 +54,7 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
   ];
 
   double _pageFadeOpacity = 0.0;
-  final Duration _pageFadeDuration = const Duration(milliseconds: 300);
+  final Duration _pageFadeDuration = const Duration(milliseconds: 200);
 
   @override
   void initState() {
@@ -107,8 +108,8 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
       context,
       PageRouteBuilder(
         opaque: false,
-        transitionDuration: const Duration(milliseconds: 250),
-        reverseTransitionDuration: const Duration(milliseconds: 250),
+        transitionDuration: _pageFadeDuration,
+        reverseTransitionDuration: _pageFadeDuration,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -143,7 +144,12 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
     await _animatedPageLeave();
 
     /// TODO: Maybe we need to merge the video at this place already
-    if (mounted) Navigator.pop(context, _videoClips);
+    if (mounted) {
+      Navigator.pop(
+        context,
+        VideoClipEditorResponse(videoClips: _videoClips),
+      );
+    }
 
     callbacks.clipsEditorCallbacks?.onDone?.call();
   }

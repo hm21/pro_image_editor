@@ -17,13 +17,10 @@ typedef AudioEditorBottomBarBuilder = ReactiveWidget? Function(
   Stream<void> rebuildStream,
 );
 
-/// Callback invoked when the user selects a specific timestamp within a track.
-typedef AudioTrackTapCallback = void Function(Duration startTime);
-
 /// Builder signature for rendering an individual audio track widget.
 typedef AudioEditorTrackBuilder = Widget Function(
   AudioTrack audioTrack,
-  AudioTrackTapCallback? onTap,
+  Function()? onTap,
 );
 
 /// A typedef for building custom audio waveform widgets in the audio editor.

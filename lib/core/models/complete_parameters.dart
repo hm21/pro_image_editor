@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../../features/filter_editor/utils/combine_color_matrix_utils.dart';
+import '/features/audio_editor/models/audio_track.dart';
+import '/features/clips_editor/models/video_clip.dart';
+import '/features/filter_editor/utils/combine_color_matrix_utils.dart';
 import 'layers/layer.dart';
 
 /// A data class that contains all parameters needed for applying visual
@@ -25,6 +27,8 @@ class CompleteParameters {
     required this.image,
     required this.isTransformed,
     required this.layers,
+    this.videoClips = const [],
+    this.customAudioTrack,
   });
 
   /// The blur strength to apply (in logical pixels).
@@ -89,6 +93,18 @@ class CompleteParameters {
   /// rendered on top of the video during export.
   final List<Layer> layers;
 
+  /// The list of video clips currently included in the editor timeline.
+  ///
+  /// Each [VideoClip] represents a segment of video with its own
+  /// source, duration, and transformation settings.
+  final List<VideoClip> videoClips;
+
+  /// An optional custom audio track to overlay on top of the video clips.
+  ///
+  /// When provided, this [AudioTrack] replaces or mixes with the
+  /// original audio from the video sources depending on the editor settings.
+  final AudioTrack? customAudioTrack;
+
   /// Creates a copy of this [CompleteParameters] object with optional new
   /// values for specific fields.
   CompleteParameters copyWith({
@@ -107,6 +123,8 @@ class CompleteParameters {
     Uint8List? image,
     bool? isTransformed,
     List<Layer>? layers,
+    List<VideoClip>? videoClips,
+    AudioTrack? customAudioTrack,
   }) {
     return CompleteParameters(
       blur: blur ?? this.blur,
@@ -125,6 +143,8 @@ class CompleteParameters {
       image: image ?? this.image,
       isTransformed: isTransformed ?? this.isTransformed,
       layers: layers ?? this.layers,
+      videoClips: videoClips ?? this.videoClips,
+      customAudioTrack: customAudioTrack ?? this.customAudioTrack,
     );
   }
 
@@ -146,6 +166,8 @@ class CompleteParameters {
         other.flipY == flipY &&
         other.image == image &&
         other.isTransformed == isTransformed &&
+        other.videoClips == videoClips &&
+        other.customAudioTrack == customAudioTrack &&
         listEquals(other.layers, layers);
   }
 
@@ -164,6 +186,8 @@ class CompleteParameters {
         flipY.hashCode ^
         image.hashCode ^
         isTransformed.hashCode ^
+        videoClips.hashCode ^
+        customAudioTrack.hashCode ^
         layers.hashCode;
   }
 }

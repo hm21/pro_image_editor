@@ -32,7 +32,7 @@ import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.
 import '/shared/widgets/screen_resize_detector.dart';
 import '../audio_editor/audio_editor_page.dart';
 import '../audio_editor/models/audio_editor_response.dart';
-import '../clips_editor/models/video_clip.dart';
+import '../clips_editor/models/video_clip_editor_response.dart';
 import '../clips_editor/pages/clips_editor_page.dart';
 import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_generator.dart';
@@ -1987,10 +1987,7 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: configs,
         callbacks: callbacks,
         theme: _theme,
-        initialData: AudioEditorResponse(
-          track: _videoController.audioTrack,
-          startTime: _videoController.startTime,
-        ),
+        initialSelectedTrack: _videoController.audioTrack,
         videoDuration: _videoController.videoDuration,
       ),
       duration: Duration.zero,
@@ -2000,15 +1997,10 @@ class ProImageEditorState extends State<ProImageEditor>
       return;
     }
 
-    _videoController
-      ..audioTrack = response.track
-      ..audioTrackStartTime = response.startTime;
+    _videoController.audioTrack = response.track;
 
     if (_videoController.isPlayingNotifier.value && response.track != null) {
-      await audioEditorCallbacks!.onPlay!(
-        response.track!.audio,
-        response.startTime ?? Duration.zero,
-      );
+      await audioEditorCallbacks!.onPlay!(response.track!);
     }
   }
 
@@ -2031,7 +2023,7 @@ class ProImageEditorState extends State<ProImageEditor>
     _videoController!.pause();
 
     if (!mounted) return;
-    List<VideoClip>? response = await openPage(
+    VideoClipEditorResponse? response = await openPage(
       ClipsEditorPage(
         key: audioEditor,
         configs: configs,
@@ -2041,8 +2033,12 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
       duration: Duration.zero,
     );
-    // TODO: update video-controller with new video-clips
-    debugPrint(response?.toString());
+
+    if (response == null) {
+      return;
+    }
+
+    _videoController.clips = response.videoClips;
   }
 
   /// Moves a layer in the list to a new position.
@@ -2266,6 +2262,8 @@ class ProImageEditorState extends State<ProImageEditor>
             isTransformed: isTransformed,
             layers: activeLayers,
             // TODO: add audio/clips
+            customAudioTrack: null,
+            videoClips: [],
           ),
         );
       }

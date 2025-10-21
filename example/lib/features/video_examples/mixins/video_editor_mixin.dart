@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
-import 'package:pro_image_editor/features/clips_editor/models/video_clip.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
@@ -73,7 +72,8 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     onCompleteWithParameters: generateVideo,
     onCloseEditor: onCloseEditor,
     audioEditorCallbacks: AudioEditorCallbacks(
-      onPlay: (audio, startTime) async {
+      onPlay: (track) async {
+        final audio = track.audio;
         Source source;
         if (audio.hasAssetPath) {
           source = AssetSource(audio.assetPath!);
@@ -86,7 +86,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         }
 
         await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-        await _audioPlayer.play(source, position: startTime);
+        await _audioPlayer.play(source, position: track.startTime);
       },
       onStop: (audio) async {
         return _audioPlayer.pause();

@@ -23,7 +23,7 @@ class AudioEditorPage extends StatefulWidget with SimpleConfigsAccess {
     this.callbacks = const ProImageEditorCallbacks(),
     required this.theme,
     required this.videoDuration,
-    this.initialData,
+    this.initialSelectedTrack,
   });
 
   @override
@@ -38,8 +38,8 @@ class AudioEditorPage extends StatefulWidget with SimpleConfigsAccess {
   /// The duration from the video.
   final Duration videoDuration;
 
-  /// Initial selection data to prefill the editor.
-  final AudioEditorResponse? initialData;
+  /// Initial selection audio track.
+  final AudioTrack? initialSelectedTrack;
 
   @override
   createState() => AudioEditorPageState();
@@ -54,23 +54,18 @@ class AudioEditorPageState extends State<AudioEditorPage>
   /// Tracks available in the current audio editor configuration.
   late final List<AudioTrack> _audioTracks = audioEditorConfigs.audioTracks;
 
-  Duration _trackStartTime = Duration.zero;
-
   /// Notifier that keeps track of the currently selected audio track.
   final _selectedTrackNotifier = ValueNotifier<AudioTrack?>(null);
 
   double _pageFadeOpacity = 0.0;
-  final Duration _pageFadeDuration = const Duration(milliseconds: 300);
+  final Duration _pageFadeDuration = const Duration(milliseconds: 200);
 
   @override
   void initState() {
     super.initState();
     _rebuildController = StreamController.broadcast();
-    if (widget.initialData?.track != null) {
-      selectTrack(
-        widget.initialData!.track!,
-        startTime: widget.initialData!.startTime ?? Duration.zero,
-      );
+    if (widget.initialSelectedTrack != null) {
+      selectTrack(widget.initialSelectedTrack!);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -88,15 +83,11 @@ class AudioEditorPageState extends State<AudioEditorPage>
   }
 
   /// Handles tap on an audio track.
-  Future<void> selectTrack(
-    AudioTrack track, {
-    Duration startTime = Duration.zero,
-  }) async {
+  Future<void> selectTrack(AudioTrack track) async {
     if (_selectedTrackNotifier.value == track) {
       return stopTrack(track);
     }
 
-    _trackStartTime = startTime;
     _selectedTrackNotifier.value = track;
 
     assert(
@@ -104,13 +95,14 @@ class AudioEditorPageState extends State<AudioEditorPage>
       'In order to play music with the audio player of your choice, the '
       '`onPlay` callback inside `audioEditorCallbacks` is required.',
     );
-    await callbacks.audioEditorCallbacks!.onPlay!(track.audio, startTime);
+    await callbacks.audioEditorCallbacks!.onPlay!(track);
     _rebuildController.add(null);
   }
 
   /// Updates the current playback start time.
   Future<void> updateStartTime(Duration startTime) async {
-    _trackStartTime = startTime;
+    if (_selectedTrackNotifier.value == null) return;
+    _selectedTrackNotifier.value!.startTime = startTime;
     await callbacks.audioEditorCallbacks!.onStartTimeChange!(startTime);
   }
 
@@ -123,7 +115,7 @@ class AudioEditorPageState extends State<AudioEditorPage>
       'In order to play music with the audio player of your choice, the '
       '`onPlay` callback inside `audioEditorCallbacks` is required.',
     );
-    await callbacks.audioEditorCallbacks!.onStop!(track?.audio);
+    await callbacks.audioEditorCallbacks!.onStop!(track);
     _rebuildController.add(null);
   }
 
@@ -147,10 +139,7 @@ class AudioEditorPageState extends State<AudioEditorPage>
     if (mounted) {
       Navigator.pop(
         context,
-        AudioEditorResponse(
-          track: track,
-          startTime: _trackStartTime,
-        ),
+        AudioEditorResponse(track: track),
       );
     }
 
@@ -244,9 +233,8 @@ class AudioEditorPageState extends State<AudioEditorPage>
                         videoDuration: widget.videoDuration,
                         audioTrack: audioTrack,
                         configs: configs,
-                        onTap: (startTime) => selectTrack(
+                        onTap: () => selectTrack(
                           audioTrack,
-                          startTime: startTime,
                         ),
                         onChangeStartTime: updateStartTime,
                       );
