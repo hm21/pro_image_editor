@@ -1,11 +1,13 @@
 // Flutter imports:
-
-import 'package:example/shared/widgets/paragraph_info_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 
+// Project imports:
 import '/core/mixin/example_helper.dart';
+import 'package:example/shared/widgets/paragraph_info_widget.dart';
 import 'pages/chewie_player_example.dart';
 import 'pages/flick_video_player_example.dart';
 import 'pages/video_media_kit_example.dart';
@@ -22,52 +24,50 @@ class VideoExample extends StatefulWidget {
 
 class _VideoExampleState extends State<VideoExample>
     with ExampleHelperState<VideoExample> {
-  final _isWebEditingSupported = false;
+  static const _isWebEditingSupported = false;
+
+  bool get _isPlatformSupported =>
+      kIsWeb && _isWebEditingSupported ||
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
+
+  bool get _showUnsupportedWarning =>
+      kIsWeb || Platform.isWindows || Platform.isLinux;
+
+  late final _favoritePackage = _Package(
+    title: 'Package "media_kit"',
+    enabled: !kIsWeb || _isWebEditingSupported,
+    example: const VideoMediaKitExample(),
+  );
 
   late final _videoPackages = [
     _Package(
       title: 'Package "video_player"',
       subTitle: 'Recommended for Android and iOS',
-      enabled: (kIsWeb && _isWebEditingSupported) ||
-          (!kIsWeb &&
-              (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
+      enabled: _isPlatformSupported,
       example: const VideoPlayerExample(),
     ),
     _Package(
-      title: 'Package "media_kit"',
-      enabled: !kIsWeb || _isWebEditingSupported,
-      example: const VideoMediaKitExample(),
-    ),
-    _Package(
       title: 'Package "flick_video_player"',
-      enabled: (kIsWeb && _isWebEditingSupported) ||
-          (!kIsWeb &&
-              (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
+      enabled: _isPlatformSupported,
       example: const FlickVideoPlayerExample(),
     ),
     _Package(
       title: 'Package "chewie"',
-      enabled: (kIsWeb && _isWebEditingSupported) ||
-          (!kIsWeb &&
-              (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)),
+      enabled: _isPlatformSupported,
       example: const ChewiePlayerExample(),
     ),
   ];
 
-  void _openExample(Widget page) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => page),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Video-Example'),
+        title: const Text('Video Examples'),
       ),
       body: ListView(
-        shrinkWrap: true,
         padding: const EdgeInsets.symmetric(vertical: 20),
         children: <Widget>[
           const ParagraphInfoWidget(
@@ -81,45 +81,109 @@ class _VideoExampleState extends State<VideoExample>
               'package, pro_video_editor.',
             ),
           ),
-          if (kIsWeb || Platform.isWindows || Platform.isLinux)
-            const ParagraphInfoWidget(
-              margin: EdgeInsets.fromLTRB(16, 16, 16, 4),
-              color: Colors.red,
+          if (_showUnsupportedWarning)
+            ParagraphInfoWidget(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              color: colorScheme.errorContainer,
               child: Text(
                 'Video editing is currently only supported on Android, iOS and '
                 'macOS. Support for other platforms will follow soon.',
                 style: TextStyle(
-                  color: Colors.red,
+                  color: colorScheme.onErrorContainer,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
+          _buildSectionHeader(
+            context,
+            'Recommended',
+            'Supports all subeditors (Clips-Editor and Audio-Editor)',
+          ),
+          _buildPackageTile(_favoritePackage),
+          const SizedBox(height: 16),
+          _buildSectionHeader(
+            context,
+            'Alternative Packages',
+            'Limited support - doesn\'t support Clips-Editor and Audio-Editor',
+          ),
           if (kDebugMode || (!kIsWeb && Platform.isAndroid))
-            ..._videoPackages.map((pkg) {
-              return ListTile(
-                enabled: pkg.enabled,
-                leading: const Icon(Icons.movie),
-                title: Text(pkg.title),
-                subtitle: pkg.enabled
-                    ? (pkg.subTitle.isNotEmpty ? Text(pkg.subTitle) : null)
-                    : _buildNotSupportedMsg(pkg.subTitle),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: pkg.enabled ? () => _openExample(pkg.example) : null,
-              );
-            }),
+            ..._videoPackages.map(_buildPackageTile),
         ],
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    String subtitle,
+  ) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPackageTile(_Package package) {
+    return ListTile(
+      enabled: package.enabled,
+      leading: Icon(
+        Icons.movie,
+        color: package.enabled ? null : Colors.grey,
+      ),
+      title: Text(package.title),
+      subtitle: package.enabled
+          ? (package.subTitle.isNotEmpty ? Text(package.subTitle) : null)
+          : _buildNotSupportedMsg(package.subTitle),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: package.enabled ? null : Colors.grey,
+      ),
+      onTap: package.enabled ? () => _openExample(package.example) : null,
+    );
+  }
+
+  void _openExample(Widget page) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => page),
     );
   }
 
   Widget _buildNotSupportedMsg(String subTitle) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      spacing: 3,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(subTitle),
-        const Text('This package is not supported on that platform.'),
+        if (subTitle.isNotEmpty) ...[
+          Text(subTitle),
+          const SizedBox(height: 4),
+        ],
+        const Text(
+          'This package is not supported on this platform.',
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Colors.grey,
+          ),
+        ),
       ],
     );
   }

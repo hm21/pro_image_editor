@@ -24,6 +24,19 @@ class _FlickVideoPlayerExampleState extends State<FlickVideoPlayerExample>
     with VideoEditorMixin {
   late FlickManager _flickManager;
 
+  /// The Clips Editor and Audio Editor are not supported by that video player.
+  /// Use video_media_kit_example.dart instead.
+  @override
+  final List<SubEditorMode> subEditors = [
+    SubEditorMode.paint,
+    SubEditorMode.text,
+    SubEditorMode.cropRotate,
+    SubEditorMode.tune,
+    SubEditorMode.filter,
+    SubEditorMode.blur,
+    SubEditorMode.emoji,
+  ];
+
   @override
   void initState() {
     super.initState();

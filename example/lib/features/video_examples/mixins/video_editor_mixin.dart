@@ -10,6 +10,8 @@ import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
+import '../constants/example_audio_tracks_constant.dart';
+
 /// A mixin for handling video editing states.
 mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   /// The target format for the exported video.
@@ -65,6 +67,19 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   final Map<String, Uint8List> _cachedKeyFrames = {};
   final Map<String, List<Uint8List>> _cachedKeyFrameList = {};
   final List<VideoClip> _initialVideoClips = [];
+
+  /// The list of available sub-editors in the video editor interface.
+  List<SubEditorMode> get subEditors => [
+        SubEditorMode.videoClips,
+        SubEditorMode.audio,
+        SubEditorMode.paint,
+        SubEditorMode.text,
+        SubEditorMode.cropRotate,
+        SubEditorMode.tune,
+        SubEditorMode.filter,
+        SubEditorMode.blur,
+        SubEditorMode.emoji,
+      ];
 
   /// Callback options for the Image Editor.
   @protected
@@ -198,17 +213,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       ),
     ),
     mainEditor: MainEditorConfigs(
-      tools: [
-        SubEditorMode.videoClips,
-        SubEditorMode.audio,
-        SubEditorMode.paint,
-        SubEditorMode.text,
-        SubEditorMode.cropRotate,
-        SubEditorMode.tune,
-        SubEditorMode.filter,
-        SubEditorMode.blur,
-        SubEditorMode.emoji,
-      ],
+      tools: subEditors,
       widgets: MainEditorWidgets(
         removeLayerArea: (
           removeAreaKey,
@@ -239,34 +244,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         PaintMode.eraser,
       ],
     ),
-    audioEditor: AudioEditorConfigs(
-      audioTracks: [
-        AudioTrack(
-          id: 'track_1',
-          title: 'Summer Vibes',
-          subtitle: 'Beach Band',
-          duration: const Duration(seconds: 10),
-          image: EditorImage.network('https://picsum.photos/200/200?random=1'),
-          audio: EditorAudio.asset('audio1.mp3'),
-        ),
-        AudioTrack(
-          id: 'track_2',
-          title: 'Night Drive',
-          subtitle: 'Synthwave Artist',
-          duration: const Duration(seconds: 59),
-          image: EditorImage.network('https://picsum.photos/200/200?random=2'),
-          audio: EditorAudio.asset('audio2.wav'),
-        ),
-        AudioTrack(
-          id: 'track_4',
-          title: 'Electronic Pulse',
-          subtitle: 'EDM Producer',
-          duration: const Duration(seconds: 34),
-          image: EditorImage.network('https://picsum.photos/200/200?random=3'),
-          audio: EditorAudio.asset('audio3.wav'),
-        ),
-      ],
-    ),
+    audioEditor: AudioEditorConfigs(audioTracks: kExampleAudioTracks),
     clipsEditor: ClipsEditorConfigs(
       clips: _initialVideoClips,
     ),
