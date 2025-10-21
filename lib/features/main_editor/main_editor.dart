@@ -2261,9 +2261,8 @@ class ProImageEditorState extends State<ProImageEditor>
             image: bytes,
             isTransformed: isTransformed,
             layers: activeLayers,
-            // TODO: add audio/clips
-            customAudioTrack: null,
-            videoClips: [],
+            customAudioTrack: _videoController?.audioTrack,
+            videoClips: _videoController?.clips ?? [],
           ),
         );
       }
