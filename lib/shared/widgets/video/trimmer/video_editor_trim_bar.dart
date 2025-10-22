@@ -65,28 +65,26 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
       // Default to maximum allowed trim
       _trimStart = 0.0;
       _trimEnd = _maxTrimPercentage;
-      _updateTrimSpan();
-      return;
+    } else {
+      final startUs = widget.initialTrimSpan!.start.inMicroseconds.toDouble();
+      final endUs = widget.initialTrimSpan!.end.inMicroseconds.toDouble();
+
+      // Convert to normalized range (0–1)
+      _trimStart = startUs / _videoDuration;
+      _trimEnd = endUs / _videoDuration;
+
+      // Enforce trim limits
+      _trimStart = _trimStart.clamp(0.0, 1.0 - _minTrimPercentage);
+      _trimEnd = _trimEnd.clamp(_trimStart + _minTrimPercentage, 1.0);
+
+      // Ensure it doesn't exceed max duration
+      final spanDuration = _trimEnd - _trimStart;
+      if (spanDuration > _maxTrimPercentage) {
+        _trimEnd = _trimStart + _maxTrimPercentage;
+      }
     }
 
-    final startUs = widget.initialTrimSpan!.start.inMicroseconds.toDouble();
-    final endUs = widget.initialTrimSpan!.end.inMicroseconds.toDouble();
-
-    // Convert to normalized range (0–1)
-    _trimStart = startUs / _videoDuration;
-    _trimEnd = endUs / _videoDuration;
-
-    // Enforce trim limits
-    _trimStart = _trimStart.clamp(0.0, 1.0 - _minTrimPercentage);
-    _trimEnd = _trimEnd.clamp(_trimStart + _minTrimPercentage, 1.0);
-
-    // Ensure it doesn't exceed max duration
-    final spanDuration = _trimEnd - _trimStart;
-    if (spanDuration > _maxTrimPercentage) {
-      _trimEnd = _trimStart + _maxTrimPercentage;
-    }
-
-    _updateTrimSpan();
+    _updateTrimSpan(markIsUpdating: false);
   }
 
   @override
@@ -98,7 +96,10 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
     super.dispose();
   }
 
-  void _updateTrimSpan({TrimDurationSpan? timeSpan}) {
+  void _updateTrimSpan({
+    TrimDurationSpan? timeSpan,
+    bool markIsUpdating = true,
+  }) {
     final startTime =
         Duration(microseconds: (_trimStart * _videoDuration).round());
     final endTime = Duration(microseconds: (_trimEnd * _videoDuration).round());
@@ -110,8 +111,10 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
         );
 
     _player.controller.setTrimSpan(span);
-    _player.showTrimTimeSpanNotifier.value = true;
-    _isUpdatingTrimBar = true;
+    if (markIsUpdating) {
+      _player.showTrimTimeSpanNotifier.value = true;
+      _isUpdatingTrimBar = true;
+    }
     setState(() {});
   }
 

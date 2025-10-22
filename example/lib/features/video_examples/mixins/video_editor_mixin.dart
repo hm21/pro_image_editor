@@ -193,14 +193,6 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
           duration: meta.duration,
         );
       },
-      onBuildPlayer: () {
-        // TODO: Return video player for only video-clips
-        return Container(
-          width: 200,
-          height: 200,
-          color: Colors.red,
-        );
-      },
     ),
     videoEditorCallbacks: VideoEditorCallbacks(),
   );

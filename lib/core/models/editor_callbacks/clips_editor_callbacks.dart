@@ -1,6 +1,9 @@
 import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
+
 import '/features/clips_editor/models/video_clip.dart';
+import '/shared/controllers/video_controller.dart';
 
 /// Defines callback hooks used by the clips editor.
 class ClipsEditorCallbacks {
@@ -30,5 +33,26 @@ class ClipsEditorCallbacks {
   final Future<VideoClip?> Function()? onAddClip;
 
   /// Called to build a custom video player widget for previewing clips.
-  final Widget Function()? onBuildPlayer;
+  final Widget Function(ProVideoController controller, VideoClip videoClip)?
+      onBuildPlayer;
+
+  /// Creates a copy with modified callbacks.
+  ClipsEditorCallbacks copyWith({
+    Function()? onDone,
+    Function()? onCloseEditor,
+    Future<Uint8List> Function(VideoClip source)? onReadKeyFrame,
+    Future<List<Uint8List>> Function(VideoClip source)? onReadKeyFrames,
+    Future<VideoClip?> Function()? onAddClip,
+    Widget Function(ProVideoController controller, VideoClip videoClip)?
+        onBuildPlayer,
+  }) {
+    return ClipsEditorCallbacks(
+      onDone: onDone ?? this.onDone,
+      onCloseEditor: onCloseEditor ?? this.onCloseEditor,
+      onReadKeyFrame: onReadKeyFrame ?? this.onReadKeyFrame,
+      onReadKeyFrames: onReadKeyFrames ?? this.onReadKeyFrames,
+      onAddClip: onAddClip ?? this.onAddClip,
+      onBuildPlayer: onBuildPlayer ?? this.onBuildPlayer,
+    );
+  }
 }

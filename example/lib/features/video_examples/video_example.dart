@@ -1,13 +1,9 @@
-// Flutter imports:
+import 'package:example/shared/widgets/paragraph_info_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-// Package imports:
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 
-// Project imports:
 import '/core/mixin/example_helper.dart';
-import 'package:example/shared/widgets/paragraph_info_widget.dart';
 import 'pages/chewie_player_example.dart';
 import 'pages/flick_video_player_example.dart';
 import 'pages/video_media_kit_example.dart';

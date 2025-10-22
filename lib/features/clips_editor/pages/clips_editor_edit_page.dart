@@ -48,15 +48,13 @@ class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
   @override
   void initState() {
     super.initState();
-    _controller.initialize(
-      callbacksAudioFunction: () =>
-          callbacks.audioEditorCallbacks ?? const AudioEditorCallbacks(),
-      callbacksFunction: () =>
-          callbacks.videoEditorCallbacks ?? VideoEditorCallbacks(),
-      configsFunction: () => configs.videoEditor,
-    );
-
     _setupKeyFrames();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   void _setupKeyFrames() async {
@@ -105,15 +103,19 @@ class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
   Widget _buildBody() {
     return VideoEditorConfigurable(
       controller: _controller,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          VideoEditorControlsWidget(
-            initialTrimSpan: widget.videoClip.trimSpan,
-          ),
-          callbacks.clipsEditorCallbacks?.onBuildPlayer?.call() ??
-              const SizedBox.shrink()
-        ],
+      child: GestureDetector(
+        onTap: _controller.togglePlayState,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            callbacks.clipsEditorCallbacks?.onBuildPlayer
+                    ?.call(_controller, widget.videoClip) ??
+                const SizedBox.shrink(),
+            VideoEditorControlsWidget(
+              initialTrimSpan: widget.videoClip.trimSpan,
+            ),
+          ],
+        ),
       ),
     );
   }
