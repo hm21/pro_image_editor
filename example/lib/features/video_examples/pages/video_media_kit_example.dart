@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
@@ -119,6 +120,48 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
     }
   }
 
+  Future<void> _mergeClips(List<VideoClip> clips) async {
+    /// TODO Use pro_video_editor to merge the videoClips
+    final updatedFile = File('');
+
+    /// Generate new thumbnails
+    var imageWidth = MediaQuery.sizeOf(context).width /
+        thumbnailCount *
+        MediaQuery.devicePixelRatioOf(context);
+
+    final thumbnailList = await ProVideoEditor.instance.getKeyFrames(
+      KeyFramesConfigs(
+        video: video,
+        outputSize: Size.square(imageWidth),
+        boxFit: ThumbnailBoxFit.cover,
+        maxOutputFrames: thumbnailCount,
+        outputFormat: ThumbnailFormat.jpeg,
+      ),
+    );
+    if (!mounted) return;
+    List<ImageProvider> temporaryThumbnails =
+        thumbnailList.map(MemoryImage.new).toList();
+    proVideoController!.thumbnails = temporaryThumbnails;
+
+    /// Update meta
+    final metaData = await ProVideoEditor.instance.getMetadata(
+      EditorVideo.file(updatedFile),
+    );
+    proVideoController!.initialResolution = metaData.resolution;
+    proVideoController!.videoDuration = metaData.duration;
+    proVideoController!.fileSize = metaData.fileSize;
+    proVideoController!.bitrate = metaData.bitrate;
+    proVideoController!.setTrimStart(Duration.zero);
+    proVideoController!.setTrimEnd(metaData.duration);
+
+    /// Load the new video
+    await _player.open(
+      Media('file:///${updatedFile.path}'),
+      play: videoConfigs.initialPlay,
+    );
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
@@ -128,30 +171,30 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
           : ProImageEditor.video(
               proVideoController!,
               callbacks: callbacks.copyWith(
-                  videoEditorCallbacks:
-                      callbacks.videoEditorCallbacks!.copyWith(
-                    onPause: _player.pause,
-                    onPlay: _player.play,
-                    onMuteToggle: (isMuted) {
-                      _player.setVolume(isMuted ? 0 : 100);
-                    },
-                    onTrimSpanUpdate: (durationSpan) {
-                      if (_player.state.playing) {
-                        proVideoController!.pause();
-                      }
-                    },
-                    onTrimSpanEnd: _seekToPosition,
-                  ),
-                  clipsEditorCallbacks:
-                      callbacks.clipsEditorCallbacks!.copyWith(
-                    onBuildPlayer: (controller, videoClip) {
-                      return ClipsPreviewer(
-                        videoConfigs: videoConfigs,
-                        proController: controller,
-                        videoClip: videoClip,
-                      );
-                    },
-                  )),
+                videoEditorCallbacks: callbacks.videoEditorCallbacks!.copyWith(
+                  onPause: _player.pause,
+                  onPlay: _player.play,
+                  onMuteToggle: (isMuted) {
+                    _player.setVolume(isMuted ? 0 : 100);
+                  },
+                  onTrimSpanUpdate: (durationSpan) {
+                    if (_player.state.playing) {
+                      proVideoController!.pause();
+                    }
+                  },
+                  onTrimSpanEnd: _seekToPosition,
+                ),
+                clipsEditorCallbacks: callbacks.clipsEditorCallbacks!.copyWith(
+                  onBuildPlayer: (controller, videoClip) {
+                    return ClipsPreviewer(
+                      videoConfigs: videoConfigs,
+                      proController: controller,
+                      videoClip: videoClip,
+                    );
+                  },
+                  onMergeClips: _mergeClips,
+                ),
+              ),
               configs: configs,
             ),
     );

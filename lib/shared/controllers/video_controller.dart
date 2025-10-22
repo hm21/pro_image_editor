@@ -40,13 +40,13 @@ class ProVideoController {
   final Widget videoPlayer;
 
   /// The total duration of the video.
-  final Duration videoDuration;
+  Duration videoDuration;
 
   /// The initial resolution of the video.
-  final Size initialResolution;
+  Size initialResolution;
 
   /// The size of the video file in bytes.
-  final int fileSize;
+  int fileSize;
 
   /// The bitrate of the video in bits per second.
   ///
@@ -59,7 +59,7 @@ class ProVideoController {
   /// If unsupported, the encoder may silently fall back to VBR
   /// (Variable Bitrate), and the actual bitrate may be constrained by
   /// device-specific minimum and maximum limits.
-  final int? bitrate;
+  int? bitrate;
 
   /// A [ValueNotifier] that holds a list of [ImageProvider] objects
   /// representing video thumbnails.

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_image.dart';
@@ -11,9 +12,10 @@ class VideoClip {
     required this.id,
     required this.title,
     this.subtitle,
+    this.image,
     required this.clip,
     required this.duration,
-    this.image,
+    this.trimSpan,
     this.thumbnails,
   });
 
@@ -49,6 +51,8 @@ class VideoClip {
     EditorImage? image,
     EditorVideoClip? clip,
     Duration? duration,
+    TrimDurationSpan? trimSpan,
+    List<ImageProvider<Object>>? thumbnails,
   }) {
     return VideoClip(
       id: id ?? this.id,
@@ -57,6 +61,8 @@ class VideoClip {
       image: image ?? this.image,
       clip: clip ?? this.clip,
       duration: duration ?? this.duration,
+      trimSpan: trimSpan ?? this.trimSpan,
+      thumbnails: thumbnails ?? this.thumbnails,
     );
   }
 
@@ -68,11 +74,20 @@ class VideoClip {
         other.id == id &&
         other.title == title &&
         other.subtitle == subtitle &&
-        other.image == image;
+        other.image == image &&
+        other.clip == clip &&
+        other.duration == duration &&
+        other.trimSpan == trimSpan;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^ title.hashCode ^ subtitle.hashCode ^ image.hashCode;
+    return id.hashCode ^
+        title.hashCode ^
+        subtitle.hashCode ^
+        image.hashCode ^
+        clip.hashCode ^
+        duration.hashCode ^
+        trimSpan.hashCode;
   }
 }

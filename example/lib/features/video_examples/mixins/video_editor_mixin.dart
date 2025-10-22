@@ -66,7 +66,6 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
 
   final Map<String, Uint8List> _cachedKeyFrames = {};
   final Map<String, List<Uint8List>> _cachedKeyFrameList = {};
-  final List<VideoClip> _initialVideoClips = [];
 
   /// The list of available sub-editors in the video editor interface.
   List<SubEditorMode> get subEditors => [
@@ -172,7 +171,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         );
 
         // User cancelled picker
-        if (result == null || result.files.isEmpty) return null;
+        if (!mounted || result == null || result.files.isEmpty) return null;
 
         final file = result.files.single;
         final path = file.path;
@@ -181,9 +180,11 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         // Extract file name for display
         final name = file.name;
         final title = name.split('.').first;
+        LoadingDialog.instance.show(context, configs: configs);
         final meta = await ProVideoEditor.instance.getMetadata(
           EditorVideo.file(path),
         );
+        LoadingDialog.instance.hide();
 
         // Create and return your video clip
         return VideoClip(
@@ -238,7 +239,20 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     ),
     audioEditor: AudioEditorConfigs(audioTracks: kExampleAudioTracks),
     clipsEditor: ClipsEditorConfigs(
-      clips: _initialVideoClips,
+      clips: [
+        VideoClip(
+          id: '001',
+          title: 'My awesome video',
+          // subtitle: 'Optional',
+          duration: Duration.zero,
+          clip: EditorVideoClip.autoSource(
+            assetPath: video.assetPath,
+            bytes: video.byteArray,
+            file: video.file,
+            networkUrl: video.networkUrl,
+          ),
+        ),
+      ],
     ),
     videoEditor: videoConfigs,
   );
@@ -295,22 +309,11 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       if (proVideoController != null) {
         proVideoController!.thumbnails = thumbnails;
       }
-
-      _initialVideoClips.add(
-        VideoClip(
-          id: '001',
-          title: 'My awesome video',
-          // subtitle: 'Optional',
-          duration: videoMetadata.duration,
-          image: EditorImage.memory(thumbnailList.first),
-          thumbnails: temporaryThumbnails,
-          clip: EditorVideoClip.autoSource(
-            assetPath: video.assetPath,
-            bytes: video.byteArray,
-            file: video.file,
-            networkUrl: video.networkUrl,
-          ),
-        ),
+      configs.clipsEditor.clips.first =
+          configs.clipsEditor.clips.first.copyWith(
+        image: EditorImage.memory(thumbnailList.first),
+        thumbnails: temporaryThumbnails,
+        duration: videoMetadata.duration,
       );
     });
   }

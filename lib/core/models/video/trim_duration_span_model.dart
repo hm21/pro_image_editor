@@ -14,4 +14,16 @@ class TrimDurationSpan {
 
   /// Returns the total duration of the trim span.
   Duration get duration => end - start;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is TrimDurationSpan &&
+        other.start == start &&
+        other.end == end;
+  }
+
+  @override
+  int get hashCode => start.hashCode ^ end.hashCode;
 }

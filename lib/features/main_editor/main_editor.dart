@@ -2030,6 +2030,7 @@ class ProImageEditorState extends State<ProImageEditor>
         callbacks: callbacks,
         theme: _theme,
         videoDuration: _videoController.videoDuration,
+        initialClips: _videoController.clips,
       ),
       duration: Duration.zero,
     );

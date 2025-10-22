@@ -15,6 +15,7 @@ class ClipsEditorCallbacks {
     this.onReadKeyFrames,
     this.onAddClip,
     this.onBuildPlayer,
+    this.onMergeClips,
   });
 
   /// Called when the user finishes editing and confirms the result.
@@ -32,6 +33,9 @@ class ClipsEditorCallbacks {
   /// Called when the user adds a new clip to the editor.
   final Future<VideoClip?> Function()? onAddClip;
 
+  /// Callback triggered when multiple [VideoClip]s must be merged.
+  final Future<void> Function(List<VideoClip> videoClips)? onMergeClips;
+
   /// Called to build a custom video player widget for previewing clips.
   final Widget Function(ProVideoController controller, VideoClip videoClip)?
       onBuildPlayer;
@@ -43,6 +47,7 @@ class ClipsEditorCallbacks {
     Future<Uint8List> Function(VideoClip source)? onReadKeyFrame,
     Future<List<Uint8List>> Function(VideoClip source)? onReadKeyFrames,
     Future<VideoClip?> Function()? onAddClip,
+    Future<void> Function(List<VideoClip> videoClips)? onMergeClips,
     Widget Function(ProVideoController controller, VideoClip videoClip)?
         onBuildPlayer,
   }) {
@@ -52,6 +57,7 @@ class ClipsEditorCallbacks {
       onReadKeyFrame: onReadKeyFrame ?? this.onReadKeyFrame,
       onReadKeyFrames: onReadKeyFrames ?? this.onReadKeyFrames,
       onAddClip: onAddClip ?? this.onAddClip,
+      onMergeClips: onMergeClips ?? this.onMergeClips,
       onBuildPlayer: onBuildPlayer ?? this.onBuildPlayer,
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,6 +10,7 @@ import '/core/mixins/editor_configs_mixin.dart';
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/widgets/extended/extended_pop_scope.dart';
+import '/shared/widgets/overlays/loading_dialog/loading_dialog.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 import '../models/video_clip.dart';
 import '../models/video_clip_editor_response.dart';
@@ -23,6 +25,7 @@ class ClipsEditorPage extends StatefulWidget with SimpleConfigsAccess {
     super.key,
     this.configs = const ProImageEditorConfigs(),
     this.callbacks = const ProImageEditorCallbacks(),
+    this.initialClips,
     required this.theme,
     required this.videoDuration,
   });
@@ -39,6 +42,9 @@ class ClipsEditorPage extends StatefulWidget with SimpleConfigsAccess {
   /// The duration from the video.
   final Duration videoDuration;
 
+  /// A list of video clips that will be initially loaded into the clips editor.
+  final List<VideoClip>? initialClips;
+
   @override
   createState() => ClipsEditorPageState();
 }
@@ -49,9 +55,10 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
   /// Helper stream to rebuild widgets.
   late final StreamController<void> _rebuildController;
 
-  late final List<VideoClip> _videoClips = [
-    ...widget.configs.clipsEditor.clips
-  ];
+  late final List<VideoClip> _videoClips =
+      (widget.initialClips ?? widget.configs.clipsEditor.clips)
+          .map((el) => el.copyWith())
+          .toList();
 
   double _pageFadeOpacity = 0.0;
   final Duration _pageFadeDuration = const Duration(milliseconds: 200);
@@ -141,17 +148,26 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
   /// Closes the editor and returns the currently selected track.
   Future<void> done() async {
     if (_pageFadeOpacity != 1) return;
-    await _animatedPageLeave();
 
-    /// TODO: Maybe we need to merge the video at this place already
-    if (mounted) {
-      Navigator.pop(
-        context,
-        VideoClipEditorResponse(videoClips: _videoClips),
-      );
+    final originalClips =
+        widget.initialClips ?? widget.configs.clipsEditor.clips;
+
+    /// Merge the video clips when the user changed something
+    if (!listEquals(originalClips, _videoClips)) {
+      LoadingDialog.instance.show(context, configs: configs);
+      await callbacks.clipsEditorCallbacks?.onMergeClips?.call(_videoClips);
+      LoadingDialog.instance.hide();
+      if (!mounted) return;
     }
 
+    await _animatedPageLeave();
+    if (!mounted) return;
+
     callbacks.clipsEditorCallbacks?.onDone?.call();
+    Navigator.pop(
+      context,
+      VideoClipEditorResponse(videoClips: _videoClips),
+    );
   }
 
   Future<void> _animatedPageLeave() async {
