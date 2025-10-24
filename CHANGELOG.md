@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.0.0
+- **FEAT**(audio-editor): Added a new Audio Editor to the Video Editor, allowing users to add background music. Users can set the audio start time and adjust the balance between the original and overlay tracks.
+- **FEAT**(clips-editor): Introduced a new Clips Editor that lets users combine multiple video clips into a single merged video.
+
 ## 11.10.1
 - **FIX**(callbacks): Resolve issue where the callback `onDone` in mainEditorCallbacks is not triggered. Resolves issue [#681](https://github.com/hm21/pro_image_editor/issues/681).
 

@@ -323,6 +323,9 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   Future<void> generateVideo(CompleteParameters parameters) async {
     final stopwatch = Stopwatch()..start();
 
+    /// TODO: Apply audio/clips after upgrading the video editor.
+    /// parameters.customAudioTrack;
+    /// parameters.videoClips;
     var exportModel = RenderVideoModel(
       id: taskId,
       video: video,
