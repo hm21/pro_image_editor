@@ -43,16 +43,20 @@ class VideoEditorControlsWidget extends StatelessWidget {
                 if (enableTrimBar)
                   Padding(
                     padding: EdgeInsets.only(
-                      top: toolbarPadding.top,
+                      top: alignTop ? toolbarPadding.top : 0,
                       left:
                           toolbarPadding.left - style.trimBarHandlerButtonSize,
                       right:
                           toolbarPadding.right - style.trimBarHandlerButtonSize,
+                      bottom: toolbarPadding.bottom,
                     ),
                     child: VideoEditorTrimBar(initialTrimSpan: initialTrimSpan),
                   ),
                 Padding(
-                  padding: toolbarPadding.copyWith(top: 0),
+                  padding: toolbarPadding.copyWith(
+                    top: alignTop ? 0 : null,
+                    bottom: alignTop ? null : 0,
+                  ),
                   child: LayoutBuilder(builder: (_, constraints) {
                     return Row(
                       spacing: constraints.maxWidth < 340 ? 6 : 12,

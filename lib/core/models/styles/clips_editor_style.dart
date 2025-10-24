@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../constants/editor_style_constants.dart';
 
@@ -18,6 +19,9 @@ class ClipsEditorStyle {
     this.addClipsButtonColor = const Color(0xFFFFFFFF),
     this.addClipsButtonBorderColor = const Color.fromARGB(179, 255, 255, 255),
     this.addClipsButtonBorderWidth = 1.5,
+    this.reversedClipsList = false,
+    this.bodyPadding = const EdgeInsets.symmetric(vertical: 12),
+    this.editPageBodyPadding = EdgeInsets.zero,
   });
 
   /// Color of the AppBar.
@@ -53,8 +57,16 @@ class ClipsEditorStyle {
   /// Border width of the "Add Clips" button.
   final double addClipsButtonBorderWidth;
 
-  /// Creates a copy of this instance with the given parameters overridden.
+  /// Reverses the order of the audio clips list when true.
+  final bool reversedClipsList;
 
+  /// Padding around the main body.
+  final EdgeInsets bodyPadding;
+
+  /// Padding inside the edit page body.
+  final EdgeInsets editPageBodyPadding;
+
+  /// Creates a copy of this instance with the given parameters overridden.
   ClipsEditorStyle copyWith({
     Color? appBarColor,
     Color? appBarBackground,
@@ -67,6 +79,9 @@ class ClipsEditorStyle {
     Color? addClipsButtonColor,
     Color? addClipsButtonBorderColor,
     double? addClipsButtonBorderWidth,
+    bool? reversedClipsList,
+    EdgeInsets? bodyPadding,
+    EdgeInsets? editPageBodyPadding,
   }) {
     return ClipsEditorStyle(
       appBarColor: appBarColor ?? this.appBarColor,
@@ -85,6 +100,9 @@ class ClipsEditorStyle {
           addClipsButtonBorderColor ?? this.addClipsButtonBorderColor,
       addClipsButtonBorderWidth:
           addClipsButtonBorderWidth ?? this.addClipsButtonBorderWidth,
+      reversedClipsList: reversedClipsList ?? this.reversedClipsList,
+      bodyPadding: bodyPadding ?? this.bodyPadding,
+      editPageBodyPadding: editPageBodyPadding ?? this.editPageBodyPadding,
     );
   }
 }

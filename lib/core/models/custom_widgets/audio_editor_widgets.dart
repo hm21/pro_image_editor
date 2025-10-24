@@ -6,6 +6,7 @@ import '/features/audio_editor/widgets/audio_main_bottom_bar.dart';
 import '/shared/controllers/video_controller.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_widget.dart';
+import 'utils/custom_widgets_typedef.dart';
 
 /// Builder signature for creating an audio editor app bar.
 typedef AudioEditorAppBarBuilder = ReactiveAppbar? Function(
@@ -86,6 +87,7 @@ class AudioEditorWidgets {
     this.startTimeSelector,
     this.balanceChooser,
     this.startTimeDisplay,
+    this.bodyItems,
   });
 
   /// Builder for a custom reactive app bar in the audio editor.
@@ -146,6 +148,9 @@ class AudioEditorWidgets {
   final ReactiveWidget Function(Stream<void> rebuildStream, int startTimeMs)?
       startTimeDisplay;
 
+  /// {@macro customBodyItem}
+  final CustomBodyItems<AudioEditorPageState>? bodyItems;
+
   /// Returns a copy of this object with the provided overrides.
   AudioEditorWidgets copyWith({
     AudioEditorAppBarBuilder? appBar,
@@ -156,8 +161,7 @@ class AudioEditorWidgets {
     AudioEditorConfirmButtonBuilder? buttonConfirm,
     AudioEditorStartTimeSelectorBuilder? startTimeSelector,
     AudioEditorBalanceChooserBuilder? balanceChooser,
-    ReactiveWidget Function(Stream<void> rebuildStream, int startTimeMs)?
-        startTimeDisplay,
+    CustomBodyItems<AudioEditorPageState>? bodyItems,
   }) {
     return AudioEditorWidgets(
       appBar: appBar ?? this.appBar,
@@ -168,7 +172,7 @@ class AudioEditorWidgets {
       buttonConfirm: buttonConfirm ?? this.buttonConfirm,
       startTimeSelector: startTimeSelector ?? this.startTimeSelector,
       balanceChooser: balanceChooser ?? this.balanceChooser,
-      startTimeDisplay: startTimeDisplay ?? this.startTimeDisplay,
+      bodyItems: bodyItems ?? this.bodyItems,
     );
   }
 }

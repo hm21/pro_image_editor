@@ -36,6 +36,8 @@ class AudioEditorStyle {
     this.buttonConfirmBorderRadius = 8.0,
     this.editSheetBackgroundColor = const Color.fromARGB(255, 40, 42, 47),
     this.editSheetShadow,
+    this.reversedTrackList = false,
+    this.bodyPadding = const EdgeInsets.symmetric(vertical: 12),
   });
 
   /// Color of the app bar.
@@ -122,6 +124,12 @@ class AudioEditorStyle {
   /// Border radius of the "Confirm" button.
   final double buttonConfirmBorderRadius;
 
+  /// Reverses the order of the audio track list when true.
+  final bool reversedTrackList;
+
+  /// Padding around the main body.
+  final EdgeInsets bodyPadding;
+
   /// Creates a copy of this instance with the given parameters overridden.
   AudioEditorStyle copyWith({
     Color? appBarColor,
@@ -152,6 +160,8 @@ class AudioEditorStyle {
     double? startTimeSelectorSelectionBorderRadius,
     double? buttonEditTrackBorderRadius,
     double? buttonConfirmBorderRadius,
+    bool? reversedTrackList,
+    EdgeInsets? bodyPadding,
   }) {
     return AudioEditorStyle(
       appBarColor: appBarColor ?? this.appBarColor,
@@ -204,6 +214,8 @@ class AudioEditorStyle {
           buttonEditTrackBorderRadius ?? this.buttonEditTrackBorderRadius,
       buttonConfirmBorderRadius:
           buttonConfirmBorderRadius ?? this.buttonConfirmBorderRadius,
+      reversedTrackList: reversedTrackList ?? this.reversedTrackList,
+      bodyPadding: bodyPadding ?? this.bodyPadding,
     );
   }
 }

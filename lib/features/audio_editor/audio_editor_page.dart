@@ -185,18 +185,23 @@ class AudioEditorPageState extends State<AudioEditorPage>
   }
 
   /// Builds the audio editor app bar.
-  PreferredSizeWidget _buildAppBar(BoxConstraints constraints) {
-    return audioEditorConfigs.widgets.appBar
-            ?.call(this, _rebuildController.stream) ??
-        ReactiveAppbar(
-          builder: (context) => AudioEditorAppBar(
-            configs: audioEditorConfigs,
-            i18n: i18n.audioEditor,
-            onClose: close,
-            onDone: done,
-          ),
-          stream: _rebuildController.stream,
-        );
+  PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
+    if (audioEditorConfigs.widgets.appBar != null) {
+      return audioEditorConfigs.widgets.appBar!(
+        this,
+        _rebuildController.stream,
+      );
+    }
+
+    return ReactiveAppbar(
+      builder: (context) => AudioEditorAppBar(
+        configs: audioEditorConfigs,
+        i18n: i18n.audioEditor,
+        onClose: close,
+        onDone: done,
+      ),
+      stream: _rebuildController.stream,
+    );
   }
 
   /// Builds the list of audio tracks and the blur background.
@@ -224,6 +229,8 @@ class AudioEditorPageState extends State<AudioEditorPage>
                 valueListenable: _selectedTrackNotifier,
                 builder: (_, selectedTrack, __) {
                   return ListView.builder(
+                    reverse: audioEditorConfigs.style.reversedTrackList,
+                    padding: audioEditorConfigs.style.bodyPadding,
                     itemCount: _audioTracks.length,
                     itemBuilder: (context, index) {
                       final audioTrack = _audioTracks[index];
@@ -242,6 +249,11 @@ class AudioEditorPageState extends State<AudioEditorPage>
                 }),
           ),
         ),
+        ...(audioEditorConfigs.widgets.bodyItems?.call(
+              this,
+              _rebuildController.stream,
+            ) ??
+            []),
       ],
     );
   }

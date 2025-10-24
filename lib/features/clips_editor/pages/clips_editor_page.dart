@@ -209,22 +209,29 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
   }
 
   /// Builds the clips editor app bar.
-  PreferredSizeWidget _buildAppBar(BoxConstraints constraints) {
-    return clipsEditorConfigs.widgets.appBar
-            ?.call(this, _rebuildController.stream) ??
-        ReactiveAppbar(
-          builder: (context) => ClipsEditorAppBar(
-            configs: clipsEditorConfigs,
-            i18n: i18n.clipsEditor,
-            onClose: close,
-            onDone: _videoClips.isNotEmpty ? done : null,
-          ),
-          stream: _rebuildController.stream,
-        );
+  PreferredSizeWidget? _buildAppBar(BoxConstraints constraints) {
+    if (clipsEditorConfigs.widgets.appBar != null) {
+      return clipsEditorConfigs.widgets.appBar!(
+        this,
+        _rebuildController.stream,
+      );
+    }
+
+    return ReactiveAppbar(
+      builder: (context) => ClipsEditorAppBar(
+        configs: clipsEditorConfigs,
+        i18n: i18n.clipsEditor,
+        onClose: close,
+        onDone: _videoClips.isNotEmpty ? done : null,
+      ),
+      stream: _rebuildController.stream,
+    );
   }
 
   /// Builds the list of clips and the blur background.
   Widget _buildBody() {
+    final bool reversedList = clipsEditorConfigs.style.reversedClipsList;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -245,7 +252,8 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
           child: Container(
             color: Colors.black45,
             child: ReorderableListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              reverse: reversedList,
+              padding: clipsEditorConfigs.style.bodyPadding,
               onReorder: (oldIndex, newIndex) {
                 if (newIndex > oldIndex) newIndex--;
                 final item = _videoClips.removeAt(oldIndex);
@@ -263,10 +271,16 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
                   onTap: () => editClip(clip),
                 );
               },
-              footer: _buildAddButton(),
+              header: reversedList ? _buildAddButton() : null,
+              footer: reversedList ? null : _buildAddButton(),
             ),
           ),
         ),
+        ...(clipsEditorConfigs.widgets.bodyItems?.call(
+              this,
+              _rebuildController.stream,
+            ) ??
+            []),
       ],
     );
   }

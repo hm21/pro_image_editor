@@ -1,5 +1,8 @@
 export 'widgets/appbar/frosted_glass_appbar.dart';
+export 'widgets/appbar/frosted_glass_audio_appbar.dart';
 export 'widgets/appbar/frosted_glass_blur_appbar.dart';
+export 'widgets/appbar/frosted_glass_clip_edit_appbar.dart';
+export 'widgets/appbar/frosted_glass_clips_appbar.dart';
 export 'widgets/appbar/frosted_glass_filter_appbar.dart';
 export 'widgets/appbar/frosted_glass_paint_appbar.dart';
 export 'widgets/appbar/frosted_glass_text_appbar.dart';

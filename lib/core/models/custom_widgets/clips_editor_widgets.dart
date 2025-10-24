@@ -1,6 +1,10 @@
+import 'package:flutter/widgets.dart';
+
+import '/features/clips_editor/pages/clips_editor_edit_page.dart';
 import '/features/clips_editor/pages/clips_editor_page.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_widget.dart';
+import 'utils/custom_widgets_typedef.dart';
 
 /// Builder signature for creating an clips editor app bar.
 typedef ClipsEditorAppBarBuilder = ReactiveAppbar? Function(
@@ -21,7 +25,19 @@ typedef ClipsEditorBottomBarBuilder = ReactiveWidget? Function(
 typedef ClipsEditorAddClipButton = ReactiveWidget? Function(
   ClipsEditorPageState editorState,
   Stream<void> rebuildStream,
-  Function() addClip,
+  VoidCallback addClip,
+);
+
+/// Builder signature for creating a clips editor edit page app bar.
+typedef ClipsEditorEditAppBarBuilder = ReactiveAppbar? Function(
+  ClipsEditorEditPageState editorState,
+  Stream<void> rebuildStream,
+);
+
+/// Builder signature for creating a clips editor edit page bottom bar.
+typedef ClipsEditorEditBottomBarBuilder = ReactiveWidget? Function(
+  ClipsEditorEditPageState editorState,
+  Stream<void> rebuildStream,
 );
 
 /// A collection of customizable widgets used in the clips editor UI.
@@ -34,6 +50,10 @@ class ClipsEditorWidgets {
     this.appBar,
     this.bottomBar,
     this.addVideoClipButton,
+    this.editClipAppBar,
+    this.editClipBottomBar,
+    this.bodyItems,
+    this.editPageBodyItems,
   });
 
   /// Builder for a custom reactive app bar in the Clips editor.
@@ -51,16 +71,42 @@ class ClipsEditorWidgets {
   /// A custom widget used as the "Add Clip" button in the editor.
   final ClipsEditorAddClipButton? addVideoClipButton;
 
+  /// Builder for a custom reactive app bar in the clips editor edit page.
+  ///
+  /// Called with the current [ClipsEditorEditPageState] and a [rebuildStream]
+  /// to reactively update the app bar UI when editing individual clips.
+  final ClipsEditorEditAppBarBuilder? editClipAppBar;
+
+  /// Builder for a custom reactive bottom bar in the clips editor edit page.
+  ///
+  /// Called with the current [ClipsEditorEditPageState] and a [rebuildStream]
+  /// to rebuild the bottom bar UI when editing individual clips.
+  final ClipsEditorEditBottomBarBuilder? editClipBottomBar;
+
+  /// {@macro customBodyItem}
+  final CustomBodyItems<ClipsEditorPageState>? bodyItems;
+
+  /// {@macro customBodyItem}
+  final CustomBodyItems<ClipsEditorEditPageState>? editPageBodyItems;
+
   /// Returns a copy of this object with the provided overrides.
   ClipsEditorWidgets copyWith({
     ClipsEditorAppBarBuilder? appBar,
     ClipsEditorBottomBarBuilder? bottomBar,
     ClipsEditorAddClipButton? addVideoClipButton,
+    ClipsEditorEditAppBarBuilder? editClipAppBar,
+    ClipsEditorEditBottomBarBuilder? editClipBottomBar,
+    CustomBodyItems<ClipsEditorPageState>? bodyItems,
+    CustomBodyItems<ClipsEditorEditPageState>? editPageBodyItems,
   }) {
     return ClipsEditorWidgets(
       appBar: appBar ?? this.appBar,
       bottomBar: bottomBar ?? this.bottomBar,
       addVideoClipButton: addVideoClipButton ?? this.addVideoClipButton,
+      editClipAppBar: editClipAppBar ?? this.editClipAppBar,
+      editClipBottomBar: editClipBottomBar ?? this.editClipBottomBar,
+      bodyItems: bodyItems ?? this.bodyItems,
+      editPageBodyItems: editPageBodyItems ?? this.editPageBodyItems,
     );
   }
 }

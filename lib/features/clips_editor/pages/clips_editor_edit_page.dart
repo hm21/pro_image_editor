@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '/core/mixins/converted_configs.dart';
@@ -31,11 +33,13 @@ class ClipsEditorEditPage extends StatefulWidget with SimpleConfigsAccess {
   final VideoClip videoClip;
 
   @override
-  State<ClipsEditorEditPage> createState() => _ClipsEditorEditPageState();
+  State<ClipsEditorEditPage> createState() => ClipsEditorEditPageState();
 }
 
-class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
+/// State for [ClipsEditorEditPage].
+class ClipsEditorEditPageState extends State<ClipsEditorEditPage>
     with ImageEditorConvertedConfigs, SimpleConfigsAccessState {
+  final _rebuildController = StreamController.broadcast();
   late final _controller = ProVideoController(
     videoPlayer: const SizedBox.shrink(),
     videoDuration: widget.videoClip.duration,
@@ -54,6 +58,7 @@ class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
   @override
   void dispose() {
     _controller.dispose();
+    _rebuildController.close();
     super.dispose();
   }
 
@@ -66,14 +71,24 @@ class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
     }
   }
 
+  @override
+  void setState(VoidCallback fn) {
+    if (!mounted) return;
+    _rebuildController.add(null);
+    super.setState(fn);
+  }
+
+  /// Closes the editor.
   void close() {
     Navigator.pop(context);
   }
 
+  /// Removes the clip.
   void remove() {
     Navigator.pop(context, true);
   }
 
+  /// Saves changes and exits.
   void done() {
     widget.videoClip.trimSpan = TrimDurationSpan(
       start: _controller.startTime,
@@ -87,10 +102,21 @@ class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
+      bottomNavigationBar: clipsEditorConfigs.widgets.editClipBottomBar?.call(
+        this,
+        _rebuildController.stream,
+      ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget? _buildAppBar() {
+    if (clipsEditorConfigs.widgets.editClipAppBar != null) {
+      return clipsEditorConfigs.widgets.editClipAppBar!(
+        this,
+        _rebuildController.stream,
+      );
+    }
+
     return ClipsEditorEditAppBar(
       configs: configs.clipsEditor,
       i18n: i18n.clipsEditor,
@@ -111,9 +137,17 @@ class _ClipsEditorEditPageState extends State<ClipsEditorEditPage>
             callbacks.clipsEditorCallbacks?.onBuildPlayer
                     ?.call(_controller, widget.videoClip) ??
                 const SizedBox.shrink(),
-            VideoEditorControlsWidget(
-              initialTrimSpan: widget.videoClip.trimSpan,
+            Padding(
+              padding: widget.configs.clipsEditor.style.editPageBodyPadding,
+              child: VideoEditorControlsWidget(
+                initialTrimSpan: widget.videoClip.trimSpan,
+              ),
             ),
+            ...(clipsEditorConfigs.widgets.editPageBodyItems?.call(
+                  this,
+                  _rebuildController.stream,
+                ) ??
+                []),
           ],
         ),
       ),

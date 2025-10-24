@@ -223,7 +223,6 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
 
             case SubEditorMode.emoji:
               return IconButton(
-                key: const ValueKey('whatsapp-open-sticker-editor-btn'),
                 tooltip: widget
                     .editor.configs.i18n.stickerEditor.bottomNavigationBarText,
                 onPressed: widget.openStickerEditor,
@@ -233,8 +232,19 @@ class _FrostedGlassActionBarState extends State<FrostedGlassActionBar> {
             case SubEditorMode.sticker:
               return null;
             case SubEditorMode.audio:
+              return IconButton(
+                tooltip: widget
+                    .editor.configs.i18n.audioEditor.bottomNavigationBarText,
+                onPressed: widget.editor.openAudioEditor,
+                icon: Icon(widget.editor.audioEditorConfigs.icons.bottomNavBar),
+              );
             case SubEditorMode.videoClips:
-              return null; // TODO:
+              return IconButton(
+                tooltip: widget
+                    .editor.configs.i18n.clipsEditor.bottomNavigationBarText,
+                onPressed: widget.editor.openClipsEditor,
+                icon: Icon(widget.editor.clipsEditorConfigs.icons.bottomNavBar),
+              );
           }
         })
         .whereType<Widget>()

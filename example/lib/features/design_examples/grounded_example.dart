@@ -379,6 +379,59 @@ class _GroundedDesignExampleState extends State<GroundedDesignExample>
               ),
             ),
           ),
+          clipsEditor: ClipsEditorConfigs(
+            style: const ClipsEditorStyle(
+              reversedClipsList: true,
+            ),
+            widgets: ClipsEditorWidgets(
+              appBar: (editorState, rebuildStream) => null,
+              bottomBar: (editorState, rebuildStream) {
+                return ReactiveWidget(
+                  builder: (_) {
+                    return GroundedClipsBar(
+                      configs: editorState.configs,
+                      callbacks: editorState.callbacks,
+                      editor: editorState,
+                    );
+                  },
+                  stream: rebuildStream,
+                );
+              },
+              editClipAppBar: (editorState, rebuildStream) => null,
+              editClipBottomBar: (editorState, rebuildStream) {
+                return ReactiveWidget(
+                  builder: (_) {
+                    return GroundedClipEditorBar(
+                      configs: editorState.configs,
+                      callbacks: editorState.callbacks,
+                      editor: editorState,
+                    );
+                  },
+                  stream: rebuildStream,
+                );
+              },
+            ),
+          ),
+          audioEditor: AudioEditorConfigs(
+            style: const AudioEditorStyle(
+              reversedTrackList: true,
+            ),
+            widgets: AudioEditorWidgets(
+              appBar: (editorState, rebuildStream) => null,
+              bottomBar: (editorState, rebuildStream) {
+                return ReactiveWidget(
+                  builder: (_) {
+                    return GroundedAudioBar(
+                      configs: editorState.configs,
+                      callbacks: editorState.callbacks,
+                      editor: editorState,
+                    );
+                  },
+                  stream: rebuildStream,
+                );
+              },
+            ),
+          ),
         ),
       );
     });

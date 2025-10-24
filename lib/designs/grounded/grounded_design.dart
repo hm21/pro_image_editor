@@ -1,6 +1,9 @@
 export 'constants/grounded_constants.dart';
+export 'widgets/bottombar/grounded_audio_bar.dart';
 export 'widgets/bottombar/grounded_blur_bar.dart';
 export 'widgets/bottombar/grounded_bottom_bar.dart';
+export 'widgets/bottombar/grounded_clip_edit_bar.dart';
+export 'widgets/bottombar/grounded_clips_bar.dart';
 export 'widgets/bottombar/grounded_crop_rotate_bar.dart';
 export 'widgets/bottombar/grounded_filter_bar.dart';
 export 'widgets/bottombar/grounded_main_bar.dart';
