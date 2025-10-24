@@ -10,6 +10,7 @@ class AudioEditorCallbacks {
     this.onCloseEditor,
     this.onMuteToggle,
     this.onStartTimeChange,
+    this.onBalanceChange,
   });
 
   /// Invoked when the editor requests to play the given [AudioTrack].
@@ -32,6 +33,9 @@ class AudioEditorCallbacks {
   /// Provides the updated [startTime] of the track within the video.
   final Future<void> Function(Duration startTime)? onStartTimeChange;
 
+  /// Callback triggered when [volumeBalance] is updated.
+  final Future<void> Function(double volumeBalance)? onBalanceChange;
+
   /// Creates a copy with modified editor callbacks.
   AudioEditorCallbacks copyWith({
     Future<void> Function(AudioTrack audio)? onPlay,
@@ -40,6 +44,7 @@ class AudioEditorCallbacks {
     Function()? onCloseEditor,
     Future<void> Function(bool isMuted)? onMuteToggle,
     Future<void> Function(Duration startTime)? onStartTimeChange,
+    Future<void> Function(double volumeBalance)? onBalanceChange,
   }) {
     return AudioEditorCallbacks(
       onPlay: onPlay ?? this.onPlay,
@@ -48,6 +53,7 @@ class AudioEditorCallbacks {
       onCloseEditor: onCloseEditor ?? this.onCloseEditor,
       onMuteToggle: onMuteToggle ?? this.onMuteToggle,
       onStartTimeChange: onStartTimeChange ?? this.onStartTimeChange,
+      onBalanceChange: onBalanceChange ?? this.onBalanceChange,
     );
   }
 }

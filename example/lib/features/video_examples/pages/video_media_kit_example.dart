@@ -27,6 +27,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
 
   final _player = Player();
   late final _controller = VideoController(_player);
+  double _lastVolumeBalance = 0;
 
   @override
   void initState() {
@@ -162,6 +163,21 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
     if (mounted) setState(() {});
   }
 
+  Future<void> _balanceAudio(double volumeBalance) async {
+    double overlayVolume = 1;
+    double originalVolume = 1;
+    if (volumeBalance < 0) {
+      overlayVolume += volumeBalance;
+    } else {
+      originalVolume -= volumeBalance;
+    }
+    await Future.wait([
+      audioPlayer.setVolume(overlayVolume),
+      _player.setVolume(originalVolume * 100),
+    ]);
+    _lastVolumeBalance = overlayVolume;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
@@ -175,7 +191,12 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
                   onPause: _player.pause,
                   onPlay: _player.play,
                   onMuteToggle: (isMuted) {
-                    _player.setVolume(isMuted ? 0 : 100);
+                    if (isMuted) {
+                      audioPlayer.setVolume(0);
+                      _player.setVolume(0);
+                    } else {
+                      _balanceAudio(_lastVolumeBalance);
+                    }
                   },
                   onTrimSpanUpdate: (durationSpan) {
                     if (_player.state.playing) {
@@ -193,6 +214,15 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
                     );
                   },
                   onMergeClips: _mergeClips,
+                ),
+                audioEditorCallbacks: callbacks.audioEditorCallbacks!.copyWith(
+                  onBalanceChange: _balanceAudio,
+                  onStartTimeChange: (startTime) async {
+                    await Future.value([
+                      audioPlayer.seek(startTime),
+                      _player.seek(Duration.zero),
+                    ]);
+                  },
                 ),
               ),
               configs: configs,

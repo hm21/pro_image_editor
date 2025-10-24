@@ -62,7 +62,8 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   /// it allows tracking each task individually.
   final taskId = DateTime.now().microsecondsSinceEpoch.toString();
 
-  final _audioPlayer = AudioPlayer();
+  /// The audio player instance.
+  final audioPlayer = AudioPlayer();
 
   final Map<String, Uint8List> _cachedKeyFrames = {};
   final Map<String, List<Uint8List>> _cachedKeyFrameList = {};
@@ -99,23 +100,20 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
           source = BytesSource(audio.bytes!);
         }
 
-        await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-        await _audioPlayer.play(source, position: track.startTime);
+        await audioPlayer.setReleaseMode(ReleaseMode.loop);
+        await audioPlayer.play(source, position: track.startTime);
       },
       onStop: (audio) async {
-        return _audioPlayer.pause();
+        return audioPlayer.pause();
       },
       onMuteToggle: (isMuted) async {
         // You can also pause or play the audio instantly, or set the volume to
         // zero. Some other audio players may support mute directly.
         if (isMuted) {
-          await _audioPlayer.setVolume(0);
+          await audioPlayer.setVolume(0);
         } else {
-          await _audioPlayer.setVolume(1);
+          await audioPlayer.setVolume(1);
         }
-      },
-      onStartTimeChange: (startTime) async {
-        await _audioPlayer.seek(startTime);
       },
     ),
     clipsEditorCallbacks: ClipsEditorCallbacks(
@@ -260,7 +258,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     proVideoController?.dispose();
-    _audioPlayer.dispose();
+    audioPlayer.dispose();
     super.dispose();
   }
 

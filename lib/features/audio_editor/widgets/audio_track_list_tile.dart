@@ -13,7 +13,6 @@ class AudioTrackListTile extends StatelessWidget {
     required this.videoDuration,
     required this.isSelected,
     this.onTap,
-    this.onChangeStartTime,
   });
 
   /// Configuration options for the Image Editor.
@@ -31,26 +30,9 @@ class AudioTrackListTile extends StatelessWidget {
   /// Callback when the tile is tapped.
   final Function()? onTap;
 
-  /// Callback when the startTime changed.
-  final Function(Duration startTime)? onChangeStartTime;
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildAudioTile(context),
-        if (isSelected) _buildAudioTimeSpanSelector(),
-      ],
-    );
-  }
-
-  Widget _buildAudioTimeSpanSelector() {
-    // TODO: Implement span selector with waveform.
-    // onChangeStartTime
-    return configs.audioEditor.widgets.audioWave
-            ?.call(audioTrack, onChangeStartTime) ??
-        const SizedBox.shrink();
+    return _buildAudioTile(context);
   }
 
   Widget _buildAudioTile(BuildContext context) {

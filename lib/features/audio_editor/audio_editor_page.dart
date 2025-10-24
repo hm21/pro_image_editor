@@ -236,7 +236,6 @@ class AudioEditorPageState extends State<AudioEditorPage>
                         onTap: () => selectTrack(
                           audioTrack,
                         ),
-                        onChangeStartTime: updateStartTime,
                       );
                     },
                   );

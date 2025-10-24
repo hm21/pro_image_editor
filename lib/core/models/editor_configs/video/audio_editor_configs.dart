@@ -15,6 +15,8 @@ class AudioEditorConfigs implements BaseSubEditorConfigs {
   /// Creates an instance of [AudioEditorConfigs].
   const AudioEditorConfigs({
     this.enableGesturePop = true,
+    this.enableEditBalance = true,
+    this.enableEditStartTime = true,
     this.audioTracks = const [],
     this.safeArea = const EditorSafeArea(),
     this.icons = const AudioEditorIcons(),
@@ -24,6 +26,12 @@ class AudioEditorConfigs implements BaseSubEditorConfigs {
 
   /// Tracks that should be displayed within the audio editor.
   final List<AudioTrack> audioTracks;
+
+  /// Enables the balance editing feature.
+  final bool enableEditBalance;
+
+  /// Enables the start time editing feature.
+  final bool enableEditStartTime;
 
   /// Icon configuration used by the Audio Editor.
   final AudioEditorIcons icons;
@@ -44,6 +52,8 @@ class AudioEditorConfigs implements BaseSubEditorConfigs {
   /// Creates a copy of this instance with the given parameters overridden.
   AudioEditorConfigs copyWith({
     List<AudioTrack>? audioTracks,
+    bool? enableEditBalance,
+    bool? enableEditStartTime,
     AudioEditorIcons? icons,
     AudioEditorStyle? style,
     AudioEditorWidgets? widgets,
@@ -52,6 +62,8 @@ class AudioEditorConfigs implements BaseSubEditorConfigs {
   }) {
     return AudioEditorConfigs(
       audioTracks: audioTracks ?? this.audioTracks,
+      enableEditBalance: enableEditBalance ?? this.enableEditBalance,
+      enableEditStartTime: enableEditStartTime ?? this.enableEditStartTime,
       icons: icons ?? this.icons,
       style: style ?? this.style,
       widgets: widgets ?? this.widgets,

@@ -32,6 +32,7 @@ import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.
 import '/shared/widgets/screen_resize_detector.dart';
 import '../audio_editor/audio_editor_page.dart';
 import '../audio_editor/models/audio_editor_response.dart';
+import '../audio_editor/widgets/audio_main_bottom_bar.dart';
 import '../clips_editor/models/video_clip_editor_response.dart';
 import '../clips_editor/pages/clips_editor_page.dart';
 import '../filter_editor/types/filter_matrix.dart';
@@ -566,6 +567,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   PointerEvent? _lastDownEvent;
   DateTime _tapDownTimestamp = DateTime.now();
+  final _audioBottomBarNotifier = ValueNotifier(false);
 
   @override
   void initState() {
@@ -620,6 +622,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void dispose() {
     _rebuildController.close();
     _controllers.dispose();
+    _audioBottomBarNotifier.dispose();
     layerInteractionManager.scaleDebounce.dispose();
     SystemChrome.setSystemUIOverlayStyle(
       _theme.brightness == Brightness.dark
@@ -1972,12 +1975,23 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// After the editor closes, updates the current video controller
   /// with the selected [AudioTrack] and its start time.
-  void openAudioEditor() async {
+  void openAudioEditor({bool enforceChooseTrackPage = false}) async {
     if (!_isVideoEditor) {
       throw ArgumentError(
         'This editor can only be opened when editing videos, not images.',
       );
     }
+
+    bool isEditSheetAvailable = audioEditorConfigs.enableEditBalance ||
+        audioEditorConfigs.enableEditStartTime;
+
+    if (!enforceChooseTrackPage &&
+        _videoController!.audioTrack != null &&
+        isEditSheetAvailable) {
+      _audioBottomBarNotifier.value = true;
+      return;
+    }
+
     _videoController!.pause();
 
     if (!mounted) return;
@@ -1998,6 +2012,11 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     _videoController.audioTrack = response.track;
+    if (_audioBottomBarNotifier.value) {
+      setState(() {});
+    } else if (isEditSheetAvailable) {
+      _audioBottomBarNotifier.value = true;
+    }
 
     if (_videoController.isPlayingNotifier.value && response.track != null) {
       await audioEditorCallbacks!.onPlay!(response.track!);
@@ -2628,7 +2647,47 @@ class ProImageEditorState extends State<ProImageEditor>
                         resizeToAvoidBottomInset: false,
                         appBar: _buildAppBar(),
                         body: _buildBody(),
-                        bottomNavigationBar: _buildBottomNavBar(),
+                        bottomNavigationBar: ValueListenableBuilder(
+                          valueListenable: _audioBottomBarNotifier,
+                          builder: (_, showAudioBar, __) {
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 220),
+                              switchInCurve: Curves.ease,
+                              switchOutCurve: Curves.ease,
+                              transitionBuilder: (child, animation) {
+                                return SizeTransition(
+                                  sizeFactor: animation,
+                                  axisAlignment: -1,
+                                  child: child,
+                                );
+                              },
+                              layoutBuilder: (currentChild, previousChildren) {
+                                return Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: <Widget>[
+                                    ...previousChildren,
+                                    if (currentChild != null) currentChild,
+                                  ],
+                                );
+                              },
+                              child: showAudioBar
+                                  ? AudioMainBottomBar(
+                                      configs: configs,
+                                      controller: _videoController!,
+                                      audioEditorCallbacks:
+                                          audioEditorCallbacks,
+                                      onSelectAudioTrack: () => openAudioEditor(
+                                        enforceChooseTrackPage: true,
+                                      ),
+                                      onConfirmChanges: () {
+                                        _audioBottomBarNotifier.value = false;
+                                      },
+                                    )
+                                  : _buildBottomNavBar() ??
+                                      const SizedBox.shrink(),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),

@@ -12,7 +12,12 @@ class AudioTrack {
     required this.audio,
     this.image,
     this.startTime,
-  });
+    this.volumeBalance = 0.0,
+  }) : assert(
+          volumeBalance >= -1 && volumeBalance <= 1,
+          '[volumeBalance] must be greater than or equal to -1.0 and '
+          'less than or equal to 1.0.',
+        );
 
   /// Unique identifier for the audio track.
   final String id;
@@ -35,6 +40,11 @@ class AudioTrack {
   /// The start time of the selected audio track in the video.
   Duration? startTime;
 
+  /// The balance between the original audio and the overlay track.
+  /// A value of `1.0` means only the overlay (this track) is audible.
+  /// A value of `-1.0` means only the original audio is audible.
+  double volumeBalance;
+
   /// Returns a formatted duration string (e.g., "3:45").
   String get formattedDuration {
     final minutes = duration.inMinutes;
@@ -51,6 +61,8 @@ class AudioTrack {
     EditorImage? image,
     EditorAudio? audio,
     Duration? startTime,
+    bool? enableLoop,
+    double? volumeBalance,
   }) {
     return AudioTrack(
       id: id ?? this.id,
@@ -60,6 +72,7 @@ class AudioTrack {
       image: image ?? this.image,
       audio: audio ?? this.audio,
       startTime: startTime ?? this.startTime,
+      volumeBalance: volumeBalance ?? this.volumeBalance,
     );
   }
 
@@ -74,7 +87,8 @@ class AudioTrack {
         other.duration == duration &&
         other.image == image &&
         other.audio == audio &&
-        other.startTime == startTime;
+        other.startTime == startTime &&
+        other.volumeBalance == volumeBalance;
   }
 
   @override
@@ -85,6 +99,7 @@ class AudioTrack {
         duration.hashCode ^
         image.hashCode ^
         audio.hashCode ^
-        startTime.hashCode;
+        startTime.hashCode ^
+        volumeBalance.hashCode;
   }
 }
