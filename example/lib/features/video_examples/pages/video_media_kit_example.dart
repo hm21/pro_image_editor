@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
-import 'package:pro_image_editor/designs/frosted_glass/frosted_glass.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
@@ -226,60 +225,7 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
                   },
                 ),
               ),
-              // FIXME:
-              // TODO: remove copyWith
-              configs: configs.copyWith(
-                clipsEditor: configs.clipsEditor.copyWith(
-                  style: const ClipsEditorStyle(
-                    bodyPadding: EdgeInsets.only(top: kToolbarHeight),
-                    editPageBodyPadding:
-                        EdgeInsets.symmetric(vertical: kToolbarHeight),
-                  ),
-                  widgets: ClipsEditorWidgets(
-                    appBar: (editorState, rebuildStream) => null,
-                    bodyItems: (editor, rebuildStream) {
-                      return [
-                        ReactiveWidget(
-                          builder: (_) {
-                            return FrostedGlassClipsAppbar(editorState: editor);
-                          },
-                          stream: rebuildStream,
-                        )
-                      ];
-                    },
-                    editClipAppBar: (editorState, rebuildStream) => null,
-                    editPageBodyItems: (editor, rebuildStream) {
-                      return [
-                        ReactiveWidget(
-                          builder: (_) {
-                            return FrostedGlassClipEditAppbar(
-                                editorState: editor);
-                          },
-                          stream: rebuildStream,
-                        )
-                      ];
-                    },
-                  ),
-                ),
-                audioEditor: configs.audioEditor.copyWith(
-                  style: const AudioEditorStyle(
-                    bodyPadding: EdgeInsets.only(top: kToolbarHeight),
-                  ),
-                  widgets: AudioEditorWidgets(
-                    appBar: (editorState, rebuildStream) => null,
-                    bodyItems: (editor, rebuildStream) {
-                      return [
-                        ReactiveWidget(
-                          builder: (_) {
-                            return FrostedGlassAudioAppbar(editorState: editor);
-                          },
-                          stream: rebuildStream,
-                        )
-                      ];
-                    },
-                  ),
-                ),
-              ),
+              configs: configs,
             ),
     );
   }
