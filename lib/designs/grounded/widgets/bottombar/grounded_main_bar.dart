@@ -168,8 +168,8 @@ class GroundedMainBarState extends State<GroundedMainBar>
                     key: _contentKey,
                     constraints: BoxConstraints(
                       minHeight: kGroundedSubBarHeight,
-                      minWidth: min(constraints.maxWidth, 600),
-                      maxWidth: 600,
+                      minWidth: min(constraints.maxWidth, 700),
+                      maxWidth: 700,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
