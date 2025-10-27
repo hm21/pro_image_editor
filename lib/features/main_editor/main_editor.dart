@@ -533,7 +533,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Determines whether redo actions can be performed on the current state.
   bool get canRedo => stateManager.canRedo;
 
-  late final _videoController = widget.videoController;
+  ProVideoController? get _videoController => widget.videoController;
 
   /// Indicates whether video editor is enabled.
   late final bool _isVideoEditor = _videoController != null;
@@ -572,7 +572,7 @@ class ProImageEditorState extends State<ProImageEditor>
   @override
   void initState() {
     super.initState();
-    _initializeVideoEditor();
+    initializeVideoEditor();
 
     _rebuildController = StreamController.broadcast();
     _controllers = MainEditorControllers(configs, callbacks, _isVideoEditor);
@@ -892,7 +892,8 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
   }
 
-  void _initializeVideoEditor() async {
+  /// Initializes the video editor functionality.
+  void initializeVideoEditor() async {
     if (!_isVideoEditor) return;
 
     _isVideoPlayerReady = false;
@@ -905,16 +906,17 @@ class ProImageEditorState extends State<ProImageEditor>
           callbacks.videoEditorCallbacks ?? VideoEditorCallbacks(),
     );
 
-    final resolution = _videoController.initialResolution;
+    final resolution = _videoController!.initialResolution;
     stateManager.activeBackgroundImage = EditorImage(
       byteArray: await createTransparentImage(resolution),
     );
-    _isVideoPlayerReady = true;
 
     if (!mounted) return;
 
     setState(() {});
     await decodeImage();
+    _isVideoPlayerReady = true;
+    setState(() {});
   }
 
   void _initializeWithTransformations() {
@@ -2001,8 +2003,8 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: configs,
         callbacks: callbacks,
         theme: _theme,
-        initialSelectedTrack: _videoController.audioTrack,
-        videoDuration: _videoController.videoDuration,
+        initialSelectedTrack: _videoController!.audioTrack,
+        videoDuration: _videoController!.videoDuration,
       ),
       duration: Duration.zero,
     );
@@ -2011,14 +2013,14 @@ class ProImageEditorState extends State<ProImageEditor>
       return;
     }
 
-    _videoController.audioTrack = response.track;
+    _videoController!.audioTrack = response.track;
     if (_audioBottomBarNotifier.value) {
       setState(() {});
     } else if (isEditSheetAvailable) {
       _audioBottomBarNotifier.value = true;
     }
 
-    if (_videoController.isPlayingNotifier.value && response.track != null) {
+    if (_videoController!.isPlayingNotifier.value && response.track != null) {
       await audioEditorCallbacks!.onPlay!(response.track!);
     }
   }
@@ -2048,8 +2050,8 @@ class ProImageEditorState extends State<ProImageEditor>
         configs: configs,
         callbacks: callbacks,
         theme: _theme,
-        videoDuration: _videoController.videoDuration,
-        initialClips: _videoController.clips,
+        videoDuration: _videoController!.videoDuration,
+        initialClips: _videoController!.clips,
       ),
       duration: Duration.zero,
     );
@@ -2058,7 +2060,7 @@ class ProImageEditorState extends State<ProImageEditor>
       return;
     }
 
-    _videoController.clips = response.videoClips;
+    _videoController!.clips = response.videoClips;
   }
 
   /// Moves a layer in the list to a new position.
@@ -2745,6 +2747,8 @@ class ProImageEditorState extends State<ProImageEditor>
                 mainEditorCallbacks?.onDoubleTap?.call();
               },
               onPointerUp: (event) {
+                if (GestureManager.instance.isBlocked) return;
+
                 _mouseService.onPointerUp(event);
                 onPointerUp(event);
 

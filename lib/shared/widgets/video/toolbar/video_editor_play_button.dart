@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '/shared/widgets/video/video_editor_configurable.dart';
+import '../../gesture/gesture_interceptor_widget.dart';
 
 /// A customizable play/pause button widget for the video editor.
 ///
@@ -29,34 +31,36 @@ class VideoEditorPlayButton extends StatelessWidget {
     var player = VideoEditorConfigurable.of(context);
     var controller = player.controller;
 
-    return ValueListenableBuilder(
-      valueListenable: player.isPlayingNotifier,
-      builder: (_, isPlaying, __) {
-        return player.widgets.playButton?.call != null
-            ? player.widgets.playButton!(controller.setMuteState)
-            : IconButtonTheme(
-                data: IconButtonThemeData(
-                  style: IconButton.styleFrom(
-                    backgroundColor: player.style.muteButtonBackground,
+    return GestureInterceptor(
+      child: ValueListenableBuilder(
+        valueListenable: player.isPlayingNotifier,
+        builder: (_, isPlaying, __) {
+          return player.widgets.playButton?.call != null
+              ? player.widgets.playButton!(controller.setMuteState)
+              : IconButtonTheme(
+                  data: IconButtonThemeData(
+                    style: IconButton.styleFrom(
+                      backgroundColor: player.style.muteButtonBackground,
+                    ),
                   ),
-                ),
-                child: IconButton.filled(
-                  onPressed: () {
-                    if (isPlaying) {
-                      controller.pause();
-                    } else {
-                      controller.play();
-                    }
-                  },
-                  color: player.style.muteButtonColor,
-                  icon: Icon(
-                    isPlaying
-                        ? player.icons.pauseIndicator
-                        : player.icons.playIndicator,
+                  child: IconButton.filled(
+                    onPressed: () {
+                      if (isPlaying) {
+                        controller.pause();
+                      } else {
+                        controller.play();
+                      }
+                    },
+                    color: player.style.muteButtonColor,
+                    icon: Icon(
+                      isPlaying
+                          ? player.icons.pauseIndicator
+                          : player.icons.playIndicator,
+                    ),
                   ),
-                ),
-              );
-      },
+                );
+        },
+      ),
     );
   }
 }

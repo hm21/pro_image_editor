@@ -10,7 +10,6 @@ import '/core/mixins/editor_configs_mixin.dart';
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/widgets/extended/extended_pop_scope.dart';
-import '/shared/widgets/overlays/loading_dialog/loading_dialog.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 import '../models/video_clip.dart';
 import '../models/video_clip_editor_response.dart';
@@ -154,9 +153,7 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
 
     /// Merge the video clips when the user changed something
     if (!listEquals(originalClips, _videoClips)) {
-      LoadingDialog.instance.show(context, configs: configs);
       await callbacks.clipsEditorCallbacks?.onMergeClips?.call(_videoClips);
-      LoadingDialog.instance.hide();
       if (!mounted) return;
     }
 
