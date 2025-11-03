@@ -396,7 +396,7 @@ class TextEditorState extends State<TextEditor>
 
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: done,
+        onTap: textEditorConfigs.enableTapOutsideToSave ? done : null,
         child: Stack(
           children: [
             if (textEditorConfigs.widgets.bodyItems != null)

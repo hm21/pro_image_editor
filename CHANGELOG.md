@@ -1,5 +1,8 @@
 # Changelog
 
+## X.X.X
+- **FEAT**(text-editor): Added `enableTapOutsideToSave` configuration to `TextEditorConfigs` to control whether tapping outside the text field saves the text annotation. When set to `false`, users must use the done button or other explicit save actions. Defaults to `true` for backward compatibility.
+
 ## 11.11.0
 - **FEAT**(dashDotLine): Added new paint-mode "dashDotLine".
 
