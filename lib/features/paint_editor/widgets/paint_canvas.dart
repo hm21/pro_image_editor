@@ -387,8 +387,7 @@ class PaintCanvasState extends State<PaintCanvas> {
                 _paintCtrl.mode == PaintMode.eraser) {
               _onScaleStart(ScaleStartDetails(
                   focalPoint: details.localPosition,
-                  localFocalPoint: details.localPosition)
-              );
+                  localFocalPoint: details.localPosition));
             }
           },
           onTapUp: (details) {
