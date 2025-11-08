@@ -17,6 +17,7 @@ dependencies:
   intl: ^0.20.1
   
   bot_toast: ^4.1.0
+  flutter_localization: ^0.3.3
   cupertino_icons: ^1.0.8
   file_picker: ^10.2.1
   gal: ^2.3.2

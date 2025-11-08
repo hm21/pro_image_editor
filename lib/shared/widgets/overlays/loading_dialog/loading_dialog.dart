@@ -219,7 +219,7 @@ class LoadingDialog extends ChangeNotifier {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 20.0),
+              padding: const EdgeInsetsDirectional.only(end: 20.0),
               child: SizedBox(
                 height: 40,
                 width: 40,

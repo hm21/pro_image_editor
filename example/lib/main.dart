@@ -3,6 +3,7 @@ import 'package:example/shared/widgets/not_found_example.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:media_kit/media_kit.dart';
 
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -14,7 +15,7 @@ import 'core/constants/example_list_constant.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await FlutterLocalization.instance.ensureInitialized();
   // Necessary initialization for package:media_kit.
   MediaKit.ensureInitialized();
 
@@ -35,6 +36,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    const langCode = 'ar';
+    FlutterLocalization.instance.init(
+      mapLocales: [const MapLocale(langCode, {})],
+      initLanguageCode: langCode,
+    );
     return MaterialApp(
       title: 'Pro-Image-Editor',
       theme: ThemeData(
@@ -45,6 +51,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       builder: BotToastInit(),
+      locale: const Locale(langCode),
+      localizationsDelegates:
+          FlutterLocalization.instance.localizationsDelegates,
+      supportedLocales: [const Locale(langCode)],
       navigatorObservers: [BotToastNavigatorObserver()],
       debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {

@@ -301,9 +301,14 @@ class _LayerInteractionHelperWidgetState
         final paddedWidth = childWidth;
         final paddedHeight = childHeight;
 
+        final targetRenderBox = context.findRenderObject() as RenderBox;
+        final position = targetRenderBox.localToGlobal(Offset.zero);
+
         return Positioned(
           width: paddedWidth,
           height: paddedHeight,
+          top: position.dy,
+          left: position.dx,
           child: ValueListenableBuilder(
               valueListenable: _isOverlayVisibleNotifier,
               builder: (_, isVisible, __) {
