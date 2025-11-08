@@ -2,7 +2,10 @@
 
 ## 11.12.0
 - **FEAT**(text-editor): Added `enableTapOutsideToSave` configuration to `TextEditorConfigs` to control whether tapping outside the text field saves the text annotation. 
+- **FEAT**(example-app): Added localization support to the example app to switch between rtl/ltr locales.
 - **FIX**(paint-editor): Resolve draw delay in the freestyle mode. Resolves issue [#696](https://github.com/hm21/pro_image_editor/issues/696).
+- **FIX**(rtl-layer-selection): Correct layer selection position in RTL layout. Resolves issue [#698](https://github.com/hm21/pro_image_editor/issues/698).
+- **FIX**(rtl-loading-dialog): Add directional padding to the loading dialog.
 
 ## 11.11.0
 - **FEAT**(dashDotLine): Added new paint-mode "dashDotLine".
