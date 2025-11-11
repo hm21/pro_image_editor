@@ -1,5 +1,8 @@
 # Changelog
 
+## X.X.X
+- **FEAT**(main-editor): Make scaling actions done through desktop interactions (mouse scroll or keyboard) consistent between layer types and proportional to the current size of the layer.
+
 ## 11.12.1
 - **FIX**(RTL): Resolve incorrect layer selection box location. Resolves issue [#698](https://github.com/hm21/pro_image_editor/issues/698). 
 
