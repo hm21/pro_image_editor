@@ -38,42 +38,43 @@ class TextEditorConfigs
   ///
   /// By default, the text editor is enabled, and most text formatting options
   /// are enabled. The initial font size is set to 24.0.
-  const TextEditorConfigs({
-    this.layerFractionalOffset = const Offset(-0.5, -0.5),
-    this.enableGesturePop = true,
-    this.enableSuggestions = true,
-    @Deprecated(
-      'Use tools inside MainEditorConfigs instead, e.g. tools: '
-      '[SubEditorMode.text]',
-    )
-    this.enabled = true,
-    this.enableEdit = true,
-    this.enableAutocorrect = true,
-    this.showSelectFontStyleBottomBar = false,
-    this.showTextAlignButton = true,
-    this.showFontScaleButton = true,
-    this.showBackgroundModeButton = true,
-    this.enableMainEditorZoomFactor = false,
-    this.enableTapOutsideToSave = true,
-    this.enableAutoOverflow = true,
-    this.initFontSize = 24.0,
-    this.initialPrimaryColor = const Color(0xFF000000),
-    this.initialSecondaryColor,
-    this.initialTextAlign = TextAlign.center,
-    this.inputTextFieldAlign = Alignment.center,
-    this.initFontScale = 1.0,
-    this.maxFontScale = 3.0,
-    this.minFontScale = 0.3,
-    this.minScale = double.negativeInfinity,
-    this.maxScale = double.infinity,
-    this.customTextStyles,
-    this.defaultTextStyle = const TextStyle(),
-    this.initialBackgroundColorMode = LayerBackgroundMode.backgroundAndColor,
-    this.safeArea = const EditorSafeArea(),
-    this.style = const TextEditorStyle(),
-    this.icons = const TextEditorIcons(),
-    this.widgets = const TextEditorWidgets(),
-  })  : assert(initFontSize > 0, 'initFontSize must be positive'),
+  const TextEditorConfigs(
+      {this.layerFractionalOffset = const Offset(-0.5, -0.5),
+      this.enableGesturePop = true,
+      this.enableSuggestions = true,
+      @Deprecated(
+        'Use tools inside MainEditorConfigs instead, e.g. tools: '
+        '[SubEditorMode.text]',
+      )
+      this.enabled = true,
+      this.enableEdit = true,
+      this.enableAutocorrect = true,
+      this.showSelectFontStyleBottomBar = false,
+      this.showTextAlignButton = true,
+      this.showFontScaleButton = true,
+      this.showBackgroundModeButton = true,
+      this.enableMainEditorZoomFactor = false,
+      this.enableTapOutsideToSave = true,
+      this.enableAutoOverflow = true,
+      this.initFontSize = 24.0,
+      this.initialPrimaryColor = const Color(0xFF000000),
+      this.initialSecondaryColor,
+      this.initialTextAlign = TextAlign.center,
+      this.inputTextFieldAlign = Alignment.center,
+      this.initFontScale = 1.0,
+      this.maxFontScale = 3.0,
+      this.minFontScale = 0.3,
+      this.minScale = double.negativeInfinity,
+      this.maxScale = double.infinity,
+      this.customTextStyles,
+      this.defaultTextStyle = const TextStyle(),
+      this.initialBackgroundColorMode = LayerBackgroundMode.backgroundAndColor,
+      this.safeArea = const EditorSafeArea(),
+      this.style = const TextEditorStyle(),
+      this.icons = const TextEditorIcons(),
+      this.widgets = const TextEditorWidgets(),
+      this.enableImageBoundaryTextWrap = false})
+      : assert(initFontSize > 0, 'initFontSize must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
 
@@ -200,6 +201,9 @@ class TextEditorConfigs
   /// Widgets associated with the text editor.
   final TextEditorWidgets widgets;
 
+  /// Enable automatic text wrapping when text reach the image boundaries
+  final bool enableImageBoundaryTextWrap;
+
   /// Creates a copy of this `TextEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -234,6 +238,7 @@ class TextEditorConfigs
     TextEditorStyle? style,
     TextEditorIcons? icons,
     TextEditorWidgets? widgets,
+    bool? enableImageBoundaryTextWrap,
   }) {
     return TextEditorConfigs(
       layerFractionalOffset:
@@ -269,6 +274,8 @@ class TextEditorConfigs
       style: style ?? this.style,
       icons: icons ?? this.icons,
       widgets: widgets ?? this.widgets,
+      enableImageBoundaryTextWrap:
+          enableImageBoundaryTextWrap ?? this.enableImageBoundaryTextWrap,
     );
   }
 }

@@ -1347,6 +1347,7 @@ class ProImageEditorState extends State<ProImageEditor>
         scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
             ? interactiveViewer.currentState?.scaleFactor ?? 1.0
             : 1.0,
+        imageSize: sizesManager.decodedImageSize,
       ),
 
       /// Small Duration is important for a smooth hero animation
@@ -1646,6 +1647,7 @@ class ProImageEditorState extends State<ProImageEditor>
         scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
             ? interactiveViewer.currentState?.scaleFactor ?? 1.0
             : 1.0,
+        imageSize: sizesManager.decodedImageSize,
       ),
       duration: duration,
     );
