@@ -236,17 +236,26 @@ class _LayerWidgetState extends State<LayerWidget>
       if (timeElapsed > tapTimeElapsed) return;
 
       // Fire onTap only if selection/edit is enabled and pointer is inside hit box
-      if ((interaction.enableSelection || interaction.enableEdit) &&
-          !_isOutsideHitBox()) {
+      final bool canSelect = interaction.enableSelection;
+      final bool canEdit = interaction.enableEdit;
+      final bool insideHitBox = !_isOutsideHitBox();
+      final bool isStylus = event.kind == PointerDeviceKind.stylus;
+
+      // For stylus input, bypass hit box check since it has precision issues
+      // If tap passed distance/time validation, it's a valid tap
+      if ((canSelect || canEdit) && (insideHitBox || isStylus)) {
         _layersService?.handleLayerTap(_layer, _lastDownEvent!);
       }
     });
   }
 
   bool _isOutsideHitBox() {
-    return ((_isHitOutsideInCanvas() || _isHitOutsideInText()) &&
-            _layerType != LayerWidgetType.censor) &&
-        !_isSelected;
+    final bool hitOutsideCanvas = _isHitOutsideInCanvas();
+    final bool hitOutsideText = _isHitOutsideInText();
+    final bool isCensor = _layerType == LayerWidgetType.censor;
+    final bool isSelected = _isSelected;
+
+    return ((hitOutsideCanvas || hitOutsideText) && !isCensor) && !isSelected;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
