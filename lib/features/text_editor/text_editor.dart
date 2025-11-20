@@ -29,6 +29,7 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
     this.callbacks = const ProImageEditorCallbacks(),
     this.configs = const ProImageEditorConfigs(),
     this.scaleFactor = 1.0,
+    this.imageSize = Size.zero,
     required this.theme,
   });
   @override
@@ -45,6 +46,9 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
 
   /// The text layer data to be edited, if any.
   final TextLayer? layer;
+
+  /// The size of the image being edited, used for boundary text wrapping.
+  final Size imageSize;
 
   /// A factor by which the textfield is scaled.
   ///
@@ -86,9 +90,15 @@ class TextEditorState extends State<TextEditor>
   late double _fontScale;
   final double _cursorWidth = 2.0;
 
-  double? get _maxTextWidth => textEditorConfigs.enableAutoOverflow
-      ? editorBodySize.width - 32 - _cursorWidth
-      : null;
+  double? get _maxTextWidth {
+    if (textEditorConfigs.enableImageBoundaryTextWrap &&
+        widget.imageSize != Size.zero) {
+      return widget.imageSize.width - 32 - _cursorWidth;
+    }
+    return textEditorConfigs.enableAutoOverflow
+        ? editorBodySize.width - 32 - _cursorWidth
+        : null;
+  }
 
   /// Gets the primary color.
   Color get primaryColor => _primaryColor;
@@ -313,8 +323,10 @@ class TextEditorState extends State<TextEditor>
         colorMode: backgroundColorMode,
         textStyle: selectedTextStyle,
         customSecondaryColor: _secondaryColor != null,
-        maxTextWidth:
-            textEditorConfigs.enableAutoOverflow ? _maxTextWidth : null,
+        maxTextWidth: (textEditorConfigs.enableAutoOverflow ||
+                textEditorConfigs.enableImageBoundaryTextWrap)
+            ? _maxTextWidth
+            : null,
       );
 
       Navigator.of(context).pop(layer);
@@ -466,6 +478,7 @@ class TextEditorState extends State<TextEditor>
       ..add(StringProperty('heroTag', widget.heroTag))
       ..add(DoubleProperty('scaleFactor', widget.scaleFactor))
       ..add(DiagnosticsProperty<TextLayer?>('layer', widget.layer))
+      ..add(DiagnosticsProperty<Size>('imageSize', widget.imageSize))
       ..add(DiagnosticsProperty<ThemeData>('theme', widget.theme))
       ..add(DiagnosticsProperty<TextAlign>('align', align))
       ..add(DiagnosticsProperty<TextStyle>(
