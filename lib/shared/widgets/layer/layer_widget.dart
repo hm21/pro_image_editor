@@ -240,10 +240,19 @@ class _LayerWidgetState extends State<LayerWidget>
       final bool canEdit = interaction.enableEdit;
       final bool insideHitBox = !_isOutsideHitBox();
       final bool isStylus = event.kind == PointerDeviceKind.stylus;
+      final bool isTextLayer = _layerType == LayerWidgetType.text;
 
-      // For stylus input, bypass hit box check since it has precision issues
-      // If tap passed distance/time validation, it's a valid tap
-      if ((canSelect || canEdit) && (insideHitBox || isStylus)) {
+      if (!(canSelect || canEdit)) {
+        return;
+      }
+
+      // For stylus on TEXT layers only, bypass hit box check since it has
+      // precision issues with stylus input
+      // For paint layers: always use hit box validation (no bypass)
+      // to ensure taps on empty space inside shapes don't trigger edit.
+      final bool stylusTextBypass = isStylus && isTextLayer;
+
+      if (insideHitBox || stylusTextBypass) {
         _layersService?.handleLayerTap(_layer, _lastDownEvent!);
       }
     });
