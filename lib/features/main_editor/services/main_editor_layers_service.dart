@@ -170,7 +170,7 @@ class MainEditorLayersService {
       layerInteraction.clearSelectedLayers();
       _deselectGroup(layer);
     }
-    if (_isScaleInteractionActive || state.isLayerBeingTransformed) return;
+    if (_isScaleInteractionActive) return;
     if (layerInteraction.hoverRemoveBtn) {
       state.removeLayer(layer);
     }
