@@ -503,10 +503,14 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Returns the most recently selected layer, or `null` if no layer is
   /// selected.
   Layer? get selectedLayer => hasSelectedLayers
-      ? activeLayers.lastWhere(
-          (layer) =>
-              layerInteractionManager.selectedLayerIds.contains(layer.id),
-        )
+      ? () {
+          final mostRecentSelectedLayerIndex = activeLayers.lastIndexWhere(
+              (layer) =>
+                  layerInteractionManager.selectedLayerIds.contains(layer.id));
+          return mostRecentSelectedLayerIndex >= 0
+              ? activeLayers[mostRecentSelectedLayerIndex]
+              : null;
+        }()
       : null;
 
   /// Returns a list of all currently selected layers.
