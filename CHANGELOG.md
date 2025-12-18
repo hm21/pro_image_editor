@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.15.0
+- **FEAT**(crop-editor): Add `setScale` method to cropRotateEditor for programmatically setting the scale factor.
+
 ## 11.14.2
 - **FIX**(main-editor): Resolve issue where `onLayerTapUp` is never called.
 - **FIX**(main-editor): Prevent the 'getSelectedLayer' function from throwing an exception when a layer is not found.
