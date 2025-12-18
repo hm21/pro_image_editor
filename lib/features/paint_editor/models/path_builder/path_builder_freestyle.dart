@@ -5,7 +5,11 @@ import 'path_builder_base.dart';
 /// Builds a freestyle path using strokes and isolated dot points.
 class PathBuilderFreestyle extends PathBuilderBase {
   /// Creates a freestyle path builder with the given item and scale.
-  PathBuilderFreestyle({required super.item, required super.scale});
+  PathBuilderFreestyle({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
 
   @override
   Path build() {

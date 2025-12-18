@@ -14,6 +14,7 @@ void main() {
     final paintModes = [
       PaintMode.line,
       PaintMode.dashLine,
+      PaintMode.dashDotLine,
       PaintMode.arrow,
       PaintMode.freeStyle,
       PaintMode.rect,

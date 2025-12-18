@@ -292,6 +292,7 @@ class PaintCanvasState extends State<PaintCanvas> {
           position: position,
           scaleFactor: stackScale * layerScale,
           isRoundCensorArea: useRoundCensor,
+          paintEditorConfigs: widget.paintEditorConfigs,
         );
         if (hasHit) {
           removeIds.add(layer.id);
@@ -382,7 +383,23 @@ class PaintCanvasState extends State<PaintCanvas> {
             if (_paintCtrl.mode == PaintMode.polygon) {
               _addPolygonPoint(details.localPosition);
               _checkPolygonIsComplete();
+            } else if (_paintCtrl.mode == PaintMode.freeStyle ||
+                _paintCtrl.mode == PaintMode.eraser) {
+              _onScaleStart(ScaleStartDetails(
+                  focalPoint: details.localPosition,
+                  localFocalPoint: details.localPosition));
             }
+          },
+          onTapUp: (details) {
+            if (_paintCtrl.mode == PaintMode.freeStyle ||
+                _paintCtrl.mode == PaintMode.eraser) {
+              _onScaleUpdate(ScaleUpdateDetails(
+                focalPoint: details.localPosition,
+                localFocalPoint: details.localPosition,
+              ));
+              _onScaleEnd(ScaleEndDetails());
+            }
+            _tapDownDetails = null;
           },
           onTap: () {
             if (_tapDownDetails != null) widget.onTap(_tapDownDetails!);

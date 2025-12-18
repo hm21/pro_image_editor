@@ -217,15 +217,13 @@ class LoadingDialog extends ChangeNotifier {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
+          spacing: 20,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: SizedBox(
-                height: 40,
-                width: 40,
-                child: FittedBox(
-                  child: PlatformCircularProgressIndicator(configs: configs),
-                ),
+            SizedBox(
+              height: 40,
+              width: 40,
+              child: FittedBox(
+                child: PlatformCircularProgressIndicator(configs: configs),
               ),
             ),
             Expanded(

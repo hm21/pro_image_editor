@@ -236,17 +236,35 @@ class _LayerWidgetState extends State<LayerWidget>
       if (timeElapsed > tapTimeElapsed) return;
 
       // Fire onTap only if selection/edit is enabled and pointer is inside hit box
-      if ((interaction.enableSelection || interaction.enableEdit) &&
-          !_isOutsideHitBox()) {
+      final bool canSelect = interaction.enableSelection;
+      final bool canEdit = interaction.enableEdit;
+      final bool insideHitBox = !_isOutsideHitBox();
+      final bool isStylus = event.kind == PointerDeviceKind.stylus;
+      final bool isTextLayer = _layerType == LayerWidgetType.text;
+
+      if (!(canSelect || canEdit)) {
+        return;
+      }
+
+      // For stylus on TEXT layers only, bypass hit box check since it has
+      // precision issues with stylus input
+      // For paint layers: always use hit box validation (no bypass)
+      // to ensure taps on empty space inside shapes don't trigger edit.
+      final bool stylusTextBypass = isStylus && isTextLayer;
+
+      if (insideHitBox || stylusTextBypass) {
         _layersService?.handleLayerTap(_layer, _lastDownEvent!);
       }
     });
   }
 
   bool _isOutsideHitBox() {
-    return ((_isHitOutsideInCanvas() || _isHitOutsideInText()) &&
-            _layerType != LayerWidgetType.censor) &&
-        !_isSelected;
+    final bool hitOutsideCanvas = _isHitOutsideInCanvas();
+    final bool hitOutsideText = _isHitOutsideInText();
+    final bool isCensor = _layerType == LayerWidgetType.censor;
+    final bool isSelected = _isSelected;
+
+    return ((hitOutsideCanvas || hitOutsideText) && !isCensor) && !isSelected;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
@@ -412,7 +430,6 @@ class _LayerWidgetState extends State<LayerWidget>
       case LayerWidgetType.canvas:
         content = LayerWidgetPaintItem(
           layer: _layer as PaintLayer,
-          scale: _layer.scale,
           isSelected: _isSelected,
           enableHitDetection:
               _layerInteractionManager?.enabledHitDetection ?? false,

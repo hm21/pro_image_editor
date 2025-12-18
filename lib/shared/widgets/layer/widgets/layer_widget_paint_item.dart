@@ -13,7 +13,6 @@ class LayerWidgetPaintItem extends StatelessWidget {
   const LayerWidgetPaintItem({
     super.key,
     required this.layer,
-    this.scale = 1.0,
     this.isSelected = false,
     this.enableHitDetection = false,
     this.willChange = false,
@@ -23,9 +22,6 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
   /// The paint layer represented by this widget.
   final PaintLayer layer;
-
-  /// The scaling factor applied to the paint layer.
-  final double scale;
 
   /// Whether the paint layer is currently selected.
   final bool isSelected;
@@ -57,7 +53,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
         isComplex: layer.item.mode == PaintMode.freeStyle,
         painter: DrawPaintItem(
           item: layer.item,
-          scale: scale,
+          scale: layer.scale,
           selected: isSelected,
           enabledHitDetection: enableHitDetection,
           onHitChanged: onHitChanged,

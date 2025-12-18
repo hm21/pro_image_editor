@@ -190,7 +190,8 @@ class CropCornerPainter extends CustomPainter {
       fadeInOpacity,
     )!;
 
-    double opacity = 0.7 - 0.25 * interactionOpacity;
+    double opacity = style.cropOverlayOpacity -
+        style.cropOverlayInteractionOpacity * interactionOpacity;
 
     double fadeInFactor = (1 - opacity) * (1 - fadeInOpacity);
 

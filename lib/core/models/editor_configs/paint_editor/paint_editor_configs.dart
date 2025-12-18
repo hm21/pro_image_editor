@@ -47,6 +47,7 @@ class PaintEditorConfigs extends ZoomConfigs
       PaintMode.rect,
       PaintMode.circle,
       PaintMode.dashLine,
+      PaintMode.dashDotLine,
       PaintMode.polygon,
       PaintMode.pixelate,
       PaintMode.blur,
@@ -70,6 +71,10 @@ class PaintEditorConfigs extends ZoomConfigs
     this.initialPaintMode = PaintMode.freeStyle,
     this.eraserMode = EraserMode.partial,
     this.eraserSize = 8.0,
+    this.dashLineSpacingFactor = 2,
+    this.dashLineWidthFactor = 2.5,
+    this.dashDotLineSpacingFactor = 2,
+    this.dashDotLineWidthFactor = 2.5,
     this.censorConfigs = const CensorConfigs(),
     this.safeArea = const EditorSafeArea(),
     this.style = const PaintEditorStyle(),
@@ -189,6 +194,42 @@ class PaintEditorConfigs extends ZoomConfigs
   /// connected when drawing polygons.
   final double polygonConnectionThreshold;
 
+  /// The spacing multiplier for dashed lines.
+  ///
+  /// The actual spacing is calculated as:
+  /// `spacing = dashLineSpacingFactor * strokeWidth`
+  ///
+  /// This ensures the visual ratio of the dashed pattern stays consistent
+  /// when the user changes the stroke width.
+  final double dashLineSpacingFactor;
+
+  /// The width multiplier for dashed line segments.
+  ///
+  /// The actual dash width is calculated as:
+  /// `dashWidth = dashLineWidthFactor * strokeWidth`
+  ///
+  /// Keeps the dashed line’s visual proportions stable when stroke width
+  /// changes.
+  final double dashLineWidthFactor;
+
+  /// The spacing multiplier for dash-dot lines.
+  ///
+  /// The actual spacing is calculated as:
+  /// `spacing = dashDotLineSpacingFactor * strokeWidth`
+  ///
+  /// Ensures the dash-dot pattern maintains its aspect ratio when
+  /// the user changes the stroke width.
+  final double dashDotLineSpacingFactor;
+
+  /// The width multiplier for dash-dot line segments.
+  ///
+  /// The actual dash width is calculated as:
+  /// `dashWidth = dashDotLineWidthFactor * strokeWidth`
+  ///
+  /// Keeps the dash-dot line appearance consistent across different stroke
+  /// widths.
+  final double dashDotLineWidthFactor;
+
   /// Defines the safe area configuration for the editor.
   final EditorSafeArea safeArea;
 
@@ -244,6 +285,10 @@ class PaintEditorConfigs extends ZoomConfigs
     double? maxOpacity,
     int? divisionsOpacity,
     List<PaintMode>? tools,
+    double? dashLineSpacingFactor,
+    double? dashLineWidthFactor,
+    double? dashDotLineSpacingFactor,
+    double? dashDotLineWidthFactor,
   }) {
     return PaintEditorConfigs(
       layerFractionalOffset:
@@ -289,6 +334,13 @@ class PaintEditorConfigs extends ZoomConfigs
       minOpacity: minOpacity ?? this.minOpacity,
       maxOpacity: maxOpacity ?? this.maxOpacity,
       divisionsOpacity: divisionsOpacity ?? this.divisionsOpacity,
+      dashLineSpacingFactor:
+          dashLineSpacingFactor ?? this.dashLineSpacingFactor,
+      dashLineWidthFactor: dashLineWidthFactor ?? this.dashLineWidthFactor,
+      dashDotLineSpacingFactor:
+          dashDotLineSpacingFactor ?? this.dashDotLineSpacingFactor,
+      dashDotLineWidthFactor:
+          dashDotLineWidthFactor ?? this.dashDotLineWidthFactor,
     );
   }
 }

@@ -5,7 +5,11 @@ import 'path_builder_base.dart';
 /// Builds a polygon path from a list of connected offset points.
 class PathBuilderPolygon extends PathBuilderBase {
   /// Creates a polygon path builder using the given item and scale factor.
-  PathBuilderPolygon({required super.item, required super.scale});
+  PathBuilderPolygon({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
 
   @override
   Path build() {

@@ -5,7 +5,11 @@ import 'path_builder_base.dart';
 /// Builds a path representing an arrow with a line and arrowhead.
 class PathBuilderArrow extends PathBuilderBase {
   /// Creates an arrow path builder using the given item and scale factor.
-  PathBuilderArrow({required super.item, required super.scale});
+  PathBuilderArrow({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
 
   @override
   Path build() {

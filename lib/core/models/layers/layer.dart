@@ -27,17 +27,6 @@ export 'widget_layer.dart';
 /// Represents a layer with common properties for widgets.
 class Layer {
   /// Creates a new layer with optional properties.
-  ///
-  /// The [id] parameter can be used to provide a custom identifier for the
-  /// layer.
-  /// The [offset] parameter determines the position offset of the widget.
-  /// The [rotation] parameter sets the rotation angle of the widget in degrees
-  /// (default is 0).
-  /// The [scale] parameter sets the scale factor of the widget (default is 1).
-  /// The [flipX] parameter controls horizontal flipping (default is false).
-  /// The [flipY] parameter controls vertical flipping (default is false).
-  /// The [enableInteraction] parameter controls if a user can interact with
-  /// the layer
   Layer({
     GlobalKey? key,
     String? id,

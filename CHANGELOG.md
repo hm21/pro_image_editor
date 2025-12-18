@@ -4,6 +4,36 @@
 - **FEAT**(audio-editor): Added a new Audio Editor to the Video Editor, allowing users to add background music. Users can set the audio start time and adjust the balance between the original and overlay tracks.
 - **FEAT**(clips-editor): Introduced a new Clips Editor that lets users combine multiple video clips into a single merged video.
 
+## 11.15.0
+- **FEAT**(crop-editor): Add `setScale` method to cropRotateEditor for programmatically setting the scale factor.
+
+## 11.14.2
+- **FIX**(main-editor): Resolve issue where `onLayerTapUp` is never called.
+- **FIX**(main-editor): Prevent the 'getSelectedLayer' function from throwing an exception when a layer is not found.
+
+## 11.14.1
+- **FIX**(main-editor): Prevent dual editor opening (paint and text) when a text layer that is inside a paint layer is tapped with Apple pencil.
+
+## 11.14.0
+- **FEAT**(crop-editor): Add `cropOverlayOpacity` and `cropOverlayInteractionOpacity` to control the opacity outside the crop area when editing an image.
+
+## 11.13.0
+- **FEAT**(text-editor): Add `enableImageBoundaryTextWrap` property to `TextEditorConfigs` to automatically wrap text at the actual image boundaries instead of screen boundaries. More details in PR [#704](https://github.com/hm21/pro_image_editor/pull/704).
+- **FIX**(main-editor): Resolve apple pencil tap detection for text layer editing. More details in PR [#705](https://github.com/hm21/pro_image_editor/pull/705).
+
+## 11.12.2
+- **FEAT**(main-editor): Make scaling actions done through desktop interactions (mouse scroll or keyboard) consistent between layer types and proportional to the current size of the layer.
+
+## 11.12.1
+- **FIX**(RTL): Resolve incorrect layer selection box location. Resolves issue [#698](https://github.com/hm21/pro_image_editor/issues/698). 
+
+## 11.12.0
+- **FEAT**(text-editor): Added `enableTapOutsideToSave` configuration to `TextEditorConfigs` to control whether tapping outside the text field saves the text annotation. 
+- **FIX**(paint-editor): Resolve draw delay in the freestyle mode. Resolves issue [#696](https://github.com/hm21/pro_image_editor/issues/696).
+
+## 11.11.0
+- **FEAT**(dashDotLine): Added new paint-mode "dashDotLine".
+
 ## 11.10.1
 - **FIX**(callbacks): Resolve issue where the callback `onDone` in mainEditorCallbacks is not triggered. Resolves issue [#681](https://github.com/hm21/pro_image_editor/issues/681).
 

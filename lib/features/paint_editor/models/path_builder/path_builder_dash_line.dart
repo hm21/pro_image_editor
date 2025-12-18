@@ -5,13 +5,17 @@ import 'path_builder_base.dart';
 /// Builds a dashed line path between the start and end offsets.
 class PathBuilderDashLine extends PathBuilderBase {
   /// Creates a dashed line path builder using the given item and scale.
-  PathBuilderDashLine({required super.item, required super.scale});
+  PathBuilderDashLine({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
 
   @override
   Path build() {
     final width = painter.strokeWidth;
-    final dashWidth = 10.0 * width / 5;
-    final dashSpace = 10.0 * width / 5;
+    final dashWidth = paintEditorConfigs.dashLineWidthFactor * width;
+    final dashSpace = paintEditorConfigs.dashLineSpacingFactor * width;
     var distance = 0.0;
 
     final segmentPath = Path()

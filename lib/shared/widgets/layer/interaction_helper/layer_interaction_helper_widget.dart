@@ -304,6 +304,7 @@ class _LayerInteractionHelperWidgetState
         return Positioned(
           width: paddedWidth,
           height: paddedHeight,
+          left: 0,
           child: ValueListenableBuilder(
               valueListenable: _isOverlayVisibleNotifier,
               builder: (_, isVisible, __) {

@@ -231,6 +231,9 @@ void main() {
       key.currentState!.setMode(PaintMode.dashLine);
       expect(key.currentState!.paintMode, PaintMode.dashLine);
 
+      key.currentState!.setMode(PaintMode.dashDotLine);
+      expect(key.currentState!.paintMode, PaintMode.dashDotLine);
+
       key.currentState!.setMode(PaintMode.arrow);
       expect(key.currentState!.paintMode, PaintMode.arrow);
     });

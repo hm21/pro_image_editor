@@ -5,7 +5,11 @@ import 'path_builder_base.dart';
 /// Builds a circular path based on the item's start and end offsets.
 class PathBuilderCircle extends PathBuilderBase {
   /// Creates a circle path builder using the given item and scale factor.
-  PathBuilderCircle({required super.item, required super.scale});
+  PathBuilderCircle({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
 
   @override
   Path build() {

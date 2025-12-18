@@ -46,6 +46,8 @@ class TextEditorConfigs
     this.showBackgroundModeButton = true,
     this.enableMainEditorZoomFactor = false,
     this.enableAutoOverflow = true,
+    this.enableImageBoundaryTextWrap = false,
+    this.enableTapOutsideToSave = true,
     this.initFontSize = 24.0,
     this.initialPrimaryColor = const Color(0xFF000000),
     this.initialSecondaryColor,
@@ -94,6 +96,14 @@ class TextEditorConfigs
   /// A flag to enable or disable scaling of the text field in sync with the
   /// editor's zoom level.
   final bool enableMainEditorZoomFactor;
+
+  /// Whether tapping outside the text field saves the text annotation.
+  ///
+  /// When `true` (default), tapping outside the text input area will save
+  /// the current text and close the editor. When `false`, tapping outside
+  /// will not trigger the save action, requiring users to use the done
+  /// button or other explicit save actions.
+  final bool enableTapOutsideToSave;
 
   /// The initial font size for text.
   final double initFontSize;
@@ -175,6 +185,9 @@ class TextEditorConfigs
   /// Widgets associated with the text editor.
   final TextEditorWidgets widgets;
 
+  /// Enable automatic text wrapping when text reach the image boundaries
+  final bool enableImageBoundaryTextWrap;
+
   /// Creates a copy of this `TextEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -187,6 +200,7 @@ class TextEditorConfigs
     bool? enableEdit,
     bool? showSelectFontStyleBottomBar,
     bool? enableMainEditorZoomFactor,
+    bool? enableTapOutsideToSave,
     bool? enableAutoOverflow,
     Color? initialPrimaryColor,
     Color? initialSecondaryColor,
@@ -207,6 +221,10 @@ class TextEditorConfigs
     TextEditorStyle? style,
     TextEditorIcons? icons,
     TextEditorWidgets? widgets,
+    bool? enableImageBoundaryTextWrap,
+    bool? showBackgroundModeButton,
+    bool? showFontScaleButton,
+    bool? showTextAlignButton,
   }) {
     return TextEditorConfigs(
       layerFractionalOffset:
@@ -218,6 +236,8 @@ class TextEditorConfigs
           showSelectFontStyleBottomBar ?? this.showSelectFontStyleBottomBar,
       enableMainEditorZoomFactor:
           enableMainEditorZoomFactor ?? this.enableMainEditorZoomFactor,
+      enableTapOutsideToSave:
+          enableTapOutsideToSave ?? this.enableTapOutsideToSave,
       enableAutoOverflow: enableAutoOverflow ?? this.enableAutoOverflow,
       initialPrimaryColor: initialPrimaryColor ?? this.initialPrimaryColor,
       initialSecondaryColor:
@@ -239,6 +259,12 @@ class TextEditorConfigs
       style: style ?? this.style,
       icons: icons ?? this.icons,
       widgets: widgets ?? this.widgets,
+      enableImageBoundaryTextWrap:
+          enableImageBoundaryTextWrap ?? this.enableImageBoundaryTextWrap,
+      showBackgroundModeButton:
+          showBackgroundModeButton ?? this.showBackgroundModeButton,
+      showFontScaleButton: showFontScaleButton ?? this.showFontScaleButton,
+      showTextAlignButton: showTextAlignButton ?? this.showTextAlignButton,
     );
   }
 }

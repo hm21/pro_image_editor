@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../enums/paint_editor_enum.dart';
 import '../models/painted_model.dart';
 import '../models/path_builder/path_builder_base.dart';
@@ -18,6 +19,7 @@ class PaintItemHitTestManager {
     bool isSelected = false,
     bool isRoundCensorArea = false,
     required double scaleFactor,
+    required PaintEditorConfigs paintEditorConfigs,
   }) {
     if (!enabledHitDetection) {
       return true;
@@ -39,6 +41,7 @@ class PaintItemHitTestManager {
         final builder = PathBuilderBase.fromMode(
           item: item,
           scale: scaleFactor,
+          paintEditorConfigs: paintEditorConfigs,
         );
 
         item.hit = builder.hitTest(position);

@@ -16,6 +16,7 @@ class I18nPaintEditor {
     this.rectangle = 'Rectangle',
     this.circle = 'Circle',
     this.dashLine = 'Dash line',
+    this.dashDotLine = 'Dash-dot line',
     this.polygon = 'Polygon',
     this.blur = 'Blur',
     this.pixelate = 'Pixelate',
@@ -39,13 +40,6 @@ class I18nPaintEditor {
   final String bottomNavigationBarText;
 
   /// The text used for moving and zooming within the editor.
-  ///
-  /// This icon appears in the editor bottombar.
-  ///
-  /// When in the [PaintEditorConfigs] the config [enableZoom] is set to
-  /// `true`, this text will be displayed, allowing users to interact with the
-  /// editor's zoom and move features. If [enableZoom] is set to `false`,
-  /// the text will be hidden.
   final String moveAndZoom;
 
   /// Text for the "Freestyle" paint mode.
@@ -65,6 +59,9 @@ class I18nPaintEditor {
 
   /// Text for the "Dash line" paint mode.
   final String dashLine;
+
+  /// Text for the "Dash-dot line" paint mode.
+  final String dashDotLine;
 
   /// Text for the "Polygon" paint mode.
   final String polygon;
@@ -123,7 +120,6 @@ class I18nPaintEditor {
   /// The [copyWith] method allows you to create a new instance of
   /// [I18nPaintEditor] with some properties updated while keeping the
   /// others unchanged.
-
   I18nPaintEditor copyWith({
     String? bottomNavigationBarText,
     String? moveAndZoom,
@@ -133,6 +129,7 @@ class I18nPaintEditor {
     String? rectangle,
     String? circle,
     String? dashLine,
+    String? dashDotLine,
     String? polygon,
     String? blur,
     String? pixelate,
@@ -161,6 +158,7 @@ class I18nPaintEditor {
       rectangle: rectangle ?? this.rectangle,
       circle: circle ?? this.circle,
       dashLine: dashLine ?? this.dashLine,
+      dashDotLine: dashDotLine ?? this.dashDotLine,
       polygon: polygon ?? this.polygon,
       blur: blur ?? this.blur,
       pixelate: pixelate ?? this.pixelate,
