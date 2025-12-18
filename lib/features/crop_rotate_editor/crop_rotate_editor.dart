@@ -1326,6 +1326,35 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
   }
 
+  /// Updates the scale factor for the image based on a pinch gesture value.
+  ///
+  /// This method calculates the new zoom level by multiplying the starting
+  /// pinch scale with the provided [value] and clamping it between 1.0 and
+  /// the configured maximum scale. It also adjusts the translation offset to
+  /// maintain the focal point at the center of the zoom operation.
+  ///
+  /// The method performs the following steps:
+  /// 1. Calculates the new zoom level within allowed bounds
+  /// 2. Computes the center offset to preserve the zoom focal point
+  /// 3. Updates the translation and user scale factor
+  /// 4. Applies offset limits and triggers scale callbacks
+  void setScale(double value) {
+    double newZoom = (_startingPinchScale * value)
+        .clamp(1.0, cropRotateEditorConfigs.maxScale);
+
+    // Calculate the center offset point from the new zoomed view
+    Offset centerZoomOffset =
+        _startingCenterOffset * _startingPinchScale / newZoom;
+
+    // Update translation and zoom values
+    translate = _startingTranslate - _startingCenterOffset + centerZoomOffset;
+    userScaleFactor = newZoom;
+
+    // Set offset limits and trigger widget rebuild
+    _setOffsetLimits();
+    cropRotateEditorCallbacks?.handleScale();
+  }
+
   void _zoomOutside() async {
     const int frameHelper = 1000 ~/ 60;
     while (userScaleFactor > 1 && _activeScaleOut) {
@@ -1450,20 +1479,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     }
     _blockInteraction = true;
     if (details.pointerCount == 2) {
-      double newZoom = (_startingPinchScale * details.scale)
-          .clamp(1.0, cropRotateEditorConfigs.maxScale);
-
-      // Calculate the center offset point from the new zoomed view
-      Offset centerZoomOffset =
-          _startingCenterOffset * _startingPinchScale / newZoom;
-
-      // Update translation and zoom values
-      translate = _startingTranslate - _startingCenterOffset + centerZoomOffset;
-      userScaleFactor = newZoom;
-
-      // Set offset limits and trigger widget rebuild
-      _setOffsetLimits();
-      cropRotateEditorCallbacks?.handleScale();
+      setScale(details.scale);
     } else {
       if (_currentCropAreaPart != CropAreaPart.none &&
           _currentCropAreaPart != CropAreaPart.inside) {
