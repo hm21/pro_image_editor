@@ -2,6 +2,7 @@
 import 'package:flutter/widgets.dart';
 
 // Project imports:
+import '../complete_parameters.dart';
 import 'editor_callbacks_typedef.dart';
 import 'standalone_editor_callbacks.dart';
 
@@ -18,6 +19,7 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
     this.onDoubleTap,
     this.onResize,
     this.onReset,
+    this.onTransformUpdateEnd,
     super.onInit,
     super.onAfterViewInit,
     super.onUndo,
@@ -63,6 +65,18 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// A callback function that is triggered when a reset action is performed.
   final Function()? onReset;
+
+  /// Callback that is triggered when a transformation update ends.
+  ///
+  /// This callback is invoked when the user completes a gesture that modifies
+  /// the crop or rotation transformation (e.g., releasing a pinch gesture or
+  /// finishing a rotation gesture).
+  ///
+  /// The [parameters] contain information about the completed transformation,
+  /// including the final state of the crop and rotation values.
+  ///
+  /// **IMPORTANT:** The `imageBytes` will always be empty.
+  final Function(CompleteParameters parameters)? onTransformUpdateEnd;
 
   /// Handles the rotate start event.
   ///
@@ -159,6 +173,7 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
     Function()? onRedo,
     Function()? onUndo,
     Function()? onCloseEditor,
+    Function(CompleteParameters parameters)? onTransformUpdateEnd,
   }) {
     return CropRotateEditorCallbacks(
       onRotateStart: onRotateStart ?? this.onRotateStart,
@@ -177,6 +192,7 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
       onRedo: onRedo ?? this.onRedo,
       onUndo: onUndo ?? this.onUndo,
       onCloseEditor: onCloseEditor ?? this.onCloseEditor,
+      onTransformUpdateEnd: onTransformUpdateEnd ?? this.onTransformUpdateEnd,
     );
   }
 }

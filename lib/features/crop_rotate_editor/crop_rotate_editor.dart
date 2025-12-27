@@ -833,46 +833,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
       /// Return complete parameters if requested
       if (initConfigs.callbacks.onCompleteWithParameters != null) {
-        final isTransformed = transformC.isNotEmpty;
-
-        Size originalImageSize;
-        if (isVideoEditor) {
-          originalImageSize = videoController!.initialResolution;
-        } else {
-          var rawOriginalSize =
-              await widget.editorImage?.safeByteArray(context) ?? imageBytes;
-          var decodedImage = await decodeImageFromList(rawOriginalSize);
-          originalImageSize = Size(
-            decodedImage.width.toDouble(),
-            decodedImage.height.toDouble(),
-          );
-        }
-
-        Size? outputSize = transformC.getCropSize(originalImageSize);
-        Offset? outputOffset = transformC.getCropStartOffset(originalImageSize);
-
-        await callbacks.onCompleteWithParameters?.call(
-          CompleteParameters(
-            blur: appliedBlurFactor,
-            matrixFilterList: appliedFilters,
-            matrixTuneAdjustmentsList:
-                appliedTuneAdjustments.map((item) => item.matrix).toList(),
-            cropWidth: isTransformed ? outputSize.width.round() : null,
-            cropHeight: isTransformed ? outputSize.height.round() : null,
-            cropX: isTransformed ? outputOffset.dx.round() : null,
-            cropY: isTransformed ? outputOffset.dy.round() : null,
-            flipX:
-                transformC.is90DegRotated ? transformC.flipY : transformC.flipX,
-            flipY:
-                transformC.is90DegRotated ? transformC.flipX : transformC.flipY,
-            rotateTurns: transformC.angleToTurns(),
-            startTime: null,
-            endTime: null,
-            image: imageBytes,
-            isTransformed: isTransformed,
-            layers: layers ?? [],
-          ),
-        );
+        final completeParams =
+            await getCompleteParameters(imageBytes: imageBytes);
+        await callbacks.onCompleteWithParameters?.call(completeParams);
       }
 
       LoadingDialog.instance.hide();
