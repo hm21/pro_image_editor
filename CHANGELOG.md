@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.15.2
+- **FEAT**(crop-rotate-editor): Add new callback `onTransformUpdateEnd` that returns all transformation changes whenever a value in the crop-rotate editor is modified.
+
 ## 11.15.1
 - **FEAT**(text-editor): Add config `enableAutoWrapOnLayer` to the `TextEditorConfigs` which allows for deciding whether the layer applies the editor's auto wrapping or not. More details in PR [#720](https://github.com/hm21/pro_image_editor/pull/720).
 
