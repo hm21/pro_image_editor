@@ -56,6 +56,7 @@ class TextEditorConfigs
       this.enableMainEditorZoomFactor = false,
       this.enableTapOutsideToSave = true,
       this.enableAutoOverflow = true,
+      this.enableAutoWrapOnLayer = true,
       this.initFontSize = 24.0,
       this.initialPrimaryColor = const Color(0xFF000000),
       this.initialSecondaryColor,
@@ -168,6 +169,17 @@ class TextEditorConfigs
   /// (e.g., the screen width).
   final bool enableAutoOverflow;
 
+  /// Whether the text should automatically wrap when it reaches the end of
+  /// the screen on the final image.
+  ///
+  /// If set to `true`, the text will wrap to the next line instead of
+  /// overflowing, ensuring it stays within the visible area
+  /// (e.g., the screen width).
+  ///
+  /// If set to `false`, the text will only wrap if the user deliberately
+  /// entered a new line while editing.
+  final bool enableAutoWrapOnLayer;
+
   /// The minimum scale factor from the layer.
   final double minScale;
 
@@ -219,6 +231,7 @@ class TextEditorConfigs
     bool? enableMainEditorZoomFactor,
     bool? enableTapOutsideToSave,
     bool? enableAutoOverflow,
+    bool? enableAutoWrapOnLayer,
     Color? initialPrimaryColor,
     Color? initialSecondaryColor,
     double? initFontSize,
@@ -254,6 +267,8 @@ class TextEditorConfigs
       enableTapOutsideToSave:
           enableTapOutsideToSave ?? this.enableTapOutsideToSave,
       enableAutoOverflow: enableAutoOverflow ?? this.enableAutoOverflow,
+      enableAutoWrapOnLayer:
+          enableAutoWrapOnLayer ?? this.enableAutoWrapOnLayer,
       initialPrimaryColor: initialPrimaryColor ?? this.initialPrimaryColor,
       initialSecondaryColor:
           initialSecondaryColor ?? this.initialSecondaryColor,
