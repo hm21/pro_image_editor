@@ -185,6 +185,7 @@ class LayerCopyManager {
       flipX: layer.flipX,
       flipY: layer.flipY,
       meta: layer.meta,
+      width: layer.width,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),
       exportConfigs: layer.exportConfigs.copyWith(),

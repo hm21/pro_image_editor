@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.15.4
+- **FIX**(widget-layer): Resolve the issue of the optional `width` being applied incorrectly.
+
 ## 11.15.3
 - **FEAT**(widget-layer): Add optional `width` property.
 

@@ -187,6 +187,7 @@ class WidgetLayer extends Layer {
         maxDecimalPlaces: maxDecimalPlaces,
         enableMinify: enableMinify,
       ),
+      if (layer is WidgetLayer && width != layer.width) 'width': width,
     };
   }
 
