@@ -30,6 +30,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'x': 'x',
   'y': 'y',
   'rotation': 'r',
+  'width': 'w',
   'scale': 's',
   'flipX': 'fx',
   'flipY': 'fy',

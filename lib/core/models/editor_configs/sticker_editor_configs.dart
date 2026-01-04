@@ -73,7 +73,8 @@ class StickerEditorConfigs
   /// The initial width of the stickers in the editor.
   ///
   /// Specifies the starting width of the stickers when they are first placed
-  /// in the editor. This value is in logical pixels.
+  /// in the editor. This value is in logical pixels and is normally used as
+  /// a fallback when no explicit width is provided.
   final double initWidth;
 
   /// A callback that builds the stickers.

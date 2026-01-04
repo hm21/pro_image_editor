@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.15.3
+- **FEAT**(widget-layer): Add optional `width` property.
+
 ## 11.15.2
 - **FEAT**(crop-rotate-editor): Add new callback `onTransformUpdateEnd` that returns all transformation changes whenever a value in the crop-rotate editor is modified.
 

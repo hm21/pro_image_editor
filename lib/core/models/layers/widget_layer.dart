@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '/core/constants/int_constants.dart';
 import '/core/platform/io/io_helper.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
+import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/parser/int_parser.dart';
 import '../editor_image.dart';
 import 'layer.dart';
@@ -31,6 +32,7 @@ class WidgetLayer extends Layer {
   /// The [widget] parameter is required, and other properties are optional.
   WidgetLayer({
     required this.widget,
+    this.width,
     super.offset,
     super.rotation,
     super.scale,
@@ -62,6 +64,7 @@ class WidgetLayer extends Layer {
         map[keyConverter('recordPosition')] ?? map['listPosition'],
         fallback: -1);
 
+    final layerWidth = map[keyConverter('width')];
     var exportConfigs =
         WidgetLayerExportConfigs.fromMap(map[keyConverter('exportConfigs')]);
 
@@ -124,6 +127,7 @@ class WidgetLayer extends Layer {
       meta: layer.meta,
       groupId: layer.groupId,
       widget: widget,
+      width: layerWidth != null ? safeParseDouble(layerWidth) : null,
       exportConfigs: exportConfigs,
       boxConstraints: layer.boxConstraints,
     );
@@ -131,6 +135,10 @@ class WidgetLayer extends Layer {
 
   /// The widget to display on the layer.
   Widget widget;
+
+  /// Optional layer width. If no value is set, it will fallback to the
+  /// `initWidth` inside of the `StickerEditorConfigs`.
+  double? width;
 
   /// Configuration settings for exporting a widget layer.
   ///
@@ -161,6 +169,7 @@ class WidgetLayer extends Layer {
         enableMinify: enableMinify,
       ),
       if (recordPosition != null) 'recordPosition': recordPosition,
+      if (width != null) 'width': width,
       if (exportConfigMap.isNotEmpty) 'exportConfigs': exportConfigMap,
       'type': 'widget',
     };
@@ -189,6 +198,7 @@ class WidgetLayer extends Layer {
   @override
   WidgetLayer copyWith({
     Widget? widget,
+    double? width,
     Offset? offset,
     double? rotation,
     double? scale,
@@ -205,6 +215,7 @@ class WidgetLayer extends Layer {
       widget: widget ?? this.widget,
       offset: offset ?? this.offset,
       rotation: rotation ?? this.rotation,
+      width: width ?? this.width,
       scale: scale ?? this.scale,
       id: id ?? this.id,
       flipX: flipX ?? this.flipX,
@@ -220,9 +231,11 @@ class WidgetLayer extends Layer {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<WidgetLayerExportConfigs>(
-      'exportConfigs',
-      exportConfigs,
-    ));
+    properties
+      ..add(DiagnosticsProperty<WidgetLayerExportConfigs>(
+        'exportConfigs',
+        exportConfigs,
+      ))
+      ..add(DoubleProperty('width', width));
   }
 }
