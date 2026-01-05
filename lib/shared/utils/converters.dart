@@ -48,8 +48,11 @@ Future<Uint8List> loadAssetImageAsUint8List(String assetPath) async {
 /// ```dart
 /// final Uint8List imageBytes = await fetchImageAsUint8List('https://example.com/image.jpg');
 /// ```
-Future<Uint8List> fetchImageAsUint8List(String imageUrl) async {
-  final response = await http.get(Uri.parse(imageUrl));
+Future<Uint8List> fetchImageAsUint8List(
+  String imageUrl, {
+  Map<String, String>? headers,
+}) async {
+  final response = await http.get(Uri.parse(imageUrl), headers: headers);
 
   if (response.statusCode == 200) {
     // Convert the response body to a Uint8List
