@@ -210,6 +210,8 @@ class ProImageEditor extends StatefulWidget
   /// {@macro mainEditorConfigs}
   /// - `networkUrl` *(required)*: The URL from which the image should be
   /// loaded.
+  /// - `networkHeaders` *(optional)*: HTTP headers to include when fetching
+  /// the image (e.g., for authentication).
   ///
   /// Example usage:
   /// ```dart
