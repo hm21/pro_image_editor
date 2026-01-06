@@ -1,7 +1,5 @@
-// Dart imports:
-import 'dart:typed_data';
-
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/platform/io/io_helper.dart';
@@ -210,7 +208,7 @@ class EditorImage {
         _areUint8ListsEqual(byteArray, other.byteArray) &&
         file?.path == other.file?.path &&
         networkUrl == other.networkUrl &&
-        _areHeadersEqual(networkHeaders, other.networkHeaders) &&
+        mapEquals(networkHeaders, other.networkHeaders) &&
         assetPath == other.assetPath;
   }
 
@@ -230,16 +228,6 @@ class EditorImage {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
-
-  bool _areHeadersEqual(
-      Map<String, String>? a, Map<String, String>? b) {
-    if (a == null || b == null) return a == b;
-    if (a.length != b.length) return false;
-    for (final key in a.keys) {
-      if (a[key] != b[key]) return false;
     }
     return true;
   }
