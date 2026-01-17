@@ -191,7 +191,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
             fontSize: widget.textFontSize,
             letterSpacing: 0,
             decoration: TextDecoration.none,
-            shadows: [],
+            // Preserve shadows from the text style for live preview
           ),
 
           /// If we edit an layer we focus to the textfield after the
