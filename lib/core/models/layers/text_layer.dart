@@ -112,6 +112,32 @@ class TextLayer extends Layer {
     String? fontStyle = map[keyConverter('fontStyle')] as String?;
     String? decoration = map[keyConverter('decoration')] as String?;
 
+    // Parse shadow if present
+    List<Shadow>? shadows;
+    try {
+      final shadowRaw = map[keyConverter('shadow')];
+      if (shadowRaw is Map) {
+        final c = shadowRaw['color'];
+        final b = shadowRaw['blurRadius'];
+        final ox = shadowRaw['offsetX'];
+        final oy = shadowRaw['offsetY'];
+        if (c != null) {
+          shadows = [
+            Shadow(
+              color: Color(c is int ? c : int.parse(c.toString())),
+              blurRadius: (b is num ? b.toDouble() : 4.0),
+              offset: Offset(
+                ox is num ? ox.toDouble() : 2.0,
+                oy is num ? oy.toDouble() : 2.0,
+              ),
+            ),
+          ];
+        }
+      }
+    } catch (_) {
+      // Shadow parsing failed, continue without shadow
+    }
+
     /// Constructs and returns a TextLayer instance with properties derived
     /// from the map.
     return TextLayer(
@@ -134,7 +160,8 @@ class TextLayer extends Layer {
               letterSpacing != null ||
               fontWeight != null ||
               fontStyle != null ||
-              decoration != null
+              decoration != null ||
+              shadows != null
           ? TextStyle(
               fontFamily: fontFamily,
               height: height,
@@ -149,6 +176,7 @@ class TextLayer extends Layer {
                   ? FontWeight.values
                       .firstWhere((element) => element.value == fontWeight)
                   : null,
+              shadows: shadows,
             )
           : null,
       colorMode: LayerBackgroundMode.values.firstWhere(
@@ -203,7 +231,7 @@ class TextLayer extends Layer {
     int maxDecimalPlaces = kMaxSafeDecimalPlaces,
     bool enableMinify = false,
   }) {
-    return {
+    final result = {
       ...super.toMap(
         maxDecimalPlaces: maxDecimalPlaces,
         enableMinify: enableMinify,
@@ -230,7 +258,15 @@ class TextLayer extends Layer {
         'wordSpacing': textStyle?.wordSpacing?.roundSmart(maxDecimalPlaces),
       if (textStyle?.decoration != null)
         'decoration': textStyle?.decoration.toString(),
+      if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
+        'shadow': {
+          'color': textStyle!.shadows!.first.color.toHex(),
+          'blurRadius': textStyle!.shadows!.first.blurRadius,
+          'offsetX': textStyle!.shadows!.first.offset.dx,
+          'offsetY': textStyle!.shadows!.first.offset.dy,
+        },
     };
+    return result;
   }
 
   @override
@@ -271,6 +307,13 @@ class TextLayer extends Layer {
         'decoration': textStyle?.decoration.toString(),
       if (paintLayer.maxTextWidth != maxTextWidth)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
+      if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
+        'shadow': {
+          'color': textStyle!.shadows!.first.color.toHex(),
+          'blurRadius': textStyle!.shadows!.first.blurRadius,
+          'offsetX': textStyle!.shadows!.first.offset.dx,
+          'offsetY': textStyle!.shadows!.first.offset.dy,
+        },
     };
   }
 
