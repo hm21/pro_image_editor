@@ -52,7 +52,7 @@ class LayerWidgetTextItem extends StatelessWidget {
     );
 
     final maxTextWidth = layer.maxTextWidth;
-    
+
     // Get the full style including shadows
     TextStyle finalStyle;
     if (layer.textStyle != null) {
