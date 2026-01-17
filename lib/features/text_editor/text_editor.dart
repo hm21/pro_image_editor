@@ -411,13 +411,15 @@ class TextEditorState extends State<TextEditor>
         onTap: textEditorConfigs.enableTapOutsideToSave ? done : null,
         child: Stack(
           children: [
+            _buildTextField(),
+            _buildColorPicker(),
+            // bodyItems rendered after text field so they stay on top
+            // (e.g., font size slider should not be blocked by large text)
             if (textEditorConfigs.widgets.bodyItems != null)
               ...textEditorConfigs.widgets.bodyItems!(
                 this,
                 _rebuildController.stream,
               ),
-            _buildTextField(),
-            _buildColorPicker(),
             if (textEditorConfigs.showSelectFontStyleBottomBar)
               Positioned(
                 bottom: 0,
