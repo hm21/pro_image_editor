@@ -118,7 +118,7 @@ class TextLayer extends Layer {
     try {
       final shadowsRaw = map[keyConverter('shadows')];
       final shadowRaw = map[keyConverter('shadow')];
-      
+
       if (shadowsRaw is List && shadowsRaw.isNotEmpty) {
         // New format: list of shadows
         shadows = shadowsRaw.map((s) {
@@ -279,12 +279,14 @@ class TextLayer extends Layer {
       if (textStyle?.decoration != null)
         'decoration': textStyle?.decoration.toString(),
       if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
-        'shadows': textStyle!.shadows!.map((s) => {
-          'color': s.color.toHex(),
-          'blurRadius': s.blurRadius,
-          'offsetX': s.offset.dx,
-          'offsetY': s.offset.dy,
-        }).toList(),
+        'shadows': textStyle!.shadows!
+            .map((s) => {
+                  'color': s.color.toHex(),
+                  'blurRadius': s.blurRadius,
+                  'offsetX': s.offset.dx,
+                  'offsetY': s.offset.dy,
+                })
+            .toList(),
     };
     return result;
   }
