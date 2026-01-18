@@ -112,11 +112,31 @@ class TextLayer extends Layer {
     String? fontStyle = map[keyConverter('fontStyle')] as String?;
     String? decoration = map[keyConverter('decoration')] as String?;
 
-    // Parse shadow if present
+    // Parse shadows if present
+    // Supports both list format and legacy single shadow format
     List<Shadow>? shadows;
     try {
+      final shadowsRaw = map[keyConverter('shadows')];
       final shadowRaw = map[keyConverter('shadow')];
-      if (shadowRaw is Map) {
+      
+      if (shadowsRaw is List && shadowsRaw.isNotEmpty) {
+        // New format: list of shadows
+        shadows = shadowsRaw.map((s) {
+          final c = s['color'];
+          final b = s['blurRadius'];
+          final ox = s['offsetX'];
+          final oy = s['offsetY'];
+          return Shadow(
+            color: Color(c is int ? c : int.parse(c.toString())),
+            blurRadius: (b is num ? b.toDouble() : 4.0),
+            offset: Offset(
+              ox is num ? ox.toDouble() : 2.0,
+              oy is num ? oy.toDouble() : 2.0,
+            ),
+          );
+        }).toList();
+      } else if (shadowRaw is Map) {
+        // Legacy format: single shadow
         final c = shadowRaw['color'];
         final b = shadowRaw['blurRadius'];
         final ox = shadowRaw['offsetX'];
@@ -259,12 +279,12 @@ class TextLayer extends Layer {
       if (textStyle?.decoration != null)
         'decoration': textStyle?.decoration.toString(),
       if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
-        'shadow': {
-          'color': textStyle!.shadows!.first.color.toHex(),
-          'blurRadius': textStyle!.shadows!.first.blurRadius,
-          'offsetX': textStyle!.shadows!.first.offset.dx,
-          'offsetY': textStyle!.shadows!.first.offset.dy,
-        },
+        'shadows': textStyle!.shadows!.map((s) => {
+          'color': s.color.toHex(),
+          'blurRadius': s.blurRadius,
+          'offsetX': s.offset.dx,
+          'offsetY': s.offset.dy,
+        }).toList(),
     };
     return result;
   }

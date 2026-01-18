@@ -183,12 +183,14 @@ class _TextEditorInputState extends State<TextEditorInput> {
           hintStyle: widget.selectedTextStyle.copyWith(
             color: widget.configs.style.inputHintColor,
             fontSize: widget.textFontSize,
+            height: widget.configs.style.textHeight,
             shadows: [],
           ),
           backgroundColor: widget.backgroundColor,
           style: widget.selectedTextStyle.copyWith(
             color: widget.textColor,
             fontSize: widget.textFontSize,
+            height: widget.configs.style.textHeight,
             letterSpacing: 0,
             decoration: TextDecoration.none,
             // Preserve shadows from the text style for live preview
