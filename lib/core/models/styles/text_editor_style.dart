@@ -63,6 +63,11 @@ class TextEditorStyle {
     this.inputHintColor = const Color(0xFFBDBDBD),
     this.inputCursorColor = kImageEditorPrimaryColor,
     this.fontScaleBottomSheetBackground = const Color(0xFF252728),
+    this.inputTextFieldBackground = Colors.transparent,
+    this.inputTextFieldBorderColor = Colors.transparent,
+    this.inputTextFieldBorderRadius =
+        const BorderRadius.all(Radius.circular(4)),
+    this.inputTextFieldPadding = EdgeInsets.zero,
   });
 
   /// Background color of the app bar in the text editor.
@@ -95,6 +100,18 @@ class TextEditorStyle {
   /// Background color for the font scale bottom sheet.
   final Color fontScaleBottomSheetBackground;
 
+  /// Background color of the input text field.
+  final Color inputTextFieldBackground;
+
+  /// Border color of the input text field.
+  final Color inputTextFieldBorderColor;
+
+  /// Border radius of the input text field.
+  final BorderRadius inputTextFieldBorderRadius;
+
+  /// Padding of the input text field.
+  final EdgeInsets inputTextFieldPadding;
+
   /// Creates a copy of this `TextEditorStyle` object with the given fields
   /// replaced with new values.
   ///
@@ -109,6 +126,10 @@ class TextEditorStyle {
     Color? inputHintColor,
     Color? inputCursorColor,
     Color? fontScaleBottomSheetBackground,
+    Color? inputTextFieldBackground,
+    Color? inputTextFieldBorderColor,
+    BorderRadius? inputTextFieldBorderRadius,
+    EdgeInsets? inputTextFieldPadding,
     MainAxisAlignment? bottomBarMainAxisAlignment,
     EdgeInsets? textFieldMargin,
     TextStyle? fontSizeBottomSheetTitle,
@@ -122,6 +143,14 @@ class TextEditorStyle {
       background: background ?? this.background,
       inputHintColor: inputHintColor ?? this.inputHintColor,
       inputCursorColor: inputCursorColor ?? this.inputCursorColor,
+      inputTextFieldBackground:
+          inputTextFieldBackground ?? this.inputTextFieldBackground,
+      inputTextFieldBorderColor:
+          inputTextFieldBorderColor ?? this.inputTextFieldBorderColor,
+      inputTextFieldBorderRadius:
+          inputTextFieldBorderRadius ?? this.inputTextFieldBorderRadius,
+      inputTextFieldPadding:
+          inputTextFieldPadding ?? this.inputTextFieldPadding,
       bottomBarMainAxisAlignment:
           bottomBarMainAxisAlignment ?? this.bottomBarMainAxisAlignment,
       textFieldMargin: textFieldMargin ?? this.textFieldMargin,

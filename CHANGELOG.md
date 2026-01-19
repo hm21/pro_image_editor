@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.15.6
+- **FEAT**(text-editor): Add an optional background and borders to the text editor input field. More details in PR [#735](https://github.com/hm21/pro_image_editor/pull/735).
+
 ## 11.15.5
 - **FEAT**(network-image): Added optional `networkHeaders` to the `EditorImage`. More details in PR [#729](https://github.com/hm21/pro_image_editor/pull/729).
 
