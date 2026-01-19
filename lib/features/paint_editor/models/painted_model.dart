@@ -145,7 +145,8 @@ class PaintedModel {
   bool get canBeFilled {
     return mode == PaintMode.circle ||
         mode == PaintMode.rect ||
-        mode == PaintMode.polygon;
+        mode == PaintMode.polygon ||
+        mode == PaintMode.hexagon;
   }
 
   /// Creates a copy of this PaintedModel instance.

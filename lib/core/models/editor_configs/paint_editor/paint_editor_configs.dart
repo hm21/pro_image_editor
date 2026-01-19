@@ -75,6 +75,7 @@ class PaintEditorConfigs extends ZoomConfigs
       PaintMode.circle,
       PaintMode.dashLine,
       PaintMode.dashDotLine,
+      PaintMode.hexagon,
       PaintMode.polygon,
       PaintMode.pixelate,
       PaintMode.blur,

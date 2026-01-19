@@ -409,6 +409,12 @@ class PaintEditorState extends State<PaintEditor>
             label: i18n.paintEditor.dashDotLine,
           );
 
+        case PaintMode.hexagon:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.hexagon,
+            label: i18n.paintEditor.hexagon,
+          );
+
         case PaintMode.polygon:
           if (!paintEditorConfigs.enableModePolygon) return null;
           return PaintModeHelper(
@@ -747,7 +753,8 @@ class PaintEditorState extends State<PaintEditor>
         rawLayer.mode == PaintMode.arrow ||
         ((rawLayer.mode == PaintMode.polygon ||
                 rawLayer.mode == PaintMode.rect ||
-                rawLayer.mode == PaintMode.circle) &&
+                rawLayer.mode == PaintMode.circle ||
+                rawLayer.mode == PaintMode.hexagon) &&
             !rawLayer.fill);
 
     // Scale and offset the offsets of the paint layer
