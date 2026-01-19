@@ -52,6 +52,7 @@ class TextEditorStyle {
   /// Creates an instance of the `TextEditorStyle` class with the specified
   /// style properties.
   const TextEditorStyle({
+    this.textHeight = 0.0,
     this.fontSizeBottomSheetTitle,
     this.textFieldMargin =
         const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
@@ -112,6 +113,10 @@ class TextEditorStyle {
   /// Padding of the input text field.
   final EdgeInsets inputTextFieldPadding;
 
+  /// Height value for the text input style. Set to 0.0 for proper centering
+  /// on various platforms. Set to null to use the default line height.
+  final double? textHeight;
+
   /// Creates a copy of this `TextEditorStyle` object with the given fields
   /// replaced with new values.
   ///
@@ -119,6 +124,7 @@ class TextEditorStyle {
   /// [TextEditorStyle] with some properties updated while keeping the
   /// others unchanged.
   TextEditorStyle copyWith({
+    double? textHeight,
     Color? appBarBackground,
     Color? appBarColor,
     Color? bottomBarBackground,
@@ -135,6 +141,7 @@ class TextEditorStyle {
     TextStyle? fontSizeBottomSheetTitle,
   }) {
     return TextEditorStyle(
+      textHeight: textHeight ?? this.textHeight,
       fontScaleBottomSheetBackground:
           fontScaleBottomSheetBackground ?? this.fontScaleBottomSheetBackground,
       appBarBackground: appBarBackground ?? this.appBarBackground,
