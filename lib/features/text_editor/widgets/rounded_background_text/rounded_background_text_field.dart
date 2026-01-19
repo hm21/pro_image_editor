@@ -183,9 +183,7 @@ class _RoundedBackgroundTextFieldState
         style: widget.style.copyWith(
           fontSize: fontSize,
           leadingDistribution: TextLeadingDistribution.proportional,
-          // Preserve the original height from the style to ensure proper
-          // alignment between the editable text and the background.
-          // Using 0.0 causes misalignment with fonts that have custom heights.
+          height: widget.configs.style.textHeight,
         ),
         decoration: InputDecoration.collapsed(
           hintText: _textController.text.isEmpty ? widget.hint : '',

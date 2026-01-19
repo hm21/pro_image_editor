@@ -58,9 +58,10 @@ class LayerWidgetTextItem extends StatelessWidget {
     if (layer.textStyle != null) {
       finalStyle = layer.textStyle!.copyWith(
         fontSize: style.fontSize,
-        fontWeight: style.fontWeight,
+        fontWeight: layer.textStyle!.fontWeight ?? style.fontWeight,
         color: style.color,
         fontFamily: layer.textStyle!.fontFamily ?? style.fontFamily,
+        shadows: layer.textStyle!.shadows ?? style.shadows,
       );
     } else {
       finalStyle = style;

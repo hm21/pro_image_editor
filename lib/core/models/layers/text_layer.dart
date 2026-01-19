@@ -112,31 +112,19 @@ class TextLayer extends Layer {
     String? fontStyle = map[keyConverter('fontStyle')] as String?;
     String? decoration = map[keyConverter('decoration')] as String?;
 
-    // Parse shadow if present
-    List<Shadow>? shadows;
-    try {
-      final shadowRaw = map[keyConverter('shadow')];
-      if (shadowRaw is Map) {
-        final c = shadowRaw['color'];
-        final b = shadowRaw['blurRadius'];
-        final ox = shadowRaw['offsetX'];
-        final oy = shadowRaw['offsetY'];
-        if (c != null) {
-          shadows = [
-            Shadow(
-              color: Color(c is int ? c : int.parse(c.toString())),
-              blurRadius: (b is num ? b.toDouble() : 4.0),
-              offset: Offset(
-                ox is num ? ox.toDouble() : 2.0,
-                oy is num ? oy.toDouble() : 2.0,
-              ),
-            ),
-          ];
-        }
-      }
-    } catch (_) {
-      // Shadow parsing failed, continue without shadow
-    }
+    // Parse shadows
+    final shadows = List.from(map[keyConverter('shadows')] ?? []).map((raw) {
+      final c = safeParseInt(raw['color']);
+      final b = safeParseDouble(raw['blurRadius']);
+      final ox = safeParseDouble(raw['offsetX']);
+      final oy = safeParseDouble(raw['offsetY']);
+
+      return Shadow(
+        color: Color(c),
+        blurRadius: b,
+        offset: Offset(ox, oy),
+      );
+    }).toList();
 
     /// Constructs and returns a TextLayer instance with properties derived
     /// from the map.
@@ -161,7 +149,7 @@ class TextLayer extends Layer {
               fontWeight != null ||
               fontStyle != null ||
               decoration != null ||
-              shadows != null
+              shadows.isNotEmpty
           ? TextStyle(
               fontFamily: fontFamily,
               height: height,
@@ -176,7 +164,7 @@ class TextLayer extends Layer {
                   ? FontWeight.values
                       .firstWhere((element) => element.value == fontWeight)
                   : null,
-              shadows: shadows,
+              shadows: shadows.isNotEmpty ? shadows : null,
             )
           : null,
       colorMode: LayerBackgroundMode.values.firstWhere(
@@ -259,12 +247,14 @@ class TextLayer extends Layer {
       if (textStyle?.decoration != null)
         'decoration': textStyle?.decoration.toString(),
       if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
-        'shadow': {
-          'color': textStyle!.shadows!.first.color.toHex(),
-          'blurRadius': textStyle!.shadows!.first.blurRadius,
-          'offsetX': textStyle!.shadows!.first.offset.dx,
-          'offsetY': textStyle!.shadows!.first.offset.dy,
-        },
+        'shadows': textStyle!.shadows!
+            .map((s) => {
+                  'color': s.color.toHex(),
+                  'blurRadius': s.blurRadius,
+                  'offsetX': s.offset.dx,
+                  'offsetY': s.offset.dy,
+                })
+            .toList(),
     };
     return result;
   }
@@ -308,12 +298,14 @@ class TextLayer extends Layer {
       if (paintLayer.maxTextWidth != maxTextWidth)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
-        'shadow': {
-          'color': textStyle!.shadows!.first.color.toHex(),
-          'blurRadius': textStyle!.shadows!.first.blurRadius,
-          'offsetX': textStyle!.shadows!.first.offset.dx,
-          'offsetY': textStyle!.shadows!.first.offset.dy,
-        },
+        'shadows': textStyle!.shadows!
+            .map((s) => {
+                  'color': s.color.toHex(),
+                  'blurRadius': s.blurRadius,
+                  'offsetX': s.offset.dx,
+                  'offsetY': s.offset.dy,
+                })
+            .toList(),
     };
   }
 
