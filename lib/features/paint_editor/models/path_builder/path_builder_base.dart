@@ -8,8 +8,8 @@ import 'path_builder_circle.dart';
 import 'path_builder_dash_dot_line.dart';
 import 'path_builder_dash_line.dart';
 import 'path_builder_freestyle.dart';
-import 'path_builder_line.dart';
 import 'path_builder_hexagon.dart';
+import 'path_builder_line.dart';
 import 'path_builder_polygon.dart';
 import 'path_builder_rectangular.dart';
 

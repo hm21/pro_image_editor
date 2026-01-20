@@ -5,6 +5,7 @@ import 'path_builder_base.dart';
 
 /// Builds a regular hexagon inside the rectangle defined by start & end.
 class PathBuilderHexagon extends PathBuilderBase {
+  /// Creates a hexagon path builder.
   PathBuilderHexagon({
     required super.item,
     required super.scale,
