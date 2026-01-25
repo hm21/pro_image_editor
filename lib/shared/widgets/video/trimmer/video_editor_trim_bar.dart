@@ -250,14 +250,16 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
         double scaledWidth = trimBarWidth * _scale;
         double trimWidth = (_trimEnd - _trimStart) * scaledWidth;
         double offsetLeftHandler = _trimStart * scaledWidth;
-        double offsetRightHandler =
-            _trimEnd * scaledWidth - _player.style.trimBarHandlerWidth;
 
-        /// Ensure there is always a small gap between the handlers
-        if (offsetLeftHandler + _player.style.trimBarHandlerWidth + 4 >=
-            offsetRightHandler) {
-          offsetRightHandler = offsetLeftHandler + 4;
-        }
+        /// Calculate the minimum required width between handlers to prevent
+        /// visual glitches when trimming long videos to short durations.
+        /// The handlers need at least their combined width plus a small gap.
+        double minTrimWidthForHandlers = _player.style.trimBarHandlerWidth + 4;
+        double effectiveTrimWidth = max(trimWidth, minTrimWidthForHandlers);
+
+        double offsetRightHandler = offsetLeftHandler +
+            effectiveTrimWidth -
+            _player.style.trimBarHandlerWidth;
 
         return SingleChildScrollView(
           controller: _scrollCtrl,
@@ -312,7 +314,7 @@ class _VideoEditorTrimBarState extends State<VideoEditorTrimBar> {
                       offsetLeftHandler + handlerButtonSize,
                       offsetRightHandler - handlerButtonSize,
                       scaledWidth,
-                      trimWidth,
+                      effectiveTrimWidth,
                     ),
 
                     /// Trim handler left
