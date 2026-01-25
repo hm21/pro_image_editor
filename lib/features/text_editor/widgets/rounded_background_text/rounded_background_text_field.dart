@@ -183,7 +183,7 @@ class _RoundedBackgroundTextFieldState
         style: widget.style.copyWith(
           fontSize: fontSize,
           leadingDistribution: TextLeadingDistribution.proportional,
-          height: 0.0,
+          height: widget.configs.style.textHeight,
         ),
         decoration: InputDecoration.collapsed(
           hintText: _textController.text.isEmpty ? widget.hint : '',

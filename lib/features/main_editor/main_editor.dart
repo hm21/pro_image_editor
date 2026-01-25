@@ -215,6 +215,8 @@ class ProImageEditor extends StatefulWidget
   /// {@macro mainEditorConfigs}
   /// - `networkUrl` *(required)*: The URL from which the image should be
   /// loaded.
+  /// - `networkHeaders` *(optional)*: HTTP headers to include when fetching
+  /// the image (e.g., for authentication).
   ///
   /// Example usage:
   /// ```dart
@@ -226,12 +228,16 @@ class ProImageEditor extends StatefulWidget
   factory ProImageEditor.network(
     String networkUrl, {
     Key? key,
+    Map<String, String>? networkHeaders,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     required ProImageEditorCallbacks callbacks,
   }) {
     return ProImageEditor._(
       key: key,
-      editorImage: EditorImage(networkUrl: networkUrl),
+      editorImage: EditorImage(
+        networkUrl: networkUrl,
+        networkHeaders: networkHeaders,
+      ),
       configs: configs,
       callbacks: callbacks,
     );
@@ -294,6 +300,7 @@ class ProImageEditor extends StatefulWidget
     dynamic file,
     String? assetPath,
     String? networkUrl,
+    Map<String, String>? networkHeaders,
     EditorImage? editorImage,
     ProVideoController? videoController,
     ProImageEditorConfigs configs = const ProImageEditorConfigs(),
@@ -306,6 +313,7 @@ class ProImageEditor extends StatefulWidget
             byteArray: byteArray,
             file: file,
             networkUrl: networkUrl,
+            networkHeaders: networkHeaders,
             assetPath: assetPath,
           ),
       videoController: videoController,

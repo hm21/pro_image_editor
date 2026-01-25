@@ -189,6 +189,11 @@ class FilterEditorState extends State<FilterEditor>
     _uiFilterStream = StreamController.broadcast();
     _uiFilterStream.stream.listen((_) => rebuildController.add(null));
 
+    final isMultiSelectionDisabled = !filterEditorConfigs.enableMultiSelection;
+    if (isMultiSelectionDisabled && appliedFilters.isNotEmpty) {
+      _initializeFilterFromApplied();
+    }
+
     filterEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       filterEditorCallbacks?.onAfterViewInit?.call();
@@ -223,12 +228,39 @@ class FilterEditorState extends State<FilterEditor>
   }
 
   FilterMatrix _getActiveFilters() {
+    if (!filterEditorConfigs.enableMultiSelection) {
+      if (selectedFilter.filters.isEmpty) {
+        return [
+          [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0]
+        ];
+      }
+    }
+
     return [
-      ...appliedFilters,
+      if (filterEditorConfigs.enableMultiSelection) ...appliedFilters,
       ...selectedFilter.filters.map(
         (matrix) => lerpColorMatrix(identityMatrix, matrix, filterOpacity),
       ),
     ];
+  }
+
+  /// Initializes the selected filter from previously applied filters.
+  ///
+  /// Searches through the available filter list to find a filter whose matrix
+  /// matches the first applied filter. If found, sets it as the selected
+  /// filter.
+  void _initializeFilterFromApplied() {
+    final filterList = filterEditorConfigs.filterList ?? presetFiltersList;
+    final firstApplied = appliedFilters.first;
+
+    for (final filter in filterList) {
+      if (filter.filters.isNotEmpty &&
+          listEquals(filter.filters.first, firstApplied)) {
+        setFilter(filter);
+        return;
+      }
+    }
+    setFilter(FilterModel(name: 'Not-Found', filters: [firstApplied]));
   }
 
   /// Set the current filter.
@@ -432,7 +464,9 @@ class FilterEditorState extends State<FilterEditor>
                             image: widget.videoController!.thumbnails!.first,
                           )
                         : Image.memory(kImageEditorTransparentBytes),
-                activeFilters: appliedFilters,
+                activeFilters: filterEditorConfigs.enableMultiSelection
+                    ? appliedFilters
+                    : null,
                 blurFactor: appliedBlurFactor,
                 configs: configs,
                 transformConfigs: initialTransformConfigs,
@@ -487,7 +521,7 @@ class FilterEditorState extends State<FilterEditor>
       ))
       ..add(IterableProperty<List<double>>(
         'appliedFilters',
-        appliedFilters,
+        filterEditorConfigs.enableMultiSelection ? appliedFilters : [],
       ));
   }
 }

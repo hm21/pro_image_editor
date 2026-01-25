@@ -1,7 +1,5 @@
-// Dart imports:
-import 'dart:typed_data';
-
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/core/platform/io/io_helper.dart';
@@ -86,6 +84,7 @@ class EditorImage {
   EditorImage({
     this.byteArray,
     this.networkUrl,
+    this.networkHeaders,
     this.assetPath,
     dynamic file,
   })  : file = file == null ? null : ensureFileInstance(file),
@@ -127,6 +126,9 @@ class EditorImage {
   /// A URL string pointing to an image on the internet.
   final String? networkUrl;
 
+  /// Optional HTTP headers to use when fetching the network image.
+  final Map<String, String>? networkHeaders;
+
   /// A string representing the asset path of an image.
   final String? assetPath;
 
@@ -161,7 +163,7 @@ class EditorImage {
       case EditorImageType.file:
         return FileImage(file! as dynamic);
       case EditorImageType.network:
-        return NetworkImage(networkUrl!);
+        return NetworkImage(networkUrl!, headers: networkHeaders);
     }
   }
 
@@ -179,7 +181,10 @@ class EditorImage {
         bytes = await readFileAsUint8List(file!);
         break;
       case EditorImageType.network:
-        bytes = await fetchImageAsUint8List(networkUrl!);
+        bytes = await fetchImageAsUint8List(
+          networkUrl!,
+          headers: networkHeaders,
+        );
         break;
     }
 
@@ -221,6 +226,7 @@ class EditorImage {
         _areUint8ListsEqual(byteArray, other.byteArray) &&
         file?.path == other.file?.path &&
         networkUrl == other.networkUrl &&
+        mapEquals(networkHeaders, other.networkHeaders) &&
         assetPath == other.assetPath;
   }
 
@@ -230,6 +236,7 @@ class EditorImage {
       _hashUint8List(byteArray),
       file?.path,
       networkUrl,
+      networkHeaders,
       assetPath,
     );
   }
@@ -265,6 +272,7 @@ class EditorImage {
     Uint8List? byteArray,
     File? file,
     String? networkUrl,
+    Map<String, String>? networkHeaders,
     String? assetPath,
   }) {
     final bytes = byteArray ?? this.byteArray;
@@ -273,6 +281,7 @@ class EditorImage {
       byteArray: bytes != null ? Uint8List.fromList(bytes) : null,
       file: fileHelper != null ? File(fileHelper.path) : null,
       networkUrl: networkUrl ?? this.networkUrl,
+      networkHeaders: networkHeaders ?? this.networkHeaders,
       assetPath: assetPath ?? this.assetPath,
     );
   }

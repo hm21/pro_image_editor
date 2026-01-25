@@ -52,6 +52,7 @@ class TextEditorStyle {
   /// Creates an instance of the `TextEditorStyle` class with the specified
   /// style properties.
   const TextEditorStyle({
+    this.textHeight = 0.0,
     this.fontSizeBottomSheetTitle,
     this.textFieldMargin =
         const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
@@ -63,6 +64,11 @@ class TextEditorStyle {
     this.inputHintColor = const Color(0xFFBDBDBD),
     this.inputCursorColor = kImageEditorPrimaryColor,
     this.fontScaleBottomSheetBackground = const Color(0xFF252728),
+    this.inputTextFieldBackground = Colors.transparent,
+    this.inputTextFieldBorderColor = Colors.transparent,
+    this.inputTextFieldBorderRadius =
+        const BorderRadius.all(Radius.circular(4)),
+    this.inputTextFieldPadding = EdgeInsets.zero,
   });
 
   /// Background color of the app bar in the text editor.
@@ -95,6 +101,22 @@ class TextEditorStyle {
   /// Background color for the font scale bottom sheet.
   final Color fontScaleBottomSheetBackground;
 
+  /// Background color of the input text field.
+  final Color inputTextFieldBackground;
+
+  /// Border color of the input text field.
+  final Color inputTextFieldBorderColor;
+
+  /// Border radius of the input text field.
+  final BorderRadius inputTextFieldBorderRadius;
+
+  /// Padding of the input text field.
+  final EdgeInsets inputTextFieldPadding;
+
+  /// Height value for the text input style. Set to 0.0 for proper centering
+  /// on various platforms. Set to null to use the default line height.
+  final double? textHeight;
+
   /// Creates a copy of this `TextEditorStyle` object with the given fields
   /// replaced with new values.
   ///
@@ -102,6 +124,7 @@ class TextEditorStyle {
   /// [TextEditorStyle] with some properties updated while keeping the
   /// others unchanged.
   TextEditorStyle copyWith({
+    double? textHeight,
     Color? appBarBackground,
     Color? appBarColor,
     Color? bottomBarBackground,
@@ -109,11 +132,16 @@ class TextEditorStyle {
     Color? inputHintColor,
     Color? inputCursorColor,
     Color? fontScaleBottomSheetBackground,
+    Color? inputTextFieldBackground,
+    Color? inputTextFieldBorderColor,
+    BorderRadius? inputTextFieldBorderRadius,
+    EdgeInsets? inputTextFieldPadding,
     MainAxisAlignment? bottomBarMainAxisAlignment,
     EdgeInsets? textFieldMargin,
     TextStyle? fontSizeBottomSheetTitle,
   }) {
     return TextEditorStyle(
+      textHeight: textHeight ?? this.textHeight,
       fontScaleBottomSheetBackground:
           fontScaleBottomSheetBackground ?? this.fontScaleBottomSheetBackground,
       appBarBackground: appBarBackground ?? this.appBarBackground,
@@ -122,6 +150,14 @@ class TextEditorStyle {
       background: background ?? this.background,
       inputHintColor: inputHintColor ?? this.inputHintColor,
       inputCursorColor: inputCursorColor ?? this.inputCursorColor,
+      inputTextFieldBackground:
+          inputTextFieldBackground ?? this.inputTextFieldBackground,
+      inputTextFieldBorderColor:
+          inputTextFieldBorderColor ?? this.inputTextFieldBorderColor,
+      inputTextFieldBorderRadius:
+          inputTextFieldBorderRadius ?? this.inputTextFieldBorderRadius,
+      inputTextFieldPadding:
+          inputTextFieldPadding ?? this.inputTextFieldPadding,
       bottomBarMainAxisAlignment:
           bottomBarMainAxisAlignment ?? this.bottomBarMainAxisAlignment,
       textFieldMargin: textFieldMargin ?? this.textFieldMargin,

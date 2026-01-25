@@ -4,6 +4,36 @@
 - **FEAT**(audio-editor): Added a new Audio Editor to the Video Editor, allowing users to add background music. Users can set the audio start time and adjust the balance between the original and overlay tracks.
 - **FEAT**(clips-editor): Introduced a new Clips Editor that lets users combine multiple video clips into a single merged video.
 
+## 11.18.1
+- **FIX**(filter-editor): Ensure that the applied filters can also be removed.
+
+## 11.18.0
+- **FEAT**(filter-editor): Restore previously applied filter when `enableMultiSelection` is disabled, allowing users to toggle between filters instant of stacking filters.
+
+## 11.17.0
+- **FEAT**(paint-editor): Add hexagon shape tool. More details in PR [#738](https://github.com/hm21/pro_image_editor/pull/738).
+
+## 11.16.0
+- **FIX**(text-editor): Persist text shadow properties when exporting and importing state history. More details in PR [#733](https://github.com/hm21/pro_image_editor/pull/733).
+
+## 11.15.6
+- **FEAT**(text-editor): Add an optional background and borders to the text editor input field. More details in PR [#735](https://github.com/hm21/pro_image_editor/pull/735).
+
+## 11.15.5
+- **FEAT**(network-image): Added optional `networkHeaders` to the `EditorImage`. More details in PR [#729](https://github.com/hm21/pro_image_editor/pull/729).
+
+## 11.15.4
+- **FIX**(widget-layer): Resolve the issue of the optional `width` being applied incorrectly.
+
+## 11.15.3
+- **FEAT**(widget-layer): Add optional `width` property.
+
+## 11.15.2
+- **FEAT**(crop-rotate-editor): Add new callback `onTransformUpdateEnd` that returns all transformation changes whenever a value in the crop-rotate editor is modified.
+
+## 11.15.1
+- **FEAT**(text-editor): Add config `enableAutoWrapOnLayer` to the `TextEditorConfigs` which allows for deciding whether the layer applies the editor's auto wrapping or not. More details in PR [#720](https://github.com/hm21/pro_image_editor/pull/720).
+
 ## 11.15.0
 - **FEAT**(crop-editor): Add `setScale` method to cropRotateEditor for programmatically setting the scale factor.
 

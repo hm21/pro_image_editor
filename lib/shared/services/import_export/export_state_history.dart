@@ -310,7 +310,8 @@ class ExportStateHistory {
           updateReference(widgetLayer, recordPosition: widgetRecords.length);
 
           double imageWidth =
-              _editorConfigs.stickerEditor.initWidth * layer.scale;
+              (layer.width ?? _editorConfigs.stickerEditor.initWidth) *
+                  layer.scale;
 
           Size targetSize = Size(
               imageWidth,

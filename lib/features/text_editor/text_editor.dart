@@ -323,7 +323,7 @@ class TextEditorState extends State<TextEditor>
         colorMode: backgroundColorMode,
         textStyle: selectedTextStyle,
         customSecondaryColor: _secondaryColor != null,
-        maxTextWidth: (textEditorConfigs.enableAutoOverflow ||
+        maxTextWidth: (textEditorConfigs.enableAutoWrapOnLayer ||
                 textEditorConfigs.enableImageBoundaryTextWrap)
             ? _maxTextWidth
             : null,

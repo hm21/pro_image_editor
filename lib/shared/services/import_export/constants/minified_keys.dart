@@ -30,6 +30,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'x': 'x',
   'y': 'y',
   'rotation': 'r',
+  'width': 'w',
   'scale': 's',
   'flipX': 'fx',
   'flipY': 'fy',
@@ -59,6 +60,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'meta': 'm',
   'boxConstraints': 'bx',
   'maxTextWidth': 'mt',
+  'shadows': 'sh',
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',
