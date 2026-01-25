@@ -1,9 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 // TODO: Remove the deprecated values when releasing version 12.0.0.
 
-// Project imports:
 import '/features/filter_editor/utils/filter_generator/filter_model.dart';
-
 import '../custom_widgets/filter_editor_widgets.dart';
 import '../icons/filter_editor_icons.dart';
 import '../styles/filter_editor_style.dart';
@@ -42,6 +40,7 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
     )
     this.enabled = true,
     this.showLayers = true,
+    this.enableMultiSelection = true,
     this.filterList,
     this.safeArea = const EditorSafeArea(),
     this.fadeInUpDuration = const Duration(milliseconds: 220),
@@ -64,6 +63,11 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
 
   /// Show also layers in the editor.
   final bool showLayers;
+
+  /// When enabled, each time the editor is opened, a new filter will be
+  /// overlaid on top of the existing one. When disabled, selecting a filter
+  /// will replace the current one instead of stacking them.
+  final bool enableMultiSelection;
 
   /// A list of color filter generators to apply to an image.
   final List<FilterModel>? filterList;
@@ -104,6 +108,7 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
     bool? enableGesturePop,
     bool? enabled,
     bool? showLayers,
+    bool? enableMultiSelection,
     List<FilterModel>? filterList,
     Duration? fadeInUpDuration,
     Duration? fadeInUpStaggerDelayDuration,
@@ -114,14 +119,15 @@ class FilterEditorConfigs implements BaseSubEditorConfigs {
   }) {
     return FilterEditorConfigs(
       enableGesturePop: enableGesturePop ?? this.enableGesturePop,
-      safeArea: safeArea ?? this.safeArea,
       enabled: enabled ?? this.enabled,
       showLayers: showLayers ?? this.showLayers,
+      enableMultiSelection: enableMultiSelection ?? this.enableMultiSelection,
       filterList: filterList ?? this.filterList,
       fadeInUpDuration: fadeInUpDuration ?? this.fadeInUpDuration,
-      style: style ?? this.style,
       fadeInUpStaggerDelayDuration:
           fadeInUpStaggerDelayDuration ?? this.fadeInUpStaggerDelayDuration,
+      safeArea: safeArea ?? this.safeArea,
+      style: style ?? this.style,
       icons: icons ?? this.icons,
       widgets: widgets ?? this.widgets,
     );
