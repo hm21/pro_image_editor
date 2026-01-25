@@ -228,6 +228,14 @@ class FilterEditorState extends State<FilterEditor>
   }
 
   FilterMatrix _getActiveFilters() {
+    if (!filterEditorConfigs.enableMultiSelection) {
+      if (selectedFilter.filters.isEmpty) {
+        return [
+          [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0]
+        ];
+      }
+    }
+
     return [
       if (filterEditorConfigs.enableMultiSelection) ...appliedFilters,
       ...selectedFilter.filters.map(
