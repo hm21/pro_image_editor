@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.18.2
+- **FEAT**(EditorSafeArea): Add convenience constructors `none`, `symmetric`, and `fromLTRB` for easier safe area configuration.
+- **FIX**(HelperLines): Resolves the issue of horizontal lines not showing up when the editor overflows the screen.
+
 ## 11.18.1
 - **FIX**(filter-editor): Ensure that the applied filters can also be removed.
 
