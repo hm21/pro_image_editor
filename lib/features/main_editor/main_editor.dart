@@ -30,7 +30,6 @@ import '/shared/utils/transparent_image_generator_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 import '/shared/widgets/screen_resize_detector.dart';
-import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_generator.dart';
 import '../paint_editor/models/paint_editor_response_model.dart';
 import '../paint_editor/widgets/paint_editor_layer_editor.dart';

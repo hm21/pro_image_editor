@@ -21,6 +21,7 @@ import '/features/crop_rotate_editor/widgets/outside_gestures/crop_rotate_gestur
 import '/features/crop_rotate_editor/widgets/outside_gestures/outside_gesture_listener.dart';
 import '/plugins/defer_pointer/defer_pointer.dart';
 import '/pro_image_editor.dart';
+import '/shared/extensions/double_extension.dart';
 import '/shared/mixins/extended_loop.dart';
 import '/shared/services/content_recorder/widgets/record_invisible_widget.dart';
 import '/shared/services/layer_transform_generator.dart';
@@ -33,8 +34,6 @@ import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../../shared/extensions/double_extension.dart';
-import '../filter_editor/widgets/filtered_widget.dart';
 import 'enums/crop_area_part.dart';
 import 'enums/crop_rotate_angle_side.dart';
 import 'mixins/crop_area_history.dart';

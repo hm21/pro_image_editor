@@ -66,6 +66,7 @@ export 'core/utils/image_converter.dart';
 export '/shared/utils/parser/int_parser.dart';
 export '/shared/utils/parser/double_parser.dart';
 export '/shared/utils/parser/size_parser.dart';
+export '/core/models/editor_configs/utils/editor_safe_area.dart';
 
 /// Widgets
 export 'shared/widgets/animated/fade_in_up.dart';

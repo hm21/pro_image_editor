@@ -69,7 +69,7 @@ class MainEditorHelperLines extends StatelessWidget {
                 final scale = viewer?.scaleFactor ?? 1;
 
                 final offset = viewer?.offset ?? Offset.zero;
-                final screenSize = sizesManager.screen;
+                final screenSize = sizesManager.editorSize;
                 final editorBodySize = sizesManager.bodySize;
 
                 if (configs.helperLines.isDisabledAtZoom && scale > 1) {

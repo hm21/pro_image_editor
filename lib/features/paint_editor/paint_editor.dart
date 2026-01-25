@@ -29,7 +29,6 @@ import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/filtered_widget.dart';
 import '../main_editor/services/layer_copy_manager.dart';
 import 'controllers/paint_controller.dart';
 import 'models/paint_editor_response_model.dart';
