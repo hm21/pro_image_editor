@@ -123,6 +123,12 @@ class PaintCanvasState extends State<PaintCanvas> {
   bool _hasPartialErasedAreas = false;
 
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
+  bool get _isEraserMode => _paintCtrl.mode == PaintMode.eraser;
+  bool get _isFreeStyleMode =>
+      _paintCtrl.mode == PaintMode.freeStyle ||
+      _paintCtrl.mode == PaintMode.freeStyleArrowStart ||
+      _paintCtrl.mode == PaintMode.freeStyleArrowEnd ||
+      _paintCtrl.mode == PaintMode.freeStyleArrowStartEnd;
 
   @override
   void initState() {
@@ -190,7 +196,7 @@ class PaintCanvasState extends State<PaintCanvas> {
           _paintCtrl.setStart(offset);
         }
 
-        if (_paintCtrl.mode == PaintMode.freeStyle) {
+        if (_isFreeStyleMode) {
           _paintCtrl.addOffsets(offset);
         }
 
@@ -219,7 +225,7 @@ class PaintCanvasState extends State<PaintCanvas> {
     List<Offset?>? offsets;
 
     if (_paintCtrl.start != null && _paintCtrl.end != null) {
-      if (_paintCtrl.mode == PaintMode.freeStyle) {
+      if (_isFreeStyleMode) {
         offsets = [..._paintCtrl.offsets];
       } else if (_paintCtrl.start != null && _paintCtrl.end != null) {
         offsets = [_paintCtrl.start, _paintCtrl.end];
@@ -383,16 +389,14 @@ class PaintCanvasState extends State<PaintCanvas> {
             if (_paintCtrl.mode == PaintMode.polygon) {
               _addPolygonPoint(details.localPosition);
               _checkPolygonIsComplete();
-            } else if (_paintCtrl.mode == PaintMode.freeStyle ||
-                _paintCtrl.mode == PaintMode.eraser) {
+            } else if (_isFreeStyleMode || _isEraserMode) {
               _onScaleStart(ScaleStartDetails(
                   focalPoint: details.localPosition,
                   localFocalPoint: details.localPosition));
             }
           },
           onTapUp: (details) {
-            if (_paintCtrl.mode == PaintMode.freeStyle ||
-                _paintCtrl.mode == PaintMode.eraser) {
+            if (_isFreeStyleMode || _isEraserMode) {
               _onScaleUpdate(ScaleUpdateDetails(
                 focalPoint: details.localPosition,
                 localFocalPoint: details.localPosition,

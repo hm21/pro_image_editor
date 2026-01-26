@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '/core/models/layers/paint_layer.dart';
-import '/features/paint_editor/enums/paint_editor_enum.dart';
 import '/features/paint_editor/widgets/draw_paint_item.dart';
 
 /// A widget representing a paint layer in the sticker editor.
@@ -50,7 +49,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
       child: CustomPaint(
         size: layer.size,
         willChange: willChange,
-        isComplex: layer.item.mode == PaintMode.freeStyle,
+        isComplex: layer.item.mode.isFreeStyleMode,
         painter: DrawPaintItem(
           item: layer.item,
           scale: layer.scale,

@@ -83,12 +83,18 @@ abstract class PathBuilderBase {
           scale: scale,
         );
       case PaintMode.freeStyle:
+      case PaintMode.freeStyleArrowStart:
+      case PaintMode.freeStyleArrowEnd:
+      case PaintMode.freeStyleArrowStartEnd:
         return PathBuilderFreestyle(
           paintEditorConfigs: paintEditorConfigs,
           item: item,
           scale: scale,
         );
-      default:
+      case PaintMode.moveAndZoom:
+      case PaintMode.eraser:
+      case PaintMode.blur:
+      case PaintMode.pixelate:
         throw ArgumentError('${item.mode} is not a valid PaintMode');
     }
   }

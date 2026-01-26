@@ -67,7 +67,11 @@ class PaintController extends ChangeNotifier {
   /// paint.
   PaintedModel get paintedModel => PaintedModel(
         mode: mode,
-        offsets: mode == PaintMode.freeStyle || mode == PaintMode.polygon
+        offsets: mode == PaintMode.freeStyle ||
+                mode == PaintMode.freeStyleArrowStart ||
+                mode == PaintMode.freeStyleArrowEnd ||
+                mode == PaintMode.freeStyleArrowStartEnd ||
+                mode == PaintMode.polygon
             ? [..._offsets]
             : [start, end],
         erasedOffsets: [],

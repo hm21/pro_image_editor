@@ -366,6 +366,21 @@ class PaintEditorState extends State<PaintEditor>
             icon: paintEditorConfigs.icons.freeStyle,
             label: i18n.paintEditor.freestyle,
           );
+        case PaintMode.freeStyleArrowStart:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.freeStyleArrowStart,
+            label: i18n.paintEditor.freestyleArrowStart,
+          );
+        case PaintMode.freeStyleArrowEnd:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.freeStyleArrowEnd,
+            label: i18n.paintEditor.freestyleArrowEnd,
+          );
+        case PaintMode.freeStyleArrowStartEnd:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.freeStyleArrowStartEnd,
+            label: i18n.paintEditor.freestyleArrowStartEnd,
+          );
 
         case PaintMode.arrow:
           if (!paintEditorConfigs.enableModeArrow) return null;
@@ -745,7 +760,7 @@ class PaintEditorState extends State<PaintEditor>
 
     Size size = layerRect.size;
 
-    bool onlyStrokeMode = rawLayer.mode == PaintMode.freeStyle ||
+    bool onlyStrokeMode = rawLayer.mode.isFreeStyleMode ||
         rawLayer.mode == PaintMode.line ||
         rawLayer.mode == PaintMode.dashLine ||
         rawLayer.mode == PaintMode.dashDotLine ||
