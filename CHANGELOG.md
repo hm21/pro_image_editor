@@ -1,5 +1,10 @@
 # Changelog
 
+## 11.19.0
+- **FEAT**(main-editor): Add `onEditTextLayer` callback to `MainEditorCallbacks`, allowing users to open a custom text editor when a text layer is tapped.
+- **FEAT**(text-editor): Add `bodyItemsOverlay` to `TextEditorWidgets` for placing custom widgets above all other content in the text editor body.
+- **FEAT**(text-editor): Add `textFieldPadding` to `TextEditorStyle` for applying padding outside the scroll area of the text field.
+
 ## 11.18.4
 - **FEAT**(CompleteParameters): Add serialization methods (`toMap`, `fromMap`, `toJson`, `fromJson`).
 

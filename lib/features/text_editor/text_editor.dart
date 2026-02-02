@@ -430,6 +430,11 @@ class TextEditorState extends State<TextEditor>
                   onFontChange: setTextStyle,
                 ),
               ),
+            if (textEditorConfigs.widgets.bodyItemsOverlay != null)
+              ...textEditorConfigs.widgets.bodyItemsOverlay!(
+                this,
+                _rebuildController.stream,
+              ),
           ],
         ),
       );

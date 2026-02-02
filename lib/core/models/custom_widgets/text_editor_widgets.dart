@@ -35,10 +35,32 @@ class TextEditorWidgets extends CustomWidgetsStandaloneEditor<TextEditorState> {
     super.appBar,
     super.bottomBar,
     super.bodyItems,
+    this.bodyItemsOverlay,
     this.colorPicker,
     this.sliderFontSize,
     this.fontSizeCloseButton,
   });
+
+  /// Custom body items that are positioned above all other content.
+  ///
+  /// These widgets are rendered on top of the text field, color picker,
+  /// and bottom bar, making them ideal for overlays, tooltips, or custom
+  /// controls that need to be always visible.
+  ///
+  /// **Example:**
+  /// ```dart
+  /// bodyItemsOverlay: (editor, rebuildStream) => [
+  ///   ReactiveWidget(
+  ///     stream: rebuildStream,
+  ///     builder: (_) => Positioned(
+  ///       top: 100,
+  ///       right: 16,
+  ///       child: MyCustomOverlayWidget(),
+  ///     ),
+  ///   ),
+  /// ],
+  /// ```
+  final CustomBodyItems<TextEditorState>? bodyItemsOverlay;
 
   /// A custom color picker widget for the text editor.
   ///
@@ -75,6 +97,7 @@ class TextEditorWidgets extends CustomWidgetsStandaloneEditor<TextEditorState> {
             TextEditorState editorState, Stream<void> rebuildStream)?
         bottomBar,
     CustomBodyItems<TextEditorState>? bodyItems,
+    CustomBodyItems<TextEditorState>? bodyItemsOverlay,
     CustomColorPicker<TextEditorState>? colorPicker,
     CustomSlider<TextEditorState>? sliderFontSize,
     Widget Function(TextEditorState editorState, Function() tap)?
@@ -84,6 +107,7 @@ class TextEditorWidgets extends CustomWidgetsStandaloneEditor<TextEditorState> {
       appBar: appBar ?? this.appBar,
       bottomBar: bottomBar ?? this.bottomBar,
       bodyItems: bodyItems ?? this.bodyItems,
+      bodyItemsOverlay: bodyItemsOverlay ?? this.bodyItemsOverlay,
       colorPicker: colorPicker ?? this.colorPicker,
       sliderFontSize: sliderFontSize ?? this.sliderFontSize,
       fontSizeCloseButton: fontSizeCloseButton ?? this.fontSizeCloseButton,

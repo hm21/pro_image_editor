@@ -138,18 +138,22 @@ class _TextEditorInputState extends State<TextEditorInput> {
   Widget build(BuildContext context) {
     return Align(
       alignment: widget.configs.inputTextFieldAlign,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: widget.configs.style.textFieldMargin,
-        child: IntrinsicWidth(
-          child: SingleChildScrollView(
-            clipBehavior: Clip.none,
-            padding: widget.configs.enableAutoOverflow
-                ? null
-                : const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: widget.maxWidth),
-              child: _buildInputField(),
+      child: Padding(
+        padding: widget.configs.style.textFieldPadding,
+        child: SingleChildScrollView(
+          clipBehavior: Clip.none,
+          scrollDirection: Axis.horizontal,
+          padding: widget.configs.style.textFieldMargin,
+          child: IntrinsicWidth(
+            child: SingleChildScrollView(
+              clipBehavior: Clip.none,
+              padding: widget.configs.enableAutoOverflow
+                  ? null
+                  : const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: widget.maxWidth),
+                child: _buildInputField(),
+              ),
             ),
           ),
         ),

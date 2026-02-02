@@ -44,6 +44,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     this.onHoverRemoveAreaChange,
     this.onStateHistoryChange,
     this.onImageDecoded,
+    this.onEditTextLayer,
     super.onInit,
     super.onAfterViewInit,
     super.onUpdateUI,
@@ -111,6 +112,30 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
 
   /// Callback that is triggered after the image has been successfully decoded.
   final Function()? onImageDecoded;
+
+  /// A callback function that allows opening a custom text editor when a
+  /// [TextLayer] is tapped.
+  ///
+  /// If this callback is provided and returns a non-null [TextLayer], the
+  /// returned layer will be used to update the existing layer. If the callback
+  /// returns `null`, no changes will be made.
+  ///
+  /// If this callback is not provided, the default text editor will be opened.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// onEditTextLayer: (layer) async {
+  ///   // Open your custom text editor
+  ///   final result = await Navigator.push(
+  ///     context,
+  ///     MaterialPageRoute(
+  ///       builder: (context) => MyCustomTextEditor(layer: layer),
+  ///     ),
+  ///   );
+  ///   return result; // Return the updated TextLayer or null
+  /// },
+  /// ```
+  final Future<TextLayer?> Function(TextLayer layer)? onEditTextLayer;
 
   /// A callback function that is triggered when the user `tap` on the body.
   final Function()? onTap;
@@ -428,6 +453,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
     Function()? onRedo,
     Function()? onUndo,
     Function()? onImageDecoded,
+    Future<TextLayer?> Function(TextLayer layer)? onEditTextLayer,
     Function(ProImageEditorState state, ImportStateHistory import)?
         onImportHistoryStart,
     Function(ProImageEditorState state, ImportStateHistory import)?
@@ -474,6 +500,7 @@ class MainEditorCallbacks extends StandaloneEditorCallbacks {
       onRedo: onRedo ?? this.onRedo,
       onUndo: onUndo ?? this.onUndo,
       onImageDecoded: onImageDecoded ?? this.onImageDecoded,
+      onEditTextLayer: onEditTextLayer ?? this.onEditTextLayer,
       onImportHistoryStart: onImportHistoryStart ?? this.onImportHistoryStart,
       onImportHistoryEnd: onImportHistoryEnd ?? this.onImportHistoryEnd,
       onHoverRemoveAreaChange:

@@ -56,6 +56,7 @@ class TextEditorStyle {
     this.fontSizeBottomSheetTitle,
     this.textFieldMargin =
         const EdgeInsets.only(bottom: kBottomNavigationBarHeight),
+    this.textFieldPadding = EdgeInsets.zero,
     this.appBarBackground = kImageEditorAppBarBackground,
     this.appBarColor = kImageEditorAppBarColor,
     this.bottomBarBackground = kImageEditorBottomBarBackground,
@@ -94,6 +95,12 @@ class TextEditorStyle {
 
   /// Margin value around the textField.
   final EdgeInsets textFieldMargin;
+
+  /// Padding value applied outside the scroll area of the text field.
+  ///
+  /// This padding is always visible at the screen edges, even when the text
+  /// field content is wider than the screen and scrollable.
+  final EdgeInsets textFieldPadding;
 
   /// Title of the bottom sheet used to select the font-size.
   final TextStyle? fontSizeBottomSheetTitle;
@@ -138,6 +145,7 @@ class TextEditorStyle {
     EdgeInsets? inputTextFieldPadding,
     MainAxisAlignment? bottomBarMainAxisAlignment,
     EdgeInsets? textFieldMargin,
+    EdgeInsets? textFieldPadding,
     TextStyle? fontSizeBottomSheetTitle,
   }) {
     return TextEditorStyle(
@@ -161,6 +169,7 @@ class TextEditorStyle {
       bottomBarMainAxisAlignment:
           bottomBarMainAxisAlignment ?? this.bottomBarMainAxisAlignment,
       textFieldMargin: textFieldMargin ?? this.textFieldMargin,
+      textFieldPadding: textFieldPadding ?? this.textFieldPadding,
       fontSizeBottomSheetTitle:
           fontSizeBottomSheetTitle ?? this.fontSizeBottomSheetTitle,
     );
