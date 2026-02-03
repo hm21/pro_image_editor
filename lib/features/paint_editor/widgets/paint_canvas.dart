@@ -134,6 +134,10 @@ class PaintCanvasState extends State<PaintCanvas> {
   /// Tracks the position of the first pointer for tap detection.
   Offset? _pointerDownPosition;
 
+  /// Maximum distance in logical pixels between pointer down and up positions
+  /// for the interaction to be considered a tap rather than a drag gesture.
+  static const double _tapDistanceThreshold = 10.0;
+
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
   bool get _isEraserMode => _paintCtrl.mode == PaintMode.eraser;
   bool get _isFreeStyleMode =>
@@ -187,8 +191,9 @@ class PaintCanvasState extends State<PaintCanvas> {
         setState(() {});
         return;
       case PaintMode.polygon:
+        // Only add the point on pointer down; completion check happens on
+        // pointer up when we can verify this was a tap (not a drag gesture)
         _addPolygonPoint(offset);
-        _checkPolygonIsComplete();
         return;
       default:
         _paintCtrl
@@ -254,11 +259,15 @@ class PaintCanvasState extends State<PaintCanvas> {
     if (_pointerDownPosition != null) {
       final distance = (offset - _pointerDownPosition!).distance;
       // If movement was minimal, treat as a tap
-      if (distance < 10) {
+      if (distance < _tapDistanceThreshold) {
         _tapDownDetails = TapDownDetails(
           globalPosition: event.position,
           localPosition: event.localPosition,
         );
+        // For polygon mode, check if the shape should be completed on tap
+        if (_paintCtrl.mode == PaintMode.polygon) {
+          _checkPolygonIsComplete();
+        }
         widget.onTap(_tapDownDetails!);
         _tapDownDetails = null;
       }
@@ -268,6 +277,8 @@ class PaintCanvasState extends State<PaintCanvas> {
     if (widget.paintCtrl.mode == PaintMode.moveAndZoom) {
       return;
     } else if (widget.paintCtrl.mode == PaintMode.eraser) {
+      // Eraser mode doesn't create paintings - it only removes existing ones.
+      // The removal is handled during pointer move via _processEraserInputAt.
       if (_isPartialEraser) widget.onRemovePartialEnd(_hasPartialErasedAreas);
       return;
     }
