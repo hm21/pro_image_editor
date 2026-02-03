@@ -225,8 +225,7 @@ class JpegHealthyEncoder {
         // edge artifacts. This fixes white line artifacts at image edges when
         // saving JPEG after applying filters or tune adjustments, caused by
         // semi-transparent edge pixels from ColorFilter.matrix or anti-aliasing.
-        if (a < 0.008) {
-          // alpha < ~2/255
+        if (a < _alphaTransparencyThreshold) {
           p
             ..r = imageBackground.r.toInt()
             ..g = imageBackground.g.toInt()
@@ -886,6 +885,12 @@ class JpegHealthyEncoder {
 
   final Int32List _rgbYuvTable = Int32List(2048);
   int? _currentQuality;
+
+  /// Alpha threshold below which pixels are treated as fully transparent.
+  /// This helps prevent edge artifacts when encoding images with semi-transparent
+  /// edge pixels (e.g., from ColorFilter.matrix or anti-aliasing) to JPEG format.
+  /// Value is approximately 2/255 ≈ 0.008.
+  static const double _alphaTransparencyThreshold = 2 / 255;
 
   static const List<int> _zigzag = [
     0,
