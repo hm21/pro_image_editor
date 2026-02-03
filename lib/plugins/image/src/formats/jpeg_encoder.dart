@@ -226,10 +226,13 @@ class JpegHealthyEncoder {
         // saving JPEG after applying filters or tune adjustments, caused by
         // semi-transparent edge pixels from ColorFilter.matrix or anti-aliasing.
         if (a < _alphaTransparencyThreshold) {
+          // Use background color directly for nearly-transparent pixels.
+          // Using round() for consistency with alpha blending and to handle
+          // potential floating-point color formats.
           p
-            ..r = imageBackground.r.toInt()
-            ..g = imageBackground.g.toInt()
-            ..b = imageBackground.b.toInt();
+            ..r = imageBackground.r.round()
+            ..g = imageBackground.g.round()
+            ..b = imageBackground.b.round();
         } else {
           final invA = 1.0 - a;
           p
@@ -889,7 +892,13 @@ class JpegHealthyEncoder {
   /// Alpha threshold below which pixels are treated as fully transparent.
   /// This helps prevent edge artifacts when encoding images with semi-transparent
   /// edge pixels (e.g., from ColorFilter.matrix or anti-aliasing) to JPEG format.
-  /// Value is approximately 2/255 ≈ 0.008.
+  ///
+  /// The value 2/255 (~0.008) was chosen because:
+  /// - Pixels with alpha this low are visually indistinguishable from fully
+  ///   transparent when viewed against any background
+  /// - It's small enough to not affect visible content (2 out of 255 levels)
+  /// - It's large enough to catch edge artifacts from anti-aliasing and filter
+  ///   effects which typically produce alpha values in the 1-3/255 range
   static const double _alphaTransparencyThreshold = 2 / 255;
 
   static const List<int> _zigzag = [
