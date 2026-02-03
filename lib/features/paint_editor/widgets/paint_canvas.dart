@@ -122,6 +122,18 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   bool _hasPartialErasedAreas = false;
 
+  /// Tracks the number of active pointers to detect multi-touch gestures.
+  /// When more than one pointer is active, drawing is disabled to allow
+  /// pinch-to-zoom gestures.
+  int _activePointerCount = 0;
+
+  /// Tracks whether the current gesture started as a multi-touch gesture.
+  /// Used to prevent drawing when the user is performing a pinch-to-zoom.
+  bool _isMultiTouch = false;
+
+  /// Tracks the position of the first pointer for tap detection.
+  Offset? _pointerDownPosition;
+
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
   bool get _isEraserMode => _paintCtrl.mode == PaintMode.eraser;
   bool get _isFreeStyleMode =>
@@ -142,13 +154,30 @@ class PaintCanvasState extends State<PaintCanvas> {
     super.dispose();
   }
 
-  /// This method is called when a scaling gesture for paint begins. It
-  /// captures the starting point of the gesture.
+  /// Handles the pointer down event for immediate response to touch/stylus
+  /// input.
   ///
-  /// It is not meant to be called directly but is an event handler for scaling
-  /// gestures.
-  void _onScaleStart(ScaleStartDetails details) {
-    final offset = details.localFocalPoint;
+  /// This uses the low-level [Listener] widget instead of [GestureDetector]
+  /// to eliminate gesture disambiguation delays, significantly reducing drawing
+  /// latency on devices like iPad with Apple Pencil.
+  void _onPointerDown(PointerDownEvent event) {
+    _activePointerCount++;
+    if (_activePointerCount > 1) {
+      // Multi-touch detected - disable drawing to allow pinch-to-zoom
+      _isMultiTouch = true;
+      // Cancel any ongoing drawing
+      if (_paintCtrl.busy) {
+        _paintCtrl
+          ..setInProgress(false)
+          ..reset();
+        _activePaintStreamCtrl.add(null);
+      }
+      return;
+    }
+
+    _pointerDownPosition = event.localPosition;
+    final offset = event.localPosition;
+
     switch (widget.paintCtrl.mode) {
       case PaintMode.moveAndZoom:
         return;
@@ -159,6 +188,7 @@ class PaintCanvasState extends State<PaintCanvas> {
         return;
       case PaintMode.polygon:
         _addPolygonPoint(offset);
+        _checkPolygonIsComplete();
         return;
       default:
         _paintCtrl
@@ -169,24 +199,24 @@ class PaintCanvasState extends State<PaintCanvas> {
     }
   }
 
-  /// Fires while the user is interacting with the screen to record paint.
+  /// Handles the pointer move event for continuous drawing updates.
   ///
-  /// This method is called during an ongoing scaling gesture to record
-  /// paint actions. It captures the current position and updates the
-  /// paint controller accordingly.
-  ///
-  /// It is not meant to be called directly but is an event handler for scaling
-  /// gestures.
-  void _onScaleUpdate(ScaleUpdateDetails details) {
+  /// This provides immediate response to pointer movement without the
+  /// gesture disambiguation delay that occurs with [GestureDetector].
+  void _onPointerMove(PointerMoveEvent event) {
+    // Skip if multi-touch gesture is active (pinch-to-zoom)
+    if (_isMultiTouch || _activePointerCount > 1) return;
+
+    final offset = event.localPosition;
+
     switch (widget.paintCtrl.mode) {
       case PaintMode.moveAndZoom:
       case PaintMode.polygon:
         return;
       case PaintMode.eraser:
-        _processEraserInput(details);
+        _processEraserInputAt(offset);
         break;
       default:
-        final offset = details.localFocalPoint;
         if (!_paintCtrl.busy) {
           widget.onRefresh();
           _paintCtrl.setInProgress(true);
@@ -206,19 +236,39 @@ class PaintCanvasState extends State<PaintCanvas> {
     }
   }
 
-  /// Fires when the user stops interacting with the screen.
-  ///
-  /// This method is called when a scaling gesture for paint ends. It
-  /// finalizes and records the paint action.
-  ///
-  /// It is not meant to be called directly but is an event handler for scaling
-  /// gestures.
-  void _onScaleEnd(ScaleEndDetails details) {
+  /// Handles the pointer up event to finalize drawing.
+  void _onPointerUp(PointerUpEvent event) {
+    _activePointerCount = max(0, _activePointerCount - 1);
+
+    // If this was part of a multi-touch gesture, reset and return
+    if (_isMultiTouch) {
+      if (_activePointerCount == 0) {
+        _isMultiTouch = false;
+      }
+      return;
+    }
+
+    final offset = event.localPosition;
+
+    // Handle tap detection for polygon and other modes
+    if (_pointerDownPosition != null) {
+      final distance = (offset - _pointerDownPosition!).distance;
+      // If movement was minimal, treat as a tap
+      if (distance < 10) {
+        _tapDownDetails = TapDownDetails(
+          globalPosition: event.position,
+          localPosition: event.localPosition,
+        );
+        widget.onTap(_tapDownDetails!);
+        _tapDownDetails = null;
+      }
+    }
+    _pointerDownPosition = null;
+
     if (widget.paintCtrl.mode == PaintMode.moveAndZoom) {
       return;
     } else if (widget.paintCtrl.mode == PaintMode.eraser) {
       if (_isPartialEraser) widget.onRemovePartialEnd(_hasPartialErasedAreas);
-
       return;
     }
 
@@ -237,6 +287,24 @@ class PaintCanvasState extends State<PaintCanvas> {
     _createPainting(offsets);
   }
 
+  /// Handles the pointer cancel event to clean up state.
+  void _onPointerCancel(PointerCancelEvent event) {
+    _activePointerCount = max(0, _activePointerCount - 1);
+    _pointerDownPosition = null;
+
+    if (_activePointerCount == 0) {
+      _isMultiTouch = false;
+    }
+
+    // Reset any ongoing drawing
+    if (_paintCtrl.busy) {
+      _paintCtrl
+        ..setInProgress(false)
+        ..reset();
+      _activePaintStreamCtrl.add(null);
+    }
+  }
+
   Offset _rotatePoint(Offset point, Offset center, double angle) {
     if (angle == 0) return point;
 
@@ -252,9 +320,12 @@ class PaintCanvasState extends State<PaintCanvas> {
         center;
   }
 
-  void _processEraserInput(ScaleUpdateDetails details) {
+  /// Processes eraser input at the given position.
+  ///
+  /// This method handles both full stroke and partial erasing based on
+  /// the current [EraserMode].
+  void _processEraserInputAt(Offset focalPoint) {
     List<String> removeIds = [];
-    final Offset focalPoint = details.localFocalPoint;
     final double stackScale = widget.layerStackScaleFactor;
     final Offset editorHalfSize = Offset(
           widget.editorBodySize.width,
@@ -379,35 +450,16 @@ class PaintCanvasState extends State<PaintCanvas> {
     return StreamBuilder(
       stream: _activePaintStreamCtrl.stream,
       builder: (context, snapshot) {
-        return GestureDetector(
+        // Use Listener instead of GestureDetector for immediate pointer
+        // response. This significantly reduces drawing latency on devices
+        // like iPad with Apple Pencil by eliminating gesture disambiguation
+        // delays.
+        return Listener(
           behavior: HitTestBehavior.translucent,
-          onScaleStart: _onScaleStart,
-          onScaleUpdate: _onScaleUpdate,
-          onScaleEnd: _onScaleEnd,
-          onTapDown: (details) {
-            _tapDownDetails = details;
-            if (_paintCtrl.mode == PaintMode.polygon) {
-              _addPolygonPoint(details.localPosition);
-              _checkPolygonIsComplete();
-            } else if (_isFreeStyleMode || _isEraserMode) {
-              _onScaleStart(ScaleStartDetails(
-                  focalPoint: details.localPosition,
-                  localFocalPoint: details.localPosition));
-            }
-          },
-          onTapUp: (details) {
-            if (_isFreeStyleMode || _isEraserMode) {
-              _onScaleUpdate(ScaleUpdateDetails(
-                focalPoint: details.localPosition,
-                localFocalPoint: details.localPosition,
-              ));
-              _onScaleEnd(ScaleEndDetails());
-            }
-            _tapDownDetails = null;
-          },
-          onTap: () {
-            if (_tapDownDetails != null) widget.onTap(_tapDownDetails!);
-          },
+          onPointerDown: _onPointerDown,
+          onPointerMove: _onPointerMove,
+          onPointerUp: _onPointerUp,
+          onPointerCancel: _onPointerCancel,
           child: _paintCtrl.busy
               ? _paintCtrl.mode == PaintMode.blur ||
                       _paintCtrl.mode == PaintMode.pixelate
