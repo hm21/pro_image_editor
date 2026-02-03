@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.20.1
+- **FIX**: Resolve issue where DeferPointer shows an error when the hero animations is running for the text layers from the custom screens.
+
 ## 11.20.0
 - **FEAT**(main-editor): Add the flag `enableSubEditorPage` which allows sub-editors to be opened with the same constraints as the editor itself. More details in PR [#752](https://github.com/hm21/pro_image_editor/pull/752).
 
