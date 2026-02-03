@@ -221,11 +221,23 @@ class JpegHealthyEncoder {
       }
       if (p.length > 3) {
         final a = p.aNormalized;
-        final invA = 1.0 - a;
-        p
-          ..r = (p.r * a + imageBackground.r * invA).round()
-          ..g = (p.g * a + imageBackground.g * invA).round()
-          ..b = (p.b * a + imageBackground.b * invA).round();
+        // Treat pixels with very low alpha as fully transparent to avoid
+        // edge artifacts. This fixes white line artifacts at image edges when
+        // saving JPEG after applying filters or tune adjustments, caused by
+        // semi-transparent edge pixels from ColorFilter.matrix or anti-aliasing.
+        if (a < 0.008) {
+          // alpha < ~2/255
+          p
+            ..r = imageBackground.r.round()
+            ..g = imageBackground.g.round()
+            ..b = imageBackground.b.round();
+        } else {
+          final invA = 1.0 - a;
+          p
+            ..r = (p.r * a + imageBackground.r * invA).round()
+            ..g = (p.g * a + imageBackground.g * invA).round()
+            ..b = (p.b * a + imageBackground.b * invA).round();
+        }
       }
       final r = p.r.toInt();
       final g = p.g.toInt();
