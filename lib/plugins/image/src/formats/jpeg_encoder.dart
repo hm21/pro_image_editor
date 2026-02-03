@@ -228,9 +228,9 @@ class JpegHealthyEncoder {
         if (a < 0.008) {
           // alpha < ~2/255
           p
-            ..r = imageBackground.r.round()
-            ..g = imageBackground.g.round()
-            ..b = imageBackground.b.round();
+            ..r = imageBackground.r.toInt()
+            ..g = imageBackground.g.toInt()
+            ..b = imageBackground.b.toInt();
         } else {
           final invA = 1.0 - a;
           p
