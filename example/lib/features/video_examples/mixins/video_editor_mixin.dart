@@ -119,6 +119,18 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   Future<void> generateVideo(CompleteParameters parameters) async {
     final stopwatch = Stopwatch()..start();
 
+    /// Convert metadata rotation from degrees to 90-degree turns and combine
+    /// with user rotation. This ensures videos with orientation metadata
+    /// (common in portrait iOS videos) are exported with correct orientation.
+    ///
+    /// - metadataRotationTurns: Handles rotation metadata (e.g., 90° for
+    ///   portrait videos). Uses double modulo to handle negative rotations.
+    /// - The subtraction from 4 inverts the user's rotation to counteract the
+    ///   editor's internal rotation tracking, then we add metadata rotation.
+    final metadataRotationTurns = ((videoMetadata.rotation ~/ 90) % 4 + 4) % 4;
+    final rotateTurns =
+        (4 - parameters.rotateTurns + metadataRotationTurns) % 4;
+
     var exportModel = RenderVideoModel(
       id: taskId,
       video: video,
@@ -131,7 +143,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
           ? ExportTransform(
               width: parameters.cropWidth,
               height: parameters.cropHeight,
-              rotateTurns: 4 - parameters.rotateTurns,
+              rotateTurns: rotateTurns,
               x: parameters.cropX,
               y: parameters.cropY,
               flipX: parameters.flipX,
