@@ -1132,9 +1132,8 @@ class PaintEditorState extends State<PaintEditor>
       onRemovePartialStart: () {
         LayerCopyManager copyManager = LayerCopyManager();
 
-        final updatedList =
-            activeHistory.layers.whereType<PaintLayer>().map((layer) {
-          return copyManager.createCopyPaintLayer(layer);
+        final updatedList = activeHistory.layers.map((layer) {
+          return copyManager.copyLayer(layer);
         });
 
         while (canRedo) {
