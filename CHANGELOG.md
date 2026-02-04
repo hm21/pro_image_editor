@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.21.2
+- **FEAT**(video-editor): Add `showControls` config to `VideoEditorConfigs` to allow hiding the video editor controls UI.
+
 ## 11.21.1
 - **FEAT**(text-editor): Add `resizeToAvoidBottomInset` config to control whether the editor resizes when the keyboard appears.
 - **FIX**(paint-editor): Resolve issue where erasing would randomly remove other layers.

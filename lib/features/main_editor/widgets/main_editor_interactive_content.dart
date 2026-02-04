@@ -143,7 +143,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
             _buildCropAreaOverlay(),
 
           /// Build video controls
-          if (isVideoEditor)
+          if (isVideoEditor && configs.videoEditor.showControls)
             AnimatedOpacity(
               opacity: hasSelectedLayers ? 0 : 1,
               duration: configs.layerInteraction.videoControlsSwitchDuration,

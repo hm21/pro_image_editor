@@ -25,6 +25,7 @@ class VideoEditorConfigs {
     this.isAudioSupported = true,
     this.enablePlayButton = false,
     this.enableEstimatedFileSize = false,
+    this.showControls = true,
     this.controlsPosition = VideoEditorControlPosition.top,
     this.minTrimDuration = const Duration(seconds: 7),
     this.maxTrimDuration,
@@ -76,6 +77,12 @@ class VideoEditorConfigs {
   /// limits. That mean the displayed estimated file size could be wrong.
   final bool enableEstimatedFileSize;
 
+  /// Whether to show the video editor controls UI.
+  ///
+  /// When set to `false`, the controls widget (play/pause, mute, trim bar,
+  /// etc.) will be hidden.
+  final bool showControls;
+
   /// Minimum scale factor for the trim bar.
   final double trimBarMinScale;
 
@@ -117,6 +124,7 @@ class VideoEditorConfigs {
     bool? isAudioSupported,
     bool? enablePlayButton,
     bool? enableEstimatedFileSize,
+    bool? showControls,
     double? trimBarMinScale,
     double? trimBarMaxScale,
     Duration? playTimeSmoothingDuration,
@@ -139,6 +147,7 @@ class VideoEditorConfigs {
       enablePlayButton: enablePlayButton ?? this.enablePlayButton,
       enableEstimatedFileSize:
           enableEstimatedFileSize ?? this.enableEstimatedFileSize,
+      showControls: showControls ?? this.showControls,
       trimBarMinScale: trimBarMinScale ?? this.trimBarMinScale,
       trimBarMaxScale: trimBarMaxScale ?? this.trimBarMaxScale,
       playTimeSmoothingDuration:
@@ -169,6 +178,7 @@ class VideoEditorConfigs {
         other.isAudioSupported == isAudioSupported &&
         other.enablePlayButton == enablePlayButton &&
         other.enableEstimatedFileSize == enableEstimatedFileSize &&
+        other.showControls == showControls &&
         other.trimBarMinScale == trimBarMinScale &&
         other.trimBarMaxScale == trimBarMaxScale &&
         other.playTimeSmoothingDuration == playTimeSmoothingDuration &&
@@ -193,6 +203,7 @@ class VideoEditorConfigs {
         isAudioSupported.hashCode ^
         enablePlayButton.hashCode ^
         enableEstimatedFileSize.hashCode ^
+        showControls.hashCode ^
         trimBarMinScale.hashCode ^
         trimBarMaxScale.hashCode ^
         playTimeSmoothingDuration.hashCode ^
