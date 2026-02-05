@@ -108,7 +108,10 @@ class ImageConverterService {
     return await encodeImageFromThreadRequest(
       ThreadRequest(
         id: 'id',
-        image: await convertFlutterUiToImage(image),
+        image: await convertFlutterUiToImage(
+          image,
+          imageByteFormat: configs.captureImageByteFormat,
+        ),
         outputFormat: configs.outputFormat,
         singleFrame: configs.singleFrame,
         jpegQuality: configs.jpegQuality,
@@ -146,7 +149,10 @@ class ImageConverterService {
       pngFilter: configs.pngFilter,
       pngLevel: configs.pngLevel,
       singleFrame: configs.singleFrame,
-      image: await convertFlutterUiToImage(image),
+      image: await convertFlutterUiToImage(
+        image,
+        imageByteFormat: configs.captureImageByteFormat,
+      ),
     );
   }
 }

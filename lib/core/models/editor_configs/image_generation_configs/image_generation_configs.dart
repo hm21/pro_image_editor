@@ -26,6 +26,7 @@ class ImageGenerationConfigs {
     this.enableBackgroundGeneration = !kIsWeb || !kDebugMode,
     this.enableUseOriginalBytes = true,
     this.singleFrame = false,
+    this.captureImageByteFormat = ImageByteFormat.rawRgba,
     this.customPixelRatio,
     this.jpegQuality = 100,
     this.pngLevel = 6,
@@ -41,7 +42,11 @@ class ImageGenerationConfigs {
         assert(
             pngLevel >= 0 && pngLevel <= 9, 'pngLevel must be between 0 and 9'),
         assert(customPixelRatio == null || customPixelRatio > 0,
-            'customPixelRatio must be greater than 0');
+            'customPixelRatio must be greater than 0'),
+        assert(
+            captureImageByteFormat != ImageByteFormat.png,
+            'ImageByteFormat.png is not supported. '
+            'Use rawRgba or rawStraightRgba instead.');
 
   /// Indicates if it should only capture the background image area and cut all
   /// stuff outside, such as when a layer overlaps the image.
@@ -118,6 +123,21 @@ class ImageGenerationConfigs {
   /// **Default**: `true`
   final bool enableUseOriginalBytes;
 
+  /// The byte format used when capturing images for processing.
+  ///
+  /// Available options:
+  /// - `ImageByteFormat.rawStraightRgba` (default): Non-premultiplied alpha.
+  ///   Prevents black border artifacts around transparent edges. Recommended
+  ///   for PNG output or any format that preserves transparency.
+  /// - `ImageByteFormat.rawRgba`: Premultiplied alpha. May be slightly faster
+  ///   but can cause dark fringing around semi-transparent edges.
+  /// - `ImageByteFormat.png`: Encodes directly to PNG format.
+  /// - `ImageByteFormat.rawExtendedRgba128`: Extended range RGBA.
+  /// - `ImageByteFormat.rawUnmodified`: Platform-specific unmodified format.
+  ///
+  /// **Default**: `ImageByteFormat.rawStraightRgba`
+  final ImageByteFormat captureImageByteFormat;
+
   /// The pixel ratio of the image relative to the content.
   ///
   /// Normally, you do not need to set any value here as the editor detects the
@@ -192,6 +212,7 @@ class ImageGenerationConfigs {
     bool? enableIsolateGeneration,
     bool? allowEmptyEditingCompletion,
     bool? enableUseOriginalBytes,
+    ImageByteFormat? captureImageByteFormat,
     double? customPixelRatio,
     ProcessorConfigs? processorConfigs,
     OutputFormat? outputFormat,
@@ -215,6 +236,8 @@ class ImageGenerationConfigs {
           allowEmptyEditingCompletion ?? this.allowEmptyEditingCompletion,
       enableUseOriginalBytes:
           enableUseOriginalBytes ?? this.enableUseOriginalBytes,
+      captureImageByteFormat:
+          captureImageByteFormat ?? this.captureImageByteFormat,
       customPixelRatio: customPixelRatio ?? this.customPixelRatio,
       processorConfigs: processorConfigs ?? this.processorConfigs,
       outputFormat: outputFormat ?? this.outputFormat,
