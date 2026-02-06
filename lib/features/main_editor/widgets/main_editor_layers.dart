@@ -156,6 +156,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
                       setState(() {});
                     },
                     child: Stack(
+                      clipBehavior: Clip.none,
                       children: [
                         for (Layer layer in widget.activeLayers)
                           _buildLayerWidget(layer)

@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.22.1
+- **FIX**(layers): Resolve issue of layers always being clipped and unable to extend beyond the image editor.
+
 ## 11.22.0
 - **FEAT**(image-generation): Add `captureImageByteFormat` config to `ImageGenerationConfigs` to control the byte format used when capturing images. Defaults to `ImageByteFormat.rawStraightRgba` which prevents black border artifacts around transparent edges when exporting to PNG.
 - **FEAT**(main-editor): Add `enableKeyboardShortcuts` config to `MainEditorConfigs` to optionally disable library-side keyboard shortcuts, allowing apps to implement their own key bindings without conflicts.
