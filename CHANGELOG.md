@@ -1,5 +1,8 @@
 # Changelog
 
+## 11.22.2
+- **FEAT**(helper-lines): Helper line stroke width is now configurable via the configs.
+
 ## 11.22.1
 - **FIX**(layers): Resolve issue of layers always being clipped and unable to extend beyond the image editor.
 

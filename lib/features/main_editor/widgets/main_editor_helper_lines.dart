@@ -46,7 +46,7 @@ class MainEditorHelperLines extends StatelessWidget {
   /// Configuration settings for the editor.
   final ProImageEditorConfigs configs;
 
-  static const double _strokeWidth = 1.25;
+  double get _strokeWidth => helperLines.style.strokeWidth;
   static const int _duration = 100;
 
   bool get _isLayerInRemovalZone => layerInteractionManager.hoverRemoveBtn;
@@ -72,7 +72,7 @@ class MainEditorHelperLines extends StatelessWidget {
                 final screenSize = sizesManager.editorSize;
                 final editorBodySize = sizesManager.bodySize;
 
-                if (configs.helperLines.isDisabledAtZoom && scale > 1) {
+                if (helperLines.isDisabledAtZoom && scale > 1) {
                   return const SizedBox.shrink();
                 }
 
@@ -175,7 +175,7 @@ class MainEditorHelperLines extends StatelessWidget {
 
   List<Widget> _buildLayerAlignLines(double scale, Size screenSize) {
     final editorCenter = sizesManager.bodySize / 2;
-    const halfStroke = _strokeWidth / 2;
+    final halfStroke = _strokeWidth / 2;
 
     final verticalOffset = (editorCenter.width +
             layerInteractionManager.verticalGuideOffset.dx -
