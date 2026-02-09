@@ -139,7 +139,6 @@ class PaintCanvasState extends State<PaintCanvas> {
   static const double _tapDistanceThreshold = 10.0;
 
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
-  bool get _isEraserMode => _paintCtrl.mode == PaintMode.eraser;
   bool get _isFreeStyleMode =>
       _paintCtrl.mode == PaintMode.freeStyle ||
       _paintCtrl.mode == PaintMode.freeStyleArrowStart ||
