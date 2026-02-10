@@ -5,6 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../audio_editor/audio_editor_page.dart';
+import '../audio_editor/models/audio_editor_response.dart';
+import '../audio_editor/widgets/audio_main_bottom_bar.dart';
+import '../clips_editor/models/video_clip_editor_response.dart';
+import '../clips_editor/pages/clips_editor_page.dart';
 import '/core/constants/editor_various_constants.dart';
 import '/core/constants/image_constants.dart';
 import '/core/mixins/converted_configs.dart';
@@ -30,12 +35,6 @@ import '/shared/utils/transparent_image_generator_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 import '/shared/widgets/screen_resize_detector.dart';
-import '../audio_editor/audio_editor_page.dart';
-import '../audio_editor/models/audio_editor_response.dart';
-import '../audio_editor/widgets/audio_main_bottom_bar.dart';
-import '../clips_editor/models/video_clip_editor_response.dart';
-import '../clips_editor/pages/clips_editor_page.dart';
-import '../filter_editor/types/filter_matrix.dart';
 import '../filter_editor/widgets/filter_generator.dart';
 import '../paint_editor/models/paint_editor_response_model.dart';
 import '../paint_editor/widgets/paint_editor_layer_editor.dart';
@@ -411,6 +410,7 @@ class ProImageEditorState extends State<ProImageEditor>
         EditorZoomMixin {
   final _bottomBarKey = GlobalKey();
   final _removeAreaKey = GlobalKey();
+  final _navigatorKey = GlobalKey<NavigatorState>();
   final _backgroundImageColorFilterKey = GlobalKey<ColorFilterGeneratorState>();
   @override
   final interactiveViewer = GlobalKey<ExtendedInteractiveViewerState>();
@@ -1361,23 +1361,31 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// [layerData] - The text layer data to be edited.
   void _onTextLayerTap(TextLayer layerData) async {
-    TextLayer? updatedLayer = await openPage(
-      TextEditor(
-        key: textEditor,
-        layer: _layerCopyManager.copyLayer(layerData) as TextLayer,
-        heroTag: layerData.id,
-        configs: configs,
-        theme: _theme,
-        callbacks: callbacks,
-        scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
-            ? interactiveViewer.currentState?.scaleFactor ?? 1.0
-            : 1.0,
-        imageSize: sizesManager.decodedImageSize,
-      ),
+    final customCallback = mainEditorCallbacks?.onEditTextLayer;
+    TextLayer? updatedLayer;
 
-      /// Small Duration is important for a smooth hero animation
-      duration: const Duration(milliseconds: 250),
-    );
+    if (customCallback != null) {
+      updatedLayer = await customCallback(
+          _layerCopyManager.copyLayer(layerData) as TextLayer);
+    } else {
+      updatedLayer = await openPage(
+        TextEditor(
+          key: textEditor,
+          layer: _layerCopyManager.copyLayer(layerData) as TextLayer,
+          heroTag: layerData.id,
+          configs: configs,
+          theme: _theme,
+          callbacks: callbacks,
+          scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
+              ? interactiveViewer.currentState?.scaleFactor ?? 1.0
+              : 1.0,
+          imageSize: sizesManager.decodedImageSize,
+        ),
+
+        /// Small Duration is important for a smooth hero animation
+        duration: const Duration(milliseconds: 250),
+      );
+    }
 
     if (!mounted || updatedLayer == null) return;
 
@@ -1493,87 +1501,91 @@ class ProImageEditorState extends State<ProImageEditor>
     _pageOpenCompleter = Completer();
 
     final subEditorStyle = mainEditorConfigs.style.subEditorPage;
-    return Navigator.push<T?>(
-      context,
-      PageRouteBuilder(
-        opaque: false,
-        barrierColor: subEditorStyle.barrierColor,
-        barrierDismissible: subEditorStyle.barrierDismissible,
-        transitionDuration: duration,
-        reverseTransitionDuration: duration,
-        transitionsBuilder: subEditorStyle.transitionsBuilder ??
-            (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-        pageBuilder: (context, animation, secondaryAnimation) {
-          void animationStatusListener(AnimationStatus status) {
-            switch (status) {
-              case AnimationStatus.completed:
-                if (cropRotateEditor.currentState != null) {
-                  cropRotateEditor.currentState!.hideFakeHero();
+    var route = PageRouteBuilder<T?>(
+      opaque: false,
+      barrierColor: subEditorStyle.barrierColor,
+      barrierDismissible: subEditorStyle.barrierDismissible,
+      transitionDuration: duration,
+      reverseTransitionDuration: duration,
+      transitionsBuilder: subEditorStyle.transitionsBuilder ??
+          (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        void animationStatusListener(AnimationStatus status) {
+          switch (status) {
+            case AnimationStatus.completed:
+              if (cropRotateEditor.currentState != null) {
+                cropRotateEditor.currentState!.hideFakeHero();
+              }
+              break;
+            case AnimationStatus.dismissed:
+              setState(() {
+                isSubEditorOpen = false;
+                isSubEditorClosing = false;
+                if (!_pageOpenCompleter.isCompleted) {
+                  _pageOpenCompleter.complete(true);
                 }
-                break;
-              case AnimationStatus.dismissed:
-                setState(() {
-                  isSubEditorOpen = false;
-                  isSubEditorClosing = false;
-                  if (!_pageOpenCompleter.isCompleted) {
-                    _pageOpenCompleter.complete(true);
-                  }
 
-                  if (stateManager.heroScreenshotRequired) {
-                    stateManager.heroScreenshotRequired = false;
-                    _takeScreenshot();
-                  }
-                });
+                if (stateManager.heroScreenshotRequired) {
+                  stateManager.heroScreenshotRequired = false;
+                  _takeScreenshot();
+                }
+              });
 
-                animation.removeStatusListener(animationStatusListener);
-                mainEditorCallbacks?.handleEndCloseSubEditor(editorName);
-                break;
-              case AnimationStatus.reverse:
-                isSubEditorClosing = true;
-                mainEditorCallbacks?.handleStartCloseSubEditor(editorName);
+              animation.removeStatusListener(animationStatusListener);
+              mainEditorCallbacks?.handleEndCloseSubEditor(editorName);
+              break;
+            case AnimationStatus.reverse:
+              isSubEditorClosing = true;
+              mainEditorCallbacks?.handleStartCloseSubEditor(editorName);
 
-                break;
-              case AnimationStatus.forward:
-                break;
-            }
+              break;
+            case AnimationStatus.forward:
+              break;
           }
+        }
 
-          animation.addStatusListener(animationStatusListener);
+        animation.addStatusListener(animationStatusListener);
 
-          if (!subEditorStyle.requireReposition) return page;
+        if (!subEditorStyle.requireReposition) return page;
 
-          return SafeArea(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Positioned(
-                  top: subEditorStyle.positionTop,
-                  left: subEditorStyle.positionLeft,
-                  right: subEditorStyle.positionRight,
-                  bottom: subEditorStyle.positionBottom,
-                  child: Center(
-                    child: Container(
-                      width: subEditorStyle.enforceSizeFromMainEditor
-                          ? sizesManager.editorSize.width
-                          : null,
-                      height: subEditorStyle.enforceSizeFromMainEditor
-                          ? sizesManager.editorSize.height
-                          : null,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        borderRadius: subEditorStyle.borderRadius,
-                      ),
-                      child: page,
+        return SafeArea(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned(
+                top: subEditorStyle.positionTop,
+                left: subEditorStyle.positionLeft,
+                right: subEditorStyle.positionRight,
+                bottom: subEditorStyle.positionBottom,
+                child: Center(
+                  child: Container(
+                    width: subEditorStyle.enforceSizeFromMainEditor
+                        ? sizesManager.editorSize.width
+                        : null,
+                    height: subEditorStyle.enforceSizeFromMainEditor
+                        ? sizesManager.editorSize.height
+                        : null,
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      borderRadius: subEditorStyle.borderRadius,
                     ),
+                    child: page,
                   ),
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (mainEditorConfigs.enableSubEditorPage) {
+      return _navigatorKey.currentState!.push<T?>(route);
+    }
+    return Navigator.push<T?>(
+      context,
+      route,
     );
   }
 
@@ -1667,19 +1679,26 @@ class ProImageEditorState extends State<ProImageEditor>
     /// Small Duration is important for a smooth hero animation
     Duration duration = const Duration(milliseconds: 150),
   }) async {
-    TextLayer? layer = await openPage(
-      TextEditor(
-        key: textEditor,
-        configs: configs,
-        theme: _theme,
-        callbacks: callbacks,
-        scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
-            ? interactiveViewer.currentState?.scaleFactor ?? 1.0
-            : 1.0,
-        imageSize: sizesManager.decodedImageSize,
-      ),
-      duration: duration,
-    );
+    final customCallback = mainEditorCallbacks?.onCreateTextLayer;
+    TextLayer? layer;
+
+    if (customCallback != null) {
+      layer = await customCallback();
+    } else {
+      layer = await openPage(
+        TextEditor(
+          key: textEditor,
+          configs: configs,
+          theme: _theme,
+          callbacks: callbacks,
+          scaleFactor: textEditorConfigs.enableMainEditorZoomFactor
+              ? interactiveViewer.currentState?.scaleFactor ?? 1.0
+              : 1.0,
+          imageSize: sizesManager.decodedImageSize,
+        ),
+        duration: duration,
+      );
+    }
 
     if (layer == null || !mounted) return;
 
@@ -2606,10 +2625,17 @@ class ProImageEditorState extends State<ProImageEditor>
     return RecordInvisibleWidget(
       controller: _controllers.screenshot,
       child: ExtendedPopScope(
-        canPop: isPopScopeDisabled ||
-            !stateManager.canUndo ||
-            _isProcessingFinalImage,
+        canPop: (isPopScopeDisabled ||
+                !stateManager.canUndo ||
+                _isProcessingFinalImage) &&
+            (!mainEditorConfigs.enableSubEditorPage || !isSubEditorOpen),
         onPopInvokedWithResult: (didPop, result) {
+          if (mainEditorConfigs.enableSubEditorPage && isSubEditorOpen) {
+            if (_navigatorKey.currentState?.canPop() == true) {
+              _navigatorKey.currentState?.pop();
+              return;
+            }
+          }
           if (!didPop &&
               !isPopScopeDisabled &&
               stateManager.canUndo &&
@@ -2658,7 +2684,7 @@ class ProImageEditorState extends State<ProImageEditor>
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       sizesManager.editorSize = constraints.biggest;
-                      return Scaffold(
+                      var scaffold = Scaffold(
                         backgroundColor: mainEditorConfigs.style.background,
                         resizeToAvoidBottomInset: false,
                         appBar: _buildAppBar(),
@@ -2705,6 +2731,30 @@ class ProImageEditorState extends State<ProImageEditor>
                           },
                         ),
                       );
+
+                      if (mainEditorConfigs.enableSubEditorPage) {
+                        return Stack(
+                          children: [
+                            scaffold,
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                ignoring: !isSubEditorOpen,
+                                child: Navigator(
+                                  key: _navigatorKey,
+                                  onGenerateRoute: (settings) =>
+                                      PageRouteBuilder(
+                                    opaque: false,
+                                    pageBuilder: (context, _, __) =>
+                                        const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return scaffold;
                     },
                   ),
                 ),
@@ -2743,7 +2793,7 @@ class ProImageEditorState extends State<ProImageEditor>
     return LayoutBuilder(builder: (context, constraints) {
       sizesManager.bodySize = constraints.biggest;
       return !_isVideoPlayerReady
-          ? _buildSetupSpinner()
+          ? _buildVideoSetupSpinner()
           : Listener(
               behavior: HitTestBehavior.translucent,
               onPointerDown: (details) {
@@ -2933,16 +2983,17 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
-  Widget _buildSetupSpinner() {
-    return Center(
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: FittedBox(
-          child: PlatformCircularProgressIndicator(configs: configs),
-        ),
-      ),
-    );
+  Widget _buildVideoSetupSpinner() {
+    return configs.videoEditor.widgets.videoSetupLoadingIndicator ??
+        Center(
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: FittedBox(
+              child: PlatformCircularProgressIndicator(configs: configs),
+            ),
+          ),
+        );
   }
 
   Widget _buildImage() {

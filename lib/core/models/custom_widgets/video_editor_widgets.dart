@@ -18,6 +18,7 @@ class VideoEditorWidgets {
     this.trimBar,
     this.headerToolbar,
     this.trimBarSkeletonLoader,
+    this.videoSetupLoadingIndicator,
   });
 
   /// Widget displayed when the video is playing.
@@ -58,6 +59,11 @@ class VideoEditorWidgets {
   /// video thumbnails are loading or processing.
   final Widget? trimBarSkeletonLoader;
 
+  /// A custom widget displayed while the video player is being initialized.
+  ///
+  /// If not provided, a default circular progress indicator is shown.
+  final Widget? videoSetupLoadingIndicator;
+
   /// Creates a copy of this instance with the given parameters overridden.
   VideoEditorWidgets copyWith({
     Widget? playIndicator,
@@ -68,6 +74,7 @@ class VideoEditorWidgets {
     Widget? trimBar,
     Widget? headerToolbar,
     Widget? trimBarSkeletonLoader,
+    Widget? videoSetupLoadingIndicator,
   }) {
     return VideoEditorWidgets(
       playIndicator: playIndicator ?? this.playIndicator,
@@ -79,6 +86,8 @@ class VideoEditorWidgets {
       headerToolbar: headerToolbar ?? this.headerToolbar,
       trimBarSkeletonLoader:
           trimBarSkeletonLoader ?? this.trimBarSkeletonLoader,
+      videoSetupLoadingIndicator:
+          videoSetupLoadingIndicator ?? this.videoSetupLoadingIndicator,
     );
   }
 }

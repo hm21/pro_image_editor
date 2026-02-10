@@ -35,4 +35,13 @@ class KeyboardService {
   bool get isShiftPressed =>
       isKeyPressed(LogicalKeyboardKey.shiftLeft) ||
       isKeyPressed(LogicalKeyboardKey.shiftRight);
+
+  /// Returns `true` if either Alt key is currently pressed.
+  ///
+  /// This includes:
+  /// - [LogicalKeyboardKey.altLeft]
+  /// - [LogicalKeyboardKey.altRight]
+  bool get isAltPressed =>
+      isKeyPressed(LogicalKeyboardKey.altLeft) ||
+      isKeyPressed(LogicalKeyboardKey.altRight);
 }

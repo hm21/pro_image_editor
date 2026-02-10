@@ -14,6 +14,9 @@ class PaintEditorIcons {
     this.bottomNavBar = Icons.edit_outlined,
     this.lineWeight = Icons.line_weight_rounded,
     this.freeStyle = Icons.edit,
+    this.freeStyleArrowStart = Icons.edit,
+    this.freeStyleArrowEnd = Icons.edit,
+    this.freeStyleArrowStartEnd = Icons.edit,
     this.arrow = Icons.arrow_right_alt_outlined,
     this.line = Icons.horizontal_rule,
     this.fill = Icons.format_color_fill,
@@ -59,6 +62,16 @@ class PaintEditorIcons {
 
   /// The icon for the freehand drawing tool.
   final IconData freeStyle;
+
+  /// The icon for the freehand drawing tool with an arrow at the start point.
+  final IconData freeStyleArrowStart;
+
+  /// The icon for the freehand drawing tool with an arrow at the end point.
+  final IconData freeStyleArrowEnd;
+
+  /// The icon for the freehand drawing tool with arrows at both start and end
+  /// points.
+  final IconData freeStyleArrowStartEnd;
 
   /// The icon for the arrow drawing tool.
   final IconData arrow;
@@ -107,16 +120,18 @@ class PaintEditorIcons {
 
   /// Creates a copy of this [PaintEditorIcons] with updated values.
   PaintEditorIcons copyWith({
-    IconData? moveAndZoom,
-    IconData? changeOpacity,
-    IconData? eraser,
     IconData? bottomNavBar,
     IconData? lineWeight,
+    IconData? moveAndZoom,
+    IconData? fill,
+    IconData? changeOpacity,
+    IconData? noFill,
     IconData? freeStyle,
+    IconData? freeStyleArrowStart,
+    IconData? freeStyleArrowEnd,
+    IconData? freeStyleArrowStartEnd,
     IconData? arrow,
     IconData? line,
-    IconData? fill,
-    IconData? noFill,
     IconData? rectangle,
     IconData? circle,
     IconData? dashLine,
@@ -125,22 +140,26 @@ class PaintEditorIcons {
     IconData? polygon,
     IconData? blur,
     IconData? pixelate,
+    IconData? eraser,
     IconData? backButton,
+    IconData? applyChanges,
     IconData? undoAction,
     IconData? redoAction,
-    IconData? applyChanges,
   }) {
     return PaintEditorIcons(
-      moveAndZoom: moveAndZoom ?? this.moveAndZoom,
-      changeOpacity: changeOpacity ?? this.changeOpacity,
-      eraser: eraser ?? this.eraser,
       bottomNavBar: bottomNavBar ?? this.bottomNavBar,
       lineWeight: lineWeight ?? this.lineWeight,
+      moveAndZoom: moveAndZoom ?? this.moveAndZoom,
+      fill: fill ?? this.fill,
+      changeOpacity: changeOpacity ?? this.changeOpacity,
+      noFill: noFill ?? this.noFill,
       freeStyle: freeStyle ?? this.freeStyle,
+      freeStyleArrowStart: freeStyleArrowStart ?? this.freeStyleArrowStart,
+      freeStyleArrowEnd: freeStyleArrowEnd ?? this.freeStyleArrowEnd,
+      freeStyleArrowStartEnd:
+          freeStyleArrowStartEnd ?? this.freeStyleArrowStartEnd,
       arrow: arrow ?? this.arrow,
       line: line ?? this.line,
-      fill: fill ?? this.fill,
-      noFill: noFill ?? this.noFill,
       rectangle: rectangle ?? this.rectangle,
       circle: circle ?? this.circle,
       dashLine: dashLine ?? this.dashLine,
@@ -149,6 +168,7 @@ class PaintEditorIcons {
       polygon: polygon ?? this.polygon,
       blur: blur ?? this.blur,
       pixelate: pixelate ?? this.pixelate,
+      eraser: eraser ?? this.eraser,
       backButton: backButton ?? this.backButton,
       applyChanges: applyChanges ?? this.applyChanges,
       undoAction: undoAction ?? this.undoAction,

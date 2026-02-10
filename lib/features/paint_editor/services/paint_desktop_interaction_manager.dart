@@ -46,7 +46,9 @@ class PaintDesktopInteractionManager {
             _shiftDown = true;
             break;
           case 'Z':
-            if (_ctrlDown) onUndoRedo(!_shiftDown);
+            if (_ctrlDown && !HardwareKeyboard.instance.isAltPressed) {
+              onUndoRedo(!_shiftDown);
+            }
             break;
         }
       } else if (event is KeyUpEvent) {

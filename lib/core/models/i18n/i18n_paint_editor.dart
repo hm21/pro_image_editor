@@ -11,6 +11,9 @@ class I18nPaintEditor {
     this.moveAndZoom = 'Zoom',
     this.bottomNavigationBarText = 'Paint',
     this.freestyle = 'Freestyle',
+    this.freestyleArrowStart = 'Freestyle arrow start',
+    this.freestyleArrowEnd = 'Freestyle arrow end',
+    this.freestyleArrowStartEnd = 'Freestyle arrow start-end',
     this.arrow = 'Arrow',
     this.line = 'Line',
     this.rectangle = 'Rectangle',
@@ -45,6 +48,15 @@ class I18nPaintEditor {
 
   /// Text for the "Freestyle" paint mode.
   final String freestyle;
+
+  /// Text for the "Freestyle arrow start" paint mode.
+  final String freestyleArrowStart;
+
+  /// Text for the "Freestyle arrow end" paint mode.
+  final String freestyleArrowEnd;
+
+  /// Text for the "Freestyle arrow start-end" paint mode.
+  final String freestyleArrowStartEnd;
 
   /// Text for the "Arrow" paint mode.
   final String arrow;
@@ -128,6 +140,9 @@ class I18nPaintEditor {
     String? bottomNavigationBarText,
     String? moveAndZoom,
     String? freestyle,
+    String? freestyleArrowStart,
+    String? freestyleArrowEnd,
+    String? freestyleArrowStartEnd,
     String? arrow,
     String? line,
     String? rectangle,
@@ -158,6 +173,10 @@ class I18nPaintEditor {
           bottomNavigationBarText ?? this.bottomNavigationBarText,
       moveAndZoom: moveAndZoom ?? this.moveAndZoom,
       freestyle: freestyle ?? this.freestyle,
+      freestyleArrowStart: freestyleArrowStart ?? this.freestyleArrowStart,
+      freestyleArrowEnd: freestyleArrowEnd ?? this.freestyleArrowEnd,
+      freestyleArrowStartEnd:
+          freestyleArrowStartEnd ?? this.freestyleArrowStartEnd,
       arrow: arrow ?? this.arrow,
       line: line ?? this.line,
       rectangle: rectangle ?? this.rectangle,

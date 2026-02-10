@@ -7,6 +7,15 @@ enum PaintMode {
   /// Allows freehand drawing.
   freeStyle,
 
+  /// Allows freehand drawing with an arrow at the start point.
+  freeStyleArrowStart,
+
+  /// Allows freehand drawing with an arrow at the end point.
+  freeStyleArrowEnd,
+
+  /// Allows freehand drawing with arrows at both start and end points.
+  freeStyleArrowStartEnd,
+
   /// Draws a straight line between two points.
   line,
 
@@ -38,7 +47,17 @@ enum PaintMode {
   blur,
 
   /// Creates an area that will pixelate the background.
-  pixelate,
+  pixelate;
+
+  /// Returns `true` if this mode is any of the freehand drawing modes.
+  ///
+  /// This includes [freeStyle], [freeStyleArrowStart], [freeStyleArrowEnd],
+  /// and [freeStyleArrowStartEnd].
+  bool get isFreeStyleMode =>
+      this == PaintMode.freeStyle ||
+      this == PaintMode.freeStyleArrowStart ||
+      this == PaintMode.freeStyleArrowEnd ||
+      this == PaintMode.freeStyleArrowStartEnd;
 }
 
 /// Defines the available erasing modes.

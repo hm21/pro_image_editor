@@ -352,6 +352,8 @@ class TextEditorState extends State<TextEditor>
               left: textEditorConfigs.safeArea.left,
               right: textEditorConfigs.safeArea.right,
               child: Scaffold(
+                resizeToAvoidBottomInset:
+                    textEditorConfigs.resizeToAvoidBottomInset,
                 backgroundColor: textEditorConfigs.style.background,
                 appBar: _buildAppBar(constraints),
                 body: _buildBody(),
@@ -429,6 +431,11 @@ class TextEditorState extends State<TextEditor>
                   selectedStyle: selectedTextStyle,
                   onFontChange: setTextStyle,
                 ),
+              ),
+            if (textEditorConfigs.widgets.bodyItemsOverlay != null)
+              ...textEditorConfigs.widgets.bodyItemsOverlay!(
+                this,
+                _rebuildController.stream,
               ),
           ],
         ),

@@ -4,6 +4,52 @@
 - **FEAT**(audio-editor): Added a new Audio Editor to the Video Editor, allowing users to add background music. Users can set the audio start time and adjust the balance between the original and overlay tracks.
 - **FEAT**(clips-editor): Introduced a new Clips Editor that lets users combine multiple video clips into a single merged video.
 
+## 11.22.2
+- **FEAT**(helper-lines): Helper line stroke width is now configurable via the configs.
+- **FIX**(paint-editor): Fix drawing latency with the Apple Pencil.
+
+## 11.22.1
+- **FIX**(layers): Resolve issue of layers always being clipped and unable to extend beyond the image editor.
+
+## 11.22.0
+- **FEAT**(image-generation): Add `captureImageByteFormat` config to `ImageGenerationConfigs` to control the byte format used when capturing images. Defaults to `ImageByteFormat.rawStraightRgba` which prevents black border artifacts around transparent edges when exporting to PNG.
+- **FEAT**(main-editor): Add `enableKeyboardShortcuts` config to `MainEditorConfigs` to optionally disable library-side keyboard shortcuts, allowing apps to implement their own key bindings without conflicts.
+
+## 11.21.3
+- **FEAT**(video-editor): Add `videoSetupLoadingIndicator` widget to `VideoEditorWidgets` to allow customizing the loading indicator shown while the video player is initializing.
+
+## 11.21.2
+- **FEAT**(video-editor): Add `showControls` config to `VideoEditorConfigs` to allow hiding the video editor controls UI.
+
+## 11.21.1
+- **FEAT**(text-editor): Add `resizeToAvoidBottomInset` config to control whether the editor resizes when the keyboard appears.
+- **FIX**(paint-editor): Resolve issue where erasing would randomly remove other layers.
+
+## 11.21.0
+- **FIX**(keyboard-shortcuts): Block Ctrl-based shortcuts when Alt is pressed to prevent conflicts with keyboard layouts (e.g., Polish) where Ctrl+Alt+Z is used for typing characters. More details in PR [#757](https://github.com/hm21/pro_image_editor/pull/757).
+
+## 11.20.1
+- **FIX**: Resolve issue where DeferPointer shows an error when the hero animations is running for the text layers from the custom screens.
+
+## 11.20.0
+- **FEAT**(main-editor): Add the flag `enableSubEditorPage` which allows sub-editors to be opened with the same constraints as the editor itself. More details in PR [#752](https://github.com/hm21/pro_image_editor/pull/752).
+
+## 11.19.1
+- **FEAT**(main-editor): Add `onEditTextLayer` callback to `MainEditorCallbacks`, allowing users to open a custom text editor when a text layer is tapped.
+- **FEAT**(main-editor): Add `onCreateTextLayer` callback to `MainEditorCallbacks`, allowing users to open a custom text editor when creating a new text layer.
+- **FEAT**(text-editor): Add `bodyItemsOverlay` to `TextEditorWidgets` for placing custom widgets above all other content in the text editor body.
+- **FEAT**(text-editor): Add `textFieldPadding` to `TextEditorStyle` for applying padding outside the scroll area of the text field.
+
+## 11.19.0
+- **FEAT**(CompleteParameters): Add serialization methods (`toMap`, `fromMap`, `toJson`, `fromJson`).
+
+## 11.18.3
+- **FEAT**(paint-editor): Add freestyle arrow modes (`freeStyleArrowStart`, `freeStyleArrowEnd`, `freeStyleArrowStartEnd`) to draw freehand paths with arrowheads at the start, end, or both ends.
+
+## 11.18.2
+- **FEAT**(EditorSafeArea): Add convenience constructors `none`, `symmetric`, and `fromLTRB` for easier safe area configuration.
+- **FIX**(HelperLines): Resolves the issue of horizontal lines not showing up when the editor overflows the screen.
+
 ## 11.18.1
 - **FIX**(filter-editor): Ensure that the applied filters can also be removed.
 

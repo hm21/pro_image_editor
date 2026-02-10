@@ -26,7 +26,6 @@ import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
-import '../filter_editor/widgets/filtered_widget.dart';
 import '../main_editor/services/layer_copy_manager.dart';
 import 'controllers/paint_controller.dart';
 import 'models/paint_editor_response_model.dart';
@@ -362,6 +361,21 @@ class PaintEditorState extends State<PaintEditor>
           return PaintModeHelper(
             icon: paintEditorConfigs.icons.freeStyle,
             label: i18n.paintEditor.freestyle,
+          );
+        case PaintMode.freeStyleArrowStart:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.freeStyleArrowStart,
+            label: i18n.paintEditor.freestyleArrowStart,
+          );
+        case PaintMode.freeStyleArrowEnd:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.freeStyleArrowEnd,
+            label: i18n.paintEditor.freestyleArrowEnd,
+          );
+        case PaintMode.freeStyleArrowStartEnd:
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.freeStyleArrowStartEnd,
+            label: i18n.paintEditor.freestyleArrowStartEnd,
           );
 
         case PaintMode.arrow:
@@ -733,7 +747,7 @@ class PaintEditorState extends State<PaintEditor>
 
     Size size = layerRect.size;
 
-    bool onlyStrokeMode = rawLayer.mode == PaintMode.freeStyle ||
+    bool onlyStrokeMode = rawLayer.mode.isFreeStyleMode ||
         rawLayer.mode == PaintMode.line ||
         rawLayer.mode == PaintMode.dashLine ||
         rawLayer.mode == PaintMode.dashDotLine ||
@@ -1105,9 +1119,8 @@ class PaintEditorState extends State<PaintEditor>
       onRemovePartialStart: () {
         LayerCopyManager copyManager = LayerCopyManager();
 
-        final updatedList =
-            activeHistory.layers.whereType<PaintLayer>().map((layer) {
-          return copyManager.createCopyPaintLayer(layer);
+        final updatedList = activeHistory.layers.map((layer) {
+          return copyManager.copyLayer(layer);
         });
 
         while (canRedo) {

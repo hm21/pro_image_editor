@@ -441,7 +441,10 @@ class ContentRecorderController {
   }) async {
     return ThreadRequest(
       id: id,
-      image: await convertFlutterUiToImage(image),
+      image: await convertFlutterUiToImage(
+        image,
+        imageByteFormat: _configs.captureImageByteFormat,
+      ),
       outputFormat: _configs.outputFormat,
       singleFrame: _configs.singleFrame,
       jpegQuality: _configs.jpegQuality,

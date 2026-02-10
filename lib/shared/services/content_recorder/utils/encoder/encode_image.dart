@@ -115,6 +115,6 @@ Future<Uint8List> encodeImageFromThreadRequest(ThreadRequest threadRequest) {
     jpegChroma: threadRequest.jpegChroma,
     pngFilter: threadRequest.pngFilter,
     pngLevel: threadRequest.pngLevel,
-    jpegBackgroundColor: threadRequest.jpegQuality,
+    jpegBackgroundColor: threadRequest.jpegBackgroundColor,
   );
 }

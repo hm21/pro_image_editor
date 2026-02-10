@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:pro_image_editor/core/models/init_configs/filter_editor_init_configs.dart';
 import 'package:pro_image_editor/features/filter_editor/filter_editor.dart';
-import 'package:pro_image_editor/features/filter_editor/widgets/filtered_widget.dart';
 
 // Project imports:
 import '../mock/mock_image.dart';

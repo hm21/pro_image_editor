@@ -65,7 +65,8 @@ class TextEditorConfigs
       this.style = const TextEditorStyle(),
       this.icons = const TextEditorIcons(),
       this.widgets = const TextEditorWidgets(),
-      this.enableImageBoundaryTextWrap = false})
+      this.enableImageBoundaryTextWrap = false,
+      this.resizeToAvoidBottomInset = true})
       : assert(initFontSize > 0, 'initFontSize must be positive'),
         assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale');
@@ -200,6 +201,13 @@ class TextEditorConfigs
   /// Enable automatic text wrapping when text reach the image boundaries
   final bool enableImageBoundaryTextWrap;
 
+  /// Whether the Scaffold should resize to avoid the bottom inset (keyboard).
+  ///
+  /// When `true` (default), the editor will resize when the keyboard appears.
+  /// When `false`, the editor will not resize and the keyboard may overlap
+  /// the content.
+  final bool resizeToAvoidBottomInset;
+
   /// Creates a copy of this `TextEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -238,6 +246,7 @@ class TextEditorConfigs
     bool? showBackgroundModeButton,
     bool? showFontScaleButton,
     bool? showTextAlignButton,
+    bool? resizeToAvoidBottomInset,
   }) {
     return TextEditorConfigs(
       layerFractionalOffset:
@@ -280,6 +289,8 @@ class TextEditorConfigs
           showBackgroundModeButton ?? this.showBackgroundModeButton,
       showFontScaleButton: showFontScaleButton ?? this.showFontScaleButton,
       showTextAlignButton: showTextAlignButton ?? this.showTextAlignButton,
+      resizeToAvoidBottomInset:
+          resizeToAvoidBottomInset ?? this.resizeToAvoidBottomInset,
     );
   }
 }
