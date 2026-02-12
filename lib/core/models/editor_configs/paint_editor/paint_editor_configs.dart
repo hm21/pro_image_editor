@@ -3,6 +3,7 @@
 import 'package:flutter/widgets.dart';
 
 import '/features/paint_editor/enums/paint_editor_enum.dart';
+import '/features/paint_editor/models/path_builder/custom_path_builder.dart';
 import '../../custom_widgets/paint_editor_widgets.dart';
 import '../../icons/paint_editor_icons.dart';
 import '../../styles/paint_editor_style.dart';
@@ -12,6 +13,8 @@ import '../utils/editor_safe_area.dart';
 import '../utils/zoom_configs.dart';
 import 'censor_configs.dart';
 
+export '/features/paint_editor/models/path_builder/custom_path_builder.dart';
+export '/features/paint_editor/models/path_builder/path_builder_base.dart';
 export '../../custom_widgets/paint_editor_widgets.dart';
 export '../../icons/paint_editor_icons.dart';
 export '../../styles/paint_editor_style.dart';
@@ -108,6 +111,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.style = const PaintEditorStyle(),
     this.icons = const PaintEditorIcons(),
     this.widgets = const PaintEditorWidgets(),
+    this.customPathBuilders = const {},
   })  : assert(maxScale >= minScale,
             'maxScale must be greater than or equal to minScale'),
         assert(editorMaxScale > editorMinScale,
@@ -321,6 +325,31 @@ class PaintEditorConfigs extends ZoomConfigs
   /// Widgets associated with the paint editor.
   final PaintEditorWidgets widgets;
 
+  /// A map of custom path builders for specific paint modes.
+  ///
+  /// Users can provide their own [PathBuilderBase] implementations to
+  /// override the default behavior of existing paint modes or to create
+  /// custom drawing tools with unique rendering logic.
+  ///
+  /// Example:
+  /// ```dart
+  /// PaintEditorConfigs(
+  ///   customPathBuilders: {
+  ///     PaintMode.arrow: ({
+  ///       required item,
+  ///       required scale,
+  ///       required paintEditorConfigs,
+  ///     }) =>
+  ///         MyCustomArrowBuilder(
+  ///           item: item,
+  ///           scale: scale,
+  ///           paintEditorConfigs: paintEditorConfigs,
+  ///         ),
+  ///   },
+  /// )
+  /// ```
+  final Map<PaintMode, CustomPathBuilderFactory> customPathBuilders;
+
   /// Creates a copy of this `PaintEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -389,6 +418,7 @@ class PaintEditorConfigs extends ZoomConfigs
     double? dashLineWidthFactor,
     double? dashDotLineSpacingFactor,
     double? dashDotLineWidthFactor,
+    Map<PaintMode, CustomPathBuilderFactory>? customPathBuilders,
   }) {
     return PaintEditorConfigs(
       layerFractionalOffset:
@@ -452,6 +482,7 @@ class PaintEditorConfigs extends ZoomConfigs
           dashDotLineSpacingFactor ?? this.dashDotLineSpacingFactor,
       dashDotLineWidthFactor:
           dashDotLineWidthFactor ?? this.dashDotLineWidthFactor,
+      customPathBuilders: customPathBuilders ?? this.customPathBuilders,
     );
   }
 }

@@ -47,7 +47,22 @@ enum PaintMode {
   blur,
 
   /// Creates an area that will pixelate the background.
-  pixelate;
+  pixelate,
+
+  /// Custom paint mode 1 - requires a custom path builder to be registered.
+  ///
+  /// Use [PaintEditorConfigs.customPathBuilders] to provide the implementation.
+  custom1,
+
+  /// Custom paint mode 2 - requires a custom path builder to be registered.
+  ///
+  /// Use [PaintEditorConfigs.customPathBuilders] to provide the implementation.
+  custom2,
+
+  /// Custom paint mode 3 - requires a custom path builder to be registered.
+  ///
+  /// Use [PaintEditorConfigs.customPathBuilders] to provide the implementation.
+  custom3;
 
   /// Returns `true` if this mode is any of the freehand drawing modes.
   ///

@@ -12,7 +12,6 @@ import '/shared/widgets/censor/pixelate_area_item.dart';
 import '../controllers/paint_controller.dart';
 import '../enums/paint_editor_enum.dart';
 import '../models/eraser_model.dart';
-import '../models/painted_model.dart';
 import '../services/paint_item_hit_test_manager.dart';
 import 'draw_paint_item.dart';
 

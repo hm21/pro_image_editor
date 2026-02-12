@@ -465,6 +465,36 @@ class PaintEditorState extends State<PaintEditor>
             icon: paintEditorConfigs.icons.moveAndZoom,
             label: i18n.paintEditor.moveAndZoom,
           );
+
+        case PaintMode.custom1:
+          if (!paintEditorConfigs.customPathBuilders
+              .containsKey(PaintMode.custom1)) {
+            return null;
+          }
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.custom1,
+            label: i18n.paintEditor.custom1,
+          );
+
+        case PaintMode.custom2:
+          if (!paintEditorConfigs.customPathBuilders
+              .containsKey(PaintMode.custom2)) {
+            return null;
+          }
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.custom2,
+            label: i18n.paintEditor.custom2,
+          );
+
+        case PaintMode.custom3:
+          if (!paintEditorConfigs.customPathBuilders
+              .containsKey(PaintMode.custom3)) {
+            return null;
+          }
+          return PaintModeHelper(
+            icon: paintEditorConfigs.icons.custom3,
+            label: i18n.paintEditor.custom3,
+          );
       }
     }
 
