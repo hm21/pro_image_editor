@@ -47,7 +47,8 @@ class PathBuilderFreestyle extends PathBuilderBase {
 
     // Add arrowheads if needed
     if (hasArrowStart || hasArrowEnd) {
-      final pathOffset = 1.0 * scale;
+      // Scale arrow size based on strokeWidth for consistent proportions
+      final strokeFactor = painter.strokeWidth / 2;
       // Minimum distance for stable direction calculation
       final minDistance = 20.0 * scale;
 
@@ -55,7 +56,7 @@ class PathBuilderFreestyle extends PathBuilderBase {
         final (startPoint, directionPoint) =
             _findPointsWithMinDistance(scaled, minDistance, fromStart: true);
         if (startPoint != null && directionPoint != null) {
-          _addArrowHead(startPoint, directionPoint, pathOffset);
+          _addArrowHead(startPoint, directionPoint, strokeFactor);
         }
       }
 
@@ -63,7 +64,7 @@ class PathBuilderFreestyle extends PathBuilderBase {
         final (endPoint, directionPoint) =
             _findPointsWithMinDistance(scaled, minDistance, fromStart: false);
         if (endPoint != null && directionPoint != null) {
-          _addArrowHead(endPoint, directionPoint, pathOffset);
+          _addArrowHead(endPoint, directionPoint, strokeFactor);
         }
       }
     }
@@ -132,12 +133,13 @@ class PathBuilderFreestyle extends PathBuilderBase {
 
   /// Adds an arrowhead at [anchorPoint] pointing away from [directionPoint].
   void _addArrowHead(
-      Offset anchorPoint, Offset directionPoint, double pathOffset) {
+      Offset anchorPoint, Offset directionPoint, double strokeFactor) {
     // Open arrowhead (two lines instead of closed triangle)
+    // Size is proportional to strokeWidth for consistent look
     final arrowHead = Path()
-      ..moveTo(-20 * pathOffset, 20 * pathOffset)
+      ..moveTo(-4 * strokeFactor, 4 * strokeFactor)
       ..lineTo(0, 0)
-      ..lineTo(-20 * pathOffset, -20 * pathOffset);
+      ..lineTo(-4 * strokeFactor, -4 * strokeFactor);
 
     // Direction points from directionPoint to anchorPoint
     final direction = (anchorPoint - directionPoint).direction;

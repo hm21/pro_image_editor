@@ -19,11 +19,12 @@ class PathBuilderArrow extends PathBuilderBase {
       ..lineTo(end.dx, end.dy);
 
     // Define the arrowhead (before transformation)
-    final pathOffset = 1.0 * scale; // this can be adjusted based on strokeWidth
+    // Scale arrow size based on strokeWidth for consistent proportions
+    final strokeFactor = painter.strokeWidth / 2;
     final arrowHead = Path()
       ..moveTo(0, 0)
-      ..lineTo(-15 * pathOffset, 10 * pathOffset)
-      ..lineTo(-15 * pathOffset, -10 * pathOffset)
+      ..lineTo(-3 * strokeFactor, 2 * strokeFactor)
+      ..lineTo(-3 * strokeFactor, -2 * strokeFactor)
       ..close();
 
     // Create transform to rotate + translate the arrowhead to the end point
