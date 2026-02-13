@@ -36,11 +36,11 @@ class VideoEditorConfigs {
     this.trimBarMinScale = 1,
     this.trimBarMaxScale = 3,
     this.playTimeSmoothingDuration = Duration.zero,
-  }) : assert(trimBarMinScale > 0, 'trimBarMinScale must be greater than 0'),
-       assert(
-         trimBarMaxScale > trimBarMinScale,
-         'trimBarMaxScale must be greater than trimBarMinScale',
-       );
+  })  : assert(trimBarMinScale > 0, 'trimBarMinScale must be greater than 0'),
+        assert(
+          trimBarMaxScale > trimBarMinScale,
+          'trimBarMaxScale must be greater than trimBarMinScale',
+        );
 
   /// Configurable icons for the video editor.
   final VideoEditorIcons icons;
@@ -169,8 +169,7 @@ class VideoEditorConfigs {
           animatedIndicatorDuration ?? this.animatedIndicatorDuration,
       animatedIndicatorSwitchInCurve:
           animatedIndicatorSwitchInCurve ?? this.animatedIndicatorSwitchInCurve,
-      animatedIndicatorSwitchOutCurve:
-          animatedIndicatorSwitchOutCurve ??
+      animatedIndicatorSwitchOutCurve: animatedIndicatorSwitchOutCurve ??
           this.animatedIndicatorSwitchOutCurve,
     );
   }
