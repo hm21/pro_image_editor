@@ -1,4 +1,4 @@
-// ignore_for_file: lines_longer_than_80_chars, deprecated_member_use_from_same_package
+// ignore_for_file: lines_longer_than_80_chars
 
 import 'dart:math' as math;
 

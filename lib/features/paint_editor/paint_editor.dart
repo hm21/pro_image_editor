@@ -836,12 +836,6 @@ class PaintEditorState extends State<PaintEditor>
     setState(() {});
   }
 
-  /// Handles changes in the selected color.
-  @Deprecated('Use [setColor] instead')
-  void colorChanged(Color color) {
-    setColor(color);
-  }
-
   /// Sets the current color for the paint editor.
   ///
   /// This method updates the color in the paint controller, triggers the
