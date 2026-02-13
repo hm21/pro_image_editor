@@ -24,6 +24,9 @@ class I18nPaintEditor {
     this.polygon = 'Polygon',
     this.blur = 'Blur',
     this.pixelate = 'Pixelate',
+    this.custom1 = 'Custom 1',
+    this.custom2 = 'Custom 2',
+    this.custom3 = 'Custom 3',
     this.lineWidth = 'Line width',
     this.eraser = 'Eraser',
     this.toggleFill = 'Toggle fill',
@@ -87,6 +90,15 @@ class I18nPaintEditor {
 
   /// Text for the "Pixelate" paint mode.
   final String pixelate;
+
+  /// Text for the "Custom 1" paint mode.
+  final String custom1;
+
+  /// Text for the "Custom 2" paint mode.
+  final String custom2;
+
+  /// Text for the "Custom 3" paint mode.
+  final String custom3;
 
   /// Text for the "Eraser" paint mode.
   final String eraser;
@@ -153,6 +165,9 @@ class I18nPaintEditor {
     String? polygon,
     String? blur,
     String? pixelate,
+    String? custom1,
+    String? custom2,
+    String? custom3,
     String? eraser,
     String? lineWidth,
     String? toggleFill,
@@ -187,6 +202,9 @@ class I18nPaintEditor {
       polygon: polygon ?? this.polygon,
       blur: blur ?? this.blur,
       pixelate: pixelate ?? this.pixelate,
+      custom1: custom1 ?? this.custom1,
+      custom2: custom2 ?? this.custom2,
+      custom3: custom3 ?? this.custom3,
       eraser: eraser ?? this.eraser,
       lineWidth: lineWidth ?? this.lineWidth,
       toggleFill: toggleFill ?? this.toggleFill,

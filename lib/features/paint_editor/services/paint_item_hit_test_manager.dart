@@ -2,8 +2,6 @@ import 'dart:ui';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../enums/paint_editor_enum.dart';
-import '../models/painted_model.dart';
-import '../models/path_builder/path_builder_base.dart';
 
 /// A manager class responsible for handling hit testing of paint items
 /// within the paint editor feature. This class provides functionality

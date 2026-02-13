@@ -28,6 +28,9 @@ class PaintEditorIcons {
     this.hexagon = Icons.hexagon_outlined,
     this.polygon = Icons.pentagon_outlined,
     this.pixelate = Icons.grid_on,
+    this.custom1 = Icons.bug_report_outlined,
+    this.custom2 = Icons.bug_report_outlined,
+    this.custom3 = Icons.bug_report_outlined,
     this.blur = Icons.blur_on_rounded,
     this.applyChanges = Icons.done,
     this.backButton = Icons.arrow_back,
@@ -103,6 +106,15 @@ class PaintEditorIcons {
   /// The icon for the pixelate drawing tool.
   final IconData pixelate;
 
+  /// The icon for the custom1 drawing tool.
+  final IconData custom1;
+
+  /// The icon for the custom2 drawing tool.
+  final IconData custom2;
+
+  /// The icon for the custom3 drawing tool.
+  final IconData custom3;
+
   /// The icon for the eraser tool.
   final IconData eraser;
 
@@ -140,6 +152,9 @@ class PaintEditorIcons {
     IconData? polygon,
     IconData? blur,
     IconData? pixelate,
+    IconData? custom1,
+    IconData? custom2,
+    IconData? custom3,
     IconData? eraser,
     IconData? backButton,
     IconData? applyChanges,
@@ -168,6 +183,9 @@ class PaintEditorIcons {
       polygon: polygon ?? this.polygon,
       blur: blur ?? this.blur,
       pixelate: pixelate ?? this.pixelate,
+      custom1: custom1 ?? this.custom1,
+      custom2: custom2 ?? this.custom2,
+      custom3: custom3 ?? this.custom3,
       eraser: eraser ?? this.eraser,
       backButton: backButton ?? this.backButton,
       applyChanges: applyChanges ?? this.applyChanges,

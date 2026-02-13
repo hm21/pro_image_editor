@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '/features/ai/ai_group_page.dart';
 import '/features/crop_to_main_editor.dart';
+import '/features/custom_path_builder_example.dart';
 import '/features/custom_widgets_example.dart';
 import '/features/default_example.dart';
 import '/features/design_examples/design_example.dart';
@@ -77,6 +78,12 @@ List<Example> kImageEditorExamples = const [
     name: 'Signature/ Drawing',
     icon: Icons.draw_outlined,
     page: SignatureDrawingExample(),
+  ),
+  Example(
+    path: '/custom-path-builder',
+    name: 'Custom Path Builder',
+    icon: Icons.brush_outlined,
+    page: CustomPathBuilderExample(),
   ),
   Example(
     path: '/stickers',

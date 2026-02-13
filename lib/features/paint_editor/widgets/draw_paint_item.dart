@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
-import '../models/painted_model.dart';
-import '../models/path_builder/path_builder_base.dart';
 import '../services/paint_item_hit_test_manager.dart';
 
 /// Handles the paint ongoing on the canvas.

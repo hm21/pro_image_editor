@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../../enums/paint_editor_enum.dart';
-import '../painted_model.dart';
 import 'path_builder_arrow.dart';
 import 'path_builder_circle.dart';
 import 'path_builder_dash_dot_line.dart';
@@ -25,12 +24,25 @@ abstract class PathBuilderBase {
           ..style = item.paint.style
           ..strokeWidth = item.paint.strokeWidth * scale;
 
-  /// Factory that returns the appropriate PathBuilder for a given PaintMode
+  /// Factory that returns the appropriate PathBuilder for a given PaintMode.
+  ///
+  /// If a custom path builder is registered in [paintEditorConfigs] for the
+  /// given mode, it will be used instead of the default implementation.
   factory PathBuilderBase.fromMode({
     required PaintedModel item,
     required double scale,
     required PaintEditorConfigs paintEditorConfigs,
   }) {
+    // Check for custom path builder first
+    final customBuilder = paintEditorConfigs.customPathBuilders[item.mode];
+    if (customBuilder != null) {
+      return customBuilder(
+        item: item,
+        scale: scale,
+        paintEditorConfigs: paintEditorConfigs,
+      );
+    }
+
     switch (item.mode) {
       case PaintMode.line:
         return PathBuilderLine(
@@ -96,6 +108,13 @@ abstract class PathBuilderBase {
       case PaintMode.blur:
       case PaintMode.pixelate:
         throw ArgumentError('${item.mode} is not a valid PaintMode');
+      case PaintMode.custom1:
+      case PaintMode.custom2:
+      case PaintMode.custom3:
+        throw ArgumentError(
+          '${item.mode} requires a custom path builder. '
+          'Register one via PaintEditorConfigs.customPathBuilders.',
+        );
     }
   }
 
