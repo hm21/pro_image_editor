@@ -20,7 +20,7 @@ class ClipsEditorAppBar extends StatelessWidget implements PreferredSizeWidget {
   final I18nClipsEditor i18n;
 
   /// Callback invoked when the close button is pressed.
-  final Function() onClose;
+  final Function()? onClose;
 
   /// Callback invoked when the done button is pressed, if available.
   final Function()? onDone;

@@ -585,6 +585,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void initState() {
     super.initState();
     initializeVideoEditor();
+    _videoController?.resolutionNotifier.addListener(_onVideoResolutionChanged);
 
     _rebuildController = StreamController.broadcast();
     _controllers = MainEditorControllers(configs, callbacks, _isVideoEditor);
@@ -632,6 +633,8 @@ class ProImageEditorState extends State<ProImageEditor>
 
   @override
   void dispose() {
+    _videoController?.resolutionNotifier
+        .removeListener(_onVideoResolutionChanged);
     _rebuildController.close();
     _controllers.dispose();
     _audioBottomBarNotifier.dispose();
@@ -929,6 +932,22 @@ class ProImageEditorState extends State<ProImageEditor>
     await decodeImage();
     _isVideoPlayerReady = true;
     setState(() {});
+  }
+
+  /// Called when the video resolution changes (e.g., after merging clips).
+  void _onVideoResolutionChanged() {
+    final newSize = _videoController!.initialResolution;
+    _imageInfos = ImageInfos(
+      rawSize: newSize,
+      renderedSize: newSize,
+      originalRenderedSize: newSize,
+      cropRectSize: newSize,
+      pixelRatio: newSize.width / sizesManager.editorSize.width,
+      isRotated: false,
+    );
+    sizesManager.originalImageSize = newSize;
+    sizesManager.decodedImageSize = newSize;
+    if (mounted) setState(() {});
   }
 
   void _initializeWithTransformations() {

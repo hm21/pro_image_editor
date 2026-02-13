@@ -40,6 +40,15 @@ typedef ClipsEditorEditBottomBarBuilder = ReactiveWidget? Function(
   Stream<void> rebuildStream,
 );
 
+/// Builder signature for creating a custom processing overlay widget.
+///
+/// Displayed when video clips are being merged. The [progress] value
+/// ranges from 0.0 to 1.0 indicating the merge progress.
+typedef ClipsEditorProcessingOverlayBuilder = Widget Function(
+  ClipsEditorPageState editorState,
+  double progress,
+);
+
 /// A collection of customizable widgets used in the clips editor UI.
 ///
 /// Provides optional builders for the app bar, bottom bar, and
@@ -52,6 +61,7 @@ class ClipsEditorWidgets {
     this.addVideoClipButton,
     this.editClipAppBar,
     this.editClipBottomBar,
+    this.processingOverlay,
     this.bodyItems,
     this.editPageBodyItems,
   });
@@ -83,6 +93,12 @@ class ClipsEditorWidgets {
   /// to rebuild the bottom bar UI when editing individual clips.
   final ClipsEditorEditBottomBarBuilder? editClipBottomBar;
 
+  /// Builder for a custom processing overlay shown during clip merging.
+  ///
+  /// If provided, replaces the default progress indicator overlay.
+  /// The [progress] parameter indicates the merge progress (0.0 to 1.0).
+  final ClipsEditorProcessingOverlayBuilder? processingOverlay;
+
   /// {@macro customBodyItem}
   final CustomBodyItems<ClipsEditorPageState>? bodyItems;
 
@@ -96,6 +112,7 @@ class ClipsEditorWidgets {
     ClipsEditorAddClipButton? addVideoClipButton,
     ClipsEditorEditAppBarBuilder? editClipAppBar,
     ClipsEditorEditBottomBarBuilder? editClipBottomBar,
+    ClipsEditorProcessingOverlayBuilder? processingOverlay,
     CustomBodyItems<ClipsEditorPageState>? bodyItems,
     CustomBodyItems<ClipsEditorEditPageState>? editPageBodyItems,
   }) {
@@ -105,6 +122,7 @@ class ClipsEditorWidgets {
       addVideoClipButton: addVideoClipButton ?? this.addVideoClipButton,
       editClipAppBar: editClipAppBar ?? this.editClipAppBar,
       editClipBottomBar: editClipBottomBar ?? this.editClipBottomBar,
+      processingOverlay: processingOverlay ?? this.processingOverlay,
       bodyItems: bodyItems ?? this.bodyItems,
       editPageBodyItems: editPageBodyItems ?? this.editPageBodyItems,
     );

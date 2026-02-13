@@ -59,6 +59,8 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
           .map((el) => el.copyWith())
           .toList();
 
+  bool _isProcessing = false;
+  double _progress = 0.0;
   double _pageFadeOpacity = 0.0;
   final Duration _pageFadeDuration = const Duration(milliseconds: 200);
 
@@ -136,7 +138,7 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
 
   /// Closes the editor without returning a selected track.
   Future<void> close() async {
-    if (_pageFadeOpacity != 1) return;
+    if (_pageFadeOpacity != 1 || _isProcessing) return;
     await _animatedPageLeave();
 
     if (mounted) Navigator.pop(context);
@@ -146,14 +148,27 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
 
   /// Closes the editor and returns the currently selected track.
   Future<void> done() async {
-    if (_pageFadeOpacity != 1) return;
+    if (_pageFadeOpacity != 1 || _isProcessing) return;
 
     final originalClips =
         widget.initialClips ?? widget.configs.clipsEditor.clips;
 
     /// Merge the video clips when the user changed something
     if (!listEquals(originalClips, _videoClips)) {
-      await callbacks.clipsEditorCallbacks?.onMergeClips?.call(_videoClips);
+      setState(() {
+        _isProcessing = true;
+        _progress = 0.0;
+      });
+      try {
+        await callbacks.clipsEditorCallbacks?.onMergeClips?.call(
+          _videoClips,
+          (progress) {
+            if (mounted) setState(() => _progress = progress);
+          },
+        );
+      } finally {
+        if (mounted) setState(() => _isProcessing = false);
+      }
       if (!mounted) return;
     }
 
@@ -218,8 +233,8 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
       builder: (context) => ClipsEditorAppBar(
         configs: clipsEditorConfigs,
         i18n: i18n.clipsEditor,
-        onClose: close,
-        onDone: _videoClips.isNotEmpty ? done : null,
+        onClose: _isProcessing ? null : close,
+        onDone: _videoClips.isNotEmpty && !_isProcessing ? done : null,
       ),
       stream: _rebuildController.stream,
     );
@@ -278,6 +293,48 @@ class ClipsEditorPageState extends State<ClipsEditorPage>
               _rebuildController.stream,
             ) ??
             []),
+        if (_isProcessing)
+          clipsEditorConfigs.widgets.processingOverlay?.call(this, _progress) ??
+              Container(
+                color: Colors.black54,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: clipsEditorConfigs.style.background,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: _progress),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                      builder: (context, animatedProgress, _) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 16,
+                          children: [
+                            SizedBox(
+                              width: 200,
+                              child: LinearProgressIndicator(
+                                  value: animatedProgress),
+                            ),
+                            Text(
+                              '${i18n.clipsEditor.processingClips} '
+                              '${(animatedProgress * 100).toInt()}%',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontFeatures: [
+                                const FontFeature.tabularFigures()
+                              ]),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
       ],
     );
   }

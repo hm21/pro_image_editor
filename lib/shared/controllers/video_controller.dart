@@ -16,14 +16,14 @@ class ProVideoController {
   ProVideoController({
     required this.videoPlayer,
     required this.videoDuration,
-    required this.initialResolution,
+    required Size initialResolution,
     required this.fileSize,
     this.bitrate,
     this.audioTrack,
     this.clips,
     List<ImageProvider>? thumbnails,
     this.initialTrimSpan,
-  }) {
+  }) : resolutionNotifier = ValueNotifier<Size>(initialResolution) {
     this.thumbnails = thumbnails;
   }
 
@@ -42,8 +42,17 @@ class ProVideoController {
   /// The total duration of the video.
   Duration videoDuration;
 
+  /// A [ValueNotifier] that holds the current video resolution.
+  ///
+  /// The [resolutionNotifier] notifies listeners when resolution changes,
+  /// e.g., after merging clips with different dimensions.
+  final ValueNotifier<Size> resolutionNotifier;
+
   /// The initial resolution of the video.
-  Size initialResolution;
+  Size get initialResolution => resolutionNotifier.value;
+
+  /// Sets the video resolution and notifies listeners.
+  set initialResolution(Size value) => resolutionNotifier.value = value;
 
   /// The size of the video file in bytes.
   int fileSize;
@@ -148,6 +157,7 @@ class ProVideoController {
   /// Dispose the video controller.
   void dispose() {
     thumbnailsNotifier.dispose();
+    resolutionNotifier.dispose();
     playTimeNotifier.dispose();
     isPlayingNotifier.dispose();
     isMutedNotifier.dispose();

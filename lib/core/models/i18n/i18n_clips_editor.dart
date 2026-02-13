@@ -8,6 +8,7 @@ class I18nClipsEditor {
     this.back = 'Back',
     this.remove = 'Remove',
     this.addVideoClip = 'Add Video-Clip',
+    this.processingClips = 'Processing clips...',
   });
 
   /// Text for the bottom navigation bar item that opens the Editor.
@@ -24,4 +25,7 @@ class I18nClipsEditor {
 
   /// Text for the "Add Video-Clip" button.
   final String addVideoClip;
+
+  /// Text shown while clips are being merged.
+  final String processingClips;
 }

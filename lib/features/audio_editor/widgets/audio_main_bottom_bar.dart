@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '/core/models/editor_callbacks/audio_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/controllers/video_controller.dart';
-import 'audio_waveform_selector.dart';
 
 /// A bottom navigation bar widget for the Audio Editor main screen.
 class AudioMainBottomBar extends StatefulWidget {
@@ -72,6 +71,8 @@ class AudioMainBottomBarState extends State<AudioMainBottomBar> {
 
   /// Updates the audio track start time.
   void updateStartTime(Duration startTime) {
+    _audioTrack.startTime = startTime;
+    setState(() {});
     widget.audioEditorCallbacks?.onStartTimeChange?.call(startTime);
   }
 
@@ -174,12 +175,13 @@ class AudioMainBottomBarState extends State<AudioMainBottomBar> {
                   widget.controller,
                   updateStartTime,
                 )
-              else if (_configs.enableEditStartTime) ...[
-                AudioWaveformSelector(
-                  configs: widget.configs,
-                  audioTrack: widget.controller.audioTrack!,
-                  videoDuration: widget.controller.videoDuration,
-                  onStartTimeChanged: updateStartTime,
+              else if (_configs.enableEditStartTime &&
+                  widget.audioEditorCallbacks?.onBuildWaveformSelector !=
+                      null) ...[
+                widget.audioEditorCallbacks!.onBuildWaveformSelector!(
+                  widget.controller.audioTrack!,
+                  widget.controller.videoDuration,
+                  updateStartTime,
                 ),
                 const SizedBox(height: 32),
               ],

@@ -34,7 +34,12 @@ class ClipsEditorCallbacks {
   final Future<VideoClip?> Function()? onAddClip;
 
   /// Callback triggered when multiple [VideoClip]s must be merged.
-  final Future<void> Function(List<VideoClip> videoClips)? onMergeClips;
+  ///
+  /// The [onProgress] callback reports progress as a value between 0.0 and 1.0.
+  final Future<void> Function(
+    List<VideoClip> videoClips,
+    void Function(double progress) onProgress,
+  )? onMergeClips;
 
   /// Called to build a custom video player widget for previewing clips.
   final Widget Function(ProVideoController controller, VideoClip videoClip)?
@@ -47,7 +52,10 @@ class ClipsEditorCallbacks {
     Future<Uint8List> Function(VideoClip source)? onReadKeyFrame,
     Future<List<Uint8List>> Function(VideoClip source)? onReadKeyFrames,
     Future<VideoClip?> Function()? onAddClip,
-    Future<void> Function(List<VideoClip> videoClips)? onMergeClips,
+    Future<void> Function(
+      List<VideoClip> videoClips,
+      void Function(double progress) onProgress,
+    )? onMergeClips,
     Widget Function(ProVideoController controller, VideoClip videoClip)?
         onBuildPlayer,
   }) {

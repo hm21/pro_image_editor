@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import '/features/audio_editor/models/audio_track.dart';
 
 /// Callbacks triggered by the audio editor when interacting with tracks.
@@ -11,6 +13,7 @@ class AudioEditorCallbacks {
     this.onMuteToggle,
     this.onStartTimeChange,
     this.onBalanceChange,
+    this.onBuildWaveformSelector,
   });
 
   /// Invoked when the editor requests to play the given [AudioTrack].
@@ -30,11 +33,32 @@ class AudioEditorCallbacks {
 
   /// Called when the audio track’s start time changes.
   ///
-  /// Provides the updated [startTime] of the track within the video.
   final Future<void> Function(Duration startTime)? onStartTimeChange;
 
   /// Callback triggered when [volumeBalance] is updated.
   final Future<void> Function(double volumeBalance)? onBalanceChange;
+
+  /// Called to build a custom waveform selector widget.
+  ///
+  /// Use this to integrate pro_video_editor's AudioWaveform widget directly:
+  /// ```dart
+  /// onBuildWaveformSelector: (audio, videoDuration, onStartTimeChanged) {
+  ///   return AudioWaveform.interactive(
+  ///     config: WaveformConfigs(
+  ///       video: EditorVideo.asset(audio.audio.assetPath!),
+  ///       resolution: WaveformResolution.medium,
+  ///     ),
+  ///     currentPosition: audio.startTime ?? Duration.zero,
+  ///     onSeek: onStartTimeChanged,
+  ///     style: WaveformStyle(height: 60),
+  ///   );
+  /// },
+  /// ```
+  final Widget Function(
+    AudioTrack audio,
+    Duration videoDuration,
+    ValueChanged<Duration> onStartTimeChanged,
+  )? onBuildWaveformSelector;
 
   /// Creates a copy with modified editor callbacks.
   AudioEditorCallbacks copyWith({
@@ -45,6 +69,11 @@ class AudioEditorCallbacks {
     Future<void> Function(bool isMuted)? onMuteToggle,
     Future<void> Function(Duration startTime)? onStartTimeChange,
     Future<void> Function(double volumeBalance)? onBalanceChange,
+    Widget Function(
+      AudioTrack audio,
+      Duration videoDuration,
+      ValueChanged<Duration> onStartTimeChanged,
+    )? onBuildWaveformSelector,
   }) {
     return AudioEditorCallbacks(
       onPlay: onPlay ?? this.onPlay,
@@ -54,6 +83,8 @@ class AudioEditorCallbacks {
       onMuteToggle: onMuteToggle ?? this.onMuteToggle,
       onStartTimeChange: onStartTimeChange ?? this.onStartTimeChange,
       onBalanceChange: onBalanceChange ?? this.onBalanceChange,
+      onBuildWaveformSelector:
+          onBuildWaveformSelector ?? this.onBuildWaveformSelector,
     );
   }
 }

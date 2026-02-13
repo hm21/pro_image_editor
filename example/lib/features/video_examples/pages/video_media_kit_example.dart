@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
@@ -121,46 +122,92 @@ class _VideoMediaKitExampleState extends State<VideoMediaKitExample>
     }
   }
 
-  Future<void> _mergeClips(List<VideoClip> clips) async {
-    /// TODO Use pro_video_editor to merge the videoClips
-    final updatedFile = File('');
+  Future<void> _mergeClips(
+    List<VideoClip> clips,
+    void Function(double progress) onProgress,
+  ) async {
+    // Convert video clips to video segments
+    final videoSegments = clips.map((clip) {
+      return VideoSegment(
+        video: EditorVideo.autoSource(
+          assetPath: clip.clip.assetPath,
+          byteArray: clip.clip.bytes,
+          file: clip.clip.file,
+          networkUrl: clip.clip.networkUrl,
+        ),
+        startTime: clip.trimSpan?.start,
+        endTime: clip.trimSpan?.end,
+      );
+    }).toList();
 
-    /// Generate new thumbnails
-    var imageWidth = MediaQuery.sizeOf(context).width /
-        thumbnailCount *
-        MediaQuery.devicePixelRatioOf(context);
+    // Merge the clips using pro_video_editor
+    final directory = await getTemporaryDirectory();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final outputPath = '${directory.path}/merged_video_$now.mp4';
 
-    final thumbnailList = await ProVideoEditor.instance.getKeyFrames(
-      KeyFramesConfigs(
-        video: video,
-        outputSize: Size.square(imageWidth),
-        boxFit: ThumbnailBoxFit.cover,
-        maxOutputFrames: thumbnailCount,
-        outputFormat: ThumbnailFormat.jpeg,
-      ),
-    );
-    if (!mounted) return;
-    List<ImageProvider> temporaryThumbnails =
-        thumbnailList.map(MemoryImage.new).toList();
-    proVideoController!.thumbnails = temporaryThumbnails;
+    // Create a unique task ID for progress tracking
+    final taskId = 'merge_clips_$now';
 
-    /// Update meta
-    final metaData = await ProVideoEditor.instance.getMetadata(
-      EditorVideo.file(updatedFile),
-    );
-    proVideoController!.initialResolution = metaData.resolution;
-    proVideoController!.videoDuration = metaData.duration;
-    proVideoController!.fileSize = metaData.fileSize;
-    proVideoController!.bitrate = metaData.bitrate;
-    proVideoController!.setTrimStart(Duration.zero);
-    proVideoController!.setTrimEnd(metaData.duration);
+    // Listen to progress stream
+    final subscription =
+        ProVideoEditor.instance.progressStreamById(taskId).listen((progress) {
+      onProgress(progress.progress);
+    });
 
-    /// Load the new video
-    await _player.open(
-      Media('file:///${updatedFile.path}'),
-      play: videoConfigs.initialPlay,
-    );
-    if (mounted) setState(() {});
+    try {
+      final mergedFilePath = await ProVideoEditor.instance.renderVideoToFile(
+        outputPath,
+        VideoRenderData(
+          id: taskId,
+          videoSegments: videoSegments,
+          outputFormat: outputFormat,
+        ),
+      );
+
+      if (!mounted) return;
+
+      final updatedFile = File(mergedFilePath);
+      video = EditorVideo.file(updatedFile);
+
+      /// Generate new thumbnails
+      var imageWidth = MediaQuery.sizeOf(context).width /
+          thumbnailCount *
+          MediaQuery.devicePixelRatioOf(context);
+
+      final thumbnailList = await ProVideoEditor.instance.getKeyFrames(
+        KeyFramesConfigs(
+          video: video,
+          outputSize: Size.square(imageWidth),
+          boxFit: ThumbnailBoxFit.cover,
+          maxOutputFrames: thumbnailCount,
+          outputFormat: ThumbnailFormat.jpeg,
+        ),
+      );
+      if (!mounted) return;
+      List<ImageProvider> temporaryThumbnails =
+          thumbnailList.map(MemoryImage.new).toList();
+      proVideoController!.thumbnails = temporaryThumbnails;
+
+      /// Update meta
+      final metaData = await ProVideoEditor.instance.getMetadata(
+        EditorVideo.file(updatedFile),
+      );
+      proVideoController!.initialResolution = metaData.resolution;
+      proVideoController!.videoDuration = metaData.duration;
+      proVideoController!.fileSize = metaData.fileSize;
+      proVideoController!.bitrate = metaData.bitrate;
+      proVideoController!.setTrimStart(Duration.zero);
+      proVideoController!.setTrimEnd(metaData.duration);
+
+      /// Load the new video
+      await _player.open(
+        Media('file:///${updatedFile.path}'),
+        play: videoConfigs.initialPlay,
+      );
+      if (mounted) setState(() {});
+    } finally {
+      await subscription.cancel();
+    }
   }
 
   Future<void> _balanceAudio(double volumeBalance) async {

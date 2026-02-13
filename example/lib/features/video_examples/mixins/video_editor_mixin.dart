@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:example/core/constants/example_constants.dart';
 import 'package:example/features/preview/preview_video.dart';
@@ -91,7 +93,12 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         final audio = track.audio;
         Source source;
         if (audio.hasAssetPath) {
-          source = AssetSource(audio.assetPath!);
+          // audioplayers adds 'assets/' prefix automatically, so strip it
+          var assetPath = audio.assetPath!;
+          if (assetPath.startsWith('assets/')) {
+            assetPath = assetPath.substring(7);
+          }
+          source = AssetSource(assetPath);
         } else if (audio.hasFile) {
           source = DeviceFileSource(audio.file!.path);
         } else if (audio.hasNetworkUrl) {
@@ -114,6 +121,36 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
         } else {
           await audioPlayer.setVolume(1);
         }
+      },
+      onBuildWaveformSelector: (track, videoDuration, onStartTimeChanged) {
+        final audio = track.audio;
+        return AudioWaveform.streaming(
+          key: ValueKey(audio),
+          config: WaveformConfigs(
+            video: EditorVideo.autoSource(
+              assetPath: audio.assetPath,
+              byteArray: audio.bytes,
+              file: audio.file,
+              networkUrl: audio.networkUrl,
+            ),
+            resolution: WaveformResolution.medium,
+          ),
+          showPositionIndicator: true,
+          onSeek: onStartTimeChanged,
+          currentPosition: track.startTime ?? Duration.zero,
+          style: WaveformStyle(
+            height: 80,
+            waveColor: Colors.cyan.shade400,
+            waveColorPlayed: Colors.cyan.shade200,
+            backgroundColor: Colors.grey.shade900,
+            playedOverlayColor: Colors.black38,
+            positionIndicatorColor: Colors.white,
+            barWidth: 2.5,
+            barSpacing: 1.5,
+            minBarHeight: 3.0,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        );
       },
     ),
     clipsEditorCallbacks: ClipsEditorCallbacks(
@@ -322,18 +359,39 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   /// before exporting using FFmpeg. Measures and stores the generation time.
   Future<void> generateVideo(CompleteParameters parameters) async {
     final stopwatch = Stopwatch()..start();
+    final directory = await getTemporaryDirectory();
 
-    /// TODO: Apply audio/clips after upgrading the video editor.
-    /// parameters.customAudioTrack;
-    /// parameters.videoClips;
-    var exportModel = RenderVideoModel(
+    // Convert video clips to video segments
+    final videoSegments = parameters.videoClips.map((clip) {
+      return VideoSegment(
+        video: EditorVideo.autoSource(
+          assetPath: clip.clip.assetPath,
+          byteArray: clip.clip.bytes,
+          file: clip.clip.file,
+          networkUrl: clip.clip.networkUrl,
+        ),
+        startTime: clip.trimSpan?.start,
+        endTime: clip.trimSpan?.end,
+      );
+    }).toList();
+
+    // Extract custom audio path and volume settings
+    final customAudioPath =
+        await _safeCustomAudioPath(parameters.customAudioTrack, directory.path);
+    final audioVolumes = _calculateAudioVolumes(parameters.customAudioTrack);
+
+    // Use videoSegments when multiple clips exist, otherwise use single video
+    final useSegments = videoSegments.length > 1;
+
+    var exportModel = VideoRenderData(
       id: taskId,
-      video: video,
+      video: useSegments ? null : video,
+      videoSegments: useSegments ? videoSegments : null,
       imageBytes: parameters.layers.isNotEmpty ? parameters.image : null,
       blur: parameters.blur,
       colorMatrixList: [parameters.colorFiltersCombined],
-      startTime: parameters.startTime,
-      endTime: parameters.endTime,
+      startTime: useSegments ? null : parameters.startTime,
+      endTime: useSegments ? null : parameters.endTime,
       transform: parameters.isTransformed
           ? ExportTransform(
               width: parameters.cropWidth,
@@ -348,8 +406,10 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       enableAudio: proVideoController?.isAudioEnabled ?? true,
       outputFormat: outputFormat,
       bitrate: videoMetadata.bitrate,
+      customAudioPath: customAudioPath,
+      originalAudioVolume: audioVolumes.originalVolume,
+      customAudioVolume: audioVolumes.customVolume,
     );
-    final directory = await getTemporaryDirectory();
 
     final now = DateTime.now().millisecondsSinceEpoch;
     _outputPath = await ProVideoEditor.instance.renderVideoToFile(
@@ -357,6 +417,54 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       exportModel,
     );
     videoGenerationTime = stopwatch.elapsed;
+  }
+
+  /// Returns a local file path for the given [track]'s audio source.
+  Future<String?> _safeCustomAudioPath(
+    AudioTrack? track,
+    String directoryPath,
+  ) async {
+    final audio = track?.audio;
+    if (audio == null) return null;
+
+    if (audio.hasFile) {
+      return audio.file!.path;
+    } else {
+      String filePath = '$directoryPath/temp-audio.mp3';
+
+      if (audio.hasNetworkUrl) {
+        return (await fetchVideoToFile(audio.networkUrl!, filePath)).path;
+      } else if (audio.hasAssetPath) {
+        // writeAssetVideoToFile expects path without 'assets/' prefix
+        var assetPath = audio.assetPath!;
+        if (!assetPath.startsWith('assets/')) {
+          assetPath = 'assets/$assetPath';
+        }
+        return (await writeAssetVideoToFile(
+          assetPath,
+          filePath,
+        ))
+            .path;
+      } else {
+        return (await writeMemoryVideoToFile(audio.bytes!, filePath)).path;
+      }
+    }
+  }
+
+  /// Calculates the original and custom audio volumes based on volume balance.
+  ({double originalVolume, double customVolume}) _calculateAudioVolumes(
+    AudioTrack? track,
+  ) {
+    if (track == null) {
+      return (originalVolume: 1.0, customVolume: 1.0);
+    }
+
+    final balance = track.volumeBalance;
+    // balance: -1.0 = only original, 0.0 = equal mix, 1.0 = only custom
+    final originalVolume = (1.0 - balance) / 2.0;
+    final customVolume = (1.0 + balance) / 2.0;
+
+    return (originalVolume: originalVolume, customVolume: customVolume);
   }
 
   /// Closes the video editor and opens a preview screen if a video was
@@ -367,6 +475,10 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
   void onCloseEditor(EditorMode editorMode) async {
     if (editorMode != EditorMode.main) return Navigator.pop(context);
     if (_outputPath != null) {
+      // Pause audio and video before opening preview
+      unawaited(audioPlayer.pause());
+      proVideoController?.pause();
+
       await Navigator.push(
         context,
         MaterialPageRoute(

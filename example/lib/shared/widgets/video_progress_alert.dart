@@ -68,9 +68,9 @@ class VideoProgressAlert extends StatelessWidget {
                     Text(
                       '${(animatedValue * 100).toStringAsFixed(1)} / 100',
                       style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                      ),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          fontFeatures: [FontFeature.tabularFigures()]),
                     )
                   ],
                 );
