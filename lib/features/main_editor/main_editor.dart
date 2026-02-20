@@ -657,6 +657,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   @override
   void setState(void Function() fn) {
+    if (!mounted) return;
     _rebuildController.add(null);
     super.setState(fn);
   }

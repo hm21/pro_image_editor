@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.2
+- **FIX**(main-editor): Resolve crash when `setState` is called after widget disposal, preventing "Cannot add new events after calling close" error.
+
 ## 12.0.1
 - **FIX**(layers): Resolve issue where layer interaction button tooltips would absorb pointer events in Flutter 3.41+, preventing scale and rotate gestures from working.
 - **CHORE**: Update minimum Flutter version to 3.41.0 and Dart SDK to 3.11.0.
