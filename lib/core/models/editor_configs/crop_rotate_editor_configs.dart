@@ -51,6 +51,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     this.invertMouseScroll = false,
     this.invertDragDirection = false,
     this.initialCropMode = CropMode.rectangular,
+    this.exportOvalMask = true,
     this.enableTransformLayers = true,
     this.enableProvideImageInfos = false,
     this.enableDoubleTap = true,
@@ -131,6 +132,14 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
   /// This determines the default cropping behavior or aspect ratio that will be
   /// presented to the user before any manual adjustments are made.
   final CropMode initialCropMode;
+
+  /// Controls whether the oval mask is applied to the exported image when
+  /// [initialCropMode] is set to [CropMode.oval].
+  ///
+  /// When `true` (default), the exported image is clipped to an oval/circle
+  /// shape. When `false`, the raw rectangular crop is exported without any
+  /// oval masking, while the oval UI is still shown inside the crop editor.
+  final bool exportOvalMask;
 
   /// Defines which crop-rotate tools are available in the editor.
   ///
@@ -259,6 +268,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     bool? invertMouseScroll,
     bool? invertDragDirection,
     CropMode? initialCropMode,
+    bool? exportOvalMask,
     List<CropRotateTool>? tools,
     bool? enableProvideImageInfos,
     double? initAspectRatio,
@@ -294,6 +304,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
       invertMouseScroll: invertMouseScroll ?? this.invertMouseScroll,
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,
+      exportOvalMask: exportOvalMask ?? this.exportOvalMask,
       tools: tools ?? this.tools,
       enableProvideImageInfos:
           enableProvideImageInfos ?? this.enableProvideImageInfos,

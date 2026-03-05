@@ -1,6 +1,7 @@
 # Changelog
 
 ## 12.0.3
+- **FEAT**(crop-rotate-editor): Add `exportOvalMask` to `CropRotateEditorConfigs` (default `true`). When set to `false`, the exported image uses a plain rectangular crop even if `CropMode.oval` is active, while the oval UI remains visible inside the crop editor.
 - **FEAT**(crop-rotate-editor): Add `helperLineWidth` to `CropRotateEditorStyle`, allowing the grid line thickness to be customized or hidden entirely by setting it to `0`.
 
 ## 12.0.2

@@ -143,12 +143,18 @@ class TransformedContentGenerator extends StatelessWidget {
 
     CropMode cropMode = _transformConfigs.cropMode;
 
+    final effectiveCropMode =
+        cropMode == CropMode.oval &&
+                !configs.cropRotateEditor.exportOvalMask
+            ? CropMode.rectangular
+            : cropMode;
+
     final clipper = CutOutsideArea(
       configs: _transformConfigs,
-      cropMode: cropMode,
+      cropMode: effectiveCropMode,
     );
 
-    if (cropMode == CropMode.oval) {
+    if (effectiveCropMode == CropMode.oval) {
       return ClipOval(clipper: clipper, child: child);
     } else {
       return ClipRect(clipper: clipper, child: child);
