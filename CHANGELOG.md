@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.3
+- **FEAT**(crop-rotate-editor): Add `helperLineWidth` to `CropRotateEditorStyle`, allowing the grid line thickness to be customized or hidden entirely by setting it to `0`.
+
 ## 12.0.2
 - **FIX**(main-editor): Resolve crash when `setState` is called after widget disposal, preventing "Cannot add new events after calling close" error.
 

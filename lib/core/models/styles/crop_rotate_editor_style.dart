@@ -56,6 +56,7 @@ class CropRotateEditorStyle {
     this.appBarBackground = kImageEditorAppBarBackground,
     this.appBarColor = kImageEditorAppBarColor,
     this.helperLineColor = const Color(0xFF000000),
+    this.helperLineWidth = 0.5,
     this.background = kImageEditorBackground,
     this.cropCornerColor = kImageEditorPrimaryColor,
     this.cropOverlayColor = const Color(0xFF000000),
@@ -109,6 +110,12 @@ class CropRotateEditorStyle {
   /// Color from the helper lines when moving the image.
   final Color helperLineColor;
 
+  /// The width (thickness) of the helper lines drawn inside the crop area.
+  ///
+  /// Set to `0` to hide the helper lines entirely.
+  /// Defaults to `0.5`.
+  final double helperLineWidth;
+
   /// This refers to the overlay area atop the image when the cropping area is
   /// smaller than the image.
   ///
@@ -158,6 +165,7 @@ class CropRotateEditorStyle {
     Color? background,
     Color? cropCornerColor,
     Color? helperLineColor,
+    double? helperLineWidth,
     Color? cropOverlayColor,
     double? cropCornerLength,
     double? cropCornerThickness,
@@ -179,6 +187,7 @@ class CropRotateEditorStyle {
       background: background ?? this.background,
       cropCornerColor: cropCornerColor ?? this.cropCornerColor,
       helperLineColor: helperLineColor ?? this.helperLineColor,
+      helperLineWidth: helperLineWidth ?? this.helperLineWidth,
       cropOverlayColor: cropOverlayColor ?? this.cropOverlayColor,
       cropCornerLength: cropCornerLength ?? this.cropCornerLength,
       cropCornerThickness: cropCornerThickness ?? this.cropCornerThickness,

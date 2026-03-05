@@ -98,12 +98,6 @@ class CropCornerPainter extends CustomPainter {
   /// such as highlighting or accentuating elements during user actions.
   final double interactionOpacity;
 
-  /// The width of the helper lines.
-  ///
-  /// This double value specifies the thickness of auxiliary lines drawn to
-  /// assist with cropping, providing additional visual guides.
-  double helperLineWidth = 0.5;
-
   /// The scale factor for resizing elements.
   ///
   /// This double value determines how much the elements are scaled, allowing
@@ -347,6 +341,9 @@ class CropCornerPainter extends CustomPainter {
   }
 
   void _drawHelperAreas({required Canvas canvas, required Size size}) {
+    final lineWidth = style.helperLineWidth;
+    if (lineWidth <= 0) return;
+
     Path path = Path();
 
     double cropWidth = _cropOffsetRight - _cropOffsetLeft;
@@ -356,15 +353,15 @@ class CropCornerPainter extends CustomPainter {
     double cropAreaSpaceH = cropHeight / 3;
 
     /// Calculation is important for the round-cropper
-    double lineWidth = !drawCircle
+    double drawWidth = !drawCircle
         ? cropWidth
         : sqrt(pow(cropWidth, 2) - pow(cropAreaSpaceW, 2));
-    double lineHeight = !drawCircle
+    double drawHeight = !drawCircle
         ? cropHeight
         : sqrt(pow(cropHeight, 2) - pow(cropAreaSpaceH, 2));
 
-    double gapW = (cropWidth - lineWidth) / 2;
-    double gapH = (cropHeight - lineHeight) / 2;
+    double gapW = (cropWidth - drawWidth) / 2;
+    double gapH = (cropHeight - drawHeight) / 2;
 
     for (var i = 1; i < 3; i++) {
       path
@@ -372,23 +369,23 @@ class CropCornerPainter extends CustomPainter {
           Rect.fromLTWH(
             cropAreaSpaceW * i + _cropOffsetLeft,
             gapH + _cropOffsetTop,
-            helperLineWidth,
-            lineHeight,
+            lineWidth,
+            drawHeight,
           ),
         )
         ..addRect(
           Rect.fromLTWH(
             gapW + _cropOffsetLeft,
             cropAreaSpaceH * i + _cropOffsetTop,
+            drawWidth,
             lineWidth,
-            helperLineWidth,
           ),
         );
     }
 
     final cornerPaint = Paint()
       ..color = style.helperLineColor.withValues(
-        alpha: fadeInOpacity * interactionOpacity,
+        alpha: style.helperLineColor.a * fadeInOpacity * interactionOpacity,
       )
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, cornerPaint);
