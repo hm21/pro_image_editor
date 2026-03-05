@@ -14,7 +14,8 @@ import '/shared/utils/decode_image.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../services/image_converter_service.dart';
 import '../services/image_render_service.dart';
-import '../services/isolate_manager.dart';
+import '../services/isolate_manager_stub.dart'
+    if (dart.library.io) '../services/isolate_manager.dart';
 import '../services/thread_fallback_manager.dart';
 import '../services/thread_manager.dart';
 import '../services/web_worker/web_worker_manager_dummy.dart'

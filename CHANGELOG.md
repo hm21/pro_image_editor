@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.4
+- **FIX**(wasm): Resolve WASM incompatibility caused by unconditional `dart:isolate` import. The `IsolateManager` is now loaded via a conditional import, so web/WASM builds use a stub that falls back to single-threaded processing.
+
 ## 12.0.3
 - **FEAT**(crop-rotate-editor): Add `exportOvalMask` to `CropRotateEditorConfigs` (default `true`). When set to `false`, the exported image uses a plain rectangular crop even if `CropMode.oval` is active, while the oval UI remains visible inside the crop editor.
 - **FEAT**(crop-rotate-editor): Add `helperLineWidth` to `CropRotateEditorStyle`, allowing the grid line thickness to be customized or hidden entirely by setting it to `0`.
