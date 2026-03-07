@@ -60,6 +60,11 @@ class File {
     throw ArgumentError('This function is not supported on the web.');
   }
 
+  /// Write bytes to the file
+  Future<File> writeAsBytes(List<int> bytes) async {
+    throw ArgumentError('This function is not supported on the web.');
+  }
+
   /// Read bytes async
   Future<Uint8List> readAsBytes() async {
     throw ArgumentError('This function is not supported on the web.');

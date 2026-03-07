@@ -1,6 +1,6 @@
 name: pro_image_editor
 description: "A Flutter image editor: Seamlessly enhance your images with user-friendly editing features."
-version: 12.0.4
+version: 12.0.5
 homepage: https://github.com/hm21/pro_image_editor/
 repository: https://github.com/hm21/pro_image_editor/
 documentation: https://github.com/hm21/pro_image_editor/
@@ -60,6 +60,12 @@ flutter:
       android:
         package: ch.waio.pro_image_editor
         pluginClass: ProImageEditorPlugin
+      ios:
+        pluginClass: ProImageEditorPlugin
+        sharedDarwinSource: true
+      macos:
+        pluginClass: ProImageEditorPlugin
+        sharedDarwinSource: true
   assets:
     - path: lib/web/web_worker.dart.js
       platforms: [web]

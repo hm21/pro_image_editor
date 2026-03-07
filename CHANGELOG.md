@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.5
+- **FEAT**(editor-audio): Add `safeFilePath` method to `EditorAudio` that returns a file path for the audio source. For file sources, it returns the path directly. For memory, asset, and network sources, it writes the data to a temporary file. File extension is automatically extracted from asset paths and network URLs.
+
 ## 12.0.4
 - **FIX**(wasm): Resolve WASM incompatibility caused by unconditional `dart:isolate` import. The `IsolateManager` is now loaded via a conditional import, so web/WASM builds use a stub that falls back to single-threaded processing.
 
