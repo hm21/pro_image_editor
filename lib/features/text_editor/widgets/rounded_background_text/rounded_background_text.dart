@@ -26,6 +26,7 @@ class RoundedBackgroundText extends StatelessWidget {
     required this.maxTextWidth,
     this.cursorWidth = 0,
     this.enableHitBoxCorrection = false,
+    this.leadingDistribution = TextLeadingDistribution.proportional,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -42,6 +43,7 @@ class RoundedBackgroundText extends StatelessWidget {
     required this.maxTextWidth,
     this.cursorWidth = 0,
     this.enableHitBoxCorrection = false,
+    this.leadingDistribution = TextLeadingDistribution.proportional,
   });
 
   /// A flag to enable or disable hitBox correction for the text.
@@ -64,6 +66,13 @@ class RoundedBackgroundText extends StatelessWidget {
   /// The width of the text cursor when displayed.
   final double cursorWidth;
 
+  /// Controls how extra leading is distributed above and below the text.
+  ///
+  /// Defaults to [TextLeadingDistribution.proportional].
+  /// Set to [TextLeadingDistribution.even] to visually centre glyphs inside
+  /// their rounded background rects when [TextStyle.height] > 1.0.
+  final TextLeadingDistribution leadingDistribution;
+
   /// Callback function triggered with the result of a hit test.
   final Function(bool hasHit)? onHitTestResult;
 
@@ -76,9 +85,7 @@ class RoundedBackgroundText extends StatelessWidget {
     final painter = TextPainter(
       text: TextSpan(
         children: [text],
-        style: const TextStyle(
-          leadingDistribution: TextLeadingDistribution.proportional,
-        ).merge(style),
+        style: TextStyle(leadingDistribution: leadingDistribution).merge(style),
       ),
       textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
       maxLines: defaultTextStyle.maxLines,
@@ -139,6 +146,13 @@ class RoundedBackgroundText extends StatelessWidget {
           'hasOnHitTestResult',
           value: onHitTestResult != null,
           ifTrue: 'callback set',
+        ),
+      )
+      ..add(
+        EnumProperty<TextLeadingDistribution>(
+          'leadingDistribution',
+          leadingDistribution,
+          defaultValue: TextLeadingDistribution.proportional,
         ),
       );
   }

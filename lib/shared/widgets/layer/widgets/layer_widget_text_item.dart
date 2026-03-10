@@ -77,6 +77,7 @@ class LayerWidgetTextItem extends StatelessWidget {
       backgroundColor: layer.background,
       textAlign: layer.align,
       style: finalStyle,
+      leadingDistribution: textEditorConfigs.style.leadingDistribution,
     );
   }
 
