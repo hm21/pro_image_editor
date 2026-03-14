@@ -75,6 +75,8 @@ class TextEditorStyle {
       Radius.circular(4),
     ),
     this.inputTextFieldPadding = EdgeInsets.zero,
+    this.inputLetterSpacing = 0,
+    this.inputShadows = const [],
   });
 
   /// Background color of the app bar in the text editor.
@@ -129,6 +131,18 @@ class TextEditorStyle {
   /// on various platforms. Set to null to use the default line height.
   final double? textHeight;
 
+  /// Letter spacing applied to the text input field style.
+  ///
+  /// Defaults to `0` to fix alignment issues with some fonts.
+  /// Set to `null` to use the font's default letter spacing.
+  final double? inputLetterSpacing;
+
+  /// Shadows applied to the text input field style.
+  ///
+  /// Defaults to an empty list to prevent unwanted shadow rendering
+  /// with some fonts. Set to `null` to use the font's default shadows.
+  final List<Shadow>? inputShadows;
+
   /// Controls how extra leading from the [TextStyle.height] multiplier is
   /// distributed above and below the text glyph.
   ///
@@ -166,6 +180,8 @@ class TextEditorStyle {
     EdgeInsets? textFieldMargin,
     EdgeInsets? textFieldPadding,
     TextStyle? fontSizeBottomSheetTitle,
+    double? inputLetterSpacing,
+    List<Shadow>? inputShadows,
   }) {
     return TextEditorStyle(
       textHeight: textHeight ?? this.textHeight,
@@ -192,6 +208,8 @@ class TextEditorStyle {
       textFieldPadding: textFieldPadding ?? this.textFieldPadding,
       fontSizeBottomSheetTitle:
           fontSizeBottomSheetTitle ?? this.fontSizeBottomSheetTitle,
+      inputLetterSpacing: inputLetterSpacing ?? this.inputLetterSpacing,
+      inputShadows: inputShadows ?? this.inputShadows,
     );
   }
 }

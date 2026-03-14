@@ -200,15 +200,16 @@ class _TextEditorInputState extends State<TextEditorInput> {
             hintStyle: widget.selectedTextStyle.copyWith(
               color: widget.configs.style.inputHintColor,
               fontSize: widget.textFontSize,
-              shadows: [],
+              letterSpacing: widget.configs.style.inputLetterSpacing,
+              shadows: widget.configs.style.inputShadows,
             ),
             backgroundColor: widget.backgroundColor,
             style: widget.selectedTextStyle.copyWith(
               color: widget.textColor,
               fontSize: widget.textFontSize,
-              letterSpacing: 0,
+              letterSpacing: widget.configs.style.inputLetterSpacing,
+              shadows: widget.configs.style.inputShadows,
               decoration: TextDecoration.none,
-              shadows: [],
             ),
 
             /// If we edit an layer we focus to the textfield after the
