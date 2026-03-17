@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.7
+- **FEAT**(text-editor): Add `leadingDistribution` property to `TextEditorStyle` for configuring how extra line height is distributed. Use `TextLeadingDistribution.even` to vertically center text within rounded background rects at non-default line heights. Defaults to `proportional` for backward compatibility.
+
 ## 12.0.6
 - **FEAT**(platform): Add shared Darwin (iOS/macOS) native plugin implementation using Swift Package Manager.
 

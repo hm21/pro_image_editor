@@ -140,7 +140,7 @@ class _RoundedBackgroundTextFieldState
   Widget _buildBackgroundText() {
     final style = widget.style.copyWith(
       color: Colors.transparent,
-      leadingDistribution: TextLeadingDistribution.proportional,
+      leadingDistribution: widget.configs.style.leadingDistribution,
     );
 
     return Positioned(
@@ -183,7 +183,7 @@ class _RoundedBackgroundTextFieldState
         scrollPadding: EdgeInsets.zero,
         style: widget.style.copyWith(
           fontSize: fontSize,
-          leadingDistribution: TextLeadingDistribution.proportional,
+          leadingDistribution: widget.configs.style.leadingDistribution,
           height: widget.configs.style.textHeight,
         ),
         decoration: InputDecoration.collapsed(
