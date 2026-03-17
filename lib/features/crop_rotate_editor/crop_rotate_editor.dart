@@ -2148,21 +2148,17 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   ),
                   child: MediaQuery.removePadding(
                     context: context,
-                    removeBottom:
-                        !cropRotateEditorConfigs.safeArea.bottom,
+                    removeBottom: !cropRotateEditorConfigs.safeArea.bottom,
                     child: Scaffold(
                       resizeToAvoidBottomInset: false,
-                      backgroundColor:
-                          cropRotateEditorConfigs.style.background,
+                      backgroundColor: cropRotateEditorConfigs.style.background,
                       appBar: _buildAppBar(constraints),
                       body: Center(
                         child: SizedBox(
                           width:
                               constraints.maxWidth *
                               (cropRotateEditorConfigs.maxWidthFactor ??
-                                  (!kIsWeb && Platform.isAndroid
-                                      ? 0.9
-                                      : 1)),
+                                  (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
                           child: _buildBody(),
                         ),
                       ),
