@@ -256,11 +256,15 @@ class BlurEditorState extends State<BlurEditor>
             right: blurEditorConfigs.safeArea.right,
             child: RecordInvisibleWidget(
               controller: screenshotCtrl,
-              child: Scaffold(
-                backgroundColor: blurEditorConfigs.style.background,
-                appBar: _buildAppBar(),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomNavBar(),
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: !blurEditorConfigs.safeArea.bottom,
+                child: Scaffold(
+                  backgroundColor: blurEditorConfigs.style.background,
+                  appBar: _buildAppBar(),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomNavBar(),
+                ),
               ),
             ),
           ),

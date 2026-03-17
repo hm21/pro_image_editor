@@ -389,11 +389,15 @@ class TuneEditorState extends State<TuneEditor>
             right: tuneEditorConfigs.safeArea.right,
             child: RecordInvisibleWidget(
               controller: screenshotCtrl,
-              child: Scaffold(
-                backgroundColor: tuneEditorConfigs.style.background,
-                appBar: _buildAppBar(),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomNavBar(),
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: !tuneEditorConfigs.safeArea.bottom,
+                child: Scaffold(
+                  backgroundColor: tuneEditorConfigs.style.background,
+                  appBar: _buildAppBar(),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomNavBar(),
+                ),
               ),
             ),
           ),

@@ -880,12 +880,16 @@ class PaintEditorState extends State<PaintEditor>
               controller: screenshotCtrl,
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  return Scaffold(
-                    resizeToAvoidBottomInset: false,
-                    backgroundColor: paintEditorConfigs.style.background,
-                    appBar: _buildAppBar(constraints),
-                    body: _buildBody(),
-                    bottomNavigationBar: _buildBottomBar(),
+                  return MediaQuery.removePadding(
+                    context: context,
+                    removeBottom: !paintEditorConfigs.safeArea.bottom,
+                    child: Scaffold(
+                      resizeToAvoidBottomInset: false,
+                      backgroundColor: paintEditorConfigs.style.background,
+                      appBar: _buildAppBar(constraints),
+                      body: _buildBody(),
+                      bottomNavigationBar: _buildBottomBar(),
+                    ),
                   );
                 },
               ),

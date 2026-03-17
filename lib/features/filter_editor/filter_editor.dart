@@ -309,11 +309,15 @@ class FilterEditorState extends State<FilterEditor>
             right: filterEditorConfigs.safeArea.right,
             child: RecordInvisibleWidget(
               controller: screenshotCtrl,
-              child: Scaffold(
-                backgroundColor: filterEditorConfigs.style.background,
-                appBar: _buildAppBar(),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomNavBar(),
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: !filterEditorConfigs.safeArea.bottom,
+                child: Scaffold(
+                  backgroundColor: filterEditorConfigs.style.background,
+                  appBar: _buildAppBar(),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomNavBar(),
+                ),
               ),
             ),
           ),

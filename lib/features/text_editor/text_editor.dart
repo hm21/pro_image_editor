@@ -355,13 +355,17 @@ class TextEditorState extends State<TextEditor>
               bottom: textEditorConfigs.safeArea.bottom,
               left: textEditorConfigs.safeArea.left,
               right: textEditorConfigs.safeArea.right,
-              child: Scaffold(
-                resizeToAvoidBottomInset:
-                    textEditorConfigs.resizeToAvoidBottomInset,
-                backgroundColor: textEditorConfigs.style.background,
-                appBar: _buildAppBar(constraints),
-                body: _buildBody(),
-                bottomNavigationBar: _buildBottomBar(),
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: !textEditorConfigs.safeArea.bottom,
+                child: Scaffold(
+                  resizeToAvoidBottomInset:
+                      textEditorConfigs.resizeToAvoidBottomInset,
+                  backgroundColor: textEditorConfigs.style.background,
+                  appBar: _buildAppBar(constraints),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomBar(),
+                ),
               ),
             ),
           ),
