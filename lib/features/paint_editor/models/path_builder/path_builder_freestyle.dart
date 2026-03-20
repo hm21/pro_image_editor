@@ -24,40 +24,46 @@ class PathBuilderFreestyle extends PathBuilderBase {
         item.mode == PaintMode.freeStyleArrowStartEnd;
 
     final double dotRadius = painter.strokeWidth / 2;
+    final int len = offsets.length;
 
-    final scaled = List<Offset?>.generate(
-      offsets.length,
-      (i) => offsets[i] == null
-          ? null
-          : Offset(offsets[i]!.dx * scale, offsets[i]!.dy * scale),
-      growable: false,
-    );
+    // Build path with minimal moveTo calls by tracking continuous segments.
+    // Only emit moveTo at the start of each segment, then lineTo for the rest.
+    bool needsMoveTo = true;
 
-    for (int i = 0; i < scaled.length - 1; i++) {
-      final a = scaled[i];
-      final b = scaled[i + 1];
+    for (int i = 0; i < len; i++) {
+      final raw = offsets[i];
+      if (raw == null) {
+        needsMoveTo = true;
+        continue;
+      }
 
-      if (a != null && b != null) {
-        path
-          ..moveTo(a.dx, a.dy)
-          ..lineTo(b.dx, b.dy);
-      } else if (a != null && b == null) {
-        // Add tiny circle at the dot point
-        path.addOval(Rect.fromCircle(center: a, radius: dotRadius));
+      final double sx = raw.dx * scale;
+      final double sy = raw.dy * scale;
+
+      if (needsMoveTo) {
+        // Isolated dot: point at end of list or followed by null
+        if (i + 1 >= len || offsets[i + 1] == null) {
+          path.addOval(
+            Rect.fromCircle(center: Offset(sx, sy), radius: dotRadius),
+          );
+        } else {
+          path.moveTo(sx, sy);
+          needsMoveTo = false;
+        }
+      } else {
+        path.lineTo(sx, sy);
       }
     }
 
     // Add arrowheads if needed
     if (hasArrowStart || hasArrowEnd) {
-      // Scale arrow size based on strokeWidth for consistent proportions
       final strokeFactor = painter.strokeWidth / 2;
-      // Minimum distance for stable direction calculation
-      final minDistance = 20.0 * scale;
+      // Use squared distance to avoid sqrt in comparisons
+      final minDistanceSq = 400.0 * scale * scale;
 
       if (hasArrowStart) {
         final (startPoint, directionPoint) = _findPointsWithMinDistance(
-          scaled,
-          minDistance,
+          minDistanceSq,
           fromStart: true,
         );
         if (startPoint != null && directionPoint != null) {
@@ -67,8 +73,7 @@ class PathBuilderFreestyle extends PathBuilderBase {
 
       if (hasArrowEnd) {
         final (endPoint, directionPoint) = _findPointsWithMinDistance(
-          scaled,
-          minDistance,
+          minDistanceSq,
           fromStart: false,
         );
         if (endPoint != null && directionPoint != null) {
@@ -78,57 +83,54 @@ class PathBuilderFreestyle extends PathBuilderBase {
     }
 
     painter.strokeCap = StrokeCap.round;
+    painter.strokeJoin = StrokeJoin.round;
 
     return path;
   }
 
   /// Finds two points with a minimum distance for stable direction calculation.
   ///
+  /// Uses squared distance to avoid sqrt. Scales offsets inline to avoid
+  /// allocating a separate scaled list.
   /// If [fromStart] is true, searches from the beginning of the list.
   /// Returns a tuple of (anchor point, direction point).
   (Offset?, Offset?) _findPointsWithMinDistance(
-    List<Offset?> points,
-    double minDistance, {
+    double minDistanceSq, {
     required bool fromStart,
   }) {
     Offset? anchorPoint;
     Offset? directionPoint;
+    final points = offsets;
 
     if (fromStart) {
-      // Find first non-null point as anchor
       for (int i = 0; i < points.length; i++) {
         if (points[i] != null) {
-          anchorPoint = points[i];
-          // Find a point with sufficient distance
+          anchorPoint = points[i]! * scale;
           for (int j = i + 1; j < points.length; j++) {
             if (points[j] != null) {
-              final distance = (points[j]! - anchorPoint!).distance;
-              if (distance >= minDistance) {
-                directionPoint = points[j];
+              final scaled = points[j]! * scale;
+              if ((scaled - anchorPoint).distanceSquared >= minDistanceSq) {
+                directionPoint = scaled;
                 break;
               }
-              // Keep updating to at least have the furthest point found
-              directionPoint = points[j];
+              directionPoint = scaled;
             }
           }
           break;
         }
       }
     } else {
-      // Find last non-null point as anchor
       for (int i = points.length - 1; i >= 0; i--) {
         if (points[i] != null) {
-          anchorPoint = points[i];
-          // Find a point with sufficient distance
+          anchorPoint = points[i]! * scale;
           for (int j = i - 1; j >= 0; j--) {
             if (points[j] != null) {
-              final distance = (points[j]! - anchorPoint!).distance;
-              if (distance >= minDistance) {
-                directionPoint = points[j];
+              final scaled = points[j]! * scale;
+              if ((scaled - anchorPoint).distanceSquared >= minDistanceSq) {
+                directionPoint = scaled;
                 break;
               }
-              // Keep updating to at least have the furthest point found
-              directionPoint = points[j];
+              directionPoint = scaled;
             }
           }
           break;

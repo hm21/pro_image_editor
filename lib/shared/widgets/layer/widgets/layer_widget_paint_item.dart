@@ -44,21 +44,25 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final child = CustomPaint(
+      size: layer.size,
+      willChange: willChange,
+      isComplex: layer.item.mode.isFreeStyleMode,
+      painter: DrawPaintItem(
+        item: layer.item,
+        scale: layer.scale,
+        selected: isSelected,
+        enabledHitDetection: enableHitDetection,
+        onHitChanged: onHitChanged,
+        paintEditorConfigs: paintEditorConfigs,
+      ),
+    );
+
+    if (layer.opacity >= 1.0) return child;
+
     return Opacity(
       opacity: layer.opacity,
-      child: CustomPaint(
-        size: layer.size,
-        willChange: willChange,
-        isComplex: layer.item.mode.isFreeStyleMode,
-        painter: DrawPaintItem(
-          item: layer.item,
-          scale: layer.scale,
-          selected: isSelected,
-          enabledHitDetection: enableHitDetection,
-          onHitChanged: onHitChanged,
-          paintEditorConfigs: paintEditorConfigs,
-        ),
-      ),
+      child: child,
     );
   }
 

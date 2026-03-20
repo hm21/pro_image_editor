@@ -282,12 +282,13 @@ class StateManager {
     EditorStateHistory history, {
     int historyLimit = 1000,
     bool enableScreenshotLimit = true,
+    bool skipUpdateActiveItems = false,
   }) {
     _cleanForwardChanges();
     _stateHistory.add(history);
     historyPointer = _stateHistory.length - 1;
     setHistoryLimit(historyLimit, enableScreenshotLimit);
-    updateActiveItems();
+    if (!skipUpdateActiveItems) updateActiveItems();
   }
 
   /// Redoes the last undone change, moving the history pointer forward by one

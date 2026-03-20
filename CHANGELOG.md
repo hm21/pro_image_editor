@@ -1,5 +1,12 @@
 # Changelog
 
+## 12.0.8
+- **PERF**(paint-editor): Optimize freestyle path building by reducing redundant `moveTo` calls, eliminating intermediate list allocations, and using `distanceSquared` instead of `distance`.
+- **PERF**(paint-editor): Skip `Opacity` widget wrapping when layer opacity is 1.0.
+- **PERF**(paint-editor): Replace O(N×M) layer filtering in `done()` with Map-based O(1) lookup.
+- **PERF**(main-editor): Replace O(N²) layer copy loop when closing paint editor with single deep-copy and incremental shallow snapshots.
+- **PERF**(main-editor): Batch history entries without redundant `updateActiveItems()` calls via new `skipUpdateActiveItems` parameter on `addHistory()`.
+
 ## 12.0.7
 - **FEAT**(text-editor): Add `leadingDistribution` property to `TextEditorStyle` for configuring how extra line height is distributed. Use `TextLeadingDistribution.even` to vertically center text within rounded background rects at non-default line heights. Defaults to `proportional` for backward compatibility.
 
