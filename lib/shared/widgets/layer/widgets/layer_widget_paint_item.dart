@@ -60,10 +60,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
     if (layer.opacity >= 1.0) return child;
 
-    return Opacity(
-      opacity: layer.opacity,
-      child: child,
-    );
+    return Opacity(opacity: layer.opacity, child: child);
   }
 
   @override
