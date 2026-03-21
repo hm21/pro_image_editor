@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.9
+- **FIX**(text-editor): Disable system text scale factor in `RoundedBackgroundTextField` to ensure consistent text sizing regardless of user accessibility settings.
+
 ## 12.0.8
 - **PERF**(paint-editor): Optimize freestyle path building by reducing redundant `moveTo` calls, eliminating intermediate list allocations, and using `distanceSquared` instead of `distance`.
 - **PERF**(paint-editor): Skip `Opacity` widget wrapping when layer opacity is 1.0.
