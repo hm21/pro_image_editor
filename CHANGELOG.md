@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.10
+- **FIX**(iOS, macOS): Restore CocoaPods compatibility for the native Darwin plugin alongside Swift Package Manager support.
+
 ## 12.0.9
 - **FIX**(text-editor): Disable system text scale factor in `RoundedBackgroundTextField` to ensure consistent text sizing regardless of user accessibility settings.
 
