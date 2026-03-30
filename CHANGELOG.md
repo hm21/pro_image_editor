@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.0.12
+- **FEAT**(text-editor): Add `spellCheckConfiguration` to `TextEditorConfigs` for enabling spell checking in the text input field.
+
 ## 12.0.11
 - **FEAT**(text-editor): Add `inputLetterSpacing` and `inputShadows` to `TextEditorStyle` for customizing letter spacing and text shadows.
 - **FEAT**(callbacks): Add `onLayerInteractionEnd` callback to `MainEditorCallbacks`, triggered when layer interaction ends.

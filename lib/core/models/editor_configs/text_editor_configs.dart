@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 // Project imports:
 import '../custom_widgets/text_editor_widgets.dart';
@@ -67,6 +67,7 @@ class TextEditorConfigs
     this.widgets = const TextEditorWidgets(),
     this.enableImageBoundaryTextWrap = false,
     this.resizeToAvoidBottomInset = true,
+    this.spellCheckConfiguration,
   }) : assert(initFontSize > 0, 'initFontSize must be positive'),
        assert(
          maxScale >= minScale,
@@ -210,6 +211,12 @@ class TextEditorConfigs
   /// the content.
   final bool resizeToAvoidBottomInset;
 
+  /// The spell check configuration for the text input field.
+  ///
+  /// When provided, enables spell checking with the given configuration.
+  /// When `null`, spell checking is disabled.
+  final SpellCheckConfiguration? spellCheckConfiguration;
+
   /// Creates a copy of this `TextEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -249,6 +256,7 @@ class TextEditorConfigs
     bool? showFontScaleButton,
     bool? showTextAlignButton,
     bool? resizeToAvoidBottomInset,
+    SpellCheckConfiguration? spellCheckConfiguration,
   }) {
     return TextEditorConfigs(
       layerFractionalOffset:
@@ -293,6 +301,8 @@ class TextEditorConfigs
       showTextAlignButton: showTextAlignButton ?? this.showTextAlignButton,
       resizeToAvoidBottomInset:
           resizeToAvoidBottomInset ?? this.resizeToAvoidBottomInset,
+      spellCheckConfiguration:
+          spellCheckConfiguration ?? this.spellCheckConfiguration,
     );
   }
 }

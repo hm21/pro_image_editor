@@ -189,6 +189,7 @@ class _RoundedBackgroundTextFieldState
           leadingDistribution: widget.configs.style.leadingDistribution,
           height: widget.configs.style.textHeight,
         ),
+        spellCheckConfiguration: widget.configs.spellCheckConfiguration,
         decoration: InputDecoration.collapsed(
           hintText: _textController.text.isEmpty ? widget.hint : '',
           hintStyle:
