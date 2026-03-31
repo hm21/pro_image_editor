@@ -35,7 +35,7 @@ dependencies:
   vibration: ^3.1.1
 
   # Video-Editing
-  pro_video_editor: ^1.6.0
+  pro_video_editor: ^1.11.0
   audioplayers: ^6.5.1
   ### Choose one player below
   video_player: ^2.10.0
