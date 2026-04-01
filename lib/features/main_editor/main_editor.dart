@@ -2442,6 +2442,55 @@ class ProImageEditorState extends State<ProImageEditor>
         Uint8List.fromList([]);
   }
 
+  /// Captures all active layers in one batch.
+  ///
+  /// For PNG exports, this method reuses the editor's existing
+  /// [ContentRecorderController] so isolate resources stay warm and can be
+  /// processed efficiently across all layers.
+  Future<List<Uint8List?>> captureAllLayers({
+    double? pixelRatio,
+    bool applyTransforms = true,
+    ui.ImageByteFormat format = ui.ImageByteFormat.png,
+  }) async {
+    final exported = await captureAllLayersWithMeta(
+      pixelRatio: pixelRatio,
+      applyTransforms: applyTransforms,
+      format: format,
+    );
+    return exported.map((e) => e.bytes).toList();
+  }
+
+  /// Captures all active layers in one batch and returns metadata per layer.
+  ///
+  /// For PNG exports, this method reuses the editor's existing
+  /// [ContentRecorderController] so isolate resources stay warm and can be
+  /// processed efficiently across all layers.
+  Future<List<ExportedLayer>> captureAllLayersWithMeta({
+    double? pixelRatio,
+    bool applyTransforms = true,
+    ui.ImageByteFormat format = ui.ImageByteFormat.png,
+  }) async {
+    if (isSubEditorOpen) {
+      Navigator.pop(context);
+      if (!_pageOpenCompleter.isCompleted) await _pageOpenCompleter.future;
+      if (!mounted) return <ExportedLayer>[];
+    }
+
+    // Ensure the current frame with layers is fully rendered before capture.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return <ExportedLayer>[];
+
+    return Layer.captureAllLayers(
+      layers: activeLayers,
+      pixelRatio: pixelRatio,
+      applyTransforms: applyTransforms,
+      format: format,
+      recorder: format == ui.ImageByteFormat.png
+          ? _controllers.screenshot
+          : null,
+    );
+  }
+
   /// Closes all active sub-editors within the main editor, including paint,
   /// text, crop/rotate, filter, tune, and emoji editors.
   /// This ensures that any open sub-editor is properly closed and the main

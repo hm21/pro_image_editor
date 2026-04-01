@@ -1,11 +1,18 @@
+// Dart imports:
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '/core/constants/int_constants.dart';
+import '/core/models/editor_configs/image_generation_configs/image_generation_configs.dart';
 import '/shared/extensions/box_constraints_extension.dart';
 import '/shared/extensions/export_bool_extension.dart';
 import '/shared/extensions/num_extension.dart';
+import '/shared/services/content_recorder/controllers/content_recorder_controller.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/map_utils.dart';
@@ -14,6 +21,7 @@ import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../editor_image.dart';
 import 'emoji_layer.dart';
+import 'exported_layer.dart';
 import 'layer_interaction.dart';
 import 'paint_layer.dart';
 import 'text_layer.dart';
@@ -41,6 +49,7 @@ class Layer {
     this.groupId,
   }) : key = key ??= GlobalKey(),
        keyInternalSize = GlobalKey(),
+       repaintBoundaryKey = GlobalKey(),
        id = id ?? generateUniqueId(),
        interaction = interaction ?? LayerInteraction();
 
@@ -132,6 +141,12 @@ class Layer {
 
   /// A global key used to get the layer size.
   GlobalKey keyInternalSize;
+
+  /// A global key attached to the layer's [RepaintBoundary].
+  ///
+  /// This key can be used to capture the layer's visual content as a PNG
+  /// image via [captureAsPng].
+  GlobalKey repaintBoundaryKey;
 
   /// The position offset of the widget.
   Offset offset;
@@ -244,6 +259,203 @@ class Layer {
         ),
       if (layer.groupId != groupId) 'groupId': groupId,
     };
+  }
+
+  /// Captures the visual content of this layer as a PNG-encoded byte array.
+  ///
+  /// The layer must be mounted in the widget tree with its
+  /// [repaintBoundaryKey] attached to a [RepaintBoundary]. The [pixelRatio]
+  /// controls the resolution of the output image. When `null`, it defaults
+  /// to `devicePixelRatio * scale` to preserve sharpness for scaled and
+  /// rotated layers.
+  ///
+  /// The [format] controls the output byte format and defaults to PNG for
+  /// backward compatibility.
+  ///
+  /// When [applyTransforms] is `true` (default), the layer's [rotation],
+  /// [flipX] and [flipY] are applied to the output image. Set it to `false`
+  /// to get the raw, un-transformed content.
+  ///
+  /// Returns `null` if the layer is not currently mounted.
+  Future<Uint8List?> captureAsPng({
+    double? pixelRatio,
+    bool applyTransforms = true,
+    ui.ImageByteFormat format = ui.ImageByteFormat.png,
+    ContentRecorderController? recorder,
+  }) async {
+    final context = repaintBoundaryKey.currentContext;
+    if (context == null) return null;
+
+    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
+    final effectivePixelRatio = pixelRatio ?? (dpr * scale);
+
+    final boundary = context.findRenderObject() as RenderRepaintBoundary;
+    final rawImage = await boundary.toImage(pixelRatio: effectivePixelRatio);
+
+    final bool needsTransform =
+        applyTransforms && (rotation != 0 || flipX || flipY);
+    if (!needsTransform) {
+      final bytes = await _encodeLayerImage(
+        rawImage,
+        format: format,
+        recorder: recorder,
+      );
+      rawImage.dispose();
+      return bytes;
+    }
+
+    final double w = rawImage.width.toDouble();
+    final double h = rawImage.height.toDouble();
+
+    final double cosR = math.cos(rotation).abs();
+    final double sinR = math.sin(rotation).abs();
+    final double newW = w * cosR + h * sinR;
+    final double newH = w * sinR + h * cosR;
+
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder, Rect.fromLTWH(0, 0, newW, newH))
+      ..translate(newW / 2, newH / 2);
+    if (flipX) canvas.scale(-1, 1);
+    if (flipY) canvas.scale(1, -1);
+    canvas
+      ..rotate(rotation)
+      ..translate(-w / 2, -h / 2)
+      ..drawImage(rawImage, Offset.zero, Paint());
+
+    final picture = pictureRecorder.endRecording();
+    final transformed = await picture.toImage(newW.ceil(), newH.ceil());
+    rawImage.dispose();
+    picture.dispose();
+
+    final bytes = await _encodeLayerImage(
+      transformed,
+      format: format,
+      recorder: recorder,
+    );
+    transformed.dispose();
+
+    return bytes;
+  }
+
+  /// Exports multiple layers in one run and reuses a single recorder for PNG
+  /// encoding to avoid repeatedly creating and destroying isolate resources.
+  ///
+  /// If [format] is PNG and [recorder] is not provided, this method creates
+  /// one recorder internally and reuses it for all layers.
+  static Future<List<Uint8List?>> captureAllLayersAsBytes({
+    required List<Layer> layers,
+    double? pixelRatio,
+    bool applyTransforms = true,
+    ui.ImageByteFormat format = ui.ImageByteFormat.png,
+    ContentRecorderController? recorder,
+  }) async {
+    ContentRecorderController? localRecorder;
+    ContentRecorderController? sharedRecorder = recorder;
+
+    if (format == ui.ImageByteFormat.png && sharedRecorder == null) {
+      sharedRecorder = _createPngRecorderController();
+      localRecorder = sharedRecorder;
+    }
+
+    try {
+      final bytes = <Uint8List?>[];
+      for (final layer in layers) {
+        bytes.add(
+          await layer.captureAsPng(
+            pixelRatio: pixelRatio,
+            applyTransforms: applyTransforms,
+            format: format,
+            recorder: sharedRecorder,
+          ),
+        );
+      }
+      return bytes;
+    } finally {
+      if (localRecorder != null) {
+        await localRecorder.destroy();
+      }
+    }
+  }
+
+  /// Exports multiple layers in one run and returns metadata per exported
+  /// layer.
+  static Future<List<ExportedLayer>> captureAllLayers({
+    required List<Layer> layers,
+    double? pixelRatio,
+    bool applyTransforms = true,
+    ui.ImageByteFormat format = ui.ImageByteFormat.png,
+    ContentRecorderController? recorder,
+  }) async {
+    final logicalSizes = <Size>[
+      for (final layer in layers)
+        (layer.repaintBoundaryKey.currentContext?.findRenderObject()
+                    as RenderBox?)
+                ?.size ??
+            Size.zero,
+    ];
+
+    final allBytes = await captureAllLayersAsBytes(
+      layers: layers,
+      pixelRatio: pixelRatio,
+      applyTransforms: applyTransforms,
+      format: format,
+      recorder: recorder,
+    );
+
+    final exported = <ExportedLayer>[];
+    for (var i = 0; i < layers.length; i++) {
+      final bytes = i < allBytes.length ? allBytes[i] : null;
+      if (bytes == null) continue;
+      exported.add(
+        ExportedLayer(
+          layer: layers[i],
+          bytes: bytes,
+          logicalSize: logicalSizes[i],
+        ),
+      );
+    }
+
+    return exported;
+  }
+
+  static ContentRecorderController _createPngRecorderController() {
+    return ContentRecorderController(
+      isVideoEditor: false,
+      configs: const ImageGenerationConfigs(
+        outputFormat: OutputFormat.png,
+        processorConfigs: ProcessorConfigs(
+          processorMode: ProcessorMode.minimum,
+        ),
+      ),
+    );
+  }
+
+  Future<Uint8List?> _encodeLayerImage(
+    ui.Image image, {
+    required ui.ImageByteFormat format,
+    ContentRecorderController? recorder,
+  }) async {
+    if (format != ui.ImageByteFormat.png) {
+      final byteData = await image.toByteData(format: format);
+      return byteData?.buffer.asUint8List();
+    }
+
+    ContentRecorderController? localRecorder;
+    final activeRecorder =
+        recorder ?? (localRecorder = _createPngRecorderController());
+
+    try {
+      return await activeRecorder.convertRawImageData(
+        image: image,
+        id: generateUniqueId(),
+        outputFormat: OutputFormat.png,
+        cropToDrawingBounds: false,
+      );
+    } finally {
+      if (localRecorder != null) {
+        await localRecorder.destroy();
+      }
+    }
   }
 
   RenderBox? get _renderBox {

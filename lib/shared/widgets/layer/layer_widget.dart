@@ -462,7 +462,7 @@ class _LayerWidgetState extends State<LayerWidget>
       );
     }
 
-    return content;
+    return RepaintBoundary(key: _layer.repaintBoundaryKey, child: content);
   }
 
   @override

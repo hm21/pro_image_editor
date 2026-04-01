@@ -6,6 +6,8 @@ analyzer:
     strict-raw-types: true
   errors:
     close_sinks: ignore
+  exclude: 
+    - build/**
 
 linter:
   rules:

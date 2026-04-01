@@ -113,10 +113,14 @@ class ContentRecorderController {
   Future<Uint8List?> convertRawImageData({
     required ui.Image image,
     String? id,
+    OutputFormat? outputFormat,
+    bool? cropToDrawingBounds,
   }) {
     return _imageConverterService.convert(
       image: image,
       id: id ?? generateUniqueId(),
+      format: outputFormat,
+      cropToDrawingBounds: cropToDrawingBounds,
     );
   }
 

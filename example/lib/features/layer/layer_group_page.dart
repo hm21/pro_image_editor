@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '/features/layer/layer_export_example.dart';
 import '/features/layer/layer_grouping_example.dart';
 import '/features/layer/layer_select_design_example.dart';
 import '/features/layer/selectable_layer_example.dart';
@@ -41,6 +42,12 @@ class _LayerGroupPageState extends State<LayerGroupPage> {
             title: const Text('Always-Selectable'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openExample(const SelectableLayerExample()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.image_outlined),
+            title: const Text('Export Layers as PNG'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openExample(const LayerExportExample()),
           ),
         ],
       ),
