@@ -53,7 +53,7 @@ class _LayerExportExampleState extends State<LayerExportExample>
     if (!mounted) return;
 
     if (overlay) {
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
         PageRouteBuilder(
           opaque: false,
           pageBuilder: (_, __, ___) => _ExportedLayersOverlay(
