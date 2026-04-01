@@ -385,11 +385,18 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
 
     var exportModel = VideoRenderData(
       id: taskId,
-      video: useSegments ? null : video,
-      videoSegments: useSegments ? videoSegments : null,
-      imageBytes: parameters.layers.isNotEmpty ? parameters.image : null,
+      videoSegments: useSegments
+          ? videoSegments
+              .map((video) =>
+                  video.copyWith(volume: audioVolumes.originalVolume))
+              .toList()
+          : [VideoSegment(video: video, volume: audioVolumes.originalVolume)],
+      imageLayers: [
+        if (parameters.layers.isNotEmpty)
+          ImageLayer(image: EditorLayerImage.memory(parameters.image))
+      ],
       blur: parameters.blur,
-      colorMatrixList: [parameters.colorFiltersCombined],
+      colorFilters: [ColorFilter(matrix: parameters.colorFiltersCombined)],
       startTime: useSegments ? null : parameters.startTime,
       endTime: useSegments ? null : parameters.endTime,
       transform: parameters.isTransformed
@@ -406,9 +413,13 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       enableAudio: proVideoController?.isAudioEnabled ?? true,
       outputFormat: outputFormat,
       bitrate: videoMetadata.bitrate,
-      customAudioPath: customAudioPath,
-      originalAudioVolume: audioVolumes.originalVolume,
-      customAudioVolume: audioVolumes.customVolume,
+      audioTracks: [
+        if (customAudioPath != null)
+          VideoAudioTrack(
+            path: customAudioPath,
+            volume: audioVolumes.customVolume,
+          )
+      ],
     );
 
     final now = DateTime.now().millisecondsSinceEpoch;
