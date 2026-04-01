@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.1.0
+- **FEAT**(layers): Add layer export API to capture individual layers as PNG images. Use `Layer.captureAsPng()` for single layers or `Layer.captureAllLayers()` for batch export with shared isolate reuse. The main editor exposes `captureAllLayers()` and `captureAllLayersWithMeta()` convenience methods.
+- **FEAT**(layers): Add `ExportedLayer` model containing the source layer, encoded image bytes, and logical size metadata.
+
 ## 12.0.13
 - **FEAT**(text-editor): Add `composingTextDecoration` to `TextEditorConfigs` to control the text decoration of the IME composing region. Defaults to `TextDecoration.none` to remove the underline shown when `enableSuggestions` is active.
 
