@@ -37,6 +37,7 @@ class MainEditorLayers extends StatefulWidget {
     required this.onDuplicateLayer,
     required this.mouseService,
     required this.dragSelectionService,
+    this.playTimeNotifier,
   });
 
   /// Represents the current state of the editor.
@@ -86,6 +87,12 @@ class MainEditorLayers extends StatefulWidget {
 
   /// Callback triggered when the context menu is toggled.
   final Function(bool isOpen)? onContextMenuToggled;
+
+  /// Notifier providing the current video playback position.
+  ///
+  /// When non-null, layers with [Layer.startTime] / [Layer.endTime] are
+  /// animated in/out based on the current time.
+  final ValueNotifier<Duration>? playTimeNotifier;
 
   @override
   State<MainEditorLayers> createState() => _MainEditorLayersState();
@@ -187,6 +194,7 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
       enableMouseCursor: !widget.dragSelectionService.isActive,
       onDuplicate: () => widget.onDuplicateLayer(layer),
       onContextMenuToggled: widget.onContextMenuToggled,
+      playTimeNotifier: widget.playTimeNotifier,
     );
   }
 }

@@ -2,7 +2,7 @@
 import 'package:flutter/foundation.dart';
 
 import '/features/crop_rotate_editor/models/transform_configs.dart';
-import '/features/filter_editor/types/filter_matrix.dart';
+import '/features/filter_editor/types/filter_state.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';
 import '../layers/layer.dart';
 
@@ -29,7 +29,7 @@ class EditorStateHistory {
   final List<Layer> layers;
 
   /// The applied filters.
-  final FilterMatrix filters;
+  final List<FilterState> filters;
 
   /// The applied tune adjustments.
   final List<TuneAdjustmentMatrix> tuneAdjustments;
@@ -47,7 +47,7 @@ class EditorStateHistory {
   EditorStateHistory copyWith({
     double? blur,
     List<Layer>? layers,
-    FilterMatrix? filters,
+    List<FilterState>? filters,
     List<TuneAdjustmentMatrix>? tuneAdjustments,
     TransformConfigs? transformConfigs,
   }) {

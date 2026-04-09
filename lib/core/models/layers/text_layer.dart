@@ -47,6 +47,13 @@ class TextLayer extends Layer {
     super.boxConstraints,
     super.key,
     super.groupId,
+    super.startTime,
+    super.endTime,
+    super.enterDuration,
+    super.exitDuration,
+    super.enterCurve,
+    super.exitCurve,
+    super.transitionBuilder,
   });
 
   /// Factory constructor for creating a TextLayer instance from a Layer
@@ -133,6 +140,10 @@ class TextLayer extends Layer {
       meta: layer.meta,
       boxConstraints: layer.boxConstraints,
       groupId: layer.groupId,
+      startTime: layer.startTime,
+      endTime: layer.endTime,
+      enterDuration: layer.enterDuration,
+      exitDuration: layer.exitDuration,
       text: map[keyConverter('text')] ?? '-',
       fontScale: fontScale,
       maxTextWidth: tryParseDouble(map[keyConverter('maxTextWidth')]),
@@ -336,6 +347,13 @@ class TextLayer extends Layer {
     BoxConstraints? boxConstraints,
     String? id,
     String? groupId,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    LayerTimelineTransitionBuilder? transitionBuilder,
   }) {
     return TextLayer(
       text: text ?? this.text,
@@ -358,6 +376,13 @@ class TextLayer extends Layer {
       meta: meta ?? this.meta,
       boxConstraints: boxConstraints ?? this.boxConstraints,
       groupId: groupId ?? this.groupId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      enterDuration: enterDuration ?? this.enterDuration,
+      exitDuration: exitDuration ?? this.exitDuration,
+      enterCurve: enterCurve ?? this.enterCurve,
+      exitCurve: exitCurve ?? this.exitCurve,
+      transitionBuilder: transitionBuilder ?? this.transitionBuilder,
     );
   }
 

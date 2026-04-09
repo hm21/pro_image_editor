@@ -167,7 +167,6 @@ class MainEditorStateHistoryService {
           EditorStateHistory(
             transformConfigs: TransformConfigs.empty(),
             blur: 0,
-            filters: [],
             layers: [],
             tuneAdjustments: [],
           ),

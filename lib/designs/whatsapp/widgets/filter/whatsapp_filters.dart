@@ -75,10 +75,12 @@ class WhatsappFilters extends StatelessWidget {
               blurFactor: stateManager.activeBlur,
               configs: editor.configs,
               selectedFilter: activeFilters.isNotEmpty
-                  ? activeFilters
+                  ? activeFilters.allMatrices
                   : emptyFilter,
               onSelectFilter: (filter) {
-                editor.addHistory(filters: filter.filters);
+                editor.addHistory(
+                  filters: [FilterState(matrices: filter.filters)],
+                );
               },
             ),
           ),

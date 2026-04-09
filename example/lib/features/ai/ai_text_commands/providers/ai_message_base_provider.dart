@@ -59,7 +59,7 @@ abstract class AiMessageBaseProvider {
       'transform': state.transformConfigs.isNotEmpty
           ? state.transformConfigs.toMap()
           : null,
-      'filters': state.activeFilters,
+      'filters': state.activeFilters.allMatrices,
       'tune': state.activeTuneAdjustments.map((tune) => tune.toMap()).toList(),
     };
     final systemConfig = buildAiSystemConfig(
@@ -129,7 +129,7 @@ abstract class AiMessageBaseProvider {
 
       editor.addHistory(
         blur: blur,
-        filters: filters,
+        filters: filters != null ? [FilterState(matrices: filters)] : null,
         tuneAdjustments: tuneAdjustments,
         layers: layers,
         transformConfigs: transformConfigs,

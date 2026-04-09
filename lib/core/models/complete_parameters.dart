@@ -4,7 +4,10 @@ import 'package:flutter/foundation.dart';
 
 import '/features/audio_editor/models/audio_track.dart';
 import '/features/clips_editor/models/video_clip.dart';
+import '/features/filter_editor/types/filter_state.dart';
 import '/features/filter_editor/utils/combine_color_matrix_utils.dart';
+import '/features/tune_editor/models/tune_adjustment_matrix.dart';
+import 'layers/exported_layer.dart';
 import 'layers/layer.dart';
 
 /// A data class that contains all parameters needed for applying visual
@@ -67,6 +70,9 @@ class CompleteParameters {
     required this.image,
     required this.isTransformed,
     required this.layers,
+    this.filterStates = const [],
+    this.tuneAdjustments = const [],
+    this.capturedLayers = const [],
     this.videoClips = const [],
     this.customAudioTrack,
   });
@@ -133,6 +139,25 @@ class CompleteParameters {
   /// rendered on top of the video during export.
   final List<Layer> layers;
 
+  /// The active filter states with their timeline metadata.
+  ///
+  /// Each [FilterState] contains the filter matrices and optional
+  /// video-timeline metadata (startTime, endTime, enter/exit transitions).
+  final List<FilterState> filterStates;
+
+  /// The active tune adjustments with their timeline metadata.
+  ///
+  /// Each [TuneAdjustmentMatrix] contains the adjustment matrix and optional
+  /// video-timeline metadata (startTime, endTime, enter/exit transitions).
+  final List<TuneAdjustmentMatrix> tuneAdjustments;
+
+  /// The captured layer images, if [MainEditorConfigs.captureLayersOnDone]
+  /// was enabled.
+  ///
+  /// Each [ExportedLayer] contains the layer metadata, its rendered image
+  /// bytes, and its logical size.
+  final List<ExportedLayer> capturedLayers;
+
   /// The list of video clips currently included in the editor timeline.
   ///
   /// Each [VideoClip] represents a segment of video with its own
@@ -151,6 +176,9 @@ class CompleteParameters {
     double? blur,
     List<List<double>>? matrixFilterList,
     List<List<double>>? matrixTuneAdjustmentsList,
+    List<FilterState>? filterStates,
+    List<TuneAdjustmentMatrix>? tuneAdjustments,
+    List<ExportedLayer>? capturedLayers,
     Duration? startTime,
     Duration? endTime,
     int? cropWidth,
@@ -171,6 +199,9 @@ class CompleteParameters {
       matrixFilterList: matrixFilterList ?? this.matrixFilterList,
       matrixTuneAdjustmentsList:
           matrixTuneAdjustmentsList ?? this.matrixTuneAdjustmentsList,
+      filterStates: filterStates ?? this.filterStates,
+      tuneAdjustments: tuneAdjustments ?? this.tuneAdjustments,
+      capturedLayers: capturedLayers ?? this.capturedLayers,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       cropWidth: cropWidth ?? this.cropWidth,

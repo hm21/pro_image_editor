@@ -10,7 +10,7 @@ import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/history/state_history.dart';
 import '/core/models/layers/layer.dart';
 import '/core/platform/io/io_helper.dart';
-import '/features/filter_editor/types/filter_matrix.dart';
+import '/features/filter_editor/types/filter_state.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';
 import '/shared/extensions/export_string_extension.dart';
 import '/shared/extensions/num_extension.dart';
@@ -138,13 +138,13 @@ class ExportStateHistory {
 
     /// Helper function to collect history states up to a given position.
     EditorStateHistory accumulateHistory(int position) {
-      FilterMatrix filters = [];
+      List<FilterState> filters = [];
       List<TuneAdjustmentMatrix> tuneAdjustments = [];
       double? blur;
       TransformConfigs? transformConfigs;
 
       for (var item in changes.getRange(0, position)) {
-        if (item.filters.isNotEmpty) filters.addAll(item.filters);
+        if (item.filters.isNotEmpty) filters = item.filters;
         if (item.blur != null) blur = item.blur;
         if (item.tuneAdjustments.isNotEmpty) {
           tuneAdjustments = item.tuneAdjustments;
@@ -221,11 +221,7 @@ class ExportStateHistory {
         if (layers.isNotEmpty) 'layers'.toHistoryKey(minifier): layers,
         if (enableFilterExport)
           'filters'.toHistoryKey(minifier): element.filters
-              .map(
-                (item) => item
-                    .map((value) => value.roundSmart(maxDecimalPlaces))
-                    .toList(),
-              )
+              .map((f) => f.toMap())
               .toList(),
         if (enableTuneExport)
           'tune'.toHistoryKey(minifier): element.tuneAdjustments

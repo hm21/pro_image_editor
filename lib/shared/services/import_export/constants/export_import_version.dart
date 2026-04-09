@@ -44,8 +44,13 @@ class ExportImportVersion {
   /// editor version >= `11.1.0`.
   static const version_6_4_0 = '6.4.0';
 
+  /// The version string representing version `6.5.0` which adds timeline
+  /// fields (startTime, endTime, enter/exit duration & curve) to filters,
+  /// tune adjustments and layers.
+  static const version_6_5_0 = '6.5.0';
+
   /// Represents the latest version of the export/import functionality.
-  static const latest = ExportImportVersion.version_6_4_0;
+  static const latest = ExportImportVersion.version_6_5_0;
 }
 
 /// An extension on the `String` class that provides functionality

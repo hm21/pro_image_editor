@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.2.0
+- **FEAT**(timeline): Add video timeline visibility to layers, filters, and tune adjustments with configurable `startTime`, `endTime`, enter/exit durations and curves.
+- **FEAT**(complete-parameters): Add `filterStates`, `tuneAdjustments`, and `capturedLayers` to `CompleteParameters`. Add `captureLayersOnDone` config to `MainEditorConfigs`.
+
 ## 12.1.0
 - **FEAT**(layers): Add layer export API to capture individual layers as PNG images. Use `Layer.captureAsPng()` for single layers or `Layer.captureAllLayers()` for batch export with shared isolate reuse. The main editor exposes `captureAllLayers()` and `captureAllLayersWithMeta()` convenience methods.
 - **FEAT**(layers): Add `ExportedLayer` model containing the source layer, encoded image bytes, and logical size metadata.

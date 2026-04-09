@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 
 import '/core/constants/int_constants.dart';
 import '/core/models/editor_configs/image_generation_configs/image_generation_configs.dart';
+import '/core/models/editor_configs/video/layer_timeline_configs.dart';
 import '/shared/extensions/box_constraints_extension.dart';
 import '/shared/extensions/export_bool_extension.dart';
 import '/shared/extensions/num_extension.dart';
@@ -17,6 +18,7 @@ import '/shared/services/import_export/types/widget_loader.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/map_utils.dart';
 import '/shared/utils/parser/bool_parser.dart';
+import '/shared/utils/parser/curve_parser.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/unique_id_generator.dart';
 import '../editor_image.dart';
@@ -27,6 +29,8 @@ import 'paint_layer.dart';
 import 'text_layer.dart';
 import 'widget_layer.dart';
 
+export '/core/models/editor_configs/video/layer_timeline_configs.dart'
+    show LayerTimelineTransitionBuilder;
 export 'emoji_layer.dart';
 export 'paint_layer.dart';
 export 'text_layer.dart';
@@ -47,6 +51,13 @@ class Layer {
     this.meta,
     this.boxConstraints,
     this.groupId,
+    this.startTime,
+    this.endTime,
+    this.enterDuration,
+    this.exitDuration,
+    this.enterCurve,
+    this.exitCurve,
+    this.transitionBuilder,
   }) : key = key ??= GlobalKey(),
        keyInternalSize = GlobalKey(),
        repaintBoundaryKey = GlobalKey(),
@@ -99,6 +110,20 @@ class Layer {
       scale: safeParseDouble(map[keyConverter('scale')], fallback: 1),
       boxConstraints: boxConstraints,
       groupId: map[keyConverter('groupId')],
+      startTime: map[keyConverter('startTime')] != null
+          ? Duration(milliseconds: map[keyConverter('startTime')] as int)
+          : null,
+      endTime: map[keyConverter('endTime')] != null
+          ? Duration(milliseconds: map[keyConverter('endTime')] as int)
+          : null,
+      enterDuration: map[keyConverter('enterDuration')] != null
+          ? Duration(milliseconds: map[keyConverter('enterDuration')] as int)
+          : null,
+      exitDuration: map[keyConverter('exitDuration')] != null
+          ? Duration(milliseconds: map[keyConverter('exitDuration')] as int)
+          : null,
+      enterCurve: parseCurve(map[keyConverter('enterCurve')] as String?),
+      exitCurve: parseCurve(map[keyConverter('exitCurve')] as String?),
     );
 
     /// Determines the layer type from the map and returns the appropriate
@@ -134,6 +159,43 @@ class Layer {
 
   /// Optional group identifier for grouping layers.
   String? groupId;
+
+  /// The time at which this layer becomes visible.
+  ///
+  /// Only used in the video editor. When `null`, the layer is always visible.
+  Duration? startTime;
+
+  /// The time at which this layer stops being visible.
+  ///
+  /// Only used in the video editor. When `null`, the layer is always visible.
+  Duration? endTime;
+
+  /// How long the fade-in animation lasts in **video time**.
+  ///
+  /// The transition starts at [startTime] and finishes at
+  /// `startTime + enterDuration`. When `null`, no fade-in is applied.
+  Duration? enterDuration;
+
+  /// How long the fade-out animation lasts in **video time**.
+  ///
+  /// The transition starts at `endTime - exitDuration` and finishes at
+  /// [endTime]. When `null`, no fade-out is applied.
+  Duration? exitDuration;
+
+  /// The curve applied to the fade-in animation for this layer.
+  ///
+  /// When `null`, falls back to [LayerTimelineConfigs.enterCurve].
+  Curve? enterCurve;
+
+  /// The curve applied to the fade-out animation for this layer.
+  ///
+  /// When `null`, falls back to [LayerTimelineConfigs.exitCurve].
+  Curve? exitCurve;
+
+  /// A builder that wraps this layer with an animated transition.
+  ///
+  /// When `null`, falls back to [LayerTimelineConfigs.transitionBuilder].
+  LayerTimelineTransitionBuilder? transitionBuilder;
 
   /// Global key associated with the Layer instance, used for accessing the
   /// widget tree.
@@ -223,6 +285,12 @@ class Layer {
           maxDecimalPlaces: maxDecimalPlaces,
         ),
       if (groupId != null) 'groupId': groupId,
+      if (startTime != null) 'startTime': startTime!.inMilliseconds,
+      if (endTime != null) 'endTime': endTime!.inMilliseconds,
+      if (enterDuration != null) 'enterDuration': enterDuration!.inMilliseconds,
+      if (exitDuration != null) 'exitDuration': exitDuration!.inMilliseconds,
+      if (enterCurve != null) 'enterCurve': curveToString(enterCurve!),
+      if (exitCurve != null) 'exitCurve': curveToString(exitCurve!),
     };
   }
 
@@ -258,6 +326,15 @@ class Layer {
           maxDecimalPlaces: maxDecimalPlaces,
         ),
       if (layer.groupId != groupId) 'groupId': groupId,
+      if (layer.startTime != startTime) 'startTime': startTime?.inMilliseconds,
+      if (layer.endTime != endTime) 'endTime': endTime?.inMilliseconds,
+      if (layer.enterDuration != enterDuration)
+        'enterDuration': enterDuration?.inMilliseconds,
+      if (layer.exitDuration != exitDuration)
+        'exitDuration': exitDuration?.inMilliseconds,
+      if (layer.enterCurve != enterCurve)
+        'enterCurve': curveToString(enterCurve!),
+      if (layer.exitCurve != exitCurve) 'exitCurve': curveToString(exitCurve!),
     };
   }
 
@@ -527,6 +604,13 @@ class Layer {
         other.interaction == interaction &&
         other.boxConstraints == boxConstraints &&
         other.groupId == groupId &&
+        other.startTime == startTime &&
+        other.endTime == endTime &&
+        other.enterDuration == enterDuration &&
+        other.exitDuration == exitDuration &&
+        other.enterCurve == enterCurve &&
+        other.exitCurve == exitCurve &&
+        other.transitionBuilder == transitionBuilder &&
         mapIsEqual(other.meta, meta);
   }
 
@@ -541,7 +625,14 @@ class Layer {
         interaction.hashCode ^
         boxConstraints.hashCode ^
         meta.hashCode ^
-        groupId.hashCode;
+        groupId.hashCode ^
+        startTime.hashCode ^
+        endTime.hashCode ^
+        enterDuration.hashCode ^
+        exitDuration.hashCode ^
+        enterCurve.hashCode ^
+        exitCurve.hashCode ^
+        transitionBuilder.hashCode;
   }
 
   /// Creates a copy of this [Layer] with the given fields replaced with
@@ -557,6 +648,13 @@ class Layer {
     LayerInteraction? interaction,
     Map<String, dynamic>? meta,
     BoxConstraints? boxConstraints,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    LayerTimelineTransitionBuilder? transitionBuilder,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -569,6 +667,13 @@ class Layer {
       interaction: interaction ?? this.interaction,
       meta: meta ?? this.meta,
       boxConstraints: boxConstraints ?? this.boxConstraints,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      enterDuration: enterDuration ?? this.enterDuration,
+      exitDuration: exitDuration ?? this.exitDuration,
+      enterCurve: enterCurve ?? this.enterCurve,
+      exitCurve: exitCurve ?? this.exitCurve,
+      transitionBuilder: transitionBuilder ?? this.transitionBuilder,
     );
   }
 
@@ -591,6 +696,18 @@ class Layer {
       ..add(FlagProperty('isEmojiLayer', value: isEmojiLayer, ifTrue: 'true'))
       ..add(FlagProperty('isPaintLayer', value: isPaintLayer, ifTrue: 'true'))
       ..add(FlagProperty('isWidgetLayer', value: isWidgetLayer, ifTrue: 'true'))
-      ..add(FlagProperty('isTextLayer', value: isTextLayer, ifTrue: 'true'));
+      ..add(FlagProperty('isTextLayer', value: isTextLayer, ifTrue: 'true'))
+      ..add(DiagnosticsProperty<Duration>('startTime', startTime))
+      ..add(DiagnosticsProperty<Duration>('endTime', endTime))
+      ..add(DiagnosticsProperty<Duration>('enterDuration', enterDuration))
+      ..add(DiagnosticsProperty<Duration>('exitDuration', exitDuration))
+      ..add(DiagnosticsProperty<Curve>('enterCurve', enterCurve))
+      ..add(DiagnosticsProperty<Curve>('exitCurve', exitCurve))
+      ..add(
+        ObjectFlagProperty<LayerTimelineTransitionBuilder>.has(
+          'transitionBuilder',
+          transitionBuilder,
+        ),
+      );
   }
 }

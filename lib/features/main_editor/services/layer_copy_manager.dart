@@ -134,6 +134,13 @@ class LayerCopyManager {
       customSecondaryColor: layer.customSecondaryColor,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),
+      startTime: layer.startTime,
+      endTime: layer.endTime,
+      enterDuration: layer.enterDuration,
+      exitDuration: layer.exitDuration,
+      enterCurve: layer.enterCurve,
+      exitCurve: layer.exitCurve,
+      transitionBuilder: layer.transitionBuilder,
     )..groupId = layer.groupId;
   }
 
@@ -156,6 +163,13 @@ class LayerCopyManager {
       meta: layer.meta,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),
+      startTime: layer.startTime,
+      endTime: layer.endTime,
+      enterDuration: layer.enterDuration,
+      exitDuration: layer.exitDuration,
+      enterCurve: layer.enterCurve,
+      exitCurve: layer.exitCurve,
+      transitionBuilder: layer.transitionBuilder,
     )..groupId = layer.groupId;
   }
 
@@ -180,6 +194,13 @@ class LayerCopyManager {
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),
       exportConfigs: layer.exportConfigs.copyWith(),
+      startTime: layer.startTime,
+      endTime: layer.endTime,
+      enterDuration: layer.enterDuration,
+      exitDuration: layer.exitDuration,
+      enterCurve: layer.enterCurve,
+      exitCurve: layer.exitCurve,
+      transitionBuilder: layer.transitionBuilder,
     )..groupId = layer.groupId;
   }
 
@@ -204,6 +225,13 @@ class LayerCopyManager {
       opacity: layer.opacity,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),
+      startTime: layer.startTime,
+      endTime: layer.endTime,
+      enterDuration: layer.enterDuration,
+      exitDuration: layer.exitDuration,
+      enterCurve: layer.enterCurve,
+      exitCurve: layer.exitCurve,
+      transitionBuilder: layer.transitionBuilder,
     )..groupId = layer.groupId;
   }
 }

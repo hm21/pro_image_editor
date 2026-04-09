@@ -2,7 +2,7 @@ import '/core/models/editor_image.dart';
 import '/core/models/history/state_history.dart';
 import '/core/models/layers/layer.dart';
 import '/core/models/multi_threading/thread_capture_model.dart';
-import '/features/filter_editor/types/filter_matrix.dart';
+import '/features/filter_editor/types/filter_state.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';
 import '../../crop_rotate_editor/models/transform_configs.dart';
 
@@ -106,8 +106,6 @@ class StateManager {
   void updateActiveItems() {
     var activeHistory = _stateHistory.getRange(0, _historyPointer + 1);
 
-    _activeFilters = [];
-
     _activeFilters = activeHistory
         .lastWhere(
           (item) => item.filters.isNotEmpty,
@@ -149,14 +147,14 @@ class StateManager {
     }
   }
 
-  /// A list of active filters applied to the image.
-  /// This stores instances of `FilterMatrix`, representing various filter
-  /// adjustments.
-  FilterMatrix _activeFilters = [];
+  /// The active filter states applied to the image.
+  /// Each [FilterState] contains filter matrices and optional
+  /// video-timeline metadata.
+  List<FilterState> _activeFilters = const [];
 
-  /// A getter that returns the list of currently applied filters.
-  /// Use this to retrieve the active `FilterMatrix` configurations.
-  FilterMatrix get activeFilters => _activeFilters;
+  /// A getter that returns the currently applied filter states.
+  /// Use this to retrieve the active list of [FilterState].
+  List<FilterState> get activeFilters => _activeFilters;
 
   /// A list of active tune adjustments for the image, such as brightness,
   /// contrast, etc.

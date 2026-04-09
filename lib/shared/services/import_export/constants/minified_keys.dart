@@ -58,6 +58,12 @@ const Map<String, String> kMinifiedLayerKeys = {
   'boxConstraints': 'bx',
   'maxTextWidth': 'mt',
   'shadows': 'sh',
+  'startTime': 'st',
+  'endTime': 'et',
+  'enterDuration': 'ed',
+  'exitDuration': 'xd',
+  'enterCurve': 'ev',
+  'exitCurve': 'xv',
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',

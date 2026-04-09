@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/editor_image.dart';
+import '/features/filter_editor/types/filter_state.dart';
 import '/features/filter_editor/widgets/filter_generator.dart';
 import '/shared/widgets/auto_image.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
@@ -82,7 +83,7 @@ class MainEditorBackgroundImage extends StatelessWidget {
                 configs: configs,
                 image: editorImage,
                 blankSize: blankSize,
-                filters: stateManager.activeFilters,
+                filters: stateManager.activeFilters.allMatrices,
                 tuneAdjustments: stateManager.activeTuneAdjustments,
                 blurFactor: stateManager.activeBlur,
               ),
@@ -112,7 +113,10 @@ class MainEditorBackgroundImage extends StatelessWidget {
         ),
       )
       ..add(
-        IntProperty('activeFiltersCount', stateManager.activeFilters.length),
+        IntProperty(
+          'activeFiltersCount',
+          stateManager.activeFilters.allMatrices.length,
+        ),
       )
       ..add(
         IntProperty(

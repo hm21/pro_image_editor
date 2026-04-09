@@ -615,7 +615,6 @@ class ProImageEditorState extends State<ProImageEditor>
           ),
           blur: 0,
           layers: [],
-          filters: [],
           tuneAdjustments: [],
         ),
       );
@@ -733,7 +732,7 @@ class ProImageEditorState extends State<ProImageEditor>
     List<Layer>? layers,
     Layer? newLayer,
     TransformConfigs? transformConfigs,
-    FilterMatrix? filters,
+    List<FilterState>? filters,
     List<TuneAdjustmentMatrix>? tuneAdjustments,
     double? blur,
     bool heroScreenshotRequired = false,
@@ -750,7 +749,7 @@ class ProImageEditorState extends State<ProImageEditor>
             (newLayer != null
                 ? [...activeLayerList, newLayer]
                 : activeLayerList),
-        filters: filters ?? [],
+        filters: filters ?? const [],
         tuneAdjustments: tuneAdjustments ?? [],
       ),
       historyLimit: stateHistoryConfigs.stateHistoryLimit,
@@ -802,6 +801,38 @@ class ProImageEditorState extends State<ProImageEditor>
         ..insert(index, layer),
     );
 
+    _controllers.uiLayerCtrl.add(null);
+  }
+
+  /// Updates the [startTime] and/or [endTime] of the layer at the given
+  /// [index] and records the change in the state history.
+  ///
+  /// Both [startTime] and [endTime] are optional. Only non-null values are
+  /// applied. This is primarily used by the video editor to define when a
+  /// layer is visible on the timeline.
+  void setLayerTimeline({
+    required int index,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    LayerTimelineTransitionBuilder? transitionBuilder,
+    Map<String, dynamic>? meta,
+  }) {
+    final layers = _layerCopyManager.copyLayerList(activeLayers);
+    final layer = layers[index];
+    if (startTime != null) layer.startTime = startTime;
+    if (endTime != null) layer.endTime = endTime;
+    if (enterDuration != null) layer.enterDuration = enterDuration;
+    if (exitDuration != null) layer.exitDuration = exitDuration;
+    if (enterCurve != null) layer.enterCurve = enterCurve;
+    if (exitCurve != null) layer.exitCurve = exitCurve;
+    if (transitionBuilder != null) layer.transitionBuilder = transitionBuilder;
+    if (meta != null) layer.meta = {...layer.meta ?? {}, ...meta};
+
+    addHistory(layers: layers);
     _controllers.uiLayerCtrl.add(null);
   }
 
@@ -965,7 +996,6 @@ class ProImageEditorState extends State<ProImageEditor>
         transformConfigs: transformSetup.transformConfigs,
         blur: 0,
         layers: [],
-        filters: [],
         tuneAdjustments: [],
       ),
     );
@@ -1662,7 +1692,7 @@ class ProImageEditorState extends State<ProImageEditor>
           mainBodySize: sizesManager.bodySize,
           transformConfigs: stateManager.transformConfigs,
           appliedBlurFactor: stateManager.activeBlur,
-          appliedFilters: stateManager.activeFilters,
+          appliedFilters: stateManager.activeFilters.allMatrices,
           appliedTuneAdjustments: stateManager.activeTuneAdjustments,
           initialZoomMatrix: interactiveViewer.currentState?.transformMatrix4,
         ),
@@ -1796,7 +1826,7 @@ class ProImageEditorState extends State<ProImageEditor>
           mainBodySize: sizesManager.bodySize,
           enableFakeHero: true,
           appliedBlurFactor: stateManager.activeBlur,
-          appliedFilters: stateManager.activeFilters,
+          appliedFilters: stateManager.activeFilters.allMatrices,
           appliedTuneAdjustments: stateManager.activeTuneAdjustments,
           onDone: (transformConfigs, fitToScreenFactor, imageInfos) async {
             List<Layer> updatedLayers = LayerTransformGenerator(
@@ -1864,7 +1894,7 @@ class ProImageEditorState extends State<ProImageEditor>
             mainBodySize: sizesManager.bodySize,
             convertToUint8List: false,
             appliedBlurFactor: stateManager.activeBlur,
-            appliedFilters: stateManager.activeFilters,
+            appliedFilters: stateManager.activeFilters.allMatrices,
             appliedTuneAdjustments: stateManager.activeTuneAdjustments,
           ),
         ),
@@ -1908,7 +1938,7 @@ class ProImageEditorState extends State<ProImageEditor>
           mainBodySize: sizesManager.bodySize,
           convertToUint8List: false,
           appliedBlurFactor: stateManager.activeBlur,
-          appliedFilters: stateManager.activeFilters,
+          appliedFilters: stateManager.activeFilters.allMatrices,
           appliedTuneAdjustments: stateManager.activeTuneAdjustments,
         ),
       ),
@@ -1916,7 +1946,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (filters == null) return;
 
-    addHistory(filters: filters, heroScreenshotRequired: true);
+    addHistory(
+      filters: [FilterState(matrices: filters)],
+      heroScreenshotRequired: true,
+    );
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -1942,7 +1975,7 @@ class ProImageEditorState extends State<ProImageEditor>
           transformConfigs: stateManager.transformConfigs,
           convertToUint8List: false,
           appliedBlurFactor: stateManager.activeBlur,
-          appliedFilters: stateManager.activeFilters,
+          appliedFilters: stateManager.activeFilters.allMatrices,
           appliedTuneAdjustments: stateManager.activeTuneAdjustments,
         ),
       ),
@@ -2357,6 +2390,10 @@ class ProImageEditorState extends State<ProImageEditor>
         Uint8List? bytes = await captureEditorImage();
         await onImageEditingComplete?.call(bytes);
 
+        final capturedLayers = mainEditorConfigs.captureLayersOnDone
+            ? await captureAllLayersWithMeta()
+            : <ExportedLayer>[];
+
         final transform = stateManager.transformConfigs;
         final isTransformed = transform.isNotEmpty;
 
@@ -2367,7 +2404,9 @@ class ProImageEditorState extends State<ProImageEditor>
         await onCompleteWithParameters?.call(
           CompleteParameters(
             blur: stateManager.activeBlur,
-            matrixFilterList: stateManager.activeFilters,
+            matrixFilterList: stateManager.activeFilters.allMatrices,
+            filterStates: stateManager.activeFilters,
+            tuneAdjustments: stateManager.activeTuneAdjustments,
             matrixTuneAdjustmentsList: stateManager.activeTuneAdjustments
                 .map((item) => item.matrix)
                 .toList(),
@@ -2383,6 +2422,7 @@ class ProImageEditorState extends State<ProImageEditor>
             image: bytes,
             isTransformed: isTransformed,
             layers: activeLayers,
+            capturedLayers: capturedLayers,
             customAudioTrack: _videoController?.audioTrack,
             videoClips: _videoController?.clips ?? [],
           ),
@@ -3073,6 +3113,7 @@ class ProImageEditorState extends State<ProImageEditor>
       state: this,
       dragSelectionService: _layerDragSelectionService,
       mouseService: _mouseService,
+      playTimeNotifier: _videoController?.playTimeNotifier,
       onContextMenuToggled: (isOpen) {
         _isContextMenuOpen = isOpen;
       },
@@ -3149,6 +3190,7 @@ class ProImageEditorState extends State<ProImageEditor>
       sizesManager: sizesManager,
       stateManager: stateManager,
       videoPlayer: _videoController!.videoPlayer,
+      playTimeNotifier: _videoController?.playTimeNotifier,
     );
   }
 }

@@ -11,6 +11,7 @@ import '/core/models/editor_image.dart';
 import '/shared/widgets/auto_image.dart';
 import '../../tune_editor/models/tune_adjustment_matrix.dart';
 import '../types/filter_matrix.dart';
+import '../types/filter_state.dart';
 import 'filter_generator.dart';
 
 /// Represents an image where filters and blur factors can be applied.
@@ -30,6 +31,8 @@ class FilteredWidget extends StatelessWidget {
     this.blankSize,
     this.videoPlayer,
     this.enableCachedSize = false,
+    this.filterStates,
+    this.playTimeNotifier,
   }) : assert(
          image != null || videoPlayer != null || blankSize != null,
          'Image or videoPlayer or blankSize cannot be null',
@@ -76,6 +79,12 @@ class FilteredWidget extends StatelessWidget {
   /// size.
   final bool enableCachedSize;
 
+  /// Optional timeline-aware filter states for the video editor.
+  final List<FilterState>? filterStates;
+
+  /// Notifier that provides the current video playback position.
+  final ValueNotifier<Duration>? playTimeNotifier;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -90,6 +99,8 @@ class FilteredWidget extends StatelessWidget {
             key: filterKey,
             filters: filters,
             tuneAdjustments: tuneAdjustments,
+            filterStates: filterStates,
+            playTimeNotifier: playTimeNotifier,
             child: _buildContent(),
           ),
           if (blurFactor > 0) _buildBlur(),

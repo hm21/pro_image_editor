@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
+import '/features/filter_editor/types/filter_state.dart';
 import '/features/filter_editor/widgets/filter_generator.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../../filter_editor/widgets/filtered_widget.dart';
@@ -28,6 +29,7 @@ class MainEditorBackgroundVideo extends StatelessWidget {
     required this.backgroundImageColorFilterKey,
     required this.isInitialized,
     required this.videoPlayer,
+    this.playTimeNotifier,
   });
 
   /// Manages the state of the editor.
@@ -48,6 +50,9 @@ class MainEditorBackgroundVideo extends StatelessWidget {
   /// The video player widget to display in the background.
   final Widget videoPlayer;
 
+  /// Notifier that provides the current video playback position.
+  final ValueNotifier<Duration>? playTimeNotifier;
+
   @override
   Widget build(BuildContext context) {
     return Hero(
@@ -64,10 +69,12 @@ class MainEditorBackgroundVideo extends StatelessWidget {
                 width: sizesManager.decodedImageSize.width,
                 height: sizesManager.decodedImageSize.height,
                 configs: configs,
-                filters: stateManager.activeFilters,
+                filters: stateManager.activeFilters.allMatrices,
                 tuneAdjustments: stateManager.activeTuneAdjustments,
                 blurFactor: stateManager.activeBlur,
                 videoPlayer: videoPlayer,
+                filterStates: stateManager.activeFilters,
+                playTimeNotifier: playTimeNotifier,
               ),
             ),
     );

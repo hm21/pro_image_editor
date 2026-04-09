@@ -21,6 +21,7 @@ import 'constants/identity_matrix_constant.dart';
 import 'utils/lerp_color_matrix_utils.dart';
 
 export 'types/filter_matrix.dart';
+export 'types/filter_state.dart';
 export 'utils/filter_generator/filter_addons.dart';
 export 'utils/filter_generator/filter_model.dart';
 export 'utils/filter_generator/filter_presets.dart';

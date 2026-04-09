@@ -46,6 +46,13 @@ class PaintLayer extends Layer {
     super.boxConstraints,
     super.key,
     super.groupId,
+    super.startTime,
+    super.endTime,
+    super.enterDuration,
+    super.exitDuration,
+    super.enterCurve,
+    super.exitCurve,
+    super.transitionBuilder,
   });
 
   /// Factory constructor for creating a PaintLayer instance from a
@@ -69,6 +76,10 @@ class PaintLayer extends Layer {
       scale: layer.scale,
       meta: layer.meta,
       groupId: layer.groupId,
+      startTime: layer.startTime,
+      endTime: layer.endTime,
+      enterDuration: layer.enterDuration,
+      exitDuration: layer.exitDuration,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
       rawSize: Size(
         safeParseDouble(map[keyConverter('rawSize')]?['w'], fallback: 0),
@@ -164,6 +175,13 @@ class PaintLayer extends Layer {
     BoxConstraints? boxConstraints,
     String? id,
     String? groupId,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    LayerTimelineTransitionBuilder? transitionBuilder,
   }) {
     return PaintLayer(
       item: item ?? this.item,
@@ -179,6 +197,13 @@ class PaintLayer extends Layer {
       meta: meta ?? this.meta,
       boxConstraints: boxConstraints ?? this.boxConstraints,
       groupId: groupId ?? this.groupId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      enterDuration: enterDuration ?? this.enterDuration,
+      exitDuration: exitDuration ?? this.exitDuration,
+      enterCurve: enterCurve ?? this.enterCurve,
+      exitCurve: exitCurve ?? this.exitCurve,
+      transitionBuilder: transitionBuilder ?? this.transitionBuilder,
     );
   }
 

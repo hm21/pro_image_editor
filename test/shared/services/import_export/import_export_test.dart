@@ -138,20 +138,20 @@ void main() {
         final editor = await pumpTestEditor(tester);
 
         final testFilters = PresetFilters.addictiveRed.filters;
-        editor.addHistory(filters: testFilters);
+        editor.addHistory(filters: [FilterState(matrices: testFilters)]);
 
-        expect(editor.stateManager.activeFilters, testFilters);
+        expect(editor.stateManager.activeFilters.allMatrices, testFilters);
         expect(editor.stateManager.historyPointer, 1);
 
         await runExportImport(
           editor,
           onAfterImport: () {
-            editor.addHistory(filters: []);
-            expect(editor.stateManager.activeFilters.length, 1);
+            editor.addHistory(filters: const []);
+            expect(editor.stateManager.activeFilters.allMatrices.length, 1);
           },
         );
 
-        expect(editor.stateManager.activeFilters, testFilters);
+        expect(editor.stateManager.activeFilters.allMatrices, testFilters);
         expect(editor.stateManager.historyPointer, 1);
       });
     });
