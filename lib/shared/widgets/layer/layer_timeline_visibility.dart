@@ -57,6 +57,12 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility>
       oldWidget.playTimeNotifier.removeListener(_onTimeChanged);
       widget.playTimeNotifier.addListener(_onTimeChanged);
     }
+    if (oldWidget.layer.startTime != widget.layer.startTime ||
+        oldWidget.layer.endTime != widget.layer.endTime ||
+        oldWidget.layer.enterDuration != widget.layer.enterDuration ||
+        oldWidget.layer.exitDuration != widget.layer.exitDuration) {
+      _controller.value = _computeProgress(widget.playTimeNotifier.value);
+    }
   }
 
   @override

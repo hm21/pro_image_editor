@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.2.1
+- **FIX**(timeline): Recalculate layer visibility when `startTime`, `endTime`, `enterDuration`, or `exitDuration` change while the video is paused.
+
 ## 12.2.0
 - **FEAT**(timeline): Add video timeline visibility to layers, filters, and tune adjustments with configurable `startTime`, `endTime`, enter/exit durations and curves.
 - **FEAT**(complete-parameters): Add `filterStates`, `tuneAdjustments`, and `capturedLayers` to `CompleteParameters`. Add `captureLayersOnDone` config to `MainEditorConfigs`.
