@@ -944,6 +944,36 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
   }
 
+  /// Removes the [FilterState] at the given [index] from the active filters
+  /// and records the change in the state history.
+  ///
+  /// Does nothing if [filter] is not found in the active filter list or
+  /// [index] is out of range.
+  ///
+  /// Either [filter] or [index] must be provided. If both are given, [index]
+  /// takes precedence.
+  ///
+  /// - [filter]: The [FilterState] instance to remove.
+  /// - [index]: Zero-based index of the filter to remove.
+  void removeFilter({FilterState? filter, int? index}) {
+    assert(
+      filter != null || index != null,
+      'Either filter or index must be provided.',
+    );
+    final filters = List<FilterState>.from(stateManager.activeFilters);
+    final i = index ?? (filter != null ? filters.indexOf(filter) : -1);
+    if (i < 0 || i >= filters.length) return;
+    filters.removeAt(i);
+    addHistory(filters: filters);
+    setState(() {});
+  }
+
+  /// Removes all active filters and records the change in the state history.
+  void clearFilters() {
+    addHistory(filters: []);
+    setState(() {});
+  }
+
   /// Initializes the video editor functionality.
   void initializeVideoEditor() async {
     if (!_isVideoEditor) return;
@@ -1413,14 +1443,22 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
   }
 
-  /// Handles tap events on a text layer.
+  /// Opens the text editor to modify an existing [TextLayer].
   ///
-  /// This method opens a text editor for the specified text layer and updates
-  /// the layer's properties
-  /// based on the user's input.
+  /// If [MainEditorCallbacks.onEditTextLayer] is set, the custom callback is
+  /// invoked instead of navigating to the built-in [TextEditor]. In both cases
+  /// a deep copy of [layerData] is passed so the original is never mutated
+  /// before the user confirms the edit.
   ///
-  /// [layerData] - The text layer data to be edited.
-  void _onTextLayerTap(TextLayer layerData) async {
+  /// After the editor returns the updated layer, all identity and transform
+  /// properties (`id`, `key`, `offset`, `scale`, `rotation`, etc.) are
+  /// restored from the original [layerData] to prevent unintended drift.
+  ///
+  /// If the returned text is empty, the layer is removed via [removeLayer].
+  /// Otherwise the layer is replaced in place via [replaceLayer].
+  ///
+  /// - [layerData]: The existing [TextLayer] to edit.
+  void editTextLayer(TextLayer layerData) async {
     final customCallback = mainEditorCallbacks?.onEditTextLayer;
     TextLayer? updatedLayer;
 
@@ -1450,30 +1488,61 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (!mounted || updatedLayer == null) return;
 
+    applyTextLayerChanges(layerData, updatedLayer);
+  }
+
+  /// Applies the result of a text editor session back to the layer stack.
+  ///
+  /// Restores all identity and transform properties (`id`, `key`, `offset`,
+  /// `scale`, `rotation`, etc.) from [original] onto [updatedLayer] so the
+  /// layer keeps its position in the editor.
+  ///
+  /// If [updatedLayer.text] is empty the layer is removed via [removeLayer].
+  /// Otherwise the layer is replaced in place via [replaceLayer].
+  ///
+  /// This method is called internally by [editTextLayer] but is also exposed
+  /// publicly so custom [MainEditorCallbacks.onEditTextLayer] implementations
+  /// can reuse the same commit logic.
+  ///
+  /// - [original]: The original [TextLayer] before editing.
+  /// - [updatedLayer]: The [TextLayer] returned by the editor.
+  void applyTextLayerChanges(TextLayer original, TextLayer updatedLayer) {
     updatedLayer
-      ..id = layerData.id
-      ..key = layerData.key
-      ..keyInternalSize = layerData.keyInternalSize
-      ..flipX = layerData.flipX
-      ..flipY = layerData.flipY
-      ..offset = layerData.offset
-      ..scale = layerData.scale
-      ..rotation = layerData.rotation
-      ..boxConstraints = layerData.boxConstraints
-      ..groupId = layerData.groupId
-      ..interaction = layerData.interaction
-      ..meta = layerData.meta;
+      ..id = original.id
+      ..key = original.key
+      ..keyInternalSize = original.keyInternalSize
+      ..flipX = original.flipX
+      ..flipY = original.flipY
+      ..offset = original.offset
+      ..scale = original.scale
+      ..rotation = original.rotation
+      ..boxConstraints = original.boxConstraints
+      ..groupId = original.groupId
+      ..interaction = original.interaction
+      ..meta = original.meta;
 
     if (updatedLayer.text.isEmpty) {
-      removeLayer(layerData);
+      removeLayer(original);
       return;
     }
 
-    int i = activeLayers.indexWhere((element) => element.id == layerData.id);
+    int i = activeLayers.indexWhere((element) => element.id == original.id);
     replaceLayer(index: i, layer: updatedLayer);
   }
 
-  void _editPaintLayer(PaintLayer layer) async {
+  /// Opens the paint editor to modify an existing [PaintLayer].
+  ///
+  /// Censor-area layers are not editable and return immediately without
+  /// opening the editor.
+  ///
+  /// If [PaintEditorCallbacks.onEditLayer] is set, the custom callback is
+  /// invoked instead of showing the built-in bottom-sheet editor.
+  ///
+  /// If the user dismisses without saving, the result is `null` and no change
+  /// is made. Otherwise the layer is replaced in place via [replaceLayer].
+  ///
+  /// - [layer]: The existing [PaintLayer] to edit.
+  void editPaintLayer(PaintLayer layer) async {
     if (layer.isPaintLayer && layer.item.isCensorArea) return;
 
     PaintLayer? result =
@@ -3108,8 +3177,8 @@ class ProImageEditorState extends State<ProImageEditor>
       activeLayers: activeLayers,
       isSubEditorOpen: isSubEditorOpen,
       onCheckInteractiveViewer: _checkInteractiveViewer,
-      onTextLayerTap: _onTextLayerTap,
-      onEditPaintLayer: _editPaintLayer,
+      onTextLayerTap: editTextLayer,
+      onEditPaintLayer: editPaintLayer,
       state: this,
       dragSelectionService: _layerDragSelectionService,
       mouseService: _mouseService,

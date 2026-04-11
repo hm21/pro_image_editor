@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.2.2
+- **FEAT**(main-editor): Expose `editTextLayer`, `editPaintLayer`, `applyTextLayerChanges`, `removeFilter`, and `clearFilters` as public methods.
+- **DOCS**(main-editor): Add doc comments to `editTextLayer`, `editPaintLayer`, `applyTextLayerChanges`, `removeFilter`, and `clearFilters`.
+
 ## 12.2.1
 - **FIX**(timeline): Recalculate layer visibility when `startTime`, `endTime`, `enterDuration`, or `exitDuration` change while the video is paused.
 
