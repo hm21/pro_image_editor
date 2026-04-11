@@ -1,5 +1,14 @@
 # Changelog
 
+## 12.3.0
+- **FEAT**(timeline): Add `meta` field to `FilterState` and `TuneAdjustmentMatrix` for storing arbitrary metadata on filters and tune adjustments.
+- **FEAT**(timeline): Add `copyWith()` to `FilterState` and `TuneAdjustmentMatrix`.
+- **FEAT**(main-editor): Add `setFilterTimeline()` and `setTuneTimeline()` methods for updating timeline properties of filters and tune adjustments.
+- **FEAT**(main-editor): Support `skipUpdateHistory` in `setFilterTimeline()` and `setTuneTimeline()` for live trimming without history overhead.
+- **PERF**(main-editor): `setLayerTimeline` with `skipUpdateHistory` now copies only the affected layer instead of the entire layer list.
+- **PERF**(main-editor): Skip `setLayerTimeline` entirely when no values would change.
+- **REFACTOR**(state-manager): Simplify `activeFilters` and `activeTuneAdjustments` to public fields.
+
 ## 12.2.2
 - **FEAT**(main-editor): Expose `editTextLayer`, `editPaintLayer`, `applyTextLayerChanges`, `removeFilter`, and `clearFilters` as public methods.
 - **DOCS**(main-editor): Add doc comments to `editTextLayer`, `editPaintLayer`, `applyTextLayerChanges`, `removeFilter`, and `clearFilters`.

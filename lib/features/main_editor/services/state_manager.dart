@@ -106,14 +106,14 @@ class StateManager {
   void updateActiveItems() {
     var activeHistory = _stateHistory.getRange(0, _historyPointer + 1);
 
-    _activeFilters = activeHistory
+    activeFilters = activeHistory
         .lastWhere(
           (item) => item.filters.isNotEmpty,
           orElse: EditorStateHistory.new,
         )
         .filters;
 
-    _activeTuneAdjustments = activeHistory
+    activeTuneAdjustments = activeHistory
         .lastWhere(
           (item) => item.tuneAdjustments.isNotEmpty,
           orElse: EditorStateHistory.new,
@@ -150,22 +150,13 @@ class StateManager {
   /// The active filter states applied to the image.
   /// Each [FilterState] contains filter matrices and optional
   /// video-timeline metadata.
-  List<FilterState> _activeFilters = const [];
+  List<FilterState> activeFilters = const [];
 
-  /// A getter that returns the currently applied filter states.
-  /// Use this to retrieve the active list of [FilterState].
-  List<FilterState> get activeFilters => _activeFilters;
-
-  /// A list of active tune adjustments for the image, such as brightness,
+  /// The active tune adjustments for the image, such as brightness,
   /// contrast, etc.
   /// Each element in the list is of type `TuneAdjustmentMatrix`, representing
   /// specific adjustment settings.
-  List<TuneAdjustmentMatrix> _activeTuneAdjustments = [];
-
-  /// A getter that returns the list of currently applied tune adjustments.
-  /// This is used to access the active `TuneAdjustmentMatrix` configurations.
-  List<TuneAdjustmentMatrix> get activeTuneAdjustments =>
-      _activeTuneAdjustments;
+  List<TuneAdjustmentMatrix> activeTuneAdjustments = [];
 
   /// The current transformation configurations applied to the image,
   /// including rotation, scaling, or other transformations.

@@ -820,9 +820,35 @@ class ProImageEditorState extends State<ProImageEditor>
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
     Map<String, dynamic>? meta,
+    bool skipUpdateHistory = false,
   }) {
-    final layers = _layerCopyManager.copyLayerList(activeLayers);
-    final layer = layers[index];
+    final current = activeLayers[index];
+
+    // Early return if nothing would change.
+    if ((startTime == null || startTime == current.startTime) &&
+        (endTime == null || endTime == current.endTime) &&
+        (enterDuration == null || enterDuration == current.enterDuration) &&
+        (exitDuration == null || exitDuration == current.exitDuration) &&
+        (enterCurve == null || enterCurve == current.enterCurve) &&
+        (exitCurve == null || exitCurve == current.exitCurve) &&
+        (transitionBuilder == null ||
+            transitionBuilder == current.transitionBuilder) &&
+        meta == null) {
+      return;
+    }
+
+    final List<Layer> layers;
+    final Layer layer;
+
+    if (skipUpdateHistory) {
+      layer = _layerCopyManager.copyLayer(activeLayers[index]);
+      activeLayers[index] = layer;
+      layers = activeLayers;
+    } else {
+      layers = _layerCopyManager.copyLayerList(activeLayers);
+      layer = layers[index];
+    }
+
     if (startTime != null) layer.startTime = startTime;
     if (endTime != null) layer.endTime = endTime;
     if (enterDuration != null) layer.enterDuration = enterDuration;
@@ -832,7 +858,9 @@ class ProImageEditorState extends State<ProImageEditor>
     if (transitionBuilder != null) layer.transitionBuilder = transitionBuilder;
     if (meta != null) layer.meta = {...layer.meta ?? {}, ...meta};
 
-    addHistory(layers: layers);
+    if (!skipUpdateHistory) {
+      addHistory(layers: layers);
+    }
     _controllers.uiLayerCtrl.add(null);
   }
 
@@ -971,6 +999,80 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Removes all active filters and records the change in the state history.
   void clearFilters() {
     addHistory(filters: []);
+    setState(() {});
+  }
+
+  /// Updates the timeline properties and/or metadata of the filter at the
+  /// given [index] and records the change in the state history.
+  ///
+  /// Only non-null values are applied. This mirrors [setLayerTimeline] but
+  /// operates on the active filter list instead of the layer list.
+  void setFilterTimeline({
+    required int index,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    Map<String, dynamic>? meta,
+    bool skipUpdateHistory = false,
+  }) {
+    final filters = skipUpdateHistory
+        ? stateManager.activeFilters
+        : List<FilterState>.from(stateManager.activeFilters);
+    if (index < 0 || index >= filters.length) return;
+
+    filters[index] = filters[index].copyWith(
+      startTime: startTime,
+      endTime: endTime,
+      enterDuration: enterDuration,
+      exitDuration: exitDuration,
+      enterCurve: enterCurve,
+      exitCurve: exitCurve,
+      meta: meta != null ? {...filters[index].meta, ...meta} : null,
+    );
+
+    if (!skipUpdateHistory) {
+      addHistory(filters: filters);
+    }
+    setState(() {});
+  }
+
+  /// Updates the timeline properties and/or metadata of the tune adjustment
+  /// at the given [index] and records the change in the state history.
+  ///
+  /// Only non-null values are applied. This mirrors [setFilterTimeline] but
+  /// operates on the active tune adjustments list.
+  void setTuneTimeline({
+    required int index,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    Map<String, dynamic>? meta,
+    bool skipUpdateHistory = false,
+  }) {
+    final tunes = skipUpdateHistory
+        ? stateManager.activeTuneAdjustments
+        : List<TuneAdjustmentMatrix>.from(stateManager.activeTuneAdjustments);
+    if (index < 0 || index >= tunes.length) return;
+
+    tunes[index] = tunes[index].copyWith(
+      startTime: startTime,
+      endTime: endTime,
+      enterDuration: enterDuration,
+      exitDuration: exitDuration,
+      enterCurve: enterCurve,
+      exitCurve: exitCurve,
+      meta: meta != null ? {...tunes[index].meta, ...meta} : null,
+    );
+
+    if (!skipUpdateHistory) {
+      addHistory(tuneAdjustments: tunes);
+    }
     setState(() {});
   }
 
@@ -2460,7 +2562,7 @@ class ProImageEditorState extends State<ProImageEditor>
         await onImageEditingComplete?.call(bytes);
 
         final capturedLayers = mainEditorConfigs.captureLayersOnDone
-            ? await captureAllLayersWithMeta()
+            ? await captureAllLayersWithMeta(applyTransforms: true)
             : <ExportedLayer>[];
 
         final transform = stateManager.transformConfigs;
@@ -2494,6 +2596,10 @@ class ProImageEditorState extends State<ProImageEditor>
             capturedLayers: capturedLayers,
             customAudioTrack: _videoController?.audioTrack,
             videoClips: _videoController?.clips ?? [],
+            originalImageSize: sizesManager.originalImageSize,
+            temporaryDecodedImageSize: sizesManager.temporaryDecodedImageSize,
+            bodySize: sizesManager.bodySize,
+            editorSize: sizesManager.editorSize,
           ),
         );
       }

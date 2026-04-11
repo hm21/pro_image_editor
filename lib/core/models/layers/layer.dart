@@ -463,13 +463,25 @@ class Layer {
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
   }) async {
-    final logicalSizes = <Size>[
-      for (final layer in layers)
-        (layer.repaintBoundaryKey.currentContext?.findRenderObject()
-                    as RenderBox?)
-                ?.size ??
-            Size.zero,
-    ];
+    final logicalSizes = <Size>[];
+    for (var i = 0; i < layers.length; i++) {
+      final layer = layers[i];
+      final box =
+          layer.repaintBoundaryKey.currentContext?.findRenderObject()
+              as RenderBox?;
+      var size = box?.size ?? Size.zero;
+
+      if (applyTransforms && (layer.rotation != 0)) {
+        final double cosR = math.cos(layer.rotation).abs();
+        final double sinR = math.sin(layer.rotation).abs();
+        size = Size(
+          size.width * cosR + size.height * sinR,
+          size.width * sinR + size.height * cosR,
+        );
+      }
+
+      logicalSizes.add(size);
+    }
 
     final allBytes = await captureAllLayersAsBytes(
       layers: layers,

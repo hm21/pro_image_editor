@@ -34,6 +34,7 @@ class TuneAdjustmentMatrix {
           : null,
       enterCurve: parseCurve(map['enterCurve'] as String?),
       exitCurve: parseCurve(map['exitCurve'] as String?),
+      meta: (map['meta'] as Map<String, dynamic>?) ?? const {},
     );
   }
 
@@ -53,6 +54,7 @@ class TuneAdjustmentMatrix {
     this.exitDuration,
     this.enterCurve,
     this.exitCurve,
+    this.meta = const {},
   });
 
   /// The unique identifier for the tune adjustment.
@@ -86,6 +88,9 @@ class TuneAdjustmentMatrix {
   /// The curve applied to the exit transition.
   final Curve? exitCurve;
 
+  /// User-defined metadata that can be attached to this tune adjustment.
+  final Map<String, dynamic> meta;
+
   /// Converts this [TuneAdjustmentMatrix] instance into a [Map] representation.
   ///
   /// The map contains the [id], [value], and [matrix] as key-value pairs.
@@ -102,6 +107,7 @@ class TuneAdjustmentMatrix {
       if (exitDuration != null) 'exitDuration': exitDuration!.inMilliseconds,
       if (enterCurve != null) 'enterCurve': curveToString(enterCurve!),
       if (exitCurve != null) 'exitCurve': curveToString(exitCurve!),
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -120,6 +126,34 @@ class TuneAdjustmentMatrix {
       exitDuration: exitDuration,
       enterCurve: enterCurve,
       exitCurve: exitCurve,
+      meta: {...meta},
+    );
+  }
+
+  /// Creates a copy of this instance with the given fields replaced.
+  TuneAdjustmentMatrix copyWith({
+    String? id,
+    double? value,
+    List<double>? matrix,
+    Duration? startTime,
+    Duration? endTime,
+    Duration? enterDuration,
+    Duration? exitDuration,
+    Curve? enterCurve,
+    Curve? exitCurve,
+    Map<String, dynamic>? meta,
+  }) {
+    return TuneAdjustmentMatrix(
+      id: id ?? this.id,
+      value: value ?? this.value,
+      matrix: matrix ?? [...this.matrix],
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      enterDuration: enterDuration ?? this.enterDuration,
+      exitDuration: exitDuration ?? this.exitDuration,
+      enterCurve: enterCurve ?? this.enterCurve,
+      exitCurve: exitCurve ?? this.exitCurve,
+      meta: meta ?? {...this.meta},
     );
   }
 
@@ -136,7 +170,8 @@ class TuneAdjustmentMatrix {
         other.enterDuration == enterDuration &&
         other.exitDuration == exitDuration &&
         other.enterCurve == enterCurve &&
-        other.exitCurve == exitCurve;
+        other.exitCurve == exitCurve &&
+        mapEquals(other.meta, meta);
   }
 
   @override
@@ -149,5 +184,6 @@ class TuneAdjustmentMatrix {
       enterDuration.hashCode ^
       exitDuration.hashCode ^
       enterCurve.hashCode ^
-      exitCurve.hashCode;
+      exitCurve.hashCode ^
+      meta.hashCode;
 }

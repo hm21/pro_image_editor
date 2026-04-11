@@ -1,7 +1,6 @@
-// Dart imports:
-import 'dart:math';
-
 // Flutter imports:
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -47,7 +46,7 @@ class _LayerExportExampleState extends State<LayerExportExample>
 
     final bodySize = editor.sizesManager.bodySize;
     final exported = await editor.captureAllLayersWithMeta(
-      applyTransforms: false,
+      applyTransforms: true,
     );
 
     if (!mounted) return;
@@ -129,6 +128,7 @@ class _LayerExportExampleState extends State<LayerExportExample>
           ),
         ),
         imageGeneration: const ImageGenerationConfigs(
+          captureImageByteFormat: ImageByteFormat.rawStraightRgba,
           processorConfigs: ProcessorConfigs(
             processorMode: ProcessorMode.auto,
           ),
@@ -170,17 +170,10 @@ class _ExportedLayersOverlay extends StatelessWidget {
                       top: item.layer.offset.dy + halfHeight,
                       child: FractionalTranslation(
                         translation: const Offset(-0.5, -0.5),
-                        child: Transform(
-                          transform: Matrix4.identity()
-                            ..rotateX(item.layer.flipY ? pi : 0)
-                            ..rotateY(item.layer.flipX ? pi : 0)
-                            ..rotateZ(item.layer.rotation),
-                          alignment: Alignment.center,
-                          child: Image.memory(
-                            item.bytes,
-                            width: item.logicalSize.width,
-                            height: item.logicalSize.height,
-                          ),
+                        child: Image.memory(
+                          item.bytes,
+                          width: item.logicalSize.width,
+                          height: item.logicalSize.height,
                         ),
                       ),
                     ),
@@ -228,17 +221,10 @@ class _ExportedLayersPreview extends StatelessWidget {
                   top: item.layer.offset.dy + halfHeight,
                   child: FractionalTranslation(
                     translation: const Offset(-0.5, -0.5),
-                    child: Transform(
-                      transform: Matrix4.identity()
-                        ..rotateX(item.layer.flipY ? pi : 0)
-                        ..rotateY(item.layer.flipX ? pi : 0)
-                        ..rotateZ(item.layer.rotation),
-                      alignment: Alignment.center,
-                      child: Image.memory(
-                        item.bytes,
-                        width: item.logicalSize.width,
-                        height: item.logicalSize.height,
-                      ),
+                    child: Image.memory(
+                      item.bytes,
+                      width: item.logicalSize.width,
+                      height: item.logicalSize.height,
                     ),
                   ),
                 ),

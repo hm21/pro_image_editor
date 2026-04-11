@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
@@ -46,6 +47,30 @@ class CompleteParameters {
       layers: List<Layer>.from(
         map['layers']?.map((x) => Layer.fromMap(x)) ?? [],
       ),
+      originalImageSize: map['originalImageSize'] != null
+          ? Size(
+              (map['originalImageSize']['width'] as num).toDouble(),
+              (map['originalImageSize']['height'] as num).toDouble(),
+            )
+          : null,
+      temporaryDecodedImageSize: map['temporaryDecodedImageSize'] != null
+          ? Size(
+              (map['temporaryDecodedImageSize']['width'] as num).toDouble(),
+              (map['temporaryDecodedImageSize']['height'] as num).toDouble(),
+            )
+          : null,
+      bodySize: map['bodySize'] != null
+          ? Size(
+              (map['bodySize']['width'] as num).toDouble(),
+              (map['bodySize']['height'] as num).toDouble(),
+            )
+          : null,
+      editorSize: map['editorSize'] != null
+          ? Size(
+              (map['editorSize']['width'] as num).toDouble(),
+              (map['editorSize']['height'] as num).toDouble(),
+            )
+          : null,
     );
   }
 
@@ -75,6 +100,10 @@ class CompleteParameters {
     this.capturedLayers = const [],
     this.videoClips = const [],
     this.customAudioTrack,
+    required this.originalImageSize,
+    required this.temporaryDecodedImageSize,
+    required this.bodySize,
+    required this.editorSize,
   });
 
   /// The blur strength to apply (in logical pixels).
@@ -170,6 +199,18 @@ class CompleteParameters {
   /// original audio from the video sources depending on the editor settings.
   final AudioTrack? customAudioTrack;
 
+  /// The raw original image size before any scaling or cropping.
+  final Size? originalImageSize;
+
+  /// A temporary decoded image size used during screen resizing.
+  final Size? temporaryDecodedImageSize;
+
+  /// The size of the editor body area.
+  final Size? bodySize;
+
+  /// The overall size of the editor widget.
+  final Size? editorSize;
+
   /// Creates a copy of this [CompleteParameters] object with optional new
   /// values for specific fields.
   CompleteParameters copyWith({
@@ -193,6 +234,10 @@ class CompleteParameters {
     List<Layer>? layers,
     List<VideoClip>? videoClips,
     AudioTrack? customAudioTrack,
+    Size? originalImageSize,
+    Size? temporaryDecodedImageSize,
+    Size? bodySize,
+    Size? editorSize,
   }) {
     return CompleteParameters(
       blur: blur ?? this.blur,
@@ -216,6 +261,11 @@ class CompleteParameters {
       layers: layers ?? this.layers,
       videoClips: videoClips ?? this.videoClips,
       customAudioTrack: customAudioTrack ?? this.customAudioTrack,
+      originalImageSize: originalImageSize ?? this.originalImageSize,
+      temporaryDecodedImageSize:
+          temporaryDecodedImageSize ?? this.temporaryDecodedImageSize,
+      bodySize: bodySize ?? this.bodySize,
+      editorSize: editorSize ?? this.editorSize,
     );
   }
 
@@ -243,6 +293,10 @@ class CompleteParameters {
         other.isTransformed == isTransformed &&
         other.videoClips == videoClips &&
         other.customAudioTrack == customAudioTrack &&
+        other.originalImageSize == originalImageSize &&
+        other.temporaryDecodedImageSize == temporaryDecodedImageSize &&
+        other.bodySize == bodySize &&
+        other.editorSize == editorSize &&
         listEquals(other.layers, layers);
   }
 
@@ -264,6 +318,10 @@ class CompleteParameters {
         isTransformed.hashCode ^
         videoClips.hashCode ^
         customAudioTrack.hashCode ^
+        originalImageSize.hashCode ^
+        temporaryDecodedImageSize.hashCode ^
+        bodySize.hashCode ^
+        editorSize.hashCode ^
         layers.hashCode;
   }
 
@@ -287,6 +345,23 @@ class CompleteParameters {
       'image': image.toList(),
       'isTransformed': isTransformed,
       'layers': layers.map((x) => x.toMap()).toList(),
+      if (originalImageSize != null)
+        'originalImageSize': {
+          'width': originalImageSize!.width,
+          'height': originalImageSize!.height,
+        },
+      if (temporaryDecodedImageSize != null)
+        'temporaryDecodedImageSize': {
+          'width': temporaryDecodedImageSize!.width,
+          'height': temporaryDecodedImageSize!.height,
+        },
+      if (bodySize != null)
+        'bodySize': {'width': bodySize!.width, 'height': bodySize!.height},
+      if (editorSize != null)
+        'editorSize': {
+          'width': editorSize!.width,
+          'height': editorSize!.height,
+        },
     };
   }
 
@@ -309,6 +384,10 @@ class CompleteParameters {
         'flipY: $flipY, '
         'image: $image, '
         'isTransformed: $isTransformed, '
+        'originalImageSize: $originalImageSize, '
+        'temporaryDecodedImageSize: $temporaryDecodedImageSize, '
+        'bodySize: $bodySize, '
+        'editorSize: $editorSize, '
         'layers: $layers)';
   }
 }

@@ -57,11 +57,16 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility>
       oldWidget.playTimeNotifier.removeListener(_onTimeChanged);
       widget.playTimeNotifier.addListener(_onTimeChanged);
     }
-    if (oldWidget.layer.startTime != widget.layer.startTime ||
+    final changed =
+        oldWidget.layer.startTime != widget.layer.startTime ||
         oldWidget.layer.endTime != widget.layer.endTime ||
         oldWidget.layer.enterDuration != widget.layer.enterDuration ||
-        oldWidget.layer.exitDuration != widget.layer.exitDuration) {
-      _controller.value = _computeProgress(widget.playTimeNotifier.value);
+        oldWidget.layer.exitDuration != widget.layer.exitDuration ||
+        oldWidget.layer.enterCurve != widget.layer.enterCurve ||
+        oldWidget.layer.exitCurve != widget.layer.exitCurve;
+    if (changed) {
+      final progress = _computeProgress(widget.playTimeNotifier.value);
+      _controller.value = progress;
     }
   }
 
@@ -99,7 +104,9 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        if (_controller.isDismissed) return const SizedBox.shrink();
+        if (_controller.isDismissed) {
+          return IgnorePointer(child: Opacity(opacity: 0, child: child));
+        }
         final builder =
             widget.layer.transitionBuilder ?? widget.configs.transitionBuilder;
         return builder(child!, _controller);

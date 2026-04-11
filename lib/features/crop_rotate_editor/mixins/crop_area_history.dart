@@ -533,6 +533,10 @@ mixin CropAreaHistory
       image: imageBytes,
       isTransformed: isTransformed,
       layers: layers ?? [],
+      originalImageSize: null,
+      temporaryDecodedImageSize: null,
+      bodySize: null,
+      editorSize: null,
     );
   }
 }
