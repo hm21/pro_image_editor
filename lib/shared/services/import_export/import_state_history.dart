@@ -65,6 +65,7 @@ class ImportStateHistory {
     final tuneKey = minifier.convertHistoryKey('tune');
     final filtersKey = minifier.convertHistoryKey('filters');
     final transformKey = minifier.convertHistoryKey('transform');
+    final metaKey = minifier.convertHistoryKey('meta');
 
     /// Initialize default values
     final version =
@@ -167,6 +168,11 @@ class ImportStateHistory {
           ? stateHistory.last.transformConfigs
           : TransformConfigs.empty();
 
+      /// Meta
+      final meta = historyItem[metaKey] is Map
+          ? Map<String, dynamic>.from(historyItem[metaKey] as Map)
+          : const <String, dynamic>{};
+
       stateHistory.add(
         EditorStateHistory(
           blur: blur,
@@ -174,6 +180,7 @@ class ImportStateHistory {
           filters: filters,
           tuneAdjustments: tuneAdjustments,
           transformConfigs: transformConfigs,
+          meta: meta,
         ),
       );
     }

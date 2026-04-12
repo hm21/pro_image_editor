@@ -20,6 +20,7 @@ const Map<String, String> kMinifiedHistoryKeys = {
   'tune': 'a',
   'blur': 'b',
   'transform': 't',
+  'meta': 'm',
 };
 
 /// A constant map containing minified layer keys for import/export services.

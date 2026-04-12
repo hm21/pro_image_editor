@@ -20,6 +20,7 @@ class EditorStateHistory {
     this.filters = const [],
     this.tuneAdjustments = const [],
     this.transformConfigs,
+    this.meta = const {},
   });
 
   /// The blur factor.
@@ -37,6 +38,9 @@ class EditorStateHistory {
   /// The transformation from the crop/ rotate editor.
   TransformConfigs? transformConfigs;
 
+  /// Optional user-defined metadata that is preserved across undo/redo.
+  final Map<String, dynamic> meta;
+
   /// Creates a copy of the current `EditorStateHistory` instance with the
   /// option to override some of its properties.
   ///
@@ -50,6 +54,7 @@ class EditorStateHistory {
     List<FilterState>? filters,
     List<TuneAdjustmentMatrix>? tuneAdjustments,
     TransformConfigs? transformConfigs,
+    Map<String, dynamic>? meta,
   }) {
     return EditorStateHistory(
       blur: blur ?? this.blur,
@@ -57,6 +62,7 @@ class EditorStateHistory {
       filters: filters ?? this.filters,
       tuneAdjustments: tuneAdjustments ?? this.tuneAdjustments,
       transformConfigs: transformConfigs ?? this.transformConfigs,
+      meta: meta ?? this.meta,
     );
   }
 
@@ -69,7 +75,8 @@ class EditorStateHistory {
         listEquals(other.layers, layers) &&
         listEquals(other.filters, filters) &&
         listEquals(other.tuneAdjustments, tuneAdjustments) &&
-        transformConfigs == other.transformConfigs;
+        transformConfigs == other.transformConfigs &&
+        mapEquals(other.meta, meta);
   }
 
   @override
@@ -78,6 +85,7 @@ class EditorStateHistory {
         layers.hashCode ^
         filters.hashCode ^
         tuneAdjustments.hashCode ^
-        transformConfigs.hashCode;
+        transformConfigs.hashCode ^
+        meta.hashCode;
   }
 }

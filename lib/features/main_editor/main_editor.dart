@@ -735,6 +735,7 @@ class ProImageEditorState extends State<ProImageEditor>
     List<FilterState>? filters,
     List<TuneAdjustmentMatrix>? tuneAdjustments,
     double? blur,
+    Map<String, dynamic>? meta,
     bool heroScreenshotRequired = false,
     bool blockCaptureScreenshot = false,
   }) {
@@ -751,6 +752,7 @@ class ProImageEditorState extends State<ProImageEditor>
                 : activeLayerList),
         filters: filters ?? const [],
         tuneAdjustments: tuneAdjustments ?? [],
+        meta: meta ?? const {},
       ),
       historyLimit: stateHistoryConfigs.stateHistoryLimit,
       enableScreenshotLimit: imageGenerationConfigs.enableBackgroundGeneration,
@@ -2562,7 +2564,10 @@ class ProImageEditorState extends State<ProImageEditor>
         await onImageEditingComplete?.call(bytes);
 
         final capturedLayers = mainEditorConfigs.captureLayersOnDone
-            ? await captureAllLayersWithMeta(applyTransforms: true)
+            ? await captureAllLayersWithMeta(
+                applyTransforms: true,
+                basePixelRatio: configs.imageGeneration.customPixelRatio,
+              )
             : <ExportedLayer>[];
 
         final transform = stateManager.transformConfigs;
@@ -2664,11 +2669,13 @@ class ProImageEditorState extends State<ProImageEditor>
   /// processed efficiently across all layers.
   Future<List<Uint8List?>> captureAllLayers({
     double? pixelRatio,
+    double? basePixelRatio,
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
   }) async {
     final exported = await captureAllLayersWithMeta(
       pixelRatio: pixelRatio,
+      basePixelRatio: basePixelRatio,
       applyTransforms: applyTransforms,
       format: format,
     );
@@ -2682,6 +2689,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// processed efficiently across all layers.
   Future<List<ExportedLayer>> captureAllLayersWithMeta({
     double? pixelRatio,
+    double? basePixelRatio,
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
   }) async {
@@ -2698,6 +2706,7 @@ class ProImageEditorState extends State<ProImageEditor>
     return Layer.captureAllLayers(
       layers: activeLayers,
       pixelRatio: pixelRatio,
+      basePixelRatio: basePixelRatio,
       applyTransforms: applyTransforms,
       format: format,
       recorder: format == ui.ImageByteFormat.png

@@ -1,5 +1,11 @@
 # Changelog
 
+## 12.3.1
+- **FEAT**(state-history): Add `meta` field (`Map<String, dynamic>`) to `EditorStateHistory` for user-defined data that is preserved across undo/redo and import/export.
+- **FEAT**(layers): Add `basePixelRatio` parameter to `captureAsPng`, `captureAllLayers`, and `captureAllLayersWithMeta` for image-relative layer export resolution.
+- **FIX**(timeline): Keep hidden layers painted in the render tree so `captureAsPng` works for timeline-dismissed layers.
+- **FIX**(layers): Use `imageInfos.pixelRatio` instead of device pixel ratio for layer capture in `doneEditing`, ensuring correct export resolution relative to the source image.
+
 ## 12.3.0
 - **FEAT**(timeline): Add `meta` field to `FilterState` and `TuneAdjustmentMatrix` for storing arbitrary metadata on filters and tune adjustments.
 - **FEAT**(timeline): Add `copyWith()` to `FilterState` and `TuneAdjustmentMatrix`.

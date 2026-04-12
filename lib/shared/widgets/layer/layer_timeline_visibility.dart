@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/video/layer_timeline_configs.dart';
@@ -105,7 +106,7 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility>
       animation: _controller,
       builder: (context, child) {
         if (_controller.isDismissed) {
-          return IgnorePointer(child: Opacity(opacity: 0, child: child));
+          return IgnorePointer(child: _InvisibleButPainted(child: child!));
         }
         final builder =
             widget.layer.transitionBuilder ?? widget.configs.transitionBuilder;
@@ -113,5 +114,30 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility>
       },
       child: widget.child,
     );
+  }
+}
+
+/// Renders its child into the render tree (so [RepaintBoundary.toImage] works)
+/// but displays nothing on screen.
+///
+/// Unlike [Opacity] with alpha 0, which skips painting entirely, this widget
+/// uses [PaintingContext.pushOpacity] directly which always paints the child
+/// into an [OpacityLayer].
+class _InvisibleButPainted extends SingleChildRenderObjectWidget {
+  const _InvisibleButPainted({required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderInvisibleButPainted();
+}
+
+class _RenderInvisibleButPainted extends RenderProxyBox {
+  @override
+  bool get alwaysNeedsCompositing => true;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (child == null) return;
+    context.pushOpacity(offset, 0, super.paint);
   }
 }

@@ -142,6 +142,7 @@ class ExportStateHistory {
       List<TuneAdjustmentMatrix> tuneAdjustments = [];
       double? blur;
       TransformConfigs? transformConfigs;
+      Map<String, dynamic> meta = const {};
 
       for (var item in changes.getRange(0, position)) {
         if (item.filters.isNotEmpty) filters = item.filters;
@@ -152,6 +153,7 @@ class ExportStateHistory {
         if (item.transformConfigs != null) {
           transformConfigs = item.transformConfigs;
         }
+        if (item.meta.isNotEmpty) meta = item.meta;
       }
 
       return EditorStateHistory(
@@ -160,6 +162,7 @@ class ExportStateHistory {
         layers: position <= 0 ? [] : changes[position - 1].layers,
         transformConfigs: transformConfigs,
         tuneAdjustments: tuneAdjustments,
+        meta: meta,
       );
     }
 
@@ -231,6 +234,8 @@ class ExportStateHistory {
         if (enableBlurExport) 'blur'.toHistoryKey(minifier): element.blur,
         if (enableCropRotateExport)
           'transform'.toHistoryKey(minifier): transformConfigsMap,
+        if (element.meta.isNotEmpty)
+          'meta'.toHistoryKey(minifier): element.meta,
       });
     }
     references = minifier.convertReferenceKeys(references);

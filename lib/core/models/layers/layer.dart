@@ -356,6 +356,7 @@ class Layer {
   /// Returns `null` if the layer is not currently mounted.
   Future<Uint8List?> captureAsPng({
     double? pixelRatio,
+    double? basePixelRatio,
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
@@ -363,7 +364,8 @@ class Layer {
     final context = repaintBoundaryKey.currentContext;
     if (context == null) return null;
 
-    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
+    final dpr =
+        basePixelRatio ?? MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
     final effectivePixelRatio = pixelRatio ?? (dpr * scale);
 
     final boundary = context.findRenderObject() as RenderRepaintBoundary;
@@ -422,6 +424,7 @@ class Layer {
   static Future<List<Uint8List?>> captureAllLayersAsBytes({
     required List<Layer> layers,
     double? pixelRatio,
+    double? basePixelRatio,
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
@@ -440,6 +443,7 @@ class Layer {
         bytes.add(
           await layer.captureAsPng(
             pixelRatio: pixelRatio,
+            basePixelRatio: basePixelRatio,
             applyTransforms: applyTransforms,
             format: format,
             recorder: sharedRecorder,
@@ -459,6 +463,7 @@ class Layer {
   static Future<List<ExportedLayer>> captureAllLayers({
     required List<Layer> layers,
     double? pixelRatio,
+    double? basePixelRatio,
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
@@ -486,6 +491,7 @@ class Layer {
     final allBytes = await captureAllLayersAsBytes(
       layers: layers,
       pixelRatio: pixelRatio,
+      basePixelRatio: basePixelRatio,
       applyTransforms: applyTransforms,
       format: format,
       recorder: recorder,
