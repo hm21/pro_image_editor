@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.3.3
+- **FEAT**(filter-editor): Add unique `id` to `FilterState`, export/import it, and generate backward-compatible IDs when missing in older history payloads.
+
 ## 12.3.2
 - **FEAT**(filter-editor): Add `name` field to `FilterState` to carry the filter name through the editor, history, and import/export.
 - **FEAT**(state-manager): Expose `activeMeta` as a public field, updated on every undo/redo alongside `activeLayers`.

@@ -21,6 +21,7 @@ class FilterState {
   /// Creates a [FilterState] instance from a [Map] representation.
   factory FilterState.fromMap(Map<String, dynamic> map) {
     return FilterState(
+      id: (map['id'] as String?) ?? _generateId(),
       name: map['name'] as String? ?? '',
       matrices:
           (map['matrices'] as List?)
@@ -48,7 +49,8 @@ class FilterState {
   }
 
   /// Creates a [FilterState] with the given fields.
-  const FilterState({
+  FilterState({
+    String? id,
     required this.name,
     this.matrices = const [],
     this.startTime,
@@ -58,7 +60,16 @@ class FilterState {
     this.enterCurve,
     this.exitCurve,
     this.meta = const {},
-  });
+  }) : id = id ?? _generateId();
+  static int _idCounter = 0;
+
+  static String _generateId() {
+    _idCounter++;
+    return 'filter-${DateTime.now().microsecondsSinceEpoch}-$_idCounter';
+  }
+
+  /// A unique identifier for this filter state.
+  final String id;
 
   /// The name of the filter.
   final String name;
@@ -100,6 +111,7 @@ class FilterState {
   /// Converts this instance into a [Map] representation.
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       if (name.isNotEmpty) 'name': name,
       'matrices': matrices,
       if (startTime != null) 'startTime': startTime!.inMilliseconds,
@@ -114,6 +126,7 @@ class FilterState {
 
   /// Creates a copy of this instance with the given fields replaced.
   FilterState copyWith({
+    String? id,
     String? name,
     FilterMatrix? matrices,
     Duration? startTime,
@@ -125,6 +138,7 @@ class FilterState {
     Map<String, dynamic>? meta,
   }) {
     return FilterState(
+      id: id ?? this.id,
       name: name ?? this.name,
       matrices: matrices ?? this.matrices.map((row) => [...row]).toList(),
       startTime: startTime ?? this.startTime,
@@ -140,6 +154,7 @@ class FilterState {
   /// Creates a deep copy of this instance.
   FilterState copy() {
     return FilterState(
+      id: id,
       name: name,
       matrices: matrices.map((row) => [...row]).toList(),
       startTime: startTime,
@@ -162,7 +177,8 @@ class FilterState {
       if (!listEquals(matrices[i], other.matrices[i])) return false;
     }
 
-    return other.name == name &&
+    return other.id == id &&
+        other.name == name &&
         other.startTime == startTime &&
         other.endTime == endTime &&
         other.enterDuration == enterDuration &&
@@ -174,6 +190,7 @@ class FilterState {
 
   @override
   int get hashCode =>
+      id.hashCode ^
       name.hashCode ^
       matrices.hashCode ^
       startTime.hashCode ^
