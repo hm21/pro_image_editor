@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.3.4
+- **FIX**(main-editor): Preserve active `filters`, `tuneAdjustments`, and `meta` in `addHistory()` when values are not explicitly provided.
+- **FIX**(main-editor): Store copied `filters`/`tuneAdjustments`/`meta` in history entries to prevent shared-reference mutations across undo/redo states.
+
 ## 12.3.3
 - **FEAT**(filter-editor): Add unique `id` to `FilterState`, export/import it, and generate backward-compatible IDs when missing in older history payloads.
 

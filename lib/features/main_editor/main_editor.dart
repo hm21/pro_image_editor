@@ -696,6 +696,30 @@ class ProImageEditorState extends State<ProImageEditor>
     );
   }
 
+  Map<String, dynamic> _deepCopyMeta(Map<String, dynamic> source) {
+    return source.map((key, value) => MapEntry(key, _deepCopyValue(value)));
+  }
+
+  dynamic _deepCopyValue(dynamic value) {
+    if (value is Map) {
+      return Map<String, dynamic>.fromEntries(
+        value.entries.map(
+          (entry) => MapEntry(
+            entry.key.toString(),
+            _deepCopyValue(entry.value),
+          ),
+        ),
+      );
+    }
+    if (value is List) {
+      return value.map(_deepCopyValue).toList();
+    }
+    if (value is Set) {
+      return value.map(_deepCopyValue).toSet();
+    }
+    return value;
+  }
+
   /// Adds a new state to the history with the given configuration and updates
   /// the state manager.
   ///
@@ -740,6 +764,14 @@ class ProImageEditorState extends State<ProImageEditor>
     bool blockCaptureScreenshot = false,
   }) {
     List<Layer> activeLayerList = _layerCopyManager.copyLayerList(activeLayers);
+    final resolvedFilters = (filters ?? stateManager.activeFilters)
+        .map((item) => item.copy())
+        .toList();
+    final resolvedTuneAdjustments =
+        (tuneAdjustments ?? stateManager.activeTuneAdjustments)
+            .map((item) => item.copy())
+            .toList();
+    final resolvedMeta = _deepCopyMeta(meta ?? stateManager.activeMeta);
 
     stateManager.addHistory(
       EditorStateHistory(
@@ -750,9 +782,9 @@ class ProImageEditorState extends State<ProImageEditor>
             (newLayer != null
                 ? [...activeLayerList, newLayer]
                 : activeLayerList),
-        filters: filters ?? const [],
-        tuneAdjustments: tuneAdjustments ?? [],
-        meta: meta ?? const {},
+        filters: resolvedFilters,
+        tuneAdjustments: resolvedTuneAdjustments,
+        meta: resolvedMeta,
       ),
       historyLimit: stateHistoryConfigs.stateHistoryLimit,
       enableScreenshotLimit: imageGenerationConfigs.enableBackgroundGeneration,
@@ -1881,6 +1913,13 @@ class ProImageEditorState extends State<ProImageEditor>
     final historyLimit = stateHistoryConfigs.stateHistoryLimit;
     final enableScreenshotLimit =
         imageGenerationConfigs.enableBackgroundGeneration;
+    final preservedFilters = stateManager.activeFilters
+      .map((item) => item.copy())
+      .toList(growable: false);
+    final preservedTuneAdjustments = stateManager.activeTuneAdjustments
+      .map((item) => item.copy())
+      .toList(growable: false);
+    final preservedMeta = _deepCopyMeta(stateManager.activeMeta);
 
     String lastLayerId = '';
     for (var i = 0; i < result.layers.length; i++) {
@@ -1901,7 +1940,12 @@ class ProImageEditorState extends State<ProImageEditor>
       // Add individual history entry (for per-layer undo) with a shallow
       // snapshot — the layer objects themselves are already independent copies.
       stateManager.addHistory(
-        EditorStateHistory(layers: List<Layer>.of(runningLayers)),
+        EditorStateHistory(
+          layers: List<Layer>.of(runningLayers),
+          filters: preservedFilters,
+          tuneAdjustments: preservedTuneAdjustments,
+          meta: _deepCopyMeta(preservedMeta),
+        ),
         historyLimit: historyLimit,
         enableScreenshotLimit: enableScreenshotLimit,
         skipUpdateActiveItems: true,
@@ -1916,7 +1960,12 @@ class ProImageEditorState extends State<ProImageEditor>
       if (layerPos < 0) continue;
       runningLayers.removeAt(layerPos);
       stateManager.addHistory(
-        EditorStateHistory(layers: List<Layer>.of(runningLayers)),
+        EditorStateHistory(
+          layers: List<Layer>.of(runningLayers),
+          filters: preservedFilters,
+          tuneAdjustments: preservedTuneAdjustments,
+          meta: _deepCopyMeta(preservedMeta),
+        ),
         historyLimit: historyLimit,
         enableScreenshotLimit: enableScreenshotLimit,
         skipUpdateActiveItems: true,
