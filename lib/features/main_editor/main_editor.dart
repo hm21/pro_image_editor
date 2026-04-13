@@ -1723,7 +1723,7 @@ class ProImageEditorState extends State<ProImageEditor>
       editorName = SubEditor.cropRotate;
     } else if (T is TuneAdjustmentMatrix || page is TuneEditor) {
       editorName = SubEditor.tune;
-    } else if (T is FilterMatrix || page is FilterEditor) {
+    } else if (T is FilterMatrix || T is FilterState || page is FilterEditor) {
       editorName = SubEditor.filter;
     } else if (T is double || page is BlurEditor) {
       editorName = SubEditor.blur;
@@ -2094,7 +2094,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// original image is retained.
   void openFilterEditor() async {
     if (!mounted) return;
-    FilterMatrix? filters = await openPage(
+    FilterState? filterState = await openPage(
       FilterEditor.autoSource(
         key: filterEditor,
         editorImage: widget.blankSize == null
@@ -2117,10 +2117,10 @@ class ProImageEditorState extends State<ProImageEditor>
       ),
     );
 
-    if (filters == null) return;
+    if (filterState == null) return;
 
     addHistory(
-      filters: [FilterState(matrices: filters)],
+      filters: [filterState],
       heroScreenshotRequired: true,
     );
 

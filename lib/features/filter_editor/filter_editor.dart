@@ -220,7 +220,10 @@ class FilterEditorState extends State<FilterEditor>
   void done() async {
     doneEditing(
       editorImage: widget.editorImage,
-      returnValue: _getActiveFilters(),
+      returnValue: FilterState(
+        name: selectedFilter.name,
+        matrices: _getActiveFilters(),
+      ),
       blur: appliedBlurFactor,
       matrixFilterList: _getActiveFilters(),
       matrixTuneAdjustmentsList: appliedTuneAdjustments

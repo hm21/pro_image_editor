@@ -55,7 +55,12 @@ void main() {
         ),
         EditorStateHistory(
           blur: 2.0,
-          filters: [FilterState(matrices: presetFiltersList.first.filters)],
+          filters: [
+            FilterState(
+              name: 'filter',
+              matrices: presetFiltersList.first.filters,
+            ),
+          ],
           layers: [DummyLayer('layer1')],
           transformConfigs: null,
         ),

@@ -232,7 +232,7 @@ class ImportStateHistory {
     // Old formats: plain list of matrices
     final matrices = parseFilters(filtersData, version);
     if (matrices.isEmpty) return const [];
-    return [FilterState(matrices: matrices)];
+    return [FilterState(name: '', matrices: matrices)];
   }
 
   /// Helper to parse filters

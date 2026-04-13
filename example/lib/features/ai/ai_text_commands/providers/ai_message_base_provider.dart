@@ -129,7 +129,8 @@ abstract class AiMessageBaseProvider {
 
       editor.addHistory(
         blur: blur,
-        filters: filters != null ? [FilterState(matrices: filters)] : null,
+        filters:
+            filters != null ? [FilterState(name: '', matrices: filters)] : null,
         tuneAdjustments: tuneAdjustments,
         layers: layers,
         transformConfigs: transformConfigs,

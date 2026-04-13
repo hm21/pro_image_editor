@@ -122,6 +122,8 @@ class StateManager {
 
     activeLayers = _stateHistory[historyPointer].layers;
 
+    activeMeta = _stateHistory[historyPointer].meta;
+
     _transformConfigs =
         activeHistory
             .lastWhere(
@@ -179,6 +181,9 @@ class StateManager {
 
   /// Get the list of layers from the current image editor changes.
   List<Layer> activeLayers = [];
+
+  /// The metadata of the current history entry.
+  Map<String, dynamic> activeMeta = const {};
 
   /// Flag indicating if a hero screenshot is required.
   bool heroScreenshotRequired = false;

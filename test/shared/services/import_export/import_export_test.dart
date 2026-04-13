@@ -138,7 +138,9 @@ void main() {
         final editor = await pumpTestEditor(tester);
 
         final testFilters = PresetFilters.addictiveRed.filters;
-        editor.addHistory(filters: [FilterState(matrices: testFilters)]);
+        editor.addHistory(
+          filters: [FilterState(name: 'filter', matrices: testFilters)],
+        );
 
         expect(editor.stateManager.activeFilters.allMatrices, testFilters);
         expect(editor.stateManager.historyPointer, 1);

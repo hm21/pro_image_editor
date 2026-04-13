@@ -21,6 +21,7 @@ class FilterState {
   /// Creates a [FilterState] instance from a [Map] representation.
   factory FilterState.fromMap(Map<String, dynamic> map) {
     return FilterState(
+      name: map['name'] as String? ?? '',
       matrices:
           (map['matrices'] as List?)
               ?.map(
@@ -48,6 +49,7 @@ class FilterState {
 
   /// Creates a [FilterState] with the given fields.
   const FilterState({
+    required this.name,
     this.matrices = const [],
     this.startTime,
     this.endTime,
@@ -57,6 +59,9 @@ class FilterState {
     this.exitCurve,
     this.meta = const {},
   });
+
+  /// The name of the filter.
+  final String name;
 
   /// The color-filter matrices that make up this filter effect.
   final FilterMatrix matrices;
@@ -95,6 +100,7 @@ class FilterState {
   /// Converts this instance into a [Map] representation.
   Map<String, dynamic> toMap() {
     return {
+      if (name.isNotEmpty) 'name': name,
       'matrices': matrices,
       if (startTime != null) 'startTime': startTime!.inMilliseconds,
       if (endTime != null) 'endTime': endTime!.inMilliseconds,
@@ -108,6 +114,7 @@ class FilterState {
 
   /// Creates a copy of this instance with the given fields replaced.
   FilterState copyWith({
+    String? name,
     FilterMatrix? matrices,
     Duration? startTime,
     Duration? endTime,
@@ -118,6 +125,7 @@ class FilterState {
     Map<String, dynamic>? meta,
   }) {
     return FilterState(
+      name: name ?? this.name,
       matrices: matrices ?? this.matrices.map((row) => [...row]).toList(),
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
@@ -132,6 +140,7 @@ class FilterState {
   /// Creates a deep copy of this instance.
   FilterState copy() {
     return FilterState(
+      name: name,
       matrices: matrices.map((row) => [...row]).toList(),
       startTime: startTime,
       endTime: endTime,
@@ -153,7 +162,8 @@ class FilterState {
       if (!listEquals(matrices[i], other.matrices[i])) return false;
     }
 
-    return other.startTime == startTime &&
+    return other.name == name &&
+        other.startTime == startTime &&
         other.endTime == endTime &&
         other.enterDuration == enterDuration &&
         other.exitDuration == exitDuration &&
@@ -164,6 +174,7 @@ class FilterState {
 
   @override
   int get hashCode =>
+      name.hashCode ^
       matrices.hashCode ^
       startTime.hashCode ^
       endTime.hashCode ^
