@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.3.2
+- **FEAT**(filter-editor): Add `name` field to `FilterState` to carry the filter name through the editor, history, and import/export.
+- **FEAT**(state-manager): Expose `activeMeta` as a public field, updated on every undo/redo alongside `activeLayers`.
+
 ## 12.3.1
 - **FEAT**(state-history): Add `meta` field (`Map<String, dynamic>`) to `EditorStateHistory` for user-defined data that is preserved across undo/redo and import/export.
 - **FEAT**(layers): Add `basePixelRatio` parameter to `captureAsPng`, `captureAllLayers`, and `captureAllLayersWithMeta` for image-relative layer export resolution.

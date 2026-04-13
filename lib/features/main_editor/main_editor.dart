@@ -2119,10 +2119,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (filterState == null) return;
 
-    addHistory(
-      filters: [filterState],
-      heroScreenshotRequired: true,
-    );
+    addHistory(filters: [filterState], heroScreenshotRequired: true);
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
