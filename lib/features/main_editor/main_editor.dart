@@ -704,10 +704,8 @@ class ProImageEditorState extends State<ProImageEditor>
     if (value is Map) {
       return Map<String, dynamic>.fromEntries(
         value.entries.map(
-          (entry) => MapEntry(
-            entry.key.toString(),
-            _deepCopyValue(entry.value),
-          ),
+          (entry) =>
+              MapEntry(entry.key.toString(), _deepCopyValue(entry.value)),
         ),
       );
     }
@@ -1914,11 +1912,11 @@ class ProImageEditorState extends State<ProImageEditor>
     final enableScreenshotLimit =
         imageGenerationConfigs.enableBackgroundGeneration;
     final preservedFilters = stateManager.activeFilters
-      .map((item) => item.copy())
-      .toList(growable: false);
+        .map((item) => item.copy())
+        .toList(growable: false);
     final preservedTuneAdjustments = stateManager.activeTuneAdjustments
-      .map((item) => item.copy())
-      .toList(growable: false);
+        .map((item) => item.copy())
+        .toList(growable: false);
     final preservedMeta = _deepCopyMeta(stateManager.activeMeta);
 
     String lastLayerId = '';
