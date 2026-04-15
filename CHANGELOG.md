@@ -1,5 +1,11 @@
 # Changelog
 
+## 12.4.0
+- **FEAT**(audio-editor): Add `volume`, `loop`, `audioStartTime`, `audioEndTime`, and `endTime` fields to `AudioTrack`.
+- **FEAT**(complete-parameters): Add `audioTracks` field (`List<AudioTrack>`) to `CompleteParameters` for multiple audio track support.
+- **DEPRECATED**(complete-parameters): `customAudioTrack` — use `audioTracks` instead.
+- **DEPRECATED**(audio-editor): `enableLoop` parameter in `AudioTrack.copyWith` — use `loop` instead.
+
 ## 12.3.6
 - **FEAT**(complete-parameters): Export `meta` field in `CompleteParameters` so user-defined metadata is available in the `onCompleteWithParameters` callback.
 
