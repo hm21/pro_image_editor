@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.3.6
+- **FEAT**(complete-parameters): Export `meta` field in `CompleteParameters` so user-defined metadata is available in the `onCompleteWithParameters` callback.
+
 ## 12.3.5
 - **FEAT**(processor): Add `initializationDelay` to `ProcessorConfigs` to optionally defer isolate/thread startup and avoid jank during page transition animations.
 

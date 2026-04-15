@@ -2649,6 +2649,7 @@ class ProImageEditorState extends State<ProImageEditor>
             temporaryDecodedImageSize: sizesManager.temporaryDecodedImageSize,
             bodySize: sizesManager.bodySize,
             editorSize: sizesManager.editorSize,
+            meta: stateManager.activeMeta,
           ),
         );
       }

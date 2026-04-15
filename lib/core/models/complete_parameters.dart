@@ -71,6 +71,7 @@ class CompleteParameters {
               (map['editorSize']['height'] as num).toDouble(),
             )
           : null,
+      meta: Map<String, dynamic>.from(map['meta'] ?? {}),
     );
   }
 
@@ -104,6 +105,7 @@ class CompleteParameters {
     required this.temporaryDecodedImageSize,
     required this.bodySize,
     required this.editorSize,
+    this.meta = const {},
   });
 
   /// The blur strength to apply (in logical pixels).
@@ -211,6 +213,9 @@ class CompleteParameters {
   /// The overall size of the editor widget.
   final Size? editorSize;
 
+  /// Custom metadata associated with the current editor state.
+  final Map<String, dynamic> meta;
+
   /// Creates a copy of this [CompleteParameters] object with optional new
   /// values for specific fields.
   CompleteParameters copyWith({
@@ -238,6 +243,7 @@ class CompleteParameters {
     Size? temporaryDecodedImageSize,
     Size? bodySize,
     Size? editorSize,
+    Map<String, dynamic>? meta,
   }) {
     return CompleteParameters(
       blur: blur ?? this.blur,
@@ -266,6 +272,7 @@ class CompleteParameters {
           temporaryDecodedImageSize ?? this.temporaryDecodedImageSize,
       bodySize: bodySize ?? this.bodySize,
       editorSize: editorSize ?? this.editorSize,
+      meta: meta ?? this.meta,
     );
   }
 
@@ -297,6 +304,7 @@ class CompleteParameters {
         other.temporaryDecodedImageSize == temporaryDecodedImageSize &&
         other.bodySize == bodySize &&
         other.editorSize == editorSize &&
+        mapEquals(other.meta, meta) &&
         listEquals(other.layers, layers);
   }
 
@@ -322,6 +330,7 @@ class CompleteParameters {
         temporaryDecodedImageSize.hashCode ^
         bodySize.hashCode ^
         editorSize.hashCode ^
+        meta.hashCode ^
         layers.hashCode;
   }
 
@@ -362,6 +371,7 @@ class CompleteParameters {
           'width': editorSize!.width,
           'height': editorSize!.height,
         },
+      'meta': meta,
     };
   }
 
@@ -388,6 +398,7 @@ class CompleteParameters {
         'temporaryDecodedImageSize: $temporaryDecodedImageSize, '
         'bodySize: $bodySize, '
         'editorSize: $editorSize, '
+        'meta: $meta, '
         'layers: $layers)';
   }
 }
