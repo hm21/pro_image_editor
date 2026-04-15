@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.3.5
+- **FEAT**(processor): Add `initializationDelay` to `ProcessorConfigs` to optionally defer isolate/thread startup and avoid jank during page transition animations.
+
 ## 12.3.4
 - **FIX**(main-editor): Preserve active `filters`, `tuneAdjustments`, and `meta` in `addHistory()` when values are not explicitly provided.
 - **FIX**(main-editor): Store copied `filters`/`tuneAdjustments`/`meta` in history entries to prevent shared-reference mutations across undo/redo states.

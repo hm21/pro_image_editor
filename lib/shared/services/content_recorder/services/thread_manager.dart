@@ -20,7 +20,16 @@ abstract class ThreadManager<T extends Thread> {
   /// initializes the threading environment.
   ThreadManager(this.configs) {
     /// Only initialize multithreading if it's enabled.
-    if (configs.enableIsolateGeneration) initialize();
+    if (configs.enableIsolateGeneration) {
+      final delay = configs.processorConfigs.initializationDelay;
+      if (delay != null) {
+        Future.delayed(delay, () {
+          if (!isDestroyed) initialize();
+        });
+      } else {
+        initialize();
+      }
+    }
   }
 
   /// List of threads.
