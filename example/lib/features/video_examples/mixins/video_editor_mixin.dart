@@ -375,10 +375,12 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       );
     }).toList();
 
-    // Extract custom audio path and volume settings
-    final customAudioPath =
-        await _safeCustomAudioPath(parameters.customAudioTrack, directory.path);
-    final audioVolumes = _calculateAudioVolumes(parameters.customAudioTrack);
+    // Extract custom audio paths and volume settings
+    final customAudioTracks = await _buildVideoAudioTracks(
+      parameters.audioTracks,
+      directory.path,
+    );
+    final originalVolume = _calculateOriginalVolume(parameters.audioTracks);
 
     // Use videoSegments when multiple clips exist, otherwise use single video
     final useSegments = videoSegments.length > 1;
@@ -387,10 +389,9 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       id: taskId,
       videoSegments: useSegments
           ? videoSegments
-              .map((video) =>
-                  video.copyWith(volume: audioVolumes.originalVolume))
+              .map((video) => video.copyWith(volume: originalVolume))
               .toList()
-          : [VideoSegment(video: video, volume: audioVolumes.originalVolume)],
+          : [VideoSegment(video: video, volume: originalVolume)],
       imageLayers: [
         if (parameters.layers.isNotEmpty)
           ImageLayer(image: EditorLayerImage.memory(parameters.image))
@@ -413,13 +414,7 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
       enableAudio: proVideoController?.isAudioEnabled ?? true,
       outputFormat: outputFormat,
       bitrate: videoMetadata.bitrate,
-      audioTracks: [
-        if (customAudioPath != null)
-          VideoAudioTrack(
-            path: customAudioPath,
-            volume: audioVolumes.customVolume,
-          )
-      ],
+      audioTracks: customAudioTracks,
     );
 
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -430,18 +425,45 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     videoGenerationTime = stopwatch.elapsed;
   }
 
-  /// Returns a local file path for the given [track]'s audio source.
-  Future<String?> _safeCustomAudioPath(
-    AudioTrack? track,
+  /// Builds [VideoAudioTrack] list from the given [tracks].
+  Future<List<VideoAudioTrack>> _buildVideoAudioTracks(
+    List<AudioTrack> tracks,
     String directoryPath,
   ) async {
-    final audio = track?.audio;
-    if (audio == null) return null;
+    final result = <VideoAudioTrack>[];
+    for (var i = 0; i < tracks.length; i++) {
+      final track = tracks[i];
+      final path = await _resolveAudioPath(track, directoryPath, i);
+      if (path == null) continue;
+
+      final balance = track.volumeBalance;
+      final customVolume = (1.0 + balance) / 2.0;
+
+      result.add(VideoAudioTrack(
+        path: path,
+        volume: track.volume * customVolume,
+        loop: track.loop,
+        audioStartTime: track.audioStartTime,
+        audioEndTime: track.audioEndTime,
+        startTime: track.startTime,
+        endTime: track.endTime,
+      ));
+    }
+    return result;
+  }
+
+  /// Returns a local file path for the given [track]'s audio source.
+  Future<String?> _resolveAudioPath(
+    AudioTrack track,
+    String directoryPath,
+    int index,
+  ) async {
+    final audio = track.audio;
 
     if (audio.hasFile) {
       return audio.file!.path;
     } else {
-      String filePath = '$directoryPath/temp-audio.mp3';
+      String filePath = '$directoryPath/temp-audio-$index.mp3';
 
       if (audio.hasNetworkUrl) {
         return (await fetchVideoToFile(audio.networkUrl!, filePath)).path;
@@ -462,20 +484,19 @@ mixin VideoEditorMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Calculates the original and custom audio volumes based on volume balance.
-  ({double originalVolume, double customVolume}) _calculateAudioVolumes(
-    AudioTrack? track,
-  ) {
-    if (track == null) {
-      return (originalVolume: 1.0, customVolume: 1.0);
+  /// Calculates the original audio volume based on the volume balance
+  /// of all custom audio tracks.
+  double _calculateOriginalVolume(List<AudioTrack> tracks) {
+    if (tracks.isEmpty) return 1.0;
+
+    // Use the minimum original volume across all tracks
+    var minOriginal = 1.0;
+    for (final track in tracks) {
+      final balance = track.volumeBalance;
+      final originalVolume = (1.0 - balance) / 2.0;
+      if (originalVolume < minOriginal) minOriginal = originalVolume;
     }
-
-    final balance = track.volumeBalance;
-    // balance: -1.0 = only original, 0.0 = equal mix, 1.0 = only custom
-    final originalVolume = (1.0 - balance) / 2.0;
-    final customVolume = (1.0 + balance) / 2.0;
-
-    return (originalVolume: originalVolume, customVolume: customVolume);
+    return minOriginal;
   }
 
   /// Closes the video editor and opens a preview screen if a video was

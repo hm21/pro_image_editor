@@ -100,7 +100,8 @@ class CompleteParameters {
     this.tuneAdjustments = const [],
     this.capturedLayers = const [],
     this.videoClips = const [],
-    this.customAudioTrack,
+    @Deprecated('Use audioTracks instead') this.customAudioTrack,
+    this.audioTracks = const [],
     required this.originalImageSize,
     required this.temporaryDecodedImageSize,
     required this.bodySize,
@@ -199,7 +200,14 @@ class CompleteParameters {
   ///
   /// When provided, this [AudioTrack] replaces or mixes with the
   /// original audio from the video sources depending on the editor settings.
+  @Deprecated('Use audioTracks instead')
   final AudioTrack? customAudioTrack;
+
+  /// The list of custom audio tracks to overlay on top of the video clips.
+  ///
+  /// When provided, these [AudioTrack]s replace or mix with the
+  /// original audio from the video sources depending on the editor settings.
+  final List<AudioTrack> audioTracks;
 
   /// The raw original image size before any scaling or cropping.
   final Size? originalImageSize;
@@ -238,7 +246,8 @@ class CompleteParameters {
     bool? isTransformed,
     List<Layer>? layers,
     List<VideoClip>? videoClips,
-    AudioTrack? customAudioTrack,
+    @Deprecated('Use audioTracks instead') AudioTrack? customAudioTrack,
+    List<AudioTrack>? audioTracks,
     Size? originalImageSize,
     Size? temporaryDecodedImageSize,
     Size? bodySize,
@@ -266,7 +275,9 @@ class CompleteParameters {
       isTransformed: isTransformed ?? this.isTransformed,
       layers: layers ?? this.layers,
       videoClips: videoClips ?? this.videoClips,
+      // ignore: deprecated_member_use_from_same_package
       customAudioTrack: customAudioTrack ?? this.customAudioTrack,
+      audioTracks: audioTracks ?? this.audioTracks,
       originalImageSize: originalImageSize ?? this.originalImageSize,
       temporaryDecodedImageSize:
           temporaryDecodedImageSize ?? this.temporaryDecodedImageSize,
@@ -299,7 +310,9 @@ class CompleteParameters {
         other.image == image &&
         other.isTransformed == isTransformed &&
         other.videoClips == videoClips &&
+        // ignore: deprecated_member_use_from_same_package
         other.customAudioTrack == customAudioTrack &&
+        listEquals(other.audioTracks, audioTracks) &&
         other.originalImageSize == originalImageSize &&
         other.temporaryDecodedImageSize == temporaryDecodedImageSize &&
         other.bodySize == bodySize &&
@@ -325,7 +338,9 @@ class CompleteParameters {
         image.hashCode ^
         isTransformed.hashCode ^
         videoClips.hashCode ^
+        // ignore: deprecated_member_use_from_same_package
         customAudioTrack.hashCode ^
+        audioTracks.hashCode ^
         originalImageSize.hashCode ^
         temporaryDecodedImageSize.hashCode ^
         bodySize.hashCode ^

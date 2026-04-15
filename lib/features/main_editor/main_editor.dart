@@ -2644,6 +2644,9 @@ class ProImageEditorState extends State<ProImageEditor>
             layers: activeLayers,
             capturedLayers: capturedLayers,
             customAudioTrack: _videoController?.audioTrack,
+            audioTracks: _videoController?.audioTrack != null
+                ? [_videoController!.audioTrack!]
+                : [],
             videoClips: _videoController?.clips ?? [],
             originalImageSize: sizesManager.originalImageSize,
             temporaryDecodedImageSize: sizesManager.temporaryDecodedImageSize,
