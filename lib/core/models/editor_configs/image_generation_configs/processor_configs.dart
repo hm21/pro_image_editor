@@ -64,8 +64,7 @@ class ProcessorConfigs {
           numberOfBackgroundProcessors ?? this.numberOfBackgroundProcessors,
       maxConcurrency: maxConcurrency ?? this.maxConcurrency,
       processorMode: processorMode ?? this.processorMode,
-      initializationDelay:
-          initializationDelay ?? this.initializationDelay,
+      initializationDelay: initializationDelay ?? this.initializationDelay,
     );
   }
 }
