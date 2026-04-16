@@ -44,6 +44,7 @@ class MainEditorConfigs extends ZoomConfigs {
       // SubEditorMode.sticker,
     ],
     this.enableSubEditorPage = false,
+    this.captureImageOnDone = true,
     this.captureLayersOnDone = false,
     this.style = const MainEditorStyle(),
     this.icons = const MainEditorIcons(),
@@ -106,6 +107,13 @@ class MainEditorConfigs extends ZoomConfigs {
   /// for further processing (e.g. video rendering).
   final bool captureLayersOnDone;
 
+  /// Whether to generate the final image bytes via `captureEditorImage()` when
+  /// [doneEditing] is called.
+  ///
+  /// If disabled, [onImageEditingComplete] is not called and
+  /// [CompleteParameters.image] contains empty bytes.
+  final bool captureImageOnDone;
+
   /// Whether to use the sub-editor page without pushing a new route.
   final bool enableSubEditorPage;
 
@@ -159,10 +167,12 @@ class MainEditorConfigs extends ZoomConfigs {
     EditorSafeArea? safeArea,
     List<SubEditorMode>? tools,
     bool? enableSubEditorPage,
+    bool? captureImageOnDone,
     bool? captureLayersOnDone,
   }) {
     return MainEditorConfigs(
       enableSubEditorPage: enableSubEditorPage ?? this.enableSubEditorPage,
+      captureImageOnDone: captureImageOnDone ?? this.captureImageOnDone,
       captureLayersOnDone: captureLayersOnDone ?? this.captureLayersOnDone,
       enableCloseButton: enableCloseButton ?? this.enableCloseButton,
       enableKeyboardShortcuts:

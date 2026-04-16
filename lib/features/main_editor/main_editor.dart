@@ -2123,7 +2123,13 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (tuneAdjustments == null) return;
 
-    addHistory(tuneAdjustments: tuneAdjustments, heroScreenshotRequired: true);
+    addHistory(
+      tuneAdjustments: [
+        ...stateManager.activeTuneAdjustments.map((item) => item.copy()),
+        ...tuneAdjustments,
+      ],
+      heroScreenshotRequired: true,
+    );
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -2166,7 +2172,13 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (filterState == null) return;
 
-    addHistory(filters: [filterState], heroScreenshotRequired: true);
+    addHistory(
+      filters: [
+        ...stateManager.activeFilters.map((item) => item.copy()),
+        filterState,
+      ],
+      heroScreenshotRequired: true,
+    );
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
@@ -2588,81 +2600,96 @@ class ProImageEditorState extends State<ProImageEditor>
         message: i18n.doneLoadingMsg,
       );
 
-      if (callbacks.onThumbnailGenerated != null) {
-        if (_imageInfos == null) await decodeImage();
+      try {
+        if (callbacks.onThumbnailGenerated != null) {
+          if (_imageInfos == null) await decodeImage();
 
-        final results = await Future.wait([
-          captureEditorImage(),
-          _controllers.screenshot.getRawRenderedImage(
-            imageInfos: _imageInfos!,
-            useThumbnailSize: false,
-          ),
-        ]);
+          final Uint8List imageBytes = mainEditorConfigs.captureImageOnDone
+              ? await captureEditorImage()
+              : Uint8List.fromList([]);
 
-        await callbacks.onThumbnailGenerated!(
-          results[0] as Uint8List,
-          results[1] as ui.Image,
-        );
-      } else {
-        Uint8List? bytes = await captureEditorImage();
-        await onImageEditingComplete?.call(bytes);
+          final results = await Future.wait([
+            Future.value(imageBytes),
+            _controllers.screenshot.getRawRenderedImage(
+              imageInfos: _imageInfos!,
+              useThumbnailSize: false,
+            ),
+          ]);
 
-        final capturedLayers = mainEditorConfigs.captureLayersOnDone
-            ? await captureAllLayersWithMeta(
-                applyTransforms: true,
-                basePixelRatio: configs.imageGeneration.customPixelRatio,
-              )
-            : <ExportedLayer>[];
+          await callbacks.onThumbnailGenerated!(
+            imageBytes,
+            results[1] as ui.Image,
+          );
+        } else {
+          Uint8List? bytes = mainEditorConfigs.captureImageOnDone
+              ? await captureEditorImage()
+              : null;
+          if (bytes != null) {
+            await onImageEditingComplete?.call(bytes);
+          }
 
-        final transform = stateManager.transformConfigs;
-        final isTransformed = transform.isNotEmpty;
+          final capturedLayers = mainEditorConfigs.captureLayersOnDone
+              ? await captureAllLayersWithMeta(
+                  applyTransforms: true,
+                  basePixelRatio: configs.imageGeneration.customPixelRatio,
+                )
+              : <ExportedLayer>[];
 
-        Size originalImageSize = _imageInfos!.rawSize;
-        Size outputSize = transform.getCropSize(originalImageSize);
-        Offset outputOffset = transform.getCropStartOffset(originalImageSize);
+          final transform = stateManager.transformConfigs;
+          final isTransformed = transform.isNotEmpty;
 
-        await onCompleteWithParameters?.call(
-          CompleteParameters(
-            blur: stateManager.activeBlur,
-            matrixFilterList: stateManager.activeFilters.allMatrices,
-            filterStates: stateManager.activeFilters,
-            tuneAdjustments: stateManager.activeTuneAdjustments,
-            matrixTuneAdjustmentsList: stateManager.activeTuneAdjustments
-                .map((item) => item.matrix)
-                .toList(),
-            startTime: _videoController?.startTime,
-            endTime: _videoController?.endTime,
-            cropWidth: isTransformed ? outputSize.width.round() : null,
-            cropHeight: isTransformed ? outputSize.height.round() : null,
-            cropX: isTransformed ? outputOffset.dx.round() : null,
-            cropY: isTransformed ? outputOffset.dy.round() : null,
-            flipX: transform.is90DegRotated ? transform.flipY : transform.flipX,
-            flipY: transform.is90DegRotated ? transform.flipX : transform.flipY,
-            rotateTurns: transform.angleToTurns(),
-            image: bytes,
-            isTransformed: isTransformed,
-            layers: activeLayers,
-            capturedLayers: capturedLayers,
-            customAudioTrack: _videoController?.audioTrack,
-            audioTracks: _videoController?.audioTrack != null
-                ? [_videoController!.audioTrack!]
-                : [],
-            videoClips: _videoController?.clips ?? [],
-            originalImageSize: sizesManager.originalImageSize,
-            temporaryDecodedImageSize: sizesManager.temporaryDecodedImageSize,
-            bodySize: sizesManager.bodySize,
-            editorSize: sizesManager.editorSize,
-            meta: stateManager.activeMeta,
-          ),
-        );
+          Size originalImageSize = _imageInfos!.rawSize;
+          Size outputSize = transform.getCropSize(originalImageSize);
+          Offset outputOffset = transform.getCropStartOffset(originalImageSize);
+
+          await onCompleteWithParameters?.call(
+            CompleteParameters(
+              blur: stateManager.activeBlur,
+              matrixFilterList: stateManager.activeFilters.allMatrices,
+              filterStates: stateManager.activeFilters,
+              tuneAdjustments: stateManager.activeTuneAdjustments,
+              matrixTuneAdjustmentsList: stateManager.activeTuneAdjustments
+                  .map((item) => item.matrix)
+                  .toList(),
+              startTime: _videoController?.startTime,
+              endTime: _videoController?.endTime,
+              cropWidth: isTransformed ? outputSize.width.round() : null,
+              cropHeight: isTransformed ? outputSize.height.round() : null,
+              cropX: isTransformed ? outputOffset.dx.round() : null,
+              cropY: isTransformed ? outputOffset.dy.round() : null,
+              flipX: transform.is90DegRotated
+                  ? transform.flipY
+                  : transform.flipX,
+              flipY: transform.is90DegRotated
+                  ? transform.flipX
+                  : transform.flipY,
+              rotateTurns: transform.angleToTurns(),
+              image: bytes ?? Uint8List.fromList([]),
+              isTransformed: isTransformed,
+              layers: activeLayers,
+              capturedLayers: capturedLayers,
+              customAudioTrack: _videoController?.audioTrack,
+              audioTracks: _videoController?.audioTrack != null
+                  ? [_videoController!.audioTrack!]
+                  : [],
+              videoClips: _videoController?.clips ?? [],
+              originalImageSize: sizesManager.originalImageSize,
+              temporaryDecodedImageSize: sizesManager.temporaryDecodedImageSize,
+              bodySize: sizesManager.bodySize,
+              editorSize: sizesManager.editorSize,
+              meta: stateManager.activeMeta,
+            ),
+          );
+        }
+
+        onCloseEditor?.call(EditorMode.main);
+      } finally {
+        LoadingDialog.instance.hide();
+
+        /// Allow users to continue editing if they didn't close the editor.
+        _isProcessingFinalImage = false;
+        if (mounted) setState(() {});
       }
-
-      LoadingDialog.instance.hide();
-
-      onCloseEditor?.call(EditorMode.main);
-
-      /// Allow users to continue editing if they didn't close the editor.
-      setState(() => _isProcessingFinalImage = false);
     });
   }
 

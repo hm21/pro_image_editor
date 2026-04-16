@@ -192,11 +192,6 @@ class FilterEditorState extends State<FilterEditor>
     _uiFilterStream = StreamController.broadcast();
     _uiFilterStream.stream.listen((_) => rebuildController.add(null));
 
-    final isMultiSelectionDisabled = !filterEditorConfigs.enableMultiSelection;
-    if (isMultiSelectionDisabled && appliedFilters.isNotEmpty) {
-      _initializeFilterFromApplied();
-    }
-
     filterEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       filterEditorCallbacks?.onAfterViewInit?.call();
@@ -249,25 +244,6 @@ class FilterEditorState extends State<FilterEditor>
         (matrix) => lerpColorMatrix(identityMatrix, matrix, filterOpacity),
       ),
     ];
-  }
-
-  /// Initializes the selected filter from previously applied filters.
-  ///
-  /// Searches through the available filter list to find a filter whose matrix
-  /// matches the first applied filter. If found, sets it as the selected
-  /// filter.
-  void _initializeFilterFromApplied() {
-    final filterList = filterEditorConfigs.filterList ?? presetFiltersList;
-    final firstApplied = appliedFilters.first;
-
-    for (final filter in filterList) {
-      if (filter.filters.isNotEmpty &&
-          listEquals(filter.filters.first, firstApplied)) {
-        setFilter(filter);
-        return;
-      }
-    }
-    setFilter(FilterModel(name: 'Not-Found', filters: [firstApplied]));
   }
 
   /// Set the current filter.
