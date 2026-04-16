@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.4.1
+- **FEAT**(main-editor): Add `captureImageOnDone` to `MainEditorConfigs` (default `true`) to make final `captureEditorImage()` on done optional.
+- **FIX**(main-editor): Prevent `_isProcessingFinalImage` from getting stuck by guarding done-flow cleanup with `try/finally`.
+
 ## 12.4.0
 - **FEAT**(audio-editor): Add `volume`, `loop`, `audioStartTime`, `audioEndTime`, and `endTime` fields to `AudioTrack`.
 - **FEAT**(complete-parameters): Add `audioTracks` field (`List<AudioTrack>`) to `CompleteParameters` for multiple audio track support.
