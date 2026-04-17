@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.4.3
+- **FIX**(state-manager): Update activeFilters and activeTuneAdjustments to directly use historyPointer.
+
 ## 12.4.2
 - **FEAT**(state-manager): Add `replaceHistory()` to replace an existing history entry in the stack (current pointer by default, or a custom index).
 

@@ -106,19 +106,9 @@ class StateManager {
   void updateActiveItems() {
     var activeHistory = _stateHistory.getRange(0, _historyPointer + 1);
 
-    activeFilters = activeHistory
-        .lastWhere(
-          (item) => item.filters.isNotEmpty,
-          orElse: EditorStateHistory.new,
-        )
-        .filters;
+    activeFilters = _stateHistory[historyPointer].filters;
 
-    activeTuneAdjustments = activeHistory
-        .lastWhere(
-          (item) => item.tuneAdjustments.isNotEmpty,
-          orElse: EditorStateHistory.new,
-        )
-        .tuneAdjustments;
+    activeTuneAdjustments = _stateHistory[historyPointer].tuneAdjustments;
 
     activeLayers = _stateHistory[historyPointer].layers;
 

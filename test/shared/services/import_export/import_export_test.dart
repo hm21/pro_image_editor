@@ -149,7 +149,7 @@ void main() {
           editor,
           onAfterImport: () {
             editor.addHistory(filters: const []);
-            expect(editor.stateManager.activeFilters.allMatrices.length, 1);
+            expect(editor.stateManager.activeFilters.allMatrices.length, 0);
           },
         );
 
@@ -179,7 +179,7 @@ void main() {
           editor,
           onAfterImport: () {
             editor.addHistory(tuneAdjustments: []);
-            expect(editor.stateManager.activeTuneAdjustments.length, 1);
+            expect(editor.stateManager.activeTuneAdjustments.length, 0);
           },
         );
 
