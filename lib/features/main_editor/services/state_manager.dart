@@ -285,6 +285,28 @@ class StateManager {
     if (!skipUpdateActiveItems) updateActiveItems();
   }
 
+  /// Replaces a history entry in the stack.
+  ///
+  /// By default, the currently active history entry is replaced. You can
+  /// provide [index] to replace any specific history position.
+  ///
+  /// Throws an [ArgumentError] when [index] is out of range.
+  void replaceHistory(
+    EditorStateHistory history, {
+    int? index,
+    bool skipUpdateActiveItems = false,
+  }) {
+    final targetIndex = index ?? _historyPointer;
+
+    if (targetIndex < 0 || targetIndex >= _stateHistory.length) {
+      throw ArgumentError('History index out of range');
+    }
+
+    _stateHistory[targetIndex] = history;
+
+    if (!skipUpdateActiveItems) updateActiveItems();
+  }
+
   /// Redoes the last undone change, moving the history pointer forward by one
   /// step.
   /// If there is no forward change available, this operation will throw an

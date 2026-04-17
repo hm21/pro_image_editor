@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.4.2
+- **FEAT**(state-manager): Add `replaceHistory()` to replace an existing history entry in the stack (current pointer by default, or a custom index).
+
 ## 12.4.1
 - **FEAT**(main-editor): Add `captureImageOnDone` to `MainEditorConfigs` (default `true`) to make final `captureEditorImage()` on done optional.
 - **FIX**(main-editor): Prevent `_isProcessingFinalImage` from getting stuck by guarding done-flow cleanup with `try/finally`.
