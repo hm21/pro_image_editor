@@ -366,7 +366,7 @@ class Layer {
 
     final dpr =
         basePixelRatio ?? MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
-    final effectivePixelRatio = pixelRatio ?? (dpr * scale);
+    final effectivePixelRatio = pixelRatio ?? dpr;
 
     final boundary = context.findRenderObject() as RenderRepaintBoundary;
     final rawImage = await boundary.toImage(pixelRatio: effectivePixelRatio);

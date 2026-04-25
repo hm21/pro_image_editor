@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.4.4
+- **FIX**(layers): Improve exported layer resolution for scaled layers to avoid blurry output.
+
 ## 12.4.3
 - **FIX**(state-manager): Update activeFilters and activeTuneAdjustments to directly use historyPointer.
 
