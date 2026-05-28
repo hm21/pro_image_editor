@@ -399,7 +399,11 @@ class Layer {
     canvas
       ..rotate(rotation)
       ..translate(-w / 2, -h / 2)
-      ..drawImage(rawImage, Offset.zero, Paint());
+      ..drawImage(
+        rawImage,
+        Offset.zero,
+        Paint()..filterQuality = FilterQuality.high,
+      );
 
     final picture = pictureRecorder.endRecording();
     final transformed = await picture.toImage(newW.ceil(), newH.ceil());

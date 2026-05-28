@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.4.5
+- **FIX**(layers): Improve text quality by applying `FilterQuality.high` when rendering layer images with transforms.
+
 ## 12.4.4
 - **FIX**(layers): Improve exported layer resolution for scaled layers to avoid blurry output.
 
