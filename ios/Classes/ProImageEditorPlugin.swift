@@ -1,1 +1,0 @@
-../../darwin/pro_image_editor/Sources/pro_image_editor/ProImageEditorPlugin.swift
