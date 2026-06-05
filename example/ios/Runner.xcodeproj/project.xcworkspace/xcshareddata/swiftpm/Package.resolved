@@ -104,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/gtm-session-fetcher.git",
       "state" : {
-        "revision" : "a883ddb9fd464216133a5ab441f1ae8995978573",
-        "version" : "5.1.0"
+        "revision" : "c0ac7575d70050c2973ba2318bd5af47f8e8153a",
+        "version" : "5.3.0"
       }
     },
     {

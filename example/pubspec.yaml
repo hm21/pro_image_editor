@@ -57,3 +57,6 @@ flutter:
   assets:
     - assets/
     - assets/google_fonts/
+
+  config:
+    enable-swift-package-manager: false

@@ -13,8 +13,9 @@ A Flutter image editor: Seamlessly enhance your images with user-friendly editin
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'hm21' => 'info@waio.ch' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'pro_image_editor/Sources/pro_image_editor/**/*'
   s.swift_version    = '5.0'
+  s.osx.frameworks   = 'FlutterMacOS'
 
   s.ios.deployment_target = '12.0'
   s.ios.dependency 'Flutter'
