@@ -62,8 +62,10 @@ flutter:
         pluginClass: ProImageEditorPlugin
       ios:
         pluginClass: ProImageEditorPlugin
+        sharedDarwinSource: true
       macos:
         pluginClass: ProImageEditorPlugin
+        sharedDarwinSource: true
   assets:
     - path: lib/web/web_worker.dart.js
       platforms: [web]
