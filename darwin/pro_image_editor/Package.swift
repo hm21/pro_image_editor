@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "pro-image-editor", targets: ["pro_image_editor"])
     ],
      dependencies: [
-        .package(name: "FlutterFramework", path: "../FlutterFramework"),
+        .package(path: "../FlutterFramework"),
     ],
     targets: [
         .target(
