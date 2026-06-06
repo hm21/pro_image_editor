@@ -20,7 +20,7 @@ void main() async {
 
   await Supabase.initialize(
     url: 'SUPABASE_URL',
-    publishableKey: 'SUPABASE_ANON_KEY',
+    anonKey: 'SUPABASE_ANON_KEY',
     debug: false,
   );
 
