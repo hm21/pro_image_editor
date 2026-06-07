@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.4.8
+- **CHORE**: Update CI to Flutter 3.44 and fix deprecated API usages.
+
 ## 12.4.7
 - **FIX**(example): Update Supabase initialization to use publishable key and upgrade `supabase_flutter` dependency to 2.14.1.
 
