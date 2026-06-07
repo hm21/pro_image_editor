@@ -245,7 +245,7 @@ class _ReorderLayerSheetState extends State<ReorderLayerSheet> {
         );
       },
       itemCount: widget.layers.length,
-      onReorder: widget.onReorder,
+      onReorderItem: widget.onReorder,
     );
   }
 }
