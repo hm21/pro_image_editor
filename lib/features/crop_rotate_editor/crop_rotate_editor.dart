@@ -287,9 +287,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// The ratio used for cropping, based on the aspect ratio and main image
   /// size.
-  double get _ratio => 1 / (_activeAspectRatio == 0
-      ? _mainImageSize.aspectRatio
-      : _activeAspectRatio);
+  double get _ratio =>
+      1 /
+      (_activeAspectRatio == 0
+          ? _mainImageSize.aspectRatio
+          : _activeAspectRatio);
 
   /// Indicates whether a locked-aspect-ratio rotation animation is in progress.
   ///
