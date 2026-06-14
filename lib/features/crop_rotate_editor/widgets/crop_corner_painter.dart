@@ -48,6 +48,7 @@ class CropCornerPainter extends CustomPainter {
     required this.scaleFactor,
     required this.style,
     required this.rotationScaleFactor,
+    this.frameOpacity = 1,
   });
 
   /// The rectangle defining the crop area.
@@ -109,6 +110,16 @@ class CropCornerPainter extends CustomPainter {
   /// This double value influences how elements are scaled when the image is
   /// rotated, ensuring that elements remain proportionate.
   final double rotationScaleFactor;
+
+  /// Overall opacity multiplier for the whole crop overlay (darkened area,
+  /// corners and helper lines).
+  ///
+  /// Unlike [fadeInOpacity] - which blends the outside area towards the
+  /// background color (hero state) - this simply fades the entire crop UI
+  /// towards fully transparent. It is used to briefly hide and show the crop
+  /// frame while a locked aspect-ratio rotation runs. A value of `1` keeps the
+  /// default behavior.
+  final double frameOpacity;
 
   double get _cropOffsetLeft => cropRect.left;
   double get _cropOffsetRight => cropRect.right;
@@ -194,7 +205,7 @@ class CropCornerPainter extends CustomPainter {
       path,
       Paint()
         ..color = interpolatedColor.withValues(
-          alpha: (opacity + fadeInFactor).clamp(0, 1),
+          alpha: ((opacity + fadeInFactor).clamp(0, 1)) * frameOpacity,
         )
         ..style = PaintingStyle.fill,
     );
@@ -266,7 +277,9 @@ class CropCornerPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = style.cropCornerColor.withValues(alpha: fadeInOpacity)
+          ..color = style.cropCornerColor.withValues(
+            alpha: fadeInOpacity * frameOpacity,
+          )
           ..style = PaintingStyle.fill,
       );
     } else {
@@ -332,7 +345,9 @@ class CropCornerPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = style.cropCornerColor.withValues(alpha: fadeInOpacity)
+          ..color = style.cropCornerColor.withValues(
+            alpha: fadeInOpacity * frameOpacity,
+          )
           ..strokeWidth = width
           ..strokeCap = StrokeCap.round
           ..style = PaintingStyle.stroke,
@@ -385,7 +400,11 @@ class CropCornerPainter extends CustomPainter {
 
     final cornerPaint = Paint()
       ..color = style.helperLineColor.withValues(
-        alpha: style.helperLineColor.a * fadeInOpacity * interactionOpacity,
+        alpha:
+            style.helperLineColor.a *
+            fadeInOpacity *
+            interactionOpacity *
+            frameOpacity,
       )
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, cornerPaint);
@@ -403,7 +422,8 @@ class CropCornerPainter extends CustomPainter {
         oldDelegate.screenSize != screenSize ||
         oldDelegate.scaleFactor != scaleFactor ||
         oldDelegate.style != style ||
-        oldDelegate.rotationScaleFactor != rotationScaleFactor;
+        oldDelegate.rotationScaleFactor != rotationScaleFactor ||
+        oldDelegate.frameOpacity != frameOpacity;
   }
 
   /// Create a copy of the [CropCornerPainter].
@@ -419,6 +439,7 @@ class CropCornerPainter extends CustomPainter {
       scaleFactor: scaleFactor,
       style: style,
       rotationScaleFactor: rotationScaleFactor,
+      frameOpacity: frameOpacity,
     );
   }
 }

@@ -245,6 +245,140 @@ void main() {
     });
   });
 
+  group('CropRotateEditor keep aspect ratio on rotate', () {
+    CropRotateEditorInitConfigs buildConfigs({
+      required bool enableLock,
+      double? initAspectRatio,
+    }) {
+      return CropRotateEditorInitConfigs(
+        theme: ThemeData.light(),
+        enableFakeHero: false,
+        mainImageSize: const Size(600, 800),
+        configs: ProImageEditorConfigs(
+          cropRotateEditor: CropRotateEditorConfigs(
+            initAspectRatio: initAspectRatio,
+            enableKeepAspectRatioOnRotate: enableLock,
+            animationDuration: Duration.zero,
+            cropDragAnimationDuration: Duration.zero,
+            fadeInOutsideCropAreaAnimationDuration: Duration.zero,
+            opacityOutsideCropAreaDuration: Duration.zero,
+          ),
+          imageGeneration: const ImageGenerationConfigs(
+            enableBackgroundGeneration: false,
+            enableIsolateGeneration: false,
+          ),
+        ),
+      );
+    }
+
+    Future<GlobalKey<CropRotateEditorState>> pumpLockEditor(
+      WidgetTester tester, {
+      required bool enableLock,
+      double? initAspectRatio,
+    }) async {
+      final editorKey = GlobalKey<CropRotateEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CropRotateEditor.memory(
+              mockMemoryImage,
+              key: editorKey,
+              initConfigs: buildConfigs(
+                enableLock: enableLock,
+                initAspectRatio: initAspectRatio,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+      return editorKey;
+    }
+
+    testWidgets('keeps the selected ratio orientation when enabled', (
+      WidgetTester tester,
+    ) async {
+      final editorKey = await pumpLockEditor(
+        tester,
+        enableLock: true,
+        initAspectRatio: 9 / 16,
+      );
+
+      // Initially the crop frame matches the selected 9:16 ratio.
+      expect(
+        editorKey.currentState!.cropRect.size.aspectRatio,
+        closeTo(9 / 16, 0.01),
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('crop-rotate-editor-rotate-btn')),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+
+      // After rotating, the local crop rect is inverted so the on-screen frame
+      // keeps the 9:16 orientation.
+      expect(editorKey.currentState!.rotationCount, 1);
+      expect(
+        editorKey.currentState!.cropRect.size.aspectRatio,
+        closeTo(16 / 9, 0.01),
+      );
+    });
+
+    testWidgets('swaps the ratio orientation when disabled', (
+      WidgetTester tester,
+    ) async {
+      final editorKey = await pumpLockEditor(
+        tester,
+        enableLock: false,
+        initAspectRatio: 9 / 16,
+      );
+
+      expect(
+        editorKey.currentState!.cropRect.size.aspectRatio,
+        closeTo(9 / 16, 0.01),
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('crop-rotate-editor-rotate-btn')),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+
+      // Without the option the local crop rect stays unchanged, so on-screen it
+      // appears as 16:9 after the rotation.
+      expect(editorKey.currentState!.rotationCount, 1);
+      expect(
+        editorKey.currentState!.cropRect.size.aspectRatio,
+        closeTo(9 / 16, 0.01),
+      );
+    });
+
+    testWidgets('keeps orientation for the free aspect ratio', (
+      WidgetTester tester,
+    ) async {
+      // No initAspectRatio => free ratio, the crop frame matches the image
+      // (600x800 => 3:4).
+      final editorKey = await pumpLockEditor(tester, enableLock: true);
+
+      expect(
+        editorKey.currentState!.cropRect.size.aspectRatio,
+        closeTo(3 / 4, 0.01),
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('crop-rotate-editor-rotate-btn')),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+
+      // The local crop rect is inverted so the on-screen frame keeps the 3:4
+      // orientation even with a free ratio.
+      expect(editorKey.currentState!.rotationCount, 1);
+      expect(
+        editorKey.currentState!.cropRect.size.aspectRatio,
+        closeTo(4 / 3, 0.01),
+      );
+    });
+  });
+
   group('CropRotateEditor Aspect Ratio Dialog Tests', () {
     testWidgets('Opens and selects an aspect ratio', (
       WidgetTester tester,

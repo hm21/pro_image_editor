@@ -56,6 +56,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     this.enableProvideImageInfos = false,
     this.enableDoubleTap = true,
     this.enableFlipAnimation = true,
+    this.enableKeepAspectRatioOnRotate = false,
     this.showLayers = true,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
@@ -120,6 +121,18 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
 
   /// Enables flip-animation when set to true.
   final bool enableFlipAnimation;
+
+  /// Keeps the crop frame's orientation when the image is rotated.
+  ///
+  /// By default a 90° rotation swaps the crop frame orientation, so a `9:16`
+  /// crop becomes `16:9` after rotating. When this is set to `true`, the crop
+  /// frame keeps the orientation it had before the rotation (e.g. `9:16` stays
+  /// `9:16`) and the image is zoomed in so it still fully covers the crop area.
+  ///
+  /// This works for fixed, `original` (`0`) and `free` (`-1`) aspect ratios.
+  /// For the free and original ratio the current crop frame orientation is
+  /// kept.
+  final bool enableKeepAspectRatioOnRotate;
 
   /// Determines if the mouse scroll direction should be inverted.
   final bool invertMouseScroll;
@@ -265,6 +278,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     bool? enableTransformLayers,
     bool? enableDoubleTap,
     bool? enableFlipAnimation,
+    bool? enableKeepAspectRatioOnRotate,
     bool? invertMouseScroll,
     bool? invertDragDirection,
     CropMode? initialCropMode,
@@ -301,6 +315,8 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
           enableTransformLayers ?? this.enableTransformLayers,
       enableDoubleTap: enableDoubleTap ?? this.enableDoubleTap,
       enableFlipAnimation: enableFlipAnimation ?? this.enableFlipAnimation,
+      enableKeepAspectRatioOnRotate:
+          enableKeepAspectRatioOnRotate ?? this.enableKeepAspectRatioOnRotate,
       invertMouseScroll: invertMouseScroll ?? this.invertMouseScroll,
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,

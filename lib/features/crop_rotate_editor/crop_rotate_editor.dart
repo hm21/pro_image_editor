@@ -269,10 +269,33 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The horizontal space for cropping.
   double _cropSpaceHorizontal = 0;
 
+  /// The aspect ratio currently applied to the crop area.
+  ///
+  /// When [CropRotateEditorConfigs.enableKeepAspectRatioOnRotate] is enabled
+  /// the ratio is inverted for every 90° rotation, so the crop frame keeps the
+  /// orientation the user selected (e.g. a `9:16` frame stays `9:16` instead of
+  /// turning into `16:9` after a rotation). Only fixed aspect ratios are
+  /// affected.
+  double get _activeAspectRatio {
+    if (cropRotateEditorConfigs.enableKeepAspectRatioOnRotate &&
+        _rotated90deg &&
+        aspectRatio > 0) {
+      return 1 / aspectRatio;
+    }
+    return aspectRatio;
+  }
+
   /// The ratio used for cropping, based on the aspect ratio and main image
   /// size.
-  double get _ratio =>
-      1 / (aspectRatio == 0 ? _mainImageSize.aspectRatio : aspectRatio);
+  double get _ratio => 1 / (_activeAspectRatio == 0
+      ? _mainImageSize.aspectRatio
+      : _activeAspectRatio);
+
+  /// Indicates whether a locked-aspect-ratio rotation animation is in progress.
+  ///
+  /// Used to defer the history entry to the end of the crop-area transition
+  /// instead of adding it when the rotation animation completes.
+  bool _lockedRotationActive = false;
 
   /// The opacity of the painter.
   double _painterOpacity = 0;
@@ -352,6 +375,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   double _rotationScaleFactor = 1;
 
+  /// Opacity of the whole crop overlay, used to briefly hide and show the crop
+  /// frame while a locked aspect-ratio rotation runs.
+  double _cropFrameOpacity = 1;
+
   @override
   CropCornerPainter? get cropPainter {
     return showWidgets
@@ -361,6 +388,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
             viewRect: _viewRect,
             scaleFactor: userScaleFactor,
             rotationScaleFactor: _rotationScaleFactor,
+            frameOpacity: _cropFrameOpacity,
             interactionOpacity: _interactionOpacityProgress,
             screenSize: Size(editorBodySize.width, editorBodySize.height),
             fadeInOpacity: _painterOpacity,
@@ -414,10 +442,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
     rotateCtrl.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        if (_blockInteraction) {
+        /// While a locked-aspect-ratio rotation is running the crop area is
+        /// still being animated, so the history entry is added once that
+        /// transition finishes instead of here.
+        if (!_lockedRotationActive && _blockInteraction) {
           addHistory(scaleRotation: oldScaleFactor);
+          _blockInteraction = false;
         }
-        _blockInteraction = false;
         cropRotateEditorCallbacks?.handleRotateEnd(rotateAnimation.value);
       }
     });
@@ -903,6 +934,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   /// Rotates the image clockwise.
   void rotate() {
+    /// Ignore new rotations while a locked-aspect-ratio rotation (which hides
+    /// and shows the crop frame) is still running.
+    if (_lockedRotationActive) return;
     _blockInteraction = true;
     var piHelper =
         cropRotateEditorConfigs.rotateDirection == RotateDirection.left
@@ -920,12 +954,89 @@ class CropRotateEditorState extends State<CropRotateEditor>
             curve: cropRotateEditorConfigs.rotateAnimationCurve,
           ),
         );
-    rotateCtrl
-      ..reset()
-      ..forward();
-    calcFitToScreen();
+    rotateCtrl.reset();
+
+    if (cropRotateEditorConfigs.enableKeepAspectRatioOnRotate &&
+        !cropRect.isEmpty) {
+      /// The rotation is started inside the helper, after fading the frame out.
+      _rotateWithLockedAspectRatio();
+    } else {
+      rotateCtrl.forward();
+      calcFitToScreen();
+    }
 
     cropRotateEditorCallbacks?.handleRotateStart(rotateAnimation.value);
+  }
+
+  /// Rotates while keeping the crop frame's orientation, hiding the frame
+  /// during the rotation so it never appears to change its aspect ratio.
+  ///
+  /// Because the crop frame lives inside the rotating image transform, letting
+  /// it rotate would make e.g. a `9:16` frame widen towards `1:1` half way
+  /// through the 90° rotation. To avoid this the crop overlay is faded out, the
+  /// image is rotated and zoomed while the frame is hidden, and the frame is
+  /// then faded back in at the preserved aspect ratio. Inverting the current
+  /// crop ratio works for fixed, original and free aspect ratios.
+  Future<void> _rotateWithLockedAspectRatio() async {
+    _lockedRotationActive = true;
+
+    final Rect startCropRect = cropRect;
+    final Rect startViewRect = _viewRect;
+
+    /// Recalculate the crop area with the inverted aspect ratio to get the
+    /// target the image is zoomed/fitted to.
+    calcCropRect(newRatio: startCropRect.width / startCropRect.height);
+    final Rect targetCropRect = cropRect;
+    final Rect targetViewRect = _viewRect;
+
+    /// 1) Fade the crop overlay out while the image is still static, so the
+    /// user never sees the frame change its aspect ratio.
+    cropRect = startCropRect;
+    _viewRect = startViewRect;
+    await loopWithTransitionTiming(
+      (double curveT) {
+        _cropFrameOpacity = 1 - curveT;
+        cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+      },
+      mounted: mounted,
+      duration: cropRotateEditorConfigs.opacityOutsideCropAreaDuration,
+      transitionFunction: Curves.easeOut.transform,
+    );
+    if (!mounted) return;
+    _cropFrameOpacity = 0;
+
+    /// 2) Switch to the target crop (still hidden) and rotate + zoom the image.
+    cropRect = targetCropRect;
+    _viewRect = targetViewRect;
+    calcFitToScreen();
+    try {
+      await rotateCtrl.forward();
+    } catch (_) {
+      /// The ticker was canceled (e.g. the editor was disposed).
+      return;
+    }
+    if (!mounted) return;
+    _setOffsetLimits();
+
+    /// 3) Fade the crop overlay back in at the preserved aspect ratio.
+    await loopWithTransitionTiming(
+      (double curveT) {
+        _cropFrameOpacity = curveT;
+        cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+      },
+      mounted: mounted,
+      duration: cropRotateEditorConfigs.fadeInOutsideCropAreaAnimationDuration,
+      transitionFunction:
+          cropRotateEditorConfigs.fadeInOutsideCropAreaAnimationCurve.transform,
+    );
+    if (!mounted) return;
+    _cropFrameOpacity = 1;
+
+    _lockedRotationActive = false;
+    if (_blockInteraction) {
+      addHistory(scaleRotation: oldScaleFactor);
+      _blockInteraction = false;
+    }
   }
 
   @override
