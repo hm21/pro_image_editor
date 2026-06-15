@@ -186,6 +186,7 @@ class MainEditorInteractiveContent extends StatelessWidget {
     return ExtendedInteractiveViewer(
       key: interactiveViewerKey,
       enableExternalGestureDetector: true,
+      clipBehavior: mainConfigs.clipBehavior,
       zoomConfigs: mainConfigs,
       onInteractionStart: (details) {
         callbacks.mainEditorCallbacks?.onEditorZoomScaleStart?.call(details);

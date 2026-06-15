@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.5.1
+- **FEAT**(main-editor): Add `clipBehavior` option to `MainEditorConfigs` (default `Clip.hardEdge`) to control clipping of the editor's interactive content area.
+
 ## 12.5.0
 - **FEAT**(crop-rotate): Add `enableKeepAspectRatioOnRotate` option to keep the selected aspect ratio orientation when rotating (e.g. `9:16` stays `9:16` instead of becoming `16:9`), zooming the image in so it still fully covers the crop area.
 
