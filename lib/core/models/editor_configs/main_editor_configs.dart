@@ -175,7 +175,7 @@ class MainEditorConfigs extends ZoomConfigs {
     bool? enableSubEditorPage,
     bool? captureImageOnDone,
     bool? captureLayersOnDone,
-    Clip? clipBehavior,
+    Clip? interactiveViewerClipBehavior,
   }) {
     return MainEditorConfigs(
       enableSubEditorPage: enableSubEditorPage ?? this.enableSubEditorPage,
@@ -206,7 +206,7 @@ class MainEditorConfigs extends ZoomConfigs {
       safeArea: safeArea ?? this.safeArea,
       tools: tools ?? this.tools,
       interactiveViewerClipBehavior:
-          clipBehavior ?? this.interactiveViewerClipBehavior,
+          interactiveViewerClipBehavior ?? this.interactiveViewerClipBehavior,
     );
   }
 }
