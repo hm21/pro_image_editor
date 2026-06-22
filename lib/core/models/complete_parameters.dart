@@ -8,6 +8,7 @@ import '/features/clips_editor/models/video_clip.dart';
 import '/features/filter_editor/types/filter_state.dart';
 import '/features/filter_editor/utils/combine_color_matrix_utils.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';
+import '/shared/services/import_export/types/widget_loader.dart';
 import 'layers/exported_layer.dart';
 import 'layers/layer.dart';
 
@@ -19,7 +20,17 @@ class CompleteParameters {
   /// Creates a [CompleteParameters] instance from a [Map].
   ///
   /// Useful for deserialization from storage or network responses.
-  factory CompleteParameters.fromMap(Map<String, dynamic> map) {
+  ///
+  /// The optional [widgetLoader] is required to rebuild any [WidgetLayer] that
+  /// was exported with an `exportConfigs.id`. Without it, deserializing such a
+  /// layer throws.
+  ///
+  /// {@macro widgetLoader}
+  factory CompleteParameters.fromMap(
+    Map<String, dynamic> map, {
+    WidgetLoader? widgetLoader,
+    List<Uint8List>? widgetRecords,
+  }) {
     return CompleteParameters(
       blur: map['blur']?.toDouble() ?? 0.0,
       matrixFilterList: List<List<double>>.from(
@@ -45,7 +56,14 @@ class CompleteParameters {
       image: Uint8List.fromList(List<int>.from(map['image'] ?? [])),
       isTransformed: map['isTransformed'] ?? false,
       layers: List<Layer>.from(
-        map['layers']?.map((x) => Layer.fromMap(x)) ?? [],
+        map['layers']?.map(
+              (x) => Layer.fromMap(
+                x,
+                widgetLoader: widgetLoader,
+                widgetRecords: widgetRecords,
+              ),
+            ) ??
+            [],
       ),
       originalImageSize: map['originalImageSize'] != null
           ? Size(
@@ -76,8 +94,20 @@ class CompleteParameters {
   }
 
   /// Creates a [CompleteParameters] instance from a JSON string.
-  factory CompleteParameters.fromJson(String source) =>
-      CompleteParameters.fromMap(json.decode(source));
+  ///
+  /// The optional [widgetLoader] is forwarded to [fromMap] to rebuild any
+  /// [WidgetLayer] that was exported with an `exportConfigs.id`.
+  ///
+  /// {@macro widgetLoader}
+  factory CompleteParameters.fromJson(
+    String source, {
+    WidgetLoader? widgetLoader,
+    List<Uint8List>? widgetRecords,
+  }) => CompleteParameters.fromMap(
+    json.decode(source),
+    widgetLoader: widgetLoader,
+    widgetRecords: widgetRecords,
+  );
 
   /// Creates a [CompleteParameters] instance with all required values.
   CompleteParameters({

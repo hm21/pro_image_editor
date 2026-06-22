@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.6.0
+- **FEAT**(import-export): Add optional `widgetLoader` (and `widgetRecords`) parameters to `CompleteParameters.fromMap` and `CompleteParameters.fromJson` so widget/sticker layers exported with an `exportConfigs.id` can be reconstructed. This is a non-breaking, additive change; existing callers are unaffected.
+
 ## 12.5.3
 - **CHORE**(main-editor): Refactor the layer-scale regression test for readability.
 
