@@ -108,8 +108,16 @@ class MainEditorStateHistoryService {
   }
 
   void _recalculateSizeAndPosition(ImportStateHistory import) {
+    // A single layer instance can be shared across multiple history entries.
+    // Mutating it in place once per entry would compound the scale factor, so
+    // track processed instances by object identity and rescale each at most
+    // once. `Layer.==` is content-based, hence `Set<Layer>.identity()` to keep
+    // independent-but-equal copies distinct.
+    final processed = Set<Layer>.identity();
+
     for (EditorStateHistory el in import.stateHistory) {
       for (Layer layer in el.layers) {
+        if (!processed.add(layer)) continue;
         if (import.configs.recalculateSizeAndPosition) {
           Size currentImageSize = sizesManager.decodedImageSize;
           Size lastRenderedImgSize = import.lastRenderedImgSize;

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/history/state_history.dart';
+import '/core/models/layers/layer.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 
 /// A helper class for managing screen size and padding calculations.
@@ -129,6 +130,16 @@ class SizesManager {
       }
     }
 
+    // A single layer instance can be shared across multiple history entries
+    // (e.g. layers added in one paint session reuse the same pre-existing
+    // instances — see `openPaintEditor`). Rescaling in place would otherwise
+    // mutate that instance once per entry, compounding the scale factor. Track
+    // processed instances by object identity so each is rescaled at most once.
+    //
+    // `Layer.==` is content-based, so independent-but-equal copies must remain
+    // distinct here — a plain `Set<Layer>` would wrongly collapse them.
+    final processed = Set<Layer>.identity();
+
     for (int i = 0; i < history.length; i++) {
       var el = history[i];
 
@@ -157,6 +168,7 @@ class SizesManager {
       );
       if (scaleFactor != 0) {
         for (var layer in el.layers) {
+          if (!processed.add(layer)) continue;
           layer
             ..scale /= scaleFactor
             ..offset /= scaleFactor;

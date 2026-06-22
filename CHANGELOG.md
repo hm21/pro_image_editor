@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.5.2
+- **FIX**(main-editor): Prevent layer scale from compounding (layers shrinking) when a single paint session adds multiple layers. Shared layer instances reused across history entries are now rescaled at most once per resize/import recalculation.
+
 ## 12.5.1
 - **FEAT**(main-editor): Add `interactiveViewerClipBehavior` option to `MainEditorConfigs` (default `Clip.hardEdge`) to control clipping of the editor's interactive content area.
 
