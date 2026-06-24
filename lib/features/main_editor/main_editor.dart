@@ -870,8 +870,7 @@ class ProImageEditorState extends State<ProImageEditor>
         (exitCurve == null || exitCurve == current.exitCurve) &&
         (transitionBuilder == null ||
             transitionBuilder == current.transitionBuilder) &&
-        (animations == null ||
-            listEquals(animations, current.animations)) &&
+        (animations == null || listEquals(animations, current.animations)) &&
         meta == null) {
       return;
     }

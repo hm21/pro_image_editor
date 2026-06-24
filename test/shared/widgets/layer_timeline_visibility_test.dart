@@ -24,11 +24,7 @@ void main() {
             layer: layer,
             playTimeNotifier: notifier,
             configs: const LayerTimelineConfigs(),
-            child: const SizedBox(
-              key: childKey,
-              width: 100,
-              height: 50,
-            ),
+            child: const SizedBox(key: childKey, width: 100, height: 50),
           ),
         ),
       ),
@@ -104,9 +100,7 @@ void main() {
       final notifier = await pumpVisibility(tester, layer);
       await seek(tester, notifier, const Duration(milliseconds: 9850));
 
-      final opacity = tester
-          .widget<Opacity>(find.byType(Opacity))
-          .opacity;
+      final opacity = tester.widget<Opacity>(find.byType(Opacity)).opacity;
       expect(opacity, closeTo(0.5, 1e-6));
       // The slide animation only plays on enter, so no translation here.
       expect(find.byType(FractionalTranslation), findsNothing);

@@ -174,10 +174,7 @@ void main() {
       });
 
       test('defaults duration to zero when durationUs is missing', () {
-        final map = <String, dynamic>{
-          'type': 'fade',
-          'phase': 'animateIn',
-        };
+        final map = <String, dynamic>{'type': 'fade', 'phase': 'animateIn'};
         final anim = LayerAnimation.fromMap(map);
 
         expect(anim.duration, Duration.zero);
