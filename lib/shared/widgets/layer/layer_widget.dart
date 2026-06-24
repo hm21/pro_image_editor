@@ -351,6 +351,8 @@ class _LayerWidgetState extends State<LayerWidget>
         layer: _layer,
         playTimeNotifier: playTime,
         configs: configs.videoEditor.layerTimeline,
+        canvasSize: widget.editorBodySize,
+        layerCenter: Offset(offsetX, offsetY),
         child: content,
       );
     }

@@ -22,7 +22,10 @@ import '/shared/utils/timeline_progress.dart';
 /// (`[endTime - duration, endTime]`). Multiple animations are composed, so the
 /// enter and leave phases can use distinct animation types — something the
 /// single `(child, animation)` [LayerTimelineConfigs.transitionBuilder] cannot
-/// express. When [Layer.animations] is empty, the legacy fade convenience
+/// express. The slide effect is edge-aware: using [canvasSize] and
+/// [layerCenter] it pushes the layer just past the nearest canvas edge (rather
+/// than by its own size), so even an off-center layer leaves the visible area
+/// completely. When [Layer.animations] is empty, the legacy fade convenience
 /// driven by [Layer.enterDuration] / [Layer.exitDuration] and the
 /// [LayerTimelineConfigs.transitionBuilder] is used instead.
 class LayerTimelineVisibility extends StatefulWidget {
@@ -32,6 +35,8 @@ class LayerTimelineVisibility extends StatefulWidget {
     required this.layer,
     required this.playTimeNotifier,
     required this.configs,
+    required this.canvasSize,
+    required this.layerCenter,
     required this.child,
   });
 
@@ -43,6 +48,18 @@ class LayerTimelineVisibility extends StatefulWidget {
 
   /// Animation configuration for the enter/exit transition.
   final LayerTimelineConfigs configs;
+
+  /// The size of the editor canvas (in canvas coordinates, origin top-left).
+  ///
+  /// Used by the edge-aware slide animation to push the layer fully off the
+  /// canvas regardless of where the layer is positioned.
+  final Size canvasSize;
+
+  /// The layer's center in canvas coordinates (origin top-left).
+  ///
+  /// Combined with [canvasSize] this lets the slide animation translate the
+  /// layer just far enough for its edge to leave (or enter from) the canvas.
+  final Offset layerCenter;
 
   /// The layer widget to show/hide.
   final Widget child;
@@ -136,7 +153,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     final effectiveStart = start ?? Duration.zero;
     double opacity = 1;
     double scale = 1;
-    Offset slide = Offset.zero;
+    Offset slideAbsolute = Offset.zero;
+    Offset slideFractional = Offset.zero;
 
     for (final anim in layer.animations) {
       final durationUs = anim.duration.inMicroseconds;
@@ -180,15 +198,32 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
           final direction = anim.slideDirection;
           if (direction == null) break;
           final invP = 1.0 - progress;
+          final center = widget.layerCenter;
+          final canvas = widget.canvasSize;
+          // Edge-aware displacement D = invP × (absolute + fractional), where
+          // the absolute part is canvas pixels and the fractional part is ±0.5
+          // of the layer's displayed size. Together they move the layer's
+          // nearest edge exactly onto the canvas border. This must mirror the
+          // native renderer in `pro_video_editor` (ApplyAnimation.kt/.swift).
           switch (direction) {
             case SlideDirection.left:
-              slide = slide.translate(-invP, 0);
+              slideAbsolute = slideAbsolute.translate(-center.dx * invP, 0);
+              slideFractional = slideFractional.translate(-0.5 * invP, 0);
             case SlideDirection.right:
-              slide = slide.translate(invP, 0);
+              slideAbsolute = slideAbsolute.translate(
+                (canvas.width - center.dx) * invP,
+                0,
+              );
+              slideFractional = slideFractional.translate(0.5 * invP, 0);
             case SlideDirection.top:
-              slide = slide.translate(0, -invP);
+              slideAbsolute = slideAbsolute.translate(0, -center.dy * invP);
+              slideFractional = slideFractional.translate(0, -0.5 * invP);
             case SlideDirection.bottom:
-              slide = slide.translate(0, invP);
+              slideAbsolute = slideAbsolute.translate(
+                0,
+                (canvas.height - center.dy) * invP,
+              );
+              slideFractional = slideFractional.translate(0, 0.5 * invP);
           }
         case LayerAnimationType.scale:
           final from = anim.scaleFrom ?? 0.0;
@@ -198,7 +233,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
 
     return _TimelineFrame(
       opacity: opacity.clamp(0.0, 1.0),
-      slide: slide,
+      slideAbsolute: slideAbsolute,
+      slideFractional: slideFractional,
       scale: math.max(0.0, scale),
     );
   }
@@ -230,8 +266,17 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     if (frame.scale != 1.0) {
       result = Transform.scale(scale: frame.scale, child: result);
     }
-    if (frame.slide != Offset.zero) {
-      result = FractionalTranslation(translation: frame.slide, child: result);
+    // The fractional part must wrap the already-scaled child so the ±0.5
+    // fraction applies to the layer's displayed (scaled) size; the absolute
+    // part is a plain pixel translation on top.
+    if (frame.slideFractional != Offset.zero) {
+      result = FractionalTranslation(
+        translation: frame.slideFractional,
+        child: result,
+      );
+    }
+    if (frame.slideAbsolute != Offset.zero) {
+      result = Transform.translate(offset: frame.slideAbsolute, child: result);
     }
     if (frame.opacity < 1.0) {
       result = Opacity(opacity: frame.opacity, child: result);
@@ -244,7 +289,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
 class _TimelineFrame {
   const _TimelineFrame({
     required this.opacity,
-    required this.slide,
+    required this.slideAbsolute,
+    required this.slideFractional,
     required this.scale,
   }) : hidden = false,
        legacyProgress = 1;
@@ -252,14 +298,16 @@ class _TimelineFrame {
   const _TimelineFrame.hidden()
     : hidden = true,
       opacity = 0,
-      slide = Offset.zero,
+      slideAbsolute = Offset.zero,
+      slideFractional = Offset.zero,
       scale = 1,
       legacyProgress = 0;
 
   const _TimelineFrame.legacy(this.legacyProgress)
     : hidden = false,
       opacity = 1,
-      slide = Offset.zero,
+      slideAbsolute = Offset.zero,
+      slideFractional = Offset.zero,
       scale = 1;
 
   /// Whether the layer is outside its visible time range and should be hidden.
@@ -268,9 +316,15 @@ class _TimelineFrame {
   /// The composed opacity (phase-aware path).
   final double opacity;
 
-  /// The composed slide offset as a fraction of the layer's own size
-  /// (phase-aware path).
-  final Offset slide;
+  /// The absolute (canvas-pixel) component of the composed slide offset
+  /// (phase-aware path). Applied via [Transform.translate].
+  final Offset slideAbsolute;
+
+  /// The fractional component of the composed slide offset, expressed as a
+  /// fraction of the layer's displayed (scaled) size (phase-aware path).
+  /// Applied via [FractionalTranslation]. Together with [slideAbsolute] this
+  /// pushes the layer's nearest edge exactly onto the canvas border.
+  final Offset slideFractional;
 
   /// The composed scale factor (phase-aware path).
   final double scale;
@@ -284,14 +338,21 @@ class _TimelineFrame {
     return other is _TimelineFrame &&
         other.hidden == hidden &&
         other.opacity == opacity &&
-        other.slide == slide &&
+        other.slideAbsolute == slideAbsolute &&
+        other.slideFractional == slideFractional &&
         other.scale == scale &&
         other.legacyProgress == legacyProgress;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(hidden, opacity, slide, scale, legacyProgress);
+  int get hashCode => Object.hash(
+    hidden,
+    opacity,
+    slideAbsolute,
+    slideFractional,
+    scale,
+    legacyProgress,
+  );
 }
 
 /// Renders its child into the render tree (so [RepaintBoundary.toImage] works)
