@@ -53,6 +53,7 @@ class PaintLayer extends Layer {
     super.enterCurve,
     super.exitCurve,
     super.transitionBuilder,
+    super.animations,
   });
 
   /// Factory constructor for creating a PaintLayer instance from a
@@ -80,6 +81,7 @@ class PaintLayer extends Layer {
       endTime: layer.endTime,
       enterDuration: layer.enterDuration,
       exitDuration: layer.exitDuration,
+      animations: layer.animations,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
       rawSize: Size(
         safeParseDouble(map[keyConverter('rawSize')]?['w'], fallback: 0),
@@ -182,6 +184,7 @@ class PaintLayer extends Layer {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    List<LayerAnimation>? animations,
   }) {
     return PaintLayer(
       item: item ?? this.item,
@@ -204,6 +207,7 @@ class PaintLayer extends Layer {
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
+      animations: animations ?? this.animations,
     );
   }
 

@@ -17,6 +17,7 @@ import '/shared/services/content_recorder/controllers/content_recorder_controlle
 import '/shared/services/import_export/types/widget_loader.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/utils/map_utils.dart';
+import '/shared/utils/parser/animation_curve_parser.dart';
 import '/shared/utils/parser/bool_parser.dart';
 import '/shared/utils/parser/curve_parser.dart';
 import '/shared/utils/parser/double_parser.dart';
@@ -24,6 +25,7 @@ import '/shared/utils/unique_id_generator.dart';
 import '../editor_image.dart';
 import 'emoji_layer.dart';
 import 'exported_layer.dart';
+import 'layer_animation.dart';
 import 'layer_interaction.dart';
 import 'paint_layer.dart';
 import 'text_layer.dart';
@@ -32,6 +34,7 @@ import 'widget_layer.dart';
 export '/core/models/editor_configs/video/layer_timeline_configs.dart'
     show LayerTimelineTransitionBuilder;
 export 'emoji_layer.dart';
+export 'layer_animation.dart';
 export 'paint_layer.dart';
 export 'text_layer.dart';
 export 'widget_layer.dart';
@@ -58,11 +61,13 @@ class Layer {
     this.enterCurve,
     this.exitCurve,
     this.transitionBuilder,
+    List<LayerAnimation>? animations,
   }) : key = key ??= GlobalKey(),
        keyInternalSize = GlobalKey(),
        repaintBoundaryKey = GlobalKey(),
        id = id ?? generateUniqueId(),
-       interaction = interaction ?? LayerInteraction();
+       interaction = interaction ?? LayerInteraction(),
+       animations = animations ?? <LayerAnimation>[];
 
   /// Factory constructor for creating a Layer instance from a map and a list
   /// of stickers.
@@ -124,6 +129,11 @@ class Layer {
           : null,
       enterCurve: parseCurve(map[keyConverter('enterCurve')] as String?),
       exitCurve: parseCurve(map[keyConverter('exitCurve')] as String?),
+      animations: (map[keyConverter('animations')] as List<dynamic>?)
+          ?.map(
+            (e) => LayerAnimation.fromMap(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList(),
     );
 
     /// Determines the layer type from the map and returns the appropriate
@@ -195,7 +205,60 @@ class Layer {
   /// A builder that wraps this layer with an animated transition.
   ///
   /// When `null`, falls back to [LayerTimelineConfigs.transitionBuilder].
+  ///
+  /// Only used as the legacy fade convenience when [animations] is empty. When
+  /// [animations] is not empty, the phase-aware fade/slide/scale composition
+  /// takes over and this builder is ignored.
   LayerTimelineTransitionBuilder? transitionBuilder;
+
+  /// Per-layer enter/leave animations for the video timeline.
+  ///
+  /// Each [LayerAnimation] drives a fade, slide, or scale effect during the
+  /// layer's enter window (`[startTime, startTime + duration]`) and/or exit
+  /// window (`[endTime - duration, endTime]`). Multiple animations can be
+  /// combined on the same phase (e.g. a slide-in together with a fade-in).
+  ///
+  /// When empty, the layer falls back to the legacy fade convenience driven by
+  /// [enterDuration] / [exitDuration] / [enterCurve] / [exitCurve] and
+  /// [transitionBuilder].
+  ///
+  /// Mirrors the `animations` model in the sister package `pro_video_editor`
+  /// so the in-editor preview matches the exported result.
+  List<LayerAnimation> animations;
+
+  /// The animations effectively applied to this layer, deriving a fade from the
+  /// legacy [enterDuration] / [exitDuration] when [animations] is empty.
+  ///
+  /// Returns [animations] unchanged when it is not empty. Otherwise synthesizes
+  /// fade [AnimationPhase.animateIn] / [AnimationPhase.animateOut] entries from
+  /// the legacy fade fields, so callers (e.g. exporters bridging to
+  /// `pro_video_editor`) get a single, unified animation list.
+  ///
+  /// When [enterCurve] / [exitCurve] are `null`, the synthesized fades fall back
+  /// to the same defaults the in-editor preview uses
+  /// ([LayerTimelineConfigs.enterCurve] `Curves.easeIn` /
+  /// [LayerTimelineConfigs.exitCurve] `Curves.easeOut`), so the exported result
+  /// matches the preview for the common legacy case.
+  List<LayerAnimation> get effectiveAnimations {
+    if (animations.isNotEmpty) return animations;
+
+    return [
+      if (enterDuration != null && enterDuration! > Duration.zero)
+        LayerAnimation(
+          type: LayerAnimationType.fade,
+          phase: AnimationPhase.animateIn,
+          duration: enterDuration!,
+          curve: animationCurveFromCurve(enterCurve ?? Curves.easeIn),
+        ),
+      if (exitDuration != null && exitDuration! > Duration.zero)
+        LayerAnimation(
+          type: LayerAnimationType.fade,
+          phase: AnimationPhase.animateOut,
+          duration: exitDuration!,
+          curve: animationCurveFromCurve(exitCurve ?? Curves.easeOut),
+        ),
+    ];
+  }
 
   /// Global key associated with the Layer instance, used for accessing the
   /// widget tree.
@@ -291,6 +354,8 @@ class Layer {
       if (exitDuration != null) 'exitDuration': exitDuration!.inMilliseconds,
       if (enterCurve != null) 'enterCurve': curveToString(enterCurve!),
       if (exitCurve != null) 'exitCurve': curveToString(exitCurve!),
+      if (animations.isNotEmpty)
+        'animations': animations.map((a) => a.toMap()).toList(),
     };
   }
 
@@ -335,6 +400,8 @@ class Layer {
       if (layer.enterCurve != enterCurve)
         'enterCurve': curveToString(enterCurve!),
       if (layer.exitCurve != exitCurve) 'exitCurve': curveToString(exitCurve!),
+      if (!listEquals(layer.animations, animations))
+        'animations': animations.map((a) => a.toMap()).toList(),
     };
   }
 
@@ -633,6 +700,7 @@ class Layer {
         other.enterCurve == enterCurve &&
         other.exitCurve == exitCurve &&
         other.transitionBuilder == transitionBuilder &&
+        listEquals(other.animations, animations) &&
         mapIsEqual(other.meta, meta);
   }
 
@@ -654,7 +722,8 @@ class Layer {
         exitDuration.hashCode ^
         enterCurve.hashCode ^
         exitCurve.hashCode ^
-        transitionBuilder.hashCode;
+        transitionBuilder.hashCode ^
+        Object.hashAll(animations);
   }
 
   /// Creates a copy of this [Layer] with the given fields replaced with
@@ -677,6 +746,7 @@ class Layer {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    List<LayerAnimation>? animations,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -696,6 +766,7 @@ class Layer {
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
+      animations: animations ?? this.animations,
     );
   }
 
@@ -730,6 +801,7 @@ class Layer {
           'transitionBuilder',
           transitionBuilder,
         ),
-      );
+      )
+      ..add(IterableProperty<LayerAnimation>('animations', animations));
   }
 }

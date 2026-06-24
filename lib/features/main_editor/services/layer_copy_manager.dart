@@ -141,6 +141,7 @@ class LayerCopyManager {
       enterCurve: layer.enterCurve,
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
+      animations: List<LayerAnimation>.of(layer.animations),
     )..groupId = layer.groupId;
   }
 
@@ -170,6 +171,7 @@ class LayerCopyManager {
       enterCurve: layer.enterCurve,
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
+      animations: List<LayerAnimation>.of(layer.animations),
     )..groupId = layer.groupId;
   }
 
@@ -201,6 +203,7 @@ class LayerCopyManager {
       enterCurve: layer.enterCurve,
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
+      animations: List<LayerAnimation>.of(layer.animations),
     )..groupId = layer.groupId;
   }
 
@@ -232,6 +235,7 @@ class LayerCopyManager {
       enterCurve: layer.enterCurve,
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
+      animations: List<LayerAnimation>.of(layer.animations),
     )..groupId = layer.groupId;
   }
 }

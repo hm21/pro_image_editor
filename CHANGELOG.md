@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.7.0
+- **FEAT**(layers): Add first-class per-layer enter/leave animations for the video timeline. A new `LayerAnimation` model (`type` fade/slide/scale, `phase` animateIn/animateOut/animateInOut, `duration`, `curve`, optional `slideDirection` and `scaleFrom`) can be attached to any layer via the new `Layer.animations` list (or set on an existing layer through `ProImageEditor.setLayerTimeline(animations: …)`), mirroring the `pro_video_editor` model so the in-editor preview matches the exported result. The video-layer-timeline preview is now phase-aware: it composes fade (opacity), slide (per-direction translation) and scale effects across a layer's enter and exit windows, so the enter and leave phases can use distinct animation types. The legacy `enterDuration` / `exitDuration` / `enterCurve` / `exitCurve` fade fields are kept as a back-compat convenience and can be read as a unified animation list via `Layer.effectiveAnimations`. `animations` is serialized in `toMap` / `fromMap` and carried through `copyWith`, equality and layer cloning. Non-breaking, additive change.
+
 ## 12.6.0
 - **FEAT**(import-export): Add optional `widgetLoader` (and `widgetRecords`) parameters to `CompleteParameters.fromMap` and `CompleteParameters.fromJson` so widget/sticker layers exported with an `exportConfigs.id` can be reconstructed. This is a non-breaking, additive change; existing callers are unaffected.
 

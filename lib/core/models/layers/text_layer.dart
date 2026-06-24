@@ -54,6 +54,7 @@ class TextLayer extends Layer {
     super.enterCurve,
     super.exitCurve,
     super.transitionBuilder,
+    super.animations,
   });
 
   /// Factory constructor for creating a TextLayer instance from a Layer
@@ -144,6 +145,7 @@ class TextLayer extends Layer {
       endTime: layer.endTime,
       enterDuration: layer.enterDuration,
       exitDuration: layer.exitDuration,
+      animations: layer.animations,
       text: map[keyConverter('text')] ?? '-',
       fontScale: fontScale,
       maxTextWidth: tryParseDouble(map[keyConverter('maxTextWidth')]),
@@ -354,6 +356,7 @@ class TextLayer extends Layer {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    List<LayerAnimation>? animations,
   }) {
     return TextLayer(
       text: text ?? this.text,
@@ -383,6 +386,7 @@ class TextLayer extends Layer {
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
+      animations: animations ?? this.animations,
     );
   }
 

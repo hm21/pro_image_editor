@@ -842,6 +842,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Both [startTime] and [endTime] are optional. Only non-null values are
   /// applied. This is primarily used by the video editor to define when a
   /// layer is visible on the timeline.
+  ///
+  /// Pass [animations] to set the per-layer enter/leave animations (fade /
+  /// slide / scale). When non-empty, they take over from the legacy
+  /// [enterDuration] / [exitDuration] fade convenience.
   void setLayerTimeline({
     required int index,
     Duration? startTime,
@@ -851,6 +855,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    List<LayerAnimation>? animations,
     Map<String, dynamic>? meta,
     bool skipUpdateHistory = false,
   }) {
@@ -865,6 +870,8 @@ class ProImageEditorState extends State<ProImageEditor>
         (exitCurve == null || exitCurve == current.exitCurve) &&
         (transitionBuilder == null ||
             transitionBuilder == current.transitionBuilder) &&
+        (animations == null ||
+            listEquals(animations, current.animations)) &&
         meta == null) {
       return;
     }
@@ -888,6 +895,9 @@ class ProImageEditorState extends State<ProImageEditor>
     if (enterCurve != null) layer.enterCurve = enterCurve;
     if (exitCurve != null) layer.exitCurve = exitCurve;
     if (transitionBuilder != null) layer.transitionBuilder = transitionBuilder;
+    if (animations != null) {
+      layer.animations = List<LayerAnimation>.of(animations);
+    }
     if (meta != null) layer.meta = {...layer.meta ?? {}, ...meta};
 
     if (!skipUpdateHistory) {

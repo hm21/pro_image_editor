@@ -52,6 +52,7 @@ class WidgetLayer extends Layer {
     super.enterCurve,
     super.exitCurve,
     super.transitionBuilder,
+    super.animations,
   });
 
   /// Factory constructor for creating a WidgetLayer instance from a
@@ -139,6 +140,7 @@ class WidgetLayer extends Layer {
       endTime: layer.endTime,
       enterDuration: layer.enterDuration,
       exitDuration: layer.exitDuration,
+      animations: layer.animations,
       widget: widget,
       width: layerWidth != null ? safeParseDouble(layerWidth) : null,
       exportConfigs: exportConfigs,
@@ -231,6 +233,7 @@ class WidgetLayer extends Layer {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    List<LayerAnimation>? animations,
   }) {
     return WidgetLayer(
       widget: widget ?? this.widget,
@@ -253,6 +256,7 @@ class WidgetLayer extends Layer {
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
+      animations: animations ?? this.animations,
     );
   }
 

@@ -243,4 +243,138 @@ void main() {
       expect(recreated, equals(original));
     });
   });
+
+  group('Layer animations', () {
+    const acceptanceAnimations = [
+      LayerAnimation(
+        type: LayerAnimationType.slide,
+        phase: AnimationPhase.animateIn,
+        duration: Duration(milliseconds: 400),
+        slideDirection: SlideDirection.left,
+        curve: AnimationCurve.easeOut,
+      ),
+      LayerAnimation(
+        type: LayerAnimationType.fade,
+        phase: AnimationPhase.animateOut,
+        duration: Duration(milliseconds: 300),
+      ),
+    ];
+
+    test('toMap serializes animations only when non-empty', () {
+      expect(Layer().toMap().containsKey('animations'), isFalse);
+
+      final map = Layer(animations: acceptanceAnimations).toMap();
+      expect(map['animations'], isA<List<dynamic>>());
+      expect(map['animations'], hasLength(2));
+      expect(map['animations'][0]['type'], 'slide');
+      expect(map['animations'][0]['slideDirection'], 'left');
+      expect(map['animations'][0]['curve'], 'easeOut');
+      expect(map['animations'][1]['type'], 'fade');
+      expect(map['animations'][1]['phase'], 'animateOut');
+    });
+
+    test('base Layer round-trips animations', () {
+      final original = Layer(
+        id: 'anim-id',
+        startTime: const Duration(seconds: 1),
+        endTime: const Duration(seconds: 5),
+        animations: acceptanceAnimations,
+      );
+
+      final recreated = Layer.fromMap(original.toMap(), id: original.id);
+
+      expect(recreated.animations, acceptanceAnimations);
+      expect(recreated, equals(original));
+    });
+
+    test('WidgetLayer round-trips animations', () {
+      final original = WidgetLayer(
+        id: 'widget-anim-id',
+        widget: Container(),
+        startTime: const Duration(seconds: 1),
+        endTime: const Duration(seconds: 5),
+        exportConfigs: const WidgetLayerExportConfigs(networkUrl: 'Test-Url'),
+        animations: const [
+          LayerAnimation(
+            type: LayerAnimationType.scale,
+            phase: AnimationPhase.animateInOut,
+            duration: Duration(milliseconds: 250),
+            scaleFrom: 0.4,
+          ),
+        ],
+      );
+
+      final recreated = Layer.fromMap(original.toMap(), id: original.id);
+
+      expect(recreated, isA<WidgetLayer>());
+      expect(recreated.animations, original.animations);
+    });
+
+    test('copyWith carries and overrides animations', () {
+      final layer = TextLayer(text: 'hi', animations: acceptanceAnimations);
+
+      expect(layer.copyWith().animations, acceptanceAnimations);
+      expect(layer.copyWith(animations: const []).animations, isEmpty);
+    });
+
+    test('effectiveAnimations returns explicit animations when present', () {
+      final layer = Layer(
+        enterDuration: const Duration(milliseconds: 500),
+        animations: acceptanceAnimations,
+      );
+
+      expect(layer.effectiveAnimations, acceptanceAnimations);
+    });
+
+    test('effectiveAnimations derives fades from legacy duration fields', () {
+      final layer = Layer(
+        enterDuration: const Duration(milliseconds: 500),
+        exitDuration: const Duration(milliseconds: 300),
+        enterCurve: Curves.easeOut,
+      );
+
+      final derived = layer.effectiveAnimations;
+      expect(derived, hasLength(2));
+      expect(derived[0].type, LayerAnimationType.fade);
+      expect(derived[0].phase, AnimationPhase.animateIn);
+      expect(derived[0].duration, const Duration(milliseconds: 500));
+      expect(derived[0].curve, AnimationCurve.easeOut);
+      expect(derived[1].type, LayerAnimationType.fade);
+      expect(derived[1].phase, AnimationPhase.animateOut);
+      expect(derived[1].duration, const Duration(milliseconds: 300));
+    });
+
+    test('effectiveAnimations is empty when nothing is configured', () {
+      expect(Layer().effectiveAnimations, isEmpty);
+    });
+
+    test('effectiveAnimations defaults curves to the preview defaults', () {
+      // No explicit curve → must mirror the preview defaults
+      // (LayerTimelineConfigs.enterCurve easeIn / exitCurve easeOut) instead of
+      // falling back to linear, so the export matches the in-editor preview.
+      final layer = Layer(
+        enterDuration: const Duration(milliseconds: 500),
+        exitDuration: const Duration(milliseconds: 300),
+      );
+
+      final derived = layer.effectiveAnimations;
+      expect(derived[0].curve, AnimationCurve.easeIn);
+      expect(derived[1].curve, AnimationCurve.easeOut);
+    });
+
+    test('default animations list is growable and mutable', () {
+      final layer = Layer();
+      expect(
+        () => layer.animations.add(
+          const LayerAnimation(
+            type: LayerAnimationType.fade,
+            phase: AnimationPhase.animateIn,
+            duration: Duration(milliseconds: 200),
+          ),
+        ),
+        returnsNormally,
+      );
+      expect(layer.animations, hasLength(1));
+    });
+  });
 }

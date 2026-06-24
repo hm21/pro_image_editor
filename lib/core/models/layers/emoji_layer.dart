@@ -44,6 +44,7 @@ class EmojiLayer extends Layer {
     super.enterCurve,
     super.exitCurve,
     super.transitionBuilder,
+    super.animations,
   });
 
   /// Factory constructor for creating an EmojiLayer instance from a Layer
@@ -73,6 +74,7 @@ class EmojiLayer extends Layer {
       exitDuration: layer.exitDuration,
       enterCurve: layer.enterCurve,
       exitCurve: layer.exitCurve,
+      animations: layer.animations,
       emoji: map[keyConverter('emoji')],
       boxConstraints: layer.boxConstraints,
     );
@@ -137,6 +139,7 @@ class EmojiLayer extends Layer {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    List<LayerAnimation>? animations,
   }) {
     return EmojiLayer(
       emoji: emoji ?? this.emoji,
@@ -157,6 +160,7 @@ class EmojiLayer extends Layer {
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
+      animations: animations ?? this.animations,
     );
   }
 

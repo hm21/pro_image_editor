@@ -344,7 +344,9 @@ class _LayerWidgetState extends State<LayerWidget>
 
     final playTime = widget.playTimeNotifier;
     if (playTime != null &&
-        (_layer.startTime != null || _layer.endTime != null)) {
+        (_layer.startTime != null ||
+            _layer.endTime != null ||
+            _layer.animations.isNotEmpty)) {
       content = LayerTimelineVisibility(
         layer: _layer,
         playTimeNotifier: playTime,
