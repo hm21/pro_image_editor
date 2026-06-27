@@ -629,6 +629,13 @@ class Layer {
     return renderObj is RenderBox ? renderObj : null;
   }
 
+  /// The current rendered (unscaled) size of the layer's content, or `null`
+  /// when the layer is not laid out yet.
+  ///
+  /// Multiply by [scale] to obtain the size in editor-body space. Used to
+  /// derive the left/center/right snap anchors of a layer.
+  Size? get renderSize => _renderBox?.size;
+
   /// Computes the global offset within the render box using a fractional
   /// position relative to the center of the box.
   ///

@@ -1,6 +1,8 @@
 import '../styles/helper_line_style.dart';
+import 'helper_guide_line.dart';
 
 export '../styles/helper_line_style.dart';
+export 'helper_guide_line.dart';
 
 /// The `HelperLineConfigs` class defines the settings for displaying helper
 /// lines in the image editor.
@@ -15,6 +17,7 @@ class HelperLineConfigs {
     this.showLayerAlignLine = true,
     this.isDisabledAtZoom = false,
     this.releaseThreshold = 10.0,
+    this.customGuides = const [],
     this.style = const HelperLineStyle(),
   });
 
@@ -42,6 +45,14 @@ class HelperLineConfigs {
   /// Style configuration for helper lines.
   final HelperLineStyle style;
 
+  /// App-defined snapping guide lines that participate in layer snapping.
+  ///
+  /// Vertical guides snap layers horizontally, horizontal guides snap layers
+  /// vertically. Each guide is drawn (using
+  /// [HelperLineStyle.customGuideColor]) while a layer snaps to it. Defaults to
+  /// an empty list (no custom guides).
+  final List<HelperGuideLine> customGuides;
+
   /// The minimum distance in logical pixels that a draggable element must be
   /// released from a helper line for the snapping effect to be deactivated.
   final double releaseThreshold;
@@ -59,6 +70,7 @@ class HelperLineConfigs {
     bool? showLayerAlignLine,
     bool? isDisabledAtZoom,
     double? releaseThreshold,
+    List<HelperGuideLine>? customGuides,
     HelperLineStyle? style,
   }) {
     return HelperLineConfigs(
@@ -68,6 +80,7 @@ class HelperLineConfigs {
       showLayerAlignLine: showLayerAlignLine ?? this.showLayerAlignLine,
       isDisabledAtZoom: isDisabledAtZoom ?? this.isDisabledAtZoom,
       releaseThreshold: releaseThreshold ?? this.releaseThreshold,
+      customGuides: customGuides ?? this.customGuides,
       style: style ?? this.style,
     );
   }

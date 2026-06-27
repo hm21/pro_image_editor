@@ -1510,6 +1510,7 @@ class ProImageEditorState extends State<ProImageEditor>
           mainEditorCallbacks?.onHoverRemoveAreaChange?.call(value);
         },
         helperLineCtrl: _controllers.helperLineCtrl,
+        editorBodySize: sizesManager.bodySize,
       );
     } else if (pointerCount == 2) {
       /// If multi-selection is active and the editor is zoomable, treat

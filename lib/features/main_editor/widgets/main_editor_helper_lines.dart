@@ -116,7 +116,8 @@ class MainEditorHelperLines extends StatelessWidget {
                       ),
                     if (helperLines.showRotateLine)
                       _buildRotateLine(scale, screenSize.height * 2),
-                    if (helperLines.showLayerAlignLine)
+                    if (helperLines.showLayerAlignLine ||
+                        helperLines.customGuides.isNotEmpty)
                       ..._buildLayerAlignLines(scale, screenSize),
                   ],
                 ),
@@ -198,6 +199,13 @@ class MainEditorHelperLines extends StatelessWidget {
         layerInteractionManager.isVerticalGuideVisible &&
         !_isLayerInRemovalZone;
 
+    final horizontalColor = layerInteractionManager.isHorizontalGuideCustom
+        ? helperLines.style.customGuideColor
+        : helperLines.style.layerAlignColor;
+    final verticalColor = layerInteractionManager.isVerticalGuideCustom
+        ? helperLines.style.customGuideColor
+        : helperLines.style.layerAlignColor;
+
     return [
       if (showHorizontal)
         _buildLine(
@@ -206,7 +214,7 @@ class MainEditorHelperLines extends StatelessWidget {
           height: _strokeWidth,
           top: horizontalOffset,
           left: 0,
-          color: helperLines.style.layerAlignColor,
+          color: horizontalColor,
         ),
       if (showVertical)
         _buildLine(
@@ -215,7 +223,7 @@ class MainEditorHelperLines extends StatelessWidget {
           height: screenSize.height * scale,
           top: 0,
           left: verticalOffset,
-          color: helperLines.style.layerAlignColor,
+          color: verticalColor,
         ),
     ];
   }

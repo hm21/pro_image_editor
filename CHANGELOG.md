@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.10.0
+- **FEAT**(helper-lines): Add app-defined custom snapping guide lines (#834). `HelperLineConfigs.customGuides` accepts a list of `HelperGuideLine`s (vertical or horizontal, positioned with absolute editor-body pixels or a normalized `0.0`-`1.0` fraction) that participate in layer snapping and are drawn - using the new `HelperLineStyle.customGuideColor` - while a layer snaps to them. Useful for safe areas, thirds, columns or any layout-specific alignment points. See the new `Custom-Guide-Lines` example.
+- **FEAT**(helper-lines): Text layers now snap by their left, center and right edges (#833). When dragging a text layer, whichever of its edges is closest to a guide (the editor center line, another layer or a custom guide) snaps to it, making it easy to align left- or right-aligned text blocks by their visible edge. Other layer types continue to snap by their configured anchor.
+
 ## 12.9.0
 - **FEAT**(editors): Support keyboard handling in the sub-editors, not just the main editor (#837). The `onKeyboardEvent` callback is now available on every standalone editor's callbacks (crop-rotate, paint, filter, tune, blur) via `StandaloneEditorCallbacks`; returning `true` consumes the event and skips the built-in shortcut. The crop-rotate and paint editors additionally gain an `enableKeyboardShortcuts` option (default `true`) to disable their built-in shortcuts (e.g. `R`/`F` in the crop-rotate editor). Previously these callbacks and the option only affected the main editor, so the crop-rotate `R`/`F` shortcuts could not be intercepted or disabled.
 

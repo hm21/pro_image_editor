@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '/features/ai/ai_group_page.dart';
 import '/features/crop_to_main_editor.dart';
+import '/features/custom_guide_lines_example.dart';
 import '/features/custom_path_builder_example.dart';
 import '/features/custom_widgets_example.dart';
 import '/features/default_example.dart';
@@ -138,6 +139,12 @@ List<Example> kImageEditorExamples = const [
     name: 'Custom-Widgets',
     icon: Icons.dashboard_customize_outlined,
     page: CustomWidgetsExample(),
+  ),
+  Example(
+    path: '/custom-guide-lines',
+    name: 'Custom-Guide-Lines',
+    icon: Icons.straighten_outlined,
+    page: CustomGuideLinesExample(),
   ),
   Example(
     path: '/import-export',
