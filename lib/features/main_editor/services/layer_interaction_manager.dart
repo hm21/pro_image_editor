@@ -468,12 +468,20 @@ class LayerInteractionManager {
     return const Offset(-0.5, -0.5);
   }
 
+  /// Layer types that expose their edges - not just their center - as snap
+  /// anchors.
+  ///
+  /// Text and paint layers can be aligned by their visible edges (left/center/
+  /// right and top/center/bottom); all other layer types expose only their
+  /// configured center anchor.
+  bool _supportsEdgeSnapping(Layer layer) =>
+      layer is TextLayer || layer is PaintLayer;
+
   /// Returns the candidate horizontal snap anchors for [layer] in
   /// center-relative editor coordinates.
   ///
-  /// Text layers naturally expose their left, center and right edges as
-  /// snapping points, so left-/right-aligned text can be aligned by its visible
-  /// edge. All other layer types expose only their configured anchor.
+  /// Layers that support edge snapping expose their left, center and right
+  /// edges; all others expose only their configured anchor.
   List<_LayerSnapAnchor> _horizontalSnapAnchors(Layer layer) {
     final fractionalOffset = _getFractionalLayerOffset(layer);
     final double center = layer
@@ -488,12 +496,15 @@ class LayerInteractionManager {
       localOffset: localCenter,
     );
 
-    if (layer is! TextLayer) return [centerAnchor];
+    if (!_supportsEdgeSnapping(layer)) return [centerAnchor];
 
+    // [renderSize] already reflects the on-screen (scaled) size - the layer's
+    // content is rendered at its scaled size, not scaled by a Transform - so it
+    // must not be multiplied by [scale] again.
     final size = layer.renderSize;
     if (size == null || size.width == 0) return [centerAnchor];
 
-    final double halfWidth = size.width * layer.scale / 2;
+    final double halfWidth = size.width / 2;
     return [
       _LayerSnapAnchor(
         position: center - halfWidth,
@@ -507,14 +518,44 @@ class LayerInteractionManager {
     ];
   }
 
-  /// Returns the single vertical snap anchor for [layer] in center-relative
+  /// Returns the candidate vertical snap anchors for [layer] in center-relative
   /// editor coordinates.
-  _LayerSnapAnchor _verticalSnapAnchor(Layer layer) {
+  ///
+  /// Layers that support edge snapping expose their top, center and bottom
+  /// edges; all others expose only their configured anchor.
+  List<_LayerSnapAnchor> _verticalSnapAnchors(Layer layer) {
     final fractionalOffset = _getFractionalLayerOffset(layer);
-    return _LayerSnapAnchor(
-      position: layer.computeOffsetFromCenterFraction(fractionalOffset).dy,
-      localOffset: layer.computeLocalCenterOffset(fractionalOffset).dy,
+    final double center = layer
+        .computeOffsetFromCenterFraction(fractionalOffset)
+        .dy;
+    final double localCenter = layer
+        .computeLocalCenterOffset(fractionalOffset)
+        .dy;
+
+    final centerAnchor = _LayerSnapAnchor(
+      position: center,
+      localOffset: localCenter,
     );
+
+    if (!_supportsEdgeSnapping(layer)) return [centerAnchor];
+
+    // [renderSize] already reflects the on-screen (scaled) size, so it must not
+    // be multiplied by [scale] again.
+    final size = layer.renderSize;
+    if (size == null || size.height == 0) return [centerAnchor];
+
+    final double halfHeight = size.height / 2;
+    return [
+      _LayerSnapAnchor(
+        position: center - halfHeight,
+        localOffset: localCenter - halfHeight,
+      ),
+      centerAnchor,
+      _LayerSnapAnchor(
+        position: center + halfHeight,
+        localOffset: localCenter + halfHeight,
+      ),
+    ];
   }
 
   /// Determines if layers are selectable based on the configuration and device
@@ -660,6 +701,8 @@ class LayerInteractionManager {
     for (Layer layer in selectedLayers) {
       if (!layer.interaction.enableMove) continue;
 
+      Offset fractionalOffset = _getFractionalLayerOffset(layer);
+
       layer.offset = Offset(
         layer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
         layer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
@@ -670,19 +713,17 @@ class LayerInteractionManager {
         continue;
       }
 
-      /// Text layers expose their left, center and right edges as snap
-      /// anchors; every other layer exposes only its configured anchor. The
-      /// edge currently closest to the center line is the one that snaps.
-      final anchorsX = _horizontalSnapAnchors(layer);
-      final closestX = anchorsX.reduce(
-        (a, b) => a.position.abs() <= b.position.abs() ? a : b,
+      final Offset localPointFromCenter = layer.computeLocalCenterOffset(
+        fractionalOffset,
       );
-      final anchorY = _verticalSnapAnchor(layer);
+      final Offset layerCenterOffset = layer.computeOffsetFromCenterFraction(
+        fractionalOffset,
+      );
 
       final releaseThreshold = helperLineConfigs.releaseThreshold;
       bool hasLineHit = false;
-      double posX = closestX.position;
-      double posY = anchorY.position;
+      double posX = layerCenterOffset.dx;
+      double posY = layerCenterOffset.dy;
 
       bool hitAreaX =
           detail.focalPoint.dx >= snapStartPosX - releaseThreshold &&
@@ -710,7 +751,7 @@ class LayerInteractionManager {
             snapStartPosX = detail.focalPoint.dx;
           }
           showVerticalHelperLine = true;
-          layer.offset = Offset(-closestX.localOffset, layer.offset.dy);
+          layer.offset = Offset(-localPointFromCenter.dx, layer.offset.dy);
           lastPositionX = LayerLastPosition.center;
         } else {
           showVerticalHelperLine = false;
@@ -730,7 +771,7 @@ class LayerInteractionManager {
             snapStartPosY = detail.focalPoint.dy;
           }
           showHorizontalHelperLine = true;
-          layer.offset = Offset(layer.offset.dx, -anchorY.localOffset);
+          layer.offset = Offset(layer.offset.dx, -localPointFromCenter.dy);
           lastPositionY = LayerLastPosition.center;
         } else {
           showHorizontalHelperLine = false;
@@ -1123,19 +1164,22 @@ class LayerInteractionManager {
         for (final anchor in _horizontalSnapAnchors(layer)) {
           addTarget(xTargets, anchor.position, false);
         }
-        addTarget(yTargets, _verticalSnapAnchor(layer).position, false);
+        for (final anchor in _verticalSnapAnchors(layer)) {
+          addTarget(yTargets, anchor.position, false);
+        }
       }
     }
 
     final activeXAnchors = _horizontalSnapAnchors(activeLayer);
-    final activeYAnchor = _verticalSnapAnchor(activeLayer);
+    final activeYAnchors = _verticalSnapAnchors(activeLayer);
 
     _SnapGuideTarget? matchedX;
     _LayerSnapAnchor? matchedXAnchor;
     for (final target in xTargets) {
       // Snap the active layer's edge that sits closest to this target.
       final anchor = activeXAnchors.reduce(
-        (a, b) => (a.position - target.position).abs() <=
+        (a, b) =>
+            (a.position - target.position).abs() <=
                 (b.position - target.position).abs()
             ? a
             : b,
@@ -1158,8 +1202,18 @@ class LayerInteractionManager {
     }
 
     _SnapGuideTarget? matchedY;
+    _LayerSnapAnchor? matchedYAnchor;
     for (final target in yTargets) {
-      if ((activeYAnchor.position - target.position).abs() <= snapThreshold &&
+      // Snap the active layer's edge that sits closest to this target.
+      final anchor = activeYAnchors.reduce(
+        (a, b) =>
+            (a.position - target.position).abs() <=
+                (b.position - target.position).abs()
+            ? a
+            : b,
+      );
+
+      if ((anchor.position - target.position).abs() <= snapThreshold &&
           _horizontalSnapHelper.maybeSnap(
             focal: detail.focalPoint.dy,
             focalDelta: detail.focalPointDelta.dy,
@@ -1170,6 +1224,7 @@ class LayerInteractionManager {
             negativeDirection: LayerLastPosition.bottom,
           )) {
         matchedY = target;
+        matchedYAnchor = anchor;
         break;
       }
     }
@@ -1194,7 +1249,7 @@ class LayerInteractionManager {
 
       activeLayer.offset = Offset(
         activeLayer.offset.dx,
-        matchedY.position - activeYAnchor.localOffset,
+        matchedY.position - matchedYAnchor!.localOffset,
       );
     }
 
