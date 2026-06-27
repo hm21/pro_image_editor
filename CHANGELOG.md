@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.8.2
+- **FIX**(crop-rotate): Honor `initAspectRatio` for the oval cropper in the main editor's initial state. Opening the editor directly in `CropMode.oval` with a fixed `initAspectRatio` (e.g. `1.0`) previously rendered and exported an ellipse stretched to the full image bounds for non-square images, because the initial (un-transformed) state never consulted `initAspectRatio` and fell back to the full image aspect ratio. The initial oval mask now uses a centered crop of the requested ratio in the overlay, the capture overlay and the export clip (so `1.0` produces a circle), while a free (`-1`) or original (`0.0`) ratio keeps the previous full-image behavior.
+
 ## 12.8.1
 - **FIX**(crop-rotate): Cover the image edge with the crop overlay when the image is panned. The darkened overlay is painted on top of the image and its outer rectangle matched the rendered image bounds exactly, so when an image edge floated inside the viewport (e.g. the image pushed to the bottom) anti-aliasing along that shared edge left a ~1px partially-transparent seam that revealed a thin line of the image. The overlay rectangle is now slightly overscanned beyond the image bounds so the seam falls on the surrounding background where it is invisible.
 

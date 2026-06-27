@@ -185,6 +185,22 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
   /// For free aspect ratio use `-1` and for original aspect ratio use `0.0`.
   final double? initAspectRatio;
 
+  /// The fixed aspect ratio that applies to the oval mask in the editor's
+  /// initial state, before any crop/rotate transform has been performed, or
+  /// `null` when the mask should span the full image.
+  ///
+  /// This honors [initAspectRatio] for the initial oval cropper so that opening
+  /// the editor directly with e.g. a `1.0` ratio renders a circle instead of an
+  /// ellipse stretched to the full image bounds (see issue #828). It returns
+  /// `null` for a free (`-1`) or original (`0.0`) ratio, or when
+  /// [initialCropMode] is not [CropMode.oval], so callers fall back to the
+  /// full image aspect ratio.
+  double? get initialOvalCropAspectRatio {
+    if (initialCropMode != CropMode.oval) return null;
+    final ratio = initAspectRatio;
+    return (ratio != null && ratio > 0) ? ratio : null;
+  }
+
   /// The maximum scale allowed for the view.
   final double maxScale;
 

@@ -132,6 +132,7 @@ class LayerStack extends StatelessWidget {
   CustomPainter _buildCropPainter() {
     final imgRatio =
         _transformConfigs?.cropRect.size.aspectRatio ??
+        configs.cropRotateEditor.initialOvalCropAspectRatio ??
         transformHelper.mainImageSize.aspectRatio;
     final isRoundCropper =
         _transformConfigs?.isOvalCropper ??

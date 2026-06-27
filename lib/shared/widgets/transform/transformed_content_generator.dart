@@ -151,6 +151,8 @@ class TransformedContentGenerator extends StatelessWidget {
     final clipper = CutOutsideArea(
       configs: _transformConfigs,
       cropMode: effectiveCropMode,
+      initialOvalCropAspectRatio:
+          configs.cropRotateEditor.initialOvalCropAspectRatio,
     );
 
     if (effectiveCropMode == CropMode.oval) {
@@ -231,7 +233,11 @@ class TransformedContentGenerator extends StatelessWidget {
 /// configurations.
 class CutOutsideArea extends CustomClipper<Rect> {
   /// Creates an instance of [CutOutsideArea] with the given [configs].
-  CutOutsideArea({required this.configs, required this.cropMode});
+  CutOutsideArea({
+    required this.configs,
+    required this.cropMode,
+    this.initialOvalCropAspectRatio,
+  });
 
   /// Defines the cropping shape to apply to an image or video.
   final CropMode cropMode;
@@ -239,11 +245,19 @@ class CutOutsideArea extends CustomClipper<Rect> {
   /// The configuration object that provides the crop rectangle.
   final TransformConfigs configs;
 
+  /// The fixed aspect ratio for the initial oval mask, used while no transform
+  /// has been applied yet.
+  ///
+  /// Without this, the empty-config oval mask spans the full image bounds and
+  /// exports an ellipse for non-square images even when a fixed ratio such as
+  /// `1.0` was requested (see issue #828). `null` keeps the full image bounds.
+  final double? initialOvalCropAspectRatio;
+
   @override
   Rect getClip(Size size) {
     Rect cropRect = configs.cropRect;
     if (configs.isEmpty && cropMode == CropMode.oval) {
-      cropRect = Rect.fromLTWH(0, 0, size.width, size.height);
+      cropRect = _initialOvalCropRect(size);
     }
 
     return Rect.fromCenter(
@@ -253,10 +267,32 @@ class CutOutsideArea extends CustomClipper<Rect> {
     );
   }
 
+  /// Builds the centered crop rect for the initial oval mask, honoring
+  /// [initialOvalCropAspectRatio] when set and otherwise spanning the full
+  /// image.
+  Rect _initialOvalCropRect(Size size) {
+    final ratio = initialOvalCropAspectRatio;
+    if (ratio == null || ratio <= 0) {
+      return Rect.fromLTWH(0, 0, size.width, size.height);
+    }
+
+    final double width;
+    final double height;
+    if (size.aspectRatio > ratio) {
+      height = size.height;
+      width = size.height * ratio;
+    } else {
+      width = size.width;
+      height = size.width / ratio;
+    }
+    return Rect.fromLTWH(0, 0, width, height);
+  }
+
   @override
   bool shouldReclip(covariant CustomClipper<Rect> oldClipper) {
     return oldClipper is! CutOutsideArea ||
         oldClipper.configs != configs ||
-        oldClipper.cropMode != cropMode;
+        oldClipper.cropMode != cropMode ||
+        oldClipper.initialOvalCropAspectRatio != initialOvalCropAspectRatio;
   }
 }
