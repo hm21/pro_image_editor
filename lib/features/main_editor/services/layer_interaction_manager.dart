@@ -486,6 +486,18 @@ class LayerInteractionManager {
     );
   }
 
+  /// Returns the axis-aligned bounding size of [size] rotated by [rotation]
+  /// (radians). Equals [size] when the rotation is a multiple of 180°.
+  Size _rotatedBoundingSize(Size size, double rotation) {
+    if (rotation == 0) return size;
+    final double cosR = cos(rotation).abs();
+    final double sinR = sin(rotation).abs();
+    return Size(
+      size.width * cosR + size.height * sinR,
+      size.width * sinR + size.height * cosR,
+    );
+  }
+
   /// Layer types that expose their edges - not just their center - as snap
   /// anchors.
   ///
@@ -520,9 +532,12 @@ class LayerInteractionManager {
     // content is rendered at its scaled size, not scaled by a Transform - so it
     // must not be multiplied by [scale] again.
     final size = layer.renderSize;
-    if (size == null || size.width == 0) return [centerAnchor];
+    if (size == null || size.isEmpty) return [centerAnchor];
 
-    final double halfWidth = size.width / 2;
+    // Use the rotated axis-aligned bounding box so the edges still match a
+    // rotated layer (collapses to width/2 when the layer is not rotated).
+    final double halfWidth =
+        _rotatedBoundingSize(size, layer.rotation).width / 2;
     return [
       _LayerSnapAnchor(
         position: center - halfWidth,
@@ -560,9 +575,12 @@ class LayerInteractionManager {
     // [renderSize] already reflects the on-screen (scaled) size, so it must not
     // be multiplied by [scale] again.
     final size = layer.renderSize;
-    if (size == null || size.height == 0) return [centerAnchor];
+    if (size == null || size.isEmpty) return [centerAnchor];
 
-    final double halfHeight = size.height / 2;
+    // Use the rotated axis-aligned bounding box so the edges still match a
+    // rotated layer (collapses to height/2 when the layer is not rotated).
+    final double halfHeight =
+        _rotatedBoundingSize(size, layer.rotation).height / 2;
     return [
       _LayerSnapAnchor(
         position: center - halfHeight,
