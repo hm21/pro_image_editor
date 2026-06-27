@@ -7,6 +7,17 @@ import 'package:flutter/material.dart';
 // Project imports:
 import '/core/models/styles/crop_rotate_editor_style.dart';
 
+/// Screen-space margin (in logical pixels) by which the darkened overlay is
+/// expanded beyond the image bounds.
+///
+/// The overlay is painted on top of the image and its outer edge is
+/// mathematically identical to the rendered image edge. When the image is
+/// panned so that one of its edges floats inside the viewport, anti-aliasing
+/// along that shared edge leaves a ~1px partially-transparent seam that reveals
+/// a thin line of the image (see #776). A small overscan moves that seam off
+/// the image and onto the surrounding background, where it is invisible.
+const double _kOverlayEdgeOverscan = 1;
+
 /// A custom painter for drawing crop corners and interaction elements.
 ///
 /// This class extends [CustomPainter] and is used to draw the crop corners,
@@ -139,6 +150,13 @@ class CropCornerPainter extends CustomPainter {
     double cropWidth = _cropOffsetRight - _cropOffsetLeft;
     double cropHeight = _cropOffsetBottom - _cropOffsetTop;
 
+    /// Convert the fixed screen-space overscan into the painter's local space
+    /// (which is scaled by [rotationScaleFactor] before being rendered) so the
+    /// margin stays visually constant regardless of zoom.
+    final double overscan = rotationScaleFactor.abs() > 0.001
+        ? _kOverlayEdgeOverscan / rotationScaleFactor.abs()
+        : _kOverlayEdgeOverscan;
+
     Path path = Path()
       // FillType "evenOdd" is important for the canvas web renderer
       ..fillType = PathFillType.evenOdd
@@ -150,7 +168,7 @@ class CropCornerPainter extends CustomPainter {
           ),
           width: size.width * scaleFactor,
           height: size.height * scaleFactor,
-        ),
+        ).inflate(overscan),
       );
     if (drawCircle) {
       /// Create a path for the current rectangle
