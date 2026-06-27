@@ -428,6 +428,16 @@ class LayerInteractionManager {
   /// Last recorded Y-axis position for layers.
   LayerLastPosition lastPositionY = LayerLastPosition.center;
 
+  /// Local offset of the edge that was closest to the vertical center line in
+  /// the previous move frame. Used to detect when the closest edge switches so
+  /// the center-line snap is not falsely triggered by the resulting jump in the
+  /// tracked position.
+  double? _activeClosestLocalOffsetX;
+
+  /// Local offset of the edge that was closest to the horizontal center line in
+  /// the previous move frame.
+  double? _activeClosestLocalOffsetY;
+
   Offset? _rotateScaleButtonStartPosition;
   final _horizontalSnapHelper = _LayerAlignGuideHelper();
   final _verticalSnapHelper = _LayerAlignGuideHelper();
@@ -727,6 +737,18 @@ class LayerInteractionManager {
       final closestX = _closestAnchor(_horizontalSnapAnchors(layer));
       final closestY = _closestAnchor(_verticalSnapAnchors(layer));
 
+      /// When the closest edge switches (e.g. from the left edge to the center)
+      /// the tracked position flips discontinuously; suppress a new snap on
+      /// that frame so only a genuine crossing snaps to the center line.
+      final bool anchorSwitchedX =
+          _activeClosestLocalOffsetX != null &&
+          _activeClosestLocalOffsetX != closestX.localOffset;
+      final bool anchorSwitchedY =
+          _activeClosestLocalOffsetY != null &&
+          _activeClosestLocalOffsetY != closestY.localOffset;
+      _activeClosestLocalOffsetX = closestX.localOffset;
+      _activeClosestLocalOffsetY = closestY.localOffset;
+
       final releaseThreshold = helperLineConfigs.releaseThreshold;
       bool hasLineHit = false;
       double posX = closestX.position;
@@ -750,7 +772,8 @@ class LayerInteractionManager {
 
       /// Calc vertical helper line
       if (helperLineConfigs.showVerticalLine) {
-        if ((!showVerticalHelperLine &&
+        if ((!anchorSwitchedX &&
+                !showVerticalHelperLine &&
                 (helperGoNearLineLeft || helperGoNearLineRight)) ||
             (showVerticalHelperLine && hitAreaX)) {
           if (!showVerticalHelperLine) {
@@ -770,7 +793,8 @@ class LayerInteractionManager {
 
       if (helperLineConfigs.showHorizontalLine) {
         /// Calc horizontal helper line
-        if ((!showHorizontalHelperLine &&
+        if ((!anchorSwitchedY &&
+                !showHorizontalHelperLine &&
                 (helperGoNearLineTop || helperGoNearLineBottom)) ||
             (showHorizontalHelperLine && hitAreaY)) {
           if (!showHorizontalHelperLine) {
@@ -948,8 +972,12 @@ class LayerInteractionManager {
       // Initialize the snap hysteresis from the same closest edge that
       // [calculateMovement] evaluates, so dragging never starts with an
       // immediate jump to a center line.
-      double posX = _closestAnchor(_horizontalSnapAnchors(layer)).position;
-      double posY = _closestAnchor(_verticalSnapAnchors(layer)).position;
+      final closestX = _closestAnchor(_horizontalSnapAnchors(layer));
+      final closestY = _closestAnchor(_verticalSnapAnchors(layer));
+      double posX = closestX.position;
+      double posY = closestY.position;
+      _activeClosestLocalOffsetX = closestX.localOffset;
+      _activeClosestLocalOffsetY = closestY.localOffset;
 
       final releaseThreshold = helperLineConfigs.releaseThreshold;
 
@@ -986,6 +1014,8 @@ class LayerInteractionManager {
     isHorizontalGuideCustom = false;
     showHelperLines = false;
     hoverRemoveBtn = false;
+    _activeClosestLocalOffsetX = null;
+    _activeClosestLocalOffsetY = null;
   }
 
   /// Rotate a layer.
