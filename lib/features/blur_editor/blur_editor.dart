@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/standalone_editor.dart';
+import '/core/models/editor_callbacks/blur_editor_callbacks.dart';
 import '/core/models/editor_image.dart';
 import '/core/models/init_configs/blur_editor_init_configs.dart';
 import '/core/models/transform_helper.dart';
@@ -177,6 +178,9 @@ class BlurEditorState extends State<BlurEditor>
   set blurFactor(double value) {
     _blurFactor.value = value;
   }
+
+  @override
+  BlurEditorCallbacks? get standaloneEditorCallbacks => blurEditorCallbacks;
 
   @override
   void initState() {

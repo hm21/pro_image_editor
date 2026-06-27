@@ -14,6 +14,7 @@ abstract class StandaloneEditorCallbacks {
     this.onCloseEditor,
     this.onInit,
     this.onAfterViewInit,
+    this.onKeyboardEvent,
   });
 
   /// A callback function that can be used to update the UI from custom widgets.
@@ -43,6 +44,24 @@ abstract class StandaloneEditorCallbacks {
   /// The framework will call this method exactly once for each [State] object
   /// it creates.
   final Function()? onAfterViewInit;
+
+  /// Callback invoked when a keyboard event occurs in the editor.
+  ///
+  /// If this function returns `true`, the event is consumed and the editor's
+  /// built-in keyboard shortcuts are skipped for it. Returning `false` or
+  /// `null` allows the default shortcut handling to continue.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// onKeyboardEvent: (event) {
+  ///   if (event.logicalKey == LogicalKeyboardKey.keyR) {
+  ///     // Prevent the built-in rotate shortcut.
+  ///     return true;
+  ///   }
+  ///   return false;
+  /// },
+  /// ```
+  final bool Function(KeyEvent event)? onKeyboardEvent;
 
   /// Handles the undo action.
   ///
@@ -82,5 +101,13 @@ abstract class StandaloneEditorCallbacks {
   /// This method calls the [onUpdateUI] callback.
   void handleUpdateUI() {
     onUpdateUI?.call();
+  }
+
+  /// Handles a keyboard event by forwarding it to [onKeyboardEvent].
+  ///
+  /// Returns `true` when the event was consumed by the callback, signaling that
+  /// the editor's built-in shortcut handling should be skipped.
+  bool handleKeyboardEvent(KeyEvent event) {
+    return onKeyboardEvent?.call(event) ?? false;
   }
 }

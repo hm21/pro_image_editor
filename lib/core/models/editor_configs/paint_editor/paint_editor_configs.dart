@@ -42,6 +42,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.layerFractionalOffset = const Offset(-0.5, -0.5),
     this.enableGesturePop = true,
     this.enableEdit = true,
+    this.enableKeyboardShortcuts = true,
     this.tools = const [
       PaintMode.moveAndZoom,
       PaintMode.freeStyle,
@@ -125,6 +126,15 @@ class PaintEditorConfigs extends ZoomConfigs
 
   /// Indicating whether created layers can be edited.
   final bool enableEdit;
+
+  /// Whether physical keyboard shortcuts are enabled in the paint editor.
+  ///
+  /// When `true` (default), `Ctrl`/`Cmd`+`Z` controls undo/redo. Set it to
+  /// `false` to disable the built-in shortcuts.
+  ///
+  /// Individual events can also be intercepted with
+  /// [PaintEditorCallbacks.onKeyboardEvent].
+  final bool enableKeyboardShortcuts;
 
   /// Defines which paint tools are available in the editor.
   ///
@@ -296,6 +306,7 @@ class PaintEditorConfigs extends ZoomConfigs
     Offset? layerFractionalOffset,
     bool? enableGesturePop,
     bool? enableEdit,
+    bool? enableKeyboardShortcuts,
     bool? showToggleFillButton,
     bool? showLineWidthAdjustmentButton,
     bool? showOpacityAdjustmentButton,
@@ -340,6 +351,8 @@ class PaintEditorConfigs extends ZoomConfigs
           layerFractionalOffset ?? this.layerFractionalOffset,
       enableGesturePop: enableGesturePop ?? this.enableGesturePop,
       enableEdit: enableEdit ?? this.enableEdit,
+      enableKeyboardShortcuts:
+          enableKeyboardShortcuts ?? this.enableKeyboardShortcuts,
       tools: tools ?? this.tools,
       showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,
       showLineWidthAdjustmentButton:

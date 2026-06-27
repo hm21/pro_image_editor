@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.9.0
+- **FEAT**(editors): Support keyboard handling in the sub-editors, not just the main editor (#837). The `onKeyboardEvent` callback is now available on every standalone editor's callbacks (crop-rotate, paint, filter, tune, blur) via `StandaloneEditorCallbacks`; returning `true` consumes the event and skips the built-in shortcut. The crop-rotate and paint editors additionally gain an `enableKeyboardShortcuts` option (default `true`) to disable their built-in shortcuts (e.g. `R`/`F` in the crop-rotate editor). Previously these callbacks and the option only affected the main editor, so the crop-rotate `R`/`F` shortcuts could not be intercepted or disabled.
+
 ## 12.8.2
 - **FIX**(crop-rotate): Honor `initAspectRatio` for the oval cropper in the main editor's initial state. Opening the editor directly in `CropMode.oval` with a fixed `initAspectRatio` (e.g. `1.0`) previously rendered and exported an ellipse stretched to the full image bounds for non-square images, because the initial (un-transformed) state never consulted `initAspectRatio` and fell back to the full image aspect ratio. The initial oval mask now uses a centered crop of the requested ratio in the overlay, the capture overlay and the export clip (so `1.0` produces a circle), while a free (`-1`) or original (`0.0`) ratio keeps the previous full-image behavior.
 

@@ -2,9 +2,11 @@
 
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
+import 'package:pro_image_editor/core/models/editor_callbacks/pro_image_editor_callbacks.dart';
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/core/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/features/crop_rotate_editor/crop_rotate_editor.dart';
@@ -407,6 +409,91 @@ void main() {
 
       // Ensure to draw ratios
       expect(find.text('16*9'), findsOneWidget);
+    });
+  });
+
+  group('Keyboard shortcuts', () {
+    const fastConfig = CropRotateEditorConfigs(
+      animationDuration: Duration.zero,
+      cropDragAnimationDuration: Duration.zero,
+      fadeInOutsideCropAreaAnimationDuration: Duration.zero,
+      opacityOutsideCropAreaDuration: Duration.zero,
+    );
+
+    Future<GlobalKey<CropRotateEditorState>> pumpWith(
+      WidgetTester tester, {
+      required CropRotateEditorConfigs cropConfigs,
+      ProImageEditorCallbacks callbacks = const ProImageEditorCallbacks(),
+    }) async {
+      final editorKey = GlobalKey<CropRotateEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CropRotateEditor.memory(
+              mockMemoryImage,
+              key: editorKey,
+              initConfigs: CropRotateEditorInitConfigs(
+                theme: ThemeData.light(),
+                enableFakeHero: false,
+                callbacks: callbacks,
+                configs: ProImageEditorConfigs(
+                  cropRotateEditor: cropConfigs,
+                  imageGeneration: const ImageGenerationConfigs(
+                    enableBackgroundGeneration: false,
+                    enableIsolateGeneration: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return editorKey;
+    }
+
+    testWidgets('rotate the image with the R key by default', (tester) async {
+      final editorKey = await pumpWith(tester, cropConfigs: fastConfig);
+      expect(editorKey.currentState!.rotationCount, 0);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+      await tester.pumpAndSettle();
+
+      expect(editorKey.currentState!.rotationCount, 1);
+    });
+
+    testWidgets('ignore the R key when shortcuts are disabled', (tester) async {
+      final editorKey = await pumpWith(
+        tester,
+        cropConfigs: fastConfig.copyWith(enableKeyboardShortcuts: false),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+      await tester.pumpAndSettle();
+
+      expect(editorKey.currentState!.rotationCount, 0);
+    });
+
+    testWidgets('onKeyboardEvent can consume the R key (#837)', (tester) async {
+      var receivedEvent = false;
+      final editorKey = await pumpWith(
+        tester,
+        cropConfigs: fastConfig,
+        callbacks: ProImageEditorCallbacks(
+          cropRotateEditorCallbacks: CropRotateEditorCallbacks(
+            onKeyboardEvent: (event) {
+              receivedEvent = true;
+              return true;
+            },
+          ),
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+      await tester.pumpAndSettle();
+
+      expect(receivedEvent, isTrue);
+      expect(editorKey.currentState!.rotationCount, 0);
     });
   });
 }

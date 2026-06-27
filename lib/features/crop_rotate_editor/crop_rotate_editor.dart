@@ -428,7 +428,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _desktopInteractionManager = CropDesktopInteractionManager(
       context: context,
     );
-    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     // Initialize image and layers
     _imageNeedDecode = mainImageSize == null;
@@ -543,7 +542,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _bottomBarScrollCtrl.dispose();
     rotateCtrl.dispose();
     scaleCtrl.dispose();
-    ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
   }
 
@@ -687,7 +685,16 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _updateAllStates();
   }
 
-  bool _onKeyEvent(KeyEvent event) {
+  @override
+  bool get enableKeyboardShortcuts =>
+      cropRotateEditorConfigs.enableKeyboardShortcuts;
+
+  @override
+  CropRotateEditorCallbacks? get standaloneEditorCallbacks =>
+      cropRotateEditorCallbacks;
+
+  @override
+  bool onCustomKeyEvent(KeyEvent event) {
     return _desktopInteractionManager.onKey(
       event,
       onRotate: rotate,

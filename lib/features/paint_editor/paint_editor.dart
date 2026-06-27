@@ -314,7 +314,6 @@ class PaintEditorState extends State<PaintEditor>
     _desktopInteractionManager = PaintDesktopInteractionManager(
       context: context,
     );
-    ServicesBinding.instance.keyboard.addHandler(_onKeyEvent);
 
     /// Important to set state after view init to set action icons
     paintEditorCallbacks?.onInit?.call();
@@ -339,7 +338,6 @@ class PaintEditorState extends State<PaintEditor>
     _uiAppbarStream.close();
     _layerStackStream.close();
     screenshotCtrl.destroy();
-    ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
     super.dispose();
   }
 
@@ -516,8 +514,16 @@ class PaintEditorState extends State<PaintEditor>
     _layerStackStream.stream.listen((_) => rebuildController.add(null));
   }
 
+  @override
+  bool get enableKeyboardShortcuts =>
+      paintEditorConfigs.enableKeyboardShortcuts;
+
+  @override
+  PaintEditorCallbacks? get standaloneEditorCallbacks => paintEditorCallbacks;
+
   /// Handle keyboard events
-  bool _onKeyEvent(KeyEvent event) {
+  @override
+  bool onCustomKeyEvent(KeyEvent event) {
     return _desktopInteractionManager.onKey(
       event,
       onUndoRedo: (undo) {

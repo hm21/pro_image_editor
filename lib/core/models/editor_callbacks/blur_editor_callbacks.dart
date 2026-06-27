@@ -15,6 +15,7 @@ class BlurEditorCallbacks extends StandaloneEditorCallbacks {
     super.onUpdateUI,
     super.onDone,
     super.onCloseEditor,
+    super.onKeyboardEvent,
   });
 
   /// A callback function that is triggered when the blur factor changes.
@@ -54,11 +55,13 @@ class BlurEditorCallbacks extends StandaloneEditorCallbacks {
     Function()? onUpdateUI,
     Function()? onDone,
     Function()? onCloseEditor,
+    bool Function(KeyEvent event)? onKeyboardEvent,
   }) {
     return BlurEditorCallbacks(
       onBlurFactorChange: onBlurFactorChange ?? this.onBlurFactorChange,
       onBlurFactorChangeEnd:
           onBlurFactorChangeEnd ?? this.onBlurFactorChangeEnd,
+      onKeyboardEvent: onKeyboardEvent ?? this.onKeyboardEvent,
       onInit: onInit ?? this.onInit,
       onAfterViewInit: onAfterViewInit ?? this.onAfterViewInit,
       onUpdateUI: onUpdateUI ?? this.onUpdateUI,

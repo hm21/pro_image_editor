@@ -27,6 +27,7 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
     super.onDone,
     super.onCloseEditor,
     super.onUpdateUI,
+    super.onKeyboardEvent,
   });
 
   /// A callback function that is triggered when a rotation gesture starts.
@@ -173,9 +174,11 @@ class CropRotateEditorCallbacks extends StandaloneEditorCallbacks {
     Function()? onRedo,
     Function()? onUndo,
     Function()? onCloseEditor,
+    bool Function(KeyEvent event)? onKeyboardEvent,
     Function(CompleteParameters parameters)? onTransformUpdateEnd,
   }) {
     return CropRotateEditorCallbacks(
+      onKeyboardEvent: onKeyboardEvent ?? this.onKeyboardEvent,
       onRotateStart: onRotateStart ?? this.onRotateStart,
       onRotateEnd: onRotateEnd ?? this.onRotateEnd,
       onFlip: onFlip ?? this.onFlip,

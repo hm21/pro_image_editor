@@ -209,6 +209,9 @@ class TuneEditorState extends State<TuneEditor>
   bool get canRedo => _redoStack.isNotEmpty;
 
   @override
+  TuneEditorCallbacks? get standaloneEditorCallbacks => tuneEditorCallbacks;
+
+  @override
   void initState() {
     super.initState();
     uiStream = StreamController.broadcast();

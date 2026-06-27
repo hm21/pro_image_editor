@@ -187,6 +187,9 @@ class FilterEditorState extends State<FilterEditor>
   }
 
   @override
+  FilterEditorCallbacks? get standaloneEditorCallbacks => filterEditorCallbacks;
+
+  @override
   void initState() {
     super.initState();
     _uiFilterStream = StreamController.broadcast();

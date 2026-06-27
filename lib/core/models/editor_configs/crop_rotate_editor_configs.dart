@@ -57,6 +57,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     this.enableDoubleTap = true,
     this.enableFlipAnimation = true,
     this.enableKeepAspectRatioOnRotate = false,
+    this.enableKeyboardShortcuts = true,
     this.showLayers = true,
     this.initAspectRatio,
     this.rotateAnimationCurve = Curves.decelerate,
@@ -133,6 +134,17 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
   /// For the free and original ratio the current crop frame orientation is
   /// kept.
   final bool enableKeepAspectRatioOnRotate;
+
+  /// Whether physical keyboard shortcuts are enabled in the crop-rotate editor.
+  ///
+  /// When `true` (default), keys such as `R` (rotate), `F` (flip), the arrow
+  /// keys (translate), `+`/`-` (zoom) and `Ctrl`/`Cmd`+`Z` (undo/redo) control
+  /// the editor. Set it to `false` to disable all built-in shortcuts, e.g. to
+  /// reserve those keys for your own handling.
+  ///
+  /// Individual events can also be intercepted with
+  /// [CropRotateEditorCallbacks.onKeyboardEvent].
+  final bool enableKeyboardShortcuts;
 
   /// Determines if the mouse scroll direction should be inverted.
   final bool invertMouseScroll;
@@ -295,6 +307,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     bool? enableDoubleTap,
     bool? enableFlipAnimation,
     bool? enableKeepAspectRatioOnRotate,
+    bool? enableKeyboardShortcuts,
     bool? invertMouseScroll,
     bool? invertDragDirection,
     CropMode? initialCropMode,
@@ -333,6 +346,8 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
       enableFlipAnimation: enableFlipAnimation ?? this.enableFlipAnimation,
       enableKeepAspectRatioOnRotate:
           enableKeepAspectRatioOnRotate ?? this.enableKeepAspectRatioOnRotate,
+      enableKeyboardShortcuts:
+          enableKeyboardShortcuts ?? this.enableKeyboardShortcuts,
       invertMouseScroll: invertMouseScroll ?? this.invertMouseScroll,
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,
