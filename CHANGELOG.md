@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.8.1
+- **FIX**(crop-rotate): Cover the image edge with the crop overlay when the image is panned. The darkened overlay is painted on top of the image and its outer rectangle matched the rendered image bounds exactly, so when an image edge floated inside the viewport (e.g. the image pushed to the bottom) anti-aliasing along that shared edge left a ~1px partially-transparent seam that revealed a thin line of the image. The overlay rectangle is now slightly overscanned beyond the image bounds so the seam falls on the surrounding background where it is invisible.
+
 ## 12.8.0
 - **FIX**(layers): Make the video-timeline `slide` layer animation edge-aware. Previously the layer was only translated by its own width/height (a single layer size), so a layer that did not sit against the canvas edge stayed partially visible while sliding in/out. The slide now uses the layer's center and the canvas size to push the layer's nearest edge exactly onto (or off) the canvas border, so off-center layers leave the visible area completely. The preview math mirrors the matching native renderer change in `pro_video_editor` (`ApplyAnimation.kt` / `ApplyAnimation.swift`). **Use this together with the corresponding `pro_video_editor` release** so the in-editor preview keeps matching the exported video. Prerelease.
 
