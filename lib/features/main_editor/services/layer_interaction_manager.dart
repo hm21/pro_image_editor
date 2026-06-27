@@ -468,6 +468,14 @@ class LayerInteractionManager {
     return const Offset(-0.5, -0.5);
   }
 
+  /// Returns the anchor whose position sits closest to the center line
+  /// (position `0`).
+  _LayerSnapAnchor _closestAnchor(List<_LayerSnapAnchor> anchors) {
+    return anchors.reduce(
+      (a, b) => a.position.abs() <= b.position.abs() ? a : b,
+    );
+  }
+
   /// Layer types that expose their edges - not just their center - as snap
   /// anchors.
   ///
@@ -701,8 +709,6 @@ class LayerInteractionManager {
     for (Layer layer in selectedLayers) {
       if (!layer.interaction.enableMove) continue;
 
-      Offset fractionalOffset = _getFractionalLayerOffset(layer);
-
       layer.offset = Offset(
         layer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
         layer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
@@ -713,17 +719,18 @@ class LayerInteractionManager {
         continue;
       }
 
-      final Offset localPointFromCenter = layer.computeLocalCenterOffset(
-        fractionalOffset,
-      );
-      final Offset layerCenterOffset = layer.computeOffsetFromCenterFraction(
-        fractionalOffset,
-      );
+      /// Text and paint layers expose their edges as snap anchors; the edge
+      /// currently closest to a center line is the one that snaps to it. The
+      /// same closest anchor is computed in [onScaleStart] so the snapping
+      /// hysteresis starts from a consistent state (avoiding an immediate
+      /// jump).
+      final closestX = _closestAnchor(_horizontalSnapAnchors(layer));
+      final closestY = _closestAnchor(_verticalSnapAnchors(layer));
 
       final releaseThreshold = helperLineConfigs.releaseThreshold;
       bool hasLineHit = false;
-      double posX = layerCenterOffset.dx;
-      double posY = layerCenterOffset.dy;
+      double posX = closestX.position;
+      double posY = closestY.position;
 
       bool hitAreaX =
           detail.focalPoint.dx >= snapStartPosX - releaseThreshold &&
@@ -751,7 +758,7 @@ class LayerInteractionManager {
             snapStartPosX = detail.focalPoint.dx;
           }
           showVerticalHelperLine = true;
-          layer.offset = Offset(-localPointFromCenter.dx, layer.offset.dy);
+          layer.offset = Offset(-closestX.localOffset, layer.offset.dy);
           lastPositionX = LayerLastPosition.center;
         } else {
           showVerticalHelperLine = false;
@@ -771,7 +778,7 @@ class LayerInteractionManager {
             snapStartPosY = detail.focalPoint.dy;
           }
           showHorizontalHelperLine = true;
-          layer.offset = Offset(layer.offset.dx, -localPointFromCenter.dy);
+          layer.offset = Offset(layer.offset.dx, -closestY.localOffset);
           lastPositionY = LayerLastPosition.center;
         } else {
           showHorizontalHelperLine = false;
@@ -938,12 +945,11 @@ class LayerInteractionManager {
       _snapLastRotation[layer.id] = _getLayerSnapStartRotation(layer.id);
       reset();
 
-      final fractionOffset = _getFractionalLayerOffset(layer);
-      final centerOffset = layer.computeOffsetFromCenterFraction(
-        fractionOffset,
-      );
-      double posX = centerOffset.dx;
-      double posY = centerOffset.dy;
+      // Initialize the snap hysteresis from the same closest edge that
+      // [calculateMovement] evaluates, so dragging never starts with an
+      // immediate jump to a center line.
+      double posX = _closestAnchor(_horizontalSnapAnchors(layer)).position;
+      double posY = _closestAnchor(_verticalSnapAnchors(layer)).position;
 
       final releaseThreshold = helperLineConfigs.releaseThreshold;
 
@@ -1189,7 +1195,8 @@ class LayerInteractionManager {
           _verticalSnapHelper.maybeSnap(
             focal: detail.focalPoint.dx,
             focalDelta: detail.focalPointDelta.dx,
-            offset: Offset(target.position, 0),
+            // Encode the snapping edge so every edge can reach the same target.
+            offset: Offset(target.position, anchor.localOffset),
             threshold: snapThreshold,
             releaseThreshold: releaseThreshold,
             positiveDirection: LayerLastPosition.left,
@@ -1217,7 +1224,8 @@ class LayerInteractionManager {
           _horizontalSnapHelper.maybeSnap(
             focal: detail.focalPoint.dy,
             focalDelta: detail.focalPointDelta.dy,
-            offset: Offset(0, target.position),
+            // Encode the snapping edge so every edge can reach the same target.
+            offset: Offset(anchor.localOffset, target.position),
             threshold: snapThreshold,
             releaseThreshold: releaseThreshold,
             positiveDirection: LayerLastPosition.top,
