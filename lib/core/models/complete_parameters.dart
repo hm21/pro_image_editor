@@ -53,6 +53,9 @@ class CompleteParameters {
       cropY: map['cropY']?.toInt(),
       flipX: map['flipX'] ?? false,
       flipY: map['flipY'] ?? false,
+      tiltRotate: map['tiltRotate']?.toDouble() ?? 0.0,
+      tiltHorizontal: map['tiltHorizontal']?.toDouble() ?? 0.0,
+      tiltVertical: map['tiltVertical']?.toDouble() ?? 0.0,
       image: Uint8List.fromList(List<int>.from(map['image'] ?? [])),
       isTransformed: map['isTransformed'] ?? false,
       layers: List<Layer>.from(
@@ -125,6 +128,9 @@ class CompleteParameters {
     required this.flipY,
     required this.image,
     required this.isTransformed,
+    this.tiltRotate = 0,
+    this.tiltHorizontal = 0,
+    this.tiltVertical = 0,
     required this.layers,
     this.filterStates = const [],
     this.tuneAdjustments = const [],
@@ -188,6 +194,24 @@ class CompleteParameters {
 
   /// Whether to flip the image vertically.
   final bool flipY;
+
+  /// The perspective tilt (rotation) in radians around the Z axis.
+  ///
+  /// Unlike [rotateTurns] this is a free-angle perspective transform and is
+  /// already baked into [image]. It is exposed here so consumers that re-apply
+  /// the transformations from these parameters (instead of using [image]) can
+  /// reproduce the tilt. `0` means no tilt.
+  final double tiltRotate;
+
+  /// The perspective tilt in radians around the Y axis (left/right).
+  ///
+  /// Already baked into [image]; see [tiltRotate].
+  final double tiltHorizontal;
+
+  /// The perspective tilt in radians around the X axis (up/down).
+  ///
+  /// Already baked into [image]; see [tiltRotate].
+  final double tiltVertical;
 
   /// The image data as a [Uint8List].
   final Uint8List image;
@@ -272,6 +296,9 @@ class CompleteParameters {
     int? cropY,
     bool? flipX,
     bool? flipY,
+    double? tiltRotate,
+    double? tiltHorizontal,
+    double? tiltVertical,
     Uint8List? image,
     bool? isTransformed,
     List<Layer>? layers,
@@ -301,6 +328,9 @@ class CompleteParameters {
       cropY: cropY ?? this.cropY,
       flipX: flipX ?? this.flipX,
       flipY: flipY ?? this.flipY,
+      tiltRotate: tiltRotate ?? this.tiltRotate,
+      tiltHorizontal: tiltHorizontal ?? this.tiltHorizontal,
+      tiltVertical: tiltVertical ?? this.tiltVertical,
       image: image ?? this.image,
       isTransformed: isTransformed ?? this.isTransformed,
       layers: layers ?? this.layers,
@@ -396,6 +426,9 @@ class CompleteParameters {
       'cropY': cropY,
       'flipX': flipX,
       'flipY': flipY,
+      'tiltRotate': tiltRotate,
+      'tiltHorizontal': tiltHorizontal,
+      'tiltVertical': tiltVertical,
       'image': image.toList(),
       'isTransformed': isTransformed,
       'layers': layers.map((x) => x.toMap()).toList(),
@@ -437,6 +470,9 @@ class CompleteParameters {
         'cropY: $cropY, '
         'flipX: $flipX, '
         'flipY: $flipY, '
+        'tiltRotate: $tiltRotate, '
+        'tiltHorizontal: $tiltHorizontal, '
+        'tiltVertical: $tiltVertical, '
         'image: $image, '
         'isTransformed: $isTransformed, '
         'originalImageSize: $originalImageSize, '

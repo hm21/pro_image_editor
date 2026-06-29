@@ -2674,6 +2674,9 @@ class ProImageEditorState extends State<ProImageEditor>
                   ? transform.flipX
                   : transform.flipY,
               rotateTurns: transform.angleToTurns(),
+              tiltRotate: transform.tiltRotate,
+              tiltHorizontal: transform.tiltHorizontal,
+              tiltVertical: transform.tiltVertical,
               image: bytes ?? Uint8List.fromList([]),
               isTransformed: isTransformed,
               layers: activeLayers,
