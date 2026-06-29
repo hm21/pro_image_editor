@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // Project imports:
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
+import '/shared/extensions/matrix_extension.dart';
 
 /// A [StatelessWidget] that applies transformations to its [child] widget
 /// based on provided transformation and editor configurations.
@@ -165,22 +166,46 @@ class TransformedContentGenerator extends StatelessWidget {
   Widget _buildScaleRotate({required Widget child}) {
     final offset = _transformConfigs.offset;
     final scale = _transformConfigs.scaleUser;
+    final bool isTilted = _transformConfigs.isTilted;
 
-    // If no pan *and* no scale, just return child
-    if (offset == Offset.zero && scale == 1.0) {
+    // If no pan, no scale *and* no tilt, just return child
+    if (offset == Offset.zero && scale == 1.0 && !isTilted) {
       return child;
     }
 
-    // Combine translate + scale into one matrix
-    final matrix = Matrix4.identity()
-      ..scaleByDouble(scale, scale, scale, 1.0)
-      ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0);
+    Widget result = child;
 
-    return Transform(
-      alignment: Alignment.center,
-      transform: matrix,
-      child: child,
-    );
+    // The perspective tilt is applied as its OWN center-aligned transform,
+    // nested inside the scale+translate transform. This matches exactly the
+    // composition the crop editor renders live (separate `userScale`,
+    // `translate` and `tilt` transforms) as well as the bounds / auto-zoom math
+    // in `_setOffsetLimits`. Folding the tilt into the scale+translate matrix
+    // instead would diverge under perspective (the homogeneous divide happens
+    // per-transform), so the exported image would no longer match the preview.
+    if (isTilted) {
+      result = Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.identity().tilt(
+          rotate: _transformConfigs.tiltRotate,
+          vertical: _transformConfigs.tiltVertical,
+          horizontal: _transformConfigs.tiltHorizontal,
+        ),
+        child: result,
+      );
+    }
+
+    if (offset != Offset.zero || scale != 1.0) {
+      final matrix = Matrix4.identity()
+        ..scaleByDouble(scale, scale, scale, 1.0)
+        ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0);
+      result = Transform(
+        alignment: Alignment.center,
+        transform: matrix,
+        child: result,
+      );
+    }
+
+    return result;
   }
 
   @override

@@ -24,6 +24,10 @@ class I18nCropRotateEditor {
     this.bottomNavigationBarText = 'Crop/ Rotate',
     this.rotate = 'Rotate',
     this.flip = 'Flip',
+    this.tilt = 'Tilt',
+    this.tiltRotate = 'Rotate',
+    this.tiltHorizontal = 'Horizontal',
+    this.tiltVertical = 'Vertical',
     this.ratio = 'Ratio',
     this.back = 'Back',
     this.done = 'Done',
@@ -43,6 +47,18 @@ class I18nCropRotateEditor {
 
   /// Text for the "Flip" tooltip.
   final String flip;
+
+  /// Text for the "Tilt" tooltip.
+  final String tilt;
+
+  /// The label text for the rotate tilt control.
+  final String tiltRotate;
+
+  /// The label text for the horizontal tilt control.
+  final String tiltHorizontal;
+
+  /// The label text for the vertical tilt control.
+  final String tiltVertical;
 
   /// Text for the "Ratio" tooltip.
   final String ratio;
@@ -78,6 +94,10 @@ class I18nCropRotateEditor {
     String? bottomNavigationBarText,
     String? rotate,
     String? flip,
+    String? tilt,
+    String? tiltRotate,
+    String? tiltHorizontal,
+    String? tiltVertical,
     String? ratio,
     String? back,
     String? cancel,
@@ -92,6 +112,10 @@ class I18nCropRotateEditor {
           bottomNavigationBarText ?? this.bottomNavigationBarText,
       rotate: rotate ?? this.rotate,
       flip: flip ?? this.flip,
+      tilt: tilt ?? this.tilt,
+      tiltRotate: tiltRotate ?? this.tiltRotate,
+      tiltHorizontal: tiltHorizontal ?? this.tiltHorizontal,
+      tiltVertical: tiltVertical ?? this.tiltVertical,
       ratio: ratio ?? this.ratio,
       back: back ?? this.back,
       cancel: cancel ?? this.cancel,

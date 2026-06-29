@@ -49,6 +49,9 @@ class TransformConfigs {
     required this.flipY,
     required this.offset,
     this.cropMode = CropMode.rectangular,
+    this.tiltRotate = 0,
+    this.tiltHorizontal = 0,
+    this.tiltVertical = 0,
   });
 
   /// Creates a [TransformConfigs] instance from a map.
@@ -82,6 +85,9 @@ class TransformConfigs {
       flipX: safeParseBool(map['flipX']),
       flipY: safeParseBool(map['flipY']),
       cropMode: cropMode,
+      tiltRotate: safeParseDouble(map['tiltRotate']),
+      tiltHorizontal: safeParseDouble(map['tiltHorizontal']),
+      tiltVertical: safeParseDouble(map['tiltVertical']),
       offset: Offset(
         safeParseDouble(map['offset']?['dx']),
         safeParseDouble(map['offset']?['dy']),
@@ -106,6 +112,9 @@ class TransformConfigs {
       flipY: false,
       offset: const Offset(0, 0),
       cropMode: CropMode.rectangular,
+      tiltRotate: 0,
+      tiltHorizontal: 0,
+      tiltVertical: 0,
     );
   }
 
@@ -188,6 +197,22 @@ class TransformConfigs {
   /// vertical axis.
   final bool flipY;
 
+  /// The current tilt (rotation) in radians around the Z axis.
+  final double tiltRotate;
+
+  /// The current tilt in radians around the Y axis (left/right).
+  final double tiltHorizontal;
+
+  /// The current tilt in radians around the X axis (up/down).
+  final double tiltVertical;
+
+  /// Returns `true` if any perspective/skew tilt is applied.
+  ///
+  /// Checks whether [tiltRotate], [tiltHorizontal], or [tiltVertical]
+  /// is non-zero.
+  bool get isTilted =>
+      tiltRotate != 0 || tiltHorizontal != 0 || tiltVertical != 0;
+
   /// Checks if the transformation configurations are empty.
   ///
   /// This property returns `true` if all properties are in their default states
@@ -202,6 +227,9 @@ class TransformConfigs {
         aspectRatio == -1 &&
         flipX == false &&
         flipY == false &&
+        tiltRotate == 0 &&
+        tiltHorizontal == 0 &&
+        tiltVertical == 0 &&
         offset == const Offset(0, 0);
   }
 
@@ -269,6 +297,9 @@ class TransformConfigs {
       'flipX': flipX.minify(enableMinify),
       'flipY': flipY.minify(enableMinify),
       'cropMode': cropMode.name,
+      'tiltRotate': tiltRotate.roundSmart(maxDecimalPlaces),
+      'tiltHorizontal': tiltHorizontal.roundSmart(maxDecimalPlaces),
+      'tiltVertical': tiltVertical.roundSmart(maxDecimalPlaces),
       'offset': {
         'dx': offset.dx.roundSmart(maxDecimalPlaces),
         'dy': offset.dy.roundSmart(maxDecimalPlaces),
@@ -342,6 +373,9 @@ class TransformConfigs {
     Rect? cropRect,
     Size? originalSize,
     double? cropEditorScreenRatio,
+    double? tiltRotate,
+    double? tiltHorizontal,
+    double? tiltVertical,
   }) {
     return TransformConfigs(
       cropMode: cropMode ?? this.cropMode,
@@ -356,6 +390,9 @@ class TransformConfigs {
       originalSize: originalSize ?? this.originalSize,
       cropEditorScreenRatio:
           cropEditorScreenRatio ?? this.cropEditorScreenRatio,
+      tiltRotate: tiltRotate ?? this.tiltRotate,
+      tiltHorizontal: tiltHorizontal ?? this.tiltHorizontal,
+      tiltVertical: tiltVertical ?? this.tiltVertical,
     );
   }
 
@@ -374,6 +411,9 @@ class TransformConfigs {
         other.aspectRatio == aspectRatio &&
         other.flipX == flipX &&
         other.flipY == flipY &&
+        other.tiltRotate == tiltRotate &&
+        other.tiltHorizontal == tiltHorizontal &&
+        other.tiltVertical == tiltVertical &&
         other.cropMode == cropMode;
   }
 
@@ -389,6 +429,9 @@ class TransformConfigs {
         aspectRatio.hashCode ^
         flipX.hashCode ^
         flipY.hashCode ^
+        tiltRotate.hashCode ^
+        tiltHorizontal.hashCode ^
+        tiltVertical.hashCode ^
         cropMode.hashCode;
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import '/core/models/styles/crop_rotate_editor_style.dart';
+import '/shared/extensions/matrix_extension.dart';
 
 /// Screen-space margin (in logical pixels) by which the darkened overlay is
 /// expanded beyond the image bounds.
@@ -60,7 +61,19 @@ class CropCornerPainter extends CustomPainter {
     required this.style,
     required this.rotationScaleFactor,
     this.frameOpacity = 1,
+    this.tiltRotate = 0,
+    this.tiltHorizontal = 0,
+    this.tiltVertical = 0,
   });
+
+  /// The perspective tilt (rotation) in radians around the Z axis.
+  final double tiltRotate;
+
+  /// The perspective tilt in radians around the Y axis (left/right).
+  final double tiltHorizontal;
+
+  /// The perspective tilt in radians around the X axis (up/down).
+  final double tiltVertical;
 
   /// The rectangle defining the crop area.
   ///
@@ -159,8 +172,18 @@ class CropCornerPainter extends CustomPainter {
 
     Path path = Path()
       // FillType "evenOdd" is important for the canvas web renderer
-      ..fillType = PathFillType.evenOdd
-      ..addRect(
+      ..fillType = PathFillType.evenOdd;
+
+    if (tiltRotate != 0 || tiltHorizontal != 0 || tiltVertical != 0) {
+      // The image is rendered as a perspective-tilted quad, so the darkened
+      // area must follow that quad. Using an axis-aligned rect here would leave
+      // parts of the tilted image outside the crop un-darkened.
+      path.addPolygon(
+        _tiltedImageOutline(size: size, overscan: overscan),
+        true,
+      );
+    } else {
+      path.addRect(
         Rect.fromCenter(
           center: Offset(
             size.width / 2 + offset.dx * scaleFactor,
@@ -170,6 +193,7 @@ class CropCornerPainter extends CustomPainter {
           height: size.height * scaleFactor,
         ).inflate(overscan),
       );
+    }
     if (drawCircle) {
       /// Create a path for the current rectangle
       Path circlePath = Path()
@@ -227,6 +251,40 @@ class CropCornerPainter extends CustomPainter {
         )
         ..style = PaintingStyle.fill,
     );
+  }
+
+  /// Returns the four corners of the perspective-tilted image in the painter's
+  /// local coordinate space.
+  ///
+  /// Mirrors the transform applied to the rendered image (tilt about the
+  /// center, then translate and scale), so the darkened overlay follows the
+  /// exact same quad the user sees. The source rectangle is expanded by
+  /// [overscan] first to keep the #776 anti-aliasing seam off the image.
+  List<Offset> _tiltedImageOutline({
+    required Size size,
+    required double overscan,
+  }) {
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final Matrix4 tiltMatrix = Matrix4.identity().tilt(
+      rotate: tiltRotate,
+      vertical: tiltVertical,
+      horizontal: tiltHorizontal,
+    );
+
+    Offset toScreen(Offset p) {
+      final Offset tilted = MatrixUtils.transformPoint(tiltMatrix, p - center);
+      return Offset(
+        center.dx + (tilted.dx + offset.dx) * scaleFactor,
+        center.dy + (tilted.dy + offset.dy) * scaleFactor,
+      );
+    }
+
+    return [
+      toScreen(Offset(-overscan, -overscan)),
+      toScreen(Offset(size.width + overscan, -overscan)),
+      toScreen(Offset(size.width + overscan, size.height + overscan)),
+      toScreen(Offset(-overscan, size.height + overscan)),
+    ];
   }
 
   void _drawCorners({required Canvas canvas, required Size size}) {
@@ -441,7 +499,10 @@ class CropCornerPainter extends CustomPainter {
         oldDelegate.scaleFactor != scaleFactor ||
         oldDelegate.style != style ||
         oldDelegate.rotationScaleFactor != rotationScaleFactor ||
-        oldDelegate.frameOpacity != frameOpacity;
+        oldDelegate.frameOpacity != frameOpacity ||
+        oldDelegate.tiltRotate != tiltRotate ||
+        oldDelegate.tiltHorizontal != tiltHorizontal ||
+        oldDelegate.tiltVertical != tiltVertical;
   }
 
   /// Create a copy of the [CropCornerPainter].
@@ -458,6 +519,9 @@ class CropCornerPainter extends CustomPainter {
       style: style,
       rotationScaleFactor: rotationScaleFactor,
       frameOpacity: frameOpacity,
+      tiltRotate: tiltRotate,
+      tiltHorizontal: tiltHorizontal,
+      tiltVertical: tiltVertical,
     );
   }
 }

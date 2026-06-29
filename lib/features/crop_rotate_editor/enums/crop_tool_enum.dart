@@ -6,6 +6,9 @@ enum CropRotateTool {
   /// A tool to flip the image horizontally or vertically.
   flip,
 
+  /// A tool to open the tilt editor for perspective/skew correction.
+  tilt,
+
   /// A tool to change the aspect ratio of the image.
   aspectRatio,
 

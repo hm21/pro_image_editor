@@ -7,15 +7,18 @@ import '/features/crop_rotate_editor/models/rotate_direction.dart';
 import '../custom_widgets/crop_rotate_editor_widgets.dart';
 import '../icons/crop_rotate_editor_icons.dart';
 import '../styles/crop_rotate_editor_style.dart';
+import 'tilt_configs.dart';
 import 'utils/base_sub_editor_configs.dart';
 import 'utils/editor_safe_area.dart';
 
 export '/features/crop_rotate_editor/enums/crop_tool_enum.dart';
+export '/features/crop_rotate_editor/enums/tilt_mode_enum.dart';
 export '/features/crop_rotate_editor/models/rotate_direction.dart';
 export '/features/crop_rotate_editor/models/transform_configs.dart';
 export '../custom_widgets/crop_rotate_editor_widgets.dart';
 export '../icons/crop_rotate_editor_icons.dart';
 export '../styles/crop_rotate_editor_style.dart';
+export 'tilt_configs.dart';
 
 /// Configuration options for a crop and rotate editor.
 ///
@@ -45,6 +48,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     this.tools = const [
       CropRotateTool.rotate,
       CropRotateTool.flip,
+      CropRotateTool.tilt,
       CropRotateTool.aspectRatio,
       CropRotateTool.reset,
     ],
@@ -52,6 +56,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     this.invertDragDirection = false,
     this.initialCropMode = CropMode.rectangular,
     this.exportOvalMask = true,
+    this.tiltConfigs = const TiltConfigs(),
     this.enableTransformLayers = true,
     this.enableProvideImageInfos = false,
     this.enableDoubleTap = true,
@@ -165,6 +170,9 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
   /// shape. When `false`, the raw rectangular crop is exported without any
   /// oval masking, while the oval UI is still shown inside the crop editor.
   final bool exportOvalMask;
+
+  /// Configuration settings for the tilt (perspective/skew) functionality.
+  final TiltConfigs tiltConfigs;
 
   /// Defines which crop-rotate tools are available in the editor.
   ///
@@ -312,6 +320,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
     bool? invertDragDirection,
     CropMode? initialCropMode,
     bool? exportOvalMask,
+    TiltConfigs? tiltConfigs,
     List<CropRotateTool>? tools,
     bool? enableProvideImageInfos,
     double? initAspectRatio,
@@ -352,6 +361,7 @@ class CropRotateEditorConfigs implements BaseSubEditorConfigs {
       invertDragDirection: invertDragDirection ?? this.invertDragDirection,
       initialCropMode: initialCropMode ?? this.initialCropMode,
       exportOvalMask: exportOvalMask ?? this.exportOvalMask,
+      tiltConfigs: tiltConfigs ?? this.tiltConfigs,
       tools: tools ?? this.tools,
       enableProvideImageInfos:
           enableProvideImageInfos ?? this.enableProvideImageInfos,

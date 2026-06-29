@@ -2,8 +2,11 @@
 import '/features/crop_rotate_editor/crop_rotate_editor.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_appbar.dart';
 import '/shared/widgets/reactive_widgets/reactive_custom_widget.dart';
+import 'tilt_widgets.dart';
 import 'utils/custom_widgets_standalone_editor.dart';
 import 'utils/custom_widgets_typedef.dart';
+
+export 'tilt_widgets.dart';
 
 /// A custom widget for editing crop and rotate effects in an image editor.
 ///
@@ -30,8 +33,12 @@ class CropRotateEditorWidgets
     super.appBar,
     super.bottomBar,
     super.bodyItems,
+    this.tiltWidgets = const TiltWidgets(),
     this.aspectRatioOptions,
   });
+
+  /// Custom widgets for tilt-related UI widgets.
+  final TiltWidgets tiltWidgets;
 
   /// A widget for selecting aspect ratio options in the crop editor.
   ///
@@ -60,12 +67,14 @@ class CropRotateEditorWidgets
     )?
     bottomBar,
     CustomBodyItems<CropRotateEditorState>? bodyItems,
+    TiltWidgets? tiltWidgets,
     CropEditorAspectRatioOptions<CropRotateEditorState>? aspectRatioOptions,
   }) {
     return CropRotateEditorWidgets(
       appBar: appBar ?? this.appBar,
       bottomBar: bottomBar ?? this.bottomBar,
       bodyItems: bodyItems ?? this.bodyItems,
+      tiltWidgets: tiltWidgets ?? this.tiltWidgets,
       aspectRatioOptions: aspectRatioOptions ?? this.aspectRatioOptions,
     );
   }

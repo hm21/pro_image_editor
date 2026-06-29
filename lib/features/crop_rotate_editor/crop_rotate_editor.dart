@@ -18,6 +18,7 @@ import '/features/crop_rotate_editor/widgets/outside_gestures/outside_gesture_li
 import '/plugins/defer_pointer/defer_pointer.dart';
 import '/pro_image_editor.dart';
 import '/shared/extensions/double_extension.dart';
+import '/shared/extensions/matrix_extension.dart';
 import '/shared/mixins/extended_loop.dart';
 import '/shared/services/content_recorder/widgets/record_invisible_widget.dart';
 import '/shared/services/layer_transform_generator.dart';
@@ -33,11 +34,15 @@ import '/shared/widgets/transform/transformed_content_generator.dart';
 import 'enums/crop_area_part.dart';
 import 'enums/crop_rotate_angle_side.dart';
 import 'mixins/crop_area_history.dart';
+import 'providers/tilt_provider.dart';
 import 'services/crop_desktop_interaction_manager.dart';
+import 'utils/crop_area_utils.dart';
 import 'utils/crop_aspect_ratios.dart';
 import 'utils/rotate_angle.dart';
+import 'utils/tilt_bounds_utils.dart';
 import 'widgets/crop_corner_painter.dart';
 import 'widgets/outside_gestures/outside_gesture_behavior.dart';
+import 'widgets/tilt/tilt_ruler_chooser.dart';
 
 export 'enums/crop_mode.enum.dart';
 export 'widgets/crop_aspect_ratio_options.dart';
@@ -342,6 +347,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
   /// The constraints for the rendered image.
   late BoxConstraints _renderedImgConstraints = const BoxConstraints();
 
+  /// The size of the editor body, used to compute how far the content must be
+  /// scaled up to make room for the tilt ruler bar.
+  Size _bodySize = Size.zero;
+
   /// Details of the tap down event for double-tap gestures.
   late TapDownDetails _doubleTapDetails;
 
@@ -396,6 +405,9 @@ class CropRotateEditorState extends State<CropRotateEditor>
             fadeInOpacity: _painterOpacity,
             style: cropRotateEditorConfigs.style,
             drawCircle: cropMode == CropMode.oval,
+            tiltRotate: tiltRotateAngle,
+            tiltHorizontal: tiltHorizontalAngle,
+            tiltVertical: tiltVerticalAngle,
           )
         : null;
   }
@@ -405,8 +417,27 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   bool _isVideoPlayerReady = true;
 
+  /// Whether the tilt (perspective/skew) editor bar is currently visible.
+  bool _isTiltEditorActive = false;
+
+  /// The currently active tilt mode shown in the tilt ruler.
+  TiltMode _tiltMode = TiltMode.rotate;
+
+  /// Counter incremented on every tilt reset, used to give the tilt ruler a
+  /// fresh state via its [ValueKey].
+  int _tiltResetCount = 0;
+
+  /// Whether tilt controls should be offered in this editor.
+  ///
+  /// Perspective tilt uses non-quarter rotations which the native video export
+  /// pipeline can't represent, so the tilt entry point is hidden in the video
+  /// editor regardless of [TiltConfigs.showTiltButton].
+  bool get _enableTilt =>
+      cropRotateEditorConfigs.tiltConfigs.showTiltButton && !isVideoEditor;
+
   /// Defines which crop-rotate tools are available in the editor.
-  late List<CropRotateTool> tools = [...cropRotateEditorConfigs.tools];
+  late List<CropRotateTool> tools = [...cropRotateEditorConfigs.tools]
+    ..removeWhere((tool) => tool == CropRotateTool.tilt && !_enableTilt);
 
   @override
   void initState() {
@@ -484,8 +515,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
       rotationCount = (initialTransformConfigs!.angle * 2 / pi).abs().toInt();
       flipX = initialTransformConfigs!.flipX;
       flipY = initialTransformConfigs!.flipY;
+      tiltRotateAngle = initialTransformConfigs!.tiltRotate;
+      tiltHorizontalAngle = initialTransformConfigs!.tiltHorizontal;
+      tiltVerticalAngle = initialTransformConfigs!.tiltVertical;
       translate = initialTransformConfigs!.offset;
       userScaleFactor = initialTransformConfigs!.scaleUser;
+      manualScaleFactor = initialTransformConfigs!.scaleUser;
       aspectRatio = initialTransformConfigs!.aspectRatio;
       cropRect = initialTransformConfigs!.cropRect;
       _viewRect = initialTransformConfigs!.cropRect;
@@ -1294,121 +1329,69 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   CropAreaPart _determineCropAreaPart(Offset localPosition) {
-    Offset offset =
-        _getRealHitPoint(zoom: userScaleFactor, position: localPosition) +
-        translate * userScaleFactor;
-    double dx = offset.dx;
-    double dy = offset.dy;
-    if (cropMode == CropMode.oval) {
-      double halfWidth = cropRect.width / 2;
-      double halfHeight = cropRect.height / 2;
-      double halfInteractiveCornerArea = _interactiveCornerArea / 2;
-
-      // Normalize against expanded ellipse for hit area
-      double ellipseHitX = dx / (halfWidth + halfInteractiveCornerArea);
-      double ellipseHitY = dy / (halfHeight + halfInteractiveCornerArea);
-      bool isWithinHitArea =
-          (ellipseHitX * ellipseHitX + ellipseHitY * ellipseHitY) <= 1;
-
-      // Normalize against exact ellipse for inside check
-      double normalizedX = dx / (halfWidth - halfInteractiveCornerArea);
-      double normalizedY = dy / (halfHeight - halfInteractiveCornerArea);
-      bool isInsideEllipse =
-          (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
-
-      if (isWithinHitArea) {
-        double cursorAreaHitWidth = halfWidth * 0.5;
-        double cursorAreaHitHeight = halfHeight * 0.5;
-
-        bool nearTopEdge = dy < -cursorAreaHitHeight;
-        bool nearBottomEdge = dy > cursorAreaHitHeight;
-        bool nearLeftEdge = dx < -cursorAreaHitWidth;
-        bool nearRightEdge = dx > cursorAreaHitWidth;
-
-        if (isInsideEllipse) {
-          return CropAreaPart.inside;
-        }
-        // Bottom Left
-        else if (nearBottomEdge && nearLeftEdge) {
-          return CropAreaPart.bottomLeft;
-        }
-        // Bottom Right
-        else if (nearBottomEdge && nearRightEdge) {
-          return CropAreaPart.bottomRight;
-        }
-        // Top Left
-        else if (nearTopEdge && nearLeftEdge) {
-          return CropAreaPart.topLeft;
-        }
-        // Top Right
-        else if (nearTopEdge && nearRightEdge) {
-          return CropAreaPart.topRight;
-        }
-        // Bottom
-        else if (nearBottomEdge) {
-          return CropAreaPart.bottom;
-        }
-        // Top
-        else if (nearTopEdge) {
-          return CropAreaPart.top;
-        }
-        // Left
-        else if (nearLeftEdge) {
-          return CropAreaPart.left;
-        }
-        // Right
-        else if (nearRightEdge) {
-          return CropAreaPart.right;
-        }
-
-        return CropAreaPart.inside;
-      } else {
-        return CropAreaPart.none;
-      }
-    }
-
-    Rect rect = Rect.fromCenter(
-      center: cropRect.center - translate,
-      width: cropRect.width + _interactiveCornerArea,
-      height: cropRect.height + _interactiveCornerArea,
+    return determineCropAreaPart(
+      localPosition: localPosition,
+      translate: translate,
+      interactiveCornerArea: _interactiveCornerArea,
+      userScaleFactor: userScaleFactor,
+      cropRect: cropRect,
+      cropMode: cropMode,
+      renderedImageSize: _renderedImgConstraints.biggest,
     );
+  }
 
-    double halfCropWidth = rect.width / 2;
-    double halfCropHeight = rect.height / 2;
+  /// Updates the perspective/skew tilt value for the given [mode].
+  ///
+  /// - [mode]: The [TiltMode] to update (horizontal, vertical, rotate).
+  /// - [value]: The new tilt value in radians.
+  /// - [updateStateHistory]: If `true`, the change is added to the history.
+  ///
+  /// After updating the angle, `_setOffsetLimits` re-fits the view (auto-zoom
+  /// and pan) so the crop selection can never end up outside the tilted image.
+  /// If even the maximum zoom can't keep the selection covered the angle is
+  /// clamped back to the last valid value, so the tilt smoothly "blocks" at the
+  /// image border instead of revealing empty area.
+  void tilt(TiltMode mode, double value, {bool updateStateHistory = true}) {
+    _tiltMode = mode;
 
-    double left = dx + halfCropWidth;
-    double right = dx - halfCropWidth;
-    double top = dy + halfCropHeight;
-    double bottom = dy - halfCropHeight;
+    final double previousValue = switch (mode) {
+      TiltMode.horizontal => tiltHorizontalAngle,
+      TiltMode.vertical => tiltVerticalAngle,
+      TiltMode.rotate => tiltRotateAngle,
+    };
 
-    bool nearLeftEdge = left.abs() <= _interactiveCornerArea;
-    bool nearRightEdge = right.abs() <= _interactiveCornerArea;
-    bool nearTopEdge = top.abs() <= _interactiveCornerArea;
-    bool nearBottomEdge = bottom.abs() <= _interactiveCornerArea;
-
-    if (rect.contains(localPosition)) {
-      if (nearLeftEdge && nearTopEdge) {
-        return CropAreaPart.topLeft;
-      } else if (nearRightEdge && nearTopEdge) {
-        return CropAreaPart.topRight;
-      } else if (nearLeftEdge && nearBottomEdge) {
-        return CropAreaPart.bottomLeft;
-      } else if (nearRightEdge && nearBottomEdge) {
-        return CropAreaPart.bottomRight;
-      } else if (nearLeftEdge) {
-        return CropAreaPart.left;
-      } else if (nearRightEdge) {
-        return CropAreaPart.right;
-      } else if (nearTopEdge) {
-        return CropAreaPart.top;
-      } else if (nearBottomEdge) {
-        return CropAreaPart.bottom;
-      } else {
-        return CropAreaPart.inside;
+    void applyAngle(double angle) {
+      switch (mode) {
+        case TiltMode.horizontal:
+          tiltHorizontalAngle = angle;
+          break;
+        case TiltMode.vertical:
+          tiltVerticalAngle = angle;
+          break;
+        case TiltMode.rotate:
+          tiltRotateAngle = angle;
+          break;
       }
-    } else {
-      return CropAreaPart.none;
     }
+
+    applyAngle(value);
+
+    // Re-fit the view. When the requested angle would push the selection
+    // outside the image even at [maxScale], revert to the previous angle so the
+    // selection always stays fully covered.
+    final bool fits = _setOffsetLimits();
+    if (!fits && value != previousValue) {
+      applyAngle(previousValue);
+      _setOffsetLimits();
+    }
+
+    if (updateStateHistory) addHistory();
+    cropPainterKey.currentState?.update(
+      foregroundPainter: cropPainter,
+      isComplex: showWidgets,
+      willChange: showWidgets,
+    );
+    setState(() {});
   }
 
   /// Updates the scale factor for the image based on a pinch gesture value.
@@ -1436,6 +1419,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     // Update translation and zoom values
     translate = _startingTranslate - _startingCenterOffset + centerZoomOffset;
     userScaleFactor = newZoom;
+    manualScaleFactor = newZoom;
 
     // Set offset limits and trigger widget rebuild
     _setOffsetLimits();
@@ -1933,6 +1917,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       cropRect = targetCropRect;
       translate = targetOffset;
       userScaleFactor = targetZoom;
+      manualScaleFactor = targetZoom;
 
       _setOffsetLimits();
       calcFitToScreen();
@@ -2013,41 +1998,97 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
 
     userScaleFactor = targetZoom;
+    manualScaleFactor = targetZoom;
     translate = targetOffset;
     _setOffsetLimits();
     addHistory();
     _blockInteraction = false;
   }
 
-  void _setOffsetLimits({Rect? rect}) {
-    Rect r = rect ?? _viewRect;
+  /// Re-fits the view so the crop selection always stays within the (possibly
+  /// perspective-tilted) image.
+  ///
+  /// Returns `true` when the crop selection fits — directly, after panning, or
+  /// after auto-zooming up to [CropRotateEditorConfigs.maxScale]. Returns
+  /// `false` only when even the maximum zoom can't keep the selection covered;
+  /// [tilt] uses this to reject (clamp) the offending tilt change so the
+  /// selection never reveals empty area outside the image.
+  bool _setOffsetLimits({Rect? rect}) {
+    final Rect r = rect ?? _viewRect;
+    final double imgW = _renderedImgConstraints.maxWidth;
+    final double imgH = _renderedImgConstraints.maxHeight;
+    if (imgW == 0 || imgH == 0) return true;
 
-    double cropWidth = r.width;
-    double cropHeight = r.height;
+    final bool isTilted =
+        tiltRotateAngle != 0 ||
+        tiltHorizontalAngle != 0 ||
+        tiltVerticalAngle != 0;
 
-    double minX =
-        (_renderedImgConstraints.maxWidth * userScaleFactor - cropWidth) /
+    if (!isTilted) {
+      // Fast path: axis-aligned clamp (unchanged behavior). Keep the manual
+      // zoom floor in sync so a following tilt zooms relative to it.
+      _clampTranslateAxisAligned(r);
+      manualScaleFactor = userScaleFactor;
+      return true;
+    }
+
+    // Tilted path: keep the crop rect inside the convex, tilted image quad,
+    // auto-zooming (never below the manual zoom) and panning minimally.
+    final fit = fitCropInsideTiltedImage(
+      baseTiltCorners: _baseTiltCorners(),
+      cropSize: r.size,
+      minScale: manualScaleFactor,
+      maxScale: cropRotateEditorConfigs.maxScale,
+      currentTranslate: translate,
+    );
+
+    userScaleFactor = fit.scale;
+    if (fit.fits) translate = fit.translate;
+    return fit.fits;
+  }
+
+  /// Clamps [translate] so an untilted, scaled image still fully covers the
+  /// crop rect [r].
+  void _clampTranslateAxisAligned(Rect r) {
+    final double minX =
+        (_renderedImgConstraints.maxWidth * userScaleFactor - r.width) /
         2 /
         userScaleFactor;
-    double minY =
-        (_renderedImgConstraints.maxHeight * userScaleFactor - cropHeight) /
+    final double minY =
+        (_renderedImgConstraints.maxHeight * userScaleFactor - r.height) /
         2 /
         userScaleFactor;
 
-    Offset offset = translate;
+    final Offset offset = translate;
+    if (offset.dx > minX) translate = Offset(minX, translate.dy);
+    if (offset.dx < -minX) translate = Offset(-minX, translate.dy);
+    if (offset.dy > minY) translate = Offset(translate.dx, minY);
+    if (offset.dy < -minY) translate = Offset(translate.dx, -minY);
+  }
 
-    if (offset.dx > minX) {
-      translate = Offset(minX, translate.dy);
-    }
-    if (offset.dx < -minX) {
-      translate = Offset(-minX, translate.dy);
-    }
-    if (offset.dy > minY) {
-      translate = Offset(translate.dx, minY);
-    }
-    if (offset.dy < -minY) {
-      translate = Offset(translate.dx, -minY);
-    }
+  /// Returns the four image corners after applying *only* the current tilt
+  /// (relative to the screen center, at scale `1`, no translation).
+  ///
+  /// These mirror the tilt transform applied to the live preview and the
+  /// exported render, so the bounds math operates on exactly what the user
+  /// sees.
+  List<Offset> _baseTiltCorners() {
+    final double imgW = _renderedImgConstraints.maxWidth;
+    final double imgH = _renderedImgConstraints.maxHeight;
+    final Offset center = Offset(imgW / 2, imgH / 2);
+    final Matrix4 tiltMatrix = Matrix4.identity().tilt(
+      rotate: tiltRotateAngle,
+      vertical: tiltVerticalAngle,
+      horizontal: tiltHorizontalAngle,
+    );
+    Offset corner(Offset p) =>
+        MatrixUtils.transformPoint(tiltMatrix, p - center);
+    return [
+      corner(const Offset(0, 0)),
+      corner(Offset(imgW, 0)),
+      corner(Offset(imgW, imgH)),
+      corner(Offset(0, imgH)),
+    ];
   }
 
   void _mouseScroll(PointerSignalEvent event) async {
@@ -2086,6 +2127,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
       // Update translation and zoom values
       translate -= centerOffset - centerZoomOffset;
       userScaleFactor = newZoom;
+      manualScaleFactor = newZoom;
 
       // Set offset limits and trigger widget rebuild
       _setOffsetLimits();
@@ -2225,69 +2267,93 @@ class CropRotateEditorState extends State<CropRotateEditor>
   }
 
   Offset _getRealHitPoint({required double zoom, required Offset position}) {
-    double imgW = _renderedImgConstraints.maxWidth;
-    double imgH = _renderedImgConstraints.maxHeight;
-
-    // Calculate the transformed local position of the pointer
-    Offset transformedLocalPosition = position * zoom;
-    // Calculate the size of the transformed image
-    Size transformedImgSize = Size(imgW, imgH) * zoom;
-
-    // Calculate the center offset point from the old zoomed view
-    return Offset(
-      transformedLocalPosition.dx - transformedImgSize.width / 2,
-      transformedLocalPosition.dy - transformedImgSize.height / 2,
+    return convertCropHitPoint(
+      zoom: zoom,
+      position: position,
+      renderedImageSize: _renderedImgConstraints.biggest,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      key: _editorContentKey,
-      top: cropRotateEditorConfigs.safeArea.top,
-      bottom: cropRotateEditorConfigs.safeArea.bottom,
-      left: cropRotateEditorConfigs.safeArea.left,
-      right: cropRotateEditorConfigs.safeArea.right,
-      child: RecordInvisibleWidget(
-        controller: screenshotCtrl,
-        child: ExtendedPopScope(
-          canPop: cropRotateEditorConfigs.enableGesturePop,
-          onPopInvokedWithResult: (didPop, _) {
-            _showFakeHero = true;
-            _updateAllStates();
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return AnnotatedRegion<SystemUiOverlayStyle>(
-                value: cropRotateEditorConfigs.style.uiOverlayStyle,
-                child: Theme(
-                  data: theme.copyWith(
-                    tooltipTheme: theme.tooltipTheme.copyWith(
-                      preferBelow: true,
-                    ),
-                  ),
-                  child: MediaQuery.removePadding(
-                    context: context,
-                    removeBottom: !cropRotateEditorConfigs.safeArea.bottom,
-                    child: Scaffold(
-                      resizeToAvoidBottomInset: false,
-                      backgroundColor: cropRotateEditorConfigs.style.background,
-                      appBar: _buildAppBar(constraints),
-                      body: Center(
-                        child: SizedBox(
-                          width:
-                              constraints.maxWidth *
-                              (cropRotateEditorConfigs.maxWidthFactor ??
-                                  (!kIsWeb && Platform.isAndroid ? 0.9 : 1)),
-                          child: _buildBody(),
-                        ),
-                      ),
-                      bottomNavigationBar: _buildBottomAppBar(),
-                    ),
-                  ),
-                ),
-              );
+    return TiltProvider(
+      onTiltChangeUpdate: (mode, val) =>
+          tilt(mode, val, updateStateHistory: false),
+      onTiltChangeEnd: tilt,
+      onToggleTiltBar: (isVisible) => setState(() {
+        _isTiltEditorActive = isVisible;
+      }),
+      onUpdateResetCount: () {
+        _tiltResetCount++;
+        setState(() {});
+      },
+      tiltResetCount: _tiltResetCount,
+      tiltHorizontal: tiltHorizontalAngle,
+      tiltVertical: tiltVerticalAngle,
+      tiltRotate: tiltRotateAngle,
+      cropRotateConfigs: cropRotateEditorConfigs,
+      i18n: i18n.cropRotateEditor,
+      isTiltEditorVisible: _isTiltEditorActive,
+      tiltMode: _tiltMode,
+      child: SafeArea(
+        key: _editorContentKey,
+        top: cropRotateEditorConfigs.safeArea.top,
+        bottom: cropRotateEditorConfigs.safeArea.bottom,
+        left: cropRotateEditorConfigs.safeArea.left,
+        right: cropRotateEditorConfigs.safeArea.right,
+        child: RecordInvisibleWidget(
+          controller: screenshotCtrl,
+          child: ExtendedPopScope(
+            canPop: cropRotateEditorConfigs.enableGesturePop,
+            onPopInvokedWithResult: (didPop, _) {
+              _showFakeHero = true;
+              _updateAllStates();
             },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                _bodySize = constraints.biggest;
+                return AnnotatedRegion<SystemUiOverlayStyle>(
+                  value: cropRotateEditorConfigs.style.uiOverlayStyle,
+                  child: Theme(
+                    data: theme.copyWith(
+                      tooltipTheme: theme.tooltipTheme.copyWith(
+                        preferBelow: true,
+                      ),
+                    ),
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeBottom: !cropRotateEditorConfigs.safeArea.bottom,
+                      child: Scaffold(
+                        resizeToAvoidBottomInset: false,
+                        backgroundColor:
+                            cropRotateEditorConfigs.style.background,
+                        appBar: _buildAppBar(constraints),
+                        body: Stack(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                width:
+                                    constraints.maxWidth *
+                                    (cropRotateEditorConfigs.maxWidthFactor ??
+                                        (!kIsWeb && Platform.isAndroid
+                                            ? 0.9
+                                            : 1)),
+                                child: _buildBody(),
+                              ),
+                            ),
+                            const Align(
+                              alignment: Alignment.bottomCenter,
+                              child: TiltRulerChooser(),
+                            ),
+                          ],
+                        ),
+                        bottomNavigationBar: _buildBottomAppBar(),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -2338,71 +2404,76 @@ class CropRotateEditorState extends State<CropRotateEditor>
             onFlip: flip,
             onOpenAspectRatioOptions: openAspectRatioOptions,
             onReset: reset,
+            onTilt: () => setState(() => _isTiltEditorActive = true),
           )
         : null;
   }
 
   Widget _buildBody() {
-    return SafeArea(
-      child: ScreenResizeDetector(
-        ignoreSafeArea: false,
-        onResizeUpdate: (event) {
-          if (event.oldContentSize != event.newContentSize &&
-              !event.oldContentSize.isEmpty) {
-            _isScreenResized = true;
-          }
+    return _buildTiltBarScaleHelper(
+      child: SafeArea(
+        child: ScreenResizeDetector(
+          ignoreSafeArea: false,
+          onResizeUpdate: (event) {
+            if (event.oldContentSize != event.newContentSize &&
+                !event.oldContentSize.isEmpty) {
+              _isScreenResized = true;
+            }
 
-          if (editorBodySize != event.newContentSize) {
-            editorBodySize = event.newContentSize;
-            cropPainterKey.currentState?.setForegroundPainter(cropPainter);
-          }
-          cropEditorScreenRatio = Size(
-            editorBodySize.width - _screenPadding * 2,
-            editorBodySize.height - _screenPadding * 2,
-          ).aspectRatio;
-        },
-        onResizeEnd: (event) {
-          if (_imageNeedDecode) _decodeImage();
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            _setCropRectBounding();
-            _updateAllStates();
-          });
-        },
-        child: Stack(
-          children: [
-            if (_showFakeHero)
-              _buildFakeHero()
-            else if (!_imageSizeIsDecoded && initConfigs.convertToUint8List)
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: FittedBox(
-                    child: PlatformCircularProgressIndicator(configs: configs),
+            if (editorBodySize != event.newContentSize) {
+              editorBodySize = event.newContentSize;
+              cropPainterKey.currentState?.setForegroundPainter(cropPainter);
+            }
+            cropEditorScreenRatio = Size(
+              editorBodySize.width - _screenPadding * 2,
+              editorBodySize.height - _screenPadding * 2,
+            ).aspectRatio;
+          },
+          onResizeEnd: (event) {
+            if (_imageNeedDecode) _decodeImage();
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              _setCropRectBounding();
+              _updateAllStates();
+            });
+          },
+          child: Stack(
+            children: [
+              if (_showFakeHero)
+                _buildFakeHero()
+              else if (!_imageSizeIsDecoded && initConfigs.convertToUint8List)
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: FittedBox(
+                      child: PlatformCircularProgressIndicator(
+                        configs: configs,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            AnimatedOpacity(
-              duration: !initConfigs.convertToUint8List
-                  ? Duration.zero
-                  : const Duration(milliseconds: 160),
-              opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
-              child: HeroMode(
-                enabled: false,
-                child: _buildMouseCursor(
-                  child: DeferredPointerHandler(
-                    child: _buildRotationTransform(
-                      child: _buildFlipTransform(
-                        child: _buildRotationScaleTransform(
-                          child: _buildPaintContainer(
-                            child: _buildCropPainter(
-                              child: _buildUserScaleTransform(
-                                child: _buildTranslate(
-                                  child: DeferPointer(
-                                    child: _buildEventListener(
-                                      child: _buildGestureDetector(
-                                        child: _buildImage(),
+              AnimatedOpacity(
+                duration: !initConfigs.convertToUint8List
+                    ? Duration.zero
+                    : const Duration(milliseconds: 160),
+                opacity: _showFakeHero || !_imageSizeIsDecoded ? 0 : 1,
+                child: HeroMode(
+                  enabled: false,
+                  child: _buildMouseCursor(
+                    child: DeferredPointerHandler(
+                      child: _buildRotationTransform(
+                        child: _buildFlipTransform(
+                          child: _buildRotationScaleTransform(
+                            child: _buildPaintContainer(
+                              child: _buildCropPainter(
+                                child: _buildUserScaleTransform(
+                                  child: _buildTranslate(
+                                    child: DeferPointer(
+                                      child: _buildEventListener(
+                                        child: _buildGestureDetector(
+                                          child: _buildImage(),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2416,13 +2487,13 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   ),
                 ),
               ),
-            ),
-            if (cropRotateEditorConfigs.widgets.bodyItems != null)
-              ...cropRotateEditorConfigs.widgets.bodyItems!(
-                this,
-                rebuildController.stream,
-              ),
-          ],
+              if (cropRotateEditorConfigs.widgets.bodyItems != null)
+                ...cropRotateEditorConfigs.widgets.bodyItems!(
+                  this,
+                  rebuildController.stream,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -2528,6 +2599,50 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
   }
 
+  /// Applies the perspective/skew tilt to the live editor preview.
+  ///
+  /// Mirrors the tilt applied by [TransformedContentGenerator] (and used by the
+  /// bounds math in [_setOffsetLimits]) so the preview, the exported render and
+  /// the auto-zoom limits all agree.
+  Widget _buildTiltTransform({required Widget child}) {
+    if (tiltRotateAngle == 0 &&
+        tiltVerticalAngle == 0 &&
+        tiltHorizontalAngle == 0) {
+      return child;
+    }
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity().tilt(
+        rotate: tiltRotateAngle,
+        horizontal: tiltHorizontalAngle,
+        vertical: tiltVerticalAngle,
+      ),
+      child: child,
+    );
+  }
+
+  /// Scales the editor body up slightly so the bottom strip stays free for the
+  /// tilt ruler bar while it is visible.
+  Widget _buildTiltBarScaleHelper({required Widget child}) {
+    final double barHeight = cropRotateEditorConfigs.style.tiltStyle.barHeight;
+
+    final double factor = _isTiltEditorActive && _bodySize.height > barHeight
+        ? (_bodySize.height - barHeight) / _bodySize.height
+        : 1.0;
+
+    return TweenAnimationBuilder<double>(
+      duration: cropRotateEditorConfigs.animationDuration,
+      tween: Tween<double>(begin: 1.0, end: factor),
+      curve: cropRotateEditorConfigs.scaleAnimationCurve,
+      builder: (_, scale, child) => Transform.scale(
+        alignment: Alignment.topCenter,
+        scale: scale,
+        child: child,
+      ),
+      child: child,
+    );
+  }
+
   Widget _buildTranslate({required Widget child}) {
     return ExtendedTransformTranslate(
       key: translateKey,
@@ -2579,42 +2694,44 @@ class CropRotateEditorState extends State<CropRotateEditor>
         builder: (context, constraints) {
           _renderedImgConstraints = constraints;
           originalSize = constraints.biggest;
-          return Stack(
-            fit: StackFit.expand,
-            alignment: Alignment.center,
-            children: [
-              FilteredWidget(
-                filters: appliedFilters,
-                tuneAdjustments: appliedTuneAdjustments,
-                blurFactor: appliedBlurFactor,
-                configs: configs,
-                width: _imgWidth,
-                height: _imgHeight,
-                image: editorImage,
-                videoPlayer: videoController?.videoPlayer,
-                blankSize: initConfigs.mainImageSize,
-              ),
-              if (cropRotateEditorConfigs.showLayers &&
-                  cropRotateEditorConfigs.enableTransformLayers &&
-                  layers != null &&
-                  !_isScreenResized)
-                ClipRRect(
-                  clipBehavior: Clip.hardEdge,
-                  child: LayerStack(
-                    cutOutsideImageArea: false,
-                    transformHelper: TransformHelper(
-                      /// set size to zero that no scale factor will be applied
-                      mainBodySize: Size.zero,
-                      mainImageSize: Size.zero,
-                      editorBodySize: originalSize,
-                    ),
-                    configs: configs,
-                    layers: _rawLayers,
-                    clipBehavior: Clip.none,
-                    overlayColor: cropRotateEditorConfigs.style.background,
-                  ),
+          return _buildTiltTransform(
+            child: Stack(
+              fit: StackFit.expand,
+              alignment: Alignment.center,
+              children: [
+                FilteredWidget(
+                  filters: appliedFilters,
+                  tuneAdjustments: appliedTuneAdjustments,
+                  blurFactor: appliedBlurFactor,
+                  configs: configs,
+                  width: _imgWidth,
+                  height: _imgHeight,
+                  image: editorImage,
+                  videoPlayer: videoController?.videoPlayer,
+                  blankSize: initConfigs.mainImageSize,
                 ),
-            ],
+                if (cropRotateEditorConfigs.showLayers &&
+                    cropRotateEditorConfigs.enableTransformLayers &&
+                    layers != null &&
+                    !_isScreenResized)
+                  ClipRRect(
+                    clipBehavior: Clip.hardEdge,
+                    child: LayerStack(
+                      cutOutsideImageArea: false,
+                      transformHelper: TransformHelper(
+                        // set size to zero so no scale factor is applied
+                        mainBodySize: Size.zero,
+                        mainImageSize: Size.zero,
+                        editorBodySize: originalSize,
+                      ),
+                      configs: configs,
+                      layers: _rawLayers,
+                      clipBehavior: Clip.none,
+                      overlayColor: cropRotateEditorConfigs.style.background,
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),

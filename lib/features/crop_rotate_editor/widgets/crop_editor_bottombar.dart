@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/widgets/editor_scrollbar.dart';
 import '/shared/widgets/flat_icon_text_button.dart';
+import '../providers/tilt_provider.dart';
+import 'tilt/tilt_item_row.dart';
 
 /// A widget representing the bottom bar for the crop editor, providing
 /// options like rotate, flip, aspect ratio, and reset.
@@ -32,6 +34,7 @@ class CropEditorBottombar extends StatelessWidget {
     required this.onFlip,
     required this.onOpenAspectRatioOptions,
     required this.onReset,
+    this.onTilt,
   });
 
   /// Controls the scroll behavior of the bottom bar.
@@ -61,6 +64,9 @@ class CropEditorBottombar extends StatelessWidget {
   /// Callback for resetting the editor.
   final Function() onReset;
 
+  /// Callback for opening the tilt (perspective/skew) editor.
+  final Function()? onTilt;
+
   _ToolItem _getItem(CropRotateTool tool) {
     switch (tool) {
       case CropRotateTool.rotate:
@@ -76,6 +82,13 @@ class CropEditorBottombar extends StatelessWidget {
           label: i18n.flip,
           icon: configs.icons.flip,
           onTap: onFlip,
+        );
+      case CropRotateTool.tilt:
+        return _ToolItem(
+          key: const ValueKey('crop-rotate-editor-tilt-btn'),
+          label: i18n.tilt,
+          icon: configs.icons.tilt,
+          onTap: onTilt ?? () {},
         );
       case CropRotateTool.aspectRatio:
         return _ToolItem(
@@ -96,6 +109,8 @@ class CropEditorBottombar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool showTiltRow =
+        TiltProvider.maybeOf(context)?.isTiltEditorVisible ?? false;
     return Theme(
       data: theme,
       child: EditorScrollbar(
@@ -113,13 +128,15 @@ class CropEditorBottombar extends StatelessWidget {
                   minWidth: min(MediaQuery.sizeOf(context).width, 500),
                   maxWidth: 500,
                 ),
-                child: Wrap(
-                  direction: Axis.horizontal,
-                  alignment: WrapAlignment.spaceAround,
-                  children: tools
-                      .map((tool) => _buildTool(_getItem(tool)))
-                      .toList(),
-                ),
+                child: showTiltRow
+                    ? const TiltItemRow()
+                    : Wrap(
+                        direction: Axis.horizontal,
+                        alignment: WrapAlignment.spaceAround,
+                        children: tools
+                            .map((tool) => _buildTool(_getItem(tool)))
+                            .toList(),
+                      ),
               ),
             ),
           ),

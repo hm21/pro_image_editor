@@ -90,10 +90,13 @@ mixin CropAreaHistory
 
   double _userScaleFactor = 1;
 
-  /// The current scale factor applied by the user.
+  /// The current *effective* scale factor applied to the view.
   ///
-  /// This property tracks the scaling transformation applied by the user,
-  /// allowing for dynamic resizing of the image.
+  /// This is the value that is actually rendered and stored in the history. It
+  /// equals the maximum of [manualScaleFactor] and the tilt-induced minimum
+  /// zoom calculated in `_setOffsetLimits`, so a perspective tilt can zoom the
+  /// image in to keep the crop selection covered, while straightening it again
+  /// zooms back out to (but never below) the user's manual zoom.
   @protected
   double get userScaleFactor => _userScaleFactor;
 
@@ -107,6 +110,20 @@ mixin CropAreaHistory
       willChange: showWidgets,
     );
   }
+
+  double _manualScaleFactor = 1;
+
+  /// The zoom factor explicitly chosen by the user via gestures (pinch,
+  /// mouse-scroll, double-tap).
+  ///
+  /// The effective [userScaleFactor] never drops below this value. The tilt
+  /// auto-zoom only ever raises the effective zoom above this floor, so when
+  /// the user straightens the image the view returns to their manual zoom.
+  @protected
+  double get manualScaleFactor => _manualScaleFactor;
+
+  @protected
+  set manualScaleFactor(double value) => _manualScaleFactor = value;
 
   Offset _translate = const Offset(0, 0);
 
@@ -190,6 +207,18 @@ mixin CropAreaHistory
   /// cropping, and is used to manage crop boundaries.
   @protected
   Rect get cropRect => _cropRect;
+
+  /// The current tilt rotation in radians around the Z axis.
+  @protected
+  double tiltRotateAngle = 0.0;
+
+  /// The current tilt in radians around the Y axis (left/right).
+  @protected
+  double tiltHorizontalAngle = 0.0;
+
+  /// The current tilt in radians around the X axis (up/down).
+  @protected
+  double tiltVerticalAngle = 0.0;
 
   set cropRect(Rect value) {
     _cropRect = value;
@@ -297,6 +326,9 @@ mixin CropAreaHistory
         flipY: flipY,
         offset: translate,
         cropMode: cropMode,
+        tiltRotate: tiltRotateAngle,
+        tiltHorizontal: tiltHorizontalAngle,
+        tiltVertical: tiltVerticalAngle,
       ),
     );
     screenshotHistoryPosition++;
@@ -359,8 +391,12 @@ mixin CropAreaHistory
   void _setParametersFromHistory() {
     flipX = activeHistory.flipX;
     flipY = activeHistory.flipY;
+    tiltRotateAngle = activeHistory.tiltRotate;
+    tiltHorizontalAngle = activeHistory.tiltHorizontal;
+    tiltVerticalAngle = activeHistory.tiltVertical;
     translate = activeHistory.offset;
     userScaleFactor = activeHistory.scaleUser;
+    manualScaleFactor = activeHistory.scaleUser;
     cropRect = activeHistory.cropRect;
     aspectRatio = activeHistory.aspectRatio < 0
         ? cropRect.size.aspectRatio
@@ -409,6 +445,9 @@ mixin CropAreaHistory
     initialized = false;
     flipX = false;
     flipY = false;
+    tiltRotateAngle = 0;
+    tiltHorizontalAngle = 0;
+    tiltVerticalAngle = 0;
     translate = Offset.zero;
     setCropMode(cropRotateEditorConfigs.initialCropMode, updateHistory: false);
     int rCount = rotationCount % 4;
@@ -431,6 +470,7 @@ mixin CropAreaHistory
     oldScaleFactor = 1;
 
     userScaleFactor = 1;
+    manualScaleFactor = 1;
     aspectRatio =
         cropRotateEditorConfigs.initAspectRatio ?? CropAspectRatios.custom;
 
