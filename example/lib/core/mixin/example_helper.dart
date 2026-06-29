@@ -95,7 +95,10 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
     ui.Image? rawOriginalImage,
     final ImageGenerationConfigs? generationConfigs,
   }) async {
-    if (editorMode != EditorMode.main) return Navigator.pop(context);
+    if (editorMode != EditorMode.main) {
+      if (Navigator.canPop(context)) Navigator.pop(context);
+      return;
+    }
 
     if (editedBytes != null) {
       // Pre-cache the edited image to improve display performance.
@@ -125,7 +128,7 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
       });
     }
 
-    if (mounted && enablePop) {
+    if (mounted && enablePop && Navigator.canPop(context)) {
       Navigator.pop(context);
     }
   }
