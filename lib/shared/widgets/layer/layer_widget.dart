@@ -353,6 +353,7 @@ class _LayerWidgetState extends State<LayerWidget>
         configs: configs.videoEditor.layerTimeline,
         canvasSize: widget.editorBodySize,
         layerCenter: Offset(offsetX, offsetY),
+        layerFractionalOffset: _fractionalOffset,
         child: content,
       );
     }

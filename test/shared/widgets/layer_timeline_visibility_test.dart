@@ -14,6 +14,7 @@ void main() {
     Layer layer, {
     Size canvas = canvasSize,
     Offset center = layerCenter,
+    Offset fractionalOffset = const Offset(-0.5, -0.5),
   }) async {
     // Start before any layer's time range so the first seek registers as a
     // real change on the [ValueNotifier].
@@ -30,6 +31,7 @@ void main() {
             configs: const LayerTimelineConfigs(),
             canvasSize: canvas,
             layerCenter: center,
+            layerFractionalOffset: fractionalOffset,
             child: const SizedBox(key: childKey, width: 100, height: 50),
           ),
         ),
@@ -234,6 +236,10 @@ void main() {
       return transform.storage[0];
     }
 
+    AlignmentGeometry? scaleAlignment(WidgetTester tester) {
+      return tester.widget<Transform>(find.byType(Transform)).alignment;
+    }
+
     testWidgets('scales from scaleFrom up to 1', (tester) async {
       final notifier = await pumpVisibility(tester, layer);
 
@@ -245,6 +251,30 @@ void main() {
 
       await seek(tester, notifier, const Duration(seconds: 5));
       expect(find.byType(Transform), findsNothing);
+    });
+
+    testWidgets('anchors scale on the layer visual center, not the box '
+        'center', (tester) async {
+      // Default fractional offset (-0.5, -0.5) paints the layer's visual
+      // center at the box top-left, so scaling must anchor there. Otherwise a
+      // combined slide + scale drifts diagonally instead of entering straight.
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, Duration.zero);
+      expect(scaleAlignment(tester), Alignment.topLeft);
+    });
+
+    testWidgets('anchors scale on the box center for a centered offset', (
+      tester,
+    ) async {
+      // A fractional offset of (0, 0) leaves the visual center at the box
+      // center, so scaling anchors there.
+      final notifier = await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: Offset.zero,
+      );
+      await seek(tester, notifier, Duration.zero);
+      expect(scaleAlignment(tester), Alignment.center);
     });
   });
 

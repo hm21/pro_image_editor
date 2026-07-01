@@ -25,7 +25,10 @@ import '/shared/utils/timeline_progress.dart';
 /// express. The slide effect is edge-aware: using [canvasSize] and
 /// [layerCenter] it pushes the layer just past the nearest canvas edge (rather
 /// than by its own size), so even an off-center layer leaves the visible area
-/// completely. When [Layer.animations] is empty, the legacy fade convenience
+/// completely. The scale effect is anchored on the layer's visual center (via
+/// [layerFractionalOffset]) so that a combined slide + scale enters straight
+/// instead of drifting diagonally. When [Layer.animations] is empty, the
+/// legacy fade convenience
 /// driven by [Layer.enterDuration] / [Layer.exitDuration] and the
 /// [LayerTimelineConfigs.transitionBuilder] is used instead.
 class LayerTimelineVisibility extends StatefulWidget {
@@ -37,6 +40,7 @@ class LayerTimelineVisibility extends StatefulWidget {
     required this.configs,
     required this.canvasSize,
     required this.layerCenter,
+    required this.layerFractionalOffset,
     required this.child,
   });
 
@@ -60,6 +64,16 @@ class LayerTimelineVisibility extends StatefulWidget {
   /// Combined with [canvasSize] this lets the slide animation translate the
   /// layer just far enough for its edge to leave (or enter from) the canvas.
   final Offset layerCenter;
+
+  /// The fractional offset used to position the layer content within its
+  /// layout box (typically `Offset(-0.5, -0.5)`, centering the content).
+  ///
+  /// The [child] paints its visible content shifted by this fraction, so the
+  /// layer's visual center is *not* the layout box center. The scale animation
+  /// uses this to anchor scaling on the visual center; otherwise scaling would
+  /// pull the layer toward the box center (down-right for the default offset),
+  /// making a combined slide + scale drift in diagonally instead of straight.
+  final Offset layerFractionalOffset;
 
   /// The layer widget to show/hide.
   final Widget child;
@@ -264,7 +278,17 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
 
     Widget result = child;
     if (frame.scale != 1.0) {
-      result = Transform.scale(scale: frame.scale, child: result);
+      // Anchor scaling on the layer's visual center rather than the layout
+      // box center. The child paints its content shifted by
+      // [layerFractionalOffset], so a fraction of (0.5 + fo) maps to
+      // Alignment(2 * fo). Without this the scale would drag the layer toward
+      // the box center as it shrinks.
+      final fo = widget.layerFractionalOffset;
+      result = Transform.scale(
+        scale: frame.scale,
+        alignment: Alignment(2 * fo.dx, 2 * fo.dy),
+        child: result,
+      );
     }
     // The fractional part must wrap the already-scaled child so the ±0.5
     // fraction applies to the layer's displayed (scaled) size; the absolute

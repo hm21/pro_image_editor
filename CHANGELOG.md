@@ -1,5 +1,8 @@
 # Changelog
 
+## 12.11.1
+- **FIX**(layers): Anchor the video-timeline `scale` layer animation on the layer's visual center. Combining `scale` with a `slide` (e.g. slide-in from the top) previously drifted the layer in diagonally instead of straight, because scaling used the layout-box center while the layer content is painted off-center.
+
 ## 12.11.0
 - **FEAT**(crop-rotate): Add perspective tilt/skew (#525). New `CropRotateTool.tilt` with rotate/horizontal/vertical rulers (`TiltConfigs`); the crop stays inside the tilted image via auto-zoom, and tilt is hidden in the video editor by default.
 
