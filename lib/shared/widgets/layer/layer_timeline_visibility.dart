@@ -40,7 +40,7 @@ class LayerTimelineVisibility extends StatefulWidget {
     required this.configs,
     required this.canvasSize,
     required this.layerCenter,
-    required this.layerFractionalOffset,
+    this.layerFractionalOffset = const Offset(-0.5, -0.5),
     required this.child,
   });
 
@@ -66,7 +66,7 @@ class LayerTimelineVisibility extends StatefulWidget {
   final Offset layerCenter;
 
   /// The fractional offset used to position the layer content within its
-  /// layout box (typically `Offset(-0.5, -0.5)`, centering the content).
+  /// layout box (defaults to `Offset(-0.5, -0.5)`, centering the content).
   ///
   /// The [child] paints its visible content shifted by this fraction, so the
   /// layer's visual center is *not* the layout box center. The scale animation
@@ -290,9 +290,11 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         child: result,
       );
     }
-    // The fractional part must wrap the already-scaled child so the ±0.5
-    // fraction applies to the layer's displayed (scaled) size; the absolute
-    // part is a plain pixel translation on top.
+    // The fractional part is applied outside the scale, so it translates by a
+    // fraction of the layer's base (unscaled) size. This mirrors the native
+    // renderer, which derives the slide from the unscaled layer half-size
+    // (`halfNormW`/`halfNormH` in ApplyAnimation) and applies scale
+    // independently. The absolute part is a plain pixel translation on top.
     if (frame.slideFractional != Offset.zero) {
       result = FractionalTranslation(
         translation: frame.slideFractional,
