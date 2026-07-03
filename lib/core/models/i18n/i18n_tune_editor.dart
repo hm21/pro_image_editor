@@ -15,9 +15,8 @@ class I18nTuneEditor {
     this.exposure = 'Exposure',
     this.hue = 'Hue',
     this.temperature = 'Temperature',
-    this.sharpness = 'Sharpness',
     this.fade = 'Fade',
-    this.luminance = 'Luminance',
+    this.tint = 'Tint',
     this.undo = 'Undo',
     this.redo = 'Redo',
   });
@@ -55,14 +54,11 @@ class I18nTuneEditor {
   /// Text for the "Temperature" adjustment control.
   final String temperature;
 
-  /// Text for the "Sharpness" adjustment control.
-  final String sharpness;
-
   /// Text for the "Fade" adjustment control.
   final String fade;
 
-  /// Text for the "Luminance" adjustment control.
-  final String luminance;
+  /// Text for the "Tint" (green–magenta) adjustment control.
+  final String tint;
 
   /// Creates a copy of this [I18nTuneEditor] object with the given fields
   /// replaced with new values.
@@ -76,8 +72,8 @@ class I18nTuneEditor {
   /// - [back] updates the text for the "Back" button.
   /// - [done] updates the text for the "Done" button.
   /// - [brightness], [contrast], [saturation], [exposure], [hue],
-  ///   [temperature], [sharpness],
-  ///   [fade], and [luminance] update the corresponding tune adjustment labels.
+  ///   [temperature],
+  ///   [fade], and [tint] update the corresponding tune adjustment labels.
   /// - [undo] updates the text for the "Undo" button.
   /// - [redo] updates the text for the "Redo" button.
   I18nTuneEditor copyWith({
@@ -92,9 +88,8 @@ class I18nTuneEditor {
     String? exposure,
     String? hue,
     String? temperature,
-    String? sharpness,
     String? fade,
-    String? luminance,
+    String? tint,
   }) {
     return I18nTuneEditor(
       bottomNavigationBarText:
@@ -109,9 +104,8 @@ class I18nTuneEditor {
       exposure: exposure ?? this.exposure,
       hue: hue ?? this.hue,
       temperature: temperature ?? this.temperature,
-      sharpness: sharpness ?? this.sharpness,
       fade: fade ?? this.fade,
-      luminance: luminance ?? this.luminance,
+      tint: tint ?? this.tint,
     );
   }
 }

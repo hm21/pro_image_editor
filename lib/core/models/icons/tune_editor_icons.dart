@@ -19,9 +19,8 @@ class TuneEditorIcons {
     this.exposure = Icons.exposure,
     this.hue = Icons.color_lens_outlined,
     this.temperature = Icons.thermostat_outlined,
-    this.sharpness = Icons.shutter_speed,
     this.fade = Icons.blur_off_outlined,
-    this.luminance = Icons.light_mode_outlined,
+    this.tint = Icons.tonality_outlined,
     this.applyChanges = Icons.done,
     this.backButton = Icons.arrow_back,
     this.undoAction = Icons.undo,
@@ -49,14 +48,11 @@ class TuneEditorIcons {
   /// Icon for the "Temperature" adjustment control.
   final IconData temperature;
 
-  /// Icon for the "Sharpness" adjustment control.
-  final IconData sharpness;
-
   /// Icon for the "Fade" adjustment control.
   final IconData fade;
 
-  /// Icon for the "Luminance" adjustment control.
-  final IconData luminance;
+  /// Icon for the "Tint" (green–magenta) adjustment control.
+  final IconData tint;
 
   /// The icon for the back button.
   final IconData backButton;
@@ -79,8 +75,8 @@ class TuneEditorIcons {
   ///
   /// - [bottomNavBar] updates the icon for the bottom navigation bar item.
   /// - [brightness], [contrast], [saturation], [exposure], [hue],
-  ///   [temperature], [sharpness],
-  ///   [fade], and [luminance] update the icons for the respective tune
+  ///   [temperature],
+  ///   [fade], and [tint] update the icons for the respective tune
   ///   adjustment controls.
   TuneEditorIcons copyWith({
     IconData? bottomNavBar,
@@ -90,9 +86,8 @@ class TuneEditorIcons {
     IconData? exposure,
     IconData? hue,
     IconData? temperature,
-    IconData? sharpness,
     IconData? fade,
-    IconData? luminance,
+    IconData? tint,
     IconData? backButton,
     IconData? undoAction,
     IconData? redoAction,
@@ -106,9 +101,8 @@ class TuneEditorIcons {
       exposure: exposure ?? this.exposure,
       hue: hue ?? this.hue,
       temperature: temperature ?? this.temperature,
-      sharpness: sharpness ?? this.sharpness,
       fade: fade ?? this.fade,
-      luminance: luminance ?? this.luminance,
+      tint: tint ?? this.tint,
       backButton: backButton ?? this.backButton,
       undoAction: undoAction ?? this.undoAction,
       redoAction: redoAction ?? this.redoAction,

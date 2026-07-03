@@ -22,22 +22,25 @@ class ColorFilterAddons {
   ///   full overlay.
   static List<double> colorOverlay(double r, double g, double b, double scale) {
     double invScale = 1 - scale;
+    // Blend each channel towards the overlay color: out = (1 - scale) * in +
+    // scale * color. The offset must be added, not subtracted, otherwise the
+    // image is tinted towards the complementary color instead of [r, g, b].
     return [
       invScale,
       0,
       0,
       0,
-      -r * scale,
+      r * scale,
       0,
       invScale,
       0,
       0,
-      -g * scale,
+      g * scale,
       0,
       0,
       invScale,
       0,
-      -b * scale,
+      b * scale,
       0,
       0,
       0,
@@ -279,7 +282,8 @@ class ColorFilterAddons {
       return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
     }
 
-    // Convert value from [0, 1] range to radians (full rotation is 2π)
+    // Convert value to radians. Note this maps value == 1 to π (a 180°
+    // rotation), so a full 360° rotation corresponds to value == 2.
     value *= pi;
 
     double cosVal = cos(value); // Cosine of the angle
@@ -377,126 +381,55 @@ class ColorFilterAddons {
     ];
   }
 
-  /// Generates a sharpness adjustment filter matrix.
-  ///
-  /// This method returns a color matrix that adjusts the sharpness of an image
-  /// by blending a high-contrast version of the image with the original.
-  ///
-  /// Parameters:
-  /// - [value]: The sharpness adjustment factor, where positive values increase
-  ///   sharpness and negative values decrease sharpness.
-  static List<double> sharpness(double value) {
-    // This sharpness adjustment works similarly to contrast but blends with
-    //the original image.
-    double factor = 1 + value * 2;
-    return [
-      factor,
-      0,
-      0,
-      0,
-      -(factor - 1) * 128,
-      0,
-      factor,
-      0,
-      0,
-      -(factor - 1) * 128,
-      0,
-      0,
-      factor,
-      0,
-      -(factor - 1) * 128,
-      0,
-      0,
-      0,
-      1,
-      0,
-    ];
-  }
-
   /// Generates a fade effect filter matrix.
   ///
-  /// This method returns a color matrix that reduces contrast and desaturates
-  /// the image, creating a faded effect.
+  /// Produces a classic washed-out "fade" by lowering the contrast and lifting
+  /// the black point, so shadows turn milky while the overall image loses
+  /// punch. Both operations are linear, so they map cleanly onto a color
+  /// matrix.
   ///
   /// Parameters:
-  /// - [value]: The intensity of the fade effect, where higher values make the
-  ///   image more faded (less contrast and saturation).
+  /// - [value]: The intensity of the fade effect. `0` leaves the image
+  ///   unchanged, higher values make it more faded. Negative values invert the
+  ///   effect (more contrast and a lowered black point).
   static List<double> fade(double value) {
     if (value == 0) {
       return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
     }
 
-    double fadeValue = 1 - value; // The amount of color to preserve
-    const double lumR = 0.3086; // Standard luminance for red
-    const double lumG = 0.6094; // Standard luminance for green
-    const double lumB = 0.082; // Standard luminance for blue
+    double factor = 1 - 0.2 * value; // Reduce contrast.
+    double lift = 30 * value; // Raise the black point (0..255).
 
     return [
-      fadeValue + value * lumR, // Red channel influence fades towards grayscale
-      value * lumG, // Green channel influence fades towards grayscale
-      value * lumB, // Blue channel influence fades towards grayscale
-      0,
-      0,
-      value *
-          lumR, // Red channel fades towards grayscale in the green component
-      fadeValue + value * lumG, // Green channel fades
-      value * lumB, // Blue channel fades
-      0,
-      0,
-      value * lumR, // Red channel fades towards grayscale in the blue component
-      value * lumG, // Green channel fades
-      fadeValue + value * lumB, // Blue channel fades
-      0,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
+      factor, 0, 0, 0, lift, // Red channel
+      0, factor, 0, 0, lift, // Green channel
+      0, 0, factor, 0, lift, // Blue channel
+      0, 0, 0, 1, 0, // Alpha channel (unchanged)
     ];
   }
 
-  /// Generates a luminance adjustment filter matrix.
+  /// Generates a tint adjustment filter matrix.
   ///
-  /// This method returns a color matrix that adjusts the brightness of an image
-  /// based on human perception of color intensity.
+  /// Shifts the image along the green–magenta axis, the natural complement to
+  /// [temperature] (which works on the blue–amber axis). This is a linear
+  /// per-channel offset, so it maps cleanly onto a color matrix.
   ///
   /// Parameters:
-  /// - [value]: The luminance adjustment factor, where higher values increase
-  ///   brightness and lower values decrease brightness.
-  static List<double> luminance(double value) {
+  /// - [value]: The tint adjustment factor. `0` keeps the original colors,
+  ///   positive values push towards magenta and negative values towards green.
+  static List<double> tint(double value) {
     if (value == 0) {
       return [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
     }
 
-    const double lumR = 0.2126;
-    const double lumG = 0.7152;
-    const double lumB = 0.0722;
-
-    // Calculate how much luminance (grayscale) effect to apply
-    double adjustedValue = 1 - value;
+    // Magenta adds to red/blue and removes green; green does the inverse.
+    double offset = value * 100;
 
     return [
-      lumR * value + adjustedValue, // Red channel luminance adjustment
-      lumG * value, // Green channel luminance adjustment
-      lumB * value, // Blue channel luminance adjustment
-      0,
-      0, // No offset; luminance is handled by the matrix
-      lumR * value, // Red channel luminance
-      lumG * value + adjustedValue, // Green channel luminance adjustment
-      lumB * value, // Blue channel luminance adjustment
-      0,
-      0,
-      lumR * value, // Red channel luminance
-      lumG * value, // Green channel luminance
-      lumB * value + adjustedValue, // Blue channel luminance adjustment
-      0,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
+      1, 0, 0, 0, offset, // Red channel
+      0, 1, 0, 0, -offset, // Green channel
+      0, 0, 1, 0, offset, // Blue channel
+      0, 0, 0, 1, 0, // Alpha channel (unchanged)
     ];
   }
 }

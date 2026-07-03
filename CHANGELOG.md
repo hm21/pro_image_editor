@@ -1,5 +1,10 @@
 # Changelog
 
+## 13.0.0
+- **FEAT**(tune): Replace the `luminance` control (which only desaturated) with a real `tint` green–magenta adjustment, the natural complement to `temperature`.
+- **FIX**(filter): Fix `colorOverlay` tinting towards the complementary color instead of the overlay color (inverted sign), and rebuild `fade` as a proper fade (lower contrast + lifted black point) instead of a desaturation.
+- **BREAKING**(tune): Remove the `sharpness` control (a per-pixel color matrix cannot sharpen) and rename `luminance` → `tint` across `ColorFilterAddons`, `TuneEditorIcons` and `I18nTuneEditor`; saved histories using the old tune ids are no longer recognized.
+
 ## 12.11.1
 - **FIX**(layers): Anchor the video-timeline `scale` layer animation on the layer's visual center. Combining `scale` with a `slide` (e.g. slide-in from the top) previously drifted the layer in diagonally instead of straight, because scaling used the layout-box center while the layer content is painted off-center.
 
