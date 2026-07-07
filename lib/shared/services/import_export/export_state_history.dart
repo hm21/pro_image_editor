@@ -28,20 +28,14 @@ import 'utils/key_minifier.dart';
 class ExportStateHistory {
   /// Constructs an [ExportStateHistory] object with the given parameters.
   ExportStateHistory({
-    required ProImageEditorConfigs editorConfigs,
-    required List<EditorStateHistory> stateHistory,
-    required ImageInfos imageInfos,
-    required int editorPosition,
-    required ContentRecorderController contentRecorderCtrl,
-    required BuildContext context,
-    ExportEditorConfigs configs = const ExportEditorConfigs(),
-  }) : _configs = configs,
-       _editorConfigs = editorConfigs,
-       _stateHistory = stateHistory,
-       _imageInfos = imageInfos,
-       _contentRecorderCtrl = contentRecorderCtrl,
-       _context = context,
-       _editorPosition = editorPosition;
+    required this._editorConfigs,
+    required this._stateHistory,
+    required this._imageInfos,
+    required this._editorPosition,
+    required this._contentRecorderCtrl,
+    required this._context,
+    this._configs = const ExportEditorConfigs(),
+  });
 
   /// The current position of the editor in the state history.
   ///

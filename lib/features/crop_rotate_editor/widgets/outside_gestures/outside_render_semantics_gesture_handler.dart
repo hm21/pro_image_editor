@@ -12,16 +12,13 @@ class OutsideRenderSemanticsGestureHandler
   /// Creates a render object that listens for specific semantic gestures.
   OutsideRenderSemanticsGestureHandler({
     super.child,
-    GestureTapCallback? onTap,
-    GestureLongPressCallback? onLongPress,
-    GestureDragUpdateCallback? onHorizontalDragUpdate,
-    GestureDragUpdateCallback? onVerticalDragUpdate,
+    this._onTap,
+    this._onLongPress,
+    this._onHorizontalDragUpdate,
+    this._onVerticalDragUpdate,
     this.scrollFactor = 0.8,
     super.behavior,
-  }) : _onTap = onTap,
-       _onLongPress = onLongPress,
-       _onHorizontalDragUpdate = onHorizontalDragUpdate,
-       _onVerticalDragUpdate = onVerticalDragUpdate;
+  });
 
   /// If non-null, the set of actions to allow. Other actions will be omitted,
   /// even if their callback is provided.

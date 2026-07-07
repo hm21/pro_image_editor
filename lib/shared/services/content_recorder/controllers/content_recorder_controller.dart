@@ -29,11 +29,11 @@ class ContentRecorderController {
   /// Initializes the controller with the specified configuration.
   /// Optionally enables thumbnail generation and skips initialization.
   ContentRecorderController({
-    required ImageGenerationConfigs configs,
+    required this._configs,
     required this.isVideoEditor,
     this.enableThumbnailGeneration = false,
     bool ignoreGeneration = false,
-  }) : _configs = configs {
+  }) {
     containerKey = GlobalKey();
     recorderKey = GlobalKey();
     recorderStream = StreamController();
