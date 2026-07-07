@@ -20,7 +20,9 @@ pluginManagement {
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     id "com.android.application" version "8.12.2" apply false
-    id "org.jetbrains.kotlin.android" version "2.2.10" apply false
+    // Kept for third-party plugins that still apply KGP (device_info_plus, audioplayers_android, ...).
+    // The example app itself uses Flutter's built-in Kotlin (no kotlin-android in app/build.gradle).
+    id "org.jetbrains.kotlin.android" version "2.2.20" apply false
 }
 
 include ":app"

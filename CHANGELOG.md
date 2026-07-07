@@ -1,5 +1,8 @@
 # Changelog
 
+## 13.1.0
+- **CHORE**(android): Migrate the Android module to Flutter's built-in Kotlin (drop the manual Kotlin Gradle Plugin apply) so the plugin no longer triggers the KGP deprecation warning and stays AGP 9+ compatible. Now requires Flutter 3.44+.
+
 ## 13.0.0
 - **FEAT**(tune): Replace the `luminance` control (which only desaturated) with a real `tint` green–magenta adjustment, the natural complement to `temperature`.
 - **FIX**(filter): Fix `colorOverlay` tinting towards the complementary color instead of the overlay color (inverted sign), and rebuild `fade` as a proper fade (lower contrast + lifted black point) instead of a desaturation.
