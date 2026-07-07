@@ -279,7 +279,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
   /// Checks if the hit is outside the canvas for certain types of layers.
   bool _isHitOutsideInCanvas() {
-    return _layer.isPaintLayer && !(_layer as PaintLayer).item.hit;
+    return _layer.isPaintLayer && !(_layer as PaintLayer).isHit;
   }
 
   /// Checks if the hit is outside the canvas for certain types of layers.
@@ -307,7 +307,7 @@ class _LayerWidgetState extends State<LayerWidget>
 
   void _onHoverLeave() {
     if (_layer.isPaintLayer) {
-      (_layer as PaintLayer).item.hit = false;
+      (_layer as PaintLayer).resetHit();
     } else if (_layer.isTextLayer) {
       (_layer as TextLayer).hit = false;
     }

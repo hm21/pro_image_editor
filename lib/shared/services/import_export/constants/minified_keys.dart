@@ -37,6 +37,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'emoji': 'e',
   'text': 'te',
   'item': 'i',
+  'items': 'it',
   'rawSize': 'rs',
   'opacity': 'o',
   'exportConfigs': 'ec',

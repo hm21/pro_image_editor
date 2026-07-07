@@ -188,6 +188,15 @@ class _LayerGroupingExampleState extends State<LayerGroupingExample>
               onPressed: editor.unselectAllLayers,
               child: const Text('Unselect All'),
             ),
+            FilledButton(
+              // Combine the selected paint layers into a single paint layer.
+              // Disabled unless at least two non-censor paint layers are
+              // selected.
+              onPressed: editor.canMergeSelectedLayers
+                  ? () => editor.mergeSelectedLayers()
+                  : null,
+              child: const Text('Combine Paint Layers'),
+            ),
           ],
         ),
       ),

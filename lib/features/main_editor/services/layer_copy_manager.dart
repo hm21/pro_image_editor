@@ -223,7 +223,7 @@ class LayerCopyManager {
       flipX: layer.flipX,
       flipY: layer.flipY,
       meta: layer.meta,
-      item: layer.item.copy(),
+      items: layer.items.map((item) => item.copy()).toList(),
       rawSize: layer.rawSize,
       opacity: layer.opacity,
       interaction: layer.interaction.copyWith(),

@@ -127,6 +127,17 @@ class EditorKeyMinifier {
             );
           }
 
+          if (entry.key == 'items') {
+            value = (entry.value as List)
+                .map(
+                  (el) => Map.from(el as Map).map(
+                    (itemKey, itemValue) =>
+                        MapEntry(convertPaintKey(itemKey), itemValue),
+                  ),
+                )
+                .toList();
+          }
+
           return MapEntry(newKey, value);
         }),
       );
@@ -159,6 +170,17 @@ class EditorKeyMinifier {
               (itemKey, itemValue) =>
                   MapEntry(convertPaintKey(itemKey), itemValue),
             );
+          }
+
+          if (entryKey == 'items') {
+            entryValue = (entryValue as List)
+                .map(
+                  (el) => Map.from(el as Map).map(
+                    (itemKey, itemValue) =>
+                        MapEntry(convertPaintKey(itemKey), itemValue),
+                  ),
+                )
+                .toList();
           }
 
           return MapEntry(convertLayerKey(entryKey), entryValue);

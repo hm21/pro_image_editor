@@ -313,6 +313,24 @@ class MainEditorLayersService {
     }
   }
 
+  /// Whether the current selection can be merged into a single paint layer.
+  bool get canMergeSelectedLayers => state.canMergeSelectedLayers;
+
+  /// Merges the currently selected non-censor paint layers into a single
+  /// [PaintLayer] and refreshes the UI.
+  ///
+  /// The heavy lifting (geometry baking + history) lives in
+  /// [ProImageEditorState.mergeSelectedLayers]; this wrapper triggers the
+  /// editor UI updates, mirroring [handleGroupLayers].
+  void handleMergeLayers() {
+    final mergedLayer = state.mergeSelectedLayers();
+
+    if (mergedLayer != null) {
+      callbacks.mainEditorCallbacks?.handleUpdateUI();
+      onUpdateState();
+    }
+  }
+
   /// Handles ungrouping of the specified layer.
   void handleUngroupLayers(Layer layer) {
     final wasUngrouped = layerInteraction.ungroupLayer(layer, _activeLayers, (
@@ -331,7 +349,7 @@ class MainEditorLayersService {
   /// Handles mouse hover events to change the cursor style
   void handleMouseHover(PointerHoverEvent event) {
     final bool hasHit = _activeLayers.any(
-      (element) => element is PaintLayer && element.item.hit,
+      (element) => element is PaintLayer && element.isHit,
     );
 
     final activeCursor = mouseCursorsKey.currentState!.currentCursor;

@@ -362,7 +362,7 @@ class LayerInteractionManager {
     } else if (originalLayer is PaintLayer) {
       return PaintLayer(
         id: originalLayer.id,
-        item: originalLayer.item,
+        items: [...originalLayer.items],
         rawSize: originalLayer.rawSize,
         opacity: originalLayer.opacity,
         key: originalLayer.key,

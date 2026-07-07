@@ -44,12 +44,39 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = CustomPaint(
+    final items = layer.items;
+
+    late final Widget child;
+    if (items.length == 1) {
+      // Fast path for the common single-stroke layer: keep the exact previous
+      // behavior where the layer opacity is applied once around the stroke.
+      child = _buildItem(items.first);
+    } else {
+      // Merged layer: stack every baked-in stroke, each with its own opacity.
+      child = Stack(
+        children: [
+          for (final item in items) _buildItem(item, applyItemOpacity: true),
+        ],
+      );
+    }
+
+    if (layer.opacity >= 1.0) return child;
+
+    return Opacity(opacity: layer.opacity, child: child);
+  }
+
+  /// Builds a single stroke painter sized to the layer.
+  ///
+  /// When [applyItemOpacity] is `true` (merged multi-stroke layers) the
+  /// per-stroke opacity is applied here, because the layer-level opacity is
+  /// `1.0` for merged layers and each stroke keeps its own opacity.
+  Widget _buildItem(PaintedModel item, {bool applyItemOpacity = false}) {
+    Widget painter = CustomPaint(
       size: layer.size,
       willChange: willChange,
-      isComplex: layer.item.mode.isFreeStyleMode,
+      isComplex: item.mode.isFreeStyleMode,
       painter: DrawPaintItem(
-        item: layer.item,
+        item: item,
         scale: layer.scale,
         selected: isSelected,
         enabledHitDetection: enableHitDetection,
@@ -58,9 +85,11 @@ class LayerWidgetPaintItem extends StatelessWidget {
       ),
     );
 
-    if (layer.opacity >= 1.0) return child;
+    if (applyItemOpacity && item.opacity < 1.0) {
+      painter = Opacity(opacity: item.opacity, child: painter);
+    }
 
-    return Opacity(opacity: layer.opacity, child: child);
+    return painter;
   }
 
   @override
