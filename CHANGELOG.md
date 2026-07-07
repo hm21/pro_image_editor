@@ -2,6 +2,7 @@
 
 ## 13.2.0
 - **FEAT**(paint): Combine several selected paint layers into one via `mergeSelectedLayers()` / `canMergeSelectedLayers`. `PaintLayer` now holds multiple `items`, baking each source transform into a shared frame so the drawing looks identical after merging.
+- **FEAT**(filter): Flatten the active filter stack into a single `FilterState` via `mergeFilters()` / `canMergeFilters` (appearance-identical; skipped for video-timeline filters).
 
 ## 13.1.0
 - **CHORE**(android): Migrate the Android module to Flutter's built-in Kotlin (drop the manual Kotlin Gradle Plugin apply) so the plugin no longer triggers the KGP deprecation warning and stays AGP 9+ compatible. Now requires Flutter 3.44+.

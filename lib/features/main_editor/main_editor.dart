@@ -35,6 +35,7 @@ import '../audio_editor/models/audio_editor_response.dart';
 import '../audio_editor/widgets/audio_main_bottom_bar.dart';
 import '../clips_editor/models/video_clip_editor_response.dart';
 import '../clips_editor/pages/clips_editor_page.dart';
+import '../filter_editor/utils/merge_filter_states.dart';
 import '../filter_editor/widgets/filter_generator.dart';
 import '../paint_editor/models/paint_editor_response_model.dart';
 import '../paint_editor/widgets/paint_editor_layer_editor.dart';
@@ -1042,6 +1043,33 @@ class ProImageEditorState extends State<ProImageEditor>
   void clearFilters() {
     addHistory(filters: []);
     setState(() {});
+  }
+
+  /// Whether the active filters can be flattened into a single [FilterState].
+  ///
+  /// True when at least two filters are active and none carry video-timeline
+  /// scheduling metadata (which a static combined matrix cannot reproduce).
+  /// Host apps can use this to enable/disable a "Combine filters" action.
+  bool get canMergeFilters =>
+      canMergeFilterStates(stateManager.activeFilters);
+
+  /// Flattens all active filters into a single [FilterState] and records it as
+  /// a single history entry.
+  ///
+  /// Filters are pure color matrices that the editor already renders as one
+  /// combined `ColorFilter.matrix`, so the merged result is appearance-
+  /// identical to the original stack. Tune adjustments are left untouched and
+  /// keep composing on top unchanged. Returns the merged [FilterState], or
+  /// `null` when [canMergeFilters] is `false`.
+  FilterState? mergeFilters() {
+    final filters = stateManager.activeFilters;
+    if (!canMergeFilterStates(filters)) return null;
+
+    final merged = mergeFilterStates(filters);
+    addHistory(filters: [merged]);
+    setState(() {});
+
+    return merged;
   }
 
   /// Updates the timeline properties and/or metadata of the filter at the
