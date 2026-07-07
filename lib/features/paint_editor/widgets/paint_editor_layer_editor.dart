@@ -35,8 +35,7 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
   late final _style = _configs.paintEditor.style;
 
   void _setFillState(bool enableFill) {
-    _layer.item = _paintItem.copyWith(fill: enableFill);
-    setState(() {});
+    _applyToItems((item) => item.copyWith(fill: enableFill));
   }
 
   void _setOpacity(double value) {
@@ -45,12 +44,20 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
   }
 
   void _setStrokeWidth(double value) {
-    _layer.item = _paintItem.copyWith(strokeWidth: value);
-    setState(() {});
+    _applyToItems((item) => item.copyWith(strokeWidth: value));
   }
 
   void _setColor(Color color) {
-    _layer.item = _paintItem.copyWith(color: color);
+    _applyToItems((item) => item.copyWith(color: color));
+  }
+
+  /// Applies [update] to every stroke of the layer.
+  ///
+  /// A freshly drawn layer holds a single stroke; a merged layer holds several,
+  /// all of which must change together so the edit affects the whole drawing
+  /// rather than only its first stroke.
+  void _applyToItems(PaintedModel Function(PaintedModel item) update) {
+    _layer.items = _layer.items.map(update).toList();
     setState(() {});
   }
 

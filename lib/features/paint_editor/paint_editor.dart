@@ -28,6 +28,7 @@ import '/shared/widgets/slider_bottom_sheet.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import '../main_editor/services/layer_copy_manager.dart';
 import 'controllers/paint_controller.dart';
+import 'models/eraser_model.dart';
 import 'models/paint_editor_response_model.dart';
 import 'models/paint_mode_helper_model.dart';
 import 'services/paint_desktop_interaction_manager.dart';
@@ -672,11 +673,17 @@ class PaintEditorState extends State<PaintEditor>
         if (!canUndo) return Navigator.pop(context);
         final scale = _layerStackTransformHelper.scale;
 
-        // Build a map for O(1) lookup instead of O(N) indexWhere
-        final originalErasedMap = <String, List<dynamic>>{};
+        // Build a map for O(1) lookup instead of O(N) indexWhere. Collect the
+        // erased offsets of every stroke so a merged (multi-stroke) layer is
+        // compared across all its items, not just the first.
+        List<ErasedOffset> allErased(PaintLayer layer) => [
+          for (final item in layer.items) ...item.erasedOffsets,
+        ];
+
+        final originalErasedMap = <String, List<ErasedOffset>>{};
         for (final layer
             in (widget.initConfigs.layers ?? []).whereType<PaintLayer>()) {
-          originalErasedMap[layer.id] = layer.item.erasedOffsets;
+          originalErasedMap[layer.id] = allErased(layer);
         }
 
         final newLayers = activeHistory.layers.whereType<PaintLayer>().where((
@@ -684,7 +691,7 @@ class PaintEditorState extends State<PaintEditor>
         ) {
           final originalErased = originalErasedMap[layer.id];
           if (originalErased == null) return true;
-          return !listEquals(originalErased, layer.item.erasedOffsets);
+          return !listEquals(originalErased, allErased(layer));
         });
 
         final transformedLayers = newLayers.map((layer) {

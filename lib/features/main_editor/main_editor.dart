@@ -3099,7 +3099,11 @@ class ProImageEditorState extends State<ProImageEditor>
     // stroke stacking order is preserved inside the merged layer.
     final List<PaintLayer> sources = activeLayers
         .whereType<PaintLayer>()
-        .where((layer) => selectedIds.contains(layer.id) && !layer.isCensor)
+        .where(
+          (layer) =>
+              selectedIds.contains(layer.id) &&
+              PaintLayerMergeManager.isMergeable(layer),
+        )
         .toList();
 
     if (sources.length < 2) return null;

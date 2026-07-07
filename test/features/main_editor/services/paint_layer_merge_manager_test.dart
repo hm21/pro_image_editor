@@ -224,6 +224,79 @@ void main() {
       final merged = PaintLayerMergeManager.merge([multi, single]);
       expect(merged.items.length, 3);
     });
+
+    test('preserves per-stroke opacity when re-merging merged sources', () {
+      // First merge: two strokes with distinct opacities become one layer that
+      // renders each stroke with its own opacity (layer opacity 1).
+      final multi = PaintLayerMergeManager.merge([
+        _paintLayer(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(0, 0), Offset(10, 10)],
+          opacity: 0.25,
+          rawSize: const Size(10, 10),
+        ),
+        _paintLayer(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(0, 0), Offset(10, 10)],
+          offset: const Offset(80, 0),
+          opacity: 0.75,
+          rawSize: const Size(10, 10),
+        ),
+      ]);
+      expect(multi.opacity, 1.0);
+
+      final single = _paintLayer(
+        mode: PaintMode.freeStyle,
+        offsets: const [Offset(0, 0), Offset(10, 10)],
+        offset: const Offset(0, 120),
+        opacity: 0.5,
+        rawSize: const Size(10, 10),
+      );
+
+      // Re-merging must keep each stroke's baked opacity, not overwrite it with
+      // the merged layer's opacity of 1.
+      final merged = PaintLayerMergeManager.merge([multi, single]);
+      expect(merged.items[0].opacity, closeTo(0.25, 1e-6));
+      expect(merged.items[1].opacity, closeTo(0.75, 1e-6));
+      expect(merged.items[2].opacity, closeTo(0.5, 1e-6));
+    });
+
+    test('inherits groupId and meta from the top-most source', () {
+      final bottom = PaintLayer(
+        item: PaintedModel(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(0, 0), Offset(10, 10)],
+          erasedOffsets: const [],
+          color: Colors.red,
+          strokeWidth: 4,
+          opacity: 1,
+        ),
+        rawSize: const Size(10, 10),
+        opacity: 1,
+        groupId: 'group-bottom',
+        meta: const {'source': 'bottom'},
+      );
+      final top = PaintLayer(
+        item: PaintedModel(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(0, 0), Offset(10, 10)],
+          erasedOffsets: const [],
+          color: Colors.blue,
+          strokeWidth: 4,
+          opacity: 1,
+        ),
+        rawSize: const Size(10, 10),
+        opacity: 1,
+        offset: const Offset(80, 0),
+        groupId: 'group-top',
+        meta: const {'source': 'top'},
+      );
+
+      final merged = PaintLayerMergeManager.merge([bottom, top]);
+
+      expect(merged.groupId, 'group-top');
+      expect(merged.meta, {'source': 'top'});
+    });
   });
 
   group('PaintLayerMergeManager.canMerge gating', () {
@@ -257,6 +330,34 @@ void main() {
         PaintLayerMergeManager.canMerge([paint(), Layer(id: 'non-paint')]),
         isFalse,
       );
+    });
+
+    test('excludes layers carrying video-timeline scheduling', () {
+      final scheduled = _paintLayer(
+        mode: PaintMode.freeStyle,
+        offsets: const [Offset(0, 0), Offset(10, 10)],
+        rawSize: const Size(10, 10),
+      )..startTime = const Duration(seconds: 1);
+
+      expect(PaintLayerMergeManager.canMerge([paint(), scheduled]), isFalse);
+      expect(PaintLayerMergeManager.isMergeable(scheduled), isFalse);
+    });
+
+    test('excludes layers carrying animations', () {
+      final animated = _paintLayer(
+        mode: PaintMode.freeStyle,
+        offsets: const [Offset(0, 0), Offset(10, 10)],
+        rawSize: const Size(10, 10),
+      )..animations.add(
+        const LayerAnimation(
+          type: LayerAnimationType.fade,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 300),
+        ),
+      );
+
+      expect(PaintLayerMergeManager.canMerge([paint(), animated]), isFalse);
+      expect(PaintLayerMergeManager.isMergeable(animated), isFalse);
     });
   });
 }

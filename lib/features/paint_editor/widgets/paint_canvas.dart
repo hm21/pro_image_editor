@@ -363,24 +363,29 @@ class PaintCanvasState extends State<PaintCanvas> {
           -rotation,
         );
 
-        layer.item.erasedOffsets
-          ..add(
-            ErasedOffset(
-              offset: rotatedPosition / layerScale,
-              radius: widget.eraserRadius,
-            ),
-          )
-          ..toSet()
-          ..toList();
-        layer.item = layer.item.copy();
+        final erased = ErasedOffset(
+          offset: rotatedPosition / layerScale,
+          radius: widget.eraserRadius,
+        );
+
+        // Erase across every stroke of the layer, not just the first. A merged
+        // layer holds several strokes in this same coordinate space, all of
+        // which must be erased at the touched point.
+        for (var i = 0; i < paintLayer.items.length; i++) {
+          paintLayer.items[i].erasedOffsets.add(erased);
+          paintLayer.items[i] = paintLayer.items[i].copy();
+        }
         _hasPartialErasedAreas = true;
       } else {
-        bool hasHit = _hitTestManager.hitTest(
-          item: paintLayer.item,
-          position: position,
-          scaleFactor: stackScale * layerScale,
-          isRoundCensorArea: useRoundCensor,
-          paintEditorConfigs: widget.paintEditorConfigs,
+        // A full-stroke eraser removes the layer if it hits any of its strokes.
+        final bool hasHit = paintLayer.items.any(
+          (item) => _hitTestManager.hitTest(
+            item: item,
+            position: position,
+            scaleFactor: stackScale * layerScale,
+            isRoundCensorArea: useRoundCensor,
+            paintEditorConfigs: widget.paintEditorConfigs,
+          ),
         );
         if (hasHit) {
           removeIds.add(layer.id);

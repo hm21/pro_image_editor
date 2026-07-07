@@ -29,6 +29,9 @@ bool canMergeFilterStates(List<FilterState> filters) {
 /// pure color matrices and the editor already renders them as one combined
 /// `ColorFilter.matrix`. Tune adjustments are intentionally excluded so they
 /// keep composing on top of the merged filter unchanged.
+///
+/// The metadata of every source filter is carried over into the merged state
+/// (later filters win on key conflicts) so host-attached data is not lost.
 FilterState mergeFilterStates(
   List<FilterState> filters, {
   String name = 'merged',
@@ -37,5 +40,9 @@ FilterState mergeFilterStates(
     filterList: filters.expand((filter) => filter.matrices).toList(),
     tuneAdjustmentList: const [],
   );
-  return FilterState(name: name, matrices: [combined]);
+  final mergedMeta = <String, dynamic>{};
+  for (final filter in filters) {
+    mergedMeta.addAll(filter.meta);
+  }
+  return FilterState(name: name, matrices: [combined], meta: mergedMeta);
 }

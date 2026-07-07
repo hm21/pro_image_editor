@@ -16,16 +16,27 @@ import '/features/paint_editor/models/painted_model.dart';
 class PaintLayerMergeManager {
   const PaintLayerMergeManager._();
 
-  /// Returns the mergeable (non-censor) paint layers contained in [layers],
-  /// preserving their original order (bottom-most first).
-  static List<PaintLayer> mergeableLayers(Iterable<Layer> layers) {
-    return layers
-        .whereType<PaintLayer>()
-        .where((layer) => !layer.isCensor)
-        .toList();
+  /// Whether [layer] can take part in a merge.
+  ///
+  /// A censor layer is excluded because its blur/pixelate effect cannot be
+  /// baked into a shared frame. A layer that carries video-timeline scheduling
+  /// ([Layer.startTime] / [Layer.endTime]) or [Layer.animations] is excluded
+  /// too, because a single static merged layer cannot reproduce a per-source
+  /// appearance that changes over the timeline.
+  static bool isMergeable(PaintLayer layer) {
+    return !layer.isCensor &&
+        layer.startTime == null &&
+        layer.endTime == null &&
+        layer.animations.isEmpty;
   }
 
-  /// Whether [layers] contains at least two non-censor paint layers that can be
+  /// Returns the mergeable paint layers contained in [layers], preserving their
+  /// original order (bottom-most first). See [isMergeable] for the criteria.
+  static List<PaintLayer> mergeableLayers(Iterable<Layer> layers) {
+    return layers.whereType<PaintLayer>().where(isMergeable).toList();
+  }
+
+  /// Whether [layers] contains at least two mergeable paint layers that can be
   /// merged into one.
   static bool canMerge(Iterable<Layer> layers) {
     return mergeableLayers(layers).length >= 2;
@@ -42,6 +53,20 @@ class PaintLayerMergeManager {
   /// given an identity transform. Per-stroke color, mode, fill and the baked
   /// stroke width / opacity / erased offsets are preserved so the appearance is
   /// unchanged.
+  ///
+  /// The merged layer inherits `groupId`, `interaction` and `meta` from the
+  /// top-most source (the last entry of [layers]), matching the z-index it is
+  /// re-inserted at.
+  ///
+  /// The geometry assumes every source uses the default center layer alignment
+  /// (`paintEditor.layerFractionalOffset == Offset(-0.5, -0.5)`), i.e. that a
+  /// layer's `offset` marks its visual center.
+  ///
+  /// Appearance is preserved for the merged strokes themselves, but stacking
+  /// order relative to *other, non-merged* layers is not: because the merged
+  /// layer occupies a single z-index (the top-most source's), any unselected
+  /// layer that previously sat between two sources ends up entirely below the
+  /// merged result.
   static PaintLayer merge(List<PaintLayer> layers) {
     assert(
       layers.length >= 2,
@@ -113,9 +138,14 @@ class PaintLayerMergeManager {
             // Bake the source scale into the stroke width so it renders the
             // same on the identity-scaled merged layer.
             strokeWidth: item.strokeWidth * layer.scale,
-            // A single-stroke source layer renders with the layer opacity, so
-            // that is the opacity the merged stroke must carry.
-            opacity: layer.opacity,
+            // Effective on-screen opacity of this stroke. A single-stroke
+            // source renders with the layer opacity only (the per-item opacity
+            // is ignored on the single-item render fast path); an already
+            // merged multi-stroke source renders each stroke with its own
+            // opacity beneath the layer opacity. Bake the product so the merged
+            // layer, which renders every stroke with its own opacity, matches.
+            opacity:
+                layer.opacity * (layer.items.length > 1 ? item.opacity : 1.0),
           ),
         );
       }
@@ -148,6 +178,10 @@ class PaintLayerMergeManager {
       );
     }).toList();
 
+    // The merged layer takes the top-most source's z-index, so it inherits
+    // that source's grouping, interaction and metadata.
+    final PaintLayer topMost = layers.last;
+
     return PaintLayer(
       items: mergedItems,
       rawSize: rect.size,
@@ -157,6 +191,11 @@ class PaintLayerMergeManager {
       rotation: 0.0,
       flipX: false,
       flipY: false,
+      groupId: topMost.groupId,
+      interaction: topMost.interaction.copyWith(),
+      meta: topMost.meta == null
+          ? null
+          : Map<String, dynamic>.of(topMost.meta!),
     );
   }
 }

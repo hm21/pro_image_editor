@@ -72,6 +72,24 @@ void main() {
       );
       _expectMatrixClose(merged.matrices.first, full);
     });
+
+    test('carries over the metadata of every source filter', () {
+      final f1 = FilterState(
+        name: 'a',
+        matrices: [_matrixDarken],
+        meta: const {'from': 'a', 'shared': 1},
+      );
+      final f2 = FilterState(
+        name: 'b',
+        matrices: [_matrixOffset],
+        meta: const {'from': 'b', 'shared': 2},
+      );
+
+      final merged = mergeFilterStates([f1, f2]);
+
+      // All keys preserved; later filters win on conflicts.
+      expect(merged.meta, {'from': 'b', 'shared': 2});
+    });
   });
 
   group('canMergeFilterStates gating', () {
