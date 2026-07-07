@@ -90,7 +90,11 @@ void main() {
   ) async {
     final state = await pumpEditor(tester);
 
-    state.addHistory(filters: [FilterState(name: 'a', matrices: [_matrixA])]);
+    state.addHistory(
+      filters: [
+        FilterState(name: 'a', matrices: [_matrixA]),
+      ],
+    );
     await tester.pump();
 
     expect(state.canMergeFilters, isFalse);

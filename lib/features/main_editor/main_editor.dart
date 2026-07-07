@@ -1050,8 +1050,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// True when at least two filters are active and none carry video-timeline
   /// scheduling metadata (which a static combined matrix cannot reproduce).
   /// Host apps can use this to enable/disable a "Combine filters" action.
-  bool get canMergeFilters =>
-      canMergeFilterStates(stateManager.activeFilters);
+  bool get canMergeFilters => canMergeFilterStates(stateManager.activeFilters);
 
   /// Flattens all active filters into a single [FilterState] and records it as
   /// a single history entry.

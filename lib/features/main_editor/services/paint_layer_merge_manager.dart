@@ -166,10 +166,7 @@ class PaintLayerMergeManager {
             .toList(),
         erasedOffsets: stroke.erasedOffsets
             .map(
-              (e) => ErasedOffset(
-                offset: e.offset - topLeft,
-                radius: e.radius,
-              ),
+              (e) => ErasedOffset(offset: e.offset - topLeft, radius: e.radius),
             )
             .toList(),
         strokeWidth: stroke.strokeWidth,

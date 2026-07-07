@@ -344,17 +344,19 @@ void main() {
     });
 
     test('excludes layers carrying animations', () {
-      final animated = _paintLayer(
-        mode: PaintMode.freeStyle,
-        offsets: const [Offset(0, 0), Offset(10, 10)],
-        rawSize: const Size(10, 10),
-      )..animations.add(
-        const LayerAnimation(
-          type: LayerAnimationType.fade,
-          phase: AnimationPhase.animateIn,
-          duration: Duration(milliseconds: 300),
-        ),
-      );
+      final animated =
+          _paintLayer(
+              mode: PaintMode.freeStyle,
+              offsets: const [Offset(0, 0), Offset(10, 10)],
+              rawSize: const Size(10, 10),
+            )
+            ..animations.add(
+              const LayerAnimation(
+                type: LayerAnimationType.fade,
+                phase: AnimationPhase.animateIn,
+                duration: Duration(milliseconds: 300),
+              ),
+            );
 
       expect(PaintLayerMergeManager.canMerge([paint(), animated]), isFalse);
       expect(PaintLayerMergeManager.isMergeable(animated), isFalse);

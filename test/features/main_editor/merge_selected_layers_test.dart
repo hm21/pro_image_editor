@@ -135,10 +135,10 @@ void main() {
     await tester.pump();
 
     expect(state.activeLayers.length, 2);
-    expect(
-      state.activeLayers.map((layer) => layer.id).toSet(),
-      {layerA.id, layerB.id},
-    );
+    expect(state.activeLayers.map((layer) => layer.id).toSet(), {
+      layerA.id,
+      layerB.id,
+    });
     for (final layer in state.activeLayers) {
       expect(layer, isA<PaintLayer>());
       expect((layer as PaintLayer).items.length, 1);

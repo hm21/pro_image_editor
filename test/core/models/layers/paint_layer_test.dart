@@ -190,7 +190,10 @@ void main() {
 
     test('multi-item round-trip keeps all N items when minified', () {
       final layer = PaintLayer(
-        items: [model(color: Colors.red), model(color: Colors.green)],
+        items: [
+          model(color: Colors.red),
+          model(color: Colors.green),
+        ],
         rawSize: const Size(40, 30),
         opacity: 1,
       );
