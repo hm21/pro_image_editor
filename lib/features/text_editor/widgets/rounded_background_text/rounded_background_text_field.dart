@@ -121,6 +121,16 @@ class _RoundedBackgroundTextFieldState
     final fontSize =
         (widget.style.fontSize ?? defaultTextStyle.style.fontSize ?? 16);
 
+    // The background rectangle drawn by [RoundedBackgroundTextPainter] always
+    // extends the text by these paddings (see `paddingHorizontal`/
+    // `paddingVertical` there). The finished layer reserves room for them via
+    // `enableHitBoxCorrection: true`; the editing preview must reserve the same
+    // room so the rounded background does not visibly grow and shift the moment
+    // editing completes.
+    final lineHeight = _preferredLineHeight(fontSize);
+    final hitBoxHorizontal = lineHeight * 0.3;
+    final hitBoxVertical = lineHeight * 0.1;
+
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
       child: Stack(
@@ -134,10 +144,30 @@ class _RoundedBackgroundTextFieldState
         },
         children: [
           if (_textController.text.isNotEmpty) _buildBackgroundText(),
-          _buildEditableText(fontSize: fontSize),
+          _buildEditableText(
+            fontSize: fontSize,
+            hitBoxHorizontal: hitBoxHorizontal,
+            hitBoxVertical: hitBoxVertical,
+          ),
         ],
       ),
     );
+  }
+
+  /// The preferred line height for [widget.style] at [fontSize], computed the
+  /// same way [RoundedBackgroundText] lays the text out, so the hit-box padding
+  /// reserved here matches the rectangle the painter draws.
+  double _preferredLineHeight(double fontSize) {
+    final painter = TextPainter(
+      text: TextSpan(
+        style: TextStyle(
+          leadingDistribution: widget.configs.style.leadingDistribution,
+        ).merge(widget.style.copyWith(fontSize: fontSize)),
+        text: 'A',
+      ),
+      textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+    )..layout();
+    return painter.preferredLineHeight;
   }
 
   Widget _buildBackgroundText() {
@@ -161,62 +191,76 @@ class _RoundedBackgroundTextFieldState
           cursorWidth: widget.cursorWidth,
           textAlign: widget.textAlign,
           backgroundColor: widget.backgroundColor,
+          // Match the finished layer (LayerWidgetTextItem) so the rounded
+          // background reserves symmetric padding while editing.
+          enableHitBoxCorrection: true,
         ),
       ),
     );
   }
 
-  Widget _buildEditableText({required double fontSize}) {
-    return Material(
-      type: MaterialType.transparency,
-      child: TextField(
-        onTap:
-            _textController.text.isEmpty &&
-                View.of(context).viewInsets.bottom <= 0
-            ? () {
-                FocusManager.instance.primaryFocus?.unfocus();
-                widget.focusNode.requestFocus();
-              }
-            : null,
-        autofocus: widget.autofocus,
-        controller: _textController,
-        focusNode: widget.focusNode,
-        scrollPhysics: const NeverScrollableScrollPhysics(),
-        scrollController: _scrollCtrl,
-        scrollPadding: EdgeInsets.zero,
-        style: widget.style.copyWith(
-          fontSize: fontSize,
-          leadingDistribution: widget.configs.style.leadingDistribution,
-          height: widget.configs.style.textHeight,
+  Widget _buildEditableText({
+    required double fontSize,
+    required double hitBoxHorizontal,
+    required double hitBoxVertical,
+  }) {
+    return Padding(
+      // Inset the editable glyphs by the same hit-box padding the background
+      // rectangle reserves, so the visible text stays centered inside the box
+      // and aligns with the finished layer.
+      padding: EdgeInsets.symmetric(
+        horizontal: hitBoxHorizontal,
+        vertical: hitBoxVertical,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: TextField(
+          onTap: _textController.text.isEmpty &&
+                  View.of(context).viewInsets.bottom <= 0
+              ? () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  widget.focusNode.requestFocus();
+                }
+              : null,
+          autofocus: widget.autofocus,
+          controller: _textController,
+          focusNode: widget.focusNode,
+          scrollPhysics: const NeverScrollableScrollPhysics(),
+          scrollController: _scrollCtrl,
+          scrollPadding: EdgeInsets.zero,
+          style: widget.style.copyWith(
+            fontSize: fontSize,
+            leadingDistribution: widget.configs.style.leadingDistribution,
+            height: widget.configs.style.textHeight,
+          ),
+          spellCheckConfiguration: widget.configs.spellCheckConfiguration,
+          decoration: InputDecoration.collapsed(
+            hintText: _textController.text.isEmpty ? widget.hint : '',
+            hintStyle: (widget.hintStyle ??
+                    TextStyle(color: Theme.of(context).hintColor))
+                .copyWith(fontSize: fontSize),
+            maintainHintSize: false,
+          ),
+          textAlign: widget.textAlign,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
+          textCapitalization: TextCapitalization.sentences,
+          textInputAction: TextInputAction.newline,
+          cursorColor: widget.configs.style.inputCursorColor,
+          cursorWidth: widget.cursorWidth,
+          cursorHeight: widget.cursorHeight,
+          cursorRadius: widget.cursorRadius,
+          enableInteractiveSelection: true,
+          showCursor: true,
+          autocorrect: widget.configs.enableAutocorrect,
+          smartDashesType: SmartDashesType.enabled,
+          smartQuotesType: SmartQuotesType.enabled,
+          enableSuggestions: widget.configs.enableSuggestions,
+          clipBehavior: Clip.hardEdge,
+          onChanged: widget.onChanged,
+          onEditingComplete: widget.onEditingComplete,
+          onSubmitted: widget.onSubmitted,
         ),
-        spellCheckConfiguration: widget.configs.spellCheckConfiguration,
-        decoration: InputDecoration.collapsed(
-          hintText: _textController.text.isEmpty ? widget.hint : '',
-          hintStyle:
-              (widget.hintStyle ??
-                      TextStyle(color: Theme.of(context).hintColor))
-                  .copyWith(fontSize: fontSize),
-          maintainHintSize: false,
-        ),
-        textAlign: widget.textAlign,
-        maxLines: null,
-        keyboardType: TextInputType.multiline,
-        textCapitalization: TextCapitalization.sentences,
-        textInputAction: TextInputAction.newline,
-        cursorColor: widget.configs.style.inputCursorColor,
-        cursorWidth: widget.cursorWidth,
-        cursorHeight: widget.cursorHeight,
-        cursorRadius: widget.cursorRadius,
-        enableInteractiveSelection: true,
-        showCursor: true,
-        autocorrect: widget.configs.enableAutocorrect,
-        smartDashesType: SmartDashesType.enabled,
-        smartQuotesType: SmartQuotesType.enabled,
-        enableSuggestions: widget.configs.enableSuggestions,
-        clipBehavior: Clip.hardEdge,
-        onChanged: widget.onChanged,
-        onEditingComplete: widget.onEditingComplete,
-        onSubmitted: widget.onSubmitted,
       ),
     );
   }
