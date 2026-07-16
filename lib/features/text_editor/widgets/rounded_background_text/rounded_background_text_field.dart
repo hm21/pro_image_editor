@@ -143,7 +143,8 @@ class _RoundedBackgroundTextFieldState
           TextAlign.center || _ => Alignment.topCenter,
         },
         children: [
-          if (_textController.text.isNotEmpty) _buildBackgroundText(),
+          if (_textController.text.isNotEmpty)
+            _buildBackgroundText(hitBoxHorizontal: hitBoxHorizontal),
           _buildEditableText(
             fontSize: fontSize,
             hitBoxHorizontal: hitBoxHorizontal,
@@ -154,23 +155,49 @@ class _RoundedBackgroundTextFieldState
     );
   }
 
+  double? _cachedLineHeight;
+  double? _cachedLineHeightFontSize;
+  TextStyle? _cachedLineHeightStyle;
+  TextLeadingDistribution? _cachedLineHeightLeading;
+  TextDirection? _cachedLineHeightDirection;
+
   /// The preferred line height for [widget.style] at [fontSize], computed the
   /// same way [RoundedBackgroundText] lays the text out, so the hit-box padding
-  /// reserved here matches the rectangle the painter draws.
+  /// reserved here matches the rectangle the painter draws. Memoized because
+  /// [build] runs on every keystroke and scroll tick while none of the inputs
+  /// change per frame.
   double _preferredLineHeight(double fontSize) {
+    final leading = widget.configs.style.leadingDistribution;
+    final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
+    if (_cachedLineHeight != null &&
+        _cachedLineHeightFontSize == fontSize &&
+        _cachedLineHeightStyle == widget.style &&
+        _cachedLineHeightLeading == leading &&
+        _cachedLineHeightDirection == direction) {
+      return _cachedLineHeight!;
+    }
+
     final painter = TextPainter(
       text: TextSpan(
         style: TextStyle(
-          leadingDistribution: widget.configs.style.leadingDistribution,
+          leadingDistribution: leading,
         ).merge(widget.style.copyWith(fontSize: fontSize)),
         text: 'A',
       ),
-      textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+      textDirection: direction,
     )..layout();
-    return painter.preferredLineHeight;
+    final lineHeight = painter.preferredLineHeight;
+    painter.dispose();
+
+    _cachedLineHeight = lineHeight;
+    _cachedLineHeightFontSize = fontSize;
+    _cachedLineHeightStyle = widget.style;
+    _cachedLineHeightLeading = leading;
+    _cachedLineHeightDirection = direction;
+    return lineHeight;
   }
 
-  Widget _buildBackgroundText() {
+  Widget _buildBackgroundText({required double hitBoxHorizontal}) {
     final style = widget.style.copyWith(
       color: Colors.transparent,
       leadingDistribution: widget.configs.style.leadingDistribution,
@@ -187,7 +214,13 @@ class _RoundedBackgroundTextFieldState
             withComposing: true,
             style: style,
           ),
-          maxTextWidth: widget.maxTextWidth - widget.cursorWidth,
+          // Wrap at the same column as the editable text: the editable glyphs
+          // are inset by `hitBoxHorizontal` on each side (see
+          // `_buildEditableText`), so the background must lay its glyphs out at
+          // that same reduced width. Otherwise the two disagree on the wrap
+          // column and the line count changes when editing completes.
+          maxTextWidth:
+              widget.maxTextWidth - widget.cursorWidth - 2 * hitBoxHorizontal,
           cursorWidth: widget.cursorWidth,
           textAlign: widget.textAlign,
           backgroundColor: widget.backgroundColor,
