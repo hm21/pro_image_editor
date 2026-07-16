@@ -248,7 +248,8 @@ class _RoundedBackgroundTextFieldState
       child: Material(
         type: MaterialType.transparency,
         child: TextField(
-          onTap: _textController.text.isEmpty &&
+          onTap:
+              _textController.text.isEmpty &&
                   View.of(context).viewInsets.bottom <= 0
               ? () {
                   FocusManager.instance.primaryFocus?.unfocus();
@@ -269,9 +270,10 @@ class _RoundedBackgroundTextFieldState
           spellCheckConfiguration: widget.configs.spellCheckConfiguration,
           decoration: InputDecoration.collapsed(
             hintText: _textController.text.isEmpty ? widget.hint : '',
-            hintStyle: (widget.hintStyle ??
-                    TextStyle(color: Theme.of(context).hintColor))
-                .copyWith(fontSize: fontSize),
+            hintStyle:
+                (widget.hintStyle ??
+                        TextStyle(color: Theme.of(context).hintColor))
+                    .copyWith(fontSize: fontSize),
             maintainHintSize: false,
           ),
           textAlign: widget.textAlign,

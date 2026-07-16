@@ -81,8 +81,9 @@ void main() {
           ),
         ),
       );
-      final referenceHeight =
-          tester.getSize(find.byType(RoundedBackgroundText)).height;
+      final referenceHeight = tester
+          .getSize(find.byType(RoundedBackgroundText))
+          .height;
 
       // Preview.
       final controller = TextEditingController(text: text);
@@ -105,7 +106,8 @@ void main() {
       expect(
         previewBgRect.height,
         moreOrLessEquals(referenceHeight, epsilon: 0.5),
-        reason: 'Preview background height must match the hit-box-corrected '
+        reason:
+            'Preview background height must match the hit-box-corrected '
             'reference; a mismatch means the padding was not reserved.',
       );
 
@@ -197,7 +199,8 @@ void main() {
         expect(
           editableLines,
           backgroundLines,
-          reason: 'At width=$width the editable text wrapped into '
+          reason:
+              'At width=$width the editable text wrapped into '
               '$editableLines lines but the background box into '
               '$backgroundLines: the two disagree on the wrap column.',
         );
