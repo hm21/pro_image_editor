@@ -1,5 +1,8 @@
 # Changelog
 
+## 13.2.2
+- **FIX**(main-editor): Ignore the spurious scale-end Flutter fires when a finger is added or removed mid-gesture (e.g. a third finger during a two-finger layer rotation). It previously ran the full interaction teardown, corrupting the history stack and crashing on iOS with a `_dependents.isEmpty` assertion (#850).
+
 ## 13.2.1
 - **FIX**(text-editor): Stop the rounded background text from growing and reflowing the moment editing completes (#849). The editing preview now reserves the same hit-box padding as the finished layer and wraps the background at the same column as the editable text, so the background no longer shifts or changes line count when editing ends.
 

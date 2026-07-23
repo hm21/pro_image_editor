@@ -1430,7 +1430,14 @@ class ProImageEditorState extends State<ProImageEditor>
     /// interaction.
     /// Important: No screenshot is taken at this point; it will be captured
     /// after the layer interaction is completed.
-    if (hasSelectedLayers) addHistory(blockCaptureScreenshot: true);
+    ///
+    /// The `!isLayerBeingTransformed` guard prevents a second history entry
+    /// when Flutter's [ScaleGestureRecognizer] restarts the gesture after a
+    /// mid-gesture pointer change (e.g. a third finger touching down), which
+    /// would otherwise corrupt the history/screenshot stack (issue #850).
+    if (hasSelectedLayers && !isLayerBeingTransformed) {
+      addHistory(blockCaptureScreenshot: true);
+    }
     _checkInteractiveViewer();
     isLayerBeingTransformed = hasSelectedLayers;
     layerInteractionManager.onScaleStart(
@@ -1572,6 +1579,26 @@ class ProImageEditorState extends State<ProImageEditor>
   /// lines and flags.
   void _onScaleEnd(ScaleEndDetails details) async {
     mainEditorCallbacks?.handleScaleEnd(details);
+
+    /// Flutter's [ScaleGestureRecognizer] fires a spurious `onScaleEnd`
+    /// (immediately followed by a fresh `onScaleStart`) whenever the number of
+    /// active pointers changes mid-gesture — for example when a third finger
+    /// touches the screen while two fingers are still rotating a layer. In that
+    /// case the fingers are not actually lifted ([details.pointerCount] > 0),
+    /// so we must not run the destructive finish logic below (removing the last
+    /// screenshot, mutating the history stack and clearing the selection).
+    /// Doing so corrupts the history/screenshot stack and, on iOS, crashes the
+    /// editor with a `_dependents.isEmpty` framework assertion (issue #850).
+    ///
+    /// The interactive viewer still needs the event to keep its own
+    /// start/end pairing balanced.
+    if (details.pointerCount > 0) {
+      if (!hasSelectedLayers && !_layerDragSelectionService.isActive) {
+        interactiveViewer.currentState?.onScaleEnd(details);
+      }
+      return;
+    }
+
     if (selectedLayers.isNotEmpty) {
       mainEditorCallbacks?.handleLayerInteractionEnd(List.of(selectedLayers));
     }
