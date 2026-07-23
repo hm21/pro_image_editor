@@ -93,8 +93,9 @@ void main() {
       // Move both fingers to rotate the layer (rotate around the center).
       for (int i = 1; i <= 6; i++) {
         final double angle = (pi / 12) * i;
-        await finger1
-            .moveTo(center + Offset(-40 * cos(angle), -40 * sin(angle)));
+        await finger1.moveTo(
+          center + Offset(-40 * cos(angle), -40 * sin(angle)),
+        );
         await finger2.moveTo(center + Offset(40 * cos(angle), 40 * sin(angle)));
         await tester.pump(const Duration(milliseconds: 16));
       }
@@ -123,7 +124,8 @@ void main() {
       expect(
         tester.takeException(),
         isNull,
-        reason: 'Adding a third finger mid-rotation must not throw '
+        reason:
+            'Adding a third finger mid-rotation must not throw '
             '(issue #850).',
       );
     },
