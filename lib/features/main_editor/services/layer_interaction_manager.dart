@@ -442,6 +442,18 @@ class LayerInteractionManager {
   final _horizontalSnapHelper = _LayerAlignGuideHelper();
   final _verticalSnapHelper = _LayerAlignGuideHelper();
 
+  /// Whether [_updateAlignmentGuides] has set up its per-drag state yet.
+  bool _alignmentGuidesInitialized = false;
+
+  /// X-axis snap targets the active layer already coincided with when the drag
+  /// started. They stay suppressed until the layer's nearest edge moves clear
+  /// (farther than the release threshold), so a layer lifted off a pile of
+  /// overlapping layers isn't trapped by their coincident alignment guides.
+  final Set<double> _heldAlignXTargets = {};
+
+  /// Y-axis counterpart of [_heldAlignXTargets].
+  final Set<double> _heldAlignYTargets = {};
+
   /// Optional override for helper line configuration at runtime.
   ///
   /// When set, this takes precedence over [configs.helperLines], allowing
@@ -980,6 +992,12 @@ class LayerInteractionManager {
     snapStartPosX = details.focalPoint.dx;
     snapStartPosY = details.focalPoint.dy;
 
+    _alignmentGuidesInitialized = false;
+    _heldAlignXTargets.clear();
+    _heldAlignYTargets.clear();
+    _horizontalSnapHelper.reset();
+    _verticalSnapHelper.reset();
+
     for (Layer layer in selectedLayers) {
       _baseScaleFactor[layer.id] = layer.scale;
       _baseAngleFactor[layer.id] = layer.rotation;
@@ -1034,6 +1052,9 @@ class LayerInteractionManager {
     hoverRemoveBtn = false;
     _activeClosestLocalOffsetX = null;
     _activeClosestLocalOffsetY = null;
+    _alignmentGuidesInitialized = false;
+    _heldAlignXTargets.clear();
+    _heldAlignYTargets.clear();
   }
 
   /// Rotate a layer.
@@ -1227,6 +1248,37 @@ class LayerInteractionManager {
     final activeXAnchors = _horizontalSnapAnchors(activeLayer);
     final activeYAnchors = _verticalSnapAnchors(activeLayer);
 
+    if (!_alignmentGuidesInitialized) {
+      _alignmentGuidesInitialized = true;
+      // Remember the targets the active layer already coincides with when the
+      // drag begins, so they don't immediately trap it. Without this a layer
+      // that shares its position with others (e.g. a stack of overlapping
+      // layers) is held in place by their coincident guides and can't be
+      // dragged away until the pointer travels past every anchor.
+      _heldAlignXTargets
+        ..clear()
+        ..addAll(
+          xTargets
+              .where(
+                (t) => activeXAnchors.any(
+                  (a) => (a.position - t.position).abs() <= snapThreshold,
+                ),
+              )
+              .map((t) => t.position),
+        );
+      _heldAlignYTargets
+        ..clear()
+        ..addAll(
+          yTargets
+              .where(
+                (t) => activeYAnchors.any(
+                  (a) => (a.position - t.position).abs() <= snapThreshold,
+                ),
+              )
+              .map((t) => t.position),
+        );
+    }
+
     _SnapGuideTarget? matchedX;
     _LayerSnapAnchor? matchedXAnchor;
     for (final target in xTargets) {
@@ -1239,7 +1291,21 @@ class LayerInteractionManager {
             : b,
       );
 
-      if ((anchor.position - target.position).abs() <= snapThreshold &&
+      final double distanceX = (anchor.position - target.position).abs();
+
+      // A target the layer already sat on when the drag began stays suppressed
+      // until the layer moves clear of it, so overlapping layers can be pulled
+      // apart instead of being trapped by their coincident guides. Once clear,
+      // the target re-arms and snapping works normally on re-approach.
+      if (_heldAlignXTargets.contains(target.position)) {
+        if (distanceX > releaseThreshold) {
+          _heldAlignXTargets.remove(target.position);
+        } else {
+          continue;
+        }
+      }
+
+      if (distanceX <= snapThreshold &&
           _verticalSnapHelper.maybeSnap(
             focal: detail.focalPoint.dx,
             focalDelta: detail.focalPointDelta.dx,
@@ -1268,7 +1334,19 @@ class LayerInteractionManager {
             : b,
       );
 
-      if ((anchor.position - target.position).abs() <= snapThreshold &&
+      final double distanceY = (anchor.position - target.position).abs();
+
+      // See the x-axis loop above: suppress targets the layer already sat on so
+      // stacked/overlapping layers can be separated.
+      if (_heldAlignYTargets.contains(target.position)) {
+        if (distanceY > releaseThreshold) {
+          _heldAlignYTargets.remove(target.position);
+        } else {
+          continue;
+        }
+      }
+
+      if (distanceY <= snapThreshold &&
           _horizontalSnapHelper.maybeSnap(
             focal: detail.focalPoint.dy,
             focalDelta: detail.focalPointDelta.dy,
@@ -1352,6 +1430,14 @@ class _LayerAlignGuideHelper {
   LayerLastPosition _lastSnapPosition = LayerLastPosition.center;
   Offset _lastSnapOffset = Offset.infinite;
   double? _lastSnapFocal;
+
+  /// Clears the snapping hysteresis so a new drag gesture starts fresh and
+  /// doesn't inherit stale state from a previous interaction.
+  void reset() {
+    _lastSnapPosition = LayerLastPosition.center;
+    _lastSnapOffset = Offset.infinite;
+    _lastSnapFocal = null;
+  }
 
   /// Returns true if snapping should occur, otherwise false
   bool maybeSnap({
