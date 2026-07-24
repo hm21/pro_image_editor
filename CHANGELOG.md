@@ -1,5 +1,8 @@
 # Changelog
 
+## 13.2.3
+- **FIX**(main-editor): A layer sharing its position with others (a stack of overlapping layers) can now be dragged away instead of being trapped by their coincident alignment guides. Snapping re-arms once the layer moves clear.
+
 ## 13.2.2
 - **FIX**(main-editor): Ignore the spurious scale-end Flutter fires when a finger is added or removed mid-gesture (e.g. a third finger during a two-finger layer rotation). It previously ran the full interaction teardown, corrupting the history stack and crashing on iOS with a `_dependents.isEmpty` assertion (#850).
 
