@@ -31,6 +31,14 @@ class LayerRasterizerExample extends StatefulWidget {
 class _LayerRasterizerExampleState extends State<LayerRasterizerExample> {
   final _rasterizer = LayerRasterizer();
 
+  /// The configuration of the session that produced the layers.
+  ///
+  /// Not optional in practice: text, emoji and widget layer sizes are derived
+  /// from it (`textEditor.initFontSize * layer.scale`,
+  /// `stickerEditor.initWidth`), so rasterizing with a different configuration
+  /// than the editor used silently rescales those layers.
+  final _configs = const ProImageEditorConfigs();
+
   /// A persisted editor session. Nothing here ever opens the editor — the
   /// history is parsed and its layers go straight to the rasterizer.
   final _history = ImportStateHistory.fromMap(
@@ -59,9 +67,13 @@ class _LayerRasterizerExampleState extends State<LayerRasterizerExample> {
   String? _error;
   int? _durationInMs;
 
-  /// The body size the layers were laid out against in the original session.
-  /// Layer offsets are relative to its center, so passing it is what makes the
-  /// capture match that session.
+  /// The size the image was rendered at in the original session.
+  ///
+  /// Layer offsets and scales are stored relative to it — that is the size the
+  /// import path rescales against — and they are measured from its center, so
+  /// laying the layers out in a box of exactly this size reproduces the
+  /// original session. It is not the editor's body size, which also covers the
+  /// letterboxing around the image.
   Size get _editorBodySize => _history.lastRenderedImgSize;
 
   List<Layer> get _layers {
@@ -89,6 +101,7 @@ class _LayerRasterizerExampleState extends State<LayerRasterizerExample> {
       final captured = await _rasterizer.capture(
         layers: _layers,
         editorBodySize: _editorBodySize,
+        configs: _configs,
 
         /// The history contains a widget layer that loads a network image. One
         /// frame after mounting it is still blank, so we hold the capture
@@ -183,7 +196,7 @@ class _LayerRasterizerExampleState extends State<LayerRasterizerExample> {
           ),
           Text(
             'Layers in the history: ${_layers.length}  •  '
-            'Original body size: ${_editorBodySize.width.round()}'
+            'Original rendered image size: ${_editorBodySize.width.round()}'
             ' × ${_editorBodySize.height.round()}',
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -215,7 +228,11 @@ class _LayerRasterizerExampleState extends State<LayerRasterizerExample> {
           Expanded(
             child: Text(
               '${captured.length} of ${_layers.length} layers captured '
-              'in $_durationInMs ms',
+              'in $_durationInMs ms'
+              // `capture` drops layers it could not render instead of
+              // returning a placeholder, so a short result is worth naming.
+              '${captured.length < _layers.length ? ' — the rest could not '
+                  'be rendered' : ''}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),

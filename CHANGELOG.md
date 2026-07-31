@@ -1,7 +1,7 @@
 # Changelog
 
 ## 13.3.0
-- **FEAT**(layers): Rasterize layers outside a live editor session via `LayerRasterizer` and `LayerRasterizerHost`. `Layer.captureAsPng` returns `null` for an unmounted layer, so layers restored from an exported state history could not be baked into a render. The host mounts them behind its own child — painted, never visible — so `capture()` returns the same `ExportedLayer`s a live session would. Use `awaitContentReady` for layers whose content loads asynchronously (network images, decoded assets, custom `WidgetLayer`s).
+- **FEAT**(layers): Rasterize layers outside a live editor session with `LayerRasterizer` and `LayerRasterizerHost`.
 
 ## 13.2.3
 - **FIX**(main-editor): A layer sharing its position with others (a stack of overlapping layers) can now be dragged away instead of being trapped by their coincident alignment guides. Snapping re-arms once the layer moves clear.

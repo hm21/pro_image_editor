@@ -1,7 +1,8 @@
 // Flutter imports:
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 // Project imports:
+import '/shared/utils/default_editor_theme.dart';
 import '/shared/widgets/layer/layer_widget.dart';
 import 'layer_rasterizer.dart';
 
@@ -23,7 +24,9 @@ import 'layer_rasterizer.dart';
 /// a capture it renders the requested layers *behind* [child]: they have to be
 /// painted for their repaint boundaries to hold an image, but [child] covers
 /// them so they never reach the user. This mirrors how the editor's own
-/// screenshot capture stays invisible.
+/// screenshot capture stays invisible — which also means [child] has to be
+/// opaque and cover the host, otherwise the layers show through for the two
+/// frames a capture takes.
 class LayerRasterizerHost extends StatefulWidget {
   /// Creates a host that renders whatever [rasterizer] is capturing.
   const LayerRasterizerHost({
@@ -82,19 +85,37 @@ class _LayerRasterizerHostState extends State<LayerRasterizerHost> {
                 top: 0,
                 width: request.editorBodySize.width,
                 height: request.editorBodySize.height,
-                child: IgnorePointer(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    alignment: Alignment.center,
-                    clipBehavior: Clip.none,
-                    children: [
-                      for (final layer in request.layers)
-                        LayerWidget(
-                          layer: layer,
-                          configs: request.configs,
-                          editorBodySize: request.editorBodySize,
+                child: ExcludeSemantics(
+                  child: IgnorePointer(
+                    // The editor wraps its layers in this theme and a Material
+                    // (through Scaffold). Layer content reads both — emoji
+                    // metrics come from the text theme, and a WidgetLayer built
+                    // from Material widgets asserts on a missing Material — so
+                    // without them the capture differs from the live session.
+                    child: Theme(
+                      data: request.configs.theme ?? defaultEditorTheme(),
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          alignment: Alignment.center,
+                          clipBehavior: Clip.none,
+                          children: [
+                            for (final layer in request.layers)
+                              LayerWidget(
+                                // Keyed by layer identity: without it the
+                                // element of a queued capture is reused for the
+                                // next one, and LayerWidget resolves the layer
+                                // type only in initState.
+                                key: ObjectKey(layer),
+                                layer: layer,
+                                configs: request.configs,
+                                editorBodySize: request.editorBodySize,
+                              ),
+                          ],
                         ),
-                    ],
+                      ),
+                    ),
                   ),
                 ),
               ),

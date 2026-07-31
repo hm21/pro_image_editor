@@ -112,6 +112,157 @@ void main() {
       );
     });
 
+    testWidgets('keeps its result when disposed mid-capture', (tester) async {
+      // No `addTearDown(dispose)`: this test disposes it itself.
+      final rasterizer = LayerRasterizer();
+
+      await tester.pumpWidget(buildHost(rasterizer));
+
+      final capture = rasterizer.capture(
+        layers: [textLayerMock],
+        editorBodySize: bodySize,
+        format: ui.ImageByteFormat.rawRgba,
+      );
+
+      await tester.pump();
+      await tester.pump();
+      // Navigating away disposes the rasterizer while the capture runs. The
+      // notification the capture ends with must not turn the result into a
+      // "used after being disposed" error.
+      rasterizer.dispose();
+
+      final captured = await tester.runAsync(() => capture);
+      expect(captured, hasLength(1));
+    });
+
+    testWidgets('throws when the host stops rendering mid-capture', (
+      tester,
+    ) async {
+      final rasterizer = LayerRasterizer();
+      addTearDown(rasterizer.dispose);
+
+      await tester.pumpWidget(buildHost(rasterizer));
+
+      final capture = rasterizer.capture(
+        layers: [textLayerMock],
+        editorBodySize: bodySize,
+        format: ui.ImageByteFormat.rawRgba,
+      );
+
+      await tester.pump();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+
+      await expectLater(
+        capture,
+        throwsA(isStateError),
+        reason:
+            'an unmounted host captures nothing, so failing beats '
+            'returning an empty list',
+      );
+    });
+
+    testWidgets('asserts when two hosts share one rasterizer', (tester) async {
+      final rasterizer = LayerRasterizer();
+      addTearDown(rasterizer.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LayerRasterizerHost(
+            rasterizer: rasterizer,
+            child: LayerRasterizerHost(
+              rasterizer: rasterizer,
+              child: const ColoredBox(
+                color: Colors.white,
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Both hosts would render the same layer, so its GlobalKeys would be
+      // mounted twice.
+      await expectLater(
+        rasterizer.capture(layers: [textLayerMock], editorBodySize: bodySize),
+        throwsAssertionError,
+      );
+    });
+
+    testWidgets('asserts when a layer is already mounted elsewhere', (
+      tester,
+    ) async {
+      final rasterizer = LayerRasterizer();
+      addTearDown(rasterizer.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LayerRasterizerHost(
+            rasterizer: rasterizer,
+            child: Stack(
+              children: [
+                LayerWidget(
+                  layer: textLayerMock,
+                  configs: const ProImageEditorConfigs(),
+                  editorBodySize: bodySize,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await expectLater(
+        rasterizer.capture(layers: [textLayerMock], editorBodySize: bodySize),
+        throwsAssertionError,
+      );
+    });
+
+    testWidgets('stays usable after a failed capture', (tester) async {
+      final rasterizer = LayerRasterizer();
+      addTearDown(rasterizer.dispose);
+
+      await tester.pumpWidget(buildHost(rasterizer));
+
+      final failing = rasterizer.capture(
+        layers: [textLayerMock],
+        editorBodySize: bodySize,
+        format: ui.ImageByteFormat.rawRgba,
+        awaitContentReady: () async => throw StateError('content failed'),
+      );
+
+      for (var i = 0; i < 4; i++) {
+        await tester.pump();
+      }
+      await expectLater(failing, throwsStateError);
+
+      await tester.pump();
+      expect(
+        find.byType(LayerWidget),
+        findsNothing,
+        reason: 'a failed capture must still unmount its layers',
+      );
+
+      final second = rasterizer.capture(
+        layers: [textLayerMock],
+        editorBodySize: bodySize,
+        format: ui.ImageByteFormat.rawRgba,
+      );
+
+      // The queued capture only starts once the failed one settled, so it takes
+      // a frame more than a capture that runs on its own.
+      await tester.pump();
+      await tester.pump();
+      expect(
+        find.byType(LayerWidget),
+        findsOneWidget,
+        reason: 'the queue must not stay blocked by the failed capture',
+      );
+
+      await tester.pump();
+      expect(await tester.runAsync(() => second), hasLength(1));
+    });
+
     testWidgets('awaits awaitContentReady before capturing', (tester) async {
       final rasterizer = LayerRasterizer();
       addTearDown(rasterizer.dispose);

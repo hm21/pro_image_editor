@@ -25,6 +25,7 @@ import '/shared/mixins/editor_zoom.mixin.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/services/import_export/export_state_history.dart';
 import '/shared/services/layer_transform_generator.dart';
+import '/shared/utils/default_editor_theme.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/utils/transparent_image_generator_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
@@ -3165,15 +3166,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   @override
   Widget build(BuildContext context) {
-    _theme =
-        configs.theme ??
-        ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue.shade800,
-            brightness: Brightness.dark,
-          ),
-        );
+    _theme = configs.theme ?? defaultEditorTheme();
 
     return RecordInvisibleWidget(
       controller: _controllers.screenshot,

@@ -63,19 +63,34 @@ class LayerRasterizationRequest {
 /// final history = ImportStateHistory.fromMap(persistedHistory);
 /// final captured = await rasterizer.capture(
 ///   layers: history.stateHistory[history.editorPosition].layers,
-///   editorBodySize: persistedBodySize,
+///   editorBodySize: history.lastRenderedImgSize,
 ///   configs: myEditorConfigs,
 /// );
 /// ```
 ///
 /// Concurrent [capture] calls are serialized: only one set of layers is
 /// mounted at a time, so captures cannot read each other's repaint boundaries.
+///
+/// The layers passed to [capture] must not be mounted anywhere else while they
+/// are captured — no running editor, no `LayerStack` preview showing the same
+/// [Layer] instances. Every layer carries [GlobalKey]s (and a [Hero] tag) that
+/// `LayerWidget` attaches, so mounting it twice makes Flutter move the existing
+/// element into the host: the visible copy loses its content, and release
+/// builds do not report it. Layers already on screen need no host at all —
+/// call [Layer.captureAllLayers] on them directly. Both this and the one-host
+/// rule are asserted in debug mode.
 class LayerRasterizer extends ChangeNotifier {
   LayerRasterizationRequest? _request;
 
   int _hostCount = 0;
 
+  bool _isDisposed = false;
+
   Future<void> _queue = Future<void>.value();
+
+  /// The layers of the preceding capture. They stay mounted until the host
+  /// repaints, so a follow-up capture must not mistake them for a conflict.
+  List<Layer> _previousLayers = const [];
 
   /// The layers currently waiting to be captured, or `null` when idle.
   ///
@@ -88,21 +103,55 @@ class LayerRasterizer extends ChangeNotifier {
   /// mount the layers into.
   bool get hasHost => _hostCount > 0;
 
-  /// Registers a mounted host. Called by [LayerRasterizerHost].
+  /// Registers a mounted host. Called by [LayerRasterizerHost] and not intended
+  /// for other callers — faking a host makes [capture] wait for layers that are
+  /// never mounted.
   void attachHost() => _hostCount++;
 
-  /// Unregisters a disposed host. Called by [LayerRasterizerHost].
-  void detachHost() => _hostCount--;
+  /// Unregisters a disposed host. Called by [LayerRasterizerHost] and not
+  /// intended for other callers.
+  void detachHost() {
+    _hostCount--;
+    assert(
+      _hostCount >= 0,
+      'detachHost() was called more often than attachHost(). Both are managed '
+      'by LayerRasterizerHost and must not be called directly.',
+    );
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  /// Notifies listeners unless this rasterizer is already disposed.
+  ///
+  /// A capture can outlive the widget that owns the rasterizer (navigating away
+  /// mid-capture), and [ChangeNotifier.notifyListeners] throws once [dispose]
+  /// ran. Without this guard the notification in `_capture`'s `finally` would
+  /// replace a successful result with that error.
+  void _notify() {
+    if (!_isDisposed) notifyListeners();
+  }
 
   /// Captures [layers] and returns their rendered bytes with layout metadata.
   ///
   /// [editorBodySize] must be the body size the layers were laid out against
   /// in the original session — offsets are relative to it.
   ///
+  /// [configs] must be the configuration of the session that created the
+  /// layers, not just any configuration: the size of text, emoji and widget
+  /// layers is derived from it (`textEditor.initFontSize * layer.scale`,
+  /// `stickerEditor.initWidth`), and `configs.theme` decides which text theme
+  /// layer content inherits. Capturing with the default configuration rescales
+  /// every such layer without reporting anything.
+  ///
   /// [pixelRatio] and [basePixelRatio] control the output resolution and are
-  /// forwarded to [Layer.captureAllLayers]. Pass the same `basePixelRatio` the
-  /// export path uses (typically `configs.imageGeneration.customPixelRatio`)
-  /// so a captured layer matches the resolution of a live-session export.
+  /// forwarded to [Layer.captureAllLayers]. [basePixelRatio] defaults to
+  /// `configs.imageGeneration.customPixelRatio` — the value the editor's own
+  /// export path passes — so a captured layer matches the resolution of a
+  /// live-session export.
   ///
   /// Layers whose content loads asynchronously — network images, decoded
   /// assets, custom [WidgetLayer]s — are not painted yet one frame after
@@ -111,9 +160,13 @@ class LayerRasterizer extends ChangeNotifier {
   /// mounted and is followed by another frame before the capture. Only the
   /// caller knows what its layers load, so there is no useful default.
   ///
-  /// Returns an empty list when [layers] is empty. Throws a [StateError] when
-  /// no [LayerRasterizerHost] is mounted, and must not be called during a
-  /// build — mounting the layers rebuilds the host.
+  /// Returns an empty list when [layers] is empty. A layer that cannot be
+  /// captured is dropped by [Layer.captureAllLayers], so the result can be
+  /// shorter than [layers]; compare `ExportedLayer.layer` against the input to
+  /// find out which ones. Throws a [StateError] when no [LayerRasterizerHost]
+  /// is mounted, or when the host disappears before the layers are captured,
+  /// and must not be called during a build — mounting the layers rebuilds the
+  /// host.
   Future<List<ExportedLayer>> capture({
     required List<Layer> layers,
     required Size editorBodySize,
@@ -124,6 +177,12 @@ class LayerRasterizer extends ChangeNotifier {
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     Future<void> Function()? awaitContentReady,
   }) {
+    // Cheap enough to answer before queueing, so an empty request does not wait
+    // behind an unrelated capture.
+    if (layers.isEmpty) {
+      return Future<List<ExportedLayer>>.value(const <ExportedLayer>[]);
+    }
+
     final result = _queue.then(
       (_) => _capture(
         layers: layers,
@@ -152,8 +211,6 @@ class LayerRasterizer extends ChangeNotifier {
     required ui.ImageByteFormat format,
     required Future<void> Function()? awaitContentReady,
   }) async {
-    if (layers.isEmpty) return const <ExportedLayer>[];
-
     if (!hasHost) {
       throw StateError(
         'LayerRasterizer.capture was called without a mounted '
@@ -162,13 +219,21 @@ class LayerRasterizer extends ChangeNotifier {
         'above the call site.',
       );
     }
+    assert(
+      _hostCount == 1,
+      'LayerRasterizer.capture found $_hostCount mounted '
+      'LayerRasterizerHosts. Every host renders the requested layers, so the '
+      'GlobalKeys a layer carries would be mounted once per host. Mount '
+      'exactly one host per rasterizer.',
+    );
+    assert(_debugLayersAreFree(layers));
 
     _request = LayerRasterizationRequest(
       layers: layers,
       editorBodySize: editorBodySize,
       configs: configs,
     );
-    notifyListeners();
+    _notify();
 
     try {
       // The first frame mounts and lays the layers out, the second guarantees
@@ -184,16 +249,57 @@ class LayerRasterizer extends ChangeNotifier {
         await WidgetsBinding.instance.endOfFrame;
       }
 
+      // The host can be gone by now — navigating away while the capture waits
+      // for frames unmounts it. Without this every layer would come back null
+      // and the caller would receive a silently empty list.
+      if (!hasHost ||
+          layers.every(
+            (layer) => layer.repaintBoundaryKey.currentContext == null,
+          )) {
+        throw StateError(
+          'The LayerRasterizerHost holding this rasterizer stopped rendering '
+          'the layers before they were captured. Keep the host mounted and '
+          'visible for the whole capture — a host that is unmounted, offstage '
+          'or inside an invisible subtree never paints the layers.',
+        );
+      }
+
       return await Layer.captureAllLayers(
         layers: layers,
         pixelRatio: pixelRatio,
-        basePixelRatio: basePixelRatio,
+        basePixelRatio:
+            basePixelRatio ?? configs.imageGeneration.customPixelRatio,
         applyTransforms: applyTransforms,
         format: format,
       );
     } finally {
       _request = null;
-      notifyListeners();
+      _previousLayers = layers;
+      _notify();
     }
+  }
+
+  /// Verifies that none of [layers] is already mounted somewhere else.
+  ///
+  /// A mounted layer already owns its [GlobalKey]s, so rendering it a second
+  /// time inside the host steals them from the visible copy. Layers of the
+  /// preceding capture are exempt: the host has not repainted since that
+  /// capture cleared the request, so they are still mounted in the host itself
+  /// and the rebuild that mounts this request replaces them.
+  bool _debugLayersAreFree(List<Layer> layers) {
+    for (final layer in layers) {
+      if (layer.repaintBoundaryKey.currentContext == null) continue;
+      if (_previousLayers.any((other) => identical(other, layer))) continue;
+
+      throw FlutterError(
+        'LayerRasterizer.capture was given a layer that is already mounted.\n'
+        'Layer ${layer.id} is in the widget tree — an open editor, a '
+        'LayerStack preview or another rasterizer host. Mounting it again '
+        'moves the GlobalKeys it carries into this host, which empties the '
+        'visible copy. Layers that are already mounted need no host: call '
+        'Layer.captureAllLayers on them directly.',
+      );
+    }
+    return true;
   }
 }
