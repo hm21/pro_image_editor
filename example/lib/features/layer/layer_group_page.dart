@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '/features/layer/layer_export_example.dart';
 import '/features/layer/layer_grouping_example.dart';
+import '/features/layer/layer_rasterizer_example.dart';
 import '/features/layer/layer_select_design_example.dart';
 import '/features/layer/selectable_layer_example.dart';
 
@@ -48,6 +49,12 @@ class _LayerGroupPageState extends State<LayerGroupPage> {
             title: const Text('Export Layers as PNG'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openExample(const LayerExportExample()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.motion_photos_on_outlined),
+            title: const Text('Rasterize Layers without Editor'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openExample(const LayerRasterizerExample()),
           ),
         ],
       ),

@@ -40,6 +40,8 @@ export 'core/models/init_configs/tune_editor_init_configs.dart';
 export '/core/models/complete_parameters.dart';
 export 'core/models/layers/layer.dart';
 export 'core/models/layers/exported_layer.dart';
+export 'shared/services/layer_rasterizer/layer_rasterizer.dart';
+export 'shared/services/layer_rasterizer/layer_rasterizer_host.dart';
 export 'core/models/custom_widgets/layer_interaction_widgets.dart';
 export 'features/blur_editor/blur_editor.dart';
 export 'features/crop_rotate_editor/crop_rotate_editor.dart';
