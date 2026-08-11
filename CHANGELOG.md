@@ -1,5 +1,13 @@
 # Changelog
 
+## 13.3.1
+- **FIX**(crop-rotate): Crop handles no longer jump onto the finger when a drag starts; the gesture slop and the distance to the grabbed handle are compensated.
+- **FIX**(crop-rotate): Corner drags with a fixed aspect ratio now follow the finger diagonally instead of tracking horizontal movement only, and stay inside the image.
+- **FIX**(crop-rotate): Pinch-to-zoom no longer jumps at gesture start and is no longer interrupted when the second finger touches down.
+- **FIX**(crop-rotate): The overlay outside the crop area fades smoothly again when an interaction is interrupted.
+- **FIX**(crop-rotate): Fix the auto zoom-out hit area being misplaced on Android and with custom app bars.
+- **FIX**(crop-rotate): Resizing a tilted image no longer makes it jump around; the tilt bounds now follow the crop animation instead of overriding its zoom, and the auto zoom-out stops at the zoom the tilt requires.
+
 ## 13.3.0
 - **FEAT**(layers): Rasterize layers outside a live editor session with `LayerRasterizer` and `LayerRasterizerHost`.
 

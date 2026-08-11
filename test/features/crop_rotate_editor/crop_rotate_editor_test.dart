@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 // Flutter imports:
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,6 +11,8 @@ import 'package:pro_image_editor/core/models/editor_callbacks/pro_image_editor_c
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/core/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/features/crop_rotate_editor/crop_rotate_editor.dart';
+import 'package:pro_image_editor/features/crop_rotate_editor/utils/crop_aspect_ratios.dart';
+import 'package:pro_image_editor/features/crop_rotate_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import '../../mock/mock_image.dart';
 
 void main() {
@@ -378,6 +381,204 @@ void main() {
         editorKey.currentState!.cropRect.size.aspectRatio,
         closeTo(4 / 3, 0.01),
       );
+    });
+  });
+
+  group('CropRotateEditor corner drag', () {
+    /// The tests run on a desktop host, so the crop handle is picked up from
+    /// hover events and the drag area is configurable.
+    const double dragArea = 40;
+
+    Future<GlobalKey<CropRotateEditorState>> pumpRatioEditor(
+      WidgetTester tester,
+      double ratio,
+    ) async {
+      final editorKey = GlobalKey<CropRotateEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CropRotateEditor.memory(
+              mockMemoryImage,
+              key: editorKey,
+              initConfigs: CropRotateEditorInitConfigs(
+                theme: ThemeData.light(),
+                enableFakeHero: false,
+                mainImageSize: const Size(600, 800),
+                configs: ProImageEditorConfigs(
+                  cropRotateEditor: CropRotateEditorConfigs(
+                    initAspectRatio: ratio,
+                    desktopCornerDragArea: dragArea,
+                    animationDuration: Duration.zero,
+                    cropDragAnimationDuration: Duration.zero,
+                    fadeInOutsideCropAreaAnimationDuration: Duration.zero,
+                    opacityOutsideCropAreaDuration: Duration.zero,
+                  ),
+                  imageGeneration: const ImageGenerationConfigs(
+                    enableBackgroundGeneration: false,
+                    enableIsolateGeneration: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+      return editorKey;
+    }
+
+    /// Returns the global position of the bottom-right corner handle.
+    ///
+    /// `cropRect` lives in the untransformed coordinate space of the crop
+    /// painter, while the gesture detector sits below the zoom and the
+    /// translation, so the point has to be mapped back through both.
+    Offset bottomRightHandle(WidgetTester tester, CropRotateEditorState state) {
+      final RenderBox box =
+          find.byType(CropRotateGestureDetector).evaluate().first.renderObject!
+              as RenderBox;
+      final Offset center = Offset(box.size.width / 2, box.size.height / 2);
+      final Offset local =
+          center +
+          (state.cropRect.bottomRight - center) / state.userScaleFactor -
+          state.translate;
+
+      return box.localToGlobal(local);
+    }
+
+    /// Grabs the bottom-right handle [inset] pixels inside the exact corner,
+    /// like a pointer that hits the handle but not its very tip.
+    Future<TestGesture> grabBottomRight(
+      WidgetTester tester,
+      CropRotateEditorState state, {
+      double inset = 12,
+    }) async {
+      final Offset position = bottomRightHandle(
+        tester,
+        state,
+      ).translate(-inset, -inset);
+
+      /// The handle is picked up from a hover event on desktop.
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: position.translate(-1, -1));
+      addTearDown(gesture.removePointer);
+      await tester.pump();
+      await gesture.moveTo(position);
+      await tester.pump();
+
+      await gesture.down(position);
+      await tester.pump(const Duration(milliseconds: 16));
+      return gesture;
+    }
+
+    testWidgets('follows the pointer without jumping on the first move', (
+      WidgetTester tester,
+    ) async {
+      final editorKey = await pumpRatioEditor(
+        tester,
+        CropAspectRatios.original,
+      );
+      final state = editorKey.currentState!;
+
+      final Rect startRect = state.cropRect;
+      expect(startRect.size.aspectRatio, closeTo(3 / 4, 0.01));
+
+      final gesture = await grabBottomRight(tester, state);
+
+      /// Nothing may happen before the pointer moves.
+      expect(state.cropRect, startRect);
+
+      for (var i = 0; i < 2; i++) {
+        await gesture.moveBy(const Offset(-4, -4));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+
+      /// The handle must not snap onto the pointer. It may only shrink by the
+      /// distance the pointer traveled, not by the 12 pixels between the
+      /// pointer and the handle.
+      expect(startRect.width - state.cropRect.width, greaterThan(0));
+      expect(startRect.width - state.cropRect.width, lessThan(8));
+      expect(state.cropRect.size.aspectRatio, closeTo(3 / 4, 0.01));
+
+      final double widthAfterFirstMove = state.cropRect.width;
+
+      /// A vertical move must resize as well. The ratio is kept by moving both
+      /// axes instead of tracking the horizontal movement only.
+      await gesture.moveBy(const Offset(0, -20));
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(state.cropRect.width, lessThan(widthAfterFirstMove));
+      expect(state.cropRect.size.aspectRatio, closeTo(3 / 4, 0.01));
+
+      /// The anchored corner never moves.
+      expect(state.cropRect.left, closeTo(startRect.left, 0.01));
+      expect(state.cropRect.top, closeTo(startRect.top, 0.01));
+
+      await gesture.up();
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+    });
+
+    testWidgets('keeps the crop rect inside the image', (
+      WidgetTester tester,
+    ) async {
+      final editorKey = await pumpRatioEditor(
+        tester,
+        CropAspectRatios.original,
+      );
+      final state = editorKey.currentState!;
+      final Rect viewRect = state.cropRect;
+
+      final gesture = await grabBottomRight(tester, state);
+
+      /// Drag far outside the image.
+      for (var i = 0; i < 4; i++) {
+        await gesture.moveBy(const Offset(100, 100));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+
+      expect(state.cropRect.right, lessThanOrEqualTo(viewRect.right + 0.01));
+      expect(state.cropRect.bottom, lessThanOrEqualTo(viewRect.bottom + 0.01));
+
+      await gesture.up();
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+    });
+
+    testWidgets('resizes without losing the tilt zoom', (
+      WidgetTester tester,
+    ) async {
+      final editorKey = await pumpRatioEditor(
+        tester,
+        CropAspectRatios.original,
+      );
+      final state = editorKey.currentState!;
+
+      expect(state.userScaleFactor, 1);
+
+      /// A tilted image no longer covers the crop area on its own, so the
+      /// editor auto-zooms to keep it covered.
+      state.tilt(TiltMode.rotate, 0.12);
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+      final double tiltZoom = state.userScaleFactor;
+      expect(tiltZoom, greaterThan(1));
+
+      final Rect startRect = state.cropRect;
+      final gesture = await grabBottomRight(tester, state);
+
+      for (var i = 0; i < 6; i++) {
+        await gesture.moveBy(const Offset(-8, -8));
+        await tester.pump(const Duration(milliseconds: 16));
+
+        /// The crop area must never be left uncovered while dragging.
+        expect(state.userScaleFactor, greaterThanOrEqualTo(tiltZoom - 0.01));
+      }
+      expect(state.cropRect.width, lessThan(startRect.width));
+
+      await gesture.up();
+      await tester.pumpAndSettle(const Duration(milliseconds: 400));
+
+      /// The smaller selection is zoomed up to fill the view again, and the
+      /// tilt is untouched by the resize.
+      expect(state.cropRect.width, closeTo(startRect.width, 0.01));
+      expect(state.userScaleFactor, greaterThan(tiltZoom));
+      expect(state.tiltRotateAngle, closeTo(0.12, 0.0001));
     });
   });
 
