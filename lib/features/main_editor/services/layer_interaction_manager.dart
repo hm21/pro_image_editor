@@ -446,13 +446,22 @@ class LayerInteractionManager {
   bool _alignmentGuidesInitialized = false;
 
   /// X-axis snap targets the active layer already coincided with when the drag
-  /// started. They stay suppressed until the layer's nearest edge moves clear
-  /// (farther than the release threshold), so a layer lifted off a pile of
-  /// overlapping layers isn't trapped by their coincident alignment guides.
-  final Set<double> _heldAlignXTargets = {};
+  /// started. Smart layer targets use `(position, active-anchor kind)` so a
+  /// left edge at the same coordinate cannot release a held center. Flag-off
+  /// matching and custom guides use `(position, null)` to keep the original
+  /// position-only suppression. Held until that key's distance exceeds the
+  /// release threshold.
+  final Set<(double, _SnapKind?)> _heldAlignXTargets = {};
 
   /// Y-axis counterpart of [_heldAlignXTargets].
-  final Set<double> _heldAlignYTargets = {};
+  final Set<(double, _SnapKind?)> _heldAlignYTargets = {};
+
+  /// Pointer-driven offset for the active drag, before helper-line snapping.
+  ///
+  /// Snap may rewrite [Layer.offset] for display; this value keeps accumulating
+  /// the finger/mouse delta so release can be measured from the intended
+  /// position rather than the glued snapped position.
+  final Map<String, Offset> _unconstrainedOffsets = {};
 
   /// Optional override for helper line configuration at runtime.
   ///
@@ -490,12 +499,111 @@ class LayerInteractionManager {
     return const Offset(-0.5, -0.5);
   }
 
-  /// Returns the anchor whose position sits closest to the center line
-  /// (position `0`).
+  /// Returns the anchor whose position sits closest to the canvas center
+  /// (position `0`). Used by the canvas helper lines.
   _LayerSnapAnchor _closestAnchor(List<_LayerSnapAnchor> anchors) {
     return anchors.reduce(
       (a, b) => a.position.abs() <= b.position.abs() ? a : b,
     );
+  }
+
+  /// Returns the anchor whose position sits closest to [target].
+  _LayerSnapAnchor _nearestAnchorTo(
+    List<_LayerSnapAnchor> anchors,
+    double target,
+  ) {
+    return anchors.reduce(
+      (a, b) =>
+          (a.position - target).abs() <= (b.position - target).abs() ? a : b,
+    );
+  }
+
+  /// Center-kind anchor, falling back to [_closestAnchor] if none is tagged.
+  _LayerSnapAnchor _centerAnchor(List<_LayerSnapAnchor> anchors) {
+    for (final anchor in anchors) {
+      if (anchor.kind == _SnapKind.center) return anchor;
+    }
+    return _closestAnchor(anchors);
+  }
+
+  /// Anchor used by the canvas center helper lines.
+  ///
+  /// Smart alignment snaps the layer center only, so a wide text box does not
+  /// hit the page midline three times (left, then center, then right).
+  _LayerSnapAnchor _canvasSnapAnchor(List<_LayerSnapAnchor> anchors) {
+    if (helperLineConfigs.enableSmartAlignment) {
+      return _centerAnchor(anchors);
+    }
+    return _closestAnchor(anchors);
+  }
+
+  _SnapFamily _snapFamily(Layer layer) {
+    if (layer is TextLayer) return _SnapFamily.text;
+    if (layer is PaintLayer) return _SnapFamily.paint;
+    return _SnapFamily.other;
+  }
+
+  Offset _snapLayerCenter(Layer layer) {
+    return layer.computeOffsetFromCenterFraction(
+      _getFractionalLayerOffset(layer),
+    );
+  }
+
+  List<Layer> _nearestSnapLayers(Layer active, List<Layer> others) {
+    final limit = helperLineConfigs.smartAlignmentNeighborLimit;
+    if (limit <= 0) return const [];
+    if (others.length <= limit) return others;
+
+    // Measure every candidate once; the comparator runs O(n log n) times.
+    final activeCenter = _snapLayerCenter(active);
+    final distances = <String, double>{
+      for (final layer in others)
+        layer.id: (_snapLayerCenter(layer) - activeCenter).distance,
+    };
+    final ranked = [...others]
+      ..sort((a, b) {
+        final cmp = distances[a.id]!.compareTo(distances[b.id]!);
+        if (cmp != 0) return cmp;
+        return a.id.compareTo(b.id);
+      });
+    return ranked.sublist(0, limit);
+  }
+
+  _LayerSnapAnchor? _anchorForTarget({
+    required List<_LayerSnapAnchor> activeAnchors,
+    required _SnapGuideTarget target,
+    required Layer activeLayer,
+  }) {
+    if (activeAnchors.isEmpty) return null;
+    if (!helperLineConfigs.enableSmartAlignment || target.isCustom) {
+      return _nearestAnchorTo(activeAnchors, target.position);
+    }
+    if (target.family == _snapFamily(activeLayer)) {
+      for (final anchor in activeAnchors) {
+        if (anchor.kind == target.kind) return anchor;
+      }
+      return null;
+    }
+    if (target.kind != _SnapKind.center) return null;
+    for (final anchor in activeAnchors) {
+      if (anchor.kind == _SnapKind.center) return anchor;
+    }
+    return null;
+  }
+
+  /// Suppression key for a target the active layer is currently matching.
+  ///
+  /// Smart layer-to-layer targets include the matched active-anchor kind so
+  /// coincident edges cannot release each other. Legacy matching and custom
+  /// guides stay position-only, matching the original hold behavior.
+  (double, _SnapKind?) _heldAlignKey(
+    _SnapGuideTarget target,
+    _LayerSnapAnchor anchor,
+  ) {
+    if (helperLineConfigs.enableSmartAlignment && !target.isCustom) {
+      return (target.position, anchor.kind);
+    }
+    return (target.position, null);
   }
 
   /// Returns the axis-aligned bounding size of [size] rotated by [rotation]
@@ -518,7 +626,11 @@ class LayerInteractionManager {
   /// configured center anchor.
   bool _supportsEdgeSnapping(Layer layer) =>
       helperLineConfigs.enableEdgeSnapping &&
-      (layer is TextLayer || layer is PaintLayer);
+      (layer is TextLayer ||
+          (layer is PaintLayer && helperLineConfigs.enablePaintLayerSnapping));
+
+  bool _excludePaintFromLayerAlign(Layer layer) =>
+      !helperLineConfigs.enablePaintLayerSnapping && layer is PaintLayer;
 
   /// Returns the candidate horizontal snap anchors for [layer] in
   /// center-relative editor coordinates.
@@ -555,11 +667,13 @@ class LayerInteractionManager {
       _LayerSnapAnchor(
         position: center - halfWidth,
         localOffset: localCenter - halfWidth,
+        kind: _SnapKind.start,
       ),
       centerAnchor,
       _LayerSnapAnchor(
         position: center + halfWidth,
         localOffset: localCenter + halfWidth,
+        kind: _SnapKind.end,
       ),
     ];
   }
@@ -598,11 +712,13 @@ class LayerInteractionManager {
       _LayerSnapAnchor(
         position: center - halfHeight,
         localOffset: localCenter - halfHeight,
+        kind: _SnapKind.start,
       ),
       centerAnchor,
       _LayerSnapAnchor(
         position: center + halfHeight,
         localOffset: localCenter + halfHeight,
+        kind: _SnapKind.end,
       ),
     ];
   }
@@ -750,13 +866,25 @@ class LayerInteractionManager {
     for (Layer layer in selectedLayers) {
       if (!layer.interaction.enableMove) continue;
 
-      layer.offset = Offset(
-        layer.offset.dx + detail.focalPointDelta.dx / editorScaleFactor,
-        layer.offset.dy + detail.focalPointDelta.dy / editorScaleFactor,
+      final pointerDelta = Offset(
+        detail.focalPointDelta.dx / editorScaleFactor,
+        detail.focalPointDelta.dy / editorScaleFactor,
       );
+      if (helperLineConfigs.enableSmartAlignment) {
+        final intended =
+            (_unconstrainedOffsets[layer.id] ?? layer.offset) + pointerDelta;
+        _unconstrainedOffsets[layer.id] = intended;
+        layer.offset = intended;
+      } else {
+        layer.offset = Offset(
+          layer.offset.dx + pointerDelta.dx,
+          layer.offset.dy + pointerDelta.dy,
+        );
+      }
 
       if (hasMultiSelection ||
-          (editorScaleFactor > 1 && helperLineConfigs.isDisabledAtZoom)) {
+          (editorScaleFactor > 1 && helperLineConfigs.isDisabledAtZoom) ||
+          _excludePaintFromLayerAlign(layer)) {
         continue;
       }
 
@@ -764,9 +892,10 @@ class LayerInteractionManager {
       /// currently closest to a center line is the one that snaps to it. The
       /// same closest anchor is computed in [onScaleStart] so the snapping
       /// hysteresis starts from a consistent state (avoiding an immediate
-      /// jump).
-      final closestX = _closestAnchor(_horizontalSnapAnchors(layer));
-      final closestY = _closestAnchor(_verticalSnapAnchors(layer));
+      /// jump). Smart alignment always uses the center so a wide box does not
+      /// hit the page midline three times.
+      final closestX = _canvasSnapAnchor(_horizontalSnapAnchors(layer));
+      final closestY = _canvasSnapAnchor(_verticalSnapAnchors(layer));
 
       /// When the closest edge switches (e.g. from the left edge to the center)
       /// the tracked position flips discontinuously; suppress a new snap on
@@ -861,6 +990,79 @@ class LayerInteractionManager {
         }
       }
     }
+  }
+
+  void _addSharedAxisTargets({
+    required List<Layer> others,
+    required double snapThreshold,
+    required void Function(double pos, _SnapKind kind, _SnapFamily? family)
+    addX,
+    required void Function(double pos, _SnapKind kind, _SnapFamily? family)
+    addY,
+  }) {
+    void addClusters({
+      required bool horizontal,
+      required void Function(double pos, _SnapKind kind, _SnapFamily? family)
+      add,
+    }) {
+      final edgeBuckets = <(_SnapFamily, _SnapKind), List<double>>{};
+      final centerPositions = <double>[];
+      for (final layer in others) {
+        final family = _snapFamily(layer);
+        final anchors = horizontal
+            ? _horizontalSnapAnchors(layer)
+            : _verticalSnapAnchors(layer);
+        for (final anchor in anchors) {
+          if (anchor.kind == _SnapKind.center) {
+            centerPositions.add(anchor.position);
+          } else {
+            edgeBuckets
+                .putIfAbsent((family, anchor.kind), () => [])
+                .add(anchor.position);
+          }
+        }
+      }
+
+      final sharedMin = helperLineConfigs.smartAlignmentSharedAxisMin;
+
+      void emit(List<double> positions, _SnapKind kind, _SnapFamily? family) {
+        final sorted = [...positions]..sort();
+        var i = 0;
+        while (i < sorted.length) {
+          var j = i + 1;
+          var sum = sorted[i];
+          while (j < sorted.length && sorted[j] - sorted[i] <= snapThreshold) {
+            sum += sorted[j];
+            j++;
+          }
+          if (j - i >= sharedMin) {
+            // Snap to the real edge closest to the cluster's mean instead of
+            // the mean itself, so the guide always overlays an actual layer
+            // edge rather than a position no layer sits on.
+            final mean = sum / (j - i);
+            var best = sorted[i];
+            for (var k = i + 1; k < j; k++) {
+              if ((sorted[k] - mean).abs() < (best - mean).abs()) {
+                best = sorted[k];
+              }
+            }
+            add(best, kind, family);
+          }
+          i = j;
+        }
+      }
+
+      // Centers count across layer types so a token and a label on the same
+      // X still form a global column. Edges stay type-specific (text lefts
+      // do not mix with paint lefts).
+      emit(centerPositions, _SnapKind.center, null);
+      for (final entry in edgeBuckets.entries) {
+        emit(entry.value, entry.key.$2, entry.key.$1);
+      }
+    }
+
+    addClusters(horizontal: true, add: addX);
+    addClusters(horizontal: false, add: addY);
   }
 
   void _checkLayerHoverRemoveArea({
@@ -998,19 +1200,21 @@ class LayerInteractionManager {
     _heldAlignYTargets.clear();
     _horizontalSnapHelper.reset();
     _verticalSnapHelper.reset();
+    _unconstrainedOffsets.clear();
 
     for (Layer layer in selectedLayers) {
+      _unconstrainedOffsets[layer.id] = layer.offset;
       _baseScaleFactor[layer.id] = layer.scale;
       _baseAngleFactor[layer.id] = layer.rotation;
       _snapStartRotation[layer.id] = layer.rotation * 180 / pi;
       _snapLastRotation[layer.id] = _getLayerSnapStartRotation(layer.id);
       reset();
 
-      // Initialize the snap hysteresis from the same closest edge that
+      // Initialize the snap hysteresis from the same canvas-line anchor that
       // [calculateMovement] evaluates, so dragging never starts with an
       // immediate jump to a center line.
-      final closestX = _closestAnchor(_horizontalSnapAnchors(layer));
-      final closestY = _closestAnchor(_verticalSnapAnchors(layer));
+      final closestX = _canvasSnapAnchor(_horizontalSnapAnchors(layer));
+      final closestY = _canvasSnapAnchor(_verticalSnapAnchors(layer));
       double posX = closestX.position;
       double posY = closestY.position;
       _activeClosestLocalOffsetX = closestX.localOffset;
@@ -1056,6 +1260,7 @@ class LayerInteractionManager {
     _alignmentGuidesInitialized = false;
     _heldAlignXTargets.clear();
     _heldAlignYTargets.clear();
+    _unconstrainedOffsets.clear();
   }
 
   /// Rotate a layer.
@@ -1206,6 +1411,7 @@ class LayerInteractionManager {
 
     final snapThreshold = 3.0 / editorScaleFactor;
     final releaseThreshold = helperLineConfigs.releaseThreshold;
+    final holdUntil = max(snapThreshold, releaseThreshold);
 
     final wasHorizontalGuideVisible = isHorizontalGuideVisible;
     final wasVerticalGuideVisible = isVerticalGuideVisible;
@@ -1217,9 +1423,40 @@ class LayerInteractionManager {
     final xTargets = <_SnapGuideTarget>[];
     final yTargets = <_SnapGuideTarget>[];
 
-    void addTarget(List<_SnapGuideTarget> list, double pos, bool isCustom) {
-      if (list.any((t) => (t.position - pos).abs() < snapThreshold)) return;
-      list.add(_SnapGuideTarget(position: pos, isCustom: isCustom));
+    void addTarget(
+      List<_SnapGuideTarget> list,
+      double pos, {
+      bool isCustom = false,
+      _SnapKind kind = _SnapKind.center,
+      _SnapFamily? family,
+    }) {
+      if (list.any((t) {
+        if ((t.position - pos).abs() >= snapThreshold) return false;
+        // Custom guides are added first and always own that line.
+        if (t.isCustom) return true;
+        if (!helperLineConfigs.enableSmartAlignment) return true;
+        return t.isCustom == isCustom && t.kind == kind && t.family == family;
+      })) {
+        return;
+      }
+      list.add(
+        _SnapGuideTarget(
+          position: pos,
+          isCustom: isCustom,
+          kind: kind,
+          family: family,
+        ),
+      );
+    }
+
+    void addLayerAnchors(Layer layer) {
+      final family = _snapFamily(layer);
+      for (final anchor in _horizontalSnapAnchors(layer)) {
+        addTarget(xTargets, anchor.position, kind: anchor.kind, family: family);
+      }
+      for (final anchor in _verticalSnapAnchors(layer)) {
+        addTarget(yTargets, anchor.position, kind: anchor.kind, family: family);
+      }
     }
 
     // App-defined custom guides take priority over layer-alignment guides.
@@ -1228,95 +1465,119 @@ class LayerInteractionManager {
     for (final guide in customGuides) {
       final pos = guide.resolvePosition(editorBodySize);
       if (guide.axis == Axis.vertical) {
-        addTarget(xTargets, pos - halfWidth, true);
+        addTarget(xTargets, pos - halfWidth, isCustom: true);
       } else {
-        addTarget(yTargets, pos - halfHeight, true);
+        addTarget(yTargets, pos - halfHeight, isCustom: true);
       }
     }
 
-    if (showLayerAlign) {
-      for (final layer in layerList) {
-        if (layer == activeLayer) continue;
-        for (final anchor in _horizontalSnapAnchors(layer)) {
-          addTarget(xTargets, anchor.position, false);
+    if (showLayerAlign && !_excludePaintFromLayerAlign(activeLayer)) {
+      final others = <Layer>[
+        for (final layer in layerList)
+          if (layer != activeLayer && !_excludePaintFromLayerAlign(layer))
+            layer,
+      ];
+      if (helperLineConfigs.enableSmartAlignment) {
+        for (final layer in _nearestSnapLayers(activeLayer, others)) {
+          addLayerAnchors(layer);
         }
-        for (final anchor in _verticalSnapAnchors(layer)) {
-          addTarget(yTargets, anchor.position, false);
+        _addSharedAxisTargets(
+          others: others,
+          snapThreshold: snapThreshold,
+          addX: (pos, kind, family) =>
+              addTarget(xTargets, pos, kind: kind, family: family),
+          addY: (pos, kind, family) =>
+              addTarget(yTargets, pos, kind: kind, family: family),
+        );
+      } else {
+        for (final layer in others) {
+          addLayerAnchors(layer);
         }
       }
     }
 
+    final intended = helperLineConfigs.enableSmartAlignment
+        ? _unconstrainedOffsets[activeLayer.id]
+        : null;
+    final displayOffset = activeLayer.offset;
+    if (intended != null) {
+      activeLayer.offset = intended;
+    }
     final activeXAnchors = _horizontalSnapAnchors(activeLayer);
     final activeYAnchors = _verticalSnapAnchors(activeLayer);
+    if (intended != null) {
+      activeLayer.offset = displayOffset;
+    }
+
+    (double, _SnapKind?)? heldKeyIfCoincident(
+      _SnapGuideTarget target,
+      List<_LayerSnapAnchor> anchors,
+    ) {
+      final anchor = _anchorForTarget(
+        activeAnchors: anchors,
+        target: target,
+        activeLayer: activeLayer,
+      );
+      if (anchor == null) return null;
+      if ((anchor.position - target.position).abs() > snapThreshold) {
+        return null;
+      }
+      return _heldAlignKey(target, anchor);
+    }
 
     if (!_alignmentGuidesInitialized) {
       _alignmentGuidesInitialized = true;
-      // Remember the targets the active layer already coincides with when the
-      // drag begins, so they don't immediately trap it. Without this a layer
-      // that shares its position with others (e.g. a stack of overlapping
-      // layers) is held in place by their coincident guides and can't be
-      // dragged away until the pointer travels past every anchor.
+      // Remember the target+anchor pairs the active layer already sat on when
+      // the drag begins, so they don't immediately trap it. Without this a
+      // layer that shares its position with others (e.g. a stack of overlapping
+      // layers) is held in place by their coincident alignment guides and
+      // can't be dragged away until the pointer travels past every pair.
       _heldAlignXTargets
         ..clear()
-        ..addAll(
-          xTargets
-              .where(
-                (t) => activeXAnchors.any(
-                  (a) => (a.position - t.position).abs() <= snapThreshold,
-                ),
-              )
-              .map((t) => t.position),
-        );
+        ..addAll([
+          for (final t in xTargets) ?heldKeyIfCoincident(t, activeXAnchors),
+        ]);
       _heldAlignYTargets
         ..clear()
-        ..addAll(
-          yTargets
-              .where(
-                (t) => activeYAnchors.any(
-                  (a) => (a.position - t.position).abs() <= snapThreshold,
-                ),
-              )
-              .map((t) => t.position),
-        );
+        ..addAll([
+          for (final t in yTargets) ?heldKeyIfCoincident(t, activeYAnchors),
+        ]);
     }
 
     _SnapGuideTarget? matchedX;
     _LayerSnapAnchor? matchedXAnchor;
     for (final target in xTargets) {
-      // Snap the active layer's edge that sits closest to this target.
-      final anchor = activeXAnchors.reduce(
-        (a, b) =>
-            (a.position - target.position).abs() <=
-                (b.position - target.position).abs()
-            ? a
-            : b,
+      final anchor = _anchorForTarget(
+        activeAnchors: activeXAnchors,
+        target: target,
+        activeLayer: activeLayer,
       );
+      if (anchor == null) continue;
 
       final double distanceX = (anchor.position - target.position).abs();
+      final key = _heldAlignKey(target, anchor);
 
-      // A target the layer already sat on when the drag began stays suppressed
-      // until the layer moves clear of it, so overlapping layers can be pulled
-      // apart instead of being trapped by their coincident guides. Once clear,
-      // the target re-arms and snapping works normally on re-approach.
-      if (_heldAlignXTargets.contains(target.position)) {
-        if (distanceX > releaseThreshold) {
-          _heldAlignXTargets.remove(target.position);
-        } else {
+      if (_heldAlignXTargets.contains(key)) {
+        if (distanceX <= holdUntil) {
           continue;
         }
+        _heldAlignXTargets.remove(key);
+        continue;
       }
 
       if (distanceX <= snapThreshold &&
-          _verticalSnapHelper.maybeSnap(
-            focal: detail.focalPoint.dx,
-            focalDelta: detail.focalPointDelta.dx,
-            // Encode the snapping edge so every edge can reach the same target.
-            offset: Offset(target.position, anchor.localOffset),
-            threshold: snapThreshold,
-            releaseThreshold: releaseThreshold,
-            positiveDirection: LayerLastPosition.left,
-            negativeDirection: LayerLastPosition.right,
-          )) {
+          (helperLineConfigs.enableSmartAlignment ||
+              _verticalSnapHelper.maybeSnap(
+                focal: detail.focalPoint.dx,
+                focalDelta: detail.focalPointDelta.dx,
+                // Encode the snapping edge so every edge can reach the same
+                // target.
+                offset: Offset(target.position, anchor.localOffset),
+                threshold: snapThreshold,
+                releaseThreshold: releaseThreshold,
+                positiveDirection: LayerLastPosition.left,
+                negativeDirection: LayerLastPosition.right,
+              ))) {
         matchedX = target;
         matchedXAnchor = anchor;
         break;
@@ -1326,38 +1587,37 @@ class LayerInteractionManager {
     _SnapGuideTarget? matchedY;
     _LayerSnapAnchor? matchedYAnchor;
     for (final target in yTargets) {
-      // Snap the active layer's edge that sits closest to this target.
-      final anchor = activeYAnchors.reduce(
-        (a, b) =>
-            (a.position - target.position).abs() <=
-                (b.position - target.position).abs()
-            ? a
-            : b,
+      final anchor = _anchorForTarget(
+        activeAnchors: activeYAnchors,
+        target: target,
+        activeLayer: activeLayer,
       );
+      if (anchor == null) continue;
 
       final double distanceY = (anchor.position - target.position).abs();
+      final key = _heldAlignKey(target, anchor);
 
-      // See the x-axis loop above: suppress targets the layer already sat on so
-      // stacked/overlapping layers can be separated.
-      if (_heldAlignYTargets.contains(target.position)) {
-        if (distanceY > releaseThreshold) {
-          _heldAlignYTargets.remove(target.position);
-        } else {
+      if (_heldAlignYTargets.contains(key)) {
+        if (distanceY <= holdUntil) {
           continue;
         }
+        _heldAlignYTargets.remove(key);
+        continue;
       }
 
       if (distanceY <= snapThreshold &&
-          _horizontalSnapHelper.maybeSnap(
-            focal: detail.focalPoint.dy,
-            focalDelta: detail.focalPointDelta.dy,
-            // Encode the snapping edge so every edge can reach the same target.
-            offset: Offset(anchor.localOffset, target.position),
-            threshold: snapThreshold,
-            releaseThreshold: releaseThreshold,
-            positiveDirection: LayerLastPosition.top,
-            negativeDirection: LayerLastPosition.bottom,
-          )) {
+          (helperLineConfigs.enableSmartAlignment ||
+              _horizontalSnapHelper.maybeSnap(
+                focal: detail.focalPoint.dy,
+                focalDelta: detail.focalPointDelta.dy,
+                // Encode the snapping edge so every edge can reach the same
+                // target.
+                offset: Offset(anchor.localOffset, target.position),
+                threshold: snapThreshold,
+                releaseThreshold: releaseThreshold,
+                positiveDirection: LayerLastPosition.top,
+                negativeDirection: LayerLastPosition.bottom,
+              ))) {
         matchedY = target;
         matchedYAnchor = anchor;
         break;
@@ -1404,27 +1664,49 @@ class LayerInteractionManager {
   }
 }
 
+enum _SnapKind { start, center, end }
+
+enum _SnapFamily { text, paint, other }
+
 /// A single snap anchor of a layer, expressed in center-relative editor
 /// coordinates together with the offset of that anchor from `layer.offset`.
 class _LayerSnapAnchor {
-  const _LayerSnapAnchor({required this.position, required this.localOffset});
+  const _LayerSnapAnchor({
+    required this.position,
+    required this.localOffset,
+    this.kind = _SnapKind.center,
+  });
 
   /// Anchor position in center-relative editor coordinates.
   final double position;
 
   /// Offset of the anchor from `layer.offset` along the same axis.
   final double localOffset;
+
+  /// Which edge of the layer this anchor represents.
+  final _SnapKind kind;
 }
 
 /// A snap target line in center-relative editor coordinates.
 class _SnapGuideTarget {
-  const _SnapGuideTarget({required this.position, required this.isCustom});
+  const _SnapGuideTarget({
+    required this.position,
+    required this.isCustom,
+    this.kind = _SnapKind.center,
+    this.family,
+  });
 
   /// Target position in center-relative editor coordinates.
   final double position;
 
   /// Whether this target originates from an app-defined custom guide.
   final bool isCustom;
+
+  /// Which edge produced this target. Ignored for custom guides.
+  final _SnapKind kind;
+
+  /// Layer family that produced this target. Null for custom guides.
+  final _SnapFamily? family;
 }
 
 class _LayerAlignGuideHelper {

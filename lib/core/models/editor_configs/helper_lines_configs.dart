@@ -17,6 +17,10 @@ class HelperLineConfigs {
     this.showLayerAlignLine = true,
     this.isDisabledAtZoom = false,
     this.enableEdgeSnapping = true,
+    this.enableSmartAlignment = false,
+    this.enablePaintLayerSnapping = true,
+    this.smartAlignmentNeighborLimit = 3,
+    this.smartAlignmentSharedAxisMin = 2,
     this.releaseThreshold = 10.0,
     this.customGuides = const [],
     this.style = const HelperLineStyle(),
@@ -48,6 +52,51 @@ class HelperLineConfigs {
   /// snaps from its center only.
   final bool enableEdgeSnapping;
 
+  /// Softens layer-to-layer snapping on a dense canvas (many text labels).
+  ///
+  /// When `false` (the default), every edge of every layer can snap to every
+  /// other edge — the original behavior, which becomes sticky on a page of
+  /// labels.
+  ///
+  /// When `true`:
+  /// * Same layer type (text↔text, paint↔paint) snaps matching edges
+  ///   (left↔left, center↔center, right↔right).
+  /// * Different types (text↔sticker) snap center↔center only.
+  /// * Only nearby layers ([smartAlignmentNeighborLimit]) plus axes already
+  ///   shared by [smartAlignmentSharedAxisMin] or more layers participate, so a
+  ///   lone label across the sheet is not a magnet. Shared **center** axes
+  ///   count across layer types (a token and a label on the same X); edges
+  ///   stay type-specific.
+  /// * Canvas center lines snap the layer center only, not every edge.
+  /// * Snapping is applied on top of the pointer's intended position. Release
+  ///   is measured from that intended position so both axes can catch without
+  ///   trapping the layer on the snapped coordinates.
+  ///
+  /// Custom guides are unchanged. Combine with [enableEdgeSnapping] to recover
+  /// flush-start columns without the magnet field.
+  final bool enableSmartAlignment;
+
+  /// When `false`, paint layers do not snap while dragging (canvas midlines,
+  /// custom guides, and layer-align) and do not act as layer-align targets
+  /// for other layers. Text edges and sticker centers are unchanged. Defaults
+  /// to `true` so existing apps keep paint-to-paint alignment.
+  final bool enablePaintLayerSnapping;
+
+  /// How many of the closest layers participate as snap targets while
+  /// [enableSmartAlignment] is on.
+  ///
+  /// Lower values calm a dense canvas further; higher values bring back more of
+  /// the original magnet field. Ignored when [enableSmartAlignment] is `false`.
+  final int smartAlignmentNeighborLimit;
+
+  /// How many layers must already share an axis for that axis to stay a global
+  /// snap target while [enableSmartAlignment] is on.
+  ///
+  /// A shared axis snaps to the real edge closest to the cluster, so the guide
+  /// always overlays an actual layer edge. Ignored when [enableSmartAlignment]
+  /// is `false`.
+  final int smartAlignmentSharedAxisMin;
+
   /// Style configuration for helper lines.
   final HelperLineStyle style;
 
@@ -76,6 +125,10 @@ class HelperLineConfigs {
     bool? showLayerAlignLine,
     bool? isDisabledAtZoom,
     bool? enableEdgeSnapping,
+    bool? enableSmartAlignment,
+    bool? enablePaintLayerSnapping,
+    int? smartAlignmentNeighborLimit,
+    int? smartAlignmentSharedAxisMin,
     double? releaseThreshold,
     List<HelperGuideLine>? customGuides,
     HelperLineStyle? style,
@@ -87,6 +140,13 @@ class HelperLineConfigs {
       showLayerAlignLine: showLayerAlignLine ?? this.showLayerAlignLine,
       isDisabledAtZoom: isDisabledAtZoom ?? this.isDisabledAtZoom,
       enableEdgeSnapping: enableEdgeSnapping ?? this.enableEdgeSnapping,
+      enableSmartAlignment: enableSmartAlignment ?? this.enableSmartAlignment,
+      enablePaintLayerSnapping:
+          enablePaintLayerSnapping ?? this.enablePaintLayerSnapping,
+      smartAlignmentNeighborLimit:
+          smartAlignmentNeighborLimit ?? this.smartAlignmentNeighborLimit,
+      smartAlignmentSharedAxisMin:
+          smartAlignmentSharedAxisMin ?? this.smartAlignmentSharedAxisMin,
       releaseThreshold: releaseThreshold ?? this.releaseThreshold,
       customGuides: customGuides ?? this.customGuides,
       style: style ?? this.style,
