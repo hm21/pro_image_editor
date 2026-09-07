@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math';
 
 // Flutter imports:
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
@@ -137,6 +138,8 @@ class PaintCanvasState extends State<PaintCanvas> {
   /// for the interaction to be considered a tap rather than a drag gesture.
   static const double _tapDistanceThreshold = 10.0;
 
+  final Set<int> _navigationPointers = <int>{};
+
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
   bool get _isFreeStyleMode =>
       _paintCtrl.mode == PaintMode.freeStyle ||
@@ -156,6 +159,38 @@ class PaintCanvasState extends State<PaintCanvas> {
     super.dispose();
   }
 
+  /// Discards the in-progress stroke so a viewport change cannot mix
+  /// coordinate spaces in a single path.
+  ///
+  /// Remaining pointers are ignored until they are released, matching the
+  /// multi-touch pinch behavior.
+  void cancelActiveDrawing() {
+    _discardActiveStroke();
+    if (_activePointerCount > 0) {
+      _isMultiTouch = true;
+    }
+  }
+
+  void _discardActiveStroke() {
+    if (_paintCtrl.busy || _paintCtrl.start != null) {
+      _paintCtrl
+        ..setInProgress(false)
+        ..reset();
+      _activePaintStreamCtrl.add(null);
+    }
+  }
+
+  bool get _auxiliaryMousePansView =>
+      widget.paintEditorConfigs.enableZoom &&
+      widget.paintEditorConfigs.enableZoomWhileDrawing;
+
+  bool _isAuxiliaryMousePan(PointerEvent event) {
+    if (!_auxiliaryMousePansView) return false;
+    if (event.kind != PointerDeviceKind.mouse) return false;
+    return (event.buttons & kSecondaryMouseButton) != 0 ||
+        (event.buttons & kMiddleMouseButton) != 0;
+  }
+
   /// Handles the pointer down event for immediate response to touch/stylus
   /// input.
   ///
@@ -163,17 +198,25 @@ class PaintCanvasState extends State<PaintCanvas> {
   /// to eliminate gesture disambiguation delays, significantly reducing drawing
   /// latency on devices like iPad with Apple Pencil.
   void _onPointerDown(PointerDownEvent event) {
+    if (_isAuxiliaryMousePan(event)) {
+      _navigationPointers.add(event.pointer);
+      _discardActiveStroke();
+      if (_activePointerCount > 0) {
+        _isMultiTouch = true;
+      }
+      return;
+    }
+    if (_navigationPointers.isNotEmpty) {
+      _activePointerCount++;
+      _isMultiTouch = true;
+      _discardActiveStroke();
+      return;
+    }
     _activePointerCount++;
     if (_activePointerCount > 1) {
       // Multi-touch detected - disable drawing to allow pinch-to-zoom
       _isMultiTouch = true;
-      // Cancel any ongoing drawing
-      if (_paintCtrl.busy) {
-        _paintCtrl
-          ..setInProgress(false)
-          ..reset();
-        _activePaintStreamCtrl.add(null);
-      }
+      _discardActiveStroke();
       return;
     }
 
@@ -207,6 +250,15 @@ class PaintCanvasState extends State<PaintCanvas> {
   /// This provides immediate response to pointer movement without the
   /// gesture disambiguation delay that occurs with [GestureDetector].
   void _onPointerMove(PointerMoveEvent event) {
+    if (_navigationPointers.contains(event.pointer)) return;
+    if (_isAuxiliaryMousePan(event)) {
+      // A mouse button pressed mid-stroke arrives as a move event, not a new
+      // pointer. Drop the stroke instead of pausing it, which would otherwise
+      // resume with a straight jump once the button is released again.
+      _isMultiTouch = true;
+      _discardActiveStroke();
+      return;
+    }
     // Skip if multi-touch gesture is active (pinch-to-zoom)
     if (_isMultiTouch || _activePointerCount > 1) return;
 
@@ -241,6 +293,7 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   /// Handles the pointer up event to finalize drawing.
   void _onPointerUp(PointerUpEvent event) {
+    if (_navigationPointers.remove(event.pointer)) return;
     _activePointerCount = max(0, _activePointerCount - 1);
 
     // If this was part of a multi-touch gesture, reset and return
@@ -298,6 +351,7 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   /// Handles the pointer cancel event to clean up state.
   void _onPointerCancel(PointerCancelEvent event) {
+    if (_navigationPointers.remove(event.pointer)) return;
     _activePointerCount = max(0, _activePointerCount - 1);
     _pointerDownPosition = null;
 
@@ -306,12 +360,7 @@ class PaintCanvasState extends State<PaintCanvas> {
     }
 
     // Reset any ongoing drawing
-    if (_paintCtrl.busy) {
-      _paintCtrl
-        ..setInProgress(false)
-        ..reset();
-      _activePaintStreamCtrl.add(null);
-    }
+    _discardActiveStroke();
   }
 
   Offset _rotatePoint(Offset point, Offset center, double angle) {

@@ -626,10 +626,70 @@ class PaintEditorState extends State<PaintEditor>
     paintCtrl.setMode(mode);
     paintEditorCallbacks?.handlePaintModeChanged(mode);
     rebuildController.add(null);
-    interactiveViewer.currentState?.setEnableInteraction(
-      mode == PaintMode.moveAndZoom,
-    );
+    _syncViewerInteraction();
     _paintCanvas.currentState?.setState(() {});
+    setState(() {});
+  }
+
+  bool get _viewerPanEnabled =>
+      _enableZoom && paintMode == PaintMode.moveAndZoom;
+
+  bool get _viewerScaleEnabled {
+    if (!_enableZoom) return false;
+    if (paintMode == PaintMode.moveAndZoom) return true;
+    return paintEditorConfigs.enableZoomWhileDrawing;
+  }
+
+  void _syncViewerInteraction() {
+    interactiveViewer.currentState?.setPanAndScaleEnabled(
+      pan: _viewerPanEnabled,
+      scale: _viewerScaleEnabled,
+    );
+  }
+
+  void _onPaintViewerMatrixChanged(Matrix4 value) {
+    _paintCanvas.currentState?.cancelActiveDrawing();
+    callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change?.call(value);
+  }
+
+  /// Whether the gesture the viewer is currently reporting can move the view.
+  bool _viewerGestureNavigates = false;
+
+  /// While a drawing tool is active the viewer keeps its gesture detector
+  /// alive so pinch may still zoom, but it reports every one-finger drag too -
+  /// and those drags are strokes, not navigation. Only gestures the viewer can
+  /// act on count: any gesture while panning is enabled, or a real multi-finger
+  /// pinch.
+  bool _isNavigationGesture(int pointerCount) =>
+      _viewerPanEnabled || pointerCount > 1;
+
+  void _onPaintViewerInteractionStart(ScaleStartDetails details) {
+    _viewerGestureNavigates = _isNavigationGesture(details.pointerCount);
+    if (!_viewerGestureNavigates) return;
+    callbacks.paintEditorCallbacks?.onEditorZoomScaleStart?.call(details);
+    setState(() {});
+  }
+
+  void _onPaintViewerInteractionUpdate(ScaleUpdateDetails details) {
+    if (!_viewerGestureNavigates) {
+      // A second finger joined a stroke, so the viewer takes the gesture over
+      // from here. Report the start it never got.
+      if (!_isNavigationGesture(details.pointerCount)) return;
+      _onPaintViewerInteractionStart(
+        ScaleStartDetails(
+          focalPoint: details.focalPoint,
+          localFocalPoint: details.localFocalPoint,
+          pointerCount: details.pointerCount,
+        ),
+      );
+    }
+    callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate?.call(details);
+  }
+
+  void _onPaintViewerInteractionEnd(ScaleEndDetails details) {
+    if (!_viewerGestureNavigates) return;
+    _viewerGestureNavigates = false;
+    callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
     setState(() {});
   }
 
@@ -1009,21 +1069,13 @@ class PaintEditorState extends State<PaintEditor>
               ? initConfigs.initialZoomMatrix
               : null,
           zoomConfigs: paintEditorConfigs,
-          enableInteraction: paintMode == PaintMode.moveAndZoom,
-          onInteractionStart: (details) {
-            callbacks.paintEditorCallbacks?.onEditorZoomScaleStart?.call(
-              details,
-            );
-            setState(() {});
-          },
-          onInteractionUpdate:
-              callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate,
-          onInteractionEnd: (details) {
-            callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
-            setState(() {});
-          },
-          onMatrix4Change:
-              callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change,
+          enableInteraction: _viewerPanEnabled || _viewerScaleEnabled,
+          panEnabled: _viewerPanEnabled,
+          scaleEnabled: _viewerScaleEnabled,
+          onInteractionStart: _onPaintViewerInteractionStart,
+          onInteractionUpdate: _onPaintViewerInteractionUpdate,
+          onInteractionEnd: _onPaintViewerInteractionEnd,
+          onMatrix4Change: _onPaintViewerMatrixChanged,
           child: Stack(
             alignment: Alignment.center,
             fit: StackFit.expand,
@@ -1278,6 +1330,13 @@ class PaintEditorState extends State<PaintEditor>
       ..add(FlagProperty('canRedo', value: canRedo, ifTrue: 'can redo'))
       ..add(
         FlagProperty('_enableZoom', value: _enableZoom, ifTrue: 'zoom enabled'),
+      )
+      ..add(
+        FlagProperty(
+          'enableZoomWhileDrawing',
+          value: paintEditorConfigs.enableZoomWhileDrawing,
+          ifTrue: 'zoom while drawing',
+        ),
       )
       ..add(
         FlagProperty(

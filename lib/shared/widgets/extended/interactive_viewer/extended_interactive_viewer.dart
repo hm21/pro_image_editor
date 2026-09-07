@@ -14,6 +14,8 @@ class ExtendedInteractiveViewer extends StatefulWidget {
     super.key,
     required this.child,
     this.enableInteraction = true,
+    this.panEnabled,
+    this.scaleEnabled,
     required this.zoomConfigs,
     required this.onInteractionStart,
     required this.onInteractionUpdate,
@@ -44,8 +46,19 @@ class ExtendedInteractiveViewer extends StatefulWidget {
   /// Indicates whether user interactions such as panning and zooming are
   /// enabled.
   ///
-  /// Default value is `true`.
+  /// Used as the default for [panEnabled] and [scaleEnabled] when those
+  /// values are omitted. Default value is `true`.
   final bool enableInteraction;
+
+  /// Whether one-finger / click-drag panning is enabled.
+  ///
+  /// Defaults to [enableInteraction] when `null`.
+  final bool? panEnabled;
+
+  /// Whether pinch, trackpad and pointer-scroll navigation is enabled.
+  ///
+  /// Defaults to [enableInteraction] when `null`.
+  final bool? scaleEnabled;
 
   /// Determines whether an external gesture detector should be enabled.
   ///
@@ -133,10 +146,22 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
   final _rawViewerKey = GlobalKey<ExtendedRawInteractiveViewerState>();
   late ExtendedTransformationController _transformCtrl;
   late final AnimationController _animationCtrl;
-  late bool _enableInteraction;
+  late bool _panEnabled;
+  late bool _scaleEnabled;
 
-  /// A getter that indicates whether interaction is enabled for the viewer.
-  bool get isInteractionEnabled => _enableInteraction;
+  /// Whether pan or scale interaction is currently enabled.
+  bool get isInteractionEnabled => _panEnabled || _scaleEnabled;
+
+  /// Whether one-finger / click-drag panning is currently enabled.
+  bool get isPanEnabled => _panEnabled;
+
+  /// Whether pinch, trackpad and pointer-scroll navigation is enabled.
+  bool get isScaleEnabled => _scaleEnabled;
+
+  bool get _widgetPanEnabled => widget.panEnabled ?? widget.enableInteraction;
+
+  bool get _widgetScaleEnabled =>
+      widget.scaleEnabled ?? widget.enableInteraction;
 
   @override
   void initState() {
@@ -149,7 +174,21 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
       vsync: this,
       duration: widget.zoomConfigs.doubleTapZoomDuration,
     );
-    _enableInteraction = widget.enableInteraction;
+    _panEnabled = _widgetPanEnabled;
+    _scaleEnabled = _widgetScaleEnabled;
+  }
+
+  @override
+  void didUpdateWidget(covariant ExtendedInteractiveViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final interactionChanged =
+        widget.enableInteraction != oldWidget.enableInteraction;
+    if (interactionChanged || widget.panEnabled != oldWidget.panEnabled) {
+      _panEnabled = _widgetPanEnabled;
+    }
+    if (interactionChanged || widget.scaleEnabled != oldWidget.scaleEnabled) {
+      _scaleEnabled = _widgetScaleEnabled;
+    }
   }
 
   @override
@@ -165,13 +204,20 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
   /// Sets the transform matrix.
   set transformMatrix4(Matrix4 value) => _transformCtrl.value = value;
 
-  /// Sets the interaction state to the given value and updates the UI
-  /// accordingly.
+  /// Sets pan and scale together and updates the UI accordingly.
   void setEnableInteraction(bool value) {
-    if (_enableInteraction != value) {
-      _enableInteraction = value;
-      setState(() {});
-    }
+    setPanAndScaleEnabled(pan: value, scale: value);
+  }
+
+  /// Enables pan and scale independently and updates the UI accordingly.
+  ///
+  /// Use this when one-finger dragging should draw (or otherwise be claimed)
+  /// while pinch, trackpad and pointer-scroll may still navigate the view.
+  void setPanAndScaleEnabled({required bool pan, required bool scale}) {
+    if (_panEnabled == pan && _scaleEnabled == scale) return;
+    _panEnabled = pan;
+    _scaleEnabled = scale;
+    setState(() {});
   }
 
   /// Reset the transformations
@@ -242,7 +288,7 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
     Duration? duration,
     Curve? curve,
   }) async {
-    if (!_enableInteraction) return;
+    if (!_scaleEnabled) return;
     if (scaleFactor > 1) {
       await animateZoomToPoint(offset: Offset.zero, scale: 1);
     } else {
@@ -310,8 +356,8 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
       key: _rawViewerKey,
       boundaryMargin: widget.zoomConfigs.boundaryMargin,
       transformationController: _transformCtrl,
-      panEnabled: _enableInteraction,
-      scaleEnabled: _enableInteraction,
+      panEnabled: _panEnabled,
+      scaleEnabled: _scaleEnabled,
       minScale: widget.zoomConfigs.editorMinScale,
       maxScale: widget.zoomConfigs.editorMaxScale,
       onInteractionStart: widget.onInteractionStart,
