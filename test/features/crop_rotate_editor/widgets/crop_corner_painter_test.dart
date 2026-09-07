@@ -161,7 +161,7 @@ void main() {
         // Reconstruct the tilted image quad with the same transform the
         // painter uses, then sample its centroid (clearly inside the image,
         // outside the crop) and a point far outside the quad.
-        const center = Offset(imageSize.width / 2, imageSize.height / 2);
+        final center = Offset(imageSize.width / 2, imageSize.height / 2);
         final tiltMatrix = Matrix4.identity().tilt(
           rotate: 0,
           vertical: 0,
@@ -174,9 +174,9 @@ void main() {
 
         final corners = [
           toScreen(const Offset(0, 0)),
-          toScreen(const Offset(imageSize.width, 0)),
-          toScreen(const Offset(imageSize.width, imageSize.height)),
-          toScreen(const Offset(0, imageSize.height)),
+          toScreen(Offset(imageSize.width, 0)),
+          toScreen(Offset(imageSize.width, imageSize.height)),
+          toScreen(Offset(0, imageSize.height)),
         ];
         final centroid =
             corners.reduce((a, b) => a + b) / corners.length.toDouble();
