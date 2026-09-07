@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/core/models/init_configs/crop_rotate_editor_init_configs.dart';
 import 'package:pro_image_editor/features/crop_rotate_editor/crop_rotate_editor.dart';

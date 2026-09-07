@@ -2,8 +2,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/constants/image_constants.dart';
 import '/core/mixins/converted_callbacks.dart';
@@ -159,7 +159,7 @@ class FilterEditor extends StatefulWidget
   final ProVideoController? videoController;
 
   @override
-  createState() => FilterEditorState();
+  FilterEditorState createState() => FilterEditorState();
 }
 
 /// The state class for the `FilterEditor` widget.

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
 
@@ -55,9 +55,7 @@ class DefaultSearchViewState extends SearchViewState {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      widget.showEmojiView();
-                    },
+                    onPressed: widget.showEmojiView,
                     color: widget.config.searchViewConfig.buttonIconColor,
                     icon: const Icon(Icons.arrow_back),
                   ),

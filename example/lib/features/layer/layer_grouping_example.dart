@@ -1,5 +1,5 @@
 import 'package:example/core/constants/example_constants.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/layer/interaction_helper/layer_interaction_button.dart';
 

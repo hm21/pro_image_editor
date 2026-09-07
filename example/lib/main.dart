@@ -1,10 +1,9 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:example/shared/widgets/not_found_example.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
-
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';

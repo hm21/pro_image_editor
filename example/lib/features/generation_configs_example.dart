@@ -1,8 +1,8 @@
 // Flutter imports:
 import 'dart:ui' as ui;
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';

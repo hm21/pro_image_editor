@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Class that defines the icon representing a [Category]
 class CategoryIcon {

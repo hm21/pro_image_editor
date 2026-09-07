@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// An abstract base widget that applies a fade-in and slide-in animation
 /// to its child.

@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A custom widget representing a button with a specific aspect ratio.
 class AspectRatioButton extends StatelessWidget {

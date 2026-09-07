@@ -1,9 +1,7 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:material_ui/material_ui.dart';
 // Project imports:
 import 'package:pro_image_editor/features/main_editor/services/sizes_manager.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';

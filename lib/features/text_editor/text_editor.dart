@@ -2,7 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
@@ -58,7 +58,7 @@ class TextEditor extends StatefulWidget with SimpleConfigsAccess {
   final double scaleFactor;
 
   @override
-  createState() => TextEditorState();
+  TextEditorState createState() => TextEditorState();
 }
 
 /// The state class for the `TextEditor` widget.

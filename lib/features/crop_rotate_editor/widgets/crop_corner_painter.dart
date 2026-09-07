@@ -2,7 +2,7 @@
 import 'dart:math';
 
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // Project imports:
 import '/core/models/styles/crop_rotate_editor_style.dart';

@@ -2,8 +2,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
@@ -153,7 +153,7 @@ class TuneEditor extends StatefulWidget
   final ProVideoController? videoController;
 
   @override
-  createState() => TuneEditorState();
+  TuneEditorState createState() => TuneEditorState();
 }
 
 /// The state class for the `TuneEditor` widget.

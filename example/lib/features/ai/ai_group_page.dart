@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'ai_replace_background/ai_replace_background_page_example.dart';
 import 'ai_text_commands/ai_text_commands_page_example.dart';

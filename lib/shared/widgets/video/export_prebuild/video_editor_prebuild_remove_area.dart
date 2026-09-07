@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '/features/main_editor/main_editor.dart';
 
 /// A widget representing the remove area in the video editor.

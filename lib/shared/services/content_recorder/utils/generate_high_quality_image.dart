@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/services/content_recorder/controllers/content_recorder_controller.dart';

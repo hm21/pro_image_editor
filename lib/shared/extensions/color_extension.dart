@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Extension on the [Color] class to provide a method for converting a color
 /// to its hexadecimal representation.

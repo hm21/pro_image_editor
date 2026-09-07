@@ -3,7 +3,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/shared/extensions/color_extension.dart';
@@ -91,7 +91,7 @@ class BarColorPicker extends StatefulWidget {
   final Duration animationDuration;
 
   @override
-  createState() => _BarColorPickerState();
+  _BarColorPickerState createState() => _BarColorPickerState();
 }
 
 class _BarColorPickerState extends State<BarColorPicker>

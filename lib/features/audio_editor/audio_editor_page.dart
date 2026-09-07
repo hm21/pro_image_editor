@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -42,7 +42,7 @@ class AudioEditorPage extends StatefulWidget with SimpleConfigsAccess {
   final AudioTrack? initialSelectedTrack;
 
   @override
-  createState() => AudioEditorPageState();
+  AudioEditorPageState createState() => AudioEditorPageState();
 }
 
 /// State responsible for rendering and managing the audio editor page.

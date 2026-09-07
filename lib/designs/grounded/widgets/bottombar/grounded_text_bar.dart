@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -168,9 +168,7 @@ class _GroundedTextBarState extends State<GroundedTextBar>
           TextAlign.right => textEditorConfigs.icons.alignRight,
           TextAlign.center || _ => textEditorConfigs.icons.alignCenter,
         }, color: _foreGroundColor),
-        onPressed: () {
-          widget.editor.toggleTextAlign();
-        },
+        onPressed: widget.editor.toggleTextAlign,
       ),
       FlatIconTextButton(
         label: Text(
@@ -181,9 +179,7 @@ class _GroundedTextBarState extends State<GroundedTextBar>
           textEditorConfigs.icons.backgroundMode,
           color: _foreGroundColor,
         ),
-        onPressed: () {
-          widget.editor.toggleBackgroundMode();
-        },
+        onPressed: widget.editor.toggleBackgroundMode,
       ),
     ];
   }

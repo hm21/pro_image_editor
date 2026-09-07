@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/features/paint_editor/enums/paint_editor_enum.dart';

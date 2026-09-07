@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/shared/widgets/video/video_editor_configurable.dart';
 import '../../gesture/gesture_interceptor_widget.dart';

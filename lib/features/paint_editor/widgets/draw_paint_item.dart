@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '../services/paint_item_hit_test_manager.dart';

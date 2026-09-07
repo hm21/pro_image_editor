@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A widget that displays a initializing screen when the video editor startup.
 class VideoInitializingWidget extends StatelessWidget {

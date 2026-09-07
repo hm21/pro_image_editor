@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A custom widget for the header row of a bottom sheet.
 class BottomSheetHeaderRow extends StatefulWidget {

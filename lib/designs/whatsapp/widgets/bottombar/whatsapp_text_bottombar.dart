@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/features/text_editor/widgets/text_editor_bottom_bar.dart';
 import '/pro_image_editor.dart';

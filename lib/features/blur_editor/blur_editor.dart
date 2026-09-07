@@ -3,8 +3,8 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_callbacks.dart';
 import '/core/mixins/converted_configs.dart';
@@ -156,7 +156,7 @@ class BlurEditor extends StatefulWidget
   final ProVideoController? videoController;
 
   @override
-  createState() => BlurEditorState();
+  BlurEditorState createState() => BlurEditorState();
 }
 
 /// The state class for the `BlurEditor` widget.

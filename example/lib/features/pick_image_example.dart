@@ -3,10 +3,9 @@ import 'dart:io';
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:image_picker/image_picker.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 // Project imports:

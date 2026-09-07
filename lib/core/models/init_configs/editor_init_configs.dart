@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/features/filter_editor/types/filter_matrix.dart';
 import '/features/tune_editor/models/tune_adjustment_matrix.dart';

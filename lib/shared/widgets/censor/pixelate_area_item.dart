@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/features/main_editor/providers/image_infos_provider.dart';
 import '/shared/services/shader_manager.dart';

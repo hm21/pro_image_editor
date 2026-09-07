@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart' show File;
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';

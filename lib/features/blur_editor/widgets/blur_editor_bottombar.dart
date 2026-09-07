@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '/core/models/editor_configs/blur_editor_configs.dart';
 
 import '../blur_editor.dart';

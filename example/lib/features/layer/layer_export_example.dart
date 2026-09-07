@@ -1,7 +1,7 @@
 // Flutter imports:
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // Package imports:
 import 'package:pro_image_editor/pro_image_editor.dart';

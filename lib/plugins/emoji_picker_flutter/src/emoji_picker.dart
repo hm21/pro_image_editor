@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/platform/io/io_helper.dart';
 import '/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
