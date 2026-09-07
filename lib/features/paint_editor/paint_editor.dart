@@ -675,7 +675,6 @@ class PaintEditorState extends State<PaintEditor>
       // A second finger joined a stroke, so the viewer takes the gesture over
       // from here. Report the start it never got.
       if (!_isNavigationGesture(details.pointerCount)) return;
-      _viewerGestureNavigates = true;
       _onPaintViewerInteractionStart(
         ScaleStartDetails(
           focalPoint: details.focalPoint,
