@@ -1,10 +1,12 @@
 # Changelog
 
+## 13.5.0
+- **FEAT**(helper-lines): Add `HelperLineConfigs.enableSmartAlignment` (opt-in) so same-type layers snap matching edges, mixed types snap center to center, and only nearby or shared axes act as guides. Tune the reach via `smartAlignmentNeighborLimit` and `smartAlignmentSharedAxisMin`.
+- **FEAT**(helper-lines): Add `HelperLineConfigs.enablePaintLayerSnapping` to exclude paint layers from snapping.
+
 ## 13.4.0
 - **FEAT**(paint-editor): Navigate while a drawing tool is active via `PaintEditorConfigs.enableZoomWhileDrawing` (opt-in). Pinch, trackpad and mouse wheel zoom; secondary/middle mouse buttons pan.
 - **FEAT**(helper-lines): Add `HelperLineConfigs.enableEdgeSnapping` to let text and paint layers snap from their center only instead of from every edge.
-- **FEAT**(helper-lines): Add `HelperLineConfigs.enableSmartAlignment` (opt-in) so same-type layers snap matching edges, mixed types snap center to center, and only nearby or shared axes act as guides. Tune the reach via `smartAlignmentNeighborLimit` and `smartAlignmentSharedAxisMin`.
-- **FEAT**(helper-lines): Add `HelperLineConfigs.enablePaintLayerSnapping` to exclude paint layers from snapping.
 
 ## 13.3.1
 - **FIX**(crop-rotate): Crop handles no longer jump onto the finger when a drag starts; the gesture slop and the distance to the grabbed handle are compensated.
