@@ -499,13 +499,6 @@ class LayerInteractionManager {
     return const Offset(-0.5, -0.5);
   }
 
-  /// Nearby layers that always participate when smart alignment is on.
-  static const int _smartAlignmentNeighborLimit = 3;
-
-  /// How many layers must share an axis for it to stay a global smart-alignment
-  /// guide.
-  static const int _smartAlignmentSharedMin = 2;
-
   /// Returns the anchor whose position sits closest to the canvas center
   /// (position `0`). Used by the canvas helper lines.
   _LayerSnapAnchor _closestAnchor(List<_LayerSnapAnchor> anchors) {
@@ -557,17 +550,23 @@ class LayerInteractionManager {
   }
 
   List<Layer> _nearestSnapLayers(Layer active, List<Layer> others) {
-    if (others.length <= _smartAlignmentNeighborLimit) return others;
+    final limit = helperLineConfigs.smartAlignmentNeighborLimit;
+    if (limit <= 0) return const [];
+    if (others.length <= limit) return others;
+
+    // Measure every candidate once; the comparator runs O(n log n) times.
+    final activeCenter = _snapLayerCenter(active);
+    final distances = <String, double>{
+      for (final layer in others)
+        layer.id: (_snapLayerCenter(layer) - activeCenter).distance,
+    };
     final ranked = [...others]
       ..sort((a, b) {
-        final cmp = (_snapLayerCenter(a) - _snapLayerCenter(active)).distance
-            .compareTo(
-              (_snapLayerCenter(b) - _snapLayerCenter(active)).distance,
-            );
+        final cmp = distances[a.id]!.compareTo(distances[b.id]!);
         if (cmp != 0) return cmp;
         return a.id.compareTo(b.id);
       });
-    return ranked.sublist(0, _smartAlignmentNeighborLimit);
+    return ranked.sublist(0, limit);
   }
 
   _LayerSnapAnchor? _anchorForTarget({
@@ -1024,6 +1023,8 @@ class LayerInteractionManager {
         }
       }
 
+      final sharedMin = helperLineConfigs.smartAlignmentSharedAxisMin;
+
       void emit(List<double> positions, _SnapKind kind, _SnapFamily? family) {
         final sorted = [...positions]..sort();
         var i = 0;
@@ -1034,8 +1035,18 @@ class LayerInteractionManager {
             sum += sorted[j];
             j++;
           }
-          if (j - i >= _smartAlignmentSharedMin) {
-            add(sum / (j - i), kind, family);
+          if (j - i >= sharedMin) {
+            // Snap to the real edge closest to the cluster's mean instead of
+            // the mean itself, so the guide always overlays an actual layer
+            // edge rather than a position no layer sits on.
+            final mean = sum / (j - i);
+            var best = sorted[i];
+            for (var k = i + 1; k < j; k++) {
+              if ((sorted[k] - mean).abs() < (best - mean).abs()) {
+                best = sorted[k];
+              }
+            }
+            add(best, kind, family);
           }
           i = j;
         }

@@ -31,4 +31,24 @@ void main() {
       expect(configs.enablePaintLayerSnapping, isTrue);
     });
   });
+
+  group('HelperLineConfigs smart alignment tuning', () {
+    test('defaults keep the nearest three layers and shared pairs', () {
+      const configs = HelperLineConfigs();
+      expect(configs.smartAlignmentNeighborLimit, 3);
+      expect(configs.smartAlignmentSharedAxisMin, 2);
+    });
+
+    test('copyWith replaces the tuning values', () {
+      const configs = HelperLineConfigs();
+      final updated = configs.copyWith(
+        smartAlignmentNeighborLimit: 1,
+        smartAlignmentSharedAxisMin: 4,
+      );
+      expect(updated.smartAlignmentNeighborLimit, 1);
+      expect(updated.smartAlignmentSharedAxisMin, 4);
+      expect(configs.smartAlignmentNeighborLimit, 3);
+      expect(configs.smartAlignmentSharedAxisMin, 2);
+    });
+  });
 }
