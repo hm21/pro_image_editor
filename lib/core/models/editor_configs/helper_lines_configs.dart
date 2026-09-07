@@ -16,6 +16,7 @@ class HelperLineConfigs {
     this.showRotateLine = true,
     this.showLayerAlignLine = true,
     this.isDisabledAtZoom = false,
+    this.enableEdgeSnapping = true,
     this.releaseThreshold = 10.0,
     this.customGuides = const [],
     this.style = const HelperLineStyle(),
@@ -41,6 +42,11 @@ class HelperLineConfigs {
   /// If set to `false`, helper lines will remain visible regardless of the
   /// zoom level.
   final bool isDisabledAtZoom;
+
+  /// When `true`, text and paint layers also snap on their visible edges
+  /// (left/center/right and top/center/bottom). When `false`, every layer
+  /// snaps from its center only.
+  final bool enableEdgeSnapping;
 
   /// Style configuration for helper lines.
   final HelperLineStyle style;
@@ -69,6 +75,7 @@ class HelperLineConfigs {
     bool? showRotateLine,
     bool? showLayerAlignLine,
     bool? isDisabledAtZoom,
+    bool? enableEdgeSnapping,
     double? releaseThreshold,
     List<HelperGuideLine>? customGuides,
     HelperLineStyle? style,
@@ -79,6 +86,7 @@ class HelperLineConfigs {
       showRotateLine: showRotateLine ?? this.showRotateLine,
       showLayerAlignLine: showLayerAlignLine ?? this.showLayerAlignLine,
       isDisabledAtZoom: isDisabledAtZoom ?? this.isDisabledAtZoom,
+      enableEdgeSnapping: enableEdgeSnapping ?? this.enableEdgeSnapping,
       releaseThreshold: releaseThreshold ?? this.releaseThreshold,
       customGuides: customGuides ?? this.customGuides,
       style: style ?? this.style,

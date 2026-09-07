@@ -2,6 +2,7 @@
 
 ## 13.4.0
 - **FEAT**(paint-editor): Navigate while a drawing tool is active via `PaintEditorConfigs.enableZoomWhileDrawing` (opt-in). Pinch, trackpad and mouse wheel zoom; secondary/middle mouse buttons pan.
+- **FEAT**(helper-lines): Add `HelperLineConfigs.enableEdgeSnapping` to let text and paint layers snap from their center only instead of from every edge.
 
 ## 13.3.1
 - **FIX**(crop-rotate): Crop handles no longer jump onto the finger when a drag starts; the gesture slop and the distance to the grabbed handle are compensated.

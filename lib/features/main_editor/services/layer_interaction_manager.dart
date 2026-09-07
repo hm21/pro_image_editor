@@ -517,7 +517,8 @@ class LayerInteractionManager {
   /// right and top/center/bottom); all other layer types expose only their
   /// configured center anchor.
   bool _supportsEdgeSnapping(Layer layer) =>
-      layer is TextLayer || layer is PaintLayer;
+      helperLineConfigs.enableEdgeSnapping &&
+      (layer is TextLayer || layer is PaintLayer);
 
   /// Returns the candidate horizontal snap anchors for [layer] in
   /// center-relative editor coordinates.
