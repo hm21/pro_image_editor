@@ -1,5 +1,8 @@
 # Changelog
 
+## 13.4.0
+- **FEAT**(paint-editor): Navigate while a drawing tool is active via `PaintEditorConfigs.enableZoomWhileDrawing` (opt-in). Pinch, trackpad and mouse wheel zoom; secondary/middle mouse buttons pan.
+
 ## 13.3.1
 - **FIX**(crop-rotate): Crop handles no longer jump onto the finger when a drag starts; the gesture slop and the distance to the grabbed handle are compensated.
 - **FIX**(crop-rotate): Corner drags with a fixed aspect ratio now follow the finger diagonally instead of tracking horizontal movement only, and stay inside the image.

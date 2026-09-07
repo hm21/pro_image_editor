@@ -64,6 +64,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.isInitiallyFilled = false,
     this.showLayers = true,
     this.enableShareZoomMatrix = true,
+    this.enableZoomWhileDrawing = false,
     this.polygonConnectionThreshold = 20,
     this.minStrokeWidth = 1.0,
     this.maxStrokeWidth = 40.0,
@@ -173,6 +174,19 @@ class PaintEditorConfigs extends ZoomConfigs
 
   /// Shares the zoom matrix between the main and paint editor.
   final bool enableShareZoomMatrix;
+
+  /// Whether pinch, trackpad, pointer-scroll and secondary/middle mouse
+  /// buttons may navigate while a drawing tool is active.
+  ///
+  /// Primary click-drag still draws. Secondary and middle mouse buttons pan
+  /// instead of drawing. If the view moves while a stroke is in progress,
+  /// that stroke is discarded so path coordinates stay in one transform
+  /// space. Has no effect when [enableZoom] is `false`.
+  ///
+  /// Defaults to `false` (viewport stays frozen until
+  /// [PaintMode.moveAndZoom] is selected). Set to `true` to navigate while
+  /// drawing.
+  final bool enableZoomWhileDrawing;
 
   /// Indicates the initial paint mode.
   final PaintMode initialPaintMode;
@@ -313,6 +327,7 @@ class PaintEditorConfigs extends ZoomConfigs
     bool? isInitiallyFilled,
     bool? showLayers,
     bool? enableShareZoomMatrix,
+    bool? enableZoomWhileDrawing,
     PaintMode? initialPaintMode,
     EraserMode? eraserMode,
     double? eraserSize,
@@ -363,6 +378,8 @@ class PaintEditorConfigs extends ZoomConfigs
       showLayers: showLayers ?? this.showLayers,
       enableShareZoomMatrix:
           enableShareZoomMatrix ?? this.enableShareZoomMatrix,
+      enableZoomWhileDrawing:
+          enableZoomWhileDrawing ?? this.enableZoomWhileDrawing,
       initialPaintMode: initialPaintMode ?? this.initialPaintMode,
       eraserMode: eraserMode ?? this.eraserMode,
       eraserSize: eraserSize ?? this.eraserSize,

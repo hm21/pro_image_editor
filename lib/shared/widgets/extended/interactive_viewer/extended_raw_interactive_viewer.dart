@@ -614,6 +614,8 @@ class ExtendedRawInteractiveViewerState
   double _currentRotation = 0.0; // Rotation of _transformationController.value.
   _GestureType? _gestureType;
   final bool _rotateEnabled = false;
+  final Set<int> _auxiliaryPanPointers = <int>{};
+  Offset? _auxiliaryPanFocalScene;
 
   // The _boundaryRect is calculated by adding the boundaryMargin to the size of
   // the child.
@@ -815,6 +817,41 @@ class ExtendedRawInteractiveViewerState
       _GestureType.scale => widget.scaleEnabled,
       _GestureType.pan || null => widget.panEnabled,
     };
+  }
+
+  bool _isAuxiliaryMousePanButton(int buttons) {
+    return (buttons & kSecondaryMouseButton) != 0 ||
+        (buttons & kMiddleMouseButton) != 0;
+  }
+
+  void _onAuxiliaryPanPointerDown(PointerDownEvent event) {
+    if (event.kind != PointerDeviceKind.mouse ||
+        !_isAuxiliaryMousePanButton(event.buttons)) {
+      return;
+    }
+    _auxiliaryPanPointers.add(event.pointer);
+    if (widget.panEnabled) return;
+    _auxiliaryPanFocalScene = _transformer.toScene(event.localPosition);
+  }
+
+  void _onAuxiliaryPanPointerMove(PointerMoveEvent event) {
+    if (!_auxiliaryPanPointers.contains(event.pointer) || widget.panEnabled) {
+      return;
+    }
+    final Offset focalPointScene = _transformer.toScene(event.localPosition);
+    _auxiliaryPanFocalScene ??= focalPointScene;
+    _transformer.value = _matrixTranslate(
+      _transformer.value,
+      focalPointScene - _auxiliaryPanFocalScene!,
+    );
+    _auxiliaryPanFocalScene = _transformer.toScene(event.localPosition);
+  }
+
+  void _onAuxiliaryPanPointerUp(PointerEvent event) {
+    if (!_auxiliaryPanPointers.remove(event.pointer)) return;
+    if (_auxiliaryPanPointers.isEmpty) {
+      _auxiliaryPanFocalScene = null;
+    }
   }
 
   // Decide which type of gesture this is by comparing the amount of scale
@@ -1072,7 +1109,7 @@ class ExtendedRawInteractiveViewerState
           transform: event.transform,
         );
 
-        if (!_gestureIsSupported(_GestureType.pan)) {
+        if (!_gestureIsSupported(_GestureType.pan) && !widget.scaleEnabled) {
           widget.onInteractionUpdate?.call(
             ScaleUpdateDetails(
               focalPoint: global - event.scrollDelta,
@@ -1352,6 +1389,10 @@ class ExtendedRawInteractiveViewerState
 
     return Listener(
       key: _parentKey,
+      onPointerDown: _onAuxiliaryPanPointerDown,
+      onPointerMove: _onAuxiliaryPanPointerMove,
+      onPointerUp: _onAuxiliaryPanPointerUp,
+      onPointerCancel: _onAuxiliaryPanPointerUp,
       onPointerSignal: _receivedPointerSignal,
       onPointerPanZoomStart: _handlePointerPanZoomStart,
       onPointerPanZoomUpdate: _handlePointerPanZoomUpdate,
