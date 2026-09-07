@@ -558,14 +558,15 @@ class LayerInteractionManager {
 
   List<Layer> _nearestSnapLayers(Layer active, List<Layer> others) {
     if (others.length <= _smartAlignmentNeighborLimit) return others;
-    final ranked = [...others]..sort((a, b) {
-      final cmp = (_snapLayerCenter(a) - _snapLayerCenter(active)).distance
-          .compareTo(
-            (_snapLayerCenter(b) - _snapLayerCenter(active)).distance,
-          );
-      if (cmp != 0) return cmp;
-      return a.id.compareTo(b.id);
-    });
+    final ranked = [...others]
+      ..sort((a, b) {
+        final cmp = (_snapLayerCenter(a) - _snapLayerCenter(active)).distance
+            .compareTo(
+              (_snapLayerCenter(b) - _snapLayerCenter(active)).distance,
+            );
+        if (cmp != 0) return cmp;
+        return a.id.compareTo(b.id);
+      });
     return ranked.sublist(0, _smartAlignmentNeighborLimit);
   }
 
@@ -1023,18 +1024,13 @@ class LayerInteractionManager {
         }
       }
 
-      void emit(
-        List<double> positions,
-        _SnapKind kind,
-        _SnapFamily? family,
-      ) {
+      void emit(List<double> positions, _SnapKind kind, _SnapFamily? family) {
         final sorted = [...positions]..sort();
         var i = 0;
         while (i < sorted.length) {
           var j = i + 1;
           var sum = sorted[i];
-          while (j < sorted.length &&
-              sorted[j] - sorted[i] <= snapThreshold) {
+          while (j < sorted.length && sorted[j] - sorted[i] <= snapThreshold) {
             sum += sorted[j];
             j++;
           }
@@ -1445,20 +1441,10 @@ class LayerInteractionManager {
     void addLayerAnchors(Layer layer) {
       final family = _snapFamily(layer);
       for (final anchor in _horizontalSnapAnchors(layer)) {
-        addTarget(
-          xTargets,
-          anchor.position,
-          kind: anchor.kind,
-          family: family,
-        );
+        addTarget(xTargets, anchor.position, kind: anchor.kind, family: family);
       }
       for (final anchor in _verticalSnapAnchors(layer)) {
-        addTarget(
-          yTargets,
-          anchor.position,
-          kind: anchor.kind,
-          family: family,
-        );
+        addTarget(yTargets, anchor.position, kind: anchor.kind, family: family);
       }
     }
 
@@ -1487,18 +1473,10 @@ class LayerInteractionManager {
         _addSharedAxisTargets(
           others: others,
           snapThreshold: snapThreshold,
-          addX: (pos, kind, family) => addTarget(
-            xTargets,
-            pos,
-            kind: kind,
-            family: family,
-          ),
-          addY: (pos, kind, family) => addTarget(
-            yTargets,
-            pos,
-            kind: kind,
-            family: family,
-          ),
+          addX: (pos, kind, family) =>
+              addTarget(xTargets, pos, kind: kind, family: family),
+          addY: (pos, kind, family) =>
+              addTarget(yTargets, pos, kind: kind, family: family),
         );
       } else {
         for (final layer in others) {
@@ -1546,14 +1524,12 @@ class LayerInteractionManager {
       _heldAlignXTargets
         ..clear()
         ..addAll([
-          for (final t in xTargets)
-            ?heldKeyIfCoincident(t, activeXAnchors),
+          for (final t in xTargets) ?heldKeyIfCoincident(t, activeXAnchors),
         ]);
       _heldAlignYTargets
         ..clear()
         ..addAll([
-          for (final t in yTargets)
-            ?heldKeyIfCoincident(t, activeYAnchors),
+          for (final t in yTargets) ?heldKeyIfCoincident(t, activeYAnchors),
         ]);
     }
 
