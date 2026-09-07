@@ -250,8 +250,13 @@ class PaintCanvasState extends State<PaintCanvas> {
   /// This provides immediate response to pointer movement without the
   /// gesture disambiguation delay that occurs with [GestureDetector].
   void _onPointerMove(PointerMoveEvent event) {
-    if (_navigationPointers.contains(event.pointer) ||
-        _isAuxiliaryMousePan(event)) {
+    if (_navigationPointers.contains(event.pointer)) return;
+    if (_isAuxiliaryMousePan(event)) {
+      // A mouse button pressed mid-stroke arrives as a move event, not a new
+      // pointer. Drop the stroke instead of pausing it, which would otherwise
+      // resume with a straight jump once the button is released again.
+      _isMultiTouch = true;
+      _discardActiveStroke();
       return;
     }
     // Skip if multi-touch gesture is active (pinch-to-zoom)

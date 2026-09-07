@@ -240,6 +240,85 @@ void main() {
       }
     });
 
+    testWidgets('an auxiliary button pressed mid-stroke discards the stroke', (
+      WidgetTester tester,
+    ) async {
+      final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
+      var created = 0;
+      PaintController ctrl = PaintController(
+        color: Colors.red,
+        mode: PaintMode.freeStyle,
+        fill: false,
+        strokeWidth: 1,
+        strokeMultiplier: 1,
+        opacity: 1,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintCanvas(
+              layers: const [],
+              key: canvasKey,
+              drawAreaSize: const Size(1000, 1000),
+              editorBodySize: const Size(1000, 1000),
+              layerStackScaleFactor: 1,
+              paintCtrl: ctrl,
+              eraserMode: EraserMode.partial,
+              eraserRadius: 8.0,
+              paintEditorConfigs: const PaintEditorConfigs(
+                enableZoom: true,
+                enableZoomWhileDrawing: true,
+              ),
+              onRefresh: () {},
+              onCreated: (PaintedModel item) {
+                created++;
+              },
+              onRemoveLayer: (List<String> value) {},
+              onRemovePartialStart: () {},
+              onRemovePartialEnd: (bool hasRemovedAreas) {},
+              onTap: (TapDownDetails details) {},
+            ),
+          ),
+        ),
+      );
+
+      final Offset center = tester.getCenter(find.byKey(canvasKey));
+      final TestPointer pointer = TestPointer(
+        1,
+        PointerDeviceKind.mouse,
+        null,
+        kPrimaryMouseButton,
+      );
+      await tester.sendEventToBinding(pointer.down(center));
+      await tester.sendEventToBinding(
+        pointer.move(center + const Offset(30, 30)),
+      );
+      expect(ctrl.offsets, isNotEmpty);
+
+      // Pressing a second mouse button mid-drag arrives as a move event with
+      // the extra button set, not as a new pointer.
+      await tester.sendEventToBinding(
+        pointer.move(
+          center + const Offset(60, 60),
+          buttons: kPrimaryMouseButton | kSecondaryMouseButton,
+        ),
+      );
+      expect(ctrl.start, isNull);
+      expect(ctrl.offsets, isEmpty);
+
+      // Releasing the auxiliary button must not resume the discarded stroke
+      // with a jump.
+      await tester.sendEventToBinding(
+        pointer.move(
+          center + const Offset(90, 90),
+          buttons: kPrimaryMouseButton,
+        ),
+      );
+      expect(ctrl.offsets, isEmpty);
+      await tester.sendEventToBinding(pointer.up());
+      expect(created, 0);
+    });
+
     testWidgets(
       'right and middle mouse buttons still draw when the view cannot pan',
       (WidgetTester tester) async {

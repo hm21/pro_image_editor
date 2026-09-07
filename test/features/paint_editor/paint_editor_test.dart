@@ -453,6 +453,7 @@ void main() {
       WidgetTester tester, {
       bool enableZoomWhileDrawing = true,
       EdgeInsets boundaryMargin = EdgeInsets.zero,
+      PaintEditorCallbacks? paintEditorCallbacks,
     }) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -468,6 +469,9 @@ void main() {
                     enableZoomWhileDrawing: enableZoomWhileDrawing,
                     boundaryMargin: boundaryMargin,
                   ),
+                ),
+                callbacks: ProImageEditorCallbacks(
+                  paintEditorCallbacks: paintEditorCallbacks,
                 ),
               ),
             ),
@@ -578,6 +582,76 @@ void main() {
 
     testWidgets('middle mouse button pans without drawing', (tester) async {
       await expectMouseButtonPansWithoutDrawing(tester, kMiddleMouseButton);
+    });
+
+    testWidgets('a stroke is not reported as a zoom interaction', (
+      tester,
+    ) async {
+      var starts = 0;
+      var updates = 0;
+      var ends = 0;
+      await pumpZoomEditor(
+        tester,
+        paintEditorCallbacks: PaintEditorCallbacks(
+          onEditorZoomScaleStart: (_) => starts++,
+          onEditorZoomScaleUpdate: (_) => updates++,
+          onEditorZoomScaleEnd: (_) => ends++,
+        ),
+      );
+
+      final editor = key.currentState!;
+      expect(editor.paintMode, PaintMode.freeStyle);
+
+      final Offset center = tester.getCenter(find.byType(PaintCanvas));
+      final TestGesture gesture = await tester.startGesture(center);
+      for (var i = 0; i < 5; i++) {
+        await gesture.moveBy(const Offset(12, 12));
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pump();
+
+      // The viewer keeps its gesture detector alive so a pinch can still zoom,
+      // but a one-finger drag is a stroke - not navigation.
+      expect(starts, 0);
+      expect(updates, 0);
+      expect(ends, 0);
+      expect(editor.canUndo, isTrue);
+    });
+
+    testWidgets('a pinch is reported as a zoom interaction', (tester) async {
+      var starts = 0;
+      var updates = 0;
+      var ends = 0;
+      await pumpZoomEditor(
+        tester,
+        boundaryMargin: const EdgeInsets.all(double.infinity),
+        paintEditorCallbacks: PaintEditorCallbacks(
+          onEditorZoomScaleStart: (_) => starts++,
+          onEditorZoomScaleUpdate: (_) => updates++,
+          onEditorZoomScaleEnd: (_) => ends++,
+        ),
+      );
+
+      final Offset center = tester.getCenter(find.byType(PaintCanvas));
+      final TestGesture first = await tester.startGesture(
+        center - const Offset(20, 0),
+      );
+      final TestGesture second = await tester.startGesture(
+        center + const Offset(20, 0),
+      );
+      for (var i = 0; i < 5; i++) {
+        await first.moveBy(const Offset(-10, 0));
+        await second.moveBy(const Offset(10, 0));
+        await tester.pump();
+      }
+      await first.up();
+      await second.up();
+      await tester.pump();
+
+      expect(starts, 1);
+      expect(updates, greaterThan(0));
+      expect(ends, 1);
     });
 
     testWidgets('right mouse button pans when click-drag pan is disabled', (

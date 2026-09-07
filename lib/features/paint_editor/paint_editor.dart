@@ -652,6 +652,48 @@ class PaintEditorState extends State<PaintEditor>
     callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change?.call(value);
   }
 
+  /// Whether the gesture the viewer is currently reporting can move the view.
+  bool _viewerGestureNavigates = false;
+
+  /// While a drawing tool is active the viewer keeps its gesture detector
+  /// alive so pinch may still zoom, but it reports every one-finger drag too -
+  /// and those drags are strokes, not navigation. Only gestures the viewer can
+  /// act on count: any gesture while panning is enabled, or a real multi-finger
+  /// pinch.
+  bool _isNavigationGesture(int pointerCount) =>
+      _viewerPanEnabled || pointerCount > 1;
+
+  void _onPaintViewerInteractionStart(ScaleStartDetails details) {
+    _viewerGestureNavigates = _isNavigationGesture(details.pointerCount);
+    if (!_viewerGestureNavigates) return;
+    callbacks.paintEditorCallbacks?.onEditorZoomScaleStart?.call(details);
+    setState(() {});
+  }
+
+  void _onPaintViewerInteractionUpdate(ScaleUpdateDetails details) {
+    if (!_viewerGestureNavigates) {
+      // A second finger joined a stroke, so the viewer takes the gesture over
+      // from here. Report the start it never got.
+      if (!_isNavigationGesture(details.pointerCount)) return;
+      _viewerGestureNavigates = true;
+      _onPaintViewerInteractionStart(
+        ScaleStartDetails(
+          focalPoint: details.focalPoint,
+          localFocalPoint: details.localFocalPoint,
+          pointerCount: details.pointerCount,
+        ),
+      );
+    }
+    callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate?.call(details);
+  }
+
+  void _onPaintViewerInteractionEnd(ScaleEndDetails details) {
+    if (!_viewerGestureNavigates) return;
+    _viewerGestureNavigates = false;
+    callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
+    setState(() {});
+  }
+
   /// Undoes the last action performed in the paint editor.
   void undoAction() {
     if (canUndo) {
@@ -1031,18 +1073,9 @@ class PaintEditorState extends State<PaintEditor>
           enableInteraction: _viewerPanEnabled || _viewerScaleEnabled,
           panEnabled: _viewerPanEnabled,
           scaleEnabled: _viewerScaleEnabled,
-          onInteractionStart: (details) {
-            callbacks.paintEditorCallbacks?.onEditorZoomScaleStart?.call(
-              details,
-            );
-            setState(() {});
-          },
-          onInteractionUpdate:
-              callbacks.paintEditorCallbacks?.onEditorZoomScaleUpdate,
-          onInteractionEnd: (details) {
-            callbacks.paintEditorCallbacks?.onEditorZoomScaleEnd?.call(details);
-            setState(() {});
-          },
+          onInteractionStart: _onPaintViewerInteractionStart,
+          onInteractionUpdate: _onPaintViewerInteractionUpdate,
+          onInteractionEnd: _onPaintViewerInteractionEnd,
           onMatrix4Change: _onPaintViewerMatrixChanged,
           child: Stack(
             alignment: Alignment.center,
