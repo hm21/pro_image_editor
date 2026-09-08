@@ -21,6 +21,11 @@ jobs:
           channel: stable
           flutter-version: 3.47.x
 
+      # `dart format` reads analysis_options.yaml, which includes a lint set
+      # from a package, so the dependencies have to be resolved first.
+      - name: Install dependencies
+        run: flutter pub get
+
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
 
