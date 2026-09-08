@@ -3,6 +3,10 @@
 ## 14.0.0
 - **BREAKING**(ui): Migrate from `package:flutter/material.dart` and `package:flutter/cupertino.dart` to the standalone [`material_ui`](https://pub.dev/packages/material_ui) and [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) packages, which Flutter is decoupling from the SDK. Apps must migrate their own imports as well (`dart fix --apply --code=migrate_design_widgets`), because types such as `ThemeData` are no longer interchangeable with the SDK ones.
 
+## 13.6.0
+- **PERF**(paint-editor): Hit-testing paint layers no longer walks the whole stroke path. Measured on macOS with 20 freestyle layers: 7.3ms -> 0.24ms per pointer hit test.
+- **PERF**(paint-editor): Paint layers apply their opacity in the stroke paint instead of an `Opacity` widget, which removes one offscreen buffer per layer.
+
 ## 13.5.0
 - **FEAT**(helper-lines): Add `HelperLineConfigs.enableSmartAlignment` (opt-in) so same-type layers snap matching edges, mixed types snap center to center, and only nearby or shared axes act as guides. Tune the reach via `smartAlignmentNeighborLimit` and `smartAlignmentSharedAxisMin`.
 - **FEAT**(helper-lines): Add `HelperLineConfigs.enablePaintLayerSnapping` to exclude paint layers from snapping.

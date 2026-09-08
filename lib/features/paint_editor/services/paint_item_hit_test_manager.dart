@@ -36,6 +36,16 @@ class PaintItemHitTestManager {
           isRoundArea: isRoundCensorArea,
         );
       default:
+        if (!_isInsideBounds(
+          item: item,
+          position: position,
+          scaleFactor: scaleFactor,
+          paintEditorConfigs: paintEditorConfigs,
+        )) {
+          item.hit = false;
+          return false;
+        }
+
         final builder = PathBuilderBase.fromMode(
           item: item,
           scale: scaleFactor,
@@ -46,6 +56,32 @@ class PaintItemHitTestManager {
     }
 
     return item.hit;
+  }
+
+  /// Cheap rejection test against the item's bounding box.
+  ///
+  /// Building the path and walking it is `O(path length)` and runs once per
+  /// paint layer for every pointer hit test - while a mouse is connected
+  /// Flutter repeats that hit test after every frame. Most layers are nowhere
+  /// near the pointer, so the box check removes nearly all of that work.
+  ///
+  /// Custom path builders may draw outside the item's points, so the box
+  /// cannot be trusted for them and the full test always runs.
+  bool _isInsideBounds({
+    required PaintedModel item,
+    required Offset position,
+    required double scaleFactor,
+    required PaintEditorConfigs paintEditorConfigs,
+  }) {
+    if (paintEditorConfigs.customPathBuilders.containsKey(item.mode)) {
+      return true;
+    }
+
+    final bounds = item.bounds;
+    return Rect.fromPoints(
+      bounds.topLeft * scaleFactor,
+      bounds.bottomRight * scaleFactor,
+    ).contains(position);
   }
 
   bool _detectCensorAreaHit({
