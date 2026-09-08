@@ -423,4 +423,135 @@ void main() {
       );
     });
   });
+
+  testWidgets(
+    're-applying tune adjustments replaces the previous session',
+    (WidgetTester tester) async {
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            mockMemoryImage,
+            key: key,
+            configs: configs,
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {},
+            ),
+          ),
+        ),
+      );
+
+      Future<void> applyTune(double brightness) async {
+        final openBtn = find.byKey(const ValueKey('open-tune-editor-btn'));
+        expect(openBtn, findsOneWidget);
+        await tester.tap(openBtn);
+        await tester.pumpAndSettle();
+
+        final TuneEditorState tuneState = tester.state(find.byType(TuneEditor));
+        tuneState
+          ..onChangedStart(brightness)
+          ..onChanged(brightness)
+          ..onChangedEnd(brightness);
+        await tester.pump();
+
+        await tester.tap(find.byTooltip('Done'));
+        await tester.pumpAndSettle();
+      }
+
+      await applyTune(-0.4);
+      final firstPass = List<TuneAdjustmentMatrix>.from(
+        key.currentState!.stateManager.activeTuneAdjustments,
+      );
+      expect(firstPass.where((item) => item.id == 'brightness').length, 1);
+      expect(
+        firstPass.firstWhere((item) => item.id == 'brightness').value,
+        -0.4,
+      );
+
+      await applyTune(-0.4);
+      final secondPass = key.currentState!.stateManager.activeTuneAdjustments;
+      expect(
+        secondPass.where((item) => item.id == 'brightness').length,
+        1,
+      );
+      expect(secondPass.length, firstPass.length);
+      expect(
+        secondPass.firstWhere((item) => item.id == 'brightness').value,
+        -0.4,
+      );
+    },
+  );
+
+  testWidgets(
+    're-applying tune keeps timed and unknown adjustments',
+    (WidgetTester tester) async {
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            mockMemoryImage,
+            key: key,
+            configs: configs,
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {},
+            ),
+          ),
+        ),
+      );
+
+      final timedBrightness = TuneAdjustmentMatrix(
+        id: 'brightness',
+        value: -0.2,
+        matrix: ColorFilterAddons.brightness(-0.2),
+        startTime: const Duration(seconds: 1),
+        endTime: const Duration(seconds: 4),
+      );
+      final custom = TuneAdjustmentMatrix(
+        id: 'custom-vignette',
+        value: 0.5,
+        matrix: ColorFilterAddons.brightness(0.5),
+      );
+      key.currentState!.addHistory(
+        tuneAdjustments: [timedBrightness, custom],
+      );
+      await tester.pump();
+
+      final openBtn = find.byKey(const ValueKey('open-tune-editor-btn'));
+      expect(openBtn, findsOneWidget);
+      await tester.tap(openBtn);
+      await tester.pumpAndSettle();
+
+      final TuneEditorState tuneState = tester.state(find.byType(TuneEditor));
+      tuneState
+        ..onChangedStart(-0.4)
+        ..onChanged(-0.4)
+        ..onChangedEnd(-0.4);
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('Done'));
+      await tester.pumpAndSettle();
+
+      final result = key.currentState!.stateManager.activeTuneAdjustments;
+      expect(
+        result.where((item) => item.id == 'brightness' && item.hasTimeline),
+        [timedBrightness],
+      );
+      expect(
+        result.where((item) => item.id == 'custom-vignette'),
+        [custom],
+      );
+      expect(
+        result
+            .where((item) => item.id == 'brightness' && !item.hasTimeline)
+            .length,
+        1,
+      );
+      expect(
+        result
+            .firstWhere((item) => item.id == 'brightness' && !item.hasTimeline)
+            .value,
+        -0.4,
+      );
+    },
+  );
 }

@@ -15,7 +15,9 @@ import '/pro_image_editor.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
+import '/shared/widgets/material_ui_localizations_scope.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
+import 'utils/merge_tune_adjustments.dart';
 import 'utils/tune_presets.dart';
 import 'widgets/tune_editor_appbar.dart';
 
@@ -220,24 +222,16 @@ class TuneEditorState extends State<TuneEditor>
     var items =
         tuneEditorConfigs.tuneAdjustmentOptions ??
         tunePresets(icons: tuneEditorConfigs.icons, i18n: i18n.tuneEditor);
-    tuneAdjustmentList = items.map((item) {
-      return item.copyWith(
-        value: tuneAdjustmentMatrix
-            .firstWhere(
-              (el) => el.id == item.id,
-              orElse: () =>
-                  TuneAdjustmentMatrix(id: 'id', value: 0, matrix: []),
-            )
-            .value,
-      );
-    }).toList();
 
-    for (final item in items) {
-      int i = appliedTuneAdjustments.indexWhere((el) => el.id == item.id);
-      tuneAdjustmentMatrix.add(
-        i >= 0 ? appliedTuneAdjustments[i] : item.toMatrixItem(),
-      );
-    }
+    // Seed each slider from the latest untimed/global entry of that id so a
+    // stacked history still recovers, while timed/custom entries stay out of
+    // the slider list and are merged back on Done.
+    tuneAdjustmentMatrix = [
+      for (final item in items)
+        latestGlobalTuneAdjustment(appliedTuneAdjustments, item.id) ??
+            item.toMatrixItem(),
+    ];
+    tuneAdjustmentList = items;
 
     tuneEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -261,12 +255,16 @@ class TuneEditorState extends State<TuneEditor>
   /// Handles the "Done" action, either by applying changes or closing the
   /// editor.
   void done() async {
+    final adjustments = mergeTuneEditorResult(
+      existing: appliedTuneAdjustments,
+      session: tuneAdjustmentMatrix,
+    );
     doneEditing(
       editorImage: editorImage,
-      returnValue: tuneAdjustmentMatrix,
+      returnValue: adjustments,
       blur: appliedBlurFactor,
       matrixFilterList: appliedFilters,
-      matrixTuneAdjustmentsList: tuneAdjustmentMatrix
+      matrixTuneAdjustmentsList: adjustments
           .map((item) => item.matrix)
           .toList(),
       transform: initialTransformConfigs,
@@ -377,7 +375,8 @@ class TuneEditorState extends State<TuneEditor>
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
+    return MaterialUiLocalizationsScope(
+      child: Theme(
       data: theme.copyWith(
         tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true),
       ),
@@ -405,6 +404,7 @@ class TuneEditorState extends State<TuneEditor>
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -491,7 +491,10 @@ class TuneEditorState extends State<TuneEditor>
               videoPlayer: videoController?.videoPlayer,
               blankSize: initConfigs.mainImageSize,
               filters: appliedFilters,
-              tuneAdjustments: tuneAdjustmentMatrix,
+              tuneAdjustments: mergeTuneEditorResult(
+                existing: appliedTuneAdjustments,
+                session: tuneAdjustmentMatrix,
+              ),
               blurFactor: appliedBlurFactor,
             );
           },
