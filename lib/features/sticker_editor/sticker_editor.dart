@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -27,7 +27,7 @@ class StickerEditor extends StatefulWidget with SimpleConfigsAccess {
   final ScrollController scrollController;
 
   @override
-  createState() => StickerEditorState();
+  StickerEditorState createState() => StickerEditorState();
 }
 
 /// The state class for the `StickerEditor` widget.

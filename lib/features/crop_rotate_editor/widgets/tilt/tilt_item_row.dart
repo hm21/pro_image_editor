@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/shared/widgets/flat_icon_text_button.dart';
 import '../../enums/tilt_mode_enum.dart';

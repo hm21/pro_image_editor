@@ -1,7 +1,7 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/features/paint_editor/controllers/paint_controller.dart';
 import 'package:pro_image_editor/features/paint_editor/enums/paint_editor_enum.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/i18n/i18n_emoji_editor.dart';
 import '/core/models/styles/emoji_editor_style.dart';

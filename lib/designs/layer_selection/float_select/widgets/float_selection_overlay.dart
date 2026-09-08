@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/custom_widgets/layer_interaction_widgets.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';

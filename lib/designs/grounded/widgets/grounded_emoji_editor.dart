@@ -1,6 +1,6 @@
 // Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 // Project imports:
 import '/core/models/editor_callbacks/pro_image_editor_callbacks.dart';

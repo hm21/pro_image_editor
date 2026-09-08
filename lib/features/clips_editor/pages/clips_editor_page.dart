@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -45,7 +45,7 @@ class ClipsEditorPage extends StatefulWidget with SimpleConfigsAccess {
   final List<VideoClip>? initialClips;
 
   @override
-  createState() => ClipsEditorPageState();
+  ClipsEditorPageState createState() => ClipsEditorPageState();
 }
 
 /// State responsible for rendering and managing the clips editor page.

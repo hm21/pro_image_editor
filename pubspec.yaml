@@ -1,6 +1,6 @@
 name: pro_image_editor
 description: "A Flutter image editor: Seamlessly enhance your images with user-friendly editing features."
-version: 13.6.0
+version: 14.0.0
 homepage: https://github.com/hm21/pro_image_editor/
 repository: https://github.com/hm21/pro_image_editor/
 documentation: https://github.com/hm21/pro_image_editor/
@@ -38,7 +38,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  cupertino_ui: ^1.0.2
   http: ^1.6.0
+  material_ui: ^1.1.1
   plugin_platform_interface: ^2.1.8
   shared_preferences: ^2.5.4
   vector_math: ^2.2.0

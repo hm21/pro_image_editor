@@ -1,6 +1,6 @@
 import 'package:example/shared/widgets/paragraph_info_widget.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 
 import '/core/mixin/example_helper.dart';

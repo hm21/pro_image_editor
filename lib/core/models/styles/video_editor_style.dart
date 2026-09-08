@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Defines style configurations for the video editor.
 class VideoEditorStyle {

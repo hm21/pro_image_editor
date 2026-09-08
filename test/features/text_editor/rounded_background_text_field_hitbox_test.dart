@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/models/editor_configs/text_editor_configs.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text_field.dart';

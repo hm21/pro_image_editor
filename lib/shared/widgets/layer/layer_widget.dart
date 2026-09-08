@@ -5,7 +5,7 @@ import 'dart:math';
 // Flutter imports:
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/constants/editor_various_constants.dart';
 import '/core/mixins/converted_configs.dart';
@@ -83,7 +83,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   final ValueNotifier<Duration>? playTimeNotifier;
 
   @override
-  createState() => _LayerWidgetState();
+  State<LayerWidget> createState() => _LayerWidgetState();
 }
 
 class _LayerWidgetState extends State<LayerWidget>

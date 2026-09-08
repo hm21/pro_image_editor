@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -190,9 +190,7 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
           paintEditorConfigs.icons.lineWeight,
           color: _foreGroundColor,
         ),
-        onPressed: () {
-          widget.editor.openLinWidthBottomSheet();
-        },
+        onPressed: widget.editor.openLinWidthBottomSheet,
       ),
       FlatIconTextButton(
         label: Text(
@@ -203,9 +201,7 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
           paintEditorConfigs.icons.changeOpacity,
           color: _foreGroundColor,
         ),
-        onPressed: () {
-          widget.editor.openOpacityBottomSheet();
-        },
+        onPressed: widget.editor.openOpacityBottomSheet,
       ),
       AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
@@ -236,9 +232,7 @@ class _GroundedPaintBarState extends State<GroundedPaintBar>
                         : paintEditorConfigs.icons.noFill,
                     color: _foreGroundColor,
                   ),
-                  onPressed: () {
-                    widget.editor.toggleFill();
-                  },
+                  onPressed: widget.editor.toggleFill,
                 ),
               )
             : const SizedBox.shrink(),

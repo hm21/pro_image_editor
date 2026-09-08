@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
+
 import '/shared/widgets/video/video_editor_configurable.dart';
 import 'video_editor_trim_skeleton.dart';
 

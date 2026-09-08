@@ -1,6 +1,6 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A stateful widget that represents a customizable button for interacting
 /// with layers.

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '/core/models/video/trim_duration_span_model.dart';
 import '/shared/controllers/video_controller.dart';
 import '/shared/extensions/duration_extension.dart';

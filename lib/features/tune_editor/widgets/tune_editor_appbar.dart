@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/tune_editor_configs.dart';
 import '/core/models/i18n/i18n_tune_editor.dart';

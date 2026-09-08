@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/features/emoji_editor/emoji_editor.dart';
 import 'package:pro_image_editor/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
 

@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/ui/pro_image_editor_icons.dart';
 import '/designs/frosted_glass/frosted_glass.dart';

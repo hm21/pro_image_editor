@@ -2,7 +2,7 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -38,7 +38,7 @@ class EmojiEditor extends StatefulWidget with SimpleConfigsAccess {
   final ScrollController? scrollController;
 
   @override
-  createState() => EmojiEditorState();
+  EmojiEditorState createState() => EmojiEditorState();
 }
 
 /// The state class for the `EmojiEditor` widget.

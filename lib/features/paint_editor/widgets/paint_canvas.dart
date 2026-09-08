@@ -4,7 +4,7 @@ import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '/core/models/layers/layer.dart';

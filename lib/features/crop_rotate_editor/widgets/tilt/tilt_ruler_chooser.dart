@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/shared/extensions/double_extension.dart';
 import '../../enums/tilt_mode_enum.dart';

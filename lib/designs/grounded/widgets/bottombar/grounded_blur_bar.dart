@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -61,9 +61,7 @@ class _GroundedBlurBarState extends State<GroundedBlurBar>
       child: FadeInUp(
         duration: kGroundedFadeInDuration,
         child: Slider(
-          onChanged: (value) {
-            widget.editor.setBlurFactor(value);
-          },
+          onChanged: widget.editor.setBlurFactor,
           value: widget.editor.blurFactor,
           max: blurEditorConfigs.maxBlur,
           activeColor: Colors.blue.shade200,

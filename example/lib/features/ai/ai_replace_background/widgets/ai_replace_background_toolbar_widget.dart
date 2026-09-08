@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A stateless widget for inputting and sending AI text commands.
 class AiReplaceBackgroundToolbarWidget extends StatelessWidget {

@@ -7,24 +7,55 @@ on:
   workflow_dispatch:
 
 jobs:
-  package-analysis:
+  format:
+    name: Check formatting
     runs-on: ubuntu-latest
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
-        
+        uses: actions/checkout@v5
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.44.0
+          flutter-version: 3.47.x
 
+      # `dart format` reads analysis_options.yaml, which includes a lint set
+      # from a package, so the dependencies have to be resolved first.
       - name: Install dependencies
         run: flutter pub get
 
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
+
+  package-analysis:
+    name: Analyze & test (Flutter ${{ matrix.flutter-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both ends of the supported range. 3.44 is the minimum declared in
+        # `environment` in pubspec.yaml, and from 3.47 on Flutter ships Material
+        # and Cupertino as the separate `material_ui` / `cupertino_ui` packages,
+        # so both need to stay green.
+        flutter-version:
+          - 3.44.0
+          - 3.47.x
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v5
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter-version }}
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Analyze code
         run: flutter analyze .

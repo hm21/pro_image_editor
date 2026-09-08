@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../enum/ai_generation_mode_enum.dart';
 import '../widgets/ai_command_input_widget.dart';

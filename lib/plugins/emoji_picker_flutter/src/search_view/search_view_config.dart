@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
 

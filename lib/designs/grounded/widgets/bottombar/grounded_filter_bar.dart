@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -133,9 +133,7 @@ class _GroundedFilterBarState extends State<GroundedFilterBar>
               configs: configs,
               transformConfigs: widget.editor.initialTransformConfigs,
               selectedFilter: widget.editor.selectedFilter.filters,
-              onSelectFilter: (filter) {
-                widget.editor.setFilter(filter);
-              },
+              onSelectFilter: widget.editor.setFilter,
             ),
           ),
         ],

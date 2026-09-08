@@ -1,8 +1,8 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/features/paint_editor/enums/paint_editor_enum.dart';
 import 'package:pro_image_editor/features/paint_editor/models/painted_model.dart';
 import 'package:pro_image_editor/features/paint_editor/widgets/draw_paint_item.dart';

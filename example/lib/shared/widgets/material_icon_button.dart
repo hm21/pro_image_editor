@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A stateless widget that displays a material-styled icon button with a custom
 /// circular background, half of which is a secondary color. Below the icon,

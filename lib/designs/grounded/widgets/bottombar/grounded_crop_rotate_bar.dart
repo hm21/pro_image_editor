@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_configs.dart';
 import '/core/mixins/editor_configs_mixin.dart';
@@ -169,9 +169,7 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
           cropRotateEditorConfigs.icons.rotate,
           color: _foreGroundColor,
         ),
-        onPressed: () {
-          widget.editor.rotate();
-        },
+        onPressed: widget.editor.rotate,
       ),
       FlatIconTextButton(
         label: Text(
@@ -179,9 +177,7 @@ class _GroundedCropRotateBarState extends State<GroundedCropRotateBar>
           style: TextStyle(fontSize: 10.0, color: _foreGroundColorAccent),
         ),
         icon: Icon(cropRotateEditorConfigs.icons.flip, color: _foreGroundColor),
-        onPressed: () {
-          widget.editor.flip();
-        },
+        onPressed: widget.editor.flip,
       ),
     ];
   }

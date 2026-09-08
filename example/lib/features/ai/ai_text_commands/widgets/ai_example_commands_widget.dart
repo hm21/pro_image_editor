@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/shared/services/shader_manager.dart';
 
 /// A widget that displays a list of example AI text commands for image editing.

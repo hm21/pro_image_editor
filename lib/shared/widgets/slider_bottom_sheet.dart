@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/enums/design_mode.dart';
 import '/shared/styles/platform_text_styles.dart';

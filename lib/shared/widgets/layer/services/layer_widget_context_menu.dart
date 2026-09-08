@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/models/i18n/i18n_layer_interaction.dart';
 import '/core/models/icons/layer_interaction_icons.dart';

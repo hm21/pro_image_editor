@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '/core/constants/int_constants.dart';
 import '/core/models/editor_configs/image_generation_configs/image_generation_configs.dart';

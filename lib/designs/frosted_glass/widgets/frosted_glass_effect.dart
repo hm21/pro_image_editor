@@ -2,7 +2,7 @@
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A stateless widget that applies a frosted glass effect to its child widget.
 ///

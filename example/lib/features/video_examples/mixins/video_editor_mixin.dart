@@ -6,7 +6,7 @@ import 'package:example/features/preview/preview_video.dart';
 import 'package:example/shared/widgets/video_progress_alert.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
