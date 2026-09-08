@@ -545,9 +545,7 @@ class PaintCanvasState extends State<PaintCanvas> {
   /// wrapper.
   Widget _buildActiveStroke() {
     final item = _paintCtrl.paintedModel;
-    final bool canBakeOpacity = !widget
-        .paintEditorConfigs
-        .customPathBuilders
+    final bool canBakeOpacity = !widget.paintEditorConfigs.customPathBuilders
         .containsKey(item.mode);
 
     final Widget painter = CustomPaint(

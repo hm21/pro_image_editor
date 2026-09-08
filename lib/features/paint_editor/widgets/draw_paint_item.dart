@@ -51,10 +51,10 @@ class DrawPaintItem extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     PathBuilderBase.fromMode(
-      item: item,
-      scale: scale,
-      paintEditorConfigs: paintEditorConfigs,
-    )
+        item: item,
+        scale: scale,
+        paintEditorConfigs: paintEditorConfigs,
+      )
       ..opacity = opacity
       ..draw(canvas: canvas, size: size);
   }

@@ -77,8 +77,8 @@ class LayerWidgetPaintItem extends StatelessWidget {
   /// single draw call. A custom path builder may issue several draw calls that
   /// would then blend against each other, so those keep the wrapper.
   Widget _buildItem(PaintedModel item, {required double opacity}) {
-    final bool canBakeOpacity =
-        !paintEditorConfigs.customPathBuilders.containsKey(item.mode);
+    final bool canBakeOpacity = !paintEditorConfigs.customPathBuilders
+        .containsKey(item.mode);
 
     Widget painter = CustomPaint(
       size: layer.size,
