@@ -142,6 +142,13 @@ abstract class PathBuilderBase {
   /// The path being constructed.
   final path = Path();
 
+  /// The opacity the item is drawn with, in `0..1`.
+  ///
+  /// Set before [draw] rather than passed to it, so that a custom builder
+  /// overriding [draw] keeps compiling; it is always `1.0` for those, which
+  /// stay wrapped in an `Opacity` widget.
+  double opacity = 1.0;
+
   /// Builds and returns the path.
   Path build();
 
@@ -161,11 +168,7 @@ abstract class PathBuilderBase {
   /// Items that need more than one draw call cannot use that shortcut: the
   /// calls would blend against each other. Those still go through an offscreen
   /// and let it apply the opacity, exactly as before.
-  void draw({
-    required Canvas canvas,
-    required Size size,
-    double opacity = 1.0,
-  }) {
+  void draw({required Canvas canvas, required Size size}) {
     if (offsets.length <= 1) return;
     // Build both paths
     build();

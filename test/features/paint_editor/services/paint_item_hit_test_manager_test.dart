@@ -64,7 +64,7 @@ void main() {
       expect(item.bounds, const Rect.fromLTRB(10, 20, 70, 100));
     });
 
-    test('reserves room for the arrow head', () {
+    test('reserves room for the whole arrow head', () {
       final item = buildFreestyle(
         offsets: const [Offset(20, 20), Offset(60, 20)],
         mode: PaintMode.freeStyleArrowEnd,
@@ -72,6 +72,13 @@ void main() {
 
       expect(item.bounds.left, lessThan(15));
       expect(item.bounds.right, greaterThan(65));
+
+      // The barbs run out to `(-4, +/-4)` units of `strokeWidth / 2` from the
+      // anchor at (60, 20), so their tips sit at (40, 0) and (40, 40) with
+      // another half stroke of rendered width around them. A box padded by
+      // only `4 * strokeWidth / 2` would cut those corners off.
+      expect(item.bounds.contains(const Offset(40, 44.9)), isTrue);
+      expect(item.bounds.contains(const Offset(40, -4.9)), isTrue);
     });
 
     test('is Rect.zero when there is no point at all', () {
@@ -137,6 +144,20 @@ void main() {
       expect(hitTest(arrow, const Offset(118, 10), scale: 1), isTrue);
       // Still bounded - far past the head stays a miss.
       expect(hitTest(arrow, const Offset(400, 10)), isFalse);
+    });
+
+    test('hits the outer tip of the arrow head', () {
+      final arrow = buildFreestyle(
+        offsets: const [Offset(10, 10), Offset(110, 10)],
+        mode: PaintMode.freeStyleArrowEnd,
+      );
+
+      // The barb runs from the anchor at (110, 10) out to (90, 30), so its far
+      // end is 28.3px from the anchor - past the `4 * strokeWidth / 2` that a
+      // straight reading of the head geometry suggests.
+      expect(hitTest(arrow, const Offset(90, 33)), isTrue);
+      // Clear of the barb, so still a miss.
+      expect(hitTest(arrow, const Offset(90, 40)), isFalse);
     });
 
     test('writes the result back onto the item', () {

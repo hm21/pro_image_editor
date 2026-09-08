@@ -15,7 +15,6 @@ void main() {
     Size canvas = canvasSize,
     Offset center = layerCenter,
     Offset fractionalOffset = const Offset(-0.5, -0.5),
-    LayerTimelineConfigs configs = const LayerTimelineConfigs(),
   }) async {
     // Start before any layer's time range so the first seek registers as a
     // real change on the [ValueNotifier].
@@ -23,31 +22,22 @@ void main() {
     addTearDown(notifier.dispose);
 
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(),
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Center(
-            child: LayerTimelineVisibility(
-              layer: layer,
-              playTimeNotifier: notifier,
-              configs: configs,
-              canvasSize: canvas,
-              layerCenter: center,
-              layerFractionalOffset: fractionalOffset,
-              child: const SizedBox(key: childKey, width: 100, height: 50),
-            ),
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: LayerTimelineVisibility(
+            layer: layer,
+            playTimeNotifier: notifier,
+            configs: const LayerTimelineConfigs(),
+            canvasSize: canvas,
+            layerCenter: center,
+            layerFractionalOffset: fractionalOffset,
+            child: const SizedBox(key: childKey, width: 100, height: 50),
           ),
         ),
       ),
     );
     return notifier;
-  }
-
-  bool isSnapshotting(WidgetTester tester) {
-    final finder = find.byType(SnapshotWidget);
-    if (finder.evaluate().isEmpty) return false;
-    return tester.widget<SnapshotWidget>(finder).controller.allowSnapshotting;
   }
 
   Future<void> seek(
@@ -285,82 +275,6 @@ void main() {
       );
       await seek(tester, notifier, Duration.zero);
       expect(scaleAlignment(tester), Alignment.center);
-    });
-  });
-
-  group('LayerTimelineVisibility scale snapshot', () {
-    Layer scaleLayer() => Layer(
-      startTime: Duration.zero,
-      endTime: const Duration(seconds: 10),
-      animations: const [
-        LayerAnimation(
-          type: LayerAnimationType.scale,
-          phase: AnimationPhase.animateIn,
-          duration: Duration(seconds: 1),
-        ),
-      ],
-    );
-
-    Layer fadeLayer() => Layer(
-      startTime: Duration.zero,
-      endTime: const Duration(seconds: 10),
-      animations: const [
-        LayerAnimation(
-          type: LayerAnimationType.fade,
-          phase: AnimationPhase.animateIn,
-          duration: Duration(seconds: 1),
-        ),
-      ],
-    );
-
-    testWidgets('freezes the layer while it is scaled near full size', (
-      tester,
-    ) async {
-      final notifier = await pumpVisibility(tester, scaleLayer());
-
-      // 80% through the scale-in window.
-      await seek(tester, notifier, const Duration(milliseconds: 800));
-      expect(isSnapshotting(tester), isTrue);
-    });
-
-    testWidgets('draws the vector content while it is scaled far down', (
-      tester,
-    ) async {
-      final notifier = await pumpVisibility(tester, scaleLayer());
-
-      // 20% through, where a snapshot would be sampled down too far.
-      await seek(tester, notifier, const Duration(milliseconds: 200));
-      expect(isSnapshotting(tester), isFalse);
-    });
-
-    testWidgets('stops freezing once the scale settles', (tester) async {
-      final notifier = await pumpVisibility(tester, scaleLayer());
-
-      await seek(tester, notifier, const Duration(milliseconds: 800));
-      expect(isSnapshotting(tester), isTrue);
-
-      await seek(tester, notifier, const Duration(seconds: 3));
-      expect(find.byType(SnapshotWidget), findsNothing);
-      expect(find.byKey(childKey), findsOneWidget);
-    });
-
-    testWidgets('leaves a fade transition alone', (tester) async {
-      final notifier = await pumpVisibility(tester, fadeLayer());
-
-      await seek(tester, notifier, const Duration(milliseconds: 500));
-      expect(find.byType(SnapshotWidget), findsNothing);
-    });
-
-    testWidgets('can be turned off', (tester) async {
-      final notifier = await pumpVisibility(
-        tester,
-        scaleLayer(),
-        configs: const LayerTimelineConfigs(enableScaleSnapshot: false),
-      );
-
-      await seek(tester, notifier, const Duration(milliseconds: 800));
-      expect(find.byType(SnapshotWidget), findsNothing);
-      expect(find.byKey(childKey), findsOneWidget);
     });
   });
 

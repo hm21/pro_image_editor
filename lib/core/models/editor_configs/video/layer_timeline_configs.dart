@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-import '/core/models/layers/layer_animation.dart';
-
 /// Signature for a builder that wraps a layer widget with an animated
 /// transition driven by [animation].
 ///
@@ -27,7 +25,6 @@ class LayerTimelineConfigs {
     this.enterCurve = Curves.easeIn,
     this.exitCurve = Curves.easeOut,
     this.transitionBuilder = defaultFadeTransition,
-    this.enableScaleSnapshot = true,
   });
 
   /// The curve applied to the fade-in animation.
@@ -40,24 +37,6 @@ class LayerTimelineConfigs {
   ///
   /// Defaults to a simple [FadeTransition].
   final LayerTimelineTransitionBuilder transitionBuilder;
-
-  /// Whether a layer is frozen into a single raster while a
-  /// [LayerAnimationType.scale] transition is running.
-  ///
-  /// A changing scale invalidates the cached raster of its layer on every
-  /// frame, so an expensive layer - a freestyle drawing holding thousands of
-  /// points - is rasterized anew 60 times a second. Painting a snapshot
-  /// instead keeps that off the raster thread. Measured with 20 full-canvas
-  /// freestyle layers on macOS, the raster time of a scale transition drops
-  /// from 21.4ms to about 1ms per frame; fade and slide reuse the cached
-  /// raster anyway and are left untouched.
-  ///
-  /// The snapshot is taken at the device pixel ratio and only while the layer
-  /// is scaled *down*, so it always holds at least as many pixels as reach the
-  /// screen, and it is dropped again the moment the transition ends. Turn this
-  /// off if you capture frames at a much higher pixel ratio while a scale
-  /// transition is mid-flight and need them pixel-exact.
-  final bool enableScaleSnapshot;
 
   /// The default transition – a simple fade.
   static Widget defaultFadeTransition(
@@ -72,13 +51,11 @@ class LayerTimelineConfigs {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
-    bool? enableScaleSnapshot,
   }) {
     return LayerTimelineConfigs(
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
-      enableScaleSnapshot: enableScaleSnapshot ?? this.enableScaleSnapshot,
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 import '../../enums/paint_editor_enum.dart';
@@ -133,9 +135,10 @@ class PathBuilderFreestyle extends PathBuilderBase {
         item.mode == PaintMode.freeStyleArrowStartEnd;
     if (!hasArrowStart && !hasArrowEnd) return false;
 
-    // The head is built from `4 * strokeWidth / 2` plus half a stroke of
-    // rendered width around those lines.
-    final double reach = halfStroke * 4 + halfStroke;
+    // The barbs run out to `(-4, +/-4)` units of `strokeWidth / 2`, so their
+    // tips sit `4 * sqrt2` of those units from the anchor - not `4`. Add half
+    // a stroke of rendered width around the lines on top.
+    final double reach = halfStroke * (4 * math.sqrt2 + 1);
     final double reachSq = reach * reach;
 
     bool hitsAnchor(Offset? anchor) =>

@@ -2,7 +2,6 @@
 
 ## 13.6.0
 - **PERF**(paint-editor): Hit-testing paint layers no longer walks the whole stroke path. Measured on macOS with 20 freestyle layers: 7.3ms -> 0.24ms per pointer hit test.
-- **PERF**(layers): A `LayerAnimationType.scale` transition no longer re-rasterizes complex layers on every frame. Measured on macOS with 20 freestyle layers: 12.9ms -> 0.35ms raster per frame. Opt out via `LayerTimelineConfigs.enableScaleSnapshot`.
 - **PERF**(paint-editor): Paint layers apply their opacity in the stroke paint instead of an `Opacity` widget, which removes one offscreen buffer per layer.
 
 ## 13.5.0

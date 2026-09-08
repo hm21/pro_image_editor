@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -121,11 +123,12 @@ class PaintedModel {
 
   Rect? _boundsCache;
 
-  /// The axis-aligned box that encloses everything this item draws, in its own
-  /// unscaled coordinate space.
+  /// The axis-aligned box that encloses every position a hit test can accept,
+  /// in the item's own unscaled coordinate space.
   ///
   /// The box is padded so it also covers the stroke width and, for the arrow
-  /// modes, the arrowhead that reaches past the outermost point.
+  /// modes, the arrowhead that reaches past the outermost point. It is not a
+  /// paint bound: a miter join may draw a little further than this.
   ///
   /// The result is cached because hit testing runs once per paint layer for
   /// every pointer hit test - and while a mouse is connected Flutter re-runs a
@@ -153,18 +156,20 @@ class PaintedModel {
         : Rect.fromLTRB(minX, minY, maxX, maxY).inflate(_boundsPadding);
   }
 
-  /// How far the drawing reaches beyond its outermost point.
+  /// How far a hit can land beyond the outermost recorded point.
   ///
-  /// Arrowheads are sized from `strokeWidth / 2` and extend up to four of
-  /// those units past their anchor point; every other mode stays within half a
-  /// stroke of its points.
+  /// Every path is built from the recorded points and stays inside their box,
+  /// and every hit test accepts a position within half a stroke of that path -
+  /// except for the arrowheads. Their barbs run out to `(-4, +/-4)` units of
+  /// `strokeWidth / 2`, so a tip sits `4 * sqrt2` of those units from its
+  /// anchor point, plus the same half stroke.
   double get _boundsPadding {
     switch (mode) {
       case PaintMode.arrow:
       case PaintMode.freeStyleArrowStart:
       case PaintMode.freeStyleArrowEnd:
       case PaintMode.freeStyleArrowStartEnd:
-        return strokeWidth * 2.5;
+        return strokeWidth * (2 * math.sqrt2 + 0.5);
       default:
         return strokeWidth / 2;
     }

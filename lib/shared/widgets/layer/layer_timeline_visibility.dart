@@ -1,9 +1,7 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:flutter/rendering.dart'
-    show PaintingContext, PaintingContextCallback, RenderProxyBox;
+import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/video/layer_timeline_configs.dart';
@@ -88,25 +86,10 @@ class LayerTimelineVisibility extends StatefulWidget {
 class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   late _TimelineFrame _frame;
 
-  /// Freezes the layer into a single raster while it is scaled.
-  ///
-  /// Toggled by [_syncSnapshot] rather than by mounting and unmounting the
-  /// [SnapshotWidget], so the layer subtree keeps its elements across the
-  /// transition.
-  final SnapshotController _snapshotController = SnapshotController();
-  final _ScaleSnapshotPainter _snapshotPainter = _ScaleSnapshotPainter();
-
-  /// Below this scale the layer covers so few pixels that redrawing it is
-  /// cheap again, while a snapshot would have to be sampled down by more than
-  /// a factor of two and start to shimmer. The vector content is drawn
-  /// directly there.
-  static const double _minSnapshotScale = 0.5;
-
   @override
   void initState() {
     super.initState();
     _frame = _computeFrame(widget.playTimeNotifier.value);
-    _syncSnapshot();
     widget.playTimeNotifier.addListener(_onTimeChanged);
   }
 
@@ -128,42 +111,18 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     if (changed) {
       _frame = _computeFrame(widget.playTimeNotifier.value);
     }
-    _syncSnapshot();
   }
 
   @override
   void dispose() {
     widget.playTimeNotifier.removeListener(_onTimeChanged);
-    _snapshotController.dispose();
-    _snapshotPainter.dispose();
     super.dispose();
-  }
-
-  /// Whether the [SnapshotWidget] belongs in the tree for the current frame.
-  ///
-  /// A scale is the only transition that invalidates the layer's cached raster
-  /// on every frame - fade and slide keep reusing it - so it is also the only
-  /// one worth freezing.
-  bool get _usesSnapshot =>
-      widget.configs.enableScaleSnapshot && _frame.scale != 1.0;
-
-  /// Turns the snapshot on only while it actually pays off.
-  ///
-  /// Scaling *up* is excluded because the snapshot is taken at the layer's
-  /// natural size and would be stretched past its own resolution; very small
-  /// scales are excluded by [_minSnapshotScale].
-  void _syncSnapshot() {
-    _snapshotController.allowSnapshotting =
-        _usesSnapshot &&
-        _frame.scale >= _minSnapshotScale &&
-        _frame.scale < 1.0;
   }
 
   void _onTimeChanged() {
     final next = _computeFrame(widget.playTimeNotifier.value);
     if (next != _frame) {
       setState(() => _frame = next);
-      _syncSnapshot();
     }
   }
 
@@ -319,20 +278,6 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
 
     Widget result = child;
     if (frame.scale != 1.0) {
-      if (_usesSnapshot) {
-        // Rasterize the layer once for the duration of the scale instead of
-        // redrawing it under a transform that misses the raster cache on every
-        // single frame. `permissive` lets a layer that cannot be rasterized -
-        // one holding a platform view, such as a video - fall back to normal
-        // painting rather than throwing.
-        result = SnapshotWidget(
-          controller: _snapshotController,
-          mode: SnapshotMode.permissive,
-          autoresize: true,
-          painter: _snapshotPainter,
-          child: result,
-        );
-      }
       // Anchor scaling on the layer's visual center rather than the layout
       // box center. The child paints its content shifted by
       // [layerFractionalOffset], so a fraction of (0.5 + fo) maps to
@@ -434,46 +379,6 @@ class _TimelineFrame {
     scale,
     legacyProgress,
   );
-}
-
-/// Draws the frozen layer while it is scaled.
-///
-/// Flutter's default painter samples with [FilterQuality.medium], which builds
-/// mipmaps; the snapshot is only ever drawn smaller than it was taken, and only
-/// for the length of a transition, so bilinear sampling is enough and markedly
-/// cheaper on the raster thread.
-class _ScaleSnapshotPainter extends SnapshotPainter {
-  _ScaleSnapshotPainter();
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset offset,
-    Size size,
-    PaintingContextCallback painter,
-  ) {
-    painter(context, offset);
-  }
-
-  @override
-  void paintSnapshot(
-    PaintingContext context,
-    Offset offset,
-    Size size,
-    ui.Image image,
-    Size sourceSize,
-    double pixelRatio,
-  ) {
-    context.canvas.drawImageRect(
-      image,
-      Offset.zero & sourceSize,
-      offset & size,
-      Paint()..filterQuality = FilterQuality.low,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _ScaleSnapshotPainter oldPainter) => false;
 }
 
 /// Renders its child into the render tree (so [RepaintBoundary.toImage] works)

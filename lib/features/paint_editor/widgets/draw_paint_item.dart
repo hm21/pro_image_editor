@@ -54,7 +54,9 @@ class DrawPaintItem extends CustomPainter {
       item: item,
       scale: scale,
       paintEditorConfigs: paintEditorConfigs,
-    ).draw(canvas: canvas, size: size, opacity: opacity);
+    )
+      ..opacity = opacity
+      ..draw(canvas: canvas, size: size);
   }
 
   @override
