@@ -52,34 +52,33 @@ void main() {
     expect(localizations, isA<MaterialLocalizations>());
   });
 
-  testWidgets(
-    'supplies English material resources for an unsupported locale',
-    (WidgetTester tester) async {
-      late MaterialLocalizations localizations;
+  testWidgets('supplies English material resources for an unsupported locale', (
+    WidgetTester tester,
+  ) async {
+    late MaterialLocalizations localizations;
 
-      await tester.pumpWidget(
-        Localizations(
-          locale: const Locale('xx'),
-          delegates: const [DefaultWidgetsLocalizations.delegate],
-          child: MaterialUiLocalizationsScope(
-            child: Builder(
-              key: const ValueKey('unsupported-locale'),
-              builder: (context) {
-                localizations = MaterialLocalizations.of(context);
-                return const SizedBox.shrink();
-              },
-            ),
+    await tester.pumpWidget(
+      Localizations(
+        locale: const Locale('xx'),
+        delegates: const [DefaultWidgetsLocalizations.delegate],
+        child: MaterialUiLocalizationsScope(
+          child: Builder(
+            key: const ValueKey('unsupported-locale'),
+            builder: (context) {
+              localizations = MaterialLocalizations.of(context);
+              return const SizedBox.shrink();
+            },
           ),
         ),
-      );
+      ),
+    );
 
-      expect(localizations, isA<DefaultMaterialLocalizations>());
-      expect(
-        Localizations.localeOf(
-          tester.element(find.byKey(const ValueKey('unsupported-locale'))),
-        ),
-        const Locale('en'),
-      );
-    },
-  );
+    expect(localizations, isA<DefaultMaterialLocalizations>());
+    expect(
+      Localizations.localeOf(
+        tester.element(find.byKey(const ValueKey('unsupported-locale'))),
+      ),
+      const Locale('en'),
+    );
+  });
 }

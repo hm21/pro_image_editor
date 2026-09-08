@@ -191,10 +191,7 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
                           .bottomBarActiveItemDecoration
                     : null;
                 if (decoration != null) {
-                  button = DecoratedBox(
-                    decoration: decoration,
-                    child: button,
-                  );
+                  button = DecoratedBox(decoration: decoration, child: button);
                 }
                 return button;
               }),

@@ -74,10 +74,7 @@ void main() {
       );
 
       expect(merged.where((item) => item.id == 'brightness').length, 1);
-      expect(
-        merged.firstWhere((item) => item.id == 'brightness').value,
-        -0.2,
-      );
+      expect(merged.firstWhere((item) => item.id == 'brightness').value, -0.2);
       expect(merged.firstWhere((item) => item.id == 'contrast').value, 0.1);
     });
 
@@ -94,11 +91,7 @@ void main() {
         session: [_brightness(0.1)],
       );
 
-      expect(merged, [
-        timed,
-        custom,
-        _brightness(0.1),
-      ]);
+      expect(merged, [timed, custom, _brightness(0.1)]);
     });
 
     test('keeps repeated timed entries of the same id', () {
@@ -137,10 +130,7 @@ void main() {
       );
 
       expect(merged.where((item) => item.hasTimeline).single, fading);
-      expect(
-        merged.firstWhere((item) => !item.hasTimeline).value,
-        0.2,
-      );
+      expect(merged.firstWhere((item) => !item.hasTimeline).value, 0.2);
     });
 
     test('preserves unknown ids including order and duplicates', () {
