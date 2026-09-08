@@ -30,6 +30,7 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/utils/transparent_image_generator_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
+import '/shared/widgets/material_ui_localizations_scope.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '../audio_editor/audio_editor_page.dart';
 import '../audio_editor/models/audio_editor_response.dart';
@@ -2189,11 +2190,11 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (tuneAdjustments == null) return;
 
+    // TuneEditor returns the merged set: current global slider values plus
+    // any timed/custom entries it did not edit. Replacing (not appending)
+    // avoids stacking the same untimed ids across sessions.
     addHistory(
-      tuneAdjustments: [
-        ...stateManager.activeTuneAdjustments.map((item) => item.copy()),
-        ...tuneAdjustments,
-      ],
+      tuneAdjustments: tuneAdjustments.map((item) => item.copy()).toList(),
       heroScreenshotRequired: true,
     );
 
@@ -3168,7 +3169,8 @@ class ProImageEditorState extends State<ProImageEditor>
   Widget build(BuildContext context) {
     _theme = configs.theme ?? defaultEditorTheme();
 
-    return RecordInvisibleWidget(
+    return MaterialUiLocalizationsScope(
+      child: RecordInvisibleWidget(
       controller: _controllers.screenshot,
       child: ExtendedPopScope(
         canPop:
@@ -3309,6 +3311,7 @@ class ProImageEditorState extends State<ProImageEditor>
             ),
           ),
         ),
+      ),
       ),
     );
   }

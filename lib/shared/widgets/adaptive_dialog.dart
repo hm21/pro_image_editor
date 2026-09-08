@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 // Project imports:
 import '/core/enums/design_mode.dart';
 import '/core/models/styles/adaptive_dialog_style.dart';
+import 'material_ui_localizations_scope.dart';
 
 /// A dialog that adapts its appearance based on the design mode.
 class AdaptiveDialog extends StatefulWidget {
@@ -76,10 +77,12 @@ class _AdaptiveDialogState extends State<AdaptiveDialog> {
       );
     } else {
       // Return a Material-style dialog for other design modes.
-      return AlertDialog(
-        title: widget.title,
-        content: widget.content,
-        actions: widget.actions,
+      return MaterialUiLocalizationsScope(
+        child: AlertDialog(
+          title: widget.title,
+          content: widget.content,
+          actions: widget.actions,
+        ),
       );
     }
   }

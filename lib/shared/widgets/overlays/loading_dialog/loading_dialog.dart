@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 // Project imports:
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '../../../styles/platform_text_styles.dart';
+import '../../material_ui_localizations_scope.dart';
 import '../../platform/platform_circular_progress_indicator.dart';
 import 'animations/loading_dialog_opacity_animation.dart';
 import 'models/loading_dialog_overlay_details.dart';
@@ -159,14 +160,16 @@ class LoadingDialog extends ChangeNotifier {
     required ThemeData theme,
     required Widget content,
   }) {
-    return Theme(
-      data: theme,
-      child: AlertDialog(
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 20,
+    return MaterialUiLocalizationsScope(
+      child: Theme(
+        data: theme,
+        child: AlertDialog(
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 16,
+            horizontal: 20,
+          ),
+          content: content,
         ),
-        content: content,
       ),
     );
   }

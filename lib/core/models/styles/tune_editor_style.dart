@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../constants/editor_style_constants.dart';
 
@@ -19,6 +20,7 @@ class TuneEditorStyle {
     this.bottomBarBackground = kImageEditorBottomBarBackground,
     this.bottomBarActiveItemColor = kImageEditorPrimaryColor,
     this.bottomBarInactiveItemColor = kImageEditorBottomBarColor,
+    this.bottomBarActiveItemDecoration,
     this.background = kImageEditorBackground,
     this.uiOverlayStyle = kImageEditorUiOverlayStyle,
   });
@@ -41,6 +43,12 @@ class TuneEditorStyle {
   /// Color of inactive items in the bottom navigation bar.
   final Color bottomBarInactiveItemColor;
 
+  /// Optional decoration drawn behind the selected tune item.
+  ///
+  /// Use this to add a box, background, or border so the active adjustment
+  /// stays recognizable when active/inactive colors are close.
+  final BoxDecoration? bottomBarActiveItemDecoration;
+
   /// UI overlay style, defining the appearance of system status bars.
   final SystemUiOverlayStyle uiOverlayStyle;
 
@@ -62,6 +70,7 @@ class TuneEditorStyle {
     Color? bottomBarBackground,
     Color? bottomBarActiveItemColor,
     Color? bottomBarInactiveItemColor,
+    BoxDecoration? bottomBarActiveItemDecoration,
     SystemUiOverlayStyle? uiOverlayStyle,
   }) {
     return TuneEditorStyle(
@@ -73,6 +82,8 @@ class TuneEditorStyle {
           bottomBarActiveItemColor ?? this.bottomBarActiveItemColor,
       bottomBarInactiveItemColor:
           bottomBarInactiveItemColor ?? this.bottomBarInactiveItemColor,
+      bottomBarActiveItemDecoration:
+          bottomBarActiveItemDecoration ?? this.bottomBarActiveItemDecoration,
       uiOverlayStyle: uiOverlayStyle ?? this.uiOverlayStyle,
     );
   }
