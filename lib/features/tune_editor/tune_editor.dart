@@ -377,34 +377,34 @@ class TuneEditorState extends State<TuneEditor>
   Widget build(BuildContext context) {
     return MaterialUiLocalizationsScope(
       child: Theme(
-      data: theme.copyWith(
-        tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true),
-      ),
-      child: ExtendedPopScope(
-        canPop: tuneEditorConfigs.enableGesturePop,
-        child: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: tuneEditorConfigs.style.uiOverlayStyle,
-          child: SafeArea(
-            top: tuneEditorConfigs.safeArea.top,
-            bottom: tuneEditorConfigs.safeArea.bottom,
-            left: tuneEditorConfigs.safeArea.left,
-            right: tuneEditorConfigs.safeArea.right,
-            child: RecordInvisibleWidget(
-              controller: screenshotCtrl,
-              child: MediaQuery.removePadding(
-                context: context,
-                removeBottom: !tuneEditorConfigs.safeArea.bottom,
-                child: Scaffold(
-                  backgroundColor: tuneEditorConfigs.style.background,
-                  appBar: _buildAppBar(),
-                  body: _buildBody(),
-                  bottomNavigationBar: _buildBottomNavBar(),
+        data: theme.copyWith(
+          tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true),
+        ),
+        child: ExtendedPopScope(
+          canPop: tuneEditorConfigs.enableGesturePop,
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: tuneEditorConfigs.style.uiOverlayStyle,
+            child: SafeArea(
+              top: tuneEditorConfigs.safeArea.top,
+              bottom: tuneEditorConfigs.safeArea.bottom,
+              left: tuneEditorConfigs.safeArea.left,
+              right: tuneEditorConfigs.safeArea.right,
+              child: RecordInvisibleWidget(
+                controller: screenshotCtrl,
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeBottom: !tuneEditorConfigs.safeArea.bottom,
+                  child: Scaffold(
+                    backgroundColor: tuneEditorConfigs.style.background,
+                    appBar: _buildAppBar(),
+                    body: _buildBody(),
+                    bottomNavigationBar: _buildBottomNavBar(),
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

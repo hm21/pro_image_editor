@@ -275,9 +275,7 @@ void main() {
         state.tuneAdjustmentList.length,
       );
       expect(
-        state.tuneAdjustmentMatrix.any(
-          (item) => item.id == 'custom-vignette',
-        ),
+        state.tuneAdjustmentMatrix.any((item) => item.id == 'custom-vignette'),
         isFalse,
       );
       expect(
@@ -291,31 +289,32 @@ void main() {
     testWidgets(
       'custom slider advances from onChanged instead of a stale value',
       (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: TuneEditor.memory(
-            mockMemoryImage,
-            initConfigs: TuneEditorInitConfigs(
-              theme: ThemeData(),
-              configs: const ProImageEditorConfigs(
-                tuneEditor: TuneEditorConfigs(
-                  widgets: TuneEditorWidgets(
-                    slider: _staleCapturedValueSlider,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: TuneEditor.memory(
+              mockMemoryImage,
+              initConfigs: TuneEditorInitConfigs(
+                theme: ThemeData(),
+                configs: const ProImageEditorConfigs(
+                  tuneEditor: TuneEditorConfigs(
+                    widgets: TuneEditorWidgets(
+                      slider: _staleCapturedValueSlider,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(tester.widget<Slider>(find.byType(Slider)).value, 0);
+        expect(tester.widget<Slider>(find.byType(Slider)).value, 0);
 
-      await tester.drag(find.byType(Slider), const Offset(80, 0));
-      await tester.pump();
+        await tester.drag(find.byType(Slider), const Offset(80, 0));
+        await tester.pump();
 
-      expect(tester.widget<Slider>(find.byType(Slider)).value, isNot(0));
-    });
+        expect(tester.widget<Slider>(find.byType(Slider)).value, isNot(0));
+      },
+    );
   });
 }
 
