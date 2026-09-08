@@ -875,15 +875,18 @@ class PaintEditorState extends State<PaintEditor>
     // Scale and offset the offsets of the paint layer
     double strokeHelperWidth = onlyStrokeMode ? rawLayer.strokeWidth : 0;
 
-    for (int i = 0; i < layer.offsets.length; i++) {
-      Offset? point = layer.offsets[i];
-      if (point != null) {
-        layer.offsets[i] = Offset(
-          point.dx - layerRect.left + strokeHelperWidth / 2,
-          point.dy - layerRect.top + strokeHelperWidth / 2,
-        );
-      }
-    }
+    // Assigned as a whole rather than patched in place, so the model can drop
+    // its cached `bounds` for the moved points.
+    layer.offsets = [
+      for (final point in layer.offsets)
+        if (point == null)
+          null
+        else
+          Offset(
+            point.dx - layerRect.left + strokeHelperWidth / 2,
+            point.dy - layerRect.top + strokeHelperWidth / 2,
+          ),
+    ];
 
     // Calculate the final offset of the paint layer
     Offset finalOffset = Offset(

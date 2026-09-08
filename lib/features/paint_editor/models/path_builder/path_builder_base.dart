@@ -142,6 +142,13 @@ abstract class PathBuilderBase {
   /// The path being constructed.
   final path = Path();
 
+  /// The opacity the item is drawn with, in `0..1`.
+  ///
+  /// Set before [draw] rather than passed to it, so that a custom builder
+  /// overriding [draw] keeps compiling; it is always `1.0` for those, which
+  /// stay wrapped in an `Opacity` widget.
+  double opacity = 1.0;
+
   /// Builds and returns the path.
   Path build();
 
@@ -149,23 +156,38 @@ abstract class PathBuilderBase {
   Path? buildSecond() => null;
 
   /// Draws the built path to the given canvas using the current painter.
+  ///
+  /// [opacity] is multiplied into the paint alpha rather than applied by an
+  /// `Opacity` widget wrapped around the painter. For a single `drawPath` both
+  /// produce the same pixels - the color channels stay untouched and the
+  /// engine resolves the coverage of the whole path in one pass, so a stroke
+  /// crossing itself is not blended twice - but baking it in saves a
+  /// `saveLayer` offscreen per layer and frame, which is the most expensive
+  /// primitive on mobile GPUs.
+  ///
+  /// Items that need more than one draw call cannot use that shortcut: the
+  /// calls would blend against each other. Those still go through an offscreen
+  /// and let it apply the opacity, exactly as before.
   void draw({required Canvas canvas, required Size size}) {
     if (offsets.length <= 1) return;
     // Build both paths
     build();
     final Path? secondPath = buildSecond();
 
-    if (item.erasedOffsets.isEmpty) {
+    final double alpha = opacity.clamp(0.0, 1.0);
+    final bool needsLayer =
+        item.erasedOffsets.isNotEmpty || (secondPath != null && alpha < 1);
+
+    if (!needsLayer) {
+      if (alpha < 1) {
+        painter.color = painter.color.withValues(
+          alpha: painter.color.a * alpha,
+        );
+      }
       // First draw stroke path
       canvas.drawPath(path, painter);
-
       // Then draw second path (fill) if present
-      if (secondPath != null) {
-        final fillPaint = Paint()
-          ..color = painter.color
-          ..style = PaintingStyle.fill;
-        canvas.drawPath(secondPath, fillPaint);
-      }
+      _drawFillPath(canvas, secondPath);
       return;
     }
 
@@ -179,38 +201,45 @@ abstract class PathBuilderBase {
           size.width + doubleStrokeWidth,
           size.height + doubleStrokeWidth,
         ),
-        Paint(),
+        // Only the alpha of this paint matters; it fades the composed result.
+        Paint()..color = Color.fromRGBO(0, 0, 0, alpha),
       )
       ..drawPath(path, painter);
 
     // Fill path (second)
-    if (secondPath != null) {
-      final fillPaint = Paint()
-        ..color = painter.color
-        ..style = PaintingStyle.fill;
-      canvas.drawPath(secondPath, fillPaint);
+    _drawFillPath(canvas, secondPath);
+
+    if (item.erasedOffsets.isNotEmpty) {
+      // Build erase path
+      final erasePaint = Paint()
+        ..blendMode = BlendMode.clear
+        ..isAntiAlias = true;
+
+      final erasePath = Path();
+      for (final erased in item.erasedOffsets) {
+        erasePath.addOval(
+          Rect.fromCircle(
+            center: erased.offset * scale,
+            // eraser size
+            radius: erased.radius * scale,
+          ),
+        );
+      }
+
+      // apply erase
+      canvas.drawPath(erasePath, erasePaint);
     }
 
-    // Build erase path
-    final erasePaint = Paint()
-      ..blendMode = BlendMode.clear
-      ..isAntiAlias = true;
+    canvas.restore();
+  }
 
-    final erasePath = Path();
-    for (final item in item.erasedOffsets) {
-      erasePath.addOval(
-        Rect.fromCircle(
-          center: item.offset * scale,
-          // eraser size
-          radius: item.radius * scale,
-        ),
-      );
-    }
+  void _drawFillPath(Canvas canvas, Path? secondPath) {
+    if (secondPath == null) return;
 
-    // apply erase
-    canvas
-      ..drawPath(erasePath, erasePaint)
-      ..restore();
+    final fillPaint = Paint()
+      ..color = painter.color
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(secondPath, fillPaint);
   }
 
   /// Performs hit testing.

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -26,14 +28,20 @@ class PaintedModel {
   PaintedModel({
     GlobalKey? key,
     required this.mode,
-    required this.offsets,
+    required List<Offset?> offsets,
     required this.erasedOffsets,
     required this.color,
-    required this.strokeWidth,
+    required double strokeWidth,
     required this.opacity,
     this.fill = false,
     this.hit = false,
-  }) : key = key ?? GlobalKey() {
+  }) : // The fields are private so that assigning them can drop the cached
+       // `bounds`, which rules out an initializing formal here.
+       // ignore: prefer_initializing_formals
+       _offsets = offsets,
+       // ignore: prefer_initializing_formals
+       _strokeWidth = strokeWidth,
+       key = key ?? GlobalKey() {
     id = generateUniqueId();
   }
 
@@ -87,7 +95,14 @@ class PaintedModel {
   Color color;
 
   /// The width of the stroke used for drawing.
-  double strokeWidth;
+  double get strokeWidth => _strokeWidth;
+  set strokeWidth(double value) {
+    if (_strokeWidth == value) return;
+    _strokeWidth = value;
+    _boundsCache = null;
+  }
+
+  double _strokeWidth;
 
   /// The opacity for the drawing.
   double opacity;
@@ -95,7 +110,70 @@ class PaintedModel {
   /// A list of offsets representing the points of the shape or drawing.
   /// For shapes like circles and rectangles, it contains two points.
   /// For [FreeStyle], it contains a list of points.
-  List<Offset?> offsets;
+  ///
+  /// Assign a new list instead of mutating this one in place, otherwise
+  /// [bounds] keeps reporting the box of the previous points.
+  List<Offset?> get offsets => _offsets;
+  set offsets(List<Offset?> value) {
+    _offsets = value;
+    _boundsCache = null;
+  }
+
+  List<Offset?> _offsets;
+
+  Rect? _boundsCache;
+
+  /// The axis-aligned box that encloses every position a hit test can accept,
+  /// in the item's own unscaled coordinate space.
+  ///
+  /// The box is padded so it also covers the stroke width and, for the arrow
+  /// modes, the arrowhead that reaches past the outermost point. It is not a
+  /// paint bound: a miter join may draw a little further than this.
+  ///
+  /// The result is cached because hit testing runs once per paint layer for
+  /// every pointer hit test - and while a mouse is connected Flutter re-runs a
+  /// hit test after every frame. Rejecting a pointer against this box keeps
+  /// the expensive per-path work off that hot path.
+  Rect get bounds {
+    final cached = _boundsCache;
+    if (cached != null) return cached;
+
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = double.negativeInfinity;
+    double maxY = double.negativeInfinity;
+
+    for (final offset in _offsets) {
+      if (offset == null) continue;
+      if (offset.dx < minX) minX = offset.dx;
+      if (offset.dx > maxX) maxX = offset.dx;
+      if (offset.dy < minY) minY = offset.dy;
+      if (offset.dy > maxY) maxY = offset.dy;
+    }
+
+    return _boundsCache = minX > maxX
+        ? Rect.zero
+        : Rect.fromLTRB(minX, minY, maxX, maxY).inflate(_boundsPadding);
+  }
+
+  /// How far a hit can land beyond the outermost recorded point.
+  ///
+  /// Every path is built from the recorded points and stays inside their box,
+  /// and every hit test accepts a position within half a stroke of that path -
+  /// except for the arrowheads. Their barbs run out to `(-4, +/-4)` units of
+  /// `strokeWidth / 2`, so a tip sits `4 * sqrt2` of those units from its
+  /// anchor point, plus the same half stroke.
+  double get _boundsPadding {
+    switch (mode) {
+      case PaintMode.arrow:
+      case PaintMode.freeStyleArrowStart:
+      case PaintMode.freeStyleArrowEnd:
+      case PaintMode.freeStyleArrowStartEnd:
+        return strokeWidth * (2 * math.sqrt2 + 0.5);
+      default:
+        return strokeWidth / 2;
+    }
+  }
 
   /// A list of offset points that have been erased from the painted content.
   ///
