@@ -1,5 +1,10 @@
 # Changelog
 
+## 13.6.0
+- **PERF**(paint-editor): Hit-testing paint layers no longer walks the whole stroke path. Measured on macOS with 20 freestyle layers: 7.3ms -> 0.24ms per pointer hit test.
+- **PERF**(layers): A `LayerAnimationType.scale` transition no longer re-rasterizes complex layers on every frame. Measured on macOS with 20 freestyle layers: 12.9ms -> 0.35ms raster per frame. Opt out via `LayerTimelineConfigs.enableScaleSnapshot`.
+- **PERF**(paint-editor): Paint layers apply their opacity in the stroke paint instead of an `Opacity` widget, which removes one offscreen buffer per layer.
+
 ## 13.5.0
 - **FEAT**(helper-lines): Add `HelperLineConfigs.enableSmartAlignment` (opt-in) so same-type layers snap matching edges, mixed types snap center to center, and only nearby or shared axes act as guides. Tune the reach via `smartAlignmentNeighborLimit` and `smartAlignmentSharedAxisMin`.
 - **FEAT**(helper-lines): Add `HelperLineConfigs.enablePaintLayerSnapping` to exclude paint layers from snapping.

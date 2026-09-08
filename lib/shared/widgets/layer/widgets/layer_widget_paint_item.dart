@@ -46,20 +46,23 @@ class LayerWidgetPaintItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = layer.items;
 
-    late final Widget child;
     if (items.length == 1) {
-      // Fast path for the common single-stroke layer: keep the exact previous
-      // behavior where the layer opacity is applied once around the stroke.
-      child = _buildItem(items.first);
-    } else {
-      // Merged layer: stack every baked-in stroke, each with its own opacity.
-      child = Stack(
-        children: [
-          for (final item in items) _buildItem(item, applyItemOpacity: true),
-        ],
-      );
+      // Fast path for the common single-stroke layer, where the layer opacity
+      // is the only one that applies.
+      return _buildItem(items.first, opacity: layer.opacity);
     }
 
+    // Merged layer: stack every baked-in stroke, each with its own opacity.
+    final Widget child = Stack(
+      children: [
+        for (final item in items) _buildItem(item, opacity: item.opacity),
+      ],
+    );
+
+    // The strokes of a merged layer overlap each other, so a layer opacity
+    // below 1 has to fade the composed stack rather than each stroke on its
+    // own. Merged layers keep an opacity of `1.0` and carry the fading in the
+    // strokes themselves, so this stays unused in practice.
     if (layer.opacity >= 1.0) return child;
 
     return Opacity(opacity: layer.opacity, child: child);
@@ -67,10 +70,16 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
   /// Builds a single stroke painter sized to the layer.
   ///
-  /// When [applyItemOpacity] is `true` (merged multi-stroke layers) the
-  /// per-stroke opacity is applied here, because the layer-level opacity is
-  /// `1.0` for merged layers and each stroke keeps its own opacity.
-  Widget _buildItem(PaintedModel item, {bool applyItemOpacity = false}) {
+  /// [opacity] is handed to the painter, which multiplies it into the stroke
+  /// color instead of wrapping the item in an `Opacity`. That widget renders
+  /// the layer into an offscreen buffer on every frame - the most expensive
+  /// primitive on mobile GPUs - while the painted result is identical for a
+  /// single draw call. A custom path builder may issue several draw calls that
+  /// would then blend against each other, so those keep the wrapper.
+  Widget _buildItem(PaintedModel item, {required double opacity}) {
+    final bool canBakeOpacity =
+        !paintEditorConfigs.customPathBuilders.containsKey(item.mode);
+
     Widget painter = CustomPaint(
       size: layer.size,
       willChange: willChange,
@@ -78,6 +87,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
       painter: DrawPaintItem(
         item: item,
         scale: layer.scale,
+        opacity: canBakeOpacity ? opacity : 1.0,
         selected: isSelected,
         enabledHitDetection: enableHitDetection,
         onHitChanged: onHitChanged,
@@ -85,8 +95,8 @@ class LayerWidgetPaintItem extends StatelessWidget {
       ),
     );
 
-    if (applyItemOpacity && item.opacity < 1.0) {
-      painter = Opacity(opacity: item.opacity, child: painter);
+    if (!canBakeOpacity && opacity < 1.0) {
+      painter = Opacity(opacity: opacity, child: painter);
     }
 
     return painter;

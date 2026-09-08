@@ -529,22 +529,41 @@ class PaintCanvasState extends State<PaintCanvas> {
                         fit: StackFit.expand,
                         children: [_buildCensorItem(_paintCtrl.paintedModel)],
                       )
-                    : Opacity(
-                        opacity: _paintCtrl.opacity,
-                        child: CustomPaint(
-                          size: widget.drawAreaSize,
-                          willChange: true,
-                          isComplex: true,
-                          painter: DrawPaintItem(
-                            item: _paintCtrl.paintedModel,
-                            paintEditorConfigs: widget.paintEditorConfigs,
-                          ),
-                        ),
-                      )
+                    : _buildActiveStroke()
               : const SizedBox.expand(),
         );
       },
     );
+  }
+
+  /// Paints the stroke that is currently being drawn.
+  ///
+  /// The opacity goes into the painter instead of an `Opacity` widget so the
+  /// in-progress stroke does not run through an offscreen buffer on every
+  /// pointer move. A custom path builder may draw more than once, where that
+  /// shortcut would blend the calls against each other, so it keeps the
+  /// wrapper.
+  Widget _buildActiveStroke() {
+    final item = _paintCtrl.paintedModel;
+    final bool canBakeOpacity = !widget
+        .paintEditorConfigs
+        .customPathBuilders
+        .containsKey(item.mode);
+
+    final Widget painter = CustomPaint(
+      size: widget.drawAreaSize,
+      willChange: true,
+      isComplex: true,
+      painter: DrawPaintItem(
+        item: item,
+        opacity: canBakeOpacity ? _paintCtrl.opacity : 1.0,
+        paintEditorConfigs: widget.paintEditorConfigs,
+      ),
+    );
+
+    if (canBakeOpacity) return painter;
+
+    return Opacity(opacity: _paintCtrl.opacity, child: painter);
   }
 
   Widget _buildCensorItem(PaintedModel item) {

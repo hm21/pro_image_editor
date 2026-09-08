@@ -88,6 +88,88 @@ class PathBuilderFreestyle extends PathBuilderBase {
     return path;
   }
 
+  @override
+  bool hitTest(Offset position) {
+    // Measures the distance to the stroke's segments directly instead of
+    // building the path and walking it with `computeMetrics`. The walk samples
+    // the path every logical pixel and asks the engine for a tangent at each
+    // sample, so its cost grows with the drawn *length*; a full-canvas scribble
+    // reaches several thousand samples per hit test. This loop runs once per
+    // recorded point and never leaves Dart.
+    final double halfStroke = painter.strokeWidth / 2;
+    final double toleranceSq = halfStroke * halfStroke;
+
+    Offset? previous;
+    for (final raw in offsets) {
+      if (raw == null) {
+        previous = null;
+        continue;
+      }
+
+      final Offset point = raw * scale;
+      if (previous == null) {
+        // Start of a segment, and the only chance to catch an isolated dot.
+        if ((point - position).distanceSquared <= toleranceSq) return true;
+      } else if (_distanceToSegmentSquared(position, previous, point) <=
+          toleranceSq) {
+        return true;
+      }
+      previous = point;
+    }
+
+    return _hitTestArrowHeads(position, halfStroke);
+  }
+
+  /// Covers the arrowheads, which reach past the first and last point.
+  ///
+  /// The heads are two short lines; this approximates them with a disc around
+  /// the anchor point, so a tap between the barbs counts as a hit too.
+  bool _hitTestArrowHeads(Offset position, double halfStroke) {
+    final bool hasArrowStart =
+        item.mode == PaintMode.freeStyleArrowStart ||
+        item.mode == PaintMode.freeStyleArrowStartEnd;
+    final bool hasArrowEnd =
+        item.mode == PaintMode.freeStyleArrowEnd ||
+        item.mode == PaintMode.freeStyleArrowStartEnd;
+    if (!hasArrowStart && !hasArrowEnd) return false;
+
+    // The head is built from `4 * strokeWidth / 2` plus half a stroke of
+    // rendered width around those lines.
+    final double reach = halfStroke * 4 + halfStroke;
+    final double reachSq = reach * reach;
+
+    bool hitsAnchor(Offset? anchor) =>
+        anchor != null &&
+        (anchor * scale - position).distanceSquared <= reachSq;
+
+    bool isPoint(Offset? el) => el != null;
+
+    if (hasArrowStart &&
+        hitsAnchor(offsets.firstWhere(isPoint, orElse: () => null))) {
+      return true;
+    }
+    if (hasArrowEnd &&
+        hitsAnchor(offsets.lastWhere(isPoint, orElse: () => null))) {
+      return true;
+    }
+    return false;
+  }
+
+  /// Squared distance from [p] to the segment [a] - [b].
+  double _distanceToSegmentSquared(Offset p, Offset a, Offset b) {
+    final double dx = b.dx - a.dx;
+    final double dy = b.dy - a.dy;
+    final double lengthSq = dx * dx + dy * dy;
+
+    if (lengthSq == 0) return (p - a).distanceSquared;
+
+    final double t = (((p.dx - a.dx) * dx + (p.dy - a.dy) * dy) / lengthSq)
+        .clamp(0.0, 1.0);
+    final double ddx = p.dx - (a.dx + t * dx);
+    final double ddy = p.dy - (a.dy + t * dy);
+    return ddx * ddx + ddy * ddy;
+  }
+
   /// Finds two points with a minimum distance for stable direction calculation.
   ///
   /// Uses squared distance to avoid sqrt. Scales offsets inline to avoid

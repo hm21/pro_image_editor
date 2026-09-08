@@ -13,6 +13,7 @@ class DrawPaintItem extends CustomPainter {
     this.paintEditorConfigs = const PaintEditorConfigs(),
     this.onHitChanged,
     this.scale = 1,
+    this.opacity = 1,
     this.enabledHitDetection = false,
   });
 
@@ -21,6 +22,13 @@ class DrawPaintItem extends CustomPainter {
 
   /// The scaling factor applied to the canvas.
   final double scale;
+
+  /// The opacity the item is drawn with.
+  ///
+  /// This is baked into the paint alpha instead of being applied by an
+  /// `Opacity` widget, which would push the item through an offscreen buffer
+  /// on every frame. See [PathBuilderBase.draw] for when that is equivalent.
+  final double opacity;
 
   /// The current erasing behavior applied by the tool.
   final PaintEditorConfigs paintEditorConfigs;
@@ -46,12 +54,12 @@ class DrawPaintItem extends CustomPainter {
       item: item,
       scale: scale,
       paintEditorConfigs: paintEditorConfigs,
-    ).draw(canvas: canvas, size: size);
+    ).draw(canvas: canvas, size: size, opacity: opacity);
   }
 
   @override
   bool shouldRepaint(DrawPaintItem oldDelegate) {
-    return oldDelegate.item != item;
+    return oldDelegate.item != item || oldDelegate.opacity != opacity;
   }
 
   @override
