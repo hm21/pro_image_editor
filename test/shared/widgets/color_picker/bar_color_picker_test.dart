@@ -1,16 +1,13 @@
-// Flutter imports:
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mockito/annotations.dart';
-import 'package:mockito/annotations.dart';
+
 // Project imports:
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
 import 'package:pro_image_editor/shared/widgets/color_picker/bar_color_picker.dart';
 
-@GenerateNiceMocks([
-  MockSpec<BarColorPicker>(unsupportedMembers: {#createState}),
-])
+@GenerateNiceMocks([MockSpec<BarColorPicker>()])
 void main() {
   group('BarColorPicker Tests', () {
     testWidgets('Picks color on tap', (WidgetTester tester) async {

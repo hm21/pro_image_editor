@@ -91,7 +91,7 @@ class BarColorPicker extends StatefulWidget {
   final Duration animationDuration;
 
   @override
-  _BarColorPickerState createState() => _BarColorPickerState();
+  State<BarColorPicker> createState() => _BarColorPickerState();
 }
 
 class _BarColorPickerState extends State<BarColorPicker>

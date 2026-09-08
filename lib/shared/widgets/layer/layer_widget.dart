@@ -83,7 +83,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   final ValueNotifier<Duration>? playTimeNotifier;
 
   @override
-  _LayerWidgetState createState() => _LayerWidgetState();
+  State<LayerWidget> createState() => _LayerWidgetState();
 }
 
 class _LayerWidgetState extends State<LayerWidget>

@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
-// Flutter imports:
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/models/editor_image.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart';

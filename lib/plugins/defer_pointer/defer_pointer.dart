@@ -3,8 +3,8 @@
 
 import 'dart:collection';
 
-import 'package:flutter/rendering.dart';
 // Flutter imports:
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '/shared/utils/unique_id_generator.dart';
