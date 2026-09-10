@@ -5,44 +5,58 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
+env:
+  # Pinned on purpose, as in pro_video_editor. `dart-lang/setup-dart`'s reusable
+  # publish workflow takes no Flutter version and always installs the latest
+  # stable, so a Flutter patch release can break a tagged release without a
+  # single commit in this repo. Publishing is inlined here instead so this
+  # version is the one that ships; v14.0.0 published on 3.47.2.
+  FLUTTER_VERSION: 3.47.2
+
 jobs:
   publish:
     name: Publish to pub.dev
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # Required for requesting the OIDC token
+      id-token: write # Required for authentication using OIDC
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup Flutter
+      # Provisions the OIDC token used for publishing. Its `dart` is shadowed
+      # by the Flutter SDK's below, which publishes both Flutter and pure-Dart
+      # packages.
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.47.x
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      # Everything that only reads from pub.dev runs before any credentials
-      # exist. Once a token is registered for pub.dev, pub attaches it to every
-      # request - plain dependency lookups included - and a token pub.dev
-      # rejects makes those fail as `<package> doesn't exist (authorization
-      # failed)`, which is what broke this workflow on v14.1.0.
-      # `dart pub get`, not `flutter pub get`: the latter rewrites
-      # analysis_options.yaml and regenerates the example's plugin registrants,
-      # which leaves checked-in files modified and fails the dry run below.
+      # `setup-dart` stores the OIDC token as pub.dev credentials, and pub then
+      # attaches it to every pub.dev request. pub.dev serves `/api/packages/*`
+      # straight from a storage bucket, which answers any bearer token it cannot
+      # resolve as its own credential with 403 - a valid OIDC token included. It
+      # surfaces as "depends on <package> any which doesn't exist (authorization
+      # failed)" or a bare "Authentication error (403)", and it broke v14.1.0.
+      #
+      # So everything that resolves runs without credentials, and the token is
+      # added only for the upload, which `--skip-validation` keeps from
+      # resolving again. Validation is not lost: the dry run below does it in
+      # full, and the job stops there if it fails.
       - name: Install dependencies
-        run: dart pub get
+        run: |
+          dart pub token remove https://pub.dev || true
+          dart pub get
 
       - name: Publish - dry run
         run: dart pub publish --dry-run
 
-      # Mints the OIDC token and registers it for pub.dev, so only the publish
-      # below is authenticated.
-      - name: Setup pub.dev credentials
-        uses: dart-lang/setup-dart@v1
-
-      # `flutter pub`, because the step above puts its own Dart SDK ahead of
-      # Flutter's on PATH and that one cannot resolve `sdk: flutter`.
       - name: Publish to pub.dev
-        run: flutter pub publish --force
+        run: |
+          dart pub token add https://pub.dev --env-var PUB_TOKEN
+          dart pub publish -f --skip-validation
 
   github-release:
     needs: publish
