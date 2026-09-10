@@ -25,7 +25,9 @@ import '/shared/utils/timeline_progress.dart';
 /// express. The slide effect is edge-aware: using [canvasSize] and
 /// [layerCenter] it pushes the layer just past the nearest canvas edge (rather
 /// than by its own size), so even an off-center layer leaves the visible area
-/// completely. The scale effect is anchored on the layer's visual center (via
+/// completely. A [LayerAnimation.slideFrom] point replaces that edge with a
+/// start position of the caller's own, measured like [Layer.offset]. The scale
+/// effect is anchored on the layer's visual center (via
 /// [layerFractionalOffset]) so that a combined slide + scale enters straight
 /// instead of drifting diagonally. When [Layer.animations] is empty, the
 /// legacy fade convenience
@@ -209,9 +211,19 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         case LayerAnimationType.fade:
           opacity *= progress;
         case LayerAnimationType.slide:
+          final invP = 1.0 - progress;
+          final from = anim.slideFrom;
+          if (from != null) {
+            // A start point of the caller's own wins over the edge the
+            // direction would otherwise pick. Both the point and the layer's
+            // resting place are measured like [Layer.offset], so their
+            // difference is the distance travelled — the layer's own size
+            // cancels out and no fractional part is needed.
+            slideAbsolute += (from - layer.offset) * invP;
+            break;
+          }
           final direction = anim.slideDirection;
           if (direction == null) break;
-          final invP = 1.0 - progress;
           final center = widget.layerCenter;
           final canvas = widget.canvasSize;
           // Edge-aware displacement D = invP × (absolute + fractional), where

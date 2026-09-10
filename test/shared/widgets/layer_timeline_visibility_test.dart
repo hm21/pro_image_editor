@@ -214,6 +214,100 @@ void main() {
     });
   });
 
+  group('LayerTimelineVisibility slide from a custom point', () {
+    // A layer resting 10px right and 20px below the canvas center, entering
+    // from a point 150px left and 60px above that center. Both are measured
+    // like [Layer.offset], so the layer travels (-160, -80).
+    const restingOffset = Offset(10, 20);
+    const startPoint = Offset(-150, -60);
+    const travel = Offset(-160, -80);
+
+    Layer slideFromLayer({SlideDirection? direction}) => Layer(
+      offset: restingOffset,
+      startTime: const Duration(seconds: 1),
+      endTime: const Duration(seconds: 10),
+      animations: [
+        LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: const Duration(milliseconds: 400),
+          slideFrom: startPoint,
+          slideDirection: direction,
+          curve: AnimationCurve.linear,
+        ),
+      ],
+    );
+
+    testWidgets('starts on the point at the enter window start', (
+      tester,
+    ) async {
+      final notifier = await pumpVisibility(
+        tester,
+        slideFromLayer(),
+        center: const Offset(60, 70),
+      );
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      // invP = 1: the layer sits exactly on the start point. The distance is
+      // measured between two anchor points, so the layer's own size plays no
+      // part and there is no fractional component.
+      expect(slideAbsolute(tester), travel);
+      expect(find.byType(FractionalTranslation), findsNothing);
+    });
+
+    testWidgets('travels a linear fraction partway through the window', (
+      tester,
+    ) async {
+      final notifier = await pumpVisibility(tester, slideFromLayer());
+      // 100ms into a 400ms linear window: invP = 0.75.
+      await seek(tester, notifier, const Duration(milliseconds: 1100));
+
+      expect(slideAbsolute(tester), travel * 0.75);
+    });
+
+    testWidgets('settles on the resting place once entered', (tester) async {
+      final notifier = await pumpVisibility(tester, slideFromLayer());
+      await seek(tester, notifier, const Duration(seconds: 5));
+
+      expect(find.byType(Transform), findsNothing);
+      expect(find.byType(FractionalTranslation), findsNothing);
+    });
+
+    testWidgets('overrides slideDirection when both are set', (tester) async {
+      final notifier = await pumpVisibility(
+        tester,
+        slideFromLayer(direction: SlideDirection.right),
+      );
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      // The right edge would push the layer the other way and add a
+      // fractional half-width; the point wins outright.
+      expect(slideAbsolute(tester), travel);
+      expect(find.byType(FractionalTranslation), findsNothing);
+    });
+
+    testWidgets('leaves back towards the point on the way out', (tester) async {
+      final layer = Layer(
+        offset: restingOffset,
+        startTime: Duration.zero,
+        endTime: const Duration(seconds: 10),
+        animations: const [
+          LayerAnimation(
+            type: LayerAnimationType.slide,
+            phase: AnimationPhase.animateOut,
+            duration: Duration(milliseconds: 400),
+            slideFrom: startPoint,
+            curve: AnimationCurve.linear,
+          ),
+        ],
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, const Duration(seconds: 10));
+
+      expect(slideAbsolute(tester), travel);
+    });
+  });
+
   group('LayerTimelineVisibility scale animation', () {
     final layer = Layer(
       startTime: Duration.zero,
