@@ -25,17 +25,22 @@ jobs:
       # request - plain dependency lookups included - and a token pub.dev
       # rejects makes those fail as `<package> doesn't exist (authorization
       # failed)`, which is what broke this workflow on v14.1.0.
+      # `dart pub get`, not `flutter pub get`: the latter rewrites
+      # analysis_options.yaml and regenerates the example's plugin registrants,
+      # which leaves checked-in files modified and fails the dry run below.
       - name: Install dependencies
-        run: flutter pub get
+        run: dart pub get
 
       - name: Publish - dry run
-        run: flutter pub publish --dry-run
+        run: dart pub publish --dry-run
 
       # Mints the OIDC token and registers it for pub.dev, so only the publish
       # below is authenticated.
       - name: Setup pub.dev credentials
         uses: dart-lang/setup-dart@v1
 
+      # `flutter pub`, because the step above puts its own Dart SDK ahead of
+      # Flutter's on PATH and that one cannot resolve `sdk: flutter`.
       - name: Publish to pub.dev
         run: flutter pub publish --force
 
