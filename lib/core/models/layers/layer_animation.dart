@@ -221,8 +221,14 @@ class LayerAnimation {
   /// Values may sit outside the canvas — on a 400×800 canvas
   /// `Offset(-400, 0)` starts the layer 200px past the left edge.
   ///
-  /// Note that the `pro_video_editor` counterpart measures its `slideFrom`
-  /// from the video frame's top-left corner, matching its own layer offsets.
+  /// Only the distance between this point and [Layer.offset] is used, so the
+  /// layer's own size, rotation and scale play no part — exactly how the
+  /// native renderer in `pro_video_editor` computes it. That package measures
+  /// its own `slideFrom` from the video frame's top-left corner, matching its
+  /// layer offsets, so an exporter bridging to it must convert this point
+  /// through the very same transform it applies to [Layer.offset] (canvas
+  /// origin *and* export scale). Converting one but not the other leaves the
+  /// layer resting correctly while travelling the wrong distance.
   ///
   /// Overrides [slideDirection] when both are set.
   final Offset? slideFrom;
