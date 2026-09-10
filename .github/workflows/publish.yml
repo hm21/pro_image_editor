@@ -7,11 +7,37 @@ on:
 
 jobs:
   publish:
+    name: Publish to pub.dev
+    runs-on: ubuntu-latest
     permissions:
-      id-token: write # Required for authentication using OIDC
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
-    # with:
-    #   working-directory: path/to/package/within/repository
+      id-token: write # Required for requesting the OIDC token
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.x
+
+      # Everything that only reads from pub.dev runs before any credentials
+      # exist. Once a token is registered for pub.dev, pub attaches it to every
+      # request - plain dependency lookups included - and a token pub.dev
+      # rejects makes those fail as `<package> doesn't exist (authorization
+      # failed)`, which is what broke this workflow on v14.1.0.
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Publish - dry run
+        run: flutter pub publish --dry-run
+
+      # Mints the OIDC token and registers it for pub.dev, so only the publish
+      # below is authenticated.
+      - name: Setup pub.dev credentials
+        uses: dart-lang/setup-dart@v1
+
+      - name: Publish to pub.dev
+        run: flutter pub publish --force
 
   github-release:
     needs: publish
