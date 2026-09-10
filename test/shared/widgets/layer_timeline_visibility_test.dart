@@ -15,11 +15,14 @@ void main() {
     Size canvas = canvasSize,
     Offset center = layerCenter,
     Offset fractionalOffset = const Offset(-0.5, -0.5),
+    ValueNotifier<Duration>? reuse,
   }) async {
     // Start before any layer's time range so the first seek registers as a
-    // real change on the [ValueNotifier].
-    final notifier = ValueNotifier<Duration>(const Duration(milliseconds: -1));
-    addTearDown(notifier.dispose);
+    // real change on the [ValueNotifier]. Pass [reuse] to re-pump with a
+    // changed geometry while the video position stays put.
+    final notifier =
+        reuse ?? ValueNotifier<Duration>(const Duration(milliseconds: -1));
+    if (reuse == null) addTearDown(notifier.dispose);
 
     await tester.pumpWidget(
       Directionality(
@@ -305,6 +308,77 @@ void main() {
       await seek(tester, notifier, const Duration(seconds: 10));
 
       expect(slideAbsolute(tester), travel);
+    });
+  });
+
+  group('LayerTimelineVisibility geometry updates', () {
+    // [Layer] is mutable and is mutated in place while it is dragged, so the
+    // cached frame has to be invalidated by the geometry it read, not by
+    // comparing the old and new widget's layer.
+    testWidgets('recomputes a point slide when the layer moves', (
+      tester,
+    ) async {
+      final layer = Layer(
+        offset: const Offset(10, 20),
+        startTime: const Duration(seconds: 1),
+        endTime: const Duration(seconds: 10),
+        animations: const [
+          LayerAnimation(
+            type: LayerAnimationType.slide,
+            phase: AnimationPhase.animateIn,
+            duration: Duration(milliseconds: 400),
+            slideFrom: Offset(-150, -60),
+            curve: AnimationCurve.linear,
+          ),
+        ],
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      expect(slideAbsolute(tester), const Offset(-160, -80));
+
+      // Drag the layer without touching the video position.
+      layer.offset = const Offset(50, 50);
+      await pumpVisibility(
+        tester,
+        layer,
+        center: const Offset(90, 100),
+        reuse: notifier,
+      );
+
+      expect(slideAbsolute(tester), const Offset(-200, -110));
+    });
+
+    testWidgets('recomputes an edge slide when the canvas resizes', (
+      tester,
+    ) async {
+      final layer = Layer(
+        startTime: const Duration(seconds: 1),
+        endTime: const Duration(seconds: 10),
+        animations: const [
+          LayerAnimation(
+            type: LayerAnimationType.slide,
+            phase: AnimationPhase.animateIn,
+            duration: Duration(milliseconds: 400),
+            slideDirection: SlideDirection.right,
+            curve: AnimationCurve.linear,
+          ),
+        ],
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      // invP = 1: pushed to the right edge, (canvas.width - center.dx).
+      expect(slideAbsolute(tester), const Offset(50, 0));
+
+      await pumpVisibility(
+        tester,
+        layer,
+        canvas: const Size(300, 100),
+        reuse: notifier,
+      );
+
+      expect(slideAbsolute(tester), const Offset(250, 0));
     });
   });
 
