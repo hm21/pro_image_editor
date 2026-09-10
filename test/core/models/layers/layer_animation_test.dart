@@ -33,6 +33,18 @@ void main() {
         expect(anim.curve, AnimationCurve.easeOut);
       });
 
+      test('creates slide animation with a custom start point only', () {
+        const anim = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 600),
+          slideFrom: Offset(-400, -400),
+        );
+
+        expect(anim.slideFrom, const Offset(-400, -400));
+        expect(anim.slideDirection, isNull);
+      });
+
       test('creates scale animation with scaleFrom', () {
         const anim = LayerAnimation(
           type: LayerAnimationType.scale,
@@ -79,6 +91,19 @@ void main() {
         expect(map['durationUs'], 1000000);
         expect(map['curve'], 'easeInOut');
         expect(map['slideDirection'], 'bottom');
+      });
+
+      test('serializes slideFrom as dx/dy', () {
+        const anim = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 600),
+          slideFrom: Offset(-120.5, 40),
+        );
+        final map = anim.toMap();
+
+        expect(map['slideFrom'], {'dx': -120.5, 'dy': 40.0});
+        expect(map['slideDirection'], isNull);
       });
 
       test('serializes scale animation with scaleFrom', () {
@@ -128,6 +153,32 @@ void main() {
         expect(anim.type, LayerAnimationType.slide);
         expect(anim.slideDirection, SlideDirection.right);
         expect(anim.curve, AnimationCurve.easeOut);
+      });
+
+      test('deserializes slideFrom', () {
+        final map = <String, dynamic>{
+          'type': 'slide',
+          'phase': 'animateIn',
+          'durationUs': 600000,
+          'slideFrom': {'dx': -400, 'dy': -400},
+        };
+        final anim = LayerAnimation.fromMap(map);
+
+        expect(anim.slideFrom, const Offset(-400, -400));
+      });
+
+      test('ignores a slideFrom that is not a map', () {
+        // Hand-edited JSON or data from a newer version must degrade
+        // gracefully instead of throwing.
+        final map = <String, dynamic>{
+          'type': 'fade',
+          'phase': 'animateIn',
+          'durationUs': 100000,
+          'slideFrom': 'top-left',
+        };
+        final anim = LayerAnimation.fromMap(map);
+
+        expect(anim.slideFrom, isNull);
       });
 
       test('defaults curve to linear when missing', () {
@@ -205,6 +256,18 @@ void main() {
         expect(restored, original);
       });
 
+      test('slideFrom roundtrip preserves data', () {
+        const original = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateInOut,
+          duration: Duration(milliseconds: 600),
+          curve: AnimationCurve.easeOutCubic,
+          slideFrom: Offset(-400.5, 250),
+        );
+        final restored = LayerAnimation.fromMap(original.toMap());
+        expect(restored, original);
+      });
+
       test('scale roundtrip preserves data', () {
         const original = LayerAnimation(
           type: LayerAnimationType.scale,
@@ -228,6 +291,20 @@ void main() {
         );
 
         expect(original.copyWith(), original);
+      });
+
+      test('adds a slideFrom point to an edge slide', () {
+        const original = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 400),
+          slideDirection: SlideDirection.left,
+        );
+
+        final updated = original.copyWith(slideFrom: const Offset(-300, -80));
+
+        expect(updated.slideFrom, const Offset(-300, -80));
+        expect(updated.slideDirection, SlideDirection.left);
       });
 
       test('overrides only the provided fields', () {
@@ -296,6 +373,22 @@ void main() {
         expect(a, isNot(b));
       });
 
+      test('different slideFrom makes unequal', () {
+        const a = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 500),
+          slideFrom: Offset(-100, 0),
+        );
+        const b = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 500),
+          slideFrom: Offset(100, 0),
+        );
+        expect(a, isNot(b));
+      });
+
       test('different scaleFrom makes unequal', () {
         const a = LayerAnimation(
           type: LayerAnimationType.scale,
@@ -335,6 +428,16 @@ void main() {
           slideDirection: SlideDirection.left,
         );
         expect(anim.toString(), contains('slideDirection'));
+      });
+
+      test('includes slideFrom when present', () {
+        const anim = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 500),
+          slideFrom: Offset(-400, 0),
+        );
+        expect(anim.toString(), contains('slideFrom'));
       });
 
       test('excludes scaleFrom when null', () {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.1.0
+- **FEAT**(layers): Add `LayerAnimation.slideFrom` to start a slide from a point of your own instead of a canvas edge. It uses the same coordinates as `Layer.offset`, may sit outside the canvas, and overrides `slideDirection`.
+- **FIX**(layers): The timeline preview recomputes a layer's slide when the layer moves or the canvas resizes, instead of keeping the displacement it measured for the old geometry.
+
 ## 14.0.0
 - **BREAKING**(ui): Migrate from `package:flutter/material.dart` and `package:flutter/cupertino.dart` to the standalone [`material_ui`](https://pub.dev/packages/material_ui) and [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) packages, which Flutter is decoupling from the SDK. Apps must migrate their own imports as well (`dart fix --apply --code=migrate_design_widgets`), because types such as `ThemeData` are no longer interchangeable with the SDK ones.
 

@@ -23,7 +23,7 @@ import 'double_parser.dart';
 /// safeParseSize({'width': 200, 'height': 100}); // returns Size(200.0, 100.0)
 /// safeParseSize(null);                          // returns Size.zero (fallback)
 /// safeParseSize({'width': 'abc', 'height': 50}, fallback: Size(10, 10));
-///                                               // returns Size(10.0, 10.0) (fallback)
+///                                               // returns Size(10.0, 50.0)
 /// ```
 Size safeParseSize(Map<String, dynamic>? map, {Size fallback = Size.zero}) {
   if (map == null) return fallback;

@@ -25,7 +25,9 @@ import '/shared/utils/timeline_progress.dart';
 /// express. The slide effect is edge-aware: using [canvasSize] and
 /// [layerCenter] it pushes the layer just past the nearest canvas edge (rather
 /// than by its own size), so even an off-center layer leaves the visible area
-/// completely. The scale effect is anchored on the layer's visual center (via
+/// completely. A [LayerAnimation.slideFrom] point replaces that edge with a
+/// start position of the caller's own, measured like [Layer.offset]. The scale
+/// effect is anchored on the layer's visual center (via
 /// [layerFractionalOffset]) so that a combined slide + scale enters straight
 /// instead of drifting diagonally. When [Layer.animations] is empty, the
 /// legacy fade convenience
@@ -86,10 +88,27 @@ class LayerTimelineVisibility extends StatefulWidget {
 class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   late _TimelineFrame _frame;
 
+  /// The geometry [_frame] was computed from, so [_geometryChanged] can tell
+  /// when the cached frame went stale.
+  late Offset _framedLayerOffset;
+  late Offset _framedLayerCenter;
+  late Size _framedCanvasSize;
+
+  /// Whether the geometry the slide animation reads has moved since [_frame]
+  /// was computed.
+  ///
+  /// [Layer] is mutable and is mutated in place while it is dragged, so
+  /// `oldWidget.layer.offset != widget.layer.offset` never fires — both
+  /// widgets hold the same instance. The recorded values are compared instead.
+  bool get _geometryChanged =>
+      _framedLayerOffset != widget.layer.offset ||
+      _framedLayerCenter != widget.layerCenter ||
+      _framedCanvasSize != widget.canvasSize;
+
   @override
   void initState() {
     super.initState();
-    _frame = _computeFrame(widget.playTimeNotifier.value);
+    _frame = _frameFor(widget.playTimeNotifier.value);
     widget.playTimeNotifier.addListener(_onTimeChanged);
   }
 
@@ -107,9 +126,10 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         oldWidget.layer.exitDuration != widget.layer.exitDuration ||
         oldWidget.layer.enterCurve != widget.layer.enterCurve ||
         oldWidget.layer.exitCurve != widget.layer.exitCurve ||
-        !listEquals(oldWidget.layer.animations, widget.layer.animations);
+        !listEquals(oldWidget.layer.animations, widget.layer.animations) ||
+        _geometryChanged;
     if (changed) {
-      _frame = _computeFrame(widget.playTimeNotifier.value);
+      _frame = _frameFor(widget.playTimeNotifier.value);
     }
   }
 
@@ -120,10 +140,18 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   }
 
   void _onTimeChanged() {
-    final next = _computeFrame(widget.playTimeNotifier.value);
+    final next = _frameFor(widget.playTimeNotifier.value);
     if (next != _frame) {
       setState(() => _frame = next);
     }
+  }
+
+  /// Computes the frame for [currentTime] and records the geometry it used.
+  _TimelineFrame _frameFor(Duration currentTime) {
+    _framedLayerOffset = widget.layer.offset;
+    _framedLayerCenter = widget.layerCenter;
+    _framedCanvasSize = widget.canvasSize;
+    return _computeFrame(currentTime);
   }
 
   /// Computes a curved progress value (0.0 – 1.0) for the legacy fade path.
@@ -209,9 +237,19 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         case LayerAnimationType.fade:
           opacity *= progress;
         case LayerAnimationType.slide:
+          final invP = 1.0 - progress;
+          final from = anim.slideFrom;
+          if (from != null) {
+            // A start point of the caller's own wins over the edge the
+            // direction would otherwise pick. Both the point and the layer's
+            // resting place are measured like [Layer.offset], so their
+            // difference is the distance travelled — the layer's own size
+            // cancels out and no fractional part is needed.
+            slideAbsolute += (from - layer.offset) * invP;
+            break;
+          }
           final direction = anim.slideDirection;
           if (direction == null) break;
-          final invP = 1.0 - progress;
           final center = widget.layerCenter;
           final canvas = widget.canvasSize;
           // Edge-aware displacement D = invP × (absolute + fractional), where
