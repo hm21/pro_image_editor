@@ -302,6 +302,9 @@ class ExtendedInteractiveViewerState extends State<ExtendedInteractiveViewer>
     return _transformCtrl.value.getMaxScaleOnAxis();
   }
 
+  /// Whether the view is zoomed away from its resting scale of 1.
+  bool get isZoomed => (scaleFactor - 1.0).abs() > 1e-6;
+
   /// The current translation offset applied to the transformation.
   /// Returns an [Offset] representing the translation values on the x and y
   /// axes.

@@ -381,5 +381,131 @@ void main() {
         }
       },
     );
+
+    group('eraser sessions', () {
+      // A horizontal stroke through the middle of its box, which the layer
+      // centers on the canvas.
+      PaintLayer stroke() => PaintLayer(
+        item: PaintedModel(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(0, 5), Offset(80, 5)],
+          // The partial eraser appends to this list.
+          erasedOffsets: [],
+          color: Colors.red,
+          strokeWidth: 6,
+          opacity: 1,
+        ),
+        rawSize: const Size(80, 10),
+        opacity: 1,
+      );
+
+      Future<GlobalKey<PaintCanvasState>> pumpEraser(
+        WidgetTester tester, {
+        required EraserMode eraserMode,
+        required List<Layer> layers,
+        required void Function() onRemovePartialStart,
+        required void Function(bool hasRemovedAreas) onRemovePartialEnd,
+        void Function(List<String> ids)? onRemoveLayer,
+      }) async {
+        final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PaintCanvas(
+                layers: layers,
+                key: canvasKey,
+                drawAreaSize: const Size(1000, 1000),
+                editorBodySize: const Size(1000, 1000),
+                layerStackScaleFactor: 1,
+                paintCtrl: PaintController(
+                  color: Colors.red,
+                  mode: PaintMode.eraser,
+                  fill: false,
+                  strokeWidth: 1,
+                  strokeMultiplier: 1,
+                  opacity: 1,
+                ),
+                eraserMode: eraserMode,
+                eraserRadius: 8.0,
+                paintEditorConfigs: const PaintEditorConfigs(),
+                onRefresh: () {},
+                onCreated: (PaintedModel item) {},
+                onRemoveLayer: onRemoveLayer ?? (List<String> value) {},
+                onRemovePartialStart: onRemovePartialStart,
+                onRemovePartialEnd: onRemovePartialEnd,
+                onTap: (TapDownDetails details) {},
+              ),
+            ),
+          ),
+        );
+        return canvasKey;
+      }
+
+      testWidgets('a partial erase that turns into a pinch is still ended', (
+        WidgetTester tester,
+      ) async {
+        var starts = 0;
+        final ends = <bool>[];
+        final canvasKey = await pumpEraser(
+          tester,
+          eraserMode: EraserMode.partial,
+          layers: [stroke()],
+          onRemovePartialStart: () => starts++,
+          onRemovePartialEnd: ends.add,
+        );
+        // The eraser maps pointer positions against `editorBodySize`, so the
+        // stroke sits at that size's center, not at the widget's.
+        final Offset center =
+            tester.getTopLeft(find.byKey(canvasKey)) + const Offset(500, 500);
+
+        // One finger erases across the stroke, then a second one lands: the
+        // gesture becomes a pinch and no pointer-up reaches the eraser path.
+        final TestGesture first = await tester.startGesture(center);
+        expect(starts, 1);
+        await first.moveTo(center + const Offset(10, 0));
+        final TestGesture second = await tester.startGesture(
+          center + const Offset(100, -100),
+        );
+        // The editor is told at once, with what was erased so far, so it
+        // does not wait forever for the end of the session.
+        expect(ends, [true]);
+
+        await first.up();
+        await second.up();
+        expect(ends, [true]);
+        expect(starts, 1);
+      });
+
+      testWidgets('a full-stroke erase records no partial session', (
+        WidgetTester tester,
+      ) async {
+        var starts = 0;
+        var ends = 0;
+        final removed = <String>[];
+        final layer = stroke();
+        final canvasKey = await pumpEraser(
+          tester,
+          eraserMode: EraserMode.object,
+          layers: [layer],
+          onRemovePartialStart: () => starts++,
+          onRemovePartialEnd: (_) => ends++,
+          onRemoveLayer: removed.addAll,
+        );
+        final Offset center =
+            tester.getTopLeft(find.byKey(canvasKey)) + const Offset(500, 500);
+
+        // Removing a whole layer records its own history entry; a copy of
+        // the layers at pointer-down would only add an empty undo step.
+        final TestGesture gesture = await tester.startGesture(
+          center + const Offset(0, 40),
+        );
+        await gesture.moveTo(center);
+        await gesture.up();
+
+        expect(removed, [layer.id]);
+        expect(starts, 0);
+        expect(ends, 0);
+      });
+    });
   });
 }

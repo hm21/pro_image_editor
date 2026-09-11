@@ -650,7 +650,25 @@ class PaintEditorState extends State<PaintEditor>
   void _onPaintViewerMatrixChanged(Matrix4 value) {
     _paintCanvas.currentState?.cancelActiveDrawing();
     callbacks.paintEditorCallbacks?.onEditorZoomMatrix4Change?.call(value);
+    final isZoomed = _isViewerZoomed;
+    if (isZoomed != _wasViewerZoomed) {
+      _wasViewerZoomed = isZoomed;
+      _layerStackStream.add(null);
+    }
   }
+
+  /// Whether the viewer is zoomed away from its resting scale.
+  ///
+  /// A cached paint-layer raster is rendered for scale 1; zoomed in, it would
+  /// be upscaled, so the layer stack renders live while this holds.
+  bool get _isViewerZoomed => interactiveViewer.currentState?.isZoomed ?? false;
+
+  bool _wasViewerZoomed = false;
+
+  /// Whether a partial erase is in progress. The eraser mutates strokes on
+  /// every pointer move, so the layer stack renders live until it ends
+  /// instead of re-rendering a cached raster per move.
+  bool _isPartialErasing = false;
 
   /// Whether the gesture the viewer is currently reporting can move the view.
   bool _viewerGestureNavigates = false;
@@ -1117,6 +1135,8 @@ class PaintEditorState extends State<PaintEditor>
                           overlayColor: paintEditorConfigs.style.background,
                           clipBehavior: Clip.none,
                           enableLayerKey: true,
+                          suspendPaintLayerRasterCache:
+                              _isPartialErasing || _isViewerZoomed,
                         );
                       },
                     ),
@@ -1239,6 +1259,7 @@ class PaintEditorState extends State<PaintEditor>
         });
       },
       onRemovePartialStart: () {
+        _isPartialErasing = true;
         LayerCopyManager copyManager = LayerCopyManager();
 
         final updatedList = activeHistory.layers.map((layer) {
@@ -1259,6 +1280,8 @@ class PaintEditorState extends State<PaintEditor>
         WidgetsBinding.instance.drawFrame();
       },
       onRemovePartialEnd: (hasRemovedAreas) {
+        _isPartialErasing = false;
+        _layerStackStream.add(null);
         if (!hasRemovedAreas) {
           historyPointer--;
           stateHistory.removeLast();

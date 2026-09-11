@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.2.0
+- **PERF**(layers): Add the opt-in `MainEditorConfigs.enablePaintLayerRasterCache`, which draws static paint layers from a cached raster instead of re-stroking them on every frame.
+- **FIX**(paint-editor): A full-stroke erase no longer leaves an empty undo step behind, and a partial erase that turns into a pinch is closed properly.
+
 ## 14.1.1
 - **FIX**(layers): A slide animation's `slideFrom` point now follows the layer when the canvas is resized or a state history recorded at another size is imported. Only `Layer.offset` was rescaled before, so the preview travelled a different distance than the one the point was placed for.
 

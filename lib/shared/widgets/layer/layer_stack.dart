@@ -7,6 +7,7 @@ import '/core/models/transform_helper.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 import '/features/crop_rotate_editor/widgets/crop_layer_painter.dart';
 import 'layer_widget.dart';
+import 'paint_layer_raster_cache_host.dart';
 
 /// A stateful widget that represents a stack of layers in an image editing
 /// application.
@@ -14,7 +15,7 @@ import 'layer_widget.dart';
 /// This widget manages the display and transformation of multiple layers,
 /// allowing for complex image editing operations such as cropping, rotating,
 /// and layering effects.
-class LayerStack extends StatelessWidget {
+class LayerStack extends StatefulWidget {
   /// Creates a [LayerStack].
   ///
   /// This widget is responsible for rendering a collection of layers within a
@@ -43,6 +44,7 @@ class LayerStack extends StatelessWidget {
       mainImageSize: Size.zero,
     ),
     this.clipBehavior = Clip.hardEdge,
+    this.suspendPaintLayerRasterCache = false,
   });
 
   /// The outside overlay color for layers.
@@ -84,35 +86,50 @@ class LayerStack extends StatelessWidget {
   /// disabled.
   final bool enableLayerKey;
 
+  /// Forces every paint layer to render live even when
+  /// [MainEditorConfigs.enablePaintLayerRasterCache] is on.
+  ///
+  /// Sub-editors set this while a layer is changing continuously — the paint
+  /// editor's partial eraser mutates strokes on every pointer move — and
+  /// while the stack is drawn under a scale the cache does not know about,
+  /// such as the paint editor's zoom or the crop editor's animated
+  /// transforms, where a cached image would be resampled. Captures and route
+  /// transitions are handled by the stack itself.
+  final bool suspendPaintLayerRasterCache;
+
+  @override
+  State<LayerStack> createState() => _LayerStackState();
+}
+
+class _LayerStackState extends State<LayerStack>
+    with PaintLayerRasterCacheHost {
+  @override
+  ProImageEditorConfigs get configs => widget.configs;
+
   bool get _cutOutsideImageArea =>
-      cutOutsideImageArea ?? configs.imageGeneration.cropToImageBounds;
+      widget.cutOutsideImageArea ??
+      widget.configs.imageGeneration.cropToImageBounds;
 
   TransformConfigs? get _transformConfigs =>
-      transformHelper.transformConfigs?.isNotEmpty == true
-      ? transformHelper.transformConfigs
+      widget.transformHelper.transformConfigs?.isNotEmpty == true
+      ? widget.transformHelper.transformConfigs
       : null;
+
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: Stack(
         children: [
           Transform.scale(
-            scale: transformHelper.scale,
+            scale: widget.transformHelper.scale,
             child: Stack(
               fit: StackFit.expand,
               alignment: Alignment.center,
-              clipBehavior: clipBehavior,
-              children: layers.map((layerItem) {
-                return LayerWidget(
-                  key: enableLayerKey ? layerItem.key : null,
-                  layer: layerItem,
-                  configs: configs,
-                  editorBodySize: transformHelper.editorBodySize,
-                );
-              }).toList(),
+              clipBehavior: widget.clipBehavior,
+              children: _buildLayerChildren(context),
             ),
           ),
-          if (configs.imageGeneration.cropToImageBounds)
+          if (widget.configs.imageGeneration.cropToImageBounds)
             RepaintBoundary(
               child: Hero(
                 tag: 'crop_layer_painter_hero',
@@ -129,18 +146,44 @@ class LayerStack extends StatelessWidget {
     );
   }
 
+  /// The stack children, with static paint layers drawn from the cache.
+  ///
+  /// The stack sits under a `Transform.scale`, so the images are rendered at
+  /// the device pixel ratio times that scale to stay one raster pixel per
+  /// device pixel.
+  List<Widget> _buildLayerChildren(BuildContext context) {
+    return buildRasterCachedLayers(
+      layers: widget.layers,
+      editorBodySize: widget.transformHelper.editorBodySize,
+      pixelRatio:
+          MediaQuery.devicePixelRatioOf(context) * widget.transformHelper.scale,
+      suspend: widget.suspendPaintLayerRasterCache,
+      buildLayer: _buildLayerWidget,
+    );
+  }
+
+  Widget _buildLayerWidget(Layer layer, {bool isRasterCached = false}) {
+    return LayerWidget(
+      key: widget.enableLayerKey ? layer.key : null,
+      layer: layer,
+      configs: widget.configs,
+      editorBodySize: widget.transformHelper.editorBodySize,
+      isRasterCached: isRasterCached,
+    );
+  }
+
   CustomPainter _buildCropPainter() {
     final imgRatio =
         _transformConfigs?.cropRect.size.aspectRatio ??
-        configs.cropRotateEditor.initialOvalCropAspectRatio ??
-        transformHelper.mainImageSize.aspectRatio;
+        widget.configs.cropRotateEditor.initialOvalCropAspectRatio ??
+        widget.transformHelper.mainImageSize.aspectRatio;
     final isRoundCropper =
         _transformConfigs?.isOvalCropper ??
-        configs.cropRotateEditor.initialCropMode == CropMode.oval;
+        widget.configs.cropRotateEditor.initialCropMode == CropMode.oval;
 
     return CropLayerPainter(
-      opacity: configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
-      backgroundColor: overlayColor,
+      opacity: widget.configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
+      backgroundColor: widget.overlayColor,
       imgRatio: imgRatio,
       isRoundCropper: isRoundCropper,
       is90DegRotated: _transformConfigs?.is90DegRotated ?? false,

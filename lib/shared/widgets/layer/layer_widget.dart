@@ -16,6 +16,7 @@ import '/core/models/layers/layer.dart';
 import '/core/services/gesture_manager.dart';
 import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/main_editor_layers_service.dart';
+import '/features/main_editor/services/paint_layer_raster_cache.dart';
 import '/features/paint_editor/enums/paint_editor_enum.dart';
 import '/shared/widgets/layer/enums/layer_widget_type_enum.dart';
 import '/shared/widgets/layer/services/layer_widget_context_menu.dart';
@@ -25,6 +26,7 @@ import '/shared/widgets/layer/widgets/layer_widget_paint_item.dart';
 import '/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 import 'interaction_helper/layer_interaction_helper_widget.dart';
 import 'layer_timeline_visibility.dart';
+import 'widgets/layer_repaint_boundary.dart';
 import 'widgets/layer_widget_custom_item.dart';
 
 /// A widget representing a layer within a design canvas.
@@ -43,6 +45,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.enableMouseCursor = true,
     this.callbacks = const ProImageEditorCallbacks(),
     this.playTimeNotifier,
+    this.isRasterCached = false,
   });
   @override
   final ProImageEditorConfigs configs;
@@ -81,6 +84,14 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   /// When non-null and the layer has [Layer.startTime] / [Layer.endTime],
   /// the layer is animated in/out based on the current time.
   final ValueNotifier<Duration>? playTimeNotifier;
+
+  /// Whether this paint layer's pixels currently come from the shared raster
+  /// cache, so its own painter must draw nothing.
+  ///
+  /// Everything else — hit-testing, selection, the interaction overlay, the
+  /// repaint-boundary key — stays live. Only meaningful for paint layers; other
+  /// layer types ignore it.
+  final bool isRasterCached;
 
   @override
   State<LayerWidget> createState() => _LayerWidgetState();
@@ -413,6 +424,7 @@ class _LayerWidgetState extends State<LayerWidget>
                       layerType: _layerType,
                       layer: _layer,
                       isSelected: _isSelected,
+                      skipPaint: widget.isRasterCached,
                       enableHitDetection:
                           _layerInteractionManager?.enabledHitDetection ??
                           false,
@@ -488,6 +500,7 @@ class _LayerContentItem extends StatelessWidget {
     required this.layer,
     required this.isSelected,
     required this.enableHitDetection,
+    this.skipPaint = false,
     required this.showMoveCursor,
     required this.onHitChanged,
     required this.emojiEditorConfigs,
@@ -501,6 +514,7 @@ class _LayerContentItem extends StatelessWidget {
   final Layer layer;
   final bool isSelected;
   final bool enableHitDetection;
+  final bool skipPaint;
   final ValueNotifier<bool> showMoveCursor;
   final ValueChanged<bool> onHitChanged;
   final EmojiEditorConfigs emojiEditorConfigs;
@@ -537,6 +551,7 @@ class _LayerContentItem extends StatelessWidget {
           layer: layer as PaintLayer,
           isSelected: isSelected,
           enableHitDetection: enableHitDetection,
+          skipPaint: skipPaint,
           onHitChanged: onHitChanged,
           paintEditorConfigs: paintEditorConfigs,
         );
@@ -556,6 +571,18 @@ class _LayerContentItem extends StatelessWidget {
       );
     }
 
-    return RepaintBoundary(key: layer.repaintBoundaryKey, child: content);
+    return LayerRepaintBoundary(
+      key: layer.repaintBoundaryKey,
+      // The painters draw nothing while the strokes come from the raster
+      // cache, so a capture has to render them from the model instead.
+      renderContent: skipPaint
+          ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
+              layer as PaintLayer,
+              pixelRatio: pixelRatio,
+              paintEditorConfigs: paintEditorConfigs,
+            )
+          : null,
+      child: content,
+    );
   }
 }

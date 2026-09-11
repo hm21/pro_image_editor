@@ -68,6 +68,10 @@ class ContentRecorderController {
   /// A stream for sending widgets to the recorder for drawing.
   late final StreamController<Widget?> recorderStream;
 
+  /// The captures currently waiting for a frame in which every layer under
+  /// the recorder paints live. See [LiveLayerRequests].
+  final LiveLayerRequests liveLayerRequests = LiveLayerRequests();
+
   /// Ensures that the widget has completed rendering before proceeding.
   Completer<bool> recordReadyHelper = Completer();
 
@@ -104,6 +108,7 @@ class ContentRecorderController {
       recordReadyHelper.complete(true);
     }
 
+    liveLayerRequests.dispose();
     _threadManager.destroy();
   }
 
@@ -404,17 +409,37 @@ class ContentRecorderController {
   /// Retrieves the raw rendered dart ui image from the widget tree based on the
   /// provided `ImageInfos`. This method supports capturing images at
   /// different pixel ratios and optional thumbnail generation.
+  ///
+  /// When a layer host under the recorder draws paint layers from a raster
+  /// cache, the container is read only after a frame in which every layer
+  /// painted live: the cached image is rendered at the device pixel ratio,
+  /// and a capture at the output ratio would upscale it.
   Future<ui.Image?> getRawRenderedImage({
     required ImageInfos imageInfos,
     bool? useThumbnailSize,
     GlobalKey? widgetKey,
   }) async {
-    return _imageRenderService.getRawRenderedImage(
+    Future<ui.Image?> read() => _imageRenderService.getRawRenderedImage(
       imageInfos: imageInfos,
       containerKey: containerKey,
       widgetKey: widgetKey,
       useThumbnailSize: useThumbnailSize ?? enableThumbnailGeneration,
     );
+
+    // A widget handed to the invisible recorder holds no layer host.
+    if (widgetKey != null || !liveLayerRequests.hasHost) return read();
+
+    liveLayerRequests.value++;
+    try {
+      // The hosts rebuild for the next frame; `endOfFrame` completes once it
+      // has painted. `ensureVisualUpdate` schedules that frame even from a
+      // post-frame callback, where `endOfFrame` alone would not.
+      WidgetsBinding.instance.ensureVisualUpdate();
+      await WidgetsBinding.instance.endOfFrame;
+      return await read();
+    } finally {
+      liveLayerRequests.value--;
+    }
   }
 
   /// Adds a placeholder screenshot entry to the provided list of
@@ -446,5 +471,38 @@ class ContentRecorderController {
       pngFilter: _configs.pngFilter,
       pngLevel: _configs.pngLevel,
     );
+  }
+}
+
+/// Counts the captures waiting for a frame in which every layer paints live.
+///
+/// A host that draws paint layers from a raster cache (see
+/// `MainEditorConfigs.enablePaintLayerRasterCache`) listens to the recorder's
+/// instance and renders every layer live while the count is above zero. A
+/// capture only waits for that frame when such a host is listening, so an
+/// editor without the cache captures exactly as before.
+///
+/// The controller may be destroyed while a capture is still waiting for its
+/// frame; the counter then just stops reporting.
+class LiveLayerRequests extends ValueNotifier<int> {
+  /// Creates the counter at zero.
+  LiveLayerRequests() : super(0);
+
+  bool _isDisposed = false;
+
+  /// Whether a raster-cache host is listening for requests.
+  bool get hasHost => !_isDisposed && hasListeners;
+
+  @override
+  set value(int newValue) {
+    if (_isDisposed) return;
+    super.value = newValue;
+  }
+
+  @override
+  void dispose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    super.dispose();
   }
 }
