@@ -16,6 +16,7 @@ import '/core/models/layers/layer.dart';
 import '/core/services/gesture_manager.dart';
 import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/main_editor_layers_service.dart';
+import '/features/main_editor/services/paint_layer_raster_cache.dart';
 import '/features/paint_editor/enums/paint_editor_enum.dart';
 import '/shared/widgets/layer/enums/layer_widget_type_enum.dart';
 import '/shared/widgets/layer/services/layer_widget_context_menu.dart';
@@ -25,6 +26,7 @@ import '/shared/widgets/layer/widgets/layer_widget_paint_item.dart';
 import '/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 import 'interaction_helper/layer_interaction_helper_widget.dart';
 import 'layer_timeline_visibility.dart';
+import 'widgets/layer_repaint_boundary.dart';
 import 'widgets/layer_widget_custom_item.dart';
 
 /// A widget representing a layer within a design canvas.
@@ -569,6 +571,18 @@ class _LayerContentItem extends StatelessWidget {
       );
     }
 
-    return RepaintBoundary(key: layer.repaintBoundaryKey, child: content);
+    return LayerRepaintBoundary(
+      key: layer.repaintBoundaryKey,
+      // The painters draw nothing while the strokes come from the raster
+      // cache, so a capture has to render them from the model instead.
+      renderContent: skipPaint
+          ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
+              layer as PaintLayer,
+              pixelRatio: pixelRatio,
+              paintEditorConfigs: paintEditorConfigs,
+            )
+          : null,
+      child: content,
+    );
   }
 }

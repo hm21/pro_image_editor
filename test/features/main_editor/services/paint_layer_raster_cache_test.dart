@@ -15,7 +15,9 @@ import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 
 const Size _body = Size(200, 300);
 const Offset _center = Offset(-0.5, -0.5);
-const _configs = PaintEditorConfigs();
+const _configs = ProImageEditorConfigs(
+  paintEditor: PaintEditorConfigs(layerFractionalOffset: _center),
+);
 
 PaintLayer _stroke({
   String? id,
@@ -32,18 +34,21 @@ PaintLayer _stroke({
   Duration? enterDuration,
   List<ErasedOffset> erasedOffsets = const [],
   int points = 12,
+  List<Offset?>? offsets,
+  PaintMode mode = PaintMode.freeStyle,
+  double strokeWidth = 6,
 }) {
-  final offsets = <Offset?>[
+  offsets ??= <Offset?>[
     for (var i = 0; i < points; i++) Offset(4 + i * 5.0, 30 + sin(i / 2) * 20),
   ];
   return PaintLayer(
     id: id,
     item: PaintedModel(
-      mode: PaintMode.freeStyle,
+      mode: mode,
       offsets: offsets,
       erasedOffsets: erasedOffsets,
       color: color,
-      strokeWidth: 6,
+      strokeWidth: strokeWidth,
       opacity: 1,
     ),
     rawSize: const Size(64, 60),
@@ -68,17 +73,39 @@ PaintLayerRasterPlan _plan(
   Set<String> excluded = const {},
   Duration? playTime,
   double pixelRatio = 1,
-  PaintEditorConfigs configs = _configs,
+  ProImageEditorConfigs configs = _configs,
 }) {
   return cache.plan(
     layers: layers,
     excludedIds: excluded,
     playTime: playTime,
     editorBodySize: _body,
-    fractionalOffset: _center,
     pixelRatio: pixelRatio,
-    paintEditorConfigs: configs,
+    configs: configs,
   );
+}
+
+void _ensure(
+  PaintLayerRasterCache cache,
+  PaintLayerRasterRun run, {
+  double pixelRatio = 1,
+}) {
+  cache.ensure(
+    run,
+    editorBodySize: _body,
+    pixelRatio: pixelRatio,
+    configs: _configs,
+  );
+}
+
+/// Pumps the real event loop until [done] holds; rendering is engine work
+/// that only completes inside `runAsync`.
+Future<void> _waitFor(WidgetTester tester, bool Function() done) {
+  return tester.runAsync(() async {
+    while (!done()) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+  });
 }
 
 /// Renders [layers] the way the main editor does — one `LayerWidget` per
@@ -144,9 +171,8 @@ Future<ByteData> _recordCached(PaintLayerRasterPlan plan) async {
     final picture = PaintLayerRasterCache.recordRun(
       run,
       editorBodySize: _body,
-      fractionalOffset: _center,
       pixelRatio: 1,
-      paintEditorConfigs: _configs,
+      configs: _configs,
     );
     final image = await picture.toImage(
       run.bounds.width.ceil(),
@@ -289,17 +315,53 @@ void main() {
 
     test('leaves modes with a custom path builder live', () {
       final cache = PaintLayerRasterCache();
-      final configs = PaintEditorConfigs(
-        customPathBuilders: {
-          PaintMode.freeStyle:
-              ({required item, required scale, required paintEditorConfigs}) =>
-                  throw UnimplementedError(),
-        },
+      final configs = ProImageEditorConfigs(
+        paintEditor: PaintEditorConfigs(
+          customPathBuilders: {
+            PaintMode.freeStyle:
+                ({
+                  required item,
+                  required scale,
+                  required paintEditorConfigs,
+                }) => throw UnimplementedError(),
+          },
+        ),
       );
 
       final plan = _plan(cache, [_stroke()], configs: configs);
 
       expect(plan.runs, isEmpty);
+      cache.dispose();
+    });
+
+    test('leaves timeline layers live under a custom timeline transition', () {
+      final cache = PaintLayerRasterCache();
+      final configs = ProImageEditorConfigs(
+        videoEditor: VideoEditorConfigs(
+          layerTimeline: LayerTimelineConfigs(
+            // Decorates the layer even at full progress, which the cached
+            // strokes could not show.
+            transitionBuilder: (child, animation) =>
+                ColoredBox(color: Colors.red, child: child),
+          ),
+        ),
+      );
+      final timed = _stroke(
+        id: 'timed',
+        startTime: Duration.zero,
+        endTime: const Duration(seconds: 6),
+      );
+      final untimed = _stroke(id: 'untimed');
+
+      final plan = _plan(
+        cache,
+        [timed, untimed],
+        playTime: const Duration(seconds: 1),
+        configs: configs,
+      );
+
+      expect(plan.runs, hasLength(1));
+      expect(plan.runs.single.layerIds, ['untimed']);
       cache.dispose();
     });
 
@@ -314,7 +376,7 @@ void main() {
 
     test('drops a run whose image would exceed maxDimension on one side', () {
       // Well within the pixel budget; only the width is over the limit.
-      final cache = PaintLayerRasterCache(maxDimension: 64);
+      final cache = PaintLayerRasterCache(maxDimension: 50);
 
       final plan = _plan(cache, [_stroke()]);
 
@@ -329,6 +391,27 @@ void main() {
 
       expect(plan.runs, hasLength(1));
       expect(plan.runs.single.layerIds, ['a']);
+      cache.dispose();
+    });
+
+    test('keeps the runs of one plan within maxTotalPixels together', () {
+      final single = _plan(PaintLayerRasterCache(), [_stroke()]).runs.single;
+      // Room for two such images, not three.
+      final cache = PaintLayerRasterCache(
+        maxTotalPixels: single.pixels * 2 + single.pixels ~/ 2,
+      );
+
+      final plan = _plan(cache, [
+        _stroke(id: 'a'),
+        _text(),
+        _stroke(id: 'b'),
+        _text(),
+        _stroke(id: 'c'),
+      ]);
+
+      // A third image could never stay resident, so the run renders live
+      // instead of evicting one of the others on every landing.
+      expect(plan.runs.map((run) => run.layerIds.single), ['a', 'b']);
       cache.dispose();
     });
   });
@@ -373,6 +456,39 @@ void main() {
       );
     });
 
+    test('differs for the same number of points at other positions', () {
+      final baseKey = PaintLayerRasterCache.layerKey(
+        _stroke(id: 'x', offsets: const [Offset(2, 2), Offset(50, 2)]),
+      );
+
+      // A layer keeps its id across history entries, so two states of it can
+      // hold as many points as each other; the image must not be shared.
+      expect(
+        PaintLayerRasterCache.layerKey(
+          _stroke(id: 'x', offsets: const [Offset(2, 2), Offset(2, 50)]),
+        ),
+        isNot(baseKey),
+      );
+
+      final erasedKey = PaintLayerRasterCache.layerKey(
+        _stroke(
+          id: 'x',
+          erasedOffsets: const [ErasedOffset(offset: Offset(5, 5), radius: 4)],
+        ),
+      );
+      expect(
+        PaintLayerRasterCache.layerKey(
+          _stroke(
+            id: 'x',
+            erasedOffsets: const [
+              ErasedOffset(offset: Offset(45, 45), radius: 4),
+            ],
+          ),
+        ),
+        isNot(erasedKey),
+      );
+    });
+
     test('ignores the timeline window, so retiming keeps the raster', () {
       final baseKey = PaintLayerRasterCache.layerKey(_stroke(id: 'x'));
 
@@ -390,6 +506,12 @@ void main() {
   });
 
   group('PaintLayerRasterCache.layerBounds', () {
+    Rect boundsOf(PaintLayer layer) => PaintLayerRasterCache.layerBounds(
+      layer,
+      editorBodySize: _body,
+      fractionalOffset: _center,
+    );
+
     test('covers the rotated box of a transformed layer', () {
       final layer = _stroke(
         offset: const Offset(20, -30),
@@ -397,11 +519,7 @@ void main() {
         rotation: pi / 3,
       );
 
-      final bounds = PaintLayerRasterCache.layerBounds(
-        layer,
-        editorBodySize: _body,
-        fractionalOffset: _center,
-      );
+      final bounds = boundsOf(layer);
 
       final center = Offset(_body.width / 2 + 20, _body.height / 2 - 30);
       final halfDiagonal = layer.size.longestSide * sqrt(2) / 2;
@@ -411,6 +529,47 @@ void main() {
       expect(bounds.width, lessThanOrEqualTo(halfDiagonal * 2 + 10));
       expect(bounds.height, lessThanOrEqualTo(halfDiagonal * 2 + 10));
       expect(bounds.width, greaterThan(layer.size.width));
+    });
+
+    test('reaches past the points for arrowheads and miter joins', () {
+      // A horizontal arrow whose head spreads across the stroke.
+      final arrow = _stroke(
+        mode: PaintMode.freeStyleArrowEnd,
+        offsets: const [Offset(5, 5), Offset(125, 5)],
+        strokeWidth: 10,
+      );
+      final arrowBounds = boundsOf(arrow);
+      final lineY = _body.height / 2 - arrow.size.height / 2 + 5;
+      // The barbs run out to four half-strokes above and below the line,
+      // well past the half stroke a plain line would need.
+      expect(arrowBounds.top, lessThan(lineY - 15));
+      expect(arrowBounds.bottom, greaterThan(lineY + 15));
+
+      // A rectangle's corners are miter joins that overshoot half a stroke.
+      final rect = _stroke(
+        mode: PaintMode.rect,
+        offsets: const [Offset(10, 10), Offset(50, 50)],
+        strokeWidth: 10,
+      );
+      final rectBounds = boundsOf(rect);
+      final rectBox = Rect.fromLTWH(
+        _body.width / 2 - rect.size.width / 2,
+        _body.height / 2 - rect.size.height / 2,
+        rect.size.width,
+        rect.size.height,
+      );
+      expect(rectBounds.left, lessThan(rectBox.left + 10 - 5));
+      expect(rectBounds.right, greaterThan(rectBox.right - 10 + 5));
+    });
+
+    test('follows a flipped layer whose ink sits off the box center', () {
+      const offsets = <Offset?>[Offset(2, 2), Offset(20, 2)];
+      final plain = boundsOf(_stroke(offsets: offsets));
+      final flipped = boundsOf(_stroke(offsets: offsets, flipX: true));
+
+      // The stroke hugs the left edge; mirrored, it hugs the right one.
+      expect(flipped.left, greaterThan(plain.left + 20));
+      expect(flipped.width, closeTo(plain.width, 0.01));
     });
   });
 
@@ -446,6 +605,24 @@ void main() {
           opacity: 0.5,
           color: const Color(0xFF000000),
         ),
+        // Their heads and corners draw past the recorded points; a run that
+        // clipped them would differ from the live render.
+        _stroke(
+          id: 'arrow',
+          mode: PaintMode.freeStyleArrowStartEnd,
+          offsets: const [Offset(4, 30), Offset(60, 30)],
+          strokeWidth: 8,
+          offset: const Offset(20, 120),
+          color: const Color(0xFF00695C),
+        ),
+        _stroke(
+          id: 'rect',
+          mode: PaintMode.rect,
+          offsets: const [Offset(6, 6), Offset(58, 54)],
+          strokeWidth: 10,
+          offset: const Offset(-50, 20),
+          color: const Color(0xFFEF6C00),
+        ),
       ];
       final cache = PaintLayerRasterCache();
       final plan = _plan(cache, layers);
@@ -475,18 +652,8 @@ void main() {
       cache.addListener(() => notified++);
 
       expect(cache.imageFor(run), isNull);
-      cache.ensure(
-        run,
-        editorBodySize: _body,
-        fractionalOffset: _center,
-        pixelRatio: 2,
-        paintEditorConfigs: _configs,
-      );
-      await tester.runAsync(() async {
-        while (notified == 0) {
-          await Future<void>.delayed(const Duration(milliseconds: 10));
-        }
-      });
+      _ensure(cache, run, pixelRatio: 2);
+      await _waitFor(tester, () => notified > 0);
 
       final image = cache.imageFor(run)!;
       expect(image.width, (run.bounds.width * 2).ceil());
@@ -503,23 +670,40 @@ void main() {
       cache.addListener(() => notified++);
 
       for (final run in [first, second]) {
-        cache.ensure(
-          run,
-          editorBodySize: _body,
-          fractionalOffset: _center,
-          pixelRatio: 1,
-          paintEditorConfigs: _configs,
-        );
+        _ensure(cache, run);
         final expected = notified + 1;
-        await tester.runAsync(() async {
-          while (notified < expected) {
-            await Future<void>.delayed(const Duration(milliseconds: 10));
-          }
-        });
+        await _waitFor(tester, () => notified >= expected);
       }
 
       expect(cache.contains(first), isFalse);
       expect(cache.contains(second), isTrue);
+      cache.dispose();
+    });
+
+    testWidgets('never evicts an image the current plan draws', (tester) async {
+      final cache = PaintLayerRasterCache(maxImages: 2);
+      final a = _stroke(id: 'a');
+      final b = _stroke(id: 'b', offset: const Offset(0, 80));
+      final t = _text();
+      final stale = _plan(cache, [_stroke(id: 'stale')]).runs.single;
+      var notified = 0;
+      cache.addListener(() => notified++);
+
+      _ensure(cache, stale);
+      await _waitFor(tester, () => notified >= 1);
+
+      // The current plan needs both of its runs resident. `stale` is the
+      // least recently used image and the one to go; evicting a planned one
+      // would only make the host render it again and evict the next.
+      final plan = _plan(cache, [a, t, b]);
+      for (final run in plan.runs) {
+        _ensure(cache, run);
+        final expected = notified + 1;
+        await _waitFor(tester, () => notified >= expected);
+      }
+
+      expect(cache.contains(stale), isFalse);
+      expect(plan.runs.every(cache.contains), isTrue);
       cache.dispose();
     });
 
@@ -536,18 +720,8 @@ void main() {
       // `ensure` runs on every build; a run the GPU cannot render must not be
       // attempted again on each of them.
       for (var i = 0; i < 3; i++) {
-        cache.ensure(
-          run,
-          editorBodySize: _body,
-          fractionalOffset: _center,
-          pixelRatio: 1,
-          paintEditorConfigs: _configs,
-        );
-        await tester.runAsync(() async {
-          while (cache.isRendering) {
-            await Future<void>.delayed(const Duration(milliseconds: 10));
-          }
-        });
+        _ensure(cache, run);
+        await _waitFor(tester, () => !cache.isRendering);
       }
 
       expect(cache.attempts, 1);

@@ -126,9 +126,17 @@ class MainEditorConfigs extends ZoomConfigs {
   /// once into a single image and that image is drawn until one of them
   /// changes. A layer that is selected, dragged, scaled or rotated, or that is
   /// mid-animation, keeps rendering live so it stays pixel-exact while it
-  /// moves; once released it joins the cache again. The cache is bypassed
-  /// while the editor is zoomed and during every capture, so
-  /// [captureLayersOnDone] and `captureAllLayersWithMeta` are unaffected.
+  /// moves; once released it joins the cache again. The cache also steps
+  /// aside while the editor is zoomed, during a partial erase and during
+  /// sub-editor transitions.
+  ///
+  /// Captures are unaffected: every screenshot the editor takes of its canvas
+  /// — the state history, [captureImageOnDone], thumbnails — waits for a frame
+  /// in which the layers paint live, and [captureLayersOnDone],
+  /// `captureAllLayersWithMeta` and [Layer.captureAsPng] render a cached
+  /// layer from its model. Measured with 150 freestyle strokes on a video
+  /// canvas, raster time per frame drops from 3.1 ms to 1.0 ms during
+  /// playback and from 1.7 ms to 0.6 ms while retiming a layer.
   ///
   /// Hit-testing, selection and the layer keys stay on the live widgets, so
   /// the editor behaves the same; only the paint is cached.

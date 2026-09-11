@@ -1,13 +1,13 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/widgets.dart';
 
-import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
+import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/layer.dart';
+import '/features/paint_editor/enums/paint_editor_enum.dart';
 
 /// A contiguous z-run of paint layers that is drawn from one cached image.
 ///
@@ -22,6 +22,7 @@ class PaintLayerRasterRun {
     required this.insertIndex,
     required this.key,
     required this.bounds,
+    required this.pixels,
   });
 
   /// The paint layers of this run, bottom-most first.
@@ -42,6 +43,9 @@ class PaintLayerRasterRun {
 
   /// The area the image covers, in editor body coordinates (logical pixels).
   final Rect bounds;
+
+  /// The number of device pixels of the image.
+  final int pixels;
 
   /// The ids of the member layers.
   Iterable<String> get layerIds => layers.map((layer) => layer.id);
@@ -83,6 +87,9 @@ class PaintLayerRasterPlan {
 /// Rasterization runs asynchronously. Until an image lands, the run renders
 /// live, so the canvas is never blank and a moved layer is pixel-exact the
 /// moment it is released; the cached copy takes over a frame or two later.
+///
+/// Widgets that stack layers use it through `PaintLayerRasterCacheHost`,
+/// which owns the cache and knows when it has to step aside.
 class PaintLayerRasterCache extends ChangeNotifier {
   /// Creates a cache.
   PaintLayerRasterCache({
@@ -106,7 +113,9 @@ class PaintLayerRasterCache extends ChangeNotifier {
   /// Scrubbing back and forth across a layer's timeline edge alternates
   /// between two run keys; keeping a few recent images avoids re-rendering
   /// each time. The oldest images are disposed first once the total goes
-  /// over this budget (64 MB of RGBA by default) or over [maxImages].
+  /// over this budget (64 MB of RGBA by default) or over [maxImages]. The
+  /// runs of a single [plan] never claim more than this together; whatever
+  /// does not fit renders live.
   final int maxTotalPixels;
 
   /// The most images kept at once, whatever their size.
@@ -123,6 +132,10 @@ class PaintLayerRasterCache extends ChangeNotifier {
 
   final Map<String, ui.Image> _images = <String, ui.Image>{};
   final List<String> _recentKeys = <String>[];
+
+  /// The keys of the runs in the most recent [plan]. Those images are what
+  /// the host draws right now, so eviction leaves them alone.
+  Set<String> _plannedKeys = const <String>{};
 
   /// Runs whose render failed. They render live and are not retried: `ensure`
   /// runs on every build, so without this a run the GPU cannot render — one
@@ -148,12 +161,14 @@ class PaintLayerRasterCache extends ChangeNotifier {
   /// and interacting ones. A layer with a timeline animation stays live even
   /// outside its animation window, because it would otherwise flip between
   /// cached and live at every window edge; the same goes for the legacy
-  /// enter/exit fade.
+  /// enter/exit fade and for a timeline layer under a custom
+  /// [LayerTimelineConfigs.transitionBuilder], which may decorate the layer
+  /// even at full progress.
   static bool isCacheable(
     Layer layer, {
     required Set<String> excludedIds,
     required Duration? playTime,
-    required PaintEditorConfigs paintEditorConfigs,
+    required ProImageEditorConfigs configs,
   }) {
     if (layer is! PaintLayer) return false;
     if (excludedIds.contains(layer.id)) return false;
@@ -164,11 +179,16 @@ class PaintLayerRasterCache extends ChangeNotifier {
       return false;
     }
     if (layer.transitionBuilder != null) return false;
+    final start = layer.startTime;
+    final end = layer.endTime;
     if (playTime != null) {
-      final start = layer.startTime;
-      final end = layer.endTime;
       if (start != null && playTime < start) return false;
       if (end != null && playTime > end) return false;
+      if ((start != null || end != null) &&
+          configs.videoEditor.layerTimeline.transitionBuilder !=
+              LayerTimelineConfigs.defaultFadeTransition) {
+        return false;
+      }
     }
     // A merged layer with a layer opacity below 1 fades the composed stack
     // through an Opacity widget; reproducing that needs an offscreen per
@@ -177,7 +197,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
     for (final item in layer.items) {
       // A custom builder may draw anything; its opacity path goes through an
       // Opacity widget as well.
-      if (paintEditorConfigs.customPathBuilders.containsKey(item.mode)) {
+      if (configs.paintEditor.customPathBuilders.containsKey(item.mode)) {
         return false;
       }
     }
@@ -189,23 +209,23 @@ class PaintLayerRasterCache extends ChangeNotifier {
 
   /// Groups the cacheable members of [layers] into runs.
   ///
-  /// [editorBodySize] and [fractionalOffset] place each layer the way
-  /// `LayerWidget` does; [pixelRatio] is the device pixel ratio the images are
-  /// rendered at. A run whose image would exceed [maxPixels] is left out, and
-  /// so is everything beyond [maxImages] runs, so the cache never holds more
-  /// than it is allowed to.
+  /// [editorBodySize] places each layer the way `LayerWidget` does;
+  /// [pixelRatio] is the device pixel ratio the images are rendered at. A run
+  /// whose image would exceed [maxPixels] is left out, and so is everything
+  /// beyond [maxImages] runs or [maxTotalPixels] in total, so the cache never
+  /// holds more than it is allowed to.
   PaintLayerRasterPlan plan({
     required List<Layer> layers,
     required Set<String> excludedIds,
     required Duration? playTime,
     required Size editorBodySize,
-    required Offset fractionalOffset,
     required double pixelRatio,
-    required PaintEditorConfigs paintEditorConfigs,
+    required ProImageEditorConfigs configs,
   }) {
     final runs = <PaintLayerRasterRun>[];
     var members = <PaintLayer>[];
     var insertIndex = 0;
+    var budget = maxTotalPixels;
 
     void flush() {
       if (members.isEmpty) return;
@@ -213,10 +233,13 @@ class PaintLayerRasterCache extends ChangeNotifier {
         members,
         insertIndex: insertIndex,
         editorBodySize: editorBodySize,
-        fractionalOffset: fractionalOffset,
+        fractionalOffset: configs.paintEditor.layerFractionalOffset,
         pixelRatio: pixelRatio,
       );
-      if (run != null && runs.length < maxImages) runs.add(run);
+      if (run != null && runs.length < maxImages && run.pixels <= budget) {
+        runs.add(run);
+        budget -= run.pixels;
+      }
       members = <PaintLayer>[];
     }
 
@@ -226,7 +249,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
         layer,
         excludedIds: excludedIds,
         playTime: playTime,
-        paintEditorConfigs: paintEditorConfigs,
+        configs: configs,
       );
       if (!cacheable) {
         flush();
@@ -237,6 +260,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
     }
     flush();
 
+    _plannedKeys = {for (final run in runs) run.key};
     return PaintLayerRasterPlan(runs: runs);
   }
 
@@ -265,12 +289,13 @@ class PaintLayerRasterCache extends ChangeNotifier {
         editorBodySize: editorBodySize,
         fractionalOffset: fractionalOffset,
       );
+      if (rect.isEmpty) continue;
       bounds = bounds == null ? rect : bounds.expandToInclude(rect);
       keyBuffer
         ..write('|')
         ..write(layerKey(layer));
     }
-    if (bounds == null || bounds.isEmpty) return null;
+    if (bounds == null) return null;
 
     // Snap to whole logical pixels so the image maps 1:1 onto the screen.
     final snapped = Rect.fromLTRB(
@@ -290,16 +315,18 @@ class PaintLayerRasterCache extends ChangeNotifier {
       insertIndex: insertIndex,
       key: keyBuffer.toString(),
       bounds: snapped,
+      pixels: pixels,
     );
   }
 
   /// The part of a run key contributed by [layer]: everything that changes
   /// its pixels, nothing that does not.
   ///
-  /// Stroke content is described by its shape parameters and point counts
-  /// rather than hashed point-by-point: strokes are never edited in place —
-  /// the paint editor hands back new layers — and the partial eraser only
-  /// ever appends erased offsets, so the counts move whenever the ink does.
+  /// The stroke points and erased spots go in as a hash of their content, not
+  /// as a count: a layer keeps its id across history entries, so two states
+  /// of it can hold the same number of points at different positions — an
+  /// erase that is undone and redone elsewhere, say — and must not share an
+  /// image.
   @visibleForTesting
   static String layerKey(PaintLayer layer) {
     final buffer = StringBuffer()
@@ -335,24 +362,46 @@ class PaintLayerRasterCache extends ChangeNotifier {
         ..write(item.fill ? 1 : 0)
         ..write(',')
         ..write(item.offsets.length)
+        ..write('/')
+        ..write(Object.hashAll(item.offsets))
         ..write(',')
-        ..write(item.erasedOffsets.length);
+        ..write(item.erasedOffsets.length)
+        ..write('/')
+        ..write(Object.hashAll(item.erasedOffsets));
     }
     return buffer.toString();
   }
 
   /// The axis-aligned area [layer] paints into, in editor body coordinates.
   ///
-  /// Mirrors `LayerWidget`: the layer's box is placed at `offset` shifted by
-  /// [fractionalOffset] of its size, then rotated about the box center. The
-  /// box is padded by half the widest stroke, because a stroke's round caps
-  /// reach past the points the box was sized from.
+  /// Each stroke's extent is its [PaintedModel.bounds] — the same box hit
+  /// testing uses, which already covers round caps and the arrowheads that
+  /// reach past the outermost point — scaled by the layer, plus room for the
+  /// miter joins of the shape modes. The union is placed and transformed the
+  /// way `LayerWidget` places the layer: the box at `offset` shifted by
+  /// [fractionalOffset] of its size, then flipped and rotated about the box
+  /// center. An empty rect means the layer draws nothing.
   @visibleForTesting
   static Rect layerBounds(
     PaintLayer layer, {
     required Size editorBodySize,
     required Offset fractionalOffset,
   }) {
+    final scale = layer.scale;
+    Rect? extent;
+    for (final item in layer.items) {
+      final bounds = item.bounds;
+      if (bounds.isEmpty) continue;
+      final rect = Rect.fromLTRB(
+        bounds.left * scale,
+        bounds.top * scale,
+        bounds.right * scale,
+        bounds.bottom * scale,
+      ).inflate(_miterPadding(item) * scale);
+      extent = extent == null ? rect : extent.expandToInclude(rect);
+    }
+    if (extent == null) return Rect.zero;
+
     final size = layer.size;
     final topLeft = Offset(
       editorBodySize.width / 2 +
@@ -362,47 +411,33 @@ class PaintLayerRasterCache extends ChangeNotifier {
           layer.offset.dy +
           fractionalOffset.dy * size.height,
     );
-    var padding = 0.0;
-    for (final item in layer.items) {
-      padding = math.max(padding, item.strokeWidth * layer.scale / 2);
-    }
-    final box = Rect.fromLTWH(
-      topLeft.dx,
-      topLeft.dy,
-      size.width,
-      size.height,
-    ).inflate(padding + 1);
-    if (layer.rotation == 0) return box;
+    // One pixel for the anti-aliased edge.
+    final box = extent.shift(topLeft).inflate(1);
+    if (layer.rotation == 0 && !layer.flipX && !layer.flipY) return box;
 
-    final center = box.center;
-    final cosR = math.cos(layer.rotation);
-    final sinR = math.sin(layer.rotation);
-    Offset rotate(Offset point) {
-      final local = point - center;
-      return center +
-          Offset(
-            local.dx * cosR - local.dy * sinR,
-            local.dx * sinR + local.dy * cosR,
-          );
-    }
+    final center = topLeft + size.center(Offset.zero);
+    final transform = Matrix4.translationValues(center.dx, center.dy, 0)
+      ..scaleByDouble(layer.flipX ? -1 : 1, layer.flipY ? -1 : 1, 1, 1)
+      ..rotateZ(layer.rotation)
+      ..translateByDouble(-center.dx, -center.dy, 0, 1);
+    return MatrixUtils.transformRect(transform, box);
+  }
 
-    final corners = [
-      rotate(box.topLeft),
-      rotate(box.topRight),
-      rotate(box.bottomLeft),
-      rotate(box.bottomRight),
-    ];
-    var minX = double.infinity;
-    var minY = double.infinity;
-    var maxX = double.negativeInfinity;
-    var maxY = double.negativeInfinity;
-    for (final corner in corners) {
-      minX = math.min(minX, corner.dx);
-      minY = math.min(minY, corner.dy);
-      maxX = math.max(maxX, corner.dx);
-      maxY = math.max(maxY, corner.dy);
+  /// How far a miter join may draw past [PaintedModel.bounds].
+  ///
+  /// The shape modes stroke their corners with the default miter join, whose
+  /// tip reaches up to `strokeMiterLimit` (4) half-strokes from the corner;
+  /// `bounds` only covers half a stroke. The freestyle modes use round joins
+  /// and the arrow modes' padding already covers the head's miters.
+  static double _miterPadding(PaintedModel item) {
+    switch (item.mode) {
+      case PaintMode.rect:
+      case PaintMode.polygon:
+      case PaintMode.hexagon:
+        return item.strokeWidth * 1.5;
+      default:
+        return 0;
     }
-    return Rect.fromLTRB(minX, minY, maxX, maxY);
   }
 
   /// The cached image for [run], or `null` while it has not been rendered.
@@ -429,9 +464,8 @@ class PaintLayerRasterCache extends ChangeNotifier {
   void ensure(
     PaintLayerRasterRun run, {
     required Size editorBodySize,
-    required Offset fractionalOffset,
     required double pixelRatio,
-    required PaintEditorConfigs paintEditorConfigs,
+    required ProImageEditorConfigs configs,
   }) {
     if (_isDisposed) return;
     if (_images.containsKey(run.key) || _inFlightKey == run.key) return;
@@ -445,9 +479,8 @@ class PaintLayerRasterCache extends ChangeNotifier {
       _rasterize(
         run,
         editorBodySize: editorBodySize,
-        fractionalOffset: fractionalOffset,
         pixelRatio: pixelRatio,
-        paintEditorConfigs: paintEditorConfigs,
+        configs: configs,
       ),
     );
   }
@@ -455,18 +488,16 @@ class PaintLayerRasterCache extends ChangeNotifier {
   Future<void> _rasterize(
     PaintLayerRasterRun run, {
     required Size editorBodySize,
-    required Offset fractionalOffset,
     required double pixelRatio,
-    required PaintEditorConfigs paintEditorConfigs,
+    required ProImageEditorConfigs configs,
   }) async {
     ui.Image? image;
     try {
       final picture = recordRun(
         run,
         editorBodySize: editorBodySize,
-        fractionalOffset: fractionalOffset,
         pixelRatio: pixelRatio,
-        paintEditorConfigs: paintEditorConfigs,
+        configs: configs,
       );
       try {
         image = await toImage(
@@ -524,20 +555,20 @@ class PaintLayerRasterCache extends ChangeNotifier {
   /// Records [run] the way its live widgets paint it.
   ///
   /// Each member is placed and transformed exactly like `LayerWidget` places
-  /// it — box at `offset` shifted by [fractionalOffset], flips and rotation
-  /// about the box center — and stroked through the same path builders with
-  /// the same baked opacity, so the image matches the live render pixel for
-  /// pixel. The recording is translated so the run's
+  /// it — box at `offset` shifted by the paint editor's fractional offset,
+  /// flips and rotation about the box center — and stroked through the same
+  /// path builders with the same baked opacity, so the image matches the live
+  /// render pixel for pixel. The recording is translated so the run's
   /// [PaintLayerRasterRun.bounds] start at the origin and scaled by
   /// [pixelRatio].
   @visibleForTesting
   static ui.Picture recordRun(
     PaintLayerRasterRun run, {
     required Size editorBodySize,
-    required Offset fractionalOffset,
     required double pixelRatio,
-    required PaintEditorConfigs paintEditorConfigs,
+    required ProImageEditorConfigs configs,
   }) {
+    final fractionalOffset = configs.paintEditor.layerFractionalOffset;
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder)
       ..scale(pixelRatio)
@@ -563,32 +594,69 @@ class PaintLayerRasterCache extends ChangeNotifier {
         ..scale(layer.flipX ? -1 : 1, layer.flipY ? -1 : 1)
         ..rotate(layer.rotation)
         ..translate(-size.width / 2, -size.height / 2);
-
-      if (layer.items.length == 1) {
-        _drawItem(
-          canvas,
-          layer.items.first,
-          size: size,
-          scale: layer.scale,
-          opacity: layer.opacity,
-          paintEditorConfigs: paintEditorConfigs,
-        );
-      } else {
-        for (final item in layer.items) {
-          _drawItem(
-            canvas,
-            item,
-            size: size,
-            scale: layer.scale,
-            opacity: item.opacity,
-            paintEditorConfigs: paintEditorConfigs,
-          );
-        }
-      }
+      _drawLayer(canvas, layer, paintEditorConfigs: configs.paintEditor);
       canvas.restore();
     }
 
     return recorder.endRecording();
+  }
+
+  /// Renders the content of [layer] alone — what its own repaint boundary
+  /// holds while it paints live — into an image of its size at [pixelRatio].
+  ///
+  /// `Layer.captureAsPng` reads this while the layer is drawn from the cache,
+  /// because the boundary paints nothing then. The cache only admits layers
+  /// whose paint it reproduces exactly, so the result is what the boundary
+  /// would have captured.
+  static Future<ui.Image> renderLayerContent(
+    PaintLayer layer, {
+    required double pixelRatio,
+    required PaintEditorConfigs paintEditorConfigs,
+  }) async {
+    final size = layer.size;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder)..scale(pixelRatio);
+    _drawLayer(canvas, layer, paintEditorConfigs: paintEditorConfigs);
+    final picture = recorder.endRecording();
+    try {
+      return await picture.toImage(
+        (size.width * pixelRatio).ceil(),
+        (size.height * pixelRatio).ceil(),
+      );
+    } finally {
+      picture.dispose();
+    }
+  }
+
+  /// Strokes [layer]'s items in its own box coordinates, with the opacity
+  /// baked the way `LayerWidgetPaintItem` bakes it.
+  static void _drawLayer(
+    Canvas canvas,
+    PaintLayer layer, {
+    required PaintEditorConfigs paintEditorConfigs,
+  }) {
+    final size = layer.size;
+    if (layer.items.length == 1) {
+      _drawItem(
+        canvas,
+        layer.items.first,
+        size: size,
+        scale: layer.scale,
+        opacity: layer.opacity,
+        paintEditorConfigs: paintEditorConfigs,
+      );
+      return;
+    }
+    for (final item in layer.items) {
+      _drawItem(
+        canvas,
+        item,
+        size: size,
+        scale: layer.scale,
+        opacity: item.opacity,
+        paintEditorConfigs: paintEditorConfigs,
+      );
+    }
   }
 
   static void _drawItem(
@@ -608,6 +676,60 @@ class PaintLayerRasterCache extends ChangeNotifier {
       ..draw(canvas: canvas, size: size);
   }
 
+  /// Plans this build's runs, starts rendering any missing image and returns
+  /// the stack children: every layer of [layers] in z-order through
+  /// [buildLayer], with each run whose image is ready preceded by that image
+  /// and its members built with `isRasterCached` set, so they skip their own
+  /// paint. A run whose image is still rendering stays live.
+  ///
+  /// [pixelRatio] is the ratio the images are rendered at — the device pixel
+  /// ratio times whatever scale the stack is drawn under.
+  List<Widget> buildChildren({
+    required List<Layer> layers,
+    required Set<String> excludedIds,
+    required Duration? playTime,
+    required Size editorBodySize,
+    required double pixelRatio,
+    required ProImageEditorConfigs configs,
+    required Widget Function(Layer layer, {required bool isRasterCached})
+    buildLayer,
+  }) {
+    final plan = this.plan(
+      layers: layers,
+      excludedIds: excludedIds,
+      playTime: playTime,
+      editorBodySize: editorBodySize,
+      pixelRatio: pixelRatio,
+      configs: configs,
+    );
+
+    final imagesByInsertIndex = <int, Widget>{};
+    final cachedIds = <String>{};
+    for (final run in plan.runs) {
+      ensure(
+        run,
+        editorBodySize: editorBodySize,
+        pixelRatio: pixelRatio,
+        configs: configs,
+      );
+      final image = imageFor(run);
+      if (image == null) continue;
+      imagesByInsertIndex[run.insertIndex] = PaintRunImage(
+        key: ValueKey<String>(run.key),
+        image: image,
+        bounds: run.bounds,
+      );
+      cachedIds.addAll(run.layerIds);
+    }
+
+    return [
+      for (var i = 0; i < layers.length; i++) ...[
+        ?imagesByInsertIndex[i],
+        buildLayer(layers[i], isRasterCached: cachedIds.contains(layers[i].id)),
+      ],
+    ];
+  }
+
   void _touch(String key) {
     _recentKeys
       ..remove(key)
@@ -617,11 +739,23 @@ class PaintLayerRasterCache extends ChangeNotifier {
   int get _totalPixels =>
       _images.values.fold(0, (sum, image) => sum + image.width * image.height);
 
+  /// Disposes the least recently used images until the rest fit the budget.
+  ///
+  /// Images of the current plan are skipped: the host draws them right now,
+  /// and evicting one would only make it render again, land again and evict
+  /// the next. [plan] keeps them within [maxImages] and [maxTotalPixels] on
+  /// its own, so the loop always ends.
   void _evict() {
-    while (_recentKeys.length > 1 &&
+    var index = 0;
+    while (index < _recentKeys.length &&
         (_recentKeys.length > maxImages || _totalPixels > maxTotalPixels)) {
-      final stale = _recentKeys.removeAt(0);
-      _images.remove(stale)?.dispose();
+      final key = _recentKeys[index];
+      if (_plannedKeys.contains(key)) {
+        index++;
+        continue;
+      }
+      _recentKeys.removeAt(index);
+      _images.remove(key)?.dispose();
     }
   }
 
@@ -642,5 +776,43 @@ class PaintLayerRasterCache extends ChangeNotifier {
     _isDisposed = true;
     clear();
     super.dispose();
+  }
+}
+
+/// One run's cached image, placed where its bottom-most member paints.
+///
+/// Pointer events pass through: the members' own widgets stay mounted and
+/// keep hit-testing the real strokes.
+class PaintRunImage extends StatelessWidget {
+  /// Creates the image widget for a cached run.
+  const PaintRunImage({super.key, required this.image, required this.bounds});
+
+  /// The rendered run.
+  final ui.Image image;
+
+  /// Where the run paints, in editor body coordinates.
+  final Rect bounds;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: bounds.left,
+      top: bounds.top,
+      width: bounds.width,
+      height: bounds.height,
+      child: IgnorePointer(
+        // The image is rendered at exactly the device pixel ratio, so at an
+        // integral ratio this is a 1:1 blit; bilinear filtering only matters
+        // on fractional ratios, where nearest-neighbour would shift edges by
+        // a pixel.
+        child: RawImage(
+          image: image,
+          width: bounds.width,
+          height: bounds.height,
+          fit: BoxFit.fill,
+          filterQuality: FilterQuality.low,
+        ),
+      ),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/services/content_recorder/widgets/content_recorder.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 
 import '../../mock/mock_image.dart';
@@ -175,7 +176,72 @@ void main() {
     expect(cachedByLayer(tester).values, everyElement(isTrue));
   });
 
+  /// Runs [action], pumping frames until it completes, and reports whether
+  /// every layer rendered live in one of them.
+  Future<({T result, bool sawLive})> runCapture<T>(
+    WidgetTester tester,
+    Future<T> Function() action,
+  ) async {
+    var sawLive = false;
+    late final T result;
+    await tester.runAsync(() async {
+      var done = false;
+      final future = action().whenComplete(() => done = true);
+      while (!done) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        await tester.pump();
+        final cached = cachedByLayer(tester).values;
+        if (cached.isNotEmpty && cached.every((value) => !value)) {
+          sawLive = true;
+        }
+      }
+      result = await future;
+    });
+    return (result: result, sawLive: sawLive);
+  }
+
   testWidgets('captures every layer although its paint is cached', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    final layers = [
+      buildPaintLayer(const Offset(-40, 0)),
+      buildPaintLayer(const Offset(40, 0)),
+    ];
+    for (final layer in layers) {
+      state.addLayer(
+        layer,
+        blockSelectLayer: true,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+    }
+    state.layerInteractionManager.clearSelectedLayers();
+    // Live: the cache has not been given a frame to land yet.
+    state.setState(() {});
+    await tester.pump();
+    expect(cachedByLayer(tester).values, [false, false]);
+    Future<List<ExportedLayer>> capture() =>
+        state.captureAllLayersWithMeta(format: ImageByteFormat.rawRgba);
+    final live = (await runCapture(tester, capture)).result;
+
+    await pumpUntil(tester, () => allCached(tester));
+    expect(cachedByLayer(tester).values, [true, true]);
+    final cached = await runCapture(tester, capture);
+
+    // A cached layer paints nothing into its repaint boundary; its capture is
+    // rendered from the model and has to be what the boundary held before.
+    expect(cached.result, hasLength(2));
+    for (var i = 0; i < 2; i++) {
+      expect(cached.result[i].bytes, live[i].bytes, reason: 'layer $i');
+      expect(cached.result[i].bytes.any((byte) => byte > 0), isTrue);
+    }
+    // The capture did not need the cache to step aside.
+    expect(cached.sawLive, isFalse);
+    expect(cachedByLayer(tester).values, [true, true]);
+  });
+
+  testWidgets('captures the canvas from a frame with live layers', (
     tester,
   ) async {
     final state = await pumpEditor(tester);
@@ -183,35 +249,32 @@ void main() {
       buildPaintLayer(const Offset(-40, 0)),
       buildPaintLayer(const Offset(40, 0)),
     ]);
-    expect(cachedByLayer(tester).values, [true, true]);
 
-    // The capture waits for a frame in which every layer paints live, and
-    // frames only happen when the test pumps them.
-    late final List<ExportedLayer> captured;
-    await tester.runAsync(() async {
-      var done = false;
-      final future = state
-          .captureAllLayersWithMeta(format: ImageByteFormat.rawRgba)
-          .whenComplete(() => done = true);
-      while (!done) {
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-        await tester.pump();
-      }
-      captured = await future;
-    });
+    // Every canvas screenshot — state history, final image, thumbnail —
+    // reads the editor's recorder at the output pixel ratio; a cached image
+    // rendered for the screen would be upscaled into it, so the recorder
+    // asks the layers for a live frame first.
+    final recorder = ContentRecorder.maybeControllerOf(
+      tester.element(find.byType(LayerWidget).first),
+    )!;
+    final body = state.sizesManager.bodySize;
+    final capture = await runCapture(
+      tester,
+      () => recorder.getRawRenderedImage(
+        imageInfos: ImageInfos(
+          rawSize: body,
+          renderedSize: body,
+          originalRenderedSize: body,
+          cropRectSize: body,
+          pixelRatio: 1,
+          isRotated: false,
+        ),
+      ),
+    );
 
-    expect(captured, hasLength(2));
-    for (final layer in captured) {
-      // A capture taken from a boundary that painted nothing is fully
-      // transparent; a real one carries the red stroke.
-      final bytes = layer.bytes;
-      var opaque = 0;
-      for (var i = 3; i < bytes.length; i += 4) {
-        if (bytes[i] > 0) opaque++;
-      }
-      expect(opaque, greaterThan(0), reason: 'layer ${layer.layer.id}');
-    }
-    // The cache takes over again once the capture is done.
+    expect(capture.result, isNotNull);
+    capture.result!.dispose();
+    expect(capture.sawLive, isTrue);
     await pumpUntil(tester, () => allCached(tester));
     expect(cachedByLayer(tester).values, [true, true]);
   });

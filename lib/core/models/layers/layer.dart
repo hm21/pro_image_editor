@@ -22,6 +22,7 @@ import '/shared/utils/parser/bool_parser.dart';
 import '/shared/utils/parser/curve_parser.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/unique_id_generator.dart';
+import '/shared/widgets/layer/widgets/layer_repaint_boundary.dart';
 import '../editor_image.dart';
 import 'emoji_layer.dart';
 import 'exported_layer.dart';
@@ -433,10 +434,13 @@ class Layer {
   /// Captures the visual content of this layer as a PNG-encoded byte array.
   ///
   /// The layer must be mounted in the widget tree with its
-  /// [repaintBoundaryKey] attached to a [RepaintBoundary]. The [pixelRatio]
-  /// controls the resolution of the output image. When `null`, it defaults
-  /// to `devicePixelRatio * scale` to preserve sharpness for scaled and
-  /// rotated layers.
+  /// [repaintBoundaryKey] attached to a [RepaintBoundary]. A paint layer that
+  /// is currently drawn from the editor's raster cache paints nothing into
+  /// that boundary; its content is then rendered from the model, so the
+  /// result is the same either way. The [pixelRatio] controls the resolution
+  /// of the output image. When `null`, it defaults to
+  /// `devicePixelRatio * scale` to preserve sharpness for scaled and rotated
+  /// layers.
   ///
   /// The [format] controls the output byte format and defaults to PNG for
   /// backward compatibility.
@@ -460,8 +464,15 @@ class Layer {
         basePixelRatio ?? MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
     final effectivePixelRatio = pixelRatio ?? dpr;
 
-    final boundary = context.findRenderObject() as RenderRepaintBoundary;
-    final rawImage = await boundary.toImage(pixelRatio: effectivePixelRatio);
+    final boundaryWidget = repaintBoundaryKey.currentWidget;
+    final renderContent = boundaryWidget is LayerRepaintBoundary
+        ? boundaryWidget.renderContent
+        : null;
+    final rawImage = renderContent != null
+        ? await renderContent(effectivePixelRatio)
+        : await (context.findRenderObject() as RenderRepaintBoundary).toImage(
+            pixelRatio: effectivePixelRatio,
+          );
 
     final bool needsTransform =
         applyTransforms && (rotation != 0 || flipX || flipY);

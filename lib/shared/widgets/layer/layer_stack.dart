@@ -1,6 +1,3 @@
-// Dart imports:
-import 'dart:ui' as ui;
-
 // Flutter imports:
 import 'package:material_ui/material_ui.dart';
 
@@ -9,8 +6,8 @@ import '/core/models/layers/layer.dart';
 import '/core/models/transform_helper.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 import '/features/crop_rotate_editor/widgets/crop_layer_painter.dart';
-import '/features/main_editor/services/paint_layer_raster_cache.dart';
 import 'layer_widget.dart';
+import 'paint_layer_raster_cache_host.dart';
 
 /// A stateful widget that represents a stack of layers in an image editing
 /// application.
@@ -93,37 +90,21 @@ class LayerStack extends StatefulWidget {
   /// [MainEditorConfigs.enablePaintLayerRasterCache] is on.
   ///
   /// Sub-editors set this while a layer is changing continuously — the paint
-  /// editor's partial eraser mutates strokes on every pointer move — and while
-  /// the editor is zoomed, where a cached image would be upscaled.
+  /// editor's partial eraser mutates strokes on every pointer move — and
+  /// while the stack is drawn under a scale the cache does not know about,
+  /// such as the paint editor's zoom or the crop editor's animated
+  /// transforms, where a cached image would be resampled. Captures and route
+  /// transitions are handled by the stack itself.
   final bool suspendPaintLayerRasterCache;
 
   @override
   State<LayerStack> createState() => _LayerStackState();
 }
 
-class _LayerStackState extends State<LayerStack> {
-  /// The raster cache, or `null` when the feature is off.
-  late final PaintLayerRasterCache? _rasterCache =
-      widget.configs.mainEditor.enablePaintLayerRasterCache
-      ? PaintLayerRasterCache()
-      : null;
-
+class _LayerStackState extends State<LayerStack>
+    with PaintLayerRasterCacheHost {
   @override
-  void initState() {
-    super.initState();
-    _rasterCache?.addListener(_onRasterCacheChanged);
-  }
-
-  @override
-  void dispose() {
-    _rasterCache?.removeListener(_onRasterCacheChanged);
-    _rasterCache?.dispose();
-    super.dispose();
-  }
-
-  void _onRasterCacheChanged() {
-    if (mounted) setState(() {});
-  }
+  ProImageEditorConfigs get configs => widget.configs;
 
   bool get _cutOutsideImageArea =>
       widget.cutOutsideImageArea ??
@@ -165,62 +146,20 @@ class _LayerStackState extends State<LayerStack> {
     );
   }
 
-  /// The stack children: every layer widget in z-order, with each cached run
-  /// preceded by its image and its members told to skip their own paint.
+  /// The stack children, with static paint layers drawn from the cache.
   ///
   /// The stack sits under a `Transform.scale`, so the images are rendered at
   /// the device pixel ratio times that scale to stay one raster pixel per
   /// device pixel.
   List<Widget> _buildLayerChildren(BuildContext context) {
-    final cache = _rasterCache;
-    final layers = widget.layers;
-    if (cache == null || widget.suspendPaintLayerRasterCache) {
-      return [for (final layer in layers) _buildLayerWidget(layer)];
-    }
-
-    final paintEditorConfigs = widget.configs.paintEditor;
-    final editorBodySize = widget.transformHelper.editorBodySize;
-    final pixelRatio =
-        MediaQuery.devicePixelRatioOf(context) * widget.transformHelper.scale;
-    final plan = cache.plan(
-      layers: layers,
-      excludedIds: const {},
-      playTime: null,
-      editorBodySize: editorBodySize,
-      fractionalOffset: paintEditorConfigs.layerFractionalOffset,
-      pixelRatio: pixelRatio,
-      paintEditorConfigs: paintEditorConfigs,
+    return buildRasterCachedLayers(
+      layers: widget.layers,
+      editorBodySize: widget.transformHelper.editorBodySize,
+      pixelRatio:
+          MediaQuery.devicePixelRatioOf(context) * widget.transformHelper.scale,
+      suspend: widget.suspendPaintLayerRasterCache,
+      buildLayer: _buildLayerWidget,
     );
-
-    final imagesByInsertIndex = <int, Widget>{};
-    final cachedIds = <String>{};
-    for (final run in plan.runs) {
-      cache.ensure(
-        run,
-        editorBodySize: editorBodySize,
-        fractionalOffset: paintEditorConfigs.layerFractionalOffset,
-        pixelRatio: pixelRatio,
-        paintEditorConfigs: paintEditorConfigs,
-      );
-      final image = cache.imageFor(run);
-      if (image == null) continue;
-      imagesByInsertIndex[run.insertIndex] = PaintRunImage(
-        key: ValueKey<String>(run.key),
-        image: image,
-        bounds: run.bounds,
-      );
-      cachedIds.addAll(run.layerIds);
-    }
-
-    return [
-      for (var i = 0; i < layers.length; i++) ...[
-        ?imagesByInsertIndex[i],
-        _buildLayerWidget(
-          layers[i],
-          isRasterCached: cachedIds.contains(layers[i].id),
-        ),
-      ],
-    ];
   }
 
   Widget _buildLayerWidget(Layer layer, {bool isRasterCached = false}) {
@@ -248,44 +187,6 @@ class _LayerStackState extends State<LayerStack> {
       imgRatio: imgRatio,
       isRoundCropper: isRoundCropper,
       is90DegRotated: _transformConfigs?.is90DegRotated ?? false,
-    );
-  }
-}
-
-/// One run's cached image, placed where its bottom-most member paints.
-///
-/// Pointer events pass through: the members' own widgets stay mounted and
-/// keep hit-testing the real strokes.
-class PaintRunImage extends StatelessWidget {
-  /// Creates the image widget for a cached run.
-  const PaintRunImage({super.key, required this.image, required this.bounds});
-
-  /// The rendered run.
-  final ui.Image image;
-
-  /// Where the run paints, in editor body coordinates.
-  final Rect bounds;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: bounds.left,
-      top: bounds.top,
-      width: bounds.width,
-      height: bounds.height,
-      child: IgnorePointer(
-        // The image is rendered at exactly the device pixel ratio, so at an
-        // integral ratio this is a 1:1 blit; bilinear filtering only matters
-        // on fractional ratios, where nearest-neighbour would shift edges by
-        // a pixel.
-        child: RawImage(
-          image: image,
-          width: bounds.width,
-          height: bounds.height,
-          fit: BoxFit.fill,
-          filterQuality: FilterQuality.low,
-        ),
-      ),
     );
   }
 }

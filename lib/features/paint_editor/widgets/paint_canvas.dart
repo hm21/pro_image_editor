@@ -140,6 +140,11 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   final Set<int> _navigationPointers = <int>{};
 
+  /// Whether a partial-erase session is open:
+  /// [PaintCanvas.onRemovePartialStart] has been reported and
+  /// [PaintCanvas.onRemovePartialEnd] has not.
+  bool _isPartialEraseActive = false;
+
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
   bool get _isFreeStyleMode =>
       _paintCtrl.mode == PaintMode.freeStyle ||
@@ -172,12 +177,25 @@ class PaintCanvasState extends State<PaintCanvas> {
   }
 
   void _discardActiveStroke() {
+    _endPartialErase();
     if (_paintCtrl.busy || _paintCtrl.start != null) {
       _paintCtrl
         ..setInProgress(false)
         ..reset();
       _activePaintStreamCtrl.add(null);
     }
+  }
+
+  /// Closes the partial-erase session, if one is open.
+  ///
+  /// Reported from the normal pointer-up as well as from every path that
+  /// discards a gesture — a second finger, a pointer cancel, a viewport
+  /// change — so the editor never waits for an end that is not coming. The
+  /// spots erased so far stay erased.
+  void _endPartialErase() {
+    if (!_isPartialEraseActive) return;
+    _isPartialEraseActive = false;
+    widget.onRemovePartialEnd(_hasPartialErasedAreas);
   }
 
   bool get _auxiliaryMousePansView =>
@@ -227,8 +245,13 @@ class PaintCanvasState extends State<PaintCanvas> {
       case PaintMode.moveAndZoom:
         return;
       case PaintMode.eraser:
-        _hasPartialErasedAreas = false;
-        widget.onRemovePartialStart();
+        // Only the partial eraser mutates strokes and needs the pre-erase
+        // copy; a full-stroke erase records its removals as it goes.
+        if (_isPartialEraser) {
+          _hasPartialErasedAreas = false;
+          _isPartialEraseActive = true;
+          widget.onRemovePartialStart();
+        }
         setState(() {});
         return;
       case PaintMode.polygon:
@@ -330,7 +353,7 @@ class PaintCanvasState extends State<PaintCanvas> {
     } else if (widget.paintCtrl.mode == PaintMode.eraser) {
       // Eraser mode doesn't create paintings - it only removes existing ones.
       // The removal is handled during pointer move via _processEraserInputAt.
-      if (_isPartialEraser) widget.onRemovePartialEnd(_hasPartialErasedAreas);
+      _endPartialErase();
       return;
     }
 

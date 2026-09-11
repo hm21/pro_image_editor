@@ -482,13 +482,6 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Flag to track if editing is completed.
   bool _isProcessingFinalImage = false;
 
-  /// How many layer captures are in progress.
-  ///
-  /// While above zero the paint-layer raster cache is suspended so every
-  /// layer paints into its own repaint boundary, which is where a capture
-  /// reads from. See [MainEditorConfigs.enablePaintLayerRasterCache].
-  int _layerCaptureDepth = 0;
-
   /// The pixel ratio of the device's screen.
   ImageInfos? _imageInfos;
 
@@ -2850,31 +2843,20 @@ class ProImageEditorState extends State<ProImageEditor>
       if (!mounted) return <ExportedLayer>[];
     }
 
+    // Ensure the current frame with layers is fully rendered before capture.
+    await WidgetsBinding.instance.endOfFrame;
     if (!mounted) return <ExportedLayer>[];
 
-    // A cached paint layer paints nothing into its own repaint boundary, so
-    // the cache has to step aside — and a frame has to render with every
-    // layer live — before the boundaries are read.
-    setState(() => _layerCaptureDepth++);
-    try {
-      // Ensure the current frame with layers is fully rendered before capture.
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return <ExportedLayer>[];
-
-      return await Layer.captureAllLayers(
-        layers: activeLayers,
-        pixelRatio: pixelRatio,
-        basePixelRatio: basePixelRatio,
-        applyTransforms: applyTransforms,
-        format: format,
-        recorder: format == ui.ImageByteFormat.png
-            ? _controllers.screenshot
-            : null,
-      );
-    } finally {
-      _layerCaptureDepth--;
-      if (mounted) setState(() {});
-    }
+    return Layer.captureAllLayers(
+      layers: activeLayers,
+      pixelRatio: pixelRatio,
+      basePixelRatio: basePixelRatio,
+      applyTransforms: applyTransforms,
+      format: format,
+      recorder: format == ui.ImageByteFormat.png
+          ? _controllers.screenshot
+          : null,
+    );
   }
 
   /// Closes all active sub-editors within the main editor, including paint,
@@ -3519,8 +3501,6 @@ class ProImageEditorState extends State<ProImageEditor>
       dragSelectionService: _layerDragSelectionService,
       mouseService: _mouseService,
       playTimeNotifier: _videoController?.playTimeNotifier,
-      suspendPaintLayerRasterCache:
-          _isProcessingFinalImage || _layerCaptureDepth > 0,
       onContextMenuToggled: (isOpen) {
         _isContextMenuOpen = isOpen;
       },

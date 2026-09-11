@@ -2993,6 +2993,11 @@ class CropRotateEditorState extends State<CropRotateEditor>
                       layers: _rawLayers,
                       clipBehavior: Clip.none,
                       overlayColor: cropRotateEditorConfigs.style.background,
+                      // The stack sits under the user zoom, the crop scale
+                      // and the rotation, flip and tilt transforms, all of
+                      // them animated; a raster rendered for scale 1 would
+                      // be resampled most of the time.
+                      suspendPaintLayerRasterCache: true,
                     ),
                   ),
               ],
@@ -3045,6 +3050,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   layers: _layers,
                   clipBehavior: Clip.none,
                   overlayColor: cropRotateEditorConfigs.style.background,
+                  // Only shown for the hero flight, which renders live.
+                  suspendPaintLayerRasterCache: true,
                 ),
             ],
           );

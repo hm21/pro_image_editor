@@ -661,10 +661,7 @@ class PaintEditorState extends State<PaintEditor>
   ///
   /// A cached paint-layer raster is rendered for scale 1; zoomed in, it would
   /// be upscaled, so the layer stack renders live while this holds.
-  bool get _isViewerZoomed {
-    final scale = interactiveViewer.currentState?.scaleFactor ?? 1.0;
-    return (scale - 1.0).abs() > 1e-6;
-  }
+  bool get _isViewerZoomed => interactiveViewer.currentState?.isZoomed ?? false;
 
   bool _wasViewerZoomed = false;
 

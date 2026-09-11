@@ -32,6 +32,18 @@ class ContentRecorder extends StatefulWidget {
   /// The [ContentRecorderController] instance used for recording.
   final ContentRecorderController controller;
 
+  /// The controller of the nearest [ContentRecorder] above [context], or
+  /// `null` when the subtree is not recorded.
+  ///
+  /// A widget whose paint a capture depends on — a layer host drawing from
+  /// a raster cache — uses it to hear when the recorder is about to read the
+  /// tree (see [ContentRecorderController.liveLayerRequests]).
+  static ContentRecorderController? maybeControllerOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<_ContentRecorderScope>()
+        ?.controller;
+  }
+
   @override
   State<ContentRecorder> createState() => ContentRecorderState();
 }
@@ -54,9 +66,22 @@ class ContentRecorderState extends State<ContentRecorder> {
 
   @override
   Widget build(BuildContext context) {
-    return ExtendedRepaintBoundary(
-      key: _controller.containerKey,
-      child: widget.child,
+    return _ContentRecorderScope(
+      controller: _controller,
+      child: ExtendedRepaintBoundary(
+        key: _controller.containerKey,
+        child: widget.child,
+      ),
     );
   }
+}
+
+class _ContentRecorderScope extends InheritedWidget {
+  const _ContentRecorderScope({required this.controller, required super.child});
+
+  final ContentRecorderController controller;
+
+  @override
+  bool updateShouldNotify(_ContentRecorderScope oldWidget) =>
+      controller != oldWidget.controller;
 }
