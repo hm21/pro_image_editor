@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mockito/mockito.dart';
@@ -161,5 +163,176 @@ void main() {
       expect(state.canUndo, isTrue);
       expect(state.canRedo, isFalse);
     });
+
+    testWidgets('seeds sliders from appliedTuneAdjustments', (
+      WidgetTester tester,
+    ) async {
+      const brightnessValue = -0.4;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TuneEditor.memory(
+            mockMemoryImage,
+            initConfigs: TuneEditorInitConfigs(
+              theme: ThemeData(),
+              appliedTuneAdjustments: [
+                TuneAdjustmentMatrix(
+                  id: 'brightness',
+                  value: brightnessValue,
+                  matrix: ColorFilterAddons.brightness(brightnessValue),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final TuneEditorState state = tester.state(find.byType(TuneEditor));
+      expect(
+        state.tuneAdjustmentMatrix
+            .firstWhere((item) => item.id == 'brightness')
+            .value,
+        brightnessValue,
+      );
+    });
+
+    testWidgets('uses the last untimed value when ids are duplicated', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TuneEditor.memory(
+            mockMemoryImage,
+            initConfigs: TuneEditorInitConfigs(
+              theme: ThemeData(),
+              appliedTuneAdjustments: [
+                TuneAdjustmentMatrix(
+                  id: 'brightness',
+                  value: -0.1,
+                  matrix: ColorFilterAddons.brightness(-0.1),
+                ),
+                TuneAdjustmentMatrix(
+                  id: 'brightness',
+                  value: -0.4,
+                  matrix: ColorFilterAddons.brightness(-0.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final TuneEditorState state = tester.state(find.byType(TuneEditor));
+      expect(
+        state.tuneAdjustmentMatrix
+            .where((item) => item.id == 'brightness')
+            .length,
+        1,
+      );
+      expect(
+        state.tuneAdjustmentMatrix
+            .firstWhere((item) => item.id == 'brightness')
+            .value,
+        -0.4,
+      );
+    });
+
+    testWidgets('does not seed sliders from timed adjustments', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TuneEditor.memory(
+            mockMemoryImage,
+            initConfigs: TuneEditorInitConfigs(
+              theme: ThemeData(),
+              appliedTuneAdjustments: [
+                TuneAdjustmentMatrix(
+                  id: 'brightness',
+                  value: -0.9,
+                  matrix: ColorFilterAddons.brightness(-0.9),
+                  startTime: const Duration(seconds: 1),
+                  endTime: const Duration(seconds: 4),
+                ),
+                TuneAdjustmentMatrix(
+                  id: 'brightness',
+                  value: -0.2,
+                  matrix: ColorFilterAddons.brightness(-0.2),
+                ),
+                TuneAdjustmentMatrix(
+                  id: 'custom-vignette',
+                  value: 0.5,
+                  matrix: ColorFilterAddons.brightness(0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final TuneEditorState state = tester.state(find.byType(TuneEditor));
+      expect(
+        state.tuneAdjustmentMatrix.length,
+        state.tuneAdjustmentList.length,
+      );
+      expect(
+        state.tuneAdjustmentMatrix.any((item) => item.id == 'custom-vignette'),
+        isFalse,
+      );
+      expect(
+        state.tuneAdjustmentMatrix
+            .firstWhere((item) => item.id == 'brightness')
+            .value,
+        -0.2,
+      );
+    });
+
+    testWidgets(
+      'custom slider advances from onChanged instead of a stale value',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: TuneEditor.memory(
+              mockMemoryImage,
+              initConfigs: TuneEditorInitConfigs(
+                theme: ThemeData(),
+                configs: const ProImageEditorConfigs(
+                  tuneEditor: TuneEditorConfigs(
+                    widgets: TuneEditorWidgets(
+                      slider: _staleCapturedValueSlider,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        expect(tester.widget<Slider>(find.byType(Slider)).value, 0);
+
+        await tester.drag(find.byType(Slider), const Offset(80, 0));
+        await tester.pump();
+
+        expect(tester.widget<Slider>(find.byType(Slider)).value, isNot(0));
+      },
+    );
   });
+}
+
+ReactiveWidget _staleCapturedValueSlider(
+  TuneEditorState editorState,
+  Stream<void> rebuildStream,
+  double value,
+  Function(double value) onChanged,
+  Function(double value) onChangeEnd,
+) {
+  return ReactiveWidget(
+    stream: rebuildStream,
+    builder: (_) => Slider(
+      min: -0.5,
+      max: 0.5,
+      value: value,
+      onChanged: onChanged,
+      onChangeEnd: onChangeEnd,
+    ),
+  );
 }
