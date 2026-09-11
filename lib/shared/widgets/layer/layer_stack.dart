@@ -1,3 +1,6 @@
+// Dart imports:
+import 'dart:ui' as ui;
+
 // Flutter imports:
 import 'package:material_ui/material_ui.dart';
 
@@ -6,6 +9,7 @@ import '/core/models/layers/layer.dart';
 import '/core/models/transform_helper.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 import '/features/crop_rotate_editor/widgets/crop_layer_painter.dart';
+import '/features/main_editor/services/paint_layer_raster_cache.dart';
 import 'layer_widget.dart';
 
 /// A stateful widget that represents a stack of layers in an image editing
@@ -14,7 +18,7 @@ import 'layer_widget.dart';
 /// This widget manages the display and transformation of multiple layers,
 /// allowing for complex image editing operations such as cropping, rotating,
 /// and layering effects.
-class LayerStack extends StatelessWidget {
+class LayerStack extends StatefulWidget {
   /// Creates a [LayerStack].
   ///
   /// This widget is responsible for rendering a collection of layers within a
@@ -43,6 +47,7 @@ class LayerStack extends StatelessWidget {
       mainImageSize: Size.zero,
     ),
     this.clipBehavior = Clip.hardEdge,
+    this.suspendPaintLayerRasterCache = false,
   });
 
   /// The outside overlay color for layers.
@@ -84,35 +89,66 @@ class LayerStack extends StatelessWidget {
   /// disabled.
   final bool enableLayerKey;
 
+  /// Forces every paint layer to render live even when
+  /// [MainEditorConfigs.enablePaintLayerRasterCache] is on.
+  ///
+  /// Sub-editors set this while a layer is changing continuously — the paint
+  /// editor's partial eraser mutates strokes on every pointer move — and while
+  /// the editor is zoomed, where a cached image would be upscaled.
+  final bool suspendPaintLayerRasterCache;
+
+  @override
+  State<LayerStack> createState() => _LayerStackState();
+}
+
+class _LayerStackState extends State<LayerStack> {
+  /// The raster cache, or `null` when the feature is off.
+  late final PaintLayerRasterCache? _rasterCache =
+      widget.configs.mainEditor.enablePaintLayerRasterCache
+      ? PaintLayerRasterCache()
+      : null;
+
+  @override
+  void initState() {
+    super.initState();
+    _rasterCache?.addListener(_onRasterCacheChanged);
+  }
+
+  @override
+  void dispose() {
+    _rasterCache?.removeListener(_onRasterCacheChanged);
+    _rasterCache?.dispose();
+    super.dispose();
+  }
+
+  void _onRasterCacheChanged() {
+    if (mounted) setState(() {});
+  }
+
   bool get _cutOutsideImageArea =>
-      cutOutsideImageArea ?? configs.imageGeneration.cropToImageBounds;
+      widget.cutOutsideImageArea ??
+      widget.configs.imageGeneration.cropToImageBounds;
 
   TransformConfigs? get _transformConfigs =>
-      transformHelper.transformConfigs?.isNotEmpty == true
-      ? transformHelper.transformConfigs
+      widget.transformHelper.transformConfigs?.isNotEmpty == true
+      ? widget.transformHelper.transformConfigs
       : null;
+
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: Stack(
         children: [
           Transform.scale(
-            scale: transformHelper.scale,
+            scale: widget.transformHelper.scale,
             child: Stack(
               fit: StackFit.expand,
               alignment: Alignment.center,
-              clipBehavior: clipBehavior,
-              children: layers.map((layerItem) {
-                return LayerWidget(
-                  key: enableLayerKey ? layerItem.key : null,
-                  layer: layerItem,
-                  configs: configs,
-                  editorBodySize: transformHelper.editorBodySize,
-                );
-              }).toList(),
+              clipBehavior: widget.clipBehavior,
+              children: _buildLayerChildren(context),
             ),
           ),
-          if (configs.imageGeneration.cropToImageBounds)
+          if (widget.configs.imageGeneration.cropToImageBounds)
             RepaintBoundary(
               child: Hero(
                 tag: 'crop_layer_painter_hero',
@@ -129,21 +165,127 @@ class LayerStack extends StatelessWidget {
     );
   }
 
+  /// The stack children: every layer widget in z-order, with each cached run
+  /// preceded by its image and its members told to skip their own paint.
+  ///
+  /// The stack sits under a `Transform.scale`, so the images are rendered at
+  /// the device pixel ratio times that scale to stay one raster pixel per
+  /// device pixel.
+  List<Widget> _buildLayerChildren(BuildContext context) {
+    final cache = _rasterCache;
+    final layers = widget.layers;
+    if (cache == null || widget.suspendPaintLayerRasterCache) {
+      return [for (final layer in layers) _buildLayerWidget(layer)];
+    }
+
+    final paintEditorConfigs = widget.configs.paintEditor;
+    final editorBodySize = widget.transformHelper.editorBodySize;
+    final pixelRatio =
+        MediaQuery.devicePixelRatioOf(context) * widget.transformHelper.scale;
+    final plan = cache.plan(
+      layers: layers,
+      excludedIds: const {},
+      playTime: null,
+      editorBodySize: editorBodySize,
+      fractionalOffset: paintEditorConfigs.layerFractionalOffset,
+      pixelRatio: pixelRatio,
+      paintEditorConfigs: paintEditorConfigs,
+    );
+
+    final imagesByInsertIndex = <int, Widget>{};
+    final cachedIds = <String>{};
+    for (final run in plan.runs) {
+      cache.ensure(
+        run,
+        editorBodySize: editorBodySize,
+        fractionalOffset: paintEditorConfigs.layerFractionalOffset,
+        pixelRatio: pixelRatio,
+        paintEditorConfigs: paintEditorConfigs,
+      );
+      final image = cache.imageFor(run);
+      if (image == null) continue;
+      imagesByInsertIndex[run.insertIndex] = PaintRunImage(
+        key: ValueKey<String>(run.key),
+        image: image,
+        bounds: run.bounds,
+      );
+      cachedIds.addAll(run.layerIds);
+    }
+
+    return [
+      for (var i = 0; i < layers.length; i++) ...[
+        ?imagesByInsertIndex[i],
+        _buildLayerWidget(
+          layers[i],
+          isRasterCached: cachedIds.contains(layers[i].id),
+        ),
+      ],
+    ];
+  }
+
+  Widget _buildLayerWidget(Layer layer, {bool isRasterCached = false}) {
+    return LayerWidget(
+      key: widget.enableLayerKey ? layer.key : null,
+      layer: layer,
+      configs: widget.configs,
+      editorBodySize: widget.transformHelper.editorBodySize,
+      isRasterCached: isRasterCached,
+    );
+  }
+
   CustomPainter _buildCropPainter() {
     final imgRatio =
         _transformConfigs?.cropRect.size.aspectRatio ??
-        configs.cropRotateEditor.initialOvalCropAspectRatio ??
-        transformHelper.mainImageSize.aspectRatio;
+        widget.configs.cropRotateEditor.initialOvalCropAspectRatio ??
+        widget.transformHelper.mainImageSize.aspectRatio;
     final isRoundCropper =
         _transformConfigs?.isOvalCropper ??
-        configs.cropRotateEditor.initialCropMode == CropMode.oval;
+        widget.configs.cropRotateEditor.initialCropMode == CropMode.oval;
 
     return CropLayerPainter(
-      opacity: configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
-      backgroundColor: overlayColor,
+      opacity: widget.configs.mainEditor.style.outsideCaptureAreaLayerOpacity,
+      backgroundColor: widget.overlayColor,
       imgRatio: imgRatio,
       isRoundCropper: isRoundCropper,
       is90DegRotated: _transformConfigs?.is90DegRotated ?? false,
+    );
+  }
+}
+
+/// One run's cached image, placed where its bottom-most member paints.
+///
+/// Pointer events pass through: the members' own widgets stay mounted and
+/// keep hit-testing the real strokes.
+class PaintRunImage extends StatelessWidget {
+  /// Creates the image widget for a cached run.
+  const PaintRunImage({super.key, required this.image, required this.bounds});
+
+  /// The rendered run.
+  final ui.Image image;
+
+  /// Where the run paints, in editor body coordinates.
+  final Rect bounds;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: bounds.left,
+      top: bounds.top,
+      width: bounds.width,
+      height: bounds.height,
+      child: IgnorePointer(
+        // The image is rendered at exactly the device pixel ratio, so at an
+        // integral ratio this is a 1:1 blit; bilinear filtering only matters
+        // on fractional ratios, where nearest-neighbour would shift edges by
+        // a pixel.
+        child: RawImage(
+          image: image,
+          width: bounds.width,
+          height: bounds.height,
+          fit: BoxFit.fill,
+          filterQuality: FilterQuality.low,
+        ),
+      ),
     );
   }
 }

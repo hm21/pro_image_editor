@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.2.0
+- **PERF**(layers): Add `MainEditorConfigs.enablePaintLayerRasterCache` (opt-in). Static paint layers are composited into one cached image per z-run and drawn from it until one of them changes, instead of being re-stroked by the engine on every frame — which on a video canvas is every frame, and costs in proportion to the ink on screen. A layer that is selected, dragged, scaled or rotated, mid-animation, or outside its timeline window renders live so it stays pixel-exact, and rejoins the cache once released; the cache also steps aside while the editor is zoomed, during a partial erase, and for every layer capture. Hit-testing, selection and layer keys are untouched. Measured with 150 freestyle strokes on a video canvas: raster 3.1ms -> 1.0ms per frame during playback and 1.7ms -> 0.6ms while retiming a layer.
+
 ## 14.1.1
 - **FIX**(layers): A slide animation's `slideFrom` point now follows the layer when the canvas is resized or a state history recorded at another size is imported. Only `Layer.offset` was rescaled before, so the preview travelled a different distance than the one the point was placed for.
 
