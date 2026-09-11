@@ -43,6 +43,7 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.enableMouseCursor = true,
     this.callbacks = const ProImageEditorCallbacks(),
     this.playTimeNotifier,
+    this.isRasterCached = false,
   });
   @override
   final ProImageEditorConfigs configs;
@@ -81,6 +82,14 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
   /// When non-null and the layer has [Layer.startTime] / [Layer.endTime],
   /// the layer is animated in/out based on the current time.
   final ValueNotifier<Duration>? playTimeNotifier;
+
+  /// Whether this paint layer's pixels currently come from the shared raster
+  /// cache, so its own painter must draw nothing.
+  ///
+  /// Everything else — hit-testing, selection, the interaction overlay, the
+  /// repaint-boundary key — stays live. Only meaningful for paint layers; other
+  /// layer types ignore it.
+  final bool isRasterCached;
 
   @override
   createState() => _LayerWidgetState();
@@ -413,6 +422,7 @@ class _LayerWidgetState extends State<LayerWidget>
                       layerType: _layerType,
                       layer: _layer,
                       isSelected: _isSelected,
+                      skipPaint: widget.isRasterCached,
                       enableHitDetection:
                           _layerInteractionManager?.enabledHitDetection ??
                           false,
@@ -488,6 +498,7 @@ class _LayerContentItem extends StatelessWidget {
     required this.layer,
     required this.isSelected,
     required this.enableHitDetection,
+    this.skipPaint = false,
     required this.showMoveCursor,
     required this.onHitChanged,
     required this.emojiEditorConfigs,
@@ -501,6 +512,7 @@ class _LayerContentItem extends StatelessWidget {
   final Layer layer;
   final bool isSelected;
   final bool enableHitDetection;
+  final bool skipPaint;
   final ValueNotifier<bool> showMoveCursor;
   final ValueChanged<bool> onHitChanged;
   final EmojiEditorConfigs emojiEditorConfigs;
@@ -537,6 +549,7 @@ class _LayerContentItem extends StatelessWidget {
           layer: layer as PaintLayer,
           isSelected: isSelected,
           enableHitDetection: enableHitDetection,
+          skipPaint: skipPaint,
           onHitChanged: onHitChanged,
           paintEditorConfigs: paintEditorConfigs,
         );

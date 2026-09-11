@@ -15,6 +15,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
     this.isSelected = false,
     this.enableHitDetection = false,
     this.willChange = false,
+    this.skipPaint = false,
     this.onHitChanged,
     required this.paintEditorConfigs,
   });
@@ -32,6 +33,10 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
   /// Whether hit detection is enabled for this layer.
   final bool enableHitDetection;
+
+  /// Whether the strokes are painted by a cached raster elsewhere, so the
+  /// painters here only serve hit-testing. See [DrawPaintItem.skipPaint].
+  final bool skipPaint;
 
   /// Configuration settings for the paint editor.
   final PaintEditorConfigs paintEditorConfigs;
@@ -88,6 +93,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
         item: item,
         scale: layer.scale,
         opacity: canBakeOpacity ? opacity : 1.0,
+        skipPaint: skipPaint,
         selected: isSelected,
         enabledHitDetection: enableHitDetection,
         onHitChanged: onHitChanged,

@@ -46,6 +46,7 @@ class MainEditorConfigs extends ZoomConfigs {
     this.enableSubEditorPage = false,
     this.captureImageOnDone = true,
     this.captureLayersOnDone = false,
+    this.enablePaintLayerRasterCache = false,
     this.style = const MainEditorStyle(),
     this.icons = const MainEditorIcons(),
     this.widgets = const MainEditorWidgets(),
@@ -113,6 +114,28 @@ class MainEditorConfigs extends ZoomConfigs {
   /// for further processing (e.g. video rendering).
   final bool captureLayersOnDone;
 
+  /// Whether static paint layers are drawn from a cached raster instead of
+  /// being re-stroked on every frame.
+  ///
+  /// Every paint layer is a vector path the engine has to rasterize again for
+  /// each frame it appears in. That cost grows with the amount of ink on the
+  /// canvas, not with the number of layers, and on a video canvas — where the
+  /// background changes every frame — a doodle-heavy edit spends most of its
+  /// frame budget re-stroking drawings that did not change. With this enabled,
+  /// consecutive paint layers that are not being interacted with are rendered
+  /// once into a single image and that image is drawn until one of them
+  /// changes. A layer that is selected, dragged, scaled or rotated, or that is
+  /// mid-animation, keeps rendering live so it stays pixel-exact while it
+  /// moves; once released it joins the cache again. The cache is bypassed
+  /// while the editor is zoomed and during every capture, so
+  /// [captureLayersOnDone] and `captureAllLayersWithMeta` are unaffected.
+  ///
+  /// Hit-testing, selection and the layer keys stay on the live widgets, so
+  /// the editor behaves the same; only the paint is cached.
+  ///
+  /// Defaults to `false`.
+  final bool enablePaintLayerRasterCache;
+
   /// Whether to generate the final image bytes via `captureEditorImage()` when
   /// [doneEditing] is called.
   ///
@@ -175,12 +198,15 @@ class MainEditorConfigs extends ZoomConfigs {
     bool? enableSubEditorPage,
     bool? captureImageOnDone,
     bool? captureLayersOnDone,
+    bool? enablePaintLayerRasterCache,
     Clip? interactiveViewerClipBehavior,
   }) {
     return MainEditorConfigs(
       enableSubEditorPage: enableSubEditorPage ?? this.enableSubEditorPage,
       captureImageOnDone: captureImageOnDone ?? this.captureImageOnDone,
       captureLayersOnDone: captureLayersOnDone ?? this.captureLayersOnDone,
+      enablePaintLayerRasterCache:
+          enablePaintLayerRasterCache ?? this.enablePaintLayerRasterCache,
       enableCloseButton: enableCloseButton ?? this.enableCloseButton,
       enableKeyboardShortcuts:
           enableKeyboardShortcuts ?? this.enableKeyboardShortcuts,

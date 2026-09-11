@@ -15,6 +15,7 @@ class DrawPaintItem extends CustomPainter {
     this.scale = 1,
     this.opacity = 1,
     this.enabledHitDetection = false,
+    this.skipPaint = false,
   });
 
   /// The model containing information about the painting.
@@ -33,6 +34,14 @@ class DrawPaintItem extends CustomPainter {
   /// The current erasing behavior applied by the tool.
   final PaintEditorConfigs paintEditorConfigs;
 
+  /// Whether [paint] draws nothing.
+  ///
+  /// Set while the item's pixels come from a cached raster (see
+  /// `MainEditorConfigs.enablePaintLayerRasterCache`). Hit-testing keeps
+  /// working on the real path, so the layer stays selectable and draggable;
+  /// only the per-frame stroking is skipped.
+  final bool skipPaint;
+
   /// Enables or disables hit detection.
   /// When `true`, allows detecting user interactions with the interface.
   bool enabledHitDetection = true;
@@ -50,6 +59,7 @@ class DrawPaintItem extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (skipPaint) return;
     PathBuilderBase.fromMode(
         item: item,
         scale: scale,
@@ -61,7 +71,9 @@ class DrawPaintItem extends CustomPainter {
 
   @override
   bool shouldRepaint(DrawPaintItem oldDelegate) {
-    return oldDelegate.item != item || oldDelegate.opacity != opacity;
+    return oldDelegate.item != item ||
+        oldDelegate.opacity != opacity ||
+        oldDelegate.skipPaint != skipPaint;
   }
 
   @override
