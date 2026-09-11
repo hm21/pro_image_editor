@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.1.1
+- **FIX**(layers): A slide animation's `slideFrom` point now follows the layer when the canvas is resized or a state history recorded at another size is imported. Only `Layer.offset` was rescaled before, so the preview travelled a different distance than the one the point was placed for.
+
 ## 14.1.0
 - **FEAT**(layers): Add `LayerAnimation.slideFrom` to start a slide from a point of your own instead of a canvas edge. It uses the same coordinates as `Layer.offset`, may sit outside the canvas, and overrides `slideDirection`.
 - **FIX**(layers): The timeline preview recomputes a layer's slide when the layer moves or the canvas resizes, instead of keeping the displacement it measured for the old geometry.

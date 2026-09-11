@@ -137,7 +137,8 @@ class MainEditorStateHistoryService {
             ..offset = Offset(
               layer.offset.dx * scaleWidth,
               layer.offset.dy * scaleHeight,
-            );
+            )
+            ..scaleSlideFrom(scaleWidth, scaleHeight);
         }
 
         if (import.version == ExportImportVersion.version_1_0_0) {

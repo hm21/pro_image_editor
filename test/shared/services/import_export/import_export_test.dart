@@ -225,5 +225,55 @@ void main() {
         expect(editor.stateManager.historyPointer, 1);
       });
     });
+
+    testWidgets(
+      'rescales a slide animation\'s start point with the offset when the '
+      'history was recorded at another size',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+
+          const slideFrom = Offset(50, 100);
+          editor.addLayer(
+            TextLayer(
+              text: 'slides in',
+              offset: const Offset(20, 40),
+              animations: const [
+                LayerAnimation(
+                  type: LayerAnimationType.slide,
+                  phase: AnimationPhase.animateIn,
+                  duration: Duration(milliseconds: 400),
+                  slideFrom: slideFrom,
+                ),
+              ],
+            ),
+          );
+
+          final history = await editor.exportStateHistory(
+            configs: const ExportEditorConfigs(
+              enableMinify: false,
+              historySpan: ExportHistorySpan.current,
+            ),
+          );
+          final map = await history.toMap();
+          // Pretend the history was recorded on a canvas half this size, so
+          // the import has to scale every layer up by 2 on both axes.
+          final recorded = map['lastRenderedImgSize'] as Map<String, dynamic>;
+          map['lastRenderedImgSize'] = {
+            'width': (recorded['width'] as num) / 2,
+            'height': (recorded['height'] as num) / 2,
+          };
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          final imported = editor.activeLayers.single;
+          expect(imported.offset, const Offset(40, 80));
+          expect(imported.animations.single.slideFrom, slideFrom * 2);
+        });
+      },
+    );
   });
 }

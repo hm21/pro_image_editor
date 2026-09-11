@@ -362,6 +362,52 @@ void main() {
       expect(derived[1].curve, AnimationCurve.easeOut);
     });
 
+    group('scaleSlideFrom', () {
+      const pointSlide = LayerAnimation(
+        type: LayerAnimationType.slide,
+        phase: AnimationPhase.animateIn,
+        duration: Duration(milliseconds: 400),
+        slideFrom: Offset(50, 100),
+      );
+      const edgeSlide = LayerAnimation(
+        type: LayerAnimationType.slide,
+        phase: AnimationPhase.animateOut,
+        duration: Duration(milliseconds: 400),
+        slideDirection: SlideDirection.left,
+      );
+
+      test('scales every point per axis and keeps direction slides', () {
+        final layer = TextLayer(
+          text: 'hi',
+          animations: const [pointSlide, edgeSlide],
+        )..scaleSlideFrom(2, 0.5);
+
+        expect(layer.animations, hasLength(2));
+        expect(layer.animations.first.slideFrom, const Offset(100, 50));
+        expect(layer.animations.first.slideDirection, isNull);
+        expect(layer.animations.last, same(edgeSlide));
+      });
+
+      test('replaces the list so a copy sharing it is not scaled too', () {
+        final layer = TextLayer(text: 'hi', animations: const [pointSlide]);
+        final copy = layer.copyWith();
+        expect(copy.animations, same(layer.animations));
+
+        layer.scaleSlideFrom(2, 2);
+
+        expect(layer.animations.single.slideFrom, const Offset(100, 200));
+        expect(copy.animations.single.slideFrom, const Offset(50, 100));
+      });
+
+      test('keeps the list untouched when no animation has a point', () {
+        final animations = [edgeSlide];
+        final layer = TextLayer(text: 'hi', animations: animations)
+          ..scaleSlideFrom(2, 2);
+
+        expect(layer.animations, same(animations));
+      });
+    });
+
     test('default animations list is growable and mutable', () {
       final layer = Layer();
       expect(

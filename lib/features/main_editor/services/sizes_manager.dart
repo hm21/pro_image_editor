@@ -171,7 +171,8 @@ class SizesManager {
           if (!processed.add(layer)) continue;
           layer
             ..scale /= scaleFactor
-            ..offset /= scaleFactor;
+            ..offset /= scaleFactor
+            ..scaleSlideFrom(1 / scaleFactor, 1 / scaleFactor);
         }
       }
     }
