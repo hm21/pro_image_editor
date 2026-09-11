@@ -89,6 +89,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
     this.maxPixels = 8 * 1024 * 1024,
     this.maxTotalPixels = 16 * 1024 * 1024,
     this.maxImages = 4,
+    this.maxDimension = 4096,
   });
 
   /// The pixel budget of a single run's image.
@@ -111,8 +112,26 @@ class PaintLayerRasterCache extends ChangeNotifier {
   /// The most images kept at once, whatever their size.
   final int maxImages;
 
+  /// The longest side an image may have, in device pixels.
+  ///
+  /// A run whose image would be wider or taller than this at the current
+  /// pixel ratio is not cached, even when it fits [maxPixels]: the GPU refuses
+  /// textures beyond its limit, and Flutter does not expose that limit. 4096
+  /// is what older mobile GPUs guarantee; a run only gets that large when its
+  /// layers spill far past the canvas.
+  final int maxDimension;
+
   final Map<String, ui.Image> _images = <String, ui.Image>{};
   final List<String> _recentKeys = <String>[];
+
+  /// Runs whose render failed. They render live and are not retried: `ensure`
+  /// runs on every build, so without this a run the GPU cannot render — one
+  /// past its texture limit, say — would be attempted again on every frame,
+  /// each attempt as expensive as a live frame and each reported as an error.
+  /// A key stops mattering once any member changes, so the set is small and
+  /// bounded anyway.
+  final Set<String> _failedKeys = <String>{};
+  static const int _maxFailedKeys = 32;
 
   /// The key being rendered right now. Only one image renders at a time: a
   /// burst of changes — every pointer move of an erase, say — would otherwise
@@ -260,10 +279,11 @@ class PaintLayerRasterCache extends ChangeNotifier {
       bounds.right.ceilToDouble(),
       bounds.bottom.ceilToDouble(),
     );
-    final pixels =
-        (snapped.width * pixelRatio).ceil() *
-        (snapped.height * pixelRatio).ceil();
+    final width = (snapped.width * pixelRatio).ceil();
+    final height = (snapped.height * pixelRatio).ceil();
+    final pixels = width * height;
     if (pixels <= 0 || pixels > maxPixels) return null;
+    if (width > maxDimension || height > maxDimension) return null;
 
     return PaintLayerRasterRun(
       layers: List<PaintLayer>.unmodifiable(members),
@@ -395,6 +415,10 @@ class PaintLayerRasterCache extends ChangeNotifier {
   /// Whether [run] has a cached image.
   bool contains(PaintLayerRasterRun run) => _images.containsKey(run.key);
 
+  /// Whether rendering [run] failed, so it stays live and is not retried.
+  @visibleForTesting
+  bool hasFailed(PaintLayerRasterRun run) => _failedKeys.contains(run.key);
+
   /// Whether an image is currently being rendered.
   @visibleForTesting
   bool get isRendering => _inFlightKey != null;
@@ -411,6 +435,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
   }) {
     if (_isDisposed) return;
     if (_images.containsKey(run.key) || _inFlightKey == run.key) return;
+    if (_failedKeys.contains(run.key)) return;
     if (_inFlightKey != null) {
       _hasPendingRequest = true;
       return;
@@ -444,7 +469,8 @@ class PaintLayerRasterCache extends ChangeNotifier {
         paintEditorConfigs: paintEditorConfigs,
       );
       try {
-        image = await picture.toImage(
+        image = await toImage(
+          picture,
           (run.bounds.width * pixelRatio).ceil(),
           (run.bounds.height * pixelRatio).ceil(),
         );
@@ -454,7 +480,11 @@ class PaintLayerRasterCache extends ChangeNotifier {
     } catch (error, stackTrace) {
       // Rendering into an image can fail when the engine is short of GPU
       // memory or the view is being torn down. The run then simply stays
-      // live, which is the behavior without a cache.
+      // live, which is the behavior without a cache, and is not retried.
+      _failedKeys.add(run.key);
+      if (_failedKeys.length > _maxFailedKeys) {
+        _failedKeys.remove(_failedKeys.first);
+      }
       FlutterError.reportError(
         FlutterErrorDetails(
           exception: error,
@@ -482,6 +512,14 @@ class PaintLayerRasterCache extends ChangeNotifier {
     _hasPendingRequest = false;
     if (image != null || hadPending) notifyListeners();
   }
+
+  /// Renders [picture] into a [width]×[height] image.
+  ///
+  /// Overridable so tests can make a render fail.
+  @protected
+  @visibleForTesting
+  Future<ui.Image> toImage(ui.Picture picture, int width, int height) =>
+      picture.toImage(width, height);
 
   /// Records [run] the way its live widgets paint it.
   ///
@@ -588,6 +626,9 @@ class PaintLayerRasterCache extends ChangeNotifier {
   }
 
   /// Drops every cached image.
+  ///
+  /// Failed runs stay remembered: what made them fail — a texture past the
+  /// GPU's limit — does not change with the cache contents.
   void clear() {
     for (final image in _images.values) {
       image.dispose();

@@ -312,6 +312,16 @@ void main() {
       cache.dispose();
     });
 
+    test('drops a run whose image would exceed maxDimension on one side', () {
+      // Well within the pixel budget; only the width is over the limit.
+      final cache = PaintLayerRasterCache(maxDimension: 64);
+
+      final plan = _plan(cache, [_stroke()]);
+
+      expect(plan.runs, isEmpty);
+      cache.dispose();
+    });
+
     test('keeps at most maxImages runs', () {
       final cache = PaintLayerRasterCache(maxImages: 1);
 
@@ -512,5 +522,51 @@ void main() {
       expect(cache.contains(second), isTrue);
       cache.dispose();
     });
+
+    testWidgets('reports a failed render once and leaves the run live', (
+      tester,
+    ) async {
+      final cache = _FailingCache();
+      final run = _plan(cache, [_stroke()]).runs.single;
+      final errors = <FlutterErrorDetails>[];
+      final onError = FlutterError.onError;
+      FlutterError.onError = errors.add;
+      addTearDown(() => FlutterError.onError = onError);
+
+      // `ensure` runs on every build; a run the GPU cannot render must not be
+      // attempted again on each of them.
+      for (var i = 0; i < 3; i++) {
+        cache.ensure(
+          run,
+          editorBodySize: _body,
+          fractionalOffset: _center,
+          pixelRatio: 1,
+          paintEditorConfigs: _configs,
+        );
+        await tester.runAsync(() async {
+          while (cache.isRendering) {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+          }
+        });
+      }
+
+      expect(cache.attempts, 1);
+      expect(errors, hasLength(1));
+      expect(cache.imageFor(run), isNull);
+      expect(cache.hasFailed(run), isTrue);
+      cache.dispose();
+    });
   });
+}
+
+/// A cache whose every render fails, the way one past the GPU's texture
+/// limit does.
+class _FailingCache extends PaintLayerRasterCache {
+  int attempts = 0;
+
+  @override
+  Future<ui.Image> toImage(ui.Picture picture, int width, int height) {
+    attempts++;
+    throw StateError('no texture');
+  }
 }

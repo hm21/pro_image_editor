@@ -165,10 +165,17 @@ class _MainEditorLayersState extends State<MainEditorLayers> {
   @override
   void didUpdateWidget(covariant MainEditorLayers oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_rasterCache != null &&
-        oldWidget.playTimeNotifier != widget.playTimeNotifier) {
+    if (_rasterCache == null) return;
+    if (oldWidget.playTimeNotifier != widget.playTimeNotifier) {
       oldWidget.playTimeNotifier?.removeListener(_onPlayTimeChanged);
       widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
+    }
+    // A sub-editor renders these layers live (hero flights need painted
+    // sources) and its `LayerStack` brings a cache of its own, so the images
+    // here would only sit in GPU memory until it closes. One re-render on
+    // return is cheaper than holding two canvases' worth of textures.
+    if (widget.isSubEditorOpen && !oldWidget.isSubEditorOpen) {
+      _rasterCache.clear();
     }
   }
 

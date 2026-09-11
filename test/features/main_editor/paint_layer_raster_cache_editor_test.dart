@@ -122,6 +122,30 @@ void main() {
     expect(cachedByLayer(tester).values, [true, true]);
   });
 
+  testWidgets('drops its images while a sub-editor is open', (tester) async {
+    final state = await pumpEditor(tester);
+    await addAndCache(tester, state, [
+      buildPaintLayer(const Offset(-40, 0)),
+      buildPaintLayer(const Offset(40, 0)),
+    ]);
+
+    // Opening a sub-editor flips this flag and rebuilds; the layers render
+    // live for the hero flight either way, so the images are dead weight.
+    state.isSubEditorOpen = true;
+    state.setState(() {});
+    await tester.pump();
+    expect(cachedByLayer(tester).values, [false, false]);
+
+    // Back in the main editor the run has to be rendered anew — its image
+    // was released, not merely bypassed — and then takes over again.
+    state.isSubEditorOpen = false;
+    state.setState(() {});
+    await tester.pump();
+    expect(cachedByLayer(tester).values, [false, false]);
+    await pumpUntil(tester, () => allCached(tester));
+    expect(cachedByLayer(tester).values, [true, true]);
+  });
+
   testWidgets('a selected layer renders live while the rest stay cached', (
     tester,
   ) async {
