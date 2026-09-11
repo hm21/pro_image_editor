@@ -145,6 +145,51 @@ void main() {
     );
 
     testWidgets(
+      'rescales a slide animation\'s start point together with the offset',
+      (tester) async {
+        final sizesManager = await buildSizesManager(tester);
+
+        const edgeSlide = LayerAnimation(
+          type: LayerAnimationType.slide,
+          phase: AnimationPhase.animateOut,
+          duration: Duration(milliseconds: 400),
+          slideDirection: SlideDirection.left,
+        );
+        final textLayer = TextLayer(
+          text: 'Hello',
+          scale: initialScale,
+          offset: initialOffset,
+          animations: const [
+            LayerAnimation(
+              type: LayerAnimationType.slide,
+              phase: AnimationPhase.animateIn,
+              duration: Duration(milliseconds: 400),
+              slideFrom: Offset(50, 100),
+            ),
+            edgeSlide,
+          ],
+        );
+
+        sizesManager.recalculateLayerPosition(
+          history: [
+            EditorStateHistory(layers: [textLayer]),
+          ],
+          resizeEvent: resizeEvent,
+        );
+
+        // `slideFrom` shares the offset's canvas pixels, so it must move by
+        // the same factor — otherwise the preview travels a different
+        // distance than the one the point was placed for.
+        expect(textLayer.offset, initialOffset / scaleFactor);
+        expect(
+          textLayer.animations.first.slideFrom,
+          const Offset(50, 100) / scaleFactor,
+        );
+        expect(textLayer.animations.last, same(edgeSlide));
+      },
+    );
+
+    testWidgets(
       'still rescales every distinct copy in the normal per-entry-copy case',
       (tester) async {
         final sizesManager = await buildSizesManager(tester);

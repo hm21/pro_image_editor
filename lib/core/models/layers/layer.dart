@@ -260,6 +260,31 @@ class Layer {
     ];
   }
 
+  /// Multiplies every [LayerAnimation.slideFrom] in [animations] by [scaleX]
+  /// and [scaleY], the way [offset] is multiplied when the canvas is resized.
+  ///
+  /// `slideFrom` is measured in the same canvas pixels as [offset], so a
+  /// resize that rescales the offset and not the point changes the distance
+  /// the slide covers. Call this wherever [offset] is rescaled.
+  ///
+  /// [copyWith] shares the [animations] list between copies, so the list is
+  /// replaced rather than mutated in place — a copy that is rescaled
+  /// separately must not see the point scaled twice. Animations without a
+  /// point are kept as they are.
+  void scaleSlideFrom(double scaleX, double scaleY) {
+    if (animations.every((animation) => animation.slideFrom == null)) return;
+
+    animations = [
+      for (final animation in animations)
+        if (animation.slideFrom case final from?)
+          animation.copyWith(
+            slideFrom: Offset(from.dx * scaleX, from.dy * scaleY),
+          )
+        else
+          animation,
+    ];
+  }
+
   /// Global key associated with the Layer instance, used for accessing the
   /// widget tree.
   GlobalKey key;
