@@ -1,5 +1,11 @@
 # Changelog
 
+## 14.3.0
+- **FIX**(tune-editor): Re-applying the tune editor replaces its slider entries instead of stacking a second set on top of the first, which darkened the image with every apply; timed and custom entries are kept (#864).
+- **FIX**(tune-editor): A custom `TuneEditorWidgets.slider` now receives the value it reported through `onChanged` instead of the value from the last drag end.
+- **FEAT**(tune-editor): Add `TuneEditorStyle.bottomBarActiveItemDecoration` to decorate the selected bottom bar item.
+- **DOCS**: Document the `localizationsDelegates` an app that still uses the SDK `MaterialApp` needs so the editor's `material_ui` widgets find their localizations.
+
 ## 14.2.0
 - **PERF**(layers): Add the opt-in `MainEditorConfigs.enablePaintLayerRasterCache`, which draws static paint layers from a cached raster instead of re-stroking them on every frame.
 - **FIX**(paint-editor): A full-stroke erase no longer leaves an empty undo step behind, and a partial erase that turns into a pinch is closed properly.
