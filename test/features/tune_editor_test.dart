@@ -286,6 +286,51 @@ void main() {
       );
     });
 
+    testWidgets('previews the sliders only, not timed or custom entries', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TuneEditor.memory(
+            mockMemoryImage,
+            initConfigs: TuneEditorInitConfigs(
+              theme: ThemeData(),
+              appliedTuneAdjustments: [
+                TuneAdjustmentMatrix(
+                  id: 'brightness',
+                  value: -0.9,
+                  matrix: ColorFilterAddons.brightness(-0.9),
+                  startTime: const Duration(seconds: 1),
+                  endTime: const Duration(seconds: 4),
+                ),
+                TuneAdjustmentMatrix(
+                  id: 'custom-vignette',
+                  value: 0.5,
+                  matrix: ColorFilterAddons.brightness(0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final state = tester.state<TuneEditorState>(find.byType(TuneEditor))
+        ..onChangedStart(-0.3)
+        ..onChanged(-0.3)
+        ..onChangedEnd(-0.3);
+      await tester.pump();
+
+      final preview = tester.widget<FilteredWidget>(
+        find.byType(FilteredWidget),
+      );
+      expect(preview.tuneAdjustments, state.tuneAdjustmentMatrix);
+      expect(preview.tuneAdjustments.any((item) => item.hasTimeline), isFalse);
+      expect(
+        preview.tuneAdjustments.any((item) => item.id == 'custom-vignette'),
+        isFalse,
+      );
+    });
+
     testWidgets(
       'custom slider advances from onChanged instead of a stale value',
       (WidgetTester tester) async {

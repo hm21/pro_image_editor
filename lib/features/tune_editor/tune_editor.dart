@@ -491,10 +491,11 @@ class TuneEditorState extends State<TuneEditor>
               videoPlayer: videoController?.videoPlayer,
               blankSize: initConfigs.mainImageSize,
               filters: appliedFilters,
-              tuneAdjustments: mergeTuneAdjustments(
-                applied: appliedTuneAdjustments,
-                sliders: tuneAdjustmentMatrix,
-              ),
+              // Only the sliders are previewed. The applied list may hold
+              // timed entries, which this preview cannot schedule without a
+              // play position, and a host that seeds the sliders from an
+              // applied entry would otherwise see that entry twice.
+              tuneAdjustments: tuneAdjustmentMatrix,
               blurFactor: appliedBlurFactor,
             );
           },
