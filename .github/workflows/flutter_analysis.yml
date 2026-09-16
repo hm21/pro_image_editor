@@ -57,6 +57,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # material_ui 1.3.0 / cupertino_ui 1.1.0 still declare Flutter >=3.44
+      # but use `awaitNotRequired` from the `meta` that ships with 3.47, so
+      # they do not compile on 3.44. Test the minimum Flutter against the
+      # minimum of those two packages instead of the newest one pub picks;
+      # the 3.47 leg keeps covering the newest.
+      - name: Pin material_ui / cupertino_ui to the declared minimum
+        if: matrix.flutter-version == '3.44.0'
+        run: flutter pub downgrade material_ui cupertino_ui
+
       - name: Analyze code
         run: flutter analyze .
 
