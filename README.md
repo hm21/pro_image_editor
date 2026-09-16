@@ -215,6 +215,22 @@ You can view the full web example [here](https://github.com/hm21/pro_image_edito
 
 No additional setup required.
 
+#### Apps that still use `package:flutter/material.dart`
+
+Since v14 the editor is built on [`material_ui`](https://pub.dev/packages/material_ui) and [`cupertino_ui`](https://pub.dev/packages/cupertino_ui), which Flutter is decoupling from the SDK. If your app has not migrated its own `MaterialApp` yet, hand it the localizations of those packages, otherwise the editor's app bars, dialogs and bottom sheets throw `No MaterialLocalizations found`:
+
+```dart
+import 'package:material_ui/material_ui.dart' as material_ui;
+
+MaterialApp(
+  localizationsDelegates: [
+    ...material_ui.GlobalMaterialLocalizations.delegates,
+    // Your existing delegates, e.g. the ones from flutter_localizations.
+  ],
+  // ...
+);
+```
+
 
 <br/>
 

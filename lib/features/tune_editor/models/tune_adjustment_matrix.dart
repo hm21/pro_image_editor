@@ -91,6 +91,16 @@ class TuneAdjustmentMatrix {
   /// User-defined metadata that can be attached to this tune adjustment.
   final Map<String, dynamic> meta;
 
+  /// Whether this adjustment carries video-timeline scheduling.
+  ///
+  /// Timed entries can share an [id] with a global adjustment and must not be
+  /// collapsed together.
+  bool get hasTimeline =>
+      startTime != null ||
+      endTime != null ||
+      enterDuration != null ||
+      exitDuration != null;
+
   /// Converts this [TuneAdjustmentMatrix] instance into a [Map] representation.
   ///
   /// The map contains the [id], [value], and [matrix] as key-value pairs.

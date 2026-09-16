@@ -124,7 +124,10 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
                     widget.state,
                     widget.rebuildController.stream,
                     value,
-                    widget.onChanged,
+                    (val) {
+                      _sliderValue.value = val;
+                      widget.onChanged(val);
+                    },
                     widget.onChangedEnd,
                   ) ??
                   Slider(
@@ -169,10 +172,12 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
                 index,
               ) {
                 var item = widget.tuneAdjustmentList[index];
-                var color = widget.selectedIndex == index
-                    ? widget.tuneEditorConfigs.style.bottomBarActiveItemColor
-                    : widget.tuneEditorConfigs.style.bottomBarInactiveItemColor;
-                return FlatIconTextButton(
+                var style = widget.tuneEditorConfigs.style;
+                var isSelected = widget.selectedIndex == index;
+                var color = isSelected
+                    ? style.bottomBarActiveItemColor
+                    : style.bottomBarInactiveItemColor;
+                Widget button = FlatIconTextButton(
                   label: Text(
                     item.label,
                     style: _textStyle.copyWith(color: color),
@@ -180,6 +185,11 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
                   icon: Icon(item.icon, size: _iconSize, color: color),
                   onPressed: () => widget.onSelect(index),
                 );
+                var decoration = style.bottomBarActiveItemDecoration;
+                if (isSelected && decoration != null) {
+                  button = DecoratedBox(decoration: decoration, child: button);
+                }
+                return button;
               }),
             ),
           ),

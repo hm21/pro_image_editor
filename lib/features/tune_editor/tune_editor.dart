@@ -16,6 +16,7 @@ import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
+import 'utils/merge_tune_adjustments.dart';
 import 'utils/tune_presets.dart';
 import 'widgets/tune_editor_appbar.dart';
 
@@ -220,24 +221,19 @@ class TuneEditorState extends State<TuneEditor>
     var items =
         tuneEditorConfigs.tuneAdjustmentOptions ??
         tunePresets(icons: tuneEditorConfigs.icons, i18n: i18n.tuneEditor);
-    tuneAdjustmentList = items.map((item) {
-      return item.copyWith(
-        value: tuneAdjustmentMatrix
-            .firstWhere(
-              (el) => el.id == item.id,
-              orElse: () =>
-                  TuneAdjustmentMatrix(id: 'id', value: 0, matrix: []),
-            )
-            .value,
-      );
-    }).toList();
 
-    for (final item in items) {
-      int i = appliedTuneAdjustments.indexWhere((el) => el.id == item.id);
-      tuneAdjustmentMatrix.add(
-        i >= 0 ? appliedTuneAdjustments[i] : item.toMatrixItem(),
-      );
-    }
+    // Each slider owns the untimed entry of its id. Later entries win so a
+    // history that stacked the same id (the old append-on-apply bug) still
+    // seeds the slider with its latest value; timed and custom entries are not
+    // editable here and are merged back on done.
+    final latestGlobal = <String, TuneAdjustmentMatrix>{
+      for (final item in appliedTuneAdjustments)
+        if (!item.hasTimeline) item.id: item,
+    };
+    tuneAdjustmentMatrix = [
+      for (final item in items) latestGlobal[item.id] ?? item.toMatrixItem(),
+    ];
+    tuneAdjustmentList = items;
 
     tuneEditorCallbacks?.onInit?.call();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -261,12 +257,16 @@ class TuneEditorState extends State<TuneEditor>
   /// Handles the "Done" action, either by applying changes or closing the
   /// editor.
   void done() async {
+    final adjustments = mergeTuneAdjustments(
+      applied: appliedTuneAdjustments,
+      sliders: tuneAdjustmentMatrix,
+    );
     doneEditing(
       editorImage: editorImage,
-      returnValue: tuneAdjustmentMatrix,
+      returnValue: adjustments,
       blur: appliedBlurFactor,
       matrixFilterList: appliedFilters,
-      matrixTuneAdjustmentsList: tuneAdjustmentMatrix
+      matrixTuneAdjustmentsList: adjustments
           .map((item) => item.matrix)
           .toList(),
       transform: initialTransformConfigs,
@@ -491,6 +491,10 @@ class TuneEditorState extends State<TuneEditor>
               videoPlayer: videoController?.videoPlayer,
               blankSize: initConfigs.mainImageSize,
               filters: appliedFilters,
+              // Only the sliders are previewed. The applied list may hold
+              // timed entries, which this preview cannot schedule without a
+              // play position, and a host that seeds the sliders from an
+              // applied entry would otherwise see that entry twice.
               tuneAdjustments: tuneAdjustmentMatrix,
               blurFactor: appliedBlurFactor,
             );

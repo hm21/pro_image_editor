@@ -2189,13 +2189,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (tuneAdjustments == null) return;
 
-    addHistory(
-      tuneAdjustments: [
-        ...stateManager.activeTuneAdjustments.map((item) => item.copy()),
-        ...tuneAdjustments,
-      ],
-      heroScreenshotRequired: true,
-    );
+    // The tune editor already merged its sliders into the applied list, so
+    // timed and custom entries survive without appending the whole list again.
+    addHistory(tuneAdjustments: tuneAdjustments, heroScreenshotRequired: true);
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();
