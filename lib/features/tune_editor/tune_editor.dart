@@ -222,13 +222,16 @@ class TuneEditorState extends State<TuneEditor>
         tuneEditorConfigs.tuneAdjustmentOptions ??
         tunePresets(icons: tuneEditorConfigs.icons, i18n: i18n.tuneEditor);
 
-    // Seed each slider from the latest untimed/global entry of that id so a
-    // stacked history still recovers, while timed/custom entries stay out of
-    // the slider list and are merged back on Done.
+    // Each slider owns the untimed entry of its id. Later entries win so a
+    // history that stacked the same id (the old append-on-apply bug) still
+    // seeds the slider with its latest value; timed and custom entries are not
+    // editable here and are merged back on done.
+    final latestGlobal = <String, TuneAdjustmentMatrix>{
+      for (final item in appliedTuneAdjustments)
+        if (!item.hasTimeline) item.id: item,
+    };
     tuneAdjustmentMatrix = [
-      for (final item in items)
-        latestGlobalTuneAdjustment(appliedTuneAdjustments, item.id) ??
-            item.toMatrixItem(),
+      for (final item in items) latestGlobal[item.id] ?? item.toMatrixItem(),
     ];
     tuneAdjustmentList = items;
 
@@ -254,9 +257,9 @@ class TuneEditorState extends State<TuneEditor>
   /// Handles the "Done" action, either by applying changes or closing the
   /// editor.
   void done() async {
-    final adjustments = mergeTuneEditorResult(
-      existing: appliedTuneAdjustments,
-      session: tuneAdjustmentMatrix,
+    final adjustments = mergeTuneAdjustments(
+      applied: appliedTuneAdjustments,
+      sliders: tuneAdjustmentMatrix,
     );
     doneEditing(
       editorImage: editorImage,
@@ -488,9 +491,9 @@ class TuneEditorState extends State<TuneEditor>
               videoPlayer: videoController?.videoPlayer,
               blankSize: initConfigs.mainImageSize,
               filters: appliedFilters,
-              tuneAdjustments: mergeTuneEditorResult(
-                existing: appliedTuneAdjustments,
-                session: tuneAdjustmentMatrix,
+              tuneAdjustments: mergeTuneAdjustments(
+                applied: appliedTuneAdjustments,
+                sliders: tuneAdjustmentMatrix,
               ),
               blurFactor: appliedBlurFactor,
             );

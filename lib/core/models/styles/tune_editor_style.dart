@@ -47,7 +47,7 @@ class TuneEditorStyle {
   ///
   /// Use this to add a box, background, or border so the active adjustment
   /// stays recognizable when active/inactive colors are close.
-  final BoxDecoration? bottomBarActiveItemDecoration;
+  final Decoration? bottomBarActiveItemDecoration;
 
   /// UI overlay style, defining the appearance of system status bars.
   final SystemUiOverlayStyle uiOverlayStyle;
@@ -70,7 +70,7 @@ class TuneEditorStyle {
     Color? bottomBarBackground,
     Color? bottomBarActiveItemColor,
     Color? bottomBarInactiveItemColor,
-    BoxDecoration? bottomBarActiveItemDecoration,
+    Decoration? bottomBarActiveItemDecoration,
     SystemUiOverlayStyle? uiOverlayStyle,
   }) {
     return TuneEditorStyle(

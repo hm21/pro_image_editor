@@ -28,57 +28,25 @@ TuneAdjustmentMatrix _custom(String id, double value) {
 }
 
 void main() {
-  group('latestGlobalTuneAdjustment', () {
-    test('returns the last untimed entry for an id', () {
-      final latest = latestGlobalTuneAdjustment([
-        _brightness(-0.1),
-        _brightness(-0.4),
-      ], 'brightness');
+  group('mergeTuneAdjustments', () {
+    test('returns the sliders when nothing was applied yet', () {
+      final sliders = [_brightness(-0.2), _custom('contrast', 0.1)];
 
-      expect(latest?.value, -0.4);
+      final merged = mergeTuneAdjustments(applied: [], sliders: sliders);
+
+      expect(merged, sliders);
     });
 
-    test('ignores timed entries with the same id', () {
-      final latest = latestGlobalTuneAdjustment([
-        _brightness(
-          -0.9,
-          startTime: const Duration(seconds: 1),
-          endTime: const Duration(seconds: 3),
-        ),
-        _brightness(-0.2),
-      ], 'brightness');
-
-      expect(latest?.value, -0.2);
-      expect(latest?.hasTimeline, isFalse);
-    });
-
-    test('returns null when only timed entries exist', () {
-      expect(
-        latestGlobalTuneAdjustment([
-          _brightness(
-            -0.9,
-            startTime: const Duration(seconds: 1),
-            endTime: const Duration(seconds: 3),
-          ),
-        ], 'brightness'),
-        isNull,
-      );
-    });
-  });
-
-  group('mergeTuneEditorResult', () {
-    test('replaces stacked global ids with the session values', () {
-      final merged = mergeTuneEditorResult(
-        existing: [_brightness(-0.1), _brightness(-0.4)],
-        session: [_brightness(-0.2), _custom('contrast', 0.1)],
+    test('collapses stacked global ids into the slider value', () {
+      final merged = mergeTuneAdjustments(
+        applied: [_brightness(-0.1), _brightness(-0.4)],
+        sliders: [_brightness(-0.2), _custom('contrast', 0.1)],
       );
 
-      expect(merged.where((item) => item.id == 'brightness').length, 1);
-      expect(merged.firstWhere((item) => item.id == 'brightness').value, -0.2);
-      expect(merged.firstWhere((item) => item.id == 'contrast').value, 0.1);
+      expect(merged, [_brightness(-0.2), _custom('contrast', 0.1)]);
     });
 
-    test('keeps timed entries and unknown custom ids', () {
+    test('keeps timed entries and custom ids in place', () {
       final timed = _brightness(
         -0.9,
         startTime: const Duration(seconds: 1),
@@ -86,9 +54,9 @@ void main() {
       );
       final custom = _custom('custom-vignette', 0.5);
 
-      final merged = mergeTuneEditorResult(
-        existing: [timed, custom, _brightness(-0.4)],
-        session: [_brightness(0.1)],
+      final merged = mergeTuneAdjustments(
+        applied: [timed, custom, _brightness(-0.4)],
+        sliders: [_brightness(0.1)],
       );
 
       expect(merged, [timed, custom, _brightness(0.1)]);
@@ -97,7 +65,7 @@ void main() {
     test('keeps repeated timed entries of the same id', () {
       final firstRange = _brightness(
         -0.2,
-        startTime: const Duration(seconds: 0),
+        startTime: Duration.zero,
         endTime: const Duration(seconds: 2),
       );
       final secondRange = _brightness(
@@ -106,46 +74,52 @@ void main() {
         endTime: const Duration(seconds: 5),
       );
 
-      final merged = mergeTuneEditorResult(
-        existing: [firstRange, secondRange, _brightness(-0.1)],
-        session: [_brightness(0)],
+      final merged = mergeTuneAdjustments(
+        applied: [firstRange, secondRange, _brightness(-0.1)],
+        sliders: [_brightness(0)],
       );
 
-      expect(merged.where((item) => item.id == 'brightness').length, 3);
-      expect(merged.where((item) => item.hasTimeline).toList(), [
-        firstRange,
-        secondRange,
-      ]);
+      expect(merged, [firstRange, secondRange, _brightness(0)]);
     });
 
-    test('treats enterDuration as timeline and preserves it', () {
+    test('treats enterDuration alone as a timeline', () {
       final fading = _brightness(
         -0.5,
         enterDuration: const Duration(milliseconds: 250),
       );
 
-      final merged = mergeTuneEditorResult(
-        existing: [fading, _brightness(-0.1)],
-        session: [_brightness(0.2)],
+      final merged = mergeTuneAdjustments(
+        applied: [fading, _brightness(-0.1)],
+        sliders: [_brightness(0.2)],
       );
 
-      expect(merged.where((item) => item.hasTimeline).single, fading);
-      expect(merged.firstWhere((item) => !item.hasTimeline).value, 0.2);
+      expect(merged, [fading, _brightness(0.2)]);
     });
 
-    test('preserves unknown ids including order and duplicates', () {
+    test('keeps duplicate custom ids and their order', () {
       final first = _custom('custom-vignette', 0.2);
       final second = _custom('custom-vignette', 0.5);
 
-      final merged = mergeTuneEditorResult(
-        existing: [first, second],
-        session: [_brightness(0)],
+      final merged = mergeTuneAdjustments(
+        applied: [first, second],
+        sliders: [_brightness(0)],
       );
 
-      expect(merged.where((item) => item.id == 'custom-vignette').toList(), [
-        first,
-        second,
-      ]);
+      expect(merged, [first, second, _brightness(0)]);
+    });
+
+    test('returns copies instead of the passed instances', () {
+      final applied = _custom('custom-vignette', 0.2);
+      final slider = _brightness(0.3);
+
+      final merged = mergeTuneAdjustments(
+        applied: [applied],
+        sliders: [slider],
+      );
+
+      expect(merged, [applied, slider]);
+      expect(identical(merged[0], applied), isFalse);
+      expect(identical(merged[1], slider), isFalse);
     });
   });
 }

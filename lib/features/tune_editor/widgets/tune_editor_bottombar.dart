@@ -172,10 +172,11 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
                 index,
               ) {
                 var item = widget.tuneAdjustmentList[index];
-                final isSelected = widget.selectedIndex == index;
+                var style = widget.tuneEditorConfigs.style;
+                var isSelected = widget.selectedIndex == index;
                 var color = isSelected
-                    ? widget.tuneEditorConfigs.style.bottomBarActiveItemColor
-                    : widget.tuneEditorConfigs.style.bottomBarInactiveItemColor;
+                    ? style.bottomBarActiveItemColor
+                    : style.bottomBarInactiveItemColor;
                 Widget button = FlatIconTextButton(
                   label: Text(
                     item.label,
@@ -184,13 +185,8 @@ class _TuneEditorBottombarState extends State<TuneEditorBottombar> {
                   icon: Icon(item.icon, size: _iconSize, color: color),
                   onPressed: () => widget.onSelect(index),
                 );
-                final decoration = isSelected
-                    ? widget
-                          .tuneEditorConfigs
-                          .style
-                          .bottomBarActiveItemDecoration
-                    : null;
-                if (decoration != null) {
+                var decoration = style.bottomBarActiveItemDecoration;
+                if (isSelected && decoration != null) {
                   button = DecoratedBox(decoration: decoration, child: button);
                 }
                 return button;

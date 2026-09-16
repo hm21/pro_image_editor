@@ -2189,13 +2189,9 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (tuneAdjustments == null) return;
 
-    // TuneEditor returns the merged set: current global slider values plus
-    // any timed/custom entries it did not edit. Replacing (not appending)
-    // avoids stacking the same untimed ids across sessions.
-    addHistory(
-      tuneAdjustments: tuneAdjustments.map((item) => item.copy()).toList(),
-      heroScreenshotRequired: true,
-    );
+    // The tune editor already merged its sliders into the applied list, so
+    // timed and custom entries survive without appending the whole list again.
+    addHistory(tuneAdjustments: tuneAdjustments, heroScreenshotRequired: true);
 
     setState(() {});
     mainEditorCallbacks?.handleUpdateUI();

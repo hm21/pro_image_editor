@@ -447,8 +447,7 @@ void main() {
       await tester.tap(openBtn);
       await tester.pumpAndSettle();
 
-      final TuneEditorState tuneState = tester.state(find.byType(TuneEditor));
-      tuneState
+      tester.state<TuneEditorState>(find.byType(TuneEditor))
         ..onChangedStart(brightness)
         ..onChanged(brightness)
         ..onChangedEnd(brightness);
@@ -512,8 +511,7 @@ void main() {
     await tester.tap(openBtn);
     await tester.pumpAndSettle();
 
-    final TuneEditorState tuneState = tester.state(find.byType(TuneEditor));
-    tuneState
+    tester.state<TuneEditorState>(find.byType(TuneEditor))
       ..onChangedStart(-0.4)
       ..onChanged(-0.4)
       ..onChangedEnd(-0.4);

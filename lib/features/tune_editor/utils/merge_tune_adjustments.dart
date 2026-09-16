@@ -1,61 +1,31 @@
 import '../models/tune_adjustment_matrix.dart';
 
-/// Latest untimed/global adjustment for [id], or `null` if none exist.
+/// Merges the tune editor's [sliders] back into the [applied] adjustments.
 ///
-/// Duplicate global entries (from a session that stacked the same ids) are
-/// collapsed by taking the last write. Timed entries with the same [id] are
-/// ignored so they can keep coexisting with the global slot.
-TuneAdjustmentMatrix? latestGlobalTuneAdjustment(
-  Iterable<TuneAdjustmentMatrix> applied,
-  String id,
-) {
-  TuneAdjustmentMatrix? latest;
-  for (final adjustment in applied) {
-    if (adjustment.id == id && !adjustment.hasTimeline) {
-      latest = adjustment;
-    }
-  }
-  return latest;
-}
-
-/// Merges a TuneEditor session with previously applied adjustments.
-///
-/// TuneEditor only edits one untimed/global slot per known option id. This
-/// keeps timed entries and any id absent from [session] (order and duplicates
-/// included), replaces the matching global slots with [session], and drops
-/// leftover untimed duplicates of those known ids created by the old
-/// append-on-apply stacking bug.
-List<TuneAdjustmentMatrix> mergeTuneEditorResult({
-  required List<TuneAdjustmentMatrix> existing,
-  required List<TuneAdjustmentMatrix> session,
+/// The editor edits exactly one untimed entry per slider id. Every untimed
+/// entry of such an id in [applied] is replaced by the slider (in place of the
+/// first one, so stacked duplicates from the old append-on-apply bug collapse
+/// to one), while timed entries and ids without a slider are kept in their
+/// original order. Sliders whose id is not applied yet are appended.
+List<TuneAdjustmentMatrix> mergeTuneAdjustments({
+  required List<TuneAdjustmentMatrix> applied,
+  required List<TuneAdjustmentMatrix> sliders,
 }) {
-  final sessionById = <String, TuneAdjustmentMatrix>{
-    for (final item in session) item.id: item,
-  };
+  final sliderById = {for (final item in sliders) item.id: item};
+  final placedIds = <String>{};
   final result = <TuneAdjustmentMatrix>[];
-  final placedSessionIds = <String>{};
 
-  for (final item in existing) {
-    if (item.hasTimeline) {
+  for (final item in applied) {
+    final slider = item.hasTimeline ? null : sliderById[item.id];
+    if (slider == null) {
       result.add(item.copy());
-      continue;
+    } else if (placedIds.add(item.id)) {
+      result.add(slider.copy());
     }
-
-    final replacement = sessionById[item.id];
-    if (replacement != null) {
-      if (placedSessionIds.add(item.id)) {
-        result.add(replacement.copy());
-      }
-      continue;
-    }
-
-    result.add(item.copy());
   }
 
-  for (final item in session) {
-    if (placedSessionIds.add(item.id)) {
-      result.add(item.copy());
-    }
+  for (final item in sliders) {
+    if (placedIds.add(item.id)) result.add(item.copy());
   }
 
   return result;
