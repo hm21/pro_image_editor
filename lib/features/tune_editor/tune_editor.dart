@@ -15,7 +15,6 @@ import '/pro_image_editor.dart';
 import '/shared/services/content_recorder/widgets/content_recorder.dart';
 import '/shared/utils/file_constructor_utils.dart';
 import '/shared/widgets/layer/layer_stack.dart';
-import '/shared/widgets/material_ui_localizations_scope.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 import 'utils/merge_tune_adjustments.dart';
 import 'utils/tune_presets.dart';
@@ -375,31 +374,29 @@ class TuneEditorState extends State<TuneEditor>
 
   @override
   Widget build(BuildContext context) {
-    return MaterialUiLocalizationsScope(
-      child: Theme(
-        data: theme.copyWith(
-          tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true),
-        ),
-        child: ExtendedPopScope(
-          canPop: tuneEditorConfigs.enableGesturePop,
-          child: AnnotatedRegion<SystemUiOverlayStyle>(
-            value: tuneEditorConfigs.style.uiOverlayStyle,
-            child: SafeArea(
-              top: tuneEditorConfigs.safeArea.top,
-              bottom: tuneEditorConfigs.safeArea.bottom,
-              left: tuneEditorConfigs.safeArea.left,
-              right: tuneEditorConfigs.safeArea.right,
-              child: RecordInvisibleWidget(
-                controller: screenshotCtrl,
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeBottom: !tuneEditorConfigs.safeArea.bottom,
-                  child: Scaffold(
-                    backgroundColor: tuneEditorConfigs.style.background,
-                    appBar: _buildAppBar(),
-                    body: _buildBody(),
-                    bottomNavigationBar: _buildBottomNavBar(),
-                  ),
+    return Theme(
+      data: theme.copyWith(
+        tooltipTheme: theme.tooltipTheme.copyWith(preferBelow: true),
+      ),
+      child: ExtendedPopScope(
+        canPop: tuneEditorConfigs.enableGesturePop,
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: tuneEditorConfigs.style.uiOverlayStyle,
+          child: SafeArea(
+            top: tuneEditorConfigs.safeArea.top,
+            bottom: tuneEditorConfigs.safeArea.bottom,
+            left: tuneEditorConfigs.safeArea.left,
+            right: tuneEditorConfigs.safeArea.right,
+            child: RecordInvisibleWidget(
+              controller: screenshotCtrl,
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: !tuneEditorConfigs.safeArea.bottom,
+                child: Scaffold(
+                  backgroundColor: tuneEditorConfigs.style.background,
+                  appBar: _buildAppBar(),
+                  body: _buildBody(),
+                  bottomNavigationBar: _buildBottomNavBar(),
                 ),
               ),
             ),

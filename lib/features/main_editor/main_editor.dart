@@ -30,7 +30,6 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/utils/transparent_image_generator_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
-import '/shared/widgets/material_ui_localizations_scope.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '../audio_editor/audio_editor_page.dart';
 import '../audio_editor/models/audio_editor_response.dart';
@@ -3169,145 +3168,141 @@ class ProImageEditorState extends State<ProImageEditor>
   Widget build(BuildContext context) {
     _theme = configs.theme ?? defaultEditorTheme();
 
-    return MaterialUiLocalizationsScope(
-      child: RecordInvisibleWidget(
-        controller: _controllers.screenshot,
-        child: ExtendedPopScope(
-          canPop:
-              (isPopScopeDisabled ||
-                  !stateManager.canUndo ||
-                  _isProcessingFinalImage) &&
-              (!mainEditorConfigs.enableSubEditorPage || !isSubEditorOpen),
-          onPopInvokedWithResult: (didPop, result) {
-            if (mainEditorConfigs.enableSubEditorPage && isSubEditorOpen) {
-              if (_navigatorKey.currentState?.canPop() == true) {
-                _navigatorKey.currentState?.pop();
-                return;
-              }
+    return RecordInvisibleWidget(
+      controller: _controllers.screenshot,
+      child: ExtendedPopScope(
+        canPop:
+            (isPopScopeDisabled ||
+                !stateManager.canUndo ||
+                _isProcessingFinalImage) &&
+            (!mainEditorConfigs.enableSubEditorPage || !isSubEditorOpen),
+        onPopInvokedWithResult: (didPop, result) {
+          if (mainEditorConfigs.enableSubEditorPage && isSubEditorOpen) {
+            if (_navigatorKey.currentState?.canPop() == true) {
+              _navigatorKey.currentState?.pop();
+              return;
             }
-            if (!didPop &&
-                !isPopScopeDisabled &&
-                stateManager.canUndo &&
-                !_isProcessingFinalImage) {
-              closeWarning();
-            }
-            mainEditorCallbacks?.onPopInvoked?.call(didPop, result);
-          },
-          child: ImageInfosProvider(
-            infos: _imageInfos,
-            imageFitToWidth:
-                _imageInfos?.renderedSize.width == sizesManager.bodySize.width,
-            child: ScreenResizeDetector(
-              ignoreSafeArea: false,
-              onResizeUpdate: (event) {
-                sizesManager
-                  ..recalculateLayerPosition(
-                    history: stateManager.stateHistory,
-                    resizeEvent: ResizeEvent(
-                      oldContentSize: Size(
-                        event.oldContentSize.width,
-                        event.oldContentSize.height -
-                            sizesManager.allToolbarHeight,
-                      ),
-                      newContentSize: Size(
-                        event.newContentSize.width,
-                        event.newContentSize.height -
-                            sizesManager.allToolbarHeight,
-                      ),
+          }
+          if (!didPop &&
+              !isPopScopeDisabled &&
+              stateManager.canUndo &&
+              !_isProcessingFinalImage) {
+            closeWarning();
+          }
+          mainEditorCallbacks?.onPopInvoked?.call(didPop, result);
+        },
+        child: ImageInfosProvider(
+          infos: _imageInfos,
+          imageFitToWidth:
+              _imageInfos?.renderedSize.width == sizesManager.bodySize.width,
+          child: ScreenResizeDetector(
+            ignoreSafeArea: false,
+            onResizeUpdate: (event) {
+              sizesManager
+                ..recalculateLayerPosition(
+                  history: stateManager.stateHistory,
+                  resizeEvent: ResizeEvent(
+                    oldContentSize: Size(
+                      event.oldContentSize.width,
+                      event.oldContentSize.height -
+                          sizesManager.allToolbarHeight,
                     ),
-                  )
-                  ..lastScreenSize = event.newContentSize;
-              },
-              onResizeEnd: (event) async {
-                await decodeImage();
-              },
-              child: AnnotatedRegion<SystemUiOverlayStyle>(
-                value: mainEditorConfigs.style.uiOverlayStyle,
-                child: Theme(
-                  data: _theme,
-                  child: SafeArea(
-                    top: mainEditorConfigs.safeArea.top,
-                    bottom: mainEditorConfigs.safeArea.bottom,
-                    left: mainEditorConfigs.safeArea.left,
-                    right: mainEditorConfigs.safeArea.right,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        sizesManager.editorSize = constraints.biggest;
-                        var scaffold = Scaffold(
-                          backgroundColor: mainEditorConfigs.style.background,
-                          resizeToAvoidBottomInset: false,
-                          appBar: _buildAppBar(),
-                          body: _buildBody(),
-                          bottomNavigationBar: ValueListenableBuilder(
-                            valueListenable: _audioBottomBarNotifier,
-                            builder: (_, showAudioBar, _) {
-                              return AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 220),
-                                switchInCurve: Curves.ease,
-                                switchOutCurve: Curves.ease,
-                                transitionBuilder: (child, animation) {
-                                  return SizeTransition(
-                                    sizeFactor: animation,
-                                    alignment: Alignment.topCenter,
-                                    child: child,
-                                  );
-                                },
-                                layoutBuilder:
-                                    (currentChild, previousChildren) {
-                                      return Stack(
-                                        alignment: .bottomCenter,
-                                        children: [
-                                          ...previousChildren,
-                                          ?currentChild,
-                                        ],
-                                      );
-                                    },
-                                child: showAudioBar
-                                    ? AudioMainBottomBar(
-                                        configs: configs,
-                                        controller: _videoController!,
-                                        audioEditorCallbacks:
-                                            audioEditorCallbacks,
-                                        onSelectAudioTrack: () =>
-                                            openAudioEditor(
-                                              enforceChooseTrackPage: true,
-                                            ),
-                                        onConfirmChanges: () {
-                                          _audioBottomBarNotifier.value = false;
-                                        },
-                                      )
-                                    : _buildBottomNavBar() ??
-                                          const SizedBox.shrink(),
-                              );
-                            },
-                          ),
-                        );
+                    newContentSize: Size(
+                      event.newContentSize.width,
+                      event.newContentSize.height -
+                          sizesManager.allToolbarHeight,
+                    ),
+                  ),
+                )
+                ..lastScreenSize = event.newContentSize;
+            },
+            onResizeEnd: (event) async {
+              await decodeImage();
+            },
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: mainEditorConfigs.style.uiOverlayStyle,
+              child: Theme(
+                data: _theme,
+                child: SafeArea(
+                  top: mainEditorConfigs.safeArea.top,
+                  bottom: mainEditorConfigs.safeArea.bottom,
+                  left: mainEditorConfigs.safeArea.left,
+                  right: mainEditorConfigs.safeArea.right,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      sizesManager.editorSize = constraints.biggest;
+                      var scaffold = Scaffold(
+                        backgroundColor: mainEditorConfigs.style.background,
+                        resizeToAvoidBottomInset: false,
+                        appBar: _buildAppBar(),
+                        body: _buildBody(),
+                        bottomNavigationBar: ValueListenableBuilder(
+                          valueListenable: _audioBottomBarNotifier,
+                          builder: (_, showAudioBar, _) {
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 220),
+                              switchInCurve: Curves.ease,
+                              switchOutCurve: Curves.ease,
+                              transitionBuilder: (child, animation) {
+                                return SizeTransition(
+                                  sizeFactor: animation,
+                                  alignment: Alignment.topCenter,
+                                  child: child,
+                                );
+                              },
+                              layoutBuilder: (currentChild, previousChildren) {
+                                return Stack(
+                                  alignment: .bottomCenter,
+                                  children: [
+                                    ...previousChildren,
+                                    ?currentChild,
+                                  ],
+                                );
+                              },
+                              child: showAudioBar
+                                  ? AudioMainBottomBar(
+                                      configs: configs,
+                                      controller: _videoController!,
+                                      audioEditorCallbacks:
+                                          audioEditorCallbacks,
+                                      onSelectAudioTrack: () => openAudioEditor(
+                                        enforceChooseTrackPage: true,
+                                      ),
+                                      onConfirmChanges: () {
+                                        _audioBottomBarNotifier.value = false;
+                                      },
+                                    )
+                                  : _buildBottomNavBar() ??
+                                        const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+                      );
 
-                        if (mainEditorConfigs.enableSubEditorPage) {
-                          return Stack(
-                            children: [
-                              scaffold,
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  ignoring: !isSubEditorOpen,
-                                  child: Navigator(
-                                    key: _navigatorKey,
-                                    onGenerateRoute: (settings) =>
-                                        PageRouteBuilder(
-                                          opaque: false,
-                                          pageBuilder: (context, _, _) =>
-                                              const SizedBox.shrink(),
-                                        ),
-                                  ),
+                      if (mainEditorConfigs.enableSubEditorPage) {
+                        return Stack(
+                          children: [
+                            scaffold,
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                ignoring: !isSubEditorOpen,
+                                child: Navigator(
+                                  key: _navigatorKey,
+                                  onGenerateRoute: (settings) =>
+                                      PageRouteBuilder(
+                                        opaque: false,
+                                        pageBuilder: (context, _, _) =>
+                                            const SizedBox.shrink(),
+                                      ),
                                 ),
                               ),
-                            ],
-                          );
-                        }
+                            ),
+                          ],
+                        );
+                      }
 
-                        return scaffold;
-                      },
-                    ),
+                      return scaffold;
+                    },
                   ),
                 ),
               ),
