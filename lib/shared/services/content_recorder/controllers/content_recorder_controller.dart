@@ -219,8 +219,13 @@ class ContentRecorderController {
     Widget? widget,
     OutputFormat? outputFormat,
   }) async {
-    if (!_configs.enableBackgroundGeneration ||
-        !_configs.enableIsolateGeneration) {
+    // Eager history screenshots pass [screenshots]. Those stay off when
+    // background generation is disabled. An explicit [widget] (export of a
+    // WidgetLayer with no restore params) must still rasterize, or export
+    // adds null to `List<Uint8List>`.
+    if (screenshots != null &&
+        (!_configs.enableBackgroundGeneration ||
+            !_configs.enableIsolateGeneration)) {
       return null;
     }
     if (isVideoEditor) {

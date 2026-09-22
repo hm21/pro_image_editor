@@ -306,8 +306,6 @@ class ExportStateHistory {
         } else {
           /// Convert the widget to Uint8List in the case the user didn't add
           /// any export config parameter to restore the widget.
-          updateReference(widgetLayer, recordPosition: widgetRecords.length);
-
           double imageWidth =
               (layer.width ?? _editorConfigs.stickerEditor.initWidth) *
               layer.scale;
@@ -325,7 +323,12 @@ class ExportStateHistory {
             imageInfos: imageInfos,
             targetSize: targetSize,
           );
-          widgetRecords.add(result);
+          if (result != null) {
+            updateReference(widgetLayer, recordPosition: widgetRecords.length);
+            widgetRecords.add(result);
+          } else {
+            updateReference(widgetLayer);
+          }
         }
       }
 
