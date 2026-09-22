@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- **FIX**(main-editor): Replacing the last background screenshot no longer throws when the list is empty (canvas pan/zoom with a layer still selected, or `enableBackgroundGeneration: false`).
+
 ## 14.3.0
 - **FIX**(tune-editor): Re-applying the tune editor replaces its slider entries instead of stacking a second set on top of the first, which darkened the image with every apply; timed and custom entries are kept (#864).
 - **FIX**(tune-editor): A custom `TuneEditorWidgets.slider` now receives the value it reported through `onChanged` instead of the value from the last drag end.

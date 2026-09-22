@@ -2600,6 +2600,11 @@ class ProImageEditorState extends State<ProImageEditor>
     if (isSubEditorOpen) await _pageOpenCompleter.future;
 
     if (replaceLastScreenshot) {
+      // Scale-end always tries to replace the screenshot reserved at
+      // scale-start. A canvas pan/zoom with a layer still selected never
+      // reserved one, and capture() appends nothing when background
+      // generation is off, so the list can be empty.
+      if (stateManager.screenshots.isEmpty) return;
       stateManager.screenshots.removeLast();
     }
 
