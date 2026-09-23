@@ -10,6 +10,41 @@ import '../../../mock/layers/text_layer_mock.dart';
 import '../../../mock/layers/widget_layer_mock.dart';
 import '../../../mock/mock_image.dart';
 
+const _testEditorConfigs = ProImageEditorConfigs(
+  i18n: I18n(importStateHistoryMsg: ''),
+  progressIndicatorConfigs: ProgressIndicatorConfigs(
+    widgets: ProgressIndicatorWidgets(
+      circularProgressIndicator: SizedBox.shrink(),
+    ),
+  ),
+  imageGeneration: ImageGenerationConfigs(
+    enableBackgroundGeneration: false,
+    enableIsolateGeneration: false,
+  ),
+);
+
+Future<ProImageEditorState> pumpTestEditor(
+  WidgetTester tester, {
+  ProImageEditorConfigs configs = _testEditorConfigs,
+  ProImageEditorCallbacks callbacks = const ProImageEditorCallbacks(),
+}) async {
+  final key = GlobalKey<ProImageEditorState>();
+
+  await tester.pumpWidget(
+    MaterialApp(
+      home: ProImageEditor.memory(
+        mockMemoryImage,
+        key: key,
+        configs: configs,
+        callbacks: callbacks,
+      ),
+    ),
+  );
+
+  expect(find.byType(ProImageEditor), findsOneWidget);
+  return key.currentState!;
+}
+
 void main() {
   const exportConfigs = ExportEditorConfigs(
     enableMinify: true,
@@ -25,38 +60,6 @@ void main() {
       return Container();
     },
   );
-
-  Future<ProImageEditorState> pumpTestEditor(
-    WidgetTester tester, {
-    ProImageEditorConfigs configs = const ProImageEditorConfigs(
-      progressIndicatorConfigs: ProgressIndicatorConfigs(
-        widgets: ProgressIndicatorWidgets(
-          circularProgressIndicator: SizedBox.shrink(),
-        ),
-      ),
-      imageGeneration: ImageGenerationConfigs(
-        enableBackgroundGeneration: false,
-        enableIsolateGeneration: false,
-      ),
-    ),
-    ProImageEditorCallbacks callbacks = const ProImageEditorCallbacks(),
-  }) async {
-    final key = GlobalKey<ProImageEditorState>();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: ProImageEditor.memory(
-          mockMemoryImage,
-          key: key,
-          configs: configs,
-          callbacks: callbacks,
-        ),
-      ),
-    );
-
-    expect(find.byType(ProImageEditor), findsOneWidget);
-    return key.currentState!;
-  }
 
   Future<void> runExportImport(
     ProImageEditorState editor, {
@@ -290,20 +293,7 @@ void main() {
               autoCorrectZoomOffset: false,
               autoCorrectZoomScale: false,
             )
-            ..addHistory(
-              transformConfigs: TransformConfigs(
-                angle: 0,
-                cropRect: const Rect.fromLTWH(0, 0, 120, 240),
-                originalSize: const Size(600, 600),
-                cropEditorScreenRatio: 1,
-                scaleUser: 3,
-                scaleRotation: 1,
-                aspectRatio: 0.5,
-                flipX: false,
-                flipY: false,
-                offset: Offset.zero,
-              ),
-            );
+            ..addHistory(transformConfigs: _testCropZoom3);
 
           final history = await editor.exportStateHistory(
             configs: const ExportEditorConfigs(
@@ -338,63 +328,137 @@ void main() {
     );
 
     testWidgets(
+      'reopening a pre-patch crop on a fresh editor keeps the layer',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          const placed = Offset(80, -40);
+          final map = await _exportCroppedTick(tester, placed);
+          map.remove('editorBodySize');
+
+          final reopened = await _reopenExportedHistory(
+            tester,
+            map,
+            importConfigs,
+          );
+
+          _expectOffsetNear(reopened.activeLayers.single.offset, placed);
+        });
+      },
+    );
+
+    testWidgets('reopening a new crop on a fresh editor keeps the layer', (
+      WidgetTester tester,
+    ) async {
+      await tester.runAsync(() async {
+        const placed = Offset(80, -40);
+        final map = await _exportCroppedTick(tester, placed);
+        expect(map.containsKey('editorBodySize'), isTrue);
+
+        final reopened = await _reopenExportedHistory(
+          tester,
+          map,
+          importConfigs,
+        );
+
+        _expectOffsetNear(reopened.activeLayers.single.offset, placed);
+      });
+    });
+
+    testWidgets(
       'undo after reopen keeps the pre-crop layer on the uncropped frame',
       (WidgetTester tester) async {
         await tester.runAsync(() async {
-          final editor = await pumpTestEditor(tester);
+          const placed = Offset(80, -40);
+          final source = await pumpTestEditor(tester);
           await tester.pump(const Duration(milliseconds: 100));
 
-          const placed = Offset(80, -40);
-          final crop = TransformConfigs(
-            angle: 0,
-            cropRect: const Rect.fromLTWH(0, 0, 120, 240),
-            originalSize: const Size(600, 600),
-            cropEditorScreenRatio: 1,
-            scaleUser: 3,
-            scaleRotation: 1,
-            aspectRatio: 0.5,
-            flipX: false,
-            flipY: false,
-            offset: Offset.zero,
-          );
-          editor
+          source
             ..addLayer(
               TextLayer(text: 'tick', offset: placed),
               autoCorrectZoomOffset: false,
               autoCorrectZoomScale: false,
             )
-            ..addHistory(transformConfigs: crop);
+            ..addHistory(transformConfigs: _testCropZoom3);
 
-          final history = await editor.exportStateHistory(
+          final history = await source.exportStateHistory(
             configs: const ExportEditorConfigs(
               enableMinify: false,
               historySpan: ExportHistorySpan.currentAndBackward,
             ),
           );
           final map = await history.toMap();
-          final recorded = map['lastRenderedImgSize'] as Map<String, dynamic>;
-          final recordedWidth = (recorded['width'] as num).toDouble();
 
-          // Reopen decodes the active crop before the history is scaled, so
-          // decodedImageSize includes scaleUser and lastRenderedImgSize does
-          // not. The exported sizes are left as written.
-          await editor.decodeImage(crop);
-          expect(
-            editor.sizesManager.decodedImageSize.width,
-            greaterThan(recordedWidth * 1.5),
+          final reopened = await _reopenExportedHistory(
+            tester,
+            map,
+            importConfigs,
           );
 
-          editor.removeAllLayers();
-          await editor.importStateHistory(
-            ImportStateHistory.fromMap(map, configs: importConfigs),
-          );
+          reopened.undoAction();
 
-          editor.undoAction();
-
-          expect(editor.stateManager.transformConfigs.isEmpty, isTrue);
-          expect(editor.activeLayers.single.offset, placed);
+          expect(reopened.stateManager.transformConfigs.isEmpty, isTrue);
+          _expectOffsetNear(reopened.activeLayers.single.offset, placed);
         });
       },
     );
   });
+}
+
+final _testCropZoom3 = TransformConfigs(
+  angle: 0,
+  cropRect: const Rect.fromLTWH(0, 0, 120, 240),
+  originalSize: const Size(600, 600),
+  cropEditorScreenRatio: 1,
+  scaleUser: 3,
+  scaleRotation: 1,
+  aspectRatio: 0.5,
+  flipX: false,
+  flipY: false,
+  offset: Offset.zero,
+);
+
+void _expectOffsetNear(Offset actual, Offset expected) {
+  expect(actual.dx, closeTo(expected.dx, 1));
+  expect(actual.dy, closeTo(expected.dy, 1));
+}
+
+Future<ProImageEditorState> _reopenExportedHistory(
+  WidgetTester tester,
+  Map<String, dynamic> map,
+  ImportEditorConfigs importConfigs,
+) async {
+  final editor = await pumpTestEditor(tester);
+  await tester.pump(const Duration(milliseconds: 100));
+  // Same order as a real reopen: the new editor has laid out, then history
+  // is imported. decodeImage may not have run yet if the surface size did
+  // not change from the previous editor.
+  await editor.decodeImage();
+  await editor.importStateHistory(
+    ImportStateHistory.fromMap(map, configs: importConfigs),
+  );
+  return editor;
+}
+
+Future<Map<String, dynamic>> _exportCroppedTick(
+  WidgetTester tester,
+  Offset placed,
+) async {
+  final editor = await pumpTestEditor(tester);
+  await tester.pump(const Duration(milliseconds: 100));
+
+  editor
+    ..addLayer(
+      TextLayer(text: 'tick', offset: placed),
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    )
+    ..addHistory(transformConfigs: _testCropZoom3);
+
+  final history = await editor.exportStateHistory(
+    configs: const ExportEditorConfigs(
+      enableMinify: false,
+      historySpan: ExportHistorySpan.current,
+    ),
+  );
+  return history.toMap();
 }

@@ -167,22 +167,21 @@ class MainEditorStateHistoryService {
       return;
     }
 
-    final currentImageSize = isCroppedFrame(effective)
-        ? sizesManager.decodedImageSize
-        : _uncroppedFrameSize();
+    // A fresh editor decodes the uncropped base before history is applied.
+    // decodedImageSize includes scaleUser only after a later crop decode,
+    // and lastRenderedImgSize never does. Dividing by scaleUser here
+    // shrinks every layer. Histories without a recorded body therefore
+    // always use the uncropped fitted frame.
+    final currentImageSize = _uncroppedFrameSize();
     final lastRenderedImgSize = import.lastRenderedImgSize;
+    if (currentImageSize.isEmpty || lastRenderedImgSize.isEmpty) {
+      // A fresh editor may import before the first decode finishes.
+      // 0 / lastRendered is finite and would collapse every offset.
+      return;
+    }
 
     double scaleWidth = currentImageSize.width / lastRenderedImgSize.width;
     double scaleHeight = currentImageSize.height / lastRenderedImgSize.height;
-
-    // A cropped entry saved before editorBodySize was recorded still compares
-    // the zoomed render, which includes this entry's scaleUser. A pre-crop
-    // entry does not: its frame is [SizesManager.originalRenderedSize].
-    final zoom = isCroppedFrame(effective) ? _legacyCropZoom(effective) : null;
-    if (zoom != null) {
-      scaleWidth /= zoom;
-      scaleHeight /= zoom;
-    }
 
     scaleWidth = scaleWidth.isFinite ? scaleWidth : 1;
     scaleHeight = scaleHeight.isFinite ? scaleHeight : 1;
@@ -204,20 +203,6 @@ class MainEditorStateHistoryService {
     final uncropped = sizesManager.originalRenderedSize;
     if (!uncropped.isEmpty) return uncropped;
     return sizesManager.decodedImageSize;
-  }
-
-  /// Crop zoom baked into [ImageInfos.renderedSize] but not into
-  /// [ImportStateHistory.lastRenderedImgSize].
-  ///
-  /// Only used for histories that did not record
-  /// [ImportStateHistory.editorBodySize].
-  /// A 90-degree rotation changes which image side the pixel ratio uses, so
-  /// the zoom is not a single divisor there.
-  double? _legacyCropZoom(TransformConfigs? transform) {
-    if (transform == null || transform.is90DegRotated) return null;
-    final zoom = transform.scaleUser;
-    if (!zoom.isFinite || zoom == 0 || zoom == 1) return null;
-    return zoom;
   }
 
   Future<void> _precacheLayers(
