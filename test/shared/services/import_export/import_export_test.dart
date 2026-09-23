@@ -275,5 +275,126 @@ void main() {
         });
       },
     );
+
+    testWidgets(
+      'keeps a cropped layer on the crop frame when the editor body changes',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+          await tester.pump(const Duration(milliseconds: 100));
+
+          const placed = Offset(80, -40);
+          editor
+            ..addLayer(
+              TextLayer(text: 'tick', offset: placed),
+              autoCorrectZoomOffset: false,
+              autoCorrectZoomScale: false,
+            )
+            ..addHistory(
+              transformConfigs: TransformConfigs(
+                angle: 0,
+                cropRect: const Rect.fromLTWH(0, 0, 120, 240),
+                originalSize: const Size(600, 600),
+                cropEditorScreenRatio: 1,
+                scaleUser: 3,
+                scaleRotation: 1,
+                aspectRatio: 0.5,
+                flipX: false,
+                flipY: false,
+                offset: Offset.zero,
+              ),
+            );
+
+          final history = await editor.exportStateHistory(
+            configs: const ExportEditorConfigs(
+              enableMinify: false,
+              historySpan: ExportHistorySpan.current,
+            ),
+          );
+          final map = await history.toMap();
+          final newBody = editor.sizesManager.bodySize;
+          expect(
+            newBody.isEmpty,
+            isFalse,
+            reason: 'editor body was not laid out',
+          );
+
+          // Record the crop as if it had been made in a body half as tall.
+          // The crop aspect is 0.5, so both bodies stick to height and the
+          // layer must grow by 2. The crop zoom (scaleUser 3) must not.
+          map['editorBodySize'] = {
+            'width': newBody.width,
+            'height': newBody.height / 2,
+          };
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          expect(editor.activeLayers.single.offset, placed * 2);
+        });
+      },
+    );
+
+    testWidgets(
+      'undo after reopen keeps the pre-crop layer on the uncropped frame',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+          await tester.pump(const Duration(milliseconds: 100));
+
+          const placed = Offset(80, -40);
+          final crop = TransformConfigs(
+            angle: 0,
+            cropRect: const Rect.fromLTWH(0, 0, 120, 240),
+            originalSize: const Size(600, 600),
+            cropEditorScreenRatio: 1,
+            scaleUser: 3,
+            scaleRotation: 1,
+            aspectRatio: 0.5,
+            flipX: false,
+            flipY: false,
+            offset: Offset.zero,
+          );
+          editor
+            ..addLayer(
+              TextLayer(text: 'tick', offset: placed),
+              autoCorrectZoomOffset: false,
+              autoCorrectZoomScale: false,
+            )
+            ..addHistory(transformConfigs: crop);
+
+          final history = await editor.exportStateHistory(
+            configs: const ExportEditorConfigs(
+              enableMinify: false,
+              historySpan: ExportHistorySpan.currentAndBackward,
+            ),
+          );
+          final map = await history.toMap();
+          final recorded = map['lastRenderedImgSize'] as Map<String, dynamic>;
+          final recordedWidth = (recorded['width'] as num).toDouble();
+
+          // Reopen decodes the active crop before the history is scaled, so
+          // decodedImageSize includes scaleUser and lastRenderedImgSize does
+          // not. The exported sizes are left as written.
+          await editor.decodeImage(crop);
+          expect(
+            editor.sizesManager.decodedImageSize.width,
+            greaterThan(recordedWidth * 1.5),
+          );
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          editor.undoAction();
+
+          expect(editor.stateManager.transformConfigs.isEmpty, isTrue);
+          expect(editor.activeLayers.single.offset, placed);
+        });
+      },
+    );
   });
 }

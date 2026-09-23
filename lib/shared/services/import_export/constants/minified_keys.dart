@@ -1,6 +1,7 @@
 /// A constant map containing minified main keys for import/export services.
 const Map<String, String> kMinifiedMainKeys = {
   'lastRenderedImgSize': 'l',
+  'editorBodySize': 'e',
   'imgSize': 'i',
   'history': 'h',
   'widgetRecords': 'w',

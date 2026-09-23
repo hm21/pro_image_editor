@@ -29,6 +29,7 @@ class ImportStateHistory {
     required this.editorPosition,
     required this.imgSize,
     required this.lastRenderedImgSize,
+    required this.editorBodySize,
     required this.stateHistory,
     required this.configs,
     required this.version,
@@ -75,6 +76,9 @@ class ImportStateHistory {
     final widgetRecords = parseWidgetRecords(map, version, minifier);
     final lastRenderedImgSize = safeParseSize(
       map[minifier.convertMainKey('lastRenderedImgSize')],
+    );
+    final editorBodySize = safeParseSize(
+      map[minifier.convertMainKey('editorBodySize')],
     );
     final List<EditorImage> requirePrecacheList = [];
 
@@ -189,6 +193,7 @@ class ImportStateHistory {
       editorPosition: safeParseInt(map[minifier.convertMainKey('position')]),
       imgSize: safeParseSize(map[minifier.convertMainKey('imgSize')]),
       lastRenderedImgSize: lastRenderedImgSize,
+      editorBodySize: editorBodySize,
       stateHistory: stateHistory,
       configs: configs,
       version: version,
@@ -334,6 +339,13 @@ class ImportStateHistory {
 
   /// The size of the last used screen.
   final Size lastRenderedImgSize;
+
+  /// Editor body the layers were laid out in, or [Size.zero] for histories
+  /// exported before that size was recorded.
+  ///
+  /// Cropped layers are rescaled from this body onto the current one. The
+  /// full-image [lastRenderedImgSize] does not describe the crop window.
+  final Size editorBodySize;
 
   /// The state history of each editor state in the session.
   final List<EditorStateHistory> stateHistory;

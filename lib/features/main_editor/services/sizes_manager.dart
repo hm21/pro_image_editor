@@ -8,6 +8,7 @@ import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/history/state_history.dart';
 import '/core/models/layers/layer.dart';
 import '/shared/widgets/screen_resize_detector.dart';
+import 'crop_layer_scale.dart';
 
 /// A helper class for managing screen size and padding calculations.
 class SizesManager {
@@ -32,8 +33,18 @@ class SizesManager {
   /// Getter for the screen size of the device.
   Size get screen => MediaQuery.sizeOf(context);
 
-  /// Size of the decoded image.
+  /// Size of the decoded image after the active crop zoom.
+  ///
+  /// This is [ImageInfos.renderedSize]. It includes `scaleUser`, so it is not
+  /// the frame pre-crop layers were placed on.
   Size decodedImageSize = const Size(0, 0);
+
+  /// Size of the image fitted to the screen with no crop zoom.
+  ///
+  /// This is [ImageInfos.originalRenderedSize]. Pre-crop layers scale from
+  /// this frame, because [decodedImageSize] changes when a later crop is
+  /// decoded.
+  Size originalRenderedSize = const Size(0, 0);
 
   /// The raw image size.
   Size? originalImageSize;
@@ -116,18 +127,11 @@ class SizesManager {
       required TransformConfigs transformConfigs,
       required Size drawSize,
     }) {
-      double ratio = transformConfigs.originalSize.isInfinite
-          ? decodedImageSize.aspectRatio
-          : transformConfigs.cropRect.size.aspectRatio;
-      double convertedRatio = transformConfigs.is90DegRotated
-          ? 1 / ratio
-          : ratio;
-
-      if (convertedRatio < drawSize.aspectRatio) {
-        return Size(drawSize.height * convertedRatio, drawSize.height);
-      } else {
-        return Size(drawSize.width, drawSize.width / convertedRatio);
-      }
+      return fittedCropDrawSize(
+        transformConfigs: transformConfigs,
+        drawSize: drawSize,
+        fallbackAspectRatio: decodedImageSize.aspectRatio,
+      );
     }
 
     // A single layer instance can be shared across multiple history entries

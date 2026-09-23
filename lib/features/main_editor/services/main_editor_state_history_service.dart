@@ -13,6 +13,7 @@ import '/shared/services/import_export/import_state_history.dart';
 import '/shared/services/import_export/models/export_state_history_configs.dart';
 import '/shared/utils/decode_image.dart';
 import '../controllers/main_editor_controllers.dart';
+import 'crop_layer_scale.dart';
 import 'sizes_manager.dart';
 import 'state_manager.dart';
 
@@ -104,41 +105,30 @@ class MainEditorStateHistoryService {
       configs: configs,
       contentRecorderCtrl: controllers.screenshot,
       context: context,
+      editorBodySize: sizesManager.bodySize,
     );
   }
 
   void _recalculateSizeAndPosition(ImportStateHistory import) {
-    // A single layer instance can be shared across multiple history entries.
-    // Mutating it in place once per entry would compound the scale factor, so
-    // track processed instances by object identity and rescale each at most
-    // once. `Layer.==` is content-based, hence `Set<Layer>.identity()` to keep
-    // independent-but-equal copies distinct.
+    // A layer object is scaled once. Paint sessions reuse one instance across
+    // entries that share a transform; scaling it again would compound.
+    // `Layer.==` is content-based, hence `Set<Layer>.identity()` so equal
+    // copies stay distinct. A crop copies layers into the new entry, so the
+    // pre-crop instance keeps the scale of the transform that was in effect
+    // then, and the copy keeps the crop's scale.
     final processed = Set<Layer>.identity();
+    var effective = TransformConfigs.empty();
 
     for (EditorStateHistory el in import.stateHistory) {
+      final specified = el.transformConfigs;
+      if (specified != null && specified.isNotEmpty) {
+        effective = specified;
+      }
+
       for (Layer layer in el.layers) {
         if (!processed.add(layer)) continue;
         if (import.configs.recalculateSizeAndPosition) {
-          Size currentImageSize = sizesManager.decodedImageSize;
-          Size lastRenderedImgSize = import.lastRenderedImgSize;
-
-          double scaleWidth =
-              currentImageSize.width / lastRenderedImgSize.width;
-          double scaleHeight =
-              currentImageSize.height / lastRenderedImgSize.height;
-
-          scaleWidth = scaleWidth.isFinite ? scaleWidth : 1;
-          scaleHeight = scaleHeight.isFinite ? scaleHeight : 1;
-
-          double scale = (scaleWidth + scaleHeight) / 2;
-
-          layer
-            ..scale *= scale
-            ..offset = Offset(
-              layer.offset.dx * scaleWidth,
-              layer.offset.dy * scaleHeight,
-            )
-            ..scaleSlideFrom(scaleWidth, scaleHeight);
+          _scaleImportedLayer(layer, import, effective);
         }
 
         if (import.version == ExportImportVersion.version_1_0_0) {
@@ -149,6 +139,85 @@ class MainEditorStateHistoryService {
         }
       }
     }
+  }
+
+  /// Scales [layer] for the transform in effect on its history entry.
+  ///
+  /// An empty entry keeps the previous transform, matching a resize of the
+  /// open editor. A later crop replaces it, so undo after reopen does not
+  /// move layers that were placed under an earlier frame.
+  void _scaleImportedLayer(
+    Layer layer,
+    ImportStateHistory import,
+    TransformConfigs effective,
+  ) {
+    final cropScale = cropReopenLayerScale(
+      oldBody: import.editorBodySize,
+      newBody: sizesManager.bodySize,
+      transform: effective,
+    );
+    if (cropScale != null) {
+      // The crop window, not the full decoded image, is what these layers
+      // were placed on. Scaling by renderedSize reapplies scaleUser and
+      // ignores the crop aspect.
+      layer
+        ..scale *= cropScale
+        ..offset *= cropScale
+        ..scaleSlideFrom(cropScale, cropScale);
+      return;
+    }
+
+    final currentImageSize = isCroppedFrame(effective)
+        ? sizesManager.decodedImageSize
+        : _uncroppedFrameSize();
+    final lastRenderedImgSize = import.lastRenderedImgSize;
+
+    double scaleWidth = currentImageSize.width / lastRenderedImgSize.width;
+    double scaleHeight = currentImageSize.height / lastRenderedImgSize.height;
+
+    // A cropped entry saved before editorBodySize was recorded still compares
+    // the zoomed render, which includes this entry's scaleUser. A pre-crop
+    // entry does not: its frame is [SizesManager.originalRenderedSize].
+    final zoom = isCroppedFrame(effective) ? _legacyCropZoom(effective) : null;
+    if (zoom != null) {
+      scaleWidth /= zoom;
+      scaleHeight /= zoom;
+    }
+
+    scaleWidth = scaleWidth.isFinite ? scaleWidth : 1;
+    scaleHeight = scaleHeight.isFinite ? scaleHeight : 1;
+
+    final scale = (scaleWidth + scaleHeight) / 2;
+
+    layer
+      ..scale *= scale
+      ..offset = Offset(
+        layer.offset.dx * scaleWidth,
+        layer.offset.dy * scaleHeight,
+      )
+      ..scaleSlideFrom(scaleWidth, scaleHeight);
+  }
+
+  /// Uncropped fitted size, even when [SizesManager.decodedImageSize] was
+  /// produced by decoding the active crop.
+  Size _uncroppedFrameSize() {
+    final uncropped = sizesManager.originalRenderedSize;
+    if (!uncropped.isEmpty) return uncropped;
+    return sizesManager.decodedImageSize;
+  }
+
+  /// Crop zoom baked into [ImageInfos.renderedSize] but not into
+  /// [ImportStateHistory.lastRenderedImgSize].
+  ///
+  /// Only used for histories that did not record
+  /// [ImportStateHistory.editorBodySize].
+  /// A 90-degree rotation changes which image side the pixel ratio uses, so
+  /// the zoom is not a single divisor there.
+  double? _legacyCropZoom(TransformConfigs? transform) {
+    if (transform == null || transform.is90DegRotated) return null;
+    final zoom = transform.scaleUser;
+    if (!zoom.isFinite || zoom == 0 || zoom == 1) return null;
+    return zoom;
   }
 
   Future<void> _precacheLayers(

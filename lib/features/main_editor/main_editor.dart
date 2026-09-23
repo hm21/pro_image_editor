@@ -1186,6 +1186,7 @@ class ProImageEditorState extends State<ProImageEditor>
     );
     sizesManager.originalImageSize = newSize;
     sizesManager.decodedImageSize = newSize;
+    sizesManager.originalRenderedSize = newSize;
     if (mounted) setState(() {});
   }
 
@@ -1241,6 +1242,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
       sizesManager.originalImageSize ??= _imageInfos!.rawSize;
       sizesManager.decodedImageSize = _imageInfos!.renderedSize;
+      sizesManager.originalRenderedSize = _imageInfos!.originalRenderedSize;
 
       bool shouldImportHistory =
           stateHistoryConfigs.initStateHistory != null && !_isInitialized;
@@ -1295,6 +1297,7 @@ class ProImageEditorState extends State<ProImageEditor>
         );
     sizesManager.originalImageSize ??= _imageInfos!.rawSize;
     sizesManager.decodedImageSize = _imageInfos!.renderedSize;
+    sizesManager.originalRenderedSize = _imageInfos!.originalRenderedSize;
 
     _isInitialized = true;
     if (!_decodeImageCompleter.isCompleted) {
