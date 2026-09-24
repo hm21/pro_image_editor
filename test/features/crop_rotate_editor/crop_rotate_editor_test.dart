@@ -697,4 +697,70 @@ void main() {
       expect(editorKey.currentState!.rotationCount, 0);
     });
   });
+
+  group('CropRotateEditor dispose', () {
+    testWidgets('ignores a resize end that lands after dispose (#858)', (
+      tester,
+    ) async {
+      await pumpEditor(tester);
+
+      // The first layout schedules a debounced `onResizeEnd`. Replacing the
+      // editor in the frame where that debounce fires disposes it before the
+      // post-frame callback that `onResizeEnd` registers runs.
+      await tester.pumpWidget(
+        const SizedBox(),
+        duration: const Duration(milliseconds: 60),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('setState after dispose is a no-op', (tester) async {
+      await pumpEditor(tester);
+      final state = key.currentState!;
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(() => state.setState(() {}), returnsNormally);
+    });
+  });
+
+  group('CropRotateEditor appbar', () {
+    testWidgets('undo and redo follow the appBarColor (#856)', (tester) async {
+      const appBarColor = Colors.lightBlueAccent;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: CropRotateEditor.memory(
+            mockMemoryImage,
+            initConfigs: CropRotateEditorInitConfigs(
+              theme: ThemeData.light(),
+              enableFakeHero: false,
+              configs: const ProImageEditorConfigs(
+                cropRotateEditor: CropRotateEditorConfigs(
+                  animationDuration: Duration.zero,
+                  cropDragAnimationDuration: Duration.zero,
+                  fadeInOutsideCropAreaAnimationDuration: Duration.zero,
+                  opacityOutsideCropAreaDuration: Duration.zero,
+                  style: CropRotateEditorStyle(
+                    appBarColor: appBarColor,
+                    appBarBackground: Colors.white,
+                  ),
+                ),
+                imageGeneration: ImageGenerationConfigs(
+                  enableBackgroundGeneration: false,
+                  enableIsolateGeneration: false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final undo = tester.widget<Icon>(find.byIcon(Icons.undo));
+      final redo = tester.widget<Icon>(find.byIcon(Icons.redo));
+      expect(undo.color, appBarColor.withAlpha(80));
+      expect(redo.color, appBarColor.withAlpha(80));
+    });
+  });
 }

@@ -85,4 +85,15 @@ void main() {
       expect(newStyle.fontSize, editor.selectedTextStyle.fontSize);
     });
   });
+
+  group('TextEditor dispose', () {
+    testWidgets('setState after dispose is a no-op', (tester) async {
+      await pumpEditor(tester);
+      final state = key.currentState!;
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(() => state.setState(() {}), returnsNormally);
+    });
+  });
 }

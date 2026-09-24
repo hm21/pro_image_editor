@@ -622,6 +622,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
     cropRotateEditorCallbacks?.onInit?.call();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (!mounted) return;
       cropRotateEditorCallbacks?.onAfterViewInit?.call();
       initialized = true;
       if (initialTransformConfigs != null &&
@@ -642,6 +643,8 @@ class CropRotateEditorState extends State<CropRotateEditor>
       Size? originalSize = initialTransformConfigs?.originalSize;
       if (originalSize != null && !originalSize.isInfinite) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
+
           /// Fit to the screen and set duration to zero
           double oldScaleAnimationValue = scaleAnimation.value;
           scaleCtrl.duration = Duration.zero;
@@ -684,6 +687,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
 
   @override
   void setState(void Function() fn) {
+    if (!mounted) return;
     rebuildController.add(null);
     super.setState(fn);
   }
@@ -2696,6 +2700,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
           onResizeEnd: (event) {
             if (_imageNeedDecode) _decodeImage();
             WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
               _setCropRectBounding();
               _updateAllStates();
             });
