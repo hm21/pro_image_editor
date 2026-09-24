@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
@@ -241,6 +243,19 @@ void main() {
       final recreated = Layer.fromMap(map, id: original.id);
 
       expect(recreated, equals(original));
+    });
+
+    test('WidgetLayer without a record position ignores other records', () {
+      final map = WidgetLayer(widget: Container()).toMap();
+
+      final recreated = Layer.fromMap(
+        map,
+        widgetRecords: [
+          Uint8List.fromList([1, 2, 3]),
+        ],
+      );
+
+      expect(recreated, isA<WidgetLayer>());
     });
   });
 
