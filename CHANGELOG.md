@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.4.0
+- **PERF**(filter-editor): The editor no longer draws its background through a color filter when no filter or tune adjustment is active, so no `ColorFilterLayer` is composited for it. Video playback no longer rebuilds the filter on every frame either, only while a timed filter or tune adjustment is entering or leaving its range.
+
 ## 14.3.1
 - **FIX**(main-editor): Panning, zooming or drag-selecting with a layer selected no longer discards the last background screenshot, or throws when there is none (#870).
 - **FIX**(import-export): Exporting a `WidgetLayer` without `exportConfigs` no longer throws when background or isolate generation is off, and rasterizes it once as PNG instead of once per history step (#870).
