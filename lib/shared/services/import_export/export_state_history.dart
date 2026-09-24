@@ -301,7 +301,10 @@ class ExportStateHistory {
       } else if (_configs.exportWidgets && layer.isWidgetLayer) {
         WidgetLayer widgetLayer = layer as WidgetLayer;
 
-        if (widgetLayer.exportConfigs.hasParameter) {
+        /// A layer that an earlier history step already rasterized keeps
+        /// that reference, so another record would never be read.
+        if (widgetLayer.exportConfigs.hasParameter ||
+            layerReferences.containsKey(widgetLayer.id)) {
           updateReference(widgetLayer);
         } else {
           /// Convert the widget to Uint8List in the case the user didn't add

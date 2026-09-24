@@ -346,5 +346,37 @@ void main() {
         expect((image.image as MemoryImage).bytes, records.single);
       },
     );
+
+    testWidgets(
+      'rasterizes a widget layer once when it spans several history steps',
+      (WidgetTester tester) async {
+        final editor = await pumpTestEditor(tester);
+        await tester.pumpAndSettle();
+
+        editor
+          ..addLayer(
+            WidgetLayer(
+              widget: Container(width: 40, height: 40, color: Colors.red),
+            ),
+          )
+          ..addLayer(emojiLayerMock);
+        await tester.pumpAndSettle();
+
+        final map = await pumpUntilDone(
+          tester,
+          editor
+              .exportStateHistory(
+                configs: const ExportEditorConfigs(
+                  enableMinify: false,
+                  historySpan: ExportHistorySpan.all,
+                ),
+              )
+              .then((history) => history.toMap()),
+        );
+
+        expect(map['history'], hasLength(2));
+        expect(map['widgetRecords'], hasLength(1));
+      },
+    );
   });
 }
