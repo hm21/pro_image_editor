@@ -1,7 +1,8 @@
 # Changelog
 
 ## 14.4.0
-- **PERF**(filter-editor): The editor no longer draws its background through a color filter when no filter or tune adjustment is active, so no `ColorFilterLayer` is composited for it. Video playback no longer rebuilds the filter on every frame either, only while a timed filter or tune adjustment is entering or leaving its range.
+- **PERF**(filter-editor): Skip the `ColorFilterLayer` when no filter or tune adjustment is active, and stop rebuilding the filter on every video frame (#872).
+- **FIX**(filter-editor): The filter preview updates when its `filterStates` or play-time notifier is replaced.
 
 ## 14.3.1
 - **FIX**(main-editor): Panning, zooming or drag-selecting with a layer selected no longer discards the last background screenshot, or throws when there is none (#870).

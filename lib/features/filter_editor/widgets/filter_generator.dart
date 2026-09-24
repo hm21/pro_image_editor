@@ -88,7 +88,11 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
     }
 
     if (oldWidget.filters.hashCode != widget.filters.hashCode ||
-        oldWidget.tuneAdjustments.hashCode != widget.tuneAdjustments.hashCode) {
+        oldWidget.tuneAdjustments.hashCode != widget.tuneAdjustments.hashCode ||
+        oldWidget.filterStates != widget.filterStates ||
+        oldWidget.playTimeNotifier != widget.playTimeNotifier ||
+        oldWidget.defaultEnterCurve != widget.defaultEnterCurve ||
+        oldWidget.defaultExitCurve != widget.defaultExitCurve) {
       _recomputeMatrix();
     }
   }

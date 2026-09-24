@@ -203,6 +203,62 @@ void main() {
         await tester.pump();
         expect(_colorFilterLayers(tester), isEmpty);
       });
+
+      testWidgets('recomputes the matrix when the notifier is replaced', (
+        tester,
+      ) async {
+        final filters = [_matrixDarken];
+        final filterStates = [
+          FilterState(
+            name: 'darken',
+            matrices: [_matrixDarken],
+            startTime: const Duration(seconds: 1),
+            endTime: const Duration(seconds: 2),
+          ),
+        ];
+        await _pumpGenerator(
+          tester,
+          filters: filters,
+          filterStates: filterStates,
+          playTimeNotifier: playTime,
+        );
+        expect(_colorFilterLayers(tester), isEmpty);
+
+        final otherPlayTime = ValueNotifier(const Duration(milliseconds: 1500));
+        addTearDown(otherPlayTime.dispose);
+        await _pumpGenerator(
+          tester,
+          filters: filters,
+          filterStates: filterStates,
+          playTimeNotifier: otherPlayTime,
+        );
+
+        expect(_colorFilterLayers(tester), hasLength(1));
+      });
+
+      testWidgets('recomputes the matrix when the filter states change', (
+        tester,
+      ) async {
+        final filters = [_matrixDarken];
+        await _pumpGenerator(
+          tester,
+          filters: filters,
+          filterStates: const [],
+          playTimeNotifier: playTime,
+        );
+        expect(_colorFilterLayers(tester), isEmpty);
+
+        await _pumpGenerator(
+          tester,
+          filters: filters,
+          filterStates: [
+            FilterState(name: 'darken', matrices: [_matrixDarken]),
+          ],
+          playTimeNotifier: playTime,
+        );
+
+        expect(_colorFilterLayers(tester), hasLength(1));
+      });
     });
   });
 }
