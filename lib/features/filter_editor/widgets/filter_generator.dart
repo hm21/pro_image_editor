@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '/shared/utils/timeline_progress.dart';
@@ -87,7 +88,11 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
     }
 
     if (oldWidget.filters.hashCode != widget.filters.hashCode ||
-        oldWidget.tuneAdjustments.hashCode != widget.tuneAdjustments.hashCode) {
+        oldWidget.tuneAdjustments.hashCode != widget.tuneAdjustments.hashCode ||
+        oldWidget.filterStates != widget.filterStates ||
+        oldWidget.playTimeNotifier != widget.playTimeNotifier ||
+        oldWidget.defaultEnterCurve != widget.defaultEnterCurve ||
+        oldWidget.defaultExitCurve != widget.defaultExitCurve) {
       _recomputeMatrix();
     }
   }
@@ -99,7 +104,11 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
   }
 
   void _onTimeChanged() {
+    final previousMatrix = _combinedMatrix;
     _recomputeMatrix();
+    // The notifier ticks on every playback frame, but the matrix only moves
+    // while a timed filter or tune adjustment is entering or leaving.
+    if (listEquals(previousMatrix, _combinedMatrix)) return;
     setState(() {});
   }
 
@@ -195,10 +204,7 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
 
   @override
   Widget build(BuildContext context) {
-    return ColorFiltered(
-      colorFilter: ColorFilter.matrix(_combinedMatrix),
-      child: widget.child,
-    );
+    return _ColorMatrixFiltered(matrix: _combinedMatrix, child: widget.child);
   }
 
   @override
@@ -216,5 +222,73 @@ class ColorFilterGeneratorState extends State<ColorFilterGenerator> {
       ..add(
         DiagnosticsProperty<List<double>>('combinedMatrix', _combinedMatrix),
       );
+  }
+}
+
+/// Applies a color matrix to its child, like [ColorFiltered], but paints the
+/// child directly when the matrix is the identity.
+///
+/// The same widget type is returned for every matrix, so a filter that starts
+/// or ends on the timeline does not remount the child (e.g. a video player).
+class _ColorMatrixFiltered extends SingleChildRenderObjectWidget {
+  const _ColorMatrixFiltered({required this.matrix, super.child});
+
+  final List<double> matrix;
+
+  @override
+  _RenderColorMatrixFiltered createRenderObject(BuildContext context) {
+    return _RenderColorMatrixFiltered(matrix);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderColorMatrixFiltered renderObject,
+  ) {
+    renderObject.matrix = matrix;
+  }
+}
+
+class _RenderColorMatrixFiltered extends RenderProxyBox {
+  _RenderColorMatrixFiltered(List<double> matrix)
+    : _matrix = matrix,
+      _isIdentity = listEquals(matrix, identityMatrix);
+
+  List<double> _matrix;
+  bool _isIdentity;
+
+  set matrix(List<double> value) {
+    if (listEquals(value, _matrix)) return;
+
+    final didNeedCompositing = alwaysNeedsCompositing;
+    _matrix = value;
+    _isIdentity = listEquals(value, identityMatrix);
+    if (didNeedCompositing != alwaysNeedsCompositing) {
+      markNeedsCompositingBitsUpdate();
+    }
+    markNeedsPaint();
+  }
+
+  @override
+  bool get alwaysNeedsCompositing => child != null && !_isIdentity;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (child == null || _isIdentity) {
+      layer = null;
+      super.paint(context, offset);
+      return;
+    }
+
+    layer = context.pushColorFilter(
+      offset,
+      ColorFilter.matrix(_matrix),
+      super.paint,
+      oldLayer: layer as ColorFilterLayer?,
+    );
+    assert(() {
+      layer!.debugCreator = debugCreator;
+      return true;
+    }());
   }
 }

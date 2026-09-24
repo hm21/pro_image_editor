@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.4.0
+- **PERF**(filter-editor): Skip the `ColorFilterLayer` when no filter or tune adjustment is active, and stop rebuilding the filter on every video frame (#872).
+- **FIX**(filter-editor): The filter preview updates when its `filterStates` or play-time notifier is replaced.
+
 ## 14.3.1
 - **FIX**(main-editor): Panning, zooming or drag-selecting with a layer selected no longer discards the last background screenshot, or throws when there is none (#870).
 - **FIX**(import-export): Exporting a `WidgetLayer` without `exportConfigs` no longer throws when background or isolate generation is off, and rasterizes it once as PNG instead of once per history step (#870).
