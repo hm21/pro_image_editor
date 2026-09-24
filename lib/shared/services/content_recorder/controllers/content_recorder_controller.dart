@@ -208,6 +208,25 @@ class ContentRecorderController {
     );
   }
 
+  /// Rasterizes [widget] on request, for example a `WidgetLayer` exported
+  /// without `WidgetLayerExportConfigs`.
+  ///
+  /// Unlike [capture], this is not a state-history screenshot, so it runs
+  /// even when background or isolate generation is disabled.
+  Future<Uint8List?> captureWidget(
+    Widget widget, {
+    required ImageInfos imageInfos,
+    Size? targetSize,
+    OutputFormat? outputFormat,
+  }) {
+    return _captureWidget(
+      widget,
+      imageInfos: imageInfos,
+      targetSize: targetSize,
+      format: outputFormat,
+    );
+  }
+
   /// Handles the process of capturing an image from the provided configuration
   /// or widget. If multi-threading is enabled, the capture leverages a separate
   /// isolate or worker to improve performance. The method also tracks the state

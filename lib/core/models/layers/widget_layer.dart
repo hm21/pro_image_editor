@@ -114,8 +114,7 @@ class WidgetLayer extends Layer {
         child: Image.file(File(exportConfigs.fileUrl!) as dynamic),
       );
       requirePrecache?.call(EditorImage(file: File(exportConfigs.fileUrl!)));
-    } else if (widgetRecords.isNotEmpty &&
-        widgetRecords.length > widgetPosition) {
+    } else if (widgetPosition >= 0 && widgetPosition < widgetRecords.length) {
       var bytes = widgetRecords[widgetPosition];
       widget = ConstrainedBox(
         constraints: defaultConstraints,

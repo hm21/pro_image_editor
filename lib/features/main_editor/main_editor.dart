@@ -1626,6 +1626,11 @@ class ProImageEditorState extends State<ProImageEditor>
           layerInteraction.selectable != LayerInteractionSelectable.enabled) {
         _takeScreenshot(replaceLastScreenshot: true);
       }
+    } else if (!isLayerBeingTransformed) {
+      /// The layers stayed selected through a canvas pan or zoom, or a drag
+      /// selection picked them. [_onScaleStart] added no history entry for
+      /// either, so there is no screenshot to replace.
+      interactiveViewer.currentState?.onScaleEnd(details);
     } else {
       /// At this point, we only create a screenshot since the new history
       /// entry was already added in [_onScaleStart].
@@ -2600,6 +2605,9 @@ class ProImageEditorState extends State<ProImageEditor>
     if (isSubEditorOpen) await _pageOpenCompleter.future;
 
     if (replaceLastScreenshot) {
+      // With background generation off, capture() appends nothing, so there
+      // may be no screenshot to replace.
+      if (stateManager.screenshots.isEmpty) return;
       stateManager.screenshots.removeLast();
     }
 

@@ -74,6 +74,7 @@ class ImageConverterService {
         if (!threadManager.isSupported) {
           return await _convertOnMainThread(
             image: image,
+            format: format,
             cropToDrawingBounds: crop,
           );
         }
@@ -91,12 +92,14 @@ class ImageConverterService {
         debugPrint('Fallback to main thread: $e');
         return await _convertOnMainThread(
           image: image,
+          format: format,
           cropToDrawingBounds: crop,
         );
       }
     } else {
       return await _convertOnMainThread(
         image: image,
+        format: format,
         cropToDrawingBounds: crop,
       );
     }
@@ -108,11 +111,13 @@ class ImageConverterService {
   /// removed before encoding.
   ///
   /// - [image]: The `ui.Image` to process.
+  /// - [format]: The format to encode the image in.
   ///
   /// Returns a `Uint8List` containing the converted image data or `null`
   /// if the conversion fails.
   Future<Uint8List?> _convertOnMainThread({
     required ui.Image image,
+    required OutputFormat format,
     required bool cropToDrawingBounds,
   }) async {
     if (cropToDrawingBounds) {
@@ -125,7 +130,7 @@ class ImageConverterService {
           image,
           imageByteFormat: configs.captureImageByteFormat,
         ),
-        outputFormat: configs.outputFormat,
+        outputFormat: format,
         singleFrame: configs.singleFrame,
         jpegQuality: configs.jpegQuality,
         jpegBackgroundColor: configs.jpegBackgroundColor.toARGB32(),

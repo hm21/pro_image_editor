@@ -269,7 +269,7 @@ class ExportStateHistory {
 
   Future<List<Map<String, dynamic>>> _convertLayers({
     required EditorStateHistory element,
-    required List<Uint8List?> widgetRecords,
+    required List<Uint8List> widgetRecords,
     required ImageInfos imageInfos,
     required Map<String, dynamic> layerReferences,
     required Map<String, dynamic> lastLayerStateHelper,
@@ -301,13 +301,14 @@ class ExportStateHistory {
       } else if (_configs.exportWidgets && layer.isWidgetLayer) {
         WidgetLayer widgetLayer = layer as WidgetLayer;
 
-        if (widgetLayer.exportConfigs.hasParameter) {
+        /// A layer that an earlier history step already rasterized keeps
+        /// that reference, so another record would never be read.
+        if (widgetLayer.exportConfigs.hasParameter ||
+            layerReferences.containsKey(widgetLayer.id)) {
           updateReference(widgetLayer);
         } else {
           /// Convert the widget to Uint8List in the case the user didn't add
           /// any export config parameter to restore the widget.
-          updateReference(widgetLayer, recordPosition: widgetRecords.length);
-
           double imageWidth =
               (layer.width ?? _editorConfigs.stickerEditor.initWidth) *
               layer.scale;
@@ -319,13 +320,18 @@ class ExportStateHistory {
                 imageWidth,
           );
 
-          Uint8List? result = await _contentRecorderCtrl.capture(
-            widget: layer.widget,
+          Uint8List? result = await _contentRecorderCtrl.captureWidget(
+            layer.widget,
             outputFormat: OutputFormat.png,
             imageInfos: imageInfos,
             targetSize: targetSize,
           );
-          widgetRecords.add(result);
+          if (result != null) {
+            updateReference(widgetLayer, recordPosition: widgetRecords.length);
+            widgetRecords.add(result);
+          } else {
+            updateReference(widgetLayer);
+          }
         }
       }
 
