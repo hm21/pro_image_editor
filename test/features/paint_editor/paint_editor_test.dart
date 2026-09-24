@@ -695,4 +695,15 @@ void main() {
       expect(viewer.transformMatrix4.getTranslation().x, isNot(0));
     });
   });
+
+  group('PaintEditor dispose', () {
+    testWidgets('setState after dispose is a no-op', (tester) async {
+      await pumpEditor(tester);
+      final state = key.currentState!;
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(() => state.setState(() {}), returnsNormally);
+    });
+  });
 }

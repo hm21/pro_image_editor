@@ -73,7 +73,9 @@ class TuneEditorAppbar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           icon: Icon(
             tuneEditorConfigs.icons.undoAction,
-            color: canUndo ? Colors.white : Colors.white.withAlpha(80),
+            color: canUndo
+                ? tuneEditorConfigs.style.appBarColor
+                : tuneEditorConfigs.style.appBarColor.withAlpha(80),
           ),
           onPressed: canUndo ? onUndo : null,
         ),
@@ -82,7 +84,9 @@ class TuneEditorAppbar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           icon: Icon(
             tuneEditorConfigs.icons.redoAction,
-            color: canRedo ? Colors.white : Colors.white.withAlpha(80),
+            color: canRedo
+                ? tuneEditorConfigs.style.appBarColor
+                : tuneEditorConfigs.style.appBarColor.withAlpha(80),
           ),
           onPressed: canRedo ? onRedo : null,
         ),

@@ -361,6 +361,46 @@ void main() {
       },
     );
   });
+
+  group('TuneEditor dispose', () {
+    testWidgets('setState after dispose is a no-op', (tester) async {
+      await pumpEditor(tester);
+      final TuneEditorState state = tester.state(find.byType(TuneEditor));
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(() => state.setState(() {}), returnsNormally);
+    });
+  });
+
+  group('TuneEditor appbar', () {
+    testWidgets('undo and redo follow the appBarColor', (tester) async {
+      const appBarColor = Colors.lightBlueAccent;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TuneEditor.memory(
+            mockMemoryImage,
+            initConfigs: TuneEditorInitConfigs(
+              theme: ThemeData(),
+              configs: const ProImageEditorConfigs(
+                tuneEditor: TuneEditorConfigs(
+                  style: TuneEditorStyle(
+                    appBarColor: appBarColor,
+                    appBarBackground: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final undo = tester.widget<Icon>(find.byIcon(Icons.undo));
+      final redo = tester.widget<Icon>(find.byIcon(Icons.redo));
+      expect(undo.color, appBarColor.withAlpha(80));
+      expect(redo.color, appBarColor.withAlpha(80));
+    });
+  });
 }
 
 ReactiveWidget _staleCapturedValueSlider(

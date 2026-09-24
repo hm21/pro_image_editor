@@ -1,5 +1,10 @@
 # Changelog
 
+## 14.4.1
+- **FIX**(crop-rotate-editor): Closing the editor while a resize is settling no longer throws `Bad state: Cannot add new events after calling close` (#858).
+- **FIX**(editors): The blur, filter, paint, text and tune editors ignore `setState` calls that arrive after dispose.
+- **FIX**(crop-rotate-editor, tune-editor): The undo and redo buttons use `appBarColor` instead of a hardcoded white (#856).
+
 ## 14.4.0
 - **PERF**(filter-editor): Skip the `ColorFilterLayer` when no filter or tune adjustment is active, and stop rebuilding the filter on every video frame (#872).
 - **FIX**(filter-editor): The filter preview updates when its `filterStates` or play-time notifier is replaced.

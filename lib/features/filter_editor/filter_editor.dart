@@ -209,6 +209,7 @@ class FilterEditorState extends State<FilterEditor>
 
   @override
   void setState(void Function() fn) {
+    if (!mounted) return;
     rebuildController.add(null);
     super.setState(fn);
   }

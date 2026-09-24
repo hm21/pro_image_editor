@@ -154,6 +154,7 @@ class TextEditorState extends State<TextEditor>
 
   @override
   void setState(void Function() fn) {
+    if (!mounted) return;
     _rebuildController.add(null);
     textEditorCallbacks?.handleUpdateUI();
     super.setState(fn);

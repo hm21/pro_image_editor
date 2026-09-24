@@ -88,7 +88,9 @@ class CropEditorAppbar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           icon: Icon(
             configs.icons.undoAction,
-            color: canUndo ? Colors.white : Colors.white.withAlpha(80),
+            color: canUndo
+                ? configs.style.appBarColor
+                : configs.style.appBarColor.withAlpha(80),
           ),
           onPressed: onUndo,
         ),
@@ -97,7 +99,9 @@ class CropEditorAppbar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           icon: Icon(
             configs.icons.redoAction,
-            color: canRedo ? Colors.white : Colors.white.withAlpha(80),
+            color: canRedo
+                ? configs.style.appBarColor
+                : configs.style.appBarColor.withAlpha(80),
           ),
           onPressed: onRedo,
         ),
