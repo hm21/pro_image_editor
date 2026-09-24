@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -75,6 +77,27 @@ void main() {
     onAfterImport?.call();
 
     await editor.importStateHistory(importHistory);
+  }
+
+  /// Resolves [future] while pumping frames; the recorder that rasterizes a
+  /// widget layer only reports ready from a build.
+  Future<T> pumpUntilDone<T>(WidgetTester tester, Future<T> future) async {
+    T? result;
+    bool isDone = false;
+    unawaited(
+      future.then((value) {
+        result = value;
+        isDone = true;
+      }),
+    );
+    for (var i = 0; i < 200 && !isDone; i++) {
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+    }
+    expect(isDone, isTrue, reason: 'did not finish while pumping frames');
+    return result as T;
   }
 
   group('ProImageEditor import/export', () {
@@ -273,6 +296,54 @@ void main() {
           expect(imported.offset, const Offset(40, 80));
           expect(imported.animations.single.slideFrom, slideFrom * 2);
         });
+      },
+    );
+
+    testWidgets(
+      'rasterizes a widget layer without export configs when background '
+      'generation is off',
+      (WidgetTester tester) async {
+        final editor = await pumpTestEditor(tester);
+        await tester.pumpAndSettle();
+
+        editor.addLayer(
+          WidgetLayer(
+            widget: Container(width: 40, height: 40, color: Colors.red),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final map = await pumpUntilDone(
+          tester,
+          editor
+              .exportStateHistory(
+                configs: const ExportEditorConfigs(
+                  enableMinify: false,
+                  historySpan: ExportHistorySpan.current,
+                ),
+              )
+              .then((history) => history.toMap()),
+        );
+
+        final records = map['widgetRecords'] as List<Uint8List>;
+        expect(records, hasLength(1));
+        // PNG signature, so a transparent widget stays transparent.
+        expect(records.single.take(4), [0x89, 0x50, 0x4E, 0x47]);
+        final reference =
+            (map['references'] as Map<String, dynamic>).values.single;
+        expect(reference['recordPosition'], 0);
+
+        editor.removeAllLayers();
+        await pumpUntilDone(
+          tester,
+          editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          ),
+        );
+
+        final imported = editor.activeLayers.single as WidgetLayer;
+        final image = (imported.widget as ConstrainedBox).child as Image;
+        expect((image.image as MemoryImage).bytes, records.single);
       },
     );
   });

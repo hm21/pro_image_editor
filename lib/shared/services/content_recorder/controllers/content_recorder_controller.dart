@@ -208,6 +208,25 @@ class ContentRecorderController {
     );
   }
 
+  /// Rasterizes [widget] on request, for example a `WidgetLayer` exported
+  /// without `WidgetLayerExportConfigs`.
+  ///
+  /// Unlike [capture], this is not a state-history screenshot, so it runs
+  /// even when background or isolate generation is disabled.
+  Future<Uint8List?> captureWidget(
+    Widget widget, {
+    required ImageInfos imageInfos,
+    Size? targetSize,
+    OutputFormat? outputFormat,
+  }) {
+    return _captureWidget(
+      widget,
+      imageInfos: imageInfos,
+      targetSize: targetSize,
+      format: outputFormat,
+    );
+  }
+
   /// Handles the process of capturing an image from the provided configuration
   /// or widget. If multi-threading is enabled, the capture leverages a separate
   /// isolate or worker to improve performance. The method also tracks the state
@@ -219,13 +238,8 @@ class ContentRecorderController {
     Widget? widget,
     OutputFormat? outputFormat,
   }) async {
-    // Eager history screenshots pass [screenshots]. Those stay off when
-    // background generation is disabled. An explicit [widget] (export of a
-    // WidgetLayer with no restore params) must still rasterize, or export
-    // adds null to `List<Uint8List>`.
-    if (screenshots != null &&
-        (!_configs.enableBackgroundGeneration ||
-            !_configs.enableIsolateGeneration)) {
+    if (!_configs.enableBackgroundGeneration ||
+        !_configs.enableIsolateGeneration) {
       return null;
     }
     if (isVideoEditor) {

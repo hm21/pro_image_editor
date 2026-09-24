@@ -269,7 +269,7 @@ class ExportStateHistory {
 
   Future<List<Map<String, dynamic>>> _convertLayers({
     required EditorStateHistory element,
-    required List<Uint8List?> widgetRecords,
+    required List<Uint8List> widgetRecords,
     required ImageInfos imageInfos,
     required Map<String, dynamic> layerReferences,
     required Map<String, dynamic> lastLayerStateHelper,
@@ -317,8 +317,8 @@ class ExportStateHistory {
                 imageWidth,
           );
 
-          Uint8List? result = await _contentRecorderCtrl.capture(
-            widget: layer.widget,
+          Uint8List? result = await _contentRecorderCtrl.captureWidget(
+            layer.widget,
             outputFormat: OutputFormat.png,
             imageInfos: imageInfos,
             targetSize: targetSize,
