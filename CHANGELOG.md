@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
-- **FIX**(main-editor): Replacing the last background screenshot no longer throws when the list is empty (canvas pan/zoom with a layer still selected, or `enableBackgroundGeneration: false`).
-- **FIX**(image-generation): Exporting a `WidgetLayer` without `exportConfigs` still rasterizes when `enableBackgroundGeneration` is false, instead of adding `null` to the widget-record list.
+## 14.3.1
+- **FIX**(main-editor): Panning, zooming or drag-selecting with a layer selected no longer discards the last background screenshot, or throws when there is none (#870).
+- **FIX**(import-export): Exporting a `WidgetLayer` without `exportConfigs` no longer throws when background or isolate generation is off, and rasterizes it once as PNG instead of once per history step (#870).
+- **FIX**(import-export): Importing a widget layer that has no widget record no longer throws.
+- **FIX**(image-generation): A capture that requests a format keeps it when encoding runs on the main thread.
 
 ## 14.3.0
 - **FIX**(tune-editor): Re-applying the tune editor replaces its slider entries instead of stacking a second set on top of the first, which darkened the image with every apply; timed and custom entries are kept (#864).
