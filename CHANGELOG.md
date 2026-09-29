@@ -1,11 +1,12 @@
 # Changelog
 
 ## 14.5.0
-- **FEAT**(text-editor): Add `TextLayer.outlineWidth` and `TextLayer.outlineColor` to draw an outline around each glyph, and `TextEditorState.setOutline` to set it while editing. Copying, grouping and transforming a layer keep it. The shadows of an outlined text are cast by the outlined glyphs, not the bare ones.
-- **FIX**(layers): The shadows of a text layer's `textStyle` grow with the rendered font size like the text itself. Scaling a text layer or its `fontScale` used to keep their unscaled offset and blur.
-- **FIX**(layers): A text layer reserves room for its shadows and outline, so a layer capture no longer cuts them off at the glyph bounds.
-- **FIX**(import-export): Removing a text layer's shadows in a later history step now survives an export and import. The removal was not recorded, so the import restored the earlier shadows.
-- **FIX**(text-editor): With `TextEditorStyle.inputShadows` set to `null`, the text input previews the selected style's shadows at the size the finished layer draws them.
+- **FEAT**(text-editor): Add `TextLayer.outlineWidth` / `outlineColor` and `TextEditorState.setOutline` to outline text; its shadows are cast by the outlined glyphs.
+- **FIX**(layers): Text shadows grow with the layer's `scale` and `fontScale` like the text, instead of keeping their unscaled offset and blur.
+- **FIX**(layers): A text layer reserves room for its shadows and outline, so a layer capture no longer cuts them off.
+- **FIX**(import-export): Shadows removed from a text layer in a later history step no longer come back after an import.
+- **FIX**(text-editor): With `TextEditorStyle.inputShadows: null`, the input previews the shadows at the size the layer draws them.
+- **FIX**(text-editor): The input's rounded background lines up with the typed text when the text style sets a `height`.
 
 ## 14.4.1
 - **FIX**(crop-rotate-editor): Closing the editor while a resize is settling no longer throws `Bad state: Cannot add new events after calling close` (#858).

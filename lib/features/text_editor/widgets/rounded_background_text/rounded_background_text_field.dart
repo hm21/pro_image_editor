@@ -172,17 +172,24 @@ class _RoundedBackgroundTextFieldState
   TextLeadingDistribution? _cachedLineHeightLeading;
   TextDirection? _cachedLineHeightDirection;
 
-  /// The preferred line height for [widget.style] at [fontSize], computed the
+  /// [widget.style] with the line height the editable text lays its glyphs
+  /// out with. The background text uses it as well, so its rectangle and the
+  /// outline it draws line up with the editable glyphs.
+  TextStyle get _glyphStyle =>
+      widget.style.copyWith(height: widget.configs.style.textHeight);
+
+  /// The preferred line height for [_glyphStyle] at [fontSize], computed the
   /// same way [RoundedBackgroundText] lays the text out, so the hit-box padding
   /// reserved here matches the rectangle the painter draws. Memoized because
   /// [build] runs on every keystroke and scroll tick while none of the inputs
   /// change per frame.
   double _preferredLineHeight(double fontSize) {
+    final style = _glyphStyle;
     final leading = widget.configs.style.leadingDistribution;
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
     if (_cachedLineHeight != null &&
         _cachedLineHeightFontSize == fontSize &&
-        _cachedLineHeightStyle == widget.style &&
+        _cachedLineHeightStyle == style &&
         _cachedLineHeightLeading == leading &&
         _cachedLineHeightDirection == direction) {
       return _cachedLineHeight!;
@@ -192,7 +199,7 @@ class _RoundedBackgroundTextFieldState
       text: TextSpan(
         style: TextStyle(
           leadingDistribution: leading,
-        ).merge(widget.style.copyWith(fontSize: fontSize)),
+        ).merge(style.copyWith(fontSize: fontSize)),
         text: 'A',
       ),
       textDirection: direction,
@@ -202,7 +209,7 @@ class _RoundedBackgroundTextFieldState
 
     _cachedLineHeight = lineHeight;
     _cachedLineHeightFontSize = fontSize;
-    _cachedLineHeightStyle = widget.style;
+    _cachedLineHeightStyle = style;
     _cachedLineHeightLeading = leading;
     _cachedLineHeightDirection = direction;
     return lineHeight;
@@ -212,7 +219,7 @@ class _RoundedBackgroundTextFieldState
     // The editable text paints the glyphs and, without an outline, their
     // shadows. With an outline, the outline has to sit under the glyphs and
     // cast the shadows, so this background text paints both instead.
-    final style = widget.style.copyWith(
+    final style = _glyphStyle.copyWith(
       color: Colors.transparent,
       leadingDistribution: widget.configs.style.leadingDistribution,
       shadows: widget._hasOutline ? null : const [],
@@ -279,10 +286,9 @@ class _RoundedBackgroundTextFieldState
           scrollPhysics: const NeverScrollableScrollPhysics(),
           scrollController: _scrollCtrl,
           scrollPadding: EdgeInsets.zero,
-          style: widget.style.copyWith(
+          style: _glyphStyle.copyWith(
             fontSize: fontSize,
             leadingDistribution: widget.configs.style.leadingDistribution,
-            height: widget.configs.style.textHeight,
             shadows: widget._hasOutline ? const [] : null,
           ),
           spellCheckConfiguration: widget.configs.spellCheckConfiguration,

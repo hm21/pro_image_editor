@@ -39,7 +39,7 @@ class TextLayer extends Layer {
     this.fontScale = 1.0,
     this.maxTextWidth,
     this.outlineWidth = 0,
-    this.outlineColor = const Color(0xFF000000),
+    this.outlineColor = _defaultOutlineColor,
     super.offset,
     super.rotation,
     super.scale,
@@ -158,7 +158,7 @@ class TextLayer extends Layer {
       outlineWidth: safeParseDouble(map[keyConverter('outlineWidth')]),
       outlineColor: outlineColor != null
           ? Color(safeParseInt(outlineColor))
-          : const Color(0xFF000000),
+          : _defaultOutlineColor,
       textStyle:
           fontFamily != null ||
               wordSpacing != null ||
@@ -248,6 +248,8 @@ class TextLayer extends Layer {
   /// `0`.
   Color outlineColor;
 
+  static const _defaultOutlineColor = Color(0xFF000000);
+
   /// Whether the layer draws an outline around its glyphs.
   bool get hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
@@ -290,7 +292,10 @@ class TextLayer extends Layer {
         'shadows': _shadowsToList(textStyle!.shadows!),
       if (outlineWidth > 0)
         'outlineWidth': outlineWidth.roundSmart(maxDecimalPlaces),
-      if (outlineWidth > 0) 'outlineColor': outlineColor.toHex(),
+      // Written without a width as well: a later history step that only
+      // sets the width is stored as a diff and would import the default.
+      if (outlineColor != _defaultOutlineColor)
+        'outlineColor': outlineColor.toHex(),
     };
     return result;
   }

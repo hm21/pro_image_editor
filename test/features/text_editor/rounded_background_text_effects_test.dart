@@ -1,6 +1,10 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pro_image_editor/core/models/editor_configs/text_editor_configs.dart';
+import 'package:pro_image_editor/features/text_editor/utils/rounded_background_painter.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
+import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text_field.dart';
 
 void main() {
   const style = TextStyle(fontSize: 40, color: Color(0xFFFFFFFF));
@@ -95,6 +99,59 @@ void main() {
         );
       });
 
+      testWidgets('keeps the shadow of glyphs that paint beyond their line', (
+        tester,
+      ) async {
+        final boundaryKey = GlobalKey();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: RepaintBoundary(
+                  key: boundaryKey,
+                  child: Padding(
+                    padding: const EdgeInsets.all(60),
+                    child: RoundedBackgroundText(
+                      'H',
+                      // A line height of 20 for a glyph that is 40 tall, so
+                      // the glyph reaches 15 above its line.
+                      style: style.copyWith(
+                        height: 0.5,
+                        shadows: const [
+                          Shadow(
+                            color: Color(0xFFFF0000),
+                            offset: Offset(50, 0),
+                          ),
+                        ],
+                      ),
+                      maxTextWidth: 400,
+                      outlineWidth: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final boundary =
+            boundaryKey.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final pixels = (await tester.runAsync(() async {
+          final image = await boundary.toImage();
+          final bytes = await image.toByteData();
+          image.dispose();
+          return bytes;
+        }))!;
+
+        // A point of the shadow 10 above the line, beside the glyph.
+        const x = 60 + 70;
+        const y = 60 - 10;
+        final index = (y * boundary.size.width.round() + x) * 4;
+        expect(pixels.getUint8(index), 0xFF, reason: 'red');
+        expect(pixels.getUint8(index + 3), 0xFF, reason: 'alpha');
+      });
+
       testWidgets('draws nothing extra for a transparent outline color', (
         tester,
       ) async {
@@ -180,6 +237,64 @@ void main() {
 
         expect(textSize(tester), plainSize);
       });
+    });
+  });
+
+  group('RoundedBackgroundTextField', () {
+    testWidgets('lines the outline up with the editable glyphs', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: 'Hello\nWorld');
+      final focusNode = FocusNode();
+      addTearDown(controller.dispose);
+      addTearDown(focusNode.dispose);
+
+      // The editable text lays its glyphs out with `TextEditorStyle
+      // .textHeight`, which overrides a line height set on the style.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: IntrinsicWidth(
+                child: RoundedBackgroundTextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  configs: const TextEditorConfigs(),
+                  style: style.copyWith(height: 1.5),
+                  maxTextWidth: 400,
+                  textAlign: TextAlign.center,
+                  backgroundColor: const Color(0xFF000000),
+                  outlineWidth: 3,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // The first glyph of the second line, where a different line height
+      // adds up.
+      const selection = TextSelection(baseOffset: 6, extentOffset: 7);
+      final editable = tester
+          .state<EditableTextState>(find.byType(EditableText))
+          .renderEditable;
+      final editableBox = editable.getBoxesForSelection(selection).first;
+      final editableGlyph = editable.localToGlobal(
+        Offset(editableBox.left, editableBox.top),
+      );
+
+      final background = textRenderObject(tester) as RenderCustomPaint;
+      final painter = background.painter! as RoundedBackgroundTextPainter;
+      final outlineBox = painter.outlinePainter!
+          .getBoxesForSelection(selection)
+          .first;
+      final outlineGlyph = background.localToGlobal(
+        painter.hitBoxCorrectionOffset +
+            Offset(outlineBox.left, outlineBox.top),
+      );
+
+      expect(outlineGlyph.dx, moreOrLessEquals(editableGlyph.dx, epsilon: 1));
+      expect(outlineGlyph.dy, moreOrLessEquals(editableGlyph.dy, epsilon: 1));
     });
   });
 }

@@ -181,6 +181,23 @@ void main() {
         expect(map['outlineWidth'], 0);
         expect(map['outlineColor'], const Color(0xFFFFFFFF).toHex());
       });
+
+      test('keeps a color set before the width in a later step', () {
+        final reference = TextLayer(
+          text: 'Sample Text',
+          outlineColor: const Color(0xFFFF0000),
+        );
+        final updated = reference.copyWith(outlineWidth: 2);
+
+        // The import merges each history entry over the previous state.
+        final restored = TextLayer.fromMap(reference, {
+          ...reference.toMap(),
+          ...updated.toMapFromReference(reference),
+        });
+
+        expect(restored.outlineWidth, 2);
+        expect(restored.outlineColor, const Color(0xFFFF0000));
+      });
     });
   });
 }

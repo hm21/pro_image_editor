@@ -468,7 +468,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   void _paintSilhouetteShadows(Canvas canvas) {
     if (silhouetteShadows.isEmpty || silhouettePainters.isEmpty) return;
 
-    final textBounds = Offset.zero & painter.size;
+    // Glyphs may paint beyond the line boxes, e.g. with a `height` below 1 or
+    // an italic overhang, and the layer clips whatever lies outside it.
+    final textBounds = (Offset.zero & painter.size).inflate(
+      painter.preferredLineHeight,
+    );
     for (final shadow in silhouetteShadows) {
       final sigma = shadow.blurRadius > 0
           ? Shadow.convertRadiusToSigma(shadow.blurRadius)
