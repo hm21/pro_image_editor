@@ -44,6 +44,7 @@ import 'controllers/main_editor_controllers.dart';
 import 'mixins/main_editor_global_keys.dart';
 import 'providers/image_infos_provider.dart';
 import 'services/desktop_interaction_manager.dart';
+import 'services/image_layer_frame.dart';
 import 'services/layer_copy_manager.dart';
 import 'services/layer_drag_selection_service.dart';
 import 'services/layer_interaction_manager.dart';
@@ -2093,6 +2094,41 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleUpdateUI();
   }
 
+  /// Places each [updated] layer on the image point its [source] layer
+  /// covered under [from], now that the image is painted with [to].
+  ///
+  /// [LayerTransformGenerator] still provides rotation and flips. Its offsets
+  /// are derived from crop editor units and drift when the crop and the body
+  /// stick to different sides.
+  void _keepLayersOnImagePoint({
+    required List<Layer> source,
+    required List<Layer> updated,
+    required TransformConfigs from,
+    required TransformConfigs to,
+  }) {
+    final uncropped =
+        _imageInfos?.originalRenderedSize ?? sizesManager.decodedImageSize;
+    final fromFrame = ImageLayerFrame.of(
+      transform: from,
+      bodySize: sizesManager.bodySize,
+      renderedImageSize: uncropped,
+    );
+    final toFrame = ImageLayerFrame.of(
+      transform: to,
+      bodySize: sizesManager.bodySize,
+      renderedImageSize: uncropped,
+    );
+    if (fromFrame == null || toFrame == null) return;
+    final ratio = toFrame.pixelsPerImageWidth / fromFrame.pixelsPerImageWidth;
+    if (!ratio.isFinite || ratio == 0) return;
+
+    for (var i = 0; i < updated.length && i < source.length; i++) {
+      updated[i]
+        ..offset = toFrame.toLayer(fromFrame.toImage(source[i].offset))
+        ..scale = source[i].scale * ratio;
+    }
+  }
+
   /// Opens the crop rotate editor.
   ///
   /// This method opens the crop editor, allowing the user to crop and rotate
@@ -2128,6 +2164,12 @@ class ProImageEditorState extends State<ProImageEditor>
               undoChanges: false,
               fitToScreenFactor: fitToScreenFactor,
             ).updatedLayers;
+            _keepLayersOnImagePoint(
+              source: stateManager.activeLayers,
+              updated: updatedLayers,
+              from: stateManager.transformConfigs,
+              to: transformConfigs,
+            );
 
             _imageInfos = null;
             unawaited(decodeImage(transformConfigs));

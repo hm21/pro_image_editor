@@ -13,6 +13,7 @@ import '/shared/services/import_export/import_state_history.dart';
 import '/shared/services/import_export/models/export_state_history_configs.dart';
 import '/shared/utils/decode_image.dart';
 import '../controllers/main_editor_controllers.dart';
+import 'image_layer_frame.dart';
 import 'sizes_manager.dart';
 import 'state_manager.dart';
 
@@ -104,6 +105,7 @@ class MainEditorStateHistoryService {
       configs: configs,
       contentRecorderCtrl: controllers.screenshot,
       context: context,
+      editorBodySize: sizesManager.bodySize,
     );
   }
 
@@ -116,9 +118,13 @@ class MainEditorStateHistoryService {
     final processed = Set<Layer>.identity();
 
     for (EditorStateHistory el in import.stateHistory) {
+      final transform = el.transformConfigs ?? TransformConfigs.empty();
       for (Layer layer in el.layers) {
         if (!processed.add(layer)) continue;
-        if (import.configs.recalculateSizeAndPosition) {
+        if (import.configs.recalculateSizeAndPosition &&
+            _relocateCroppedLayer(layer, import, transform)) {
+          // Placed on the crop window, not on the uncropped image.
+        } else if (import.configs.recalculateSizeAndPosition) {
           Size currentImageSize = sizesManager.decodedImageSize;
           Size lastRenderedImgSize = import.lastRenderedImgSize;
 
@@ -149,6 +155,59 @@ class MainEditorStateHistoryService {
         }
       }
     }
+  }
+
+  /// Body of an export that predates [ImportStateHistory.editorBodySize].
+  ///
+  /// [renderedImageSize] is the uncropped image fitted to that body, so one
+  /// side of the body is known. The crop editor was laid out on the same
+  /// screen, and [TransformConfigs.cropEditorScreenRatio] is the aspect ratio
+  /// of its area, which gives the other side.
+  Size _estimateExportedBody(Size renderedImageSize, TransformConfigs t) {
+    final ratio = t.cropEditorScreenRatio;
+    if (renderedImageSize.isEmpty || !ratio.isFinite || ratio <= 0) {
+      return renderedImageSize;
+    }
+    if (ratio > renderedImageSize.aspectRatio) {
+      return Size(renderedImageSize.height * ratio, renderedImageSize.height);
+    }
+    return Size(renderedImageSize.width, renderedImageSize.width / ratio);
+  }
+
+  /// Moves [layer] from the body it was exported in to the current body,
+  /// keeping it on the same image point under the cropped [transform].
+  ///
+  /// The uncropped image fit does not describe where a crop window is
+  /// painted, so a plain rescale drifts layers when the body shape changes.
+  /// Exports that predate the recorded body use an estimate of it.
+  bool _relocateCroppedLayer(
+    Layer layer,
+    ImportStateHistory import,
+    TransformConfigs transform,
+  ) {
+    if (transform.isEmpty) return false;
+    final exportedBody = import.editorBodySize.isEmpty
+        ? _estimateExportedBody(import.lastRenderedImgSize, transform)
+        : import.editorBodySize;
+    final from = ImageLayerFrame.of(
+      transform: transform,
+      bodySize: exportedBody,
+      renderedImageSize: import.lastRenderedImgSize,
+    );
+    final to = ImageLayerFrame.of(
+      transform: transform,
+      bodySize: sizesManager.bodySize,
+      renderedImageSize: sizesManager.decodedImageSize,
+    );
+    if (from == null || to == null) return false;
+
+    final ratio = to.pixelsPerImageWidth / from.pixelsPerImageWidth;
+    if (!ratio.isFinite || ratio == 0) return false;
+    layer
+      ..offset = to.toLayer(from.toImage(layer.offset))
+      ..scale *= ratio
+      ..scaleSlideFrom(ratio, ratio);
+    return true;
   }
 
   Future<void> _precacheLayers(

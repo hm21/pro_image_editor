@@ -34,8 +34,9 @@ class TransformedContentGenerator extends StatelessWidget {
 
   TransformConfigs get _transformConfigs => transformConfigs;
 
-  double _computeFitHelper(Size size) {
-    final tc = _transformConfigs;
+  /// Scale that makes the crop window fill [size] after the [FittedBox] has
+  /// fitted the uncropped [TransformConfigs.originalSize] box.
+  static double fitFactor(TransformConfigs tc, Size size) {
     if (tc.cropEditorScreenRatio == 0) return 1.0;
 
     final Size orig = tc.originalSize;
@@ -89,7 +90,10 @@ class TransformedContentGenerator extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final Size size = constraints.biggest;
-        final double fitFactor = _computeFitHelper(size);
+        final double fitFactor = TransformedContentGenerator.fitFactor(
+          _transformConfigs,
+          size,
+        );
         final Size originalSize = _transformConfigs.originalSize;
 
         return FittedBox(

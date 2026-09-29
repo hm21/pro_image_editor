@@ -29,6 +29,7 @@ class ImportStateHistory {
     required this.editorPosition,
     required this.imgSize,
     required this.lastRenderedImgSize,
+    this.editorBodySize = Size.zero,
     required this.stateHistory,
     required this.configs,
     required this.version,
@@ -75,6 +76,9 @@ class ImportStateHistory {
     final widgetRecords = parseWidgetRecords(map, version, minifier);
     final lastRenderedImgSize = safeParseSize(
       map[minifier.convertMainKey('lastRenderedImgSize')],
+    );
+    final editorBodySize = safeParseSize(
+      map[minifier.convertMainKey('editorBodySize')],
     );
     final List<EditorImage> requirePrecacheList = [];
 
@@ -189,6 +193,7 @@ class ImportStateHistory {
       editorPosition: safeParseInt(map[minifier.convertMainKey('position')]),
       imgSize: safeParseSize(map[minifier.convertMainKey('imgSize')]),
       lastRenderedImgSize: lastRenderedImgSize,
+      editorBodySize: editorBodySize,
       stateHistory: stateHistory,
       configs: configs,
       version: version,
@@ -334,6 +339,10 @@ class ImportStateHistory {
 
   /// The size of the last used screen.
   final Size lastRenderedImgSize;
+
+  /// Editor body the layers were laid out in, or [Size.zero] when the export
+  /// predates it.
+  final Size editorBodySize;
 
   /// The state history of each editor state in the session.
   final List<EditorStateHistory> stateHistory;
