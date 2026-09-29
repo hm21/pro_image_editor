@@ -83,5 +83,156 @@ void main() {
 
       expect(exported.logicalSize, Size.zero);
     });
+
+    group('frames', () {
+      final base = Uint8List.fromList([0]);
+      final first = Uint8List.fromList([1]);
+      final second = Uint8List.fromList([2]);
+
+      Duration ms(int value) => Duration(milliseconds: value);
+
+      TextHighlight highlight(int start, int end, int from, int to) =>
+          TextHighlight(
+            start: start,
+            end: end,
+            startTime: ms(from),
+            endTime: ms(to),
+          );
+
+      /// Each frame as (the one byte identifying its image, start, end).
+      List<(int, Duration?, Duration?)> describe(
+        List<ExportedLayerFrame> frames,
+      ) => [
+        for (final frame in frames)
+          (frame.bytes.single, frame.startTime, frame.endTime),
+      ];
+
+      test('is one frame of the base image for a layer without highlights', () {
+        final exported = ExportedLayer(
+          layer: EmojiLayer(emoji: '😀', startTime: ms(100), endTime: ms(500)),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+        );
+
+        expect(describe(exported.frames), [(0, ms(100), ms(500))]);
+      });
+
+      test('shows each highlight in its window and the base in between', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            startTime: ms(1000),
+            endTime: ms(3000),
+            highlights: [
+              highlight(0, 5, 200, 600),
+              highlight(6, 11, 800, 1500),
+            ],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first, 1: second},
+        );
+
+        expect(describe(exported.frames), [
+          (0, ms(1000), ms(1200)),
+          (1, ms(1200), ms(1600)),
+          (0, ms(1600), ms(1800)),
+          (2, ms(1800), ms(2500)),
+          (0, ms(2500), ms(3000)),
+        ]);
+      });
+
+      test('joins back-to-back highlights without a gap frame', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            startTime: ms(0),
+            endTime: ms(1000),
+            highlights: [highlight(0, 5, 0, 500), highlight(6, 11, 500, 1000)],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first, 1: second},
+        );
+
+        expect(describe(exported.frames), [
+          (1, ms(0), ms(500)),
+          (2, ms(500), ms(1000)),
+        ]);
+      });
+
+      test('clips highlights to the layer range', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            startTime: ms(100),
+            endTime: ms(600),
+            highlights: [highlight(6, 11, 300, 900)],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first},
+        );
+
+        expect(describe(exported.frames), [
+          (0, ms(100), ms(400)),
+          (1, ms(400), ms(600)),
+        ]);
+      });
+
+      test('keeps open ends when the layer has no time range', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            highlights: [highlight(0, 5, 200, 400)],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first},
+        );
+
+        expect(describe(exported.frames), [
+          (0, null, ms(200)),
+          (1, ms(200), ms(400)),
+          (0, ms(400), null),
+        ]);
+      });
+
+      test('starts with a highlight that starts with an open-ended layer', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            highlights: [highlight(0, 5, 0, 400)],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first},
+        );
+
+        expect(describe(exported.frames), [
+          (1, null, ms(400)),
+          (0, ms(400), null),
+        ]);
+      });
+
+      test('falls back to the base image for an uncaptured highlight', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            startTime: ms(0),
+            endTime: ms(1000),
+            highlights: [highlight(0, 5, 0, 400), highlight(6, 11, 400, 800)],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first},
+        );
+
+        expect(describe(exported.frames), [
+          (1, ms(0), ms(400)),
+          (0, ms(400), ms(1000)),
+        ]);
+      });
+    });
   });
 }

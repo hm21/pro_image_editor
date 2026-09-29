@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.6.0
+- **FEAT**(layers): Add `TextLayer.highlights` / `highlightColor` to light up words of a text layer while the video plays through them; `ExportedLayer.highlightBytes` and `ExportedLayer.frames` carry them into the export (#876).
+- **FIX**(text-editor): Editing a text layer keeps its time range and animations.
+
 ## 14.5.0
 - **FEAT**(text-editor): Add `TextLayer.outlineWidth` / `outlineColor` and `TextEditorState.setOutline` to outline text; its shadows are cast by the outlined glyphs.
 - **FIX**(layers): Text shadows grow with the layer's `scale` and `fontScale` like the text, instead of keeping their unscaled offset and blur.

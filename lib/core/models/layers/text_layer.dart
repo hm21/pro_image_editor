@@ -10,6 +10,10 @@ import 'enums/layer_background_mode.dart';
 import 'layer.dart';
 import 'layer_interaction.dart';
 
+/// The [TextLayer.highlightColor] a layer gets when none is given: a warm
+/// yellow that reads on light and dark text alike.
+const Color kDefaultTextHighlightColor = Color(0xFFFFD60A);
+
 /// Represents a text layer with customizable properties.
 class TextLayer extends Layer {
   /// Creates a new text layer with customizable properties.
@@ -40,6 +44,8 @@ class TextLayer extends Layer {
     this.maxTextWidth,
     this.outlineWidth = 0,
     this.outlineColor = _defaultOutlineColor,
+    List<TextHighlight>? highlights,
+    this.highlightColor = kDefaultTextHighlightColor,
     super.offset,
     super.rotation,
     super.scale,
@@ -59,7 +65,7 @@ class TextLayer extends Layer {
     super.exitCurve,
     super.transitionBuilder,
     super.animations,
-  });
+  }) : highlights = highlights ?? <TextHighlight>[];
 
   /// Factory constructor for creating a TextLayer instance from a Layer
   /// instance and a map.
@@ -196,6 +202,15 @@ class TextLayer extends Layer {
         (element) => element.name == map[keyConverter!('align')],
       ),
       customSecondaryColor: map[keyConverter('customSecondaryColor')] ?? false,
+      highlights: (map[keyConverter('highlights')] as List<dynamic>?)
+          ?.map(
+            (e) => TextHighlight.fromMap(Map<String, dynamic>.from(e as Map)),
+          )
+          .where((highlight) => highlight.isValid)
+          .toList(),
+      highlightColor: map[keyConverter('highlightColor')] != null
+          ? Color(safeParseInt(map[keyConverter('highlightColor')]))
+          : kDefaultTextHighlightColor,
     );
   }
 
@@ -253,6 +268,34 @@ class TextLayer extends Layer {
   /// Whether the layer draws an outline around its glyphs.
   bool get hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
+  /// Parts of [text] that light up in [highlightColor] while the video plays
+  /// through them, such as the words of a caption as they are spoken.
+  ///
+  /// Only a video editor, which knows the playback position, shows them. When
+  /// more than one is active at the same time, the last one in the list wins.
+  ///
+  /// An exported layer carries an image per highlight in
+  /// `ExportedLayer.highlightBytes`, and `ExportedLayer.frames` says which
+  /// image to show when.
+  List<TextHighlight> highlights;
+
+  /// The text color of the active entry in [highlights].
+  Color highlightColor;
+
+  /// The index of the entry in [highlights] that is active [time] into the
+  /// video, or `null` when none is.
+  ///
+  /// Highlight times are measured from [startTime], so [time] is converted
+  /// first. Highlights are not clipped to the layer's own time range; the
+  /// layer is simply not visible outside it.
+  int? highlightIndexAt(Duration time) {
+    final elapsed = time - (startTime ?? Duration.zero);
+    for (var i = highlights.length - 1; i >= 0; i--) {
+      if (highlights[i].isActiveAt(elapsed)) return i;
+    }
+    return null;
+  }
+
   @override
   bool get isTextLayer => true;
 
@@ -276,6 +319,12 @@ class TextLayer extends Layer {
       if (maxTextWidth != null)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
+      if (highlights.isNotEmpty)
+        'highlights': highlights.map((h) => h.toMap()).toList(),
+      // Written without highlights as well: a later history step that only
+      // adds highlights is stored as a diff and would import the default.
+      if (highlightColor != kDefaultTextHighlightColor)
+        'highlightColor': highlightColor.toHex(),
       if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
       if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
       if (textStyle?.fontWeight != null)
@@ -322,6 +371,10 @@ class TextLayer extends Layer {
         'colorMode': LayerBackgroundMode.values[colorMode.index].name,
       if (paintLayer.customSecondaryColor != customSecondaryColor)
         'customSecondaryColor': customSecondaryColor,
+      if (!listEquals(paintLayer.highlights, highlights))
+        'highlights': highlights.map((h) => h.toMap()).toList(),
+      if (paintLayer.highlightColor != highlightColor)
+        'highlightColor': highlightColor.toHex(),
       if (paintLayer.textStyle?.fontFamily != textStyle?.fontFamily)
         'fontFamily': textStyle?.fontFamily,
       if (paintLayer.textStyle?.fontStyle != textStyle?.fontStyle)
@@ -383,6 +436,8 @@ class TextLayer extends Layer {
     double? maxTextWidth,
     double? outlineWidth,
     Color? outlineColor,
+    List<TextHighlight>? highlights,
+    Color? highlightColor,
     bool? hit,
     bool? flipX,
     bool? flipY,
@@ -414,6 +469,8 @@ class TextLayer extends Layer {
       maxTextWidth: maxTextWidth ?? this.maxTextWidth,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       outlineColor: outlineColor ?? this.outlineColor,
+      highlights: highlights ?? this.highlights,
+      highlightColor: highlightColor ?? this.highlightColor,
       offset: offset ?? this.offset,
       rotation: rotation ?? this.rotation,
       scale: scale ?? this.scale,
@@ -452,6 +509,8 @@ class TextLayer extends Layer {
       ..add(DoubleProperty('outlineWidth', outlineWidth))
       ..add(ColorProperty('outlineColor', outlineColor))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
+      ..add(IterableProperty<TextHighlight>('highlights', highlights))
+      ..add(ColorProperty('highlightColor', highlightColor))
       ..add(DiagnosticsProperty<bool>('hasHit', hit));
   }
 }

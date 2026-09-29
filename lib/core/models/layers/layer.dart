@@ -37,6 +37,7 @@ export '/core/models/editor_configs/video/layer_timeline_configs.dart'
 export 'emoji_layer.dart';
 export 'layer_animation.dart';
 export 'paint_layer.dart';
+export 'text_highlight.dart';
 export 'text_layer.dart';
 export 'widget_layer.dart';
 
@@ -449,6 +450,10 @@ class Layer {
   /// [flipX] and [flipY] are applied to the output image. Set it to `false`
   /// to get the raw, un-transformed content.
   ///
+  /// A [TextLayer] with [TextLayer.highlights] is captured with none of them
+  /// active, whatever the playback position shows; [captureAllLayers]
+  /// captures the highlights as well.
+  ///
   /// Returns `null` if the layer is not currently mounted.
   Future<Uint8List?> captureAsPng({
     double? pixelRatio,
@@ -456,6 +461,28 @@ class Layer {
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
+  }) {
+    return _capture(
+      pixelRatio: pixelRatio,
+      basePixelRatio: basePixelRatio,
+      applyTransforms: applyTransforms,
+      format: format,
+      recorder: recorder,
+    );
+  }
+
+  /// Captures the layer like [captureAsPng], or with the entry of
+  /// [TextLayer.highlights] at [highlightIndex] active when it is given.
+  ///
+  /// Returns `null` when the layer is not mounted, or when [highlightIndex] is
+  /// given for a layer that has no highlights to render.
+  Future<Uint8List?> _capture({
+    required double? pixelRatio,
+    required double? basePixelRatio,
+    required bool applyTransforms,
+    required ui.ImageByteFormat format,
+    required ContentRecorderController? recorder,
+    int? highlightIndex,
   }) async {
     final context = repaintBoundaryKey.currentContext;
     if (context == null) return null;
@@ -465,14 +492,20 @@ class Layer {
     final effectivePixelRatio = pixelRatio ?? dpr;
 
     final boundaryWidget = repaintBoundaryKey.currentWidget;
-    final renderContent = boundaryWidget is LayerRepaintBoundary
-        ? boundaryWidget.renderContent
+    final boundary = boundaryWidget is LayerRepaintBoundary
+        ? boundaryWidget
         : null;
-    final rawImage = renderContent != null
-        ? await renderContent(effectivePixelRatio)
-        : await (context.findRenderObject() as RenderRepaintBoundary).toImage(
-            pixelRatio: effectivePixelRatio,
-          );
+    final ui.Image rawImage;
+    if (highlightIndex != null) {
+      final renderHighlight = boundary?.renderHighlight;
+      if (renderHighlight == null) return null;
+      rawImage = await renderHighlight(effectivePixelRatio, highlightIndex);
+    } else if (boundary?.renderContent case final renderContent?) {
+      rawImage = await renderContent(effectivePixelRatio);
+    } else {
+      rawImage = await (context.findRenderObject() as RenderRepaintBoundary)
+          .toImage(pixelRatio: effectivePixelRatio);
+    }
 
     final bool needsTransform =
         applyTransforms && (rotation != 0 || flipX || flipY);
@@ -567,6 +600,10 @@ class Layer {
 
   /// Exports multiple layers in one run and returns metadata per exported
   /// layer.
+  ///
+  /// A [TextLayer] with [TextLayer.highlights] is also captured once per
+  /// highlight, into [ExportedLayer.highlightBytes]; [ExportedLayer.frames]
+  /// lays those images out along the layer's time range.
   static Future<List<ExportedLayer>> captureAllLayers({
     required List<Layer> layers,
     double? pixelRatio,
@@ -574,6 +611,38 @@ class Layer {
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
+  }) async {
+    ContentRecorderController? localRecorder;
+    ContentRecorderController? sharedRecorder = recorder;
+
+    if (format == ui.ImageByteFormat.png && sharedRecorder == null) {
+      sharedRecorder = _createPngRecorderController();
+      localRecorder = sharedRecorder;
+    }
+
+    try {
+      return await _captureAllLayers(
+        layers: layers,
+        pixelRatio: pixelRatio,
+        basePixelRatio: basePixelRatio,
+        applyTransforms: applyTransforms,
+        format: format,
+        recorder: sharedRecorder,
+      );
+    } finally {
+      if (localRecorder != null) {
+        await localRecorder.destroy();
+      }
+    }
+  }
+
+  static Future<List<ExportedLayer>> _captureAllLayers({
+    required List<Layer> layers,
+    required double? pixelRatio,
+    required double? basePixelRatio,
+    required bool applyTransforms,
+    required ui.ImageByteFormat format,
+    required ContentRecorderController? recorder,
   }) async {
     final logicalSizes = <Size>[];
     for (var i = 0; i < layers.length; i++) {
@@ -608,16 +677,58 @@ class Layer {
     for (var i = 0; i < layers.length; i++) {
       final bytes = i < allBytes.length ? allBytes[i] : null;
       if (bytes == null) continue;
+      final layer = layers[i];
       exported.add(
         ExportedLayer(
-          layer: layers[i],
+          layer: layer,
           bytes: bytes,
           logicalSize: logicalSizes[i],
+          // Only highlighted text pays for the extra captures, or even an
+          // extra await: a layer without highlights completes exactly as
+          // before.
+          highlightBytes: layer is TextLayer && layer.highlights.isNotEmpty
+              ? await layer._captureHighlights(
+                  pixelRatio: pixelRatio,
+                  basePixelRatio: basePixelRatio,
+                  applyTransforms: applyTransforms,
+                  format: format,
+                  recorder: recorder,
+                )
+              : const {},
         ),
       );
     }
 
     return exported;
+  }
+
+  /// Captures this text layer once per valid entry of
+  /// [TextLayer.highlights], keyed by the entry's index. Empty for any other
+  /// layer.
+  Future<Map<int, Uint8List>> _captureHighlights({
+    required double? pixelRatio,
+    required double? basePixelRatio,
+    required bool applyTransforms,
+    required ui.ImageByteFormat format,
+    required ContentRecorderController? recorder,
+  }) async {
+    final layer = this;
+    if (layer is! TextLayer) return const {};
+
+    final captured = <int, Uint8List>{};
+    for (var i = 0; i < layer.highlights.length; i++) {
+      if (!layer.highlights[i].isValid) continue;
+      final bytes = await _capture(
+        pixelRatio: pixelRatio,
+        basePixelRatio: basePixelRatio,
+        applyTransforms: applyTransforms,
+        format: format,
+        recorder: recorder,
+        highlightIndex: i,
+      );
+      if (bytes != null) captured[i] = bytes;
+    }
+    return captured;
   }
 
   static ContentRecorderController _createPngRecorderController() {
