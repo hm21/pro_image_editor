@@ -58,21 +58,17 @@ class ExportedLayer {
     }
 
     // Every highlight edge that falls inside the layer's range starts a new
-    // interval; within one interval the active highlight cannot change.
+    // interval; within one interval the active highlight cannot change. A
+    // layer without a start begins with the video, at zero.
     final origin = start ?? Duration.zero;
     final cuts =
         <Duration>{
-              for (final highlight in layer.highlights)
-                if (highlight.isValid) ...[
-                  origin + highlight.startTime,
-                  origin + highlight.endTime,
-                ],
-            }
-            .where(
-              (cut) =>
-                  (start == null || cut > start) && (end == null || cut < end),
-            )
-            .toList()
+            for (final highlight in layer.highlights)
+              if (highlight.isValid) ...[
+                origin + highlight.startTime,
+                origin + highlight.endTime,
+              ],
+          }.where((cut) => cut > origin && (end == null || cut < end)).toList()
           ..sort();
 
     final bounds = <Duration?>[start, ...cuts, end];
@@ -80,10 +76,7 @@ class ExportedLayer {
     for (var i = 0; i < bounds.length - 1; i++) {
       final from = bounds[i];
       final to = bounds[i + 1];
-      // An interval open towards the past is probed just before its end.
-      final probe =
-          from ?? (to ?? Duration.zero) - const Duration(microseconds: 1);
-      final index = layer.highlightIndexAt(probe);
+      final index = layer.highlightIndexAt(from ?? origin);
       final frameBytes = index == null ? bytes : highlightBytes[index] ?? bytes;
 
       if (frames.isNotEmpty && identical(frames.last.bytes, frameBytes)) {

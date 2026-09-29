@@ -319,10 +319,12 @@ class TextLayer extends Layer {
       if (maxTextWidth != null)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
-      if (highlights.isNotEmpty) ...{
+      if (highlights.isNotEmpty)
         'highlights': highlights.map((h) => h.toMap()).toList(),
+      // Written without highlights as well: a later history step that only
+      // adds highlights is stored as a diff and would import the default.
+      if (highlightColor != kDefaultTextHighlightColor)
         'highlightColor': highlightColor.toHex(),
-      },
       if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
       if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
       if (textStyle?.fontWeight != null)

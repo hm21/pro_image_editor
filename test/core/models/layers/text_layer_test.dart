@@ -275,6 +275,26 @@ void main() {
         expect(map.containsKey('highlightColor'), false);
       });
 
+      test('keeps a custom color when a later step adds highlights', () {
+        // The import merges each history step's diff over the first map of
+        // the layer, so that map has to carry the color on its own.
+        final before = TextLayer(
+          text: 'Hello world',
+          highlightColor: const Color(0xFF00FF00),
+        );
+        final after = before.copyWith(highlights: [hello, world]);
+
+        final restored =
+            Layer.fromMap({
+                  ...before.toMap(),
+                  ...after.toMapFromReference(before),
+                })
+                as TextLayer;
+
+        expect(restored.highlights, [hello, world]);
+        expect(restored.highlightColor, const Color(0xFF00FF00));
+      });
+
       test('round-trips through Layer.fromMap', () {
         final restored = Layer.fromMap(highlightedLayer().toMap()) as TextLayer;
 

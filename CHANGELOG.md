@@ -1,7 +1,8 @@
 # Changelog
 
 ## 14.6.0
-- **FEAT**(layers): Add `TextLayer.highlights`, which light up parts of a text layer in `TextLayer.highlightColor` while the video plays through them, such as the words of a caption as they are spoken. Highlight times count from the layer's `startTime`, so they move with the layer on the timeline. The video editor previews the active highlight, and `Layer.captureAllLayers` captures one extra image per highlight into `ExportedLayer.highlightBytes`; `ExportedLayer.frames` lays the images out along the layer's time range for a renderer that draws timed overlays.
+- **FEAT**(layers): Add `TextLayer.highlights` / `highlightColor` to light up words of a text layer while the video plays through them; `ExportedLayer.highlightBytes` and `ExportedLayer.frames` carry them into the export (#876).
+- **FIX**(text-editor): Editing a text layer keeps its time range and animations.
 
 ## 14.5.0
 - **FEAT**(text-editor): Add `TextLayer.outlineWidth` / `outlineColor` and `TextEditorState.setOutline` to outline text; its shadows are cast by the outlined glyphs.

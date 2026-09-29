@@ -198,6 +198,23 @@ void main() {
         ]);
       });
 
+      test('starts with a highlight that starts with an open-ended layer', () {
+        final exported = ExportedLayer(
+          layer: TextLayer(
+            text: 'Hello world',
+            highlights: [highlight(0, 5, 0, 400)],
+          ),
+          bytes: base,
+          logicalSize: const Size(10, 10),
+          highlightBytes: {0: first},
+        );
+
+        expect(describe(exported.frames), [
+          (1, null, ms(400)),
+          (0, ms(400), null),
+        ]);
+      });
+
       test('falls back to the base image for an uncaptured highlight', () {
         final exported = ExportedLayer(
           layer: TextLayer(

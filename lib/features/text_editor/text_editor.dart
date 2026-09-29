@@ -342,8 +342,10 @@ class TextEditorState extends State<TextEditor>
   /// editor.
   void done() {
     if (textCtrl.text.trim().isNotEmpty || widget.layer != null) {
+      final original = widget.layer;
+      final text = textCtrl.text.trim();
       TextLayer layer = TextLayer(
-        text: textCtrl.text.trim(),
+        text: text,
         background: _backgroundColor,
         color: _textColor,
         align: align,
@@ -358,6 +360,19 @@ class TextEditorState extends State<TextEditor>
                 textEditorConfigs.enableImageBoundaryTextWrap)
             ? _maxTextWidth
             : null,
+        // The editor changes how the text looks, not when it shows.
+        startTime: original?.startTime,
+        endTime: original?.endTime,
+        enterDuration: original?.enterDuration,
+        exitDuration: original?.exitDuration,
+        enterCurve: original?.enterCurve,
+        exitCurve: original?.exitCurve,
+        transitionBuilder: original?.transitionBuilder,
+        animations: original?.animations,
+        // Highlights point into the text, so they only fit the text they
+        // were made for.
+        highlights: original?.text == text ? original?.highlights : null,
+        highlightColor: original?.highlightColor ?? kDefaultTextHighlightColor,
       );
 
       Navigator.of(context).pop(layer);
