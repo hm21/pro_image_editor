@@ -30,6 +30,8 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
+    this.outlineWidth = 0,
+    this.outlineColor = const Color(0xFF000000),
   });
 
   /// Controls the text being edited in the text editor.
@@ -81,6 +83,15 @@ class RoundedBackgroundTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.onSubmitted}
   final ValueChanged<String>? onSubmitted;
+
+  /// The thickness of the outline drawn around each glyph, measured outward
+  /// from the glyph edge. `0` draws no outline.
+  final double outlineWidth;
+
+  /// The color of the outline.
+  final Color outlineColor;
+
+  bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
   @override
   State<RoundedBackgroundTextField> createState() =>
@@ -198,9 +209,13 @@ class _RoundedBackgroundTextFieldState
   }
 
   Widget _buildBackgroundText({required double hitBoxHorizontal}) {
+    // The editable text paints the glyphs and, without an outline, their
+    // shadows. With an outline, the outline has to sit under the glyphs and
+    // cast the shadows, so this background text paints both instead.
     final style = widget.style.copyWith(
       color: Colors.transparent,
       leadingDistribution: widget.configs.style.leadingDistribution,
+      shadows: widget._hasOutline ? null : const [],
     );
 
     return Positioned(
@@ -227,6 +242,8 @@ class _RoundedBackgroundTextFieldState
           // Match the finished layer (LayerWidgetTextItem) so the rounded
           // background reserves symmetric padding while editing.
           enableHitBoxCorrection: true,
+          outlineWidth: widget.outlineWidth,
+          outlineColor: widget.outlineColor,
         ),
       ),
     );
@@ -266,6 +283,7 @@ class _RoundedBackgroundTextFieldState
             fontSize: fontSize,
             leadingDistribution: widget.configs.style.leadingDistribution,
             height: widget.configs.style.textHeight,
+            shadows: widget._hasOutline ? const [] : null,
           ),
           spellCheckConfiguration: widget.configs.spellCheckConfiguration,
           decoration: InputDecoration.collapsed(
@@ -309,6 +327,8 @@ class _RoundedBackgroundTextFieldState
       ..add(DiagnosticsProperty<TextStyle>('style', widget.style))
       ..add(EnumProperty<TextAlign>('textAlign', widget.textAlign))
       ..add(ColorProperty('backgroundColor', widget.backgroundColor))
+      ..add(DoubleProperty('outlineWidth', widget.outlineWidth))
+      ..add(ColorProperty('outlineColor', widget.outlineColor))
       ..add(DoubleProperty('maxTextWidth', widget.maxTextWidth))
       ..add(DoubleProperty('cursorWidth', widget.cursorWidth))
       ..add(

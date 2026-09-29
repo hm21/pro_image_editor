@@ -23,6 +23,8 @@ class TextEditorInput extends StatefulWidget {
   /// - [layer]: The text layer being edited, if applicable.
   /// - [focusNode]: The focus node for managing input focus.
   /// - [textCtrl]: The text editing controller for managing input content.
+  /// - [outlineWidth]: The outline thickness at [textFontSize].
+  /// - [outlineColor]: The color of the outline.
   const TextEditorInput({
     super.key,
     required this.callbacks,
@@ -40,6 +42,8 @@ class TextEditorInput extends StatefulWidget {
     required this.textCtrl,
     required this.maxWidth,
     required this.cursorWidth,
+    this.outlineWidth = 0,
+    this.outlineColor = const Color(0xFF000000),
   });
 
   /// Optional callbacks for text editor interactions.
@@ -88,11 +92,26 @@ class TextEditorInput extends StatefulWidget {
   /// The text editing controller for managing input content.
   final TextEditingController textCtrl;
 
+  /// The thickness of the outline around each glyph at [textFontSize].
+  final double outlineWidth;
+
+  /// The color of the outline.
+  final Color outlineColor;
+
   @override
   State<TextEditorInput> createState() => _TextEditorInputState();
 }
 
 class _TextEditorInputState extends State<TextEditorInput> {
+  /// The shadows of the selected style, grown with the font size as the
+  /// finished layer grows them (see `LayerWidgetTextItem`).
+  List<Shadow>? get _layerShadows {
+    final shadows = widget.selectedTextStyle.shadows;
+    if (shadows == null) return null;
+    final scale = widget.textFontSize / widget.configs.initFontSize;
+    return shadows.map((shadow) => shadow.scale(scale)).toList();
+  }
+
   Widget _flightShuttleBuilder(
     BuildContext flightContext,
     Animation<double> animation,
@@ -201,16 +220,18 @@ class _TextEditorInputState extends State<TextEditorInput> {
               color: widget.configs.style.inputHintColor,
               fontSize: widget.textFontSize,
               letterSpacing: widget.configs.style.inputLetterSpacing,
-              shadows: widget.configs.style.inputShadows,
+              shadows: widget.configs.style.inputShadows ?? _layerShadows,
             ),
             backgroundColor: widget.backgroundColor,
             style: widget.selectedTextStyle.copyWith(
               color: widget.textColor,
               fontSize: widget.textFontSize,
               letterSpacing: widget.configs.style.inputLetterSpacing,
-              shadows: widget.configs.style.inputShadows,
+              shadows: widget.configs.style.inputShadows ?? _layerShadows,
               decoration: TextDecoration.none,
             ),
+            outlineWidth: widget.outlineWidth,
+            outlineColor: widget.outlineColor,
 
             /// If we edit an layer we focus to the textfield after the
             /// hero animation is done
