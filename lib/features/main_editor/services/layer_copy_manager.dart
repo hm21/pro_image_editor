@@ -131,6 +131,8 @@ class LayerCopyManager {
       flipY: layer.flipY,
       meta: layer.meta,
       maxTextWidth: layer.maxTextWidth,
+      outlineWidth: layer.outlineWidth,
+      outlineColor: layer.outlineColor,
       customSecondaryColor: layer.customSecondaryColor,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),

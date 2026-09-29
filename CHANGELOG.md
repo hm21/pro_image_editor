@@ -1,5 +1,13 @@
 # Changelog
 
+## 14.5.0
+- **FEAT**(text-editor): Add `TextLayer.outlineWidth` / `outlineColor` and `TextEditorState.setOutline` to outline text; its shadows are cast by the outlined glyphs.
+- **FIX**(layers): Text shadows grow with the layer's `scale` and `fontScale` like the text, instead of keeping their unscaled offset and blur.
+- **FIX**(layers): A text layer reserves room for its shadows and outline, so a layer capture no longer cuts them off.
+- **FIX**(import-export): Shadows removed from a text layer in a later history step no longer come back after an import.
+- **FIX**(text-editor): With `TextEditorStyle.inputShadows: null`, the input previews the shadows at the size the layer draws them.
+- **FIX**(text-editor): The input's rounded background lines up with the typed text when the text style sets a `height`.
+
 ## 14.4.1
 - **FIX**(crop-rotate-editor): Closing the editor while a resize is settling no longer throws `Bad state: Cannot add new events after calling close` (#858).
 - **FIX**(editors): The blur, filter, paint, text and tune editors ignore `setState` calls that arrive after dispose.

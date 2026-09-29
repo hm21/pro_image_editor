@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -25,6 +27,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     required this.textDirection,
     required this.hitBoxCorrectionOffset,
     this.cursorWidth = 0.0,
+    this.outlinePainter,
+    this.outlineWidth = 0,
+    this.outlineColor = const Color(0xFF000000),
+    this.silhouettePainters = const [],
+    this.silhouetteShadows = const [],
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -54,6 +61,25 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
   /// An offset used to correct the position of the hitbox.
   final Offset hitBoxCorrectionOffset;
+
+  /// Paints the outline of the glyphs underneath [painter], or `null` when
+  /// the text has no outline.
+  final TextPainter? outlinePainter;
+
+  /// The outline thickness [outlinePainter] was built with; compared to
+  /// decide on a repaint, since its stroke paint has no value equality.
+  final double outlineWidth;
+
+  /// The outline color [outlinePainter] was built with.
+  final Color outlineColor;
+
+  /// Opaque passes that together form the outlined glyphs, used as the shape
+  /// that casts each of [silhouetteShadows].
+  final List<TextPainter> silhouettePainters;
+
+  /// Shadows cast by the outlined glyphs. The text style of an outlined text
+  /// carries none itself, since a text shadow only follows the bare glyphs.
+  final List<Shadow> silhouetteShadows;
 
   Path _buildBackgroundPath() {
     final metrics = painter.computeLineMetrics();
@@ -430,7 +456,44 @@ class RoundedBackgroundTextPainter extends CustomPainter {
       ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy)
       ..drawPath(_cachedPath!, painter);
 
+    _paintSilhouetteShadows(canvas);
+    outlinePainter?.paint(canvas, Offset.zero);
     this.painter.paint(canvas, Offset.zero);
+  }
+
+  /// Draws every shadow of [silhouetteShadows] as the tinted, blurred
+  /// silhouette of the outlined glyphs. The silhouette passes are merged in
+  /// one layer first, so where they overlap a translucent shadow color is not
+  /// applied twice.
+  void _paintSilhouetteShadows(Canvas canvas) {
+    if (silhouetteShadows.isEmpty || silhouettePainters.isEmpty) return;
+
+    // Glyphs may paint beyond the line boxes, e.g. with a `height` below 1 or
+    // an italic overhang, and the layer clips whatever lies outside it.
+    final textBounds = (Offset.zero & painter.size).inflate(
+      painter.preferredLineHeight,
+    );
+    for (final shadow in silhouetteShadows) {
+      final sigma = shadow.blurRadius > 0
+          ? Shadow.convertRadiusToSigma(shadow.blurRadius)
+          : 0.0;
+      final bounds = textBounds
+          .shift(shadow.offset)
+          .inflate(outlineWidth + sigma * 3);
+
+      canvas.saveLayer(
+        bounds,
+        Paint()
+          ..colorFilter = ColorFilter.mode(shadow.color, BlendMode.srcIn)
+          ..imageFilter = sigma > 0
+              ? ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma)
+              : null,
+      );
+      for (final silhouette in silhouettePainters) {
+        silhouette.paint(canvas, shadow.offset);
+      }
+      canvas.restore();
+    }
   }
 
   Path? _cachedPath;
@@ -453,6 +516,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         oldDelegate.painter.height != painter.height ||
         oldDelegate.painter.ellipsis != painter.ellipsis ||
         oldDelegate.painter.plainText != painter.plainText ||
+        oldDelegate.painter.text != painter.text ||
+        (oldDelegate.outlinePainter == null) != (outlinePainter == null) ||
+        oldDelegate.outlineWidth != outlineWidth ||
+        oldDelegate.outlineColor != outlineColor ||
+        !listEquals(oldDelegate.silhouetteShadows, silhouetteShadows) ||
         oldDelegate.painter.textAlign != painter.textAlign ||
         oldDelegate.painter.preferredLineHeight !=
             painter.preferredLineHeight ||
@@ -480,7 +548,12 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         other.cursorWidth == cursorWidth &&
         other.hitBoxCorrectionOffset == hitBoxCorrectionOffset &&
         other.innerRadius == innerRadius &&
-        other.outerRadius == outerRadius;
+        other.outerRadius == outerRadius &&
+        other.outlinePainter == outlinePainter &&
+        other.outlineWidth == outlineWidth &&
+        other.outlineColor == outlineColor &&
+        listEquals(other.silhouettePainters, silhouettePainters) &&
+        listEquals(other.silhouetteShadows, silhouetteShadows);
   }
 
   @override
@@ -493,6 +566,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         cursorWidth.hashCode ^
         hitBoxCorrectionOffset.hashCode ^
         innerRadius.hashCode ^
-        outerRadius.hashCode;
+        outerRadius.hashCode ^
+        outlinePainter.hashCode ^
+        outlineWidth.hashCode ^
+        outlineColor.hashCode ^
+        Object.hashAll(silhouettePainters) ^
+        Object.hashAll(silhouetteShadows);
   }
 }

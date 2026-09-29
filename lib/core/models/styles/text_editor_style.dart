@@ -140,7 +140,8 @@ class TextEditorStyle {
   /// Shadows applied to the text input field style.
   ///
   /// Defaults to an empty list to prevent unwanted shadow rendering
-  /// with some fonts. Set to `null` to use the font's default shadows.
+  /// with some fonts. Set to `null` to preview the shadows of the selected
+  /// text style, which the finished text layer draws.
   final List<Shadow>? inputShadows;
 
   /// Controls how extra leading from the [TextStyle.height] multiplier is

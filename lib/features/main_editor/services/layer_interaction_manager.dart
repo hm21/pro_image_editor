@@ -334,6 +334,8 @@ class LayerInteractionManager {
         fontScale: originalLayer.fontScale,
         customSecondaryColor: originalLayer.customSecondaryColor,
         maxTextWidth: originalLayer.maxTextWidth,
+        outlineWidth: originalLayer.outlineWidth,
+        outlineColor: originalLayer.outlineColor,
         hit: originalLayer.hit,
         key: originalLayer.key,
         interaction: originalLayer.interaction,

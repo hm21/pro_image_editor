@@ -53,6 +53,10 @@ class LayerWidgetTextItem extends StatelessWidget {
 
     final maxTextWidth = layer.maxTextWidth;
 
+    // Shadows and the outline are measured at the unscaled font size, so they
+    // grow with the text when the layer is scaled.
+    final effectScale = layer.scale * layer.fontScale;
+
     // Get the full style including shadows
     TextStyle finalStyle;
     if (layer.textStyle != null) {
@@ -61,7 +65,9 @@ class LayerWidgetTextItem extends StatelessWidget {
         fontWeight: layer.textStyle!.fontWeight ?? style.fontWeight,
         color: style.color,
         fontFamily: layer.textStyle!.fontFamily ?? style.fontFamily,
-        shadows: layer.textStyle!.shadows ?? style.shadows,
+        shadows: layer.textStyle!.shadows
+            ?.map((shadow) => shadow.scale(effectScale))
+            .toList(),
       );
     } else {
       finalStyle = style;
@@ -78,6 +84,9 @@ class LayerWidgetTextItem extends StatelessWidget {
       textAlign: layer.align,
       style: finalStyle,
       leadingDistribution: textEditorConfigs.style.leadingDistribution,
+      outlineWidth: layer.outlineWidth * effectScale,
+      outlineColor: layer.outlineColor,
+      reserveEffectSpace: true,
     );
   }
 

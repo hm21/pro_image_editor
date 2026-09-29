@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -27,6 +29,9 @@ class RoundedBackgroundText extends StatelessWidget {
     this.cursorWidth = 0,
     this.enableHitBoxCorrection = false,
     this.leadingDistribution = TextLeadingDistribution.proportional,
+    this.outlineWidth = 0,
+    this.outlineColor = const Color(0xFF000000),
+    this.reserveEffectSpace = false,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -44,6 +49,9 @@ class RoundedBackgroundText extends StatelessWidget {
     this.cursorWidth = 0,
     this.enableHitBoxCorrection = false,
     this.leadingDistribution = TextLeadingDistribution.proportional,
+    this.outlineWidth = 0,
+    this.outlineColor = const Color(0xFF000000),
+    this.reserveEffectSpace = false,
   });
 
   /// A flag to enable or disable hitBox correction for the text.
@@ -76,49 +84,170 @@ class RoundedBackgroundText extends StatelessWidget {
   /// Callback function triggered with the result of a hit test.
   final Function(bool hasHit)? onHitTestResult;
 
+  /// The thickness of the outline drawn around each glyph, measured outward
+  /// from the glyph edge. `0` draws no outline.
+  ///
+  /// While an outline is drawn, the shadows of the text style are cast by
+  /// the outlined glyphs rather than the bare ones.
+  final double outlineWidth;
+
+  /// The color of the outline.
+  final Color outlineColor;
+
+  /// Whether the widget grows by the space its outline and shadows paint
+  /// beyond the glyphs, so a capture of its bounds does not cut them off.
+  ///
+  /// The space is added on both sides, so the text keeps its center.
+  final bool reserveEffectSpace;
+
+  bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
+
   @override
   Widget build(BuildContext context) {
     final defaultTextStyle = DefaultTextStyle.of(context);
     final style = text.style ?? defaultTextStyle.style;
     final align = textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start;
+    final rootStyle = TextStyle(
+      leadingDistribution: leadingDistribution,
+    ).merge(style);
+    final shadows = style.shadows ?? const <Shadow>[];
+    final hasOutline = _hasOutline;
 
-    final painter = TextPainter(
-      text: TextSpan(
-        children: [text],
-        style: TextStyle(leadingDistribution: leadingDistribution).merge(style),
-      ),
-      textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
-      maxLines: defaultTextStyle.maxLines,
-      textAlign: align,
-      textWidthBasis: defaultTextStyle.textWidthBasis,
-      textHeightBehavior: defaultTextStyle.textHeightBehavior,
+    TextPainter createPainter(TextStyle Function(TextStyle style)? restyle) {
+      return TextPainter(
+        text: TextSpan(
+          children: [restyle == null ? text : _restyleSpan(text, restyle)],
+          style: restyle == null ? rootStyle : restyle(rootStyle),
+        ),
+        textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+        maxLines: defaultTextStyle.maxLines,
+        textAlign: align,
+        textWidthBasis: defaultTextStyle.textWidthBasis,
+        textHeightBehavior: defaultTextStyle.textHeightBehavior,
+      );
+    }
+
+    TextStyle Function(TextStyle style) paintWith(Paint paint) {
+      return (style) => style.copyWith(
+        foreground: paint,
+        shadows: const [],
+        decoration: TextDecoration.none,
+      );
+    }
+
+    Paint strokePaint(Color color) => Paint()
+      ..style = PaintingStyle.stroke
+      // Half of the stroke lies inside the glyph, under the fill.
+      ..strokeWidth = outlineWidth * 2
+      ..strokeJoin = StrokeJoin.round
+      ..strokeCap = StrokeCap.round
+      ..color = color;
+
+    // With an outline, the shadows are cast by the outlined glyphs, which the
+    // painter draws from opaque silhouettes; the passes themselves draw none.
+    final painter = createPainter(
+      hasOutline ? (style) => style.copyWith(shadows: const []) : null,
     );
+    final outlinePainter = hasOutline
+        ? createPainter(paintWith(strokePaint(outlineColor)))
+        : null;
+    final hasOutlineShadows = hasOutline && shadows.isNotEmpty;
+    final silhouettePainters = hasOutlineShadows
+        ? [
+            createPainter(paintWith(strokePaint(const Color(0xFF000000)))),
+            createPainter(paintWith(Paint()..color = const Color(0xFF000000))),
+          ]
+        : const <TextPainter>[];
+
     double height = painter.preferredLineHeight;
 
     double horizontalSpace = enableHitBoxCorrection ? height * 0.3 : 0;
     double verticalSpace = enableHitBoxCorrection ? height * 0.1 : 0;
 
+    final effectSpace = reserveEffectSpace
+        ? _effectSpace(
+            outlineWidth: hasOutline ? outlineWidth : 0,
+            shadows: shadows,
+          )
+        : Offset.zero;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         painter.layout(maxWidth: maxTextWidth);
+        outlinePainter?.layout(maxWidth: maxTextWidth);
+        for (final silhouette in silhouettePainters) {
+          silhouette.layout(maxWidth: maxTextWidth);
+        }
 
         return CustomPaint(
           isComplex: true,
           painter: RoundedBackgroundTextPainter(
             backgroundColor: backgroundColor ?? Colors.transparent,
             painter: painter,
+            outlinePainter: outlinePainter,
+            outlineWidth: hasOutline ? outlineWidth : 0,
+            outlineColor: outlineColor,
+            silhouettePainters: silhouettePainters,
+            silhouetteShadows: hasOutlineShadows ? shadows : const [],
             onHitTestResult: onHitTestResult,
             textAlign: align,
             cursorWidth: cursorWidth,
             textDirection: Directionality.of(context),
-            hitBoxCorrectionOffset: Offset(horizontalSpace, verticalSpace),
+            hitBoxCorrectionOffset:
+                Offset(horizontalSpace, verticalSpace) + effectSpace,
           ),
           size: Size(
-            painter.width.clamp(0, constraints.maxWidth) + horizontalSpace * 2,
-            painter.height.clamp(0, constraints.maxHeight) + verticalSpace * 2,
+            painter.width.clamp(0, constraints.maxWidth) +
+                (horizontalSpace + effectSpace.dx) * 2,
+            painter.height.clamp(0, constraints.maxHeight) +
+                (verticalSpace + effectSpace.dy) * 2,
           ),
         );
       },
+    );
+  }
+
+  /// How far the outline and the shadows paint beyond the glyphs on each
+  /// axis.
+  static Offset _effectSpace({
+    required double outlineWidth,
+    required List<Shadow> shadows,
+  }) {
+    double dx = outlineWidth;
+    double dy = outlineWidth;
+    for (final shadow in shadows) {
+      // A gaussian blur fades out within three sigma.
+      final blur = shadow.blurRadius > 0
+          ? Shadow.convertRadiusToSigma(shadow.blurRadius) * 3
+          : 0.0;
+      dx = max(dx, outlineWidth + shadow.offset.dx.abs() + blur);
+      dy = max(dy, outlineWidth + shadow.offset.dy.abs() + blur);
+    }
+    return Offset(dx.ceilToDouble(), dy.ceilToDouble());
+  }
+
+  /// A copy of [span] whose own styles, where set, are passed through
+  /// [restyle], so a paint applied to the root reaches spans that set their
+  /// own color.
+  static InlineSpan _restyleSpan(
+    InlineSpan span,
+    TextStyle Function(TextStyle style) restyle,
+  ) {
+    if (span is! TextSpan) return span;
+    return TextSpan(
+      text: span.text,
+      style: span.style == null ? null : restyle(span.style!),
+      children: span.children
+          ?.map((child) => _restyleSpan(child, restyle))
+          .toList(),
+      recognizer: span.recognizer,
+      mouseCursor: span.mouseCursor,
+      onEnter: span.onEnter,
+      onExit: span.onExit,
+      semanticsLabel: span.semanticsLabel,
+      semanticsIdentifier: span.semanticsIdentifier,
+      locale: span.locale,
+      spellOut: span.spellOut,
     );
   }
 
@@ -153,6 +282,15 @@ class RoundedBackgroundText extends StatelessWidget {
           'leadingDistribution',
           leadingDistribution,
           defaultValue: TextLeadingDistribution.proportional,
+        ),
+      )
+      ..add(DoubleProperty('outlineWidth', outlineWidth, defaultValue: 0))
+      ..add(ColorProperty('outlineColor', outlineColor))
+      ..add(
+        FlagProperty(
+          'reserveEffectSpace',
+          value: reserveEffectSpace,
+          ifTrue: 'effect space reserved',
         ),
       );
   }

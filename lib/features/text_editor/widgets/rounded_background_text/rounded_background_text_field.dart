@@ -30,6 +30,8 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
+    this.outlineWidth = 0,
+    this.outlineColor = const Color(0xFF000000),
   });
 
   /// Controls the text being edited in the text editor.
@@ -81,6 +83,15 @@ class RoundedBackgroundTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.onSubmitted}
   final ValueChanged<String>? onSubmitted;
+
+  /// The thickness of the outline drawn around each glyph, measured outward
+  /// from the glyph edge. `0` draws no outline.
+  final double outlineWidth;
+
+  /// The color of the outline.
+  final Color outlineColor;
+
+  bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
   @override
   State<RoundedBackgroundTextField> createState() =>
@@ -161,17 +172,24 @@ class _RoundedBackgroundTextFieldState
   TextLeadingDistribution? _cachedLineHeightLeading;
   TextDirection? _cachedLineHeightDirection;
 
-  /// The preferred line height for [widget.style] at [fontSize], computed the
+  /// [widget.style] with the line height the editable text lays its glyphs
+  /// out with. The background text uses it as well, so its rectangle and the
+  /// outline it draws line up with the editable glyphs.
+  TextStyle get _glyphStyle =>
+      widget.style.copyWith(height: widget.configs.style.textHeight);
+
+  /// The preferred line height for [_glyphStyle] at [fontSize], computed the
   /// same way [RoundedBackgroundText] lays the text out, so the hit-box padding
   /// reserved here matches the rectangle the painter draws. Memoized because
   /// [build] runs on every keystroke and scroll tick while none of the inputs
   /// change per frame.
   double _preferredLineHeight(double fontSize) {
+    final style = _glyphStyle;
     final leading = widget.configs.style.leadingDistribution;
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
     if (_cachedLineHeight != null &&
         _cachedLineHeightFontSize == fontSize &&
-        _cachedLineHeightStyle == widget.style &&
+        _cachedLineHeightStyle == style &&
         _cachedLineHeightLeading == leading &&
         _cachedLineHeightDirection == direction) {
       return _cachedLineHeight!;
@@ -181,7 +199,7 @@ class _RoundedBackgroundTextFieldState
       text: TextSpan(
         style: TextStyle(
           leadingDistribution: leading,
-        ).merge(widget.style.copyWith(fontSize: fontSize)),
+        ).merge(style.copyWith(fontSize: fontSize)),
         text: 'A',
       ),
       textDirection: direction,
@@ -191,16 +209,20 @@ class _RoundedBackgroundTextFieldState
 
     _cachedLineHeight = lineHeight;
     _cachedLineHeightFontSize = fontSize;
-    _cachedLineHeightStyle = widget.style;
+    _cachedLineHeightStyle = style;
     _cachedLineHeightLeading = leading;
     _cachedLineHeightDirection = direction;
     return lineHeight;
   }
 
   Widget _buildBackgroundText({required double hitBoxHorizontal}) {
-    final style = widget.style.copyWith(
+    // The editable text paints the glyphs and, without an outline, their
+    // shadows. With an outline, the outline has to sit under the glyphs and
+    // cast the shadows, so this background text paints both instead.
+    final style = _glyphStyle.copyWith(
       color: Colors.transparent,
       leadingDistribution: widget.configs.style.leadingDistribution,
+      shadows: widget._hasOutline ? null : const [],
     );
 
     return Positioned(
@@ -227,6 +249,8 @@ class _RoundedBackgroundTextFieldState
           // Match the finished layer (LayerWidgetTextItem) so the rounded
           // background reserves symmetric padding while editing.
           enableHitBoxCorrection: true,
+          outlineWidth: widget.outlineWidth,
+          outlineColor: widget.outlineColor,
         ),
       ),
     );
@@ -262,10 +286,10 @@ class _RoundedBackgroundTextFieldState
           scrollPhysics: const NeverScrollableScrollPhysics(),
           scrollController: _scrollCtrl,
           scrollPadding: EdgeInsets.zero,
-          style: widget.style.copyWith(
+          style: _glyphStyle.copyWith(
             fontSize: fontSize,
             leadingDistribution: widget.configs.style.leadingDistribution,
-            height: widget.configs.style.textHeight,
+            shadows: widget._hasOutline ? const [] : null,
           ),
           spellCheckConfiguration: widget.configs.spellCheckConfiguration,
           decoration: InputDecoration.collapsed(
@@ -309,6 +333,8 @@ class _RoundedBackgroundTextFieldState
       ..add(DiagnosticsProperty<TextStyle>('style', widget.style))
       ..add(EnumProperty<TextAlign>('textAlign', widget.textAlign))
       ..add(ColorProperty('backgroundColor', widget.backgroundColor))
+      ..add(DoubleProperty('outlineWidth', widget.outlineWidth))
+      ..add(ColorProperty('outlineColor', widget.outlineColor))
       ..add(DoubleProperty('maxTextWidth', widget.maxTextWidth))
       ..add(DoubleProperty('cursorWidth', widget.cursorWidth))
       ..add(

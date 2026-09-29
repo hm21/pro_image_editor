@@ -83,5 +83,121 @@ void main() {
       expect(map['flipX'], isTrue);
       expect(map['flipY'], isFalse);
     });
+
+    group('outline', () {
+      test('has no outline by default', () {
+        final textLayer = TextLayer(text: 'Sample Text');
+
+        expect(textLayer.outlineWidth, 0);
+        expect(textLayer.hasOutline, isFalse);
+        expect(textLayer.toMap(), isNot(contains('outlineWidth')));
+        expect(textLayer.toMap(), isNot(contains('outlineColor')));
+      });
+
+      test('has no outline when its color is fully transparent', () {
+        final textLayer = TextLayer(
+          text: 'Sample Text',
+          outlineWidth: 2,
+          outlineColor: const Color(0x00FF0000),
+        );
+
+        expect(textLayer.hasOutline, isFalse);
+      });
+
+      test('survives a map round trip', () {
+        const outlineColor = Color(0xFFFF0000);
+        final textLayer = TextLayer(
+          text: 'Sample Text',
+          outlineWidth: 2.5,
+          outlineColor: outlineColor,
+        );
+
+        final restored = TextLayer.fromMap(
+          TextLayer(text: 'Base Layer'),
+          textLayer.toMap(),
+        );
+
+        expect(restored.outlineWidth, 2.5);
+        expect(restored.outlineColor, outlineColor);
+        expect(restored.hasOutline, isTrue);
+      });
+
+      test('is kept by copyWith unless replaced', () {
+        final textLayer = TextLayer(
+          text: 'Sample Text',
+          outlineWidth: 2,
+          outlineColor: const Color(0xFFFF0000),
+        );
+
+        expect(textLayer.copyWith(text: 'Other').outlineWidth, 2);
+        expect(textLayer.copyWith(outlineWidth: 0).hasOutline, isFalse);
+      });
+    });
+
+    group('toMapFromReference', () {
+      const shadow = Shadow(
+        color: Color(0x80000000),
+        blurRadius: 4,
+        offset: Offset(1, 2),
+      );
+
+      test('omits shadows and outline that did not change', () {
+        final reference = TextLayer(
+          text: 'Sample Text',
+          textStyle: const TextStyle(shadows: [shadow]),
+          outlineWidth: 2,
+        );
+
+        final map = reference
+            .copyWith(text: 'Other')
+            .toMapFromReference(reference);
+
+        expect(map, isNot(contains('shadows')));
+        expect(map, isNot(contains('outlineWidth')));
+        expect(map, isNot(contains('outlineColor')));
+      });
+
+      test('writes an empty list when the shadows were removed', () {
+        final reference = TextLayer(
+          text: 'Sample Text',
+          textStyle: const TextStyle(shadows: [shadow]),
+        );
+        final updated = reference.copyWith(textStyle: const TextStyle());
+
+        final map = updated.toMapFromReference(reference);
+
+        expect(map['shadows'], isEmpty);
+      });
+
+      test('writes the outline when it changed', () {
+        final reference = TextLayer(text: 'Sample Text', outlineWidth: 2);
+        final updated = reference.copyWith(
+          outlineWidth: 0,
+          outlineColor: const Color(0xFFFFFFFF),
+        );
+
+        final map = updated.toMapFromReference(reference);
+
+        expect(map['outlineWidth'], 0);
+        expect(map['outlineColor'], const Color(0xFFFFFFFF).toHex());
+      });
+
+      test('keeps a color set before the width in a later step', () {
+        final reference = TextLayer(
+          text: 'Sample Text',
+          outlineColor: const Color(0xFFFF0000),
+        );
+        final updated = reference.copyWith(outlineWidth: 2);
+
+        // The import merges each history entry over the previous state.
+        final restored = TextLayer.fromMap(reference, {
+          ...reference.toMap(),
+          ...updated.toMapFromReference(reference),
+        });
+
+        expect(restored.outlineWidth, 2);
+        expect(restored.outlineColor, const Color(0xFFFF0000));
+      });
+    });
   });
 }
