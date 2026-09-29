@@ -69,6 +69,8 @@ const Map<String, String> kMinifiedLayerKeys = {
   'enterCurve': 'ev',
   'exitCurve': 'xv',
   'animations': 'an',
+  'highlights': 'hl',
+  'highlightColor': 'hc',
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -104,6 +105,58 @@ class RoundedBackgroundText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final layout = _layout(context, constraints);
+        return CustomPaint(
+          isComplex: true,
+          painter: layout.painter,
+          size: layout.size,
+        );
+      },
+    );
+  }
+
+  /// Paints this text into an image the way it paints on screen when laid
+  /// out at [size], at [pixelRatio] device pixels per logical pixel.
+  ///
+  /// [context] supplies the inherited text style and direction, exactly as it
+  /// does in [build], so it must be a context the widget could be built in.
+  /// The result matches what `RenderRepaintBoundary.toImage` reads from a
+  /// boundary directly around this widget, without the widget having to be
+  /// on screen in that state.
+  Future<ui.Image> toImage(
+    BuildContext context, {
+    required Size size,
+    required double pixelRatio,
+  }) async {
+    final painter = _layout(context, BoxConstraints.loose(size)).painter;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder)..scale(pixelRatio);
+    painter.paint(canvas, size);
+
+    final picture = recorder.endRecording();
+    try {
+      return await picture.toImage(
+        (size.width * pixelRatio).ceil(),
+        (size.height * pixelRatio).ceil(),
+      );
+    } finally {
+      picture.dispose();
+      painter.painter.dispose();
+      painter.outlinePainter?.dispose();
+      for (final silhouette in painter.silhouettePainters) {
+        silhouette.dispose();
+      }
+    }
+  }
+
+  /// Lays the text out within [constraints] and returns the painter that
+  /// draws it together with the size it paints at.
+  ({RoundedBackgroundTextPainter painter, Size size}) _layout(
+    BuildContext context,
+    BoxConstraints constraints,
+  ) {
     final defaultTextStyle = DefaultTextStyle.of(context);
     final style = text.style ?? defaultTextStyle.style;
     final align = textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start;
@@ -171,39 +224,34 @@ class RoundedBackgroundText extends StatelessWidget {
           )
         : Offset.zero;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        painter.layout(maxWidth: maxTextWidth);
-        outlinePainter?.layout(maxWidth: maxTextWidth);
-        for (final silhouette in silhouettePainters) {
-          silhouette.layout(maxWidth: maxTextWidth);
-        }
+    painter.layout(maxWidth: maxTextWidth);
+    outlinePainter?.layout(maxWidth: maxTextWidth);
+    for (final silhouette in silhouettePainters) {
+      silhouette.layout(maxWidth: maxTextWidth);
+    }
 
-        return CustomPaint(
-          isComplex: true,
-          painter: RoundedBackgroundTextPainter(
-            backgroundColor: backgroundColor ?? Colors.transparent,
-            painter: painter,
-            outlinePainter: outlinePainter,
-            outlineWidth: hasOutline ? outlineWidth : 0,
-            outlineColor: outlineColor,
-            silhouettePainters: silhouettePainters,
-            silhouetteShadows: hasOutlineShadows ? shadows : const [],
-            onHitTestResult: onHitTestResult,
-            textAlign: align,
-            cursorWidth: cursorWidth,
-            textDirection: Directionality.of(context),
-            hitBoxCorrectionOffset:
-                Offset(horizontalSpace, verticalSpace) + effectSpace,
-          ),
-          size: Size(
-            painter.width.clamp(0, constraints.maxWidth) +
-                (horizontalSpace + effectSpace.dx) * 2,
-            painter.height.clamp(0, constraints.maxHeight) +
-                (verticalSpace + effectSpace.dy) * 2,
-          ),
-        );
-      },
+    return (
+      painter: RoundedBackgroundTextPainter(
+        backgroundColor: backgroundColor ?? Colors.transparent,
+        painter: painter,
+        outlinePainter: outlinePainter,
+        outlineWidth: hasOutline ? outlineWidth : 0,
+        outlineColor: outlineColor,
+        silhouettePainters: silhouettePainters,
+        silhouetteShadows: hasOutlineShadows ? shadows : const [],
+        onHitTestResult: onHitTestResult,
+        textAlign: align,
+        cursorWidth: cursorWidth,
+        textDirection: Directionality.of(context),
+        hitBoxCorrectionOffset:
+            Offset(horizontalSpace, verticalSpace) + effectSpace,
+      ),
+      size: Size(
+        painter.width.clamp(0, constraints.maxWidth) +
+            (horizontalSpace + effectSpace.dx) * 2,
+        painter.height.clamp(0, constraints.maxHeight) +
+            (verticalSpace + effectSpace.dy) * 2,
+      ),
     );
   }
 

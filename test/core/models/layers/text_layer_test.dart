@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/models/layers/enums/layer_background_mode.dart';
-import 'package:pro_image_editor/core/models/layers/text_layer.dart';
+import 'package:pro_image_editor/core/models/layers/layer.dart';
 import 'package:pro_image_editor/shared/extensions/color_extension.dart';
+import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';
 
 void main() {
   group('TextLayer', () {
@@ -197,6 +198,151 @@ void main() {
 
         expect(restored.outlineWidth, 2);
         expect(restored.outlineColor, const Color(0xFFFF0000));
+      });
+    });
+
+    group('highlights', () {
+      const hello = TextHighlight(
+        start: 0,
+        end: 5,
+        startTime: Duration.zero,
+        endTime: Duration(milliseconds: 400),
+      );
+      const world = TextHighlight(
+        start: 6,
+        end: 11,
+        startTime: Duration(milliseconds: 400),
+        endTime: Duration(milliseconds: 900),
+      );
+
+      TextLayer highlightedLayer({Duration? startTime}) => TextLayer(
+        text: 'Hello world',
+        startTime: startTime,
+        highlights: [hello, world],
+        highlightColor: const Color(0xFF00FF00),
+      );
+
+      test('defaults to none, in the default highlight color', () {
+        final layer = TextLayer(text: 'Plain');
+
+        expect(layer.highlights, isEmpty);
+        expect(layer.highlightColor, kDefaultTextHighlightColor);
+        expect(layer.highlightIndexAt(Duration.zero), isNull);
+      });
+
+      test('highlightIndexAt measures from the layer start', () {
+        final layer = highlightedLayer(startTime: const Duration(seconds: 2));
+
+        expect(layer.highlightIndexAt(const Duration(seconds: 1)), isNull);
+        expect(layer.highlightIndexAt(const Duration(seconds: 2)), 0);
+        expect(layer.highlightIndexAt(const Duration(milliseconds: 2500)), 1);
+        expect(
+          layer.highlightIndexAt(const Duration(milliseconds: 2900)),
+          isNull,
+        );
+      });
+
+      test('highlightIndexAt measures from zero without a layer start', () {
+        final layer = highlightedLayer();
+
+        expect(layer.highlightIndexAt(const Duration(milliseconds: 500)), 1);
+      });
+
+      test('the later of two overlapping highlights wins', () {
+        final layer = TextLayer(
+          text: 'Hello world',
+          highlights: [
+            hello.copyWith(endTime: const Duration(seconds: 1)),
+            world.copyWith(startTime: const Duration(milliseconds: 200)),
+          ],
+        );
+
+        expect(layer.highlightIndexAt(const Duration(milliseconds: 100)), 0);
+        expect(layer.highlightIndexAt(const Duration(milliseconds: 300)), 1);
+      });
+
+      test('toMap writes the highlights and their color', () {
+        final map = highlightedLayer().toMap();
+
+        expect(map['highlights'], [hello.toMap(), world.toMap()]);
+        expect(map['highlightColor'], const Color(0xFF00FF00).toHex());
+      });
+
+      test('toMap leaves both out without highlights', () {
+        final map = TextLayer(text: 'Plain').toMap();
+
+        expect(map.containsKey('highlights'), false);
+        expect(map.containsKey('highlightColor'), false);
+      });
+
+      test('round-trips through Layer.fromMap', () {
+        final restored = Layer.fromMap(highlightedLayer().toMap()) as TextLayer;
+
+        expect(restored.highlights, [hello, world]);
+        expect(restored.highlightColor, const Color(0xFF00FF00));
+      });
+
+      test('round-trips through minified keys', () {
+        final minifier = EditorKeyMinifier(enableMinify: true);
+        final minified = {
+          for (final entry in highlightedLayer().toMap().entries)
+            minifier.convertLayerKey(entry.key): entry.value,
+        };
+
+        final restored =
+            Layer.fromMap(minified, minifier: minifier) as TextLayer;
+
+        expect(restored.highlights, [hello, world]);
+        expect(restored.highlightColor, const Color(0xFF00FF00));
+      });
+
+      test('fromMap drops highlights that can never show', () {
+        final map = highlightedLayer().toMap()
+          ..['highlights'] = [
+            hello.toMap(),
+            {'start': 4, 'end': 2, 'startTime': 0, 'endTime': 100},
+          ];
+
+        final restored = Layer.fromMap(map) as TextLayer;
+
+        expect(restored.highlights, [hello]);
+      });
+
+      test('toMapFromReference writes only changed highlight fields', () {
+        final reference = highlightedLayer();
+
+        expect(
+          reference.copyWith().toMapFromReference(reference),
+          isNot(contains('highlights')),
+        );
+
+        final retimed = reference.copyWith(
+          highlights: [
+            hello,
+            world.copyWith(endTime: const Duration(seconds: 1)),
+          ],
+        );
+        final diff = retimed.toMapFromReference(reference);
+        expect(diff['highlights'], [
+          hello.toMap(),
+          world.copyWith(endTime: const Duration(seconds: 1)).toMap(),
+        ]);
+        expect(diff.containsKey('highlightColor'), false);
+
+        final recolored = reference.copyWith(
+          highlightColor: const Color(0xFFFF0000),
+        );
+        expect(
+          recolored.toMapFromReference(reference)['highlightColor'],
+          const Color(0xFFFF0000).toHex(),
+        );
+      });
+
+      test('copyWith keeps the highlights unless replaced', () {
+        final layer = highlightedLayer();
+
+        expect(layer.copyWith(text: 'Hello world!').highlights, [hello, world]);
+        expect(layer.copyWith(highlights: const []).highlights, isEmpty);
       });
     });
   });

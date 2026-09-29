@@ -133,6 +133,8 @@ class LayerCopyManager {
       maxTextWidth: layer.maxTextWidth,
       outlineWidth: layer.outlineWidth,
       outlineColor: layer.outlineColor,
+      highlights: List<TextHighlight>.of(layer.highlights),
+      highlightColor: layer.highlightColor,
       customSecondaryColor: layer.customSecondaryColor,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),

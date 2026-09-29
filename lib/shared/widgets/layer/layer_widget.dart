@@ -1,6 +1,7 @@
 // Dart imports:
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/foundation.dart';
@@ -425,6 +426,7 @@ class _LayerWidgetState extends State<LayerWidget>
                       layer: _layer,
                       isSelected: _isSelected,
                       skipPaint: widget.isRasterCached,
+                      playTimeNotifier: widget.playTimeNotifier,
                       enableHitDetection:
                           _layerInteractionManager?.enabledHitDetection ??
                           false,
@@ -508,6 +510,7 @@ class _LayerContentItem extends StatelessWidget {
     required this.stickerEditorConfigs,
     required this.paintEditorConfigs,
     required this.designMode,
+    this.playTimeNotifier,
   });
 
   final LayerWidgetType layerType;
@@ -522,6 +525,7 @@ class _LayerContentItem extends StatelessWidget {
   final StickerEditorConfigs stickerEditorConfigs;
   final PaintEditorConfigs paintEditorConfigs;
   final ImageEditorDesignMode designMode;
+  final ValueNotifier<Duration>? playTimeNotifier;
 
   @override
   Widget build(BuildContext context) {
@@ -540,6 +544,7 @@ class _LayerContentItem extends StatelessWidget {
           textEditorConfigs: textEditorConfigs,
           showMoveCursor: showMoveCursor,
           onHitChanged: onHitChanged,
+          playTimeNotifier: playTimeNotifier,
         );
       case LayerWidgetType.widget:
         content = LayerWidgetCustomItem(
@@ -571,17 +576,40 @@ class _LayerContentItem extends StatelessWidget {
       );
     }
 
+    final textLayer = layer is TextLayer ? layer as TextLayer : null;
+    final highlightedText = textLayer?.highlights.isNotEmpty == true
+        ? textLayer
+        : null;
+    Future<ui.Image> renderText(double pixelRatio, int? highlightIndex) {
+      final box =
+          layer.repaintBoundaryKey.currentContext?.findRenderObject()
+              as RenderBox?;
+      return LayerWidgetTextItem.renderContent(
+        context,
+        layer: highlightedText!,
+        textEditorConfigs: textEditorConfigs,
+        size: box?.size ?? Size.zero,
+        pixelRatio: pixelRatio,
+        highlightIndex: highlightIndex,
+      );
+    }
+
     return LayerRepaintBoundary(
       key: layer.repaintBoundaryKey,
       // The painters draw nothing while the strokes come from the raster
       // cache, so a capture has to render them from the model instead.
+      // Highlighted text is rendered from the model as well: on screen it
+      // shows whichever highlight the playback position is on.
       renderContent: skipPaint
           ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
               layer as PaintLayer,
               pixelRatio: pixelRatio,
               paintEditorConfigs: paintEditorConfigs,
             )
+          : highlightedText != null
+          ? (pixelRatio) => renderText(pixelRatio, null)
           : null,
+      renderHighlight: highlightedText != null ? renderText : null,
       child: content,
     );
   }
