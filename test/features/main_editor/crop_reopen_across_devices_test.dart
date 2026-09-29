@@ -156,6 +156,52 @@ void main() {
     }
   }
 
+  /// Anchor of each layer in raw image pixels, as the open crop editor
+  /// previews it.
+  Map<String, Offset> layersInCropPreview(WidgetTester tester) {
+    final editor = find.byType(CropRotateEditor);
+    final image = tester.renderObject<RenderBox>(
+      find
+          .descendant(
+            of: editor,
+            matching: find.byWidgetPredicate(
+              (w) => w.runtimeType.toString() == 'FilteredWidget',
+            ),
+          )
+          .first,
+    );
+    final result = <String, Offset>{};
+    for (final element
+        in find
+            .descendant(of: editor, matching: find.byType(LayerWidget))
+            .evaluate()) {
+      final layer = (element.widget as LayerWidget).layer;
+      if (layer is! TextLayer) continue;
+      final anchor = (element.renderObject! as RenderBox).localToGlobal(
+        Offset.zero,
+      );
+      final local = image.globalToLocal(anchor);
+      result[layer.text] = Offset(
+        local.dx / image.size.width * rawSize.width,
+        local.dy / image.size.height * rawSize.height,
+      );
+    }
+    return result;
+  }
+
+  Future<void> expectCropPreview(
+    WidgetTester tester,
+    ProImageEditorState editor,
+    Map<String, Offset> expected,
+    String when,
+  ) async {
+    editor.openCropRotateEditor();
+    await settle(tester);
+    expectSame(layersInCropPreview(tester), expected, 'crop preview $when');
+    editor.cropRotateEditor.currentState!.close();
+    await settle(tester);
+  }
+
   void addTick(ProImageEditorState editor, String name, Offset offset) {
     editor.addLayer(
       TextLayer(text: name, offset: offset),
@@ -217,6 +263,7 @@ void main() {
     required List<String> hops,
     String Function(String json)? rewriteExport,
     bool rotate = false,
+    bool checkCropPreview = false,
   }) async {
     addTearDown(tester.view.reset);
     final bytes = (await tester.runAsync(makePng))!;
@@ -234,6 +281,10 @@ void main() {
     await settle(tester);
     final expected = layersOnImage(tester);
 
+    if (checkCropPreview) {
+      await expectCropPreview(tester, source, expected, 'after crop');
+    }
+
     var json = await export(tester, source);
     if (rewriteExport != null) json = rewriteExport(json);
 
@@ -241,6 +292,9 @@ void main() {
       setSurface(tester, hop);
       final reopened = await pumpEditor(tester, bytes, historyJson: json);
       expectSame(layersOnImage(tester), expected, 'reopened on $hop');
+      if (checkCropPreview) {
+        await expectCropPreview(tester, reopened, expected, 'on $hop');
+      }
       json = await export(tester, reopened);
     }
   }
@@ -300,6 +354,17 @@ void main() {
     testWidgets(
       'rotated crop, ${pair.join(' > ')}',
       (t) => scenario(t, hops: pair, rotate: true),
+    );
+  }
+
+  for (final pair in const [
+    ['desktop', 'phone'],
+    ['phone', 'desktop'],
+    ['ultrawide', 'tablet'],
+  ]) {
+    testWidgets(
+      'crop editor previews layers on a cropped image, ${pair.join(' > ')}',
+      (t) => scenario(t, hops: pair, checkCropPreview: true),
     );
   }
 

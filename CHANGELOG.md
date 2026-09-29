@@ -2,6 +2,7 @@
 
 ## 14.4.2
 - **FIX**(main-editor): Applying a crop keeps existing layers on the same point of the image. They used to jump when the image filled the editor by its width, such as on portrait screens.
+- **FIX**(crop-rotate-editor): Opening the crop editor on an already cropped image previews its layers on the image points the main editor shows them on.
 - **FIX**(import-export): Reopening a cropped image on a screen of another size keeps its layers on the same point of the image instead of drifting. The export records the editor body size for this; histories exported before it estimate that size from the crop.
 
 ## 14.4.1

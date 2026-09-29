@@ -15,6 +15,7 @@ import '/features/crop_rotate_editor/widgets/crop_editor_appbar.dart';
 import '/features/crop_rotate_editor/widgets/crop_editor_bottombar.dart';
 import '/features/crop_rotate_editor/widgets/outside_gestures/crop_rotate_gesture_detector.dart';
 import '/features/crop_rotate_editor/widgets/outside_gestures/outside_gesture_listener.dart';
+import '/features/main_editor/services/image_layer_frame.dart';
 import '/plugins/defer_pointer/defer_pointer.dart';
 import '/pro_image_editor.dart';
 import '/shared/extensions/double_extension.dart';
@@ -705,6 +706,36 @@ class CropRotateEditorState extends State<CropRotateEditor>
       fitToScreenFactor: _transformHelperScale,
       transformHelperScale: _transformHelperScale,
     ).updatedLayers;
+    _placeRawLayersOnImage();
+  }
+
+  /// Places the preview layers on the image points the main editor shows
+  /// them on.
+  ///
+  /// The preview stack is centered on the uncropped image box
+  /// ([originalSize]). The main editor positions layers with
+  /// [ImageLayerFrame], so undoing its crop with [LayerTransformGenerator]
+  /// would not land on the same points. Rotation and flips still come from
+  /// the generator.
+  void _placeRawLayersOnImage() {
+    final bodySize = mainBodySize;
+    final box = originalSize;
+    if (bodySize == null || !box.isFinite || box.isEmpty) return;
+    final frame = ImageLayerFrame.of(
+      transform: _fakeHeroTransformConfigs,
+      bodySize: bodySize,
+      renderedImageSize: _mainImageSize,
+    );
+    if (frame == null) return;
+    final scale = box.width / frame.pixelsPerImageWidth;
+    if (!scale.isFinite || scale == 0) return;
+
+    for (var i = 0; i < _rawLayers.length && i < _layers.length; i++) {
+      final point = frame.toImage(_layers[i].offset);
+      _rawLayers[i]
+        ..offset = Offset(point.dx * box.width, point.dy * box.height)
+        ..scale = _layers[i].scale * scale;
+    }
   }
 
   double get _transformHelperScale => originalSize.isEmpty
@@ -2963,7 +2994,12 @@ class CropRotateEditorState extends State<CropRotateEditor>
       child: LayoutBuilder(
         builder: (context, constraints) {
           _renderedImgConstraints = constraints;
-          originalSize = constraints.biggest;
+          final laidOutSize = constraints.biggest;
+          if (laidOutSize != originalSize) {
+            originalSize = laidOutSize;
+            // The preview layers are centered on this box.
+            _placeRawLayersOnImage();
+          }
           return _buildTiltTransform(
             child: Stack(
               fit: StackFit.expand,
