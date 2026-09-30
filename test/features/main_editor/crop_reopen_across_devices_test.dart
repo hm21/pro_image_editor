@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 // Project imports:
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/widgets/layer/layer_stack.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 import 'package:pro_image_editor/shared/widgets/transform/transformed_content_generator.dart';
 
@@ -76,25 +77,35 @@ void main() {
     WidgetTester tester,
     Uint8List bytes, {
     String? historyJson,
+    bool blank = false,
   }) async {
     final key = GlobalKey<ProImageEditorState>();
+    final editorConfigs = configs.copyWith(
+      stateHistory: StateHistoryConfigs(
+        initStateHistory: historyJson == null
+            ? null
+            : ImportStateHistory.fromJson(historyJson),
+      ),
+    );
+    final callbacks = ProImageEditorCallbacks(
+      onImageEditingComplete: (_) async {},
+    );
     await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(
       MaterialApp(
-        home: ProImageEditor.memory(
-          bytes,
-          key: key,
-          configs: configs.copyWith(
-            stateHistory: StateHistoryConfigs(
-              initStateHistory: historyJson == null
-                  ? null
-                  : ImportStateHistory.fromJson(historyJson),
-            ),
-          ),
-          callbacks: ProImageEditorCallbacks(
-            onImageEditingComplete: (_) async {},
-          ),
-        ),
+        home: blank
+            ? ProImageEditor.blank(
+                rawSize,
+                key: key,
+                configs: editorConfigs,
+                callbacks: callbacks,
+              )
+            : ProImageEditor.memory(
+                bytes,
+                key: key,
+                configs: editorConfigs,
+                callbacks: callbacks,
+              ),
       ),
     );
     await settle(tester);
@@ -115,16 +126,15 @@ void main() {
     );
   }
 
-  /// Anchor of each layer in raw image pixels, by layer text.
+  /// Anchor of each text layer found by [layers] in raw pixels of [image],
+  /// by layer text.
   ///
   /// The layout box top-left is the anchor; FractionalTranslation only shifts
   /// paint. globalToLocal inverts rotation and flips too.
-  Map<String, Offset> layersOnImage(WidgetTester tester) {
-    final image = paintedImage(tester);
+  Map<String, Offset> anchorsOn(RenderBox image, Finder layers) {
     final result = <String, Offset>{};
-    for (final element in find.byType(LayerWidget).evaluate()) {
-      final widget = element.widget as LayerWidget;
-      final layer = widget.layer;
+    for (final element in layers.evaluate()) {
+      final layer = (element.widget as LayerWidget).layer;
       if (layer is! TextLayer) continue;
       final anchor = (element.renderObject! as RenderBox).localToGlobal(
         Offset.zero,
@@ -136,6 +146,11 @@ void main() {
       );
     }
     return result;
+  }
+
+  /// Anchor of each layer in raw image pixels, by layer text.
+  Map<String, Offset> layersOnImage(WidgetTester tester) {
+    return anchorsOn(paintedImage(tester), find.byType(LayerWidget));
   }
 
   void expectSame(
@@ -156,37 +171,46 @@ void main() {
     }
   }
 
+  Finder filteredImageIn(Finder scope) {
+    return find
+        .descendant(
+          of: scope,
+          matching: find.byWidgetPredicate(
+            (w) => w.runtimeType.toString() == 'FilteredWidget',
+          ),
+        )
+        .first;
+  }
+
   /// Anchor of each layer in raw image pixels, as the open crop editor
   /// previews it.
   Map<String, Offset> layersInCropPreview(WidgetTester tester) {
     final editor = find.byType(CropRotateEditor);
-    final image = tester.renderObject<RenderBox>(
-      find
-          .descendant(
-            of: editor,
-            matching: find.byWidgetPredicate(
-              (w) => w.runtimeType.toString() == 'FilteredWidget',
-            ),
-          )
-          .first,
+    return anchorsOn(
+      tester.renderObject<RenderBox>(filteredImageIn(editor)),
+      find.descendant(of: editor, matching: find.byType(LayerWidget)),
     );
-    final result = <String, Offset>{};
-    for (final element
-        in find
-            .descendant(of: editor, matching: find.byType(LayerWidget))
-            .evaluate()) {
-      final layer = (element.widget as LayerWidget).layer;
-      if (layer is! TextLayer) continue;
-      final anchor = (element.renderObject! as RenderBox).localToGlobal(
-        Offset.zero,
-      );
-      final local = image.globalToLocal(anchor);
-      result[layer.text] = Offset(
-        local.dx / image.size.width * rawSize.width,
-        local.dy / image.size.height * rawSize.height,
-      );
-    }
-    return result;
+  }
+
+  /// Anchor of each layer in raw image pixels, as the crop editor shows it
+  /// while it closes, where the hero flight back to the main editor starts.
+  Map<String, Offset> layersInClosingCropEditor(WidgetTester tester) {
+    final editor = find.byType(CropRotateEditor);
+    final heroImage = find.descendant(
+      of: editor,
+      matching: find.byType(TransformedContentGenerator),
+    );
+    // The preview stack draws with a zero main body size.
+    final heroLayers = find.descendant(
+      of: editor,
+      matching: find.byWidgetPredicate(
+        (w) => w is LayerStack && !w.transformHelper.mainBodySize.isEmpty,
+      ),
+    );
+    return anchorsOn(
+      tester.renderObject<RenderBox>(filteredImageIn(heroImage)),
+      find.descendant(of: heroLayers, matching: find.byType(LayerWidget)),
+    );
   }
 
   Future<void> expectCropPreview(
@@ -214,6 +238,9 @@ void main() {
     WidgetTester tester,
     ProImageEditorState editor, {
     bool rotate = false,
+    bool flip = false,
+    double aspectRatio = 1,
+    void Function()? whileClosing,
   }) async {
     editor.openCropRotateEditor();
     await settle(tester);
@@ -222,7 +249,11 @@ void main() {
       crop.rotate();
       await settle(tester);
     }
-    crop.updateAspectRatio(1);
+    if (flip) {
+      crop.flip();
+      await settle(tester);
+    }
+    crop.updateAspectRatio(aspectRatio);
     await settle(tester);
     crop.setScale(1.6);
     await settle(tester);
@@ -235,6 +266,10 @@ void main() {
     // inside the fake-async zone never completes. Pump until it finishes.
     var finished = false;
     unawaited(crop.done().whenComplete(() => finished = true));
+    if (whileClosing != null) {
+      await tester.pump();
+      whileClosing();
+    }
     for (var i = 0; i < 40 && !finished; i++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
@@ -263,23 +298,46 @@ void main() {
     required List<String> hops,
     String Function(String json)? rewriteExport,
     bool rotate = false,
+    bool flip = false,
+    bool cropTwice = false,
+    bool blank = false,
+    double aspectRatio = 1,
     bool checkCropPreview = false,
+    bool checkClosingCropEditor = false,
   }) async {
     addTearDown(tester.view.reset);
     final bytes = (await tester.runAsync(makePng))!;
 
     setSurface(tester, hops.first);
-    final source = await pumpEditor(tester, bytes);
+    final source = await pumpEditor(tester, bytes, blank: blank);
     addTick(source, 'before', const Offset(40, -30));
     await settle(tester);
     final placed = layersOnImage(tester);
 
-    await cropOffCenter(tester, source, rotate: rotate);
+    await cropOffCenter(
+      tester,
+      source,
+      rotate: rotate,
+      flip: flip,
+      aspectRatio: aspectRatio,
+      whileClosing: checkClosingCropEditor
+          ? () => expectSame(
+              layersInClosingCropEditor(tester),
+              placed,
+              'while the crop editor closes',
+            )
+          : null,
+    );
     expectSame(layersOnImage(tester), placed, 'right after crop');
 
     addTick(source, 'after', const Offset(-25, 35));
     await settle(tester);
     final expected = layersOnImage(tester);
+
+    if (cropTwice) {
+      await cropOffCenter(tester, source);
+      expectSame(layersOnImage(tester), expected, 'right after second crop');
+    }
 
     if (checkCropPreview) {
       await expectCropPreview(tester, source, expected, 'after crop');
@@ -290,7 +348,12 @@ void main() {
 
     for (final hop in hops.skip(1)) {
       setSurface(tester, hop);
-      final reopened = await pumpEditor(tester, bytes, historyJson: json);
+      final reopened = await pumpEditor(
+        tester,
+        bytes,
+        historyJson: json,
+        blank: blank,
+      );
       expectSame(layersOnImage(tester), expected, 'reopened on $hop');
       if (checkCropPreview) {
         await expectCropPreview(tester, reopened, expected, 'on $hop');
@@ -365,6 +428,50 @@ void main() {
     testWidgets(
       'crop editor previews layers on a cropped image, ${pair.join(' > ')}',
       (t) => scenario(t, hops: pair, checkCropPreview: true),
+    );
+  }
+
+  testWidgets(
+    'flipped crop, desktop > phone',
+    (t) => scenario(t, hops: ['desktop', 'phone'], flip: true),
+  );
+
+  testWidgets(
+    'crop a cropped image, phone > desktop',
+    (t) => scenario(t, hops: ['phone', 'desktop'], cropTwice: true),
+  );
+
+  testWidgets(
+    'export without body size reopens on the same phone with a tall crop',
+    (t) => scenario(
+      t,
+      hops: ['phone', 'phone'],
+      rewriteExport: withoutBodySize,
+      aspectRatio: 0.5,
+    ),
+  );
+
+  testWidgets(
+    'blank canvas, desktop > phone',
+    (t) => scenario(t, hops: ['desktop', 'phone'], blank: true),
+  );
+
+  for (final hop in const ['desktop', 'phone']) {
+    testWidgets(
+      'blank canvas export without body size reopens on $hop',
+      (t) => scenario(
+        t,
+        hops: [hop, hop],
+        blank: true,
+        rewriteExport: withoutBodySize,
+      ),
+    );
+  }
+
+  for (final hop in const ['desktop', 'phone']) {
+    testWidgets(
+      'closing crop editor shows layers on their image points, $hop',
+      (t) => scenario(t, hops: [hop], checkClosingCropEditor: true),
     );
   }
 

@@ -63,7 +63,10 @@ class LayerRasterizationRequest {
 /// final history = ImportStateHistory.fromMap(persistedHistory);
 /// final captured = await rasterizer.capture(
 ///   layers: history.stateHistory[history.editorPosition].layers,
-///   editorBodySize: history.lastRenderedImgSize,
+///   // Exports made before `editorBodySize` was recorded leave it empty.
+///   editorBodySize: history.editorBodySize.isEmpty
+///       ? history.lastRenderedImgSize
+///       : history.editorBodySize,
 ///   configs: myEditorConfigs,
 /// );
 /// ```

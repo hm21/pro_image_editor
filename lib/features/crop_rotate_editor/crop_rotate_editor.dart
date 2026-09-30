@@ -728,7 +728,6 @@ class CropRotateEditorState extends State<CropRotateEditor>
     );
     if (frame == null) return;
     final scale = box.width / frame.pixelsPerImageWidth;
-    if (!scale.isFinite || scale == 0) return;
 
     for (var i = 0; i < _rawLayers.length && i < _layers.length; i++) {
       final point = frame.toImage(_layers[i].offset);
@@ -961,15 +960,28 @@ class CropRotateEditorState extends State<CropRotateEditor>
     _updateAllStates();
 
     if (!initConfigs.convertToUint8List) {
+      final sourceLayers = initConfigs.layers ?? [];
+      final activeTransformConfigs =
+          initConfigs.transformConfigs ?? TransformConfigs.empty();
       List<Layer> updatedLayers = LayerTransformGenerator(
-        layers: initConfigs.layers ?? [],
-        activeTransformConfigs:
-            initConfigs.transformConfigs ?? TransformConfigs.empty(),
+        layers: sourceLayers,
+        activeTransformConfigs: activeTransformConfigs,
         newTransformConfigs: transformC,
         layerDrawAreaSize: originalSize,
         fitToScreenFactor: _transformHelperScale,
         undoChanges: false,
       ).updatedLayers;
+      // Start the hero flight where the main editor places the layers.
+      if (mainBodySize case final bodySize?) {
+        ImageLayerFrame.keepLayersOnImagePoint(
+          sources: sourceLayers,
+          targets: updatedLayers,
+          from: activeTransformConfigs,
+          to: transformC,
+          bodySize: bodySize,
+          renderedImageSize: _mainImageSize,
+        );
+      }
       _layers = updatedLayers;
       _updateAllStates();
 
@@ -3085,7 +3097,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                     mainBodySize: (mainBodySize ?? editorBodySize),
                     mainImageSize: _mainImageSize,
                     editorBodySize: constraints.biggest,
-                    transformConfigs: initialTransformConfigs,
+                    transformConfigs: _fakeHeroTransformConfigs,
                   ),
                   configs: configs,
                   layers: _layers,

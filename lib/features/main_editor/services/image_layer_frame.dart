@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
+import '/core/models/layers/layer.dart';
 import '/features/crop_rotate_editor/models/transform_configs.dart';
 import '/shared/widgets/transform/transformed_content_generator.dart';
 
@@ -28,7 +29,8 @@ class ImageLayerFrame {
   /// [renderedImageSize] is the uncropped image fitted to [bodySize]. It is
   /// the painted size when [transform] is empty.
   ///
-  /// Returns null for a tilted transform, whose perspective is not linear.
+  /// Returns null for a tilted transform, whose perspective is not linear,
+  /// and for sizes that paint no image.
   static ImageLayerFrame? of({
     required TransformConfigs transform,
     required Size bodySize,
@@ -49,18 +51,51 @@ class ImageLayerFrame {
     if (transform.isTilted) return null;
     final box = transform.originalSize;
     if (!box.isFinite || box.isEmpty) return null;
+    final scale =
+        _containScale(box, bodySize) *
+        TransformedContentGenerator.fitFactor(transform, bodySize) *
+        transform.scaleUser;
+    if (!scale.isFinite || scale <= 0) return null;
 
     return ImageLayerFrame._(
       box: box,
-      scale:
-          _containScale(box, bodySize) *
-          TransformedContentGenerator.fitFactor(transform, bodySize) *
-          transform.scaleUser,
+      scale: scale,
       pan: transform.offset,
       angle: transform.angle,
       flipX: transform.flipX,
       flipY: transform.flipY,
     );
+  }
+
+  /// Places each of [targets] on the image point the matching [sources]
+  /// layer covers in [bodySize] under [from], now that the image is painted
+  /// with [to].
+  ///
+  /// [renderedImageSize] is the uncropped image fitted to [bodySize]. Leaves
+  /// [targets] as they are when either transform is tilted.
+  static void keepLayersOnImagePoint({
+    required List<Layer> sources,
+    required List<Layer> targets,
+    required TransformConfigs from,
+    required TransformConfigs to,
+    required Size bodySize,
+    required Size renderedImageSize,
+  }) {
+    final fromFrame = of(
+      transform: from,
+      bodySize: bodySize,
+      renderedImageSize: renderedImageSize,
+    );
+    final toFrame = of(
+      transform: to,
+      bodySize: bodySize,
+      renderedImageSize: renderedImageSize,
+    );
+    if (fromFrame == null || toFrame == null) return;
+
+    for (var i = 0; i < targets.length && i < sources.length; i++) {
+      fromFrame.moveLayer(sources[i], toFrame, target: targets[i]);
+    }
   }
 
   /// Size of the uncropped image box before scaling.
@@ -101,6 +136,19 @@ class ImageLayerFrame {
     v += pan;
     v = _flip(v);
     return _rotate(v, angle) * scale;
+  }
+
+  /// Places [target], or [source] itself, on the image point [source] covers
+  /// in this frame, painted as [to].
+  ///
+  /// Only the offset, the scale and the slide distance of its animations
+  /// change. Rotation and flips are left to the caller.
+  void moveLayer(Layer source, ImageLayerFrame to, {Layer? target}) {
+    final ratio = to.pixelsPerImageWidth / pixelsPerImageWidth;
+    (target ?? source)
+      ..offset = to.toLayer(toImage(source.offset))
+      ..scale = source.scale * ratio
+      ..scaleSlideFrom(ratio, ratio);
   }
 
   Offset _flip(Offset v) => Offset(flipX ? -v.dx : v.dx, flipY ? -v.dy : v.dy);
