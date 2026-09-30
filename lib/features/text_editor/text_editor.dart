@@ -92,6 +92,25 @@ class TextEditorState extends State<TextEditor>
   late double _fontScale;
   final double _cursorWidth = 2.0;
 
+  /// The thickness of the outline around each glyph, measured at a font
+  /// scale of 1. `0` draws no outline. See [TextLayer.outlineWidth].
+  double get outlineWidth => _outlineWidth;
+  double _outlineWidth = 0;
+
+  /// The color of the outline. See [TextLayer.outlineColor].
+  Color get outlineColor => _outlineColor;
+  Color _outlineColor = const Color(0xFF000000);
+
+  /// Sets the outline drawn around each glyph; a [width] of `0` removes it.
+  ///
+  /// Omitted values keep their current setting.
+  void setOutline({double? width, Color? color}) {
+    setState(() {
+      if (width != null) _outlineWidth = width;
+      if (color != null) _outlineColor = color;
+    });
+  }
+
   double? get _maxTextWidth {
     if (textEditorConfigs.enableImageBoundaryTextWrap &&
         widget.imageSize != Size.zero) {
@@ -166,6 +185,8 @@ class TextEditorState extends State<TextEditor>
       textCtrl.text = widget.layer!.text;
       align = widget.layer!.align;
       _fontScale = widget.layer!.fontScale;
+      _outlineWidth = widget.layer!.outlineWidth;
+      _outlineColor = widget.layer!.outlineColor;
       backgroundColorMode = widget.layer!.colorMode;
       if (widget.layer!.customSecondaryColor) {
         _primaryColor = widget.layer!.color;
@@ -321,20 +342,37 @@ class TextEditorState extends State<TextEditor>
   /// editor.
   void done() {
     if (textCtrl.text.trim().isNotEmpty || widget.layer != null) {
+      final original = widget.layer;
+      final text = textCtrl.text.trim();
       TextLayer layer = TextLayer(
-        text: textCtrl.text.trim(),
+        text: text,
         background: _backgroundColor,
         color: _textColor,
         align: align,
         fontScale: _fontScale,
         colorMode: backgroundColorMode,
         textStyle: selectedTextStyle,
+        outlineWidth: _outlineWidth,
+        outlineColor: _outlineColor,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth:
             (textEditorConfigs.enableAutoWrapOnLayer ||
                 textEditorConfigs.enableImageBoundaryTextWrap)
             ? _maxTextWidth
             : null,
+        // The editor changes how the text looks, not when it shows.
+        startTime: original?.startTime,
+        endTime: original?.endTime,
+        enterDuration: original?.enterDuration,
+        exitDuration: original?.exitDuration,
+        enterCurve: original?.enterCurve,
+        exitCurve: original?.exitCurve,
+        transitionBuilder: original?.transitionBuilder,
+        animations: original?.animations,
+        // Highlights point into the text, so they only fit the text they
+        // were made for.
+        highlights: original?.text == text ? original?.highlights : null,
+        highlightColor: original?.highlightColor ?? kDefaultTextHighlightColor,
       );
 
       Navigator.of(context).pop(layer);
@@ -494,6 +532,8 @@ class TextEditorState extends State<TextEditor>
       textFontSize: _textFontSize,
       maxWidth: _maxTextWidth ?? double.infinity,
       cursorWidth: _cursorWidth,
+      outlineWidth: _outlineWidth * _fontScale,
+      outlineColor: _outlineColor,
     );
   }
 
@@ -518,6 +558,8 @@ class TextEditorState extends State<TextEditor>
         ),
       )
       ..add(DoubleProperty('fontScale', _fontScale))
+      ..add(DoubleProperty('outlineWidth', _outlineWidth))
+      ..add(ColorProperty('outlineColor', _outlineColor))
       ..add(ColorProperty('primaryColor', primaryColor))
       ..add(ColorProperty('secondaryColor', secondaryColor))
       ..add(DiagnosticsProperty<Size>('editorBodySize', editorBodySize));

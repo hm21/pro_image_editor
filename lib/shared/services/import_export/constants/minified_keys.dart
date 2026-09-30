@@ -61,6 +61,8 @@ const Map<String, String> kMinifiedLayerKeys = {
   'boxConstraints': 'bx',
   'maxTextWidth': 'mt',
   'shadows': 'sh',
+  'outlineWidth': 'ow',
+  'outlineColor': 'oc',
   'startTime': 'st',
   'endTime': 'et',
   'enterDuration': 'ed',
@@ -68,6 +70,8 @@ const Map<String, String> kMinifiedLayerKeys = {
   'enterCurve': 'ev',
   'exitCurve': 'xv',
   'animations': 'an',
+  'highlights': 'hl',
+  'highlightColor': 'hc',
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',

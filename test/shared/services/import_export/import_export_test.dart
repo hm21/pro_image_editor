@@ -348,6 +348,62 @@ void main() {
     );
 
     testWidgets(
+      'restores a text layer outline and drops shadows removed in a later step',
+      (WidgetTester tester) async {
+        final editor = await pumpTestEditor(tester);
+        await tester.pumpAndSettle();
+
+        final layer = TextLayer(
+          text: 'Outlined',
+          textStyle: const TextStyle(
+            shadows: [
+              Shadow(
+                color: Color(0x80000000),
+                blurRadius: 4,
+                offset: Offset(1, 2),
+              ),
+            ],
+          ),
+          outlineWidth: 2,
+          outlineColor: const Color(0xFFFF0000),
+        );
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+        editor.replaceLayer(
+          index: 0,
+          layer: layer.copyWith(textStyle: const TextStyle(), outlineWidth: 3),
+        );
+        await tester.pumpAndSettle();
+
+        // Both steps are exported, so the second one is stored as a diff
+        // against the first, which the import merges over it again.
+        final json = await pumpUntilDone(
+          tester,
+          editor
+              .exportStateHistory(
+                configs: const ExportEditorConfigs(
+                  enableMinify: true,
+                  historySpan: ExportHistorySpan.all,
+                ),
+              )
+              .then((history) => history.toJson()),
+        );
+        await pumpUntilDone(
+          tester,
+          editor.importStateHistory(
+            ImportStateHistory.fromJson(json, configs: importConfigs),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final imported = editor.activeLayers.single as TextLayer;
+        expect(imported.textStyle?.shadows ?? const [], isEmpty);
+        expect(imported.outlineWidth, 3);
+        expect(imported.outlineColor, const Color(0xFFFF0000));
+      },
+    );
+
+    testWidgets(
       'rasterizes a widget layer once when it spans several history steps',
       (WidgetTester tester) async {
         final editor = await pumpTestEditor(tester);

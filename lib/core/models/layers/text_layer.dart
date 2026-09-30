@@ -10,6 +10,10 @@ import 'enums/layer_background_mode.dart';
 import 'layer.dart';
 import 'layer_interaction.dart';
 
+/// The [TextLayer.highlightColor] a layer gets when none is given: a warm
+/// yellow that reads on light and dark text alike.
+const Color kDefaultTextHighlightColor = Color(0xFFFFD60A);
+
 /// Represents a text layer with customizable properties.
 class TextLayer extends Layer {
   /// Creates a new text layer with customizable properties.
@@ -21,6 +25,8 @@ class TextLayer extends Layer {
   /// (default is Colors.transparent).
   /// The [align] parameter determines the text alignment within the layer
   /// (default is TextAlign.left).
+  /// The [outlineWidth] and [outlineColor] parameters draw an outline around
+  /// each glyph (no outline by default).
   /// The other optional parameters such as [textStyle], [offset], [rotation],
   /// [scale], [id], [flipX], and [flipY]
   /// can be used to customize the position, appearance, and behavior of the
@@ -36,6 +42,10 @@ class TextLayer extends Layer {
     this.align = TextAlign.left,
     this.fontScale = 1.0,
     this.maxTextWidth,
+    this.outlineWidth = 0,
+    this.outlineColor = _defaultOutlineColor,
+    List<TextHighlight>? highlights,
+    this.highlightColor = kDefaultTextHighlightColor,
     super.offset,
     super.rotation,
     super.scale,
@@ -55,7 +65,7 @@ class TextLayer extends Layer {
     super.exitCurve,
     super.transitionBuilder,
     super.animations,
-  });
+  }) : highlights = highlights ?? <TextHighlight>[];
 
   /// Factory constructor for creating a TextLayer instance from a Layer
   /// instance and a map.
@@ -128,6 +138,8 @@ class TextLayer extends Layer {
       return Shadow(color: Color(c), blurRadius: b, offset: Offset(ox, oy));
     }).toList();
 
+    final outlineColor = map[keyConverter('outlineColor')];
+
     /// Constructs and returns a TextLayer instance with properties derived
     /// from the map.
     return TextLayer(
@@ -149,6 +161,10 @@ class TextLayer extends Layer {
       text: map[keyConverter('text')] ?? '-',
       fontScale: fontScale,
       maxTextWidth: tryParseDouble(map[keyConverter('maxTextWidth')]),
+      outlineWidth: safeParseDouble(map[keyConverter('outlineWidth')]),
+      outlineColor: outlineColor != null
+          ? Color(safeParseInt(outlineColor))
+          : _defaultOutlineColor,
       textStyle:
           fontFamily != null ||
               wordSpacing != null ||
@@ -186,6 +202,15 @@ class TextLayer extends Layer {
         (element) => element.name == map[keyConverter!('align')],
       ),
       customSecondaryColor: map[keyConverter('customSecondaryColor')] ?? false,
+      highlights: (map[keyConverter('highlights')] as List<dynamic>?)
+          ?.map(
+            (e) => TextHighlight.fromMap(Map<String, dynamic>.from(e as Map)),
+          )
+          .where((highlight) => highlight.isValid)
+          .toList(),
+      highlightColor: map[keyConverter('highlightColor')] != null
+          ? Color(safeParseInt(map[keyConverter('highlightColor')]))
+          : kDefaultTextHighlightColor,
     );
   }
 
@@ -221,7 +246,55 @@ class TextLayer extends Layer {
 
   /// A custom text style for the text. Be careful the editor allow not to
   /// import and export this style.
+  ///
+  /// The offset and blur radius of its [TextStyle.shadows] are measured at a
+  /// [fontScale] and [scale] of 1 and grow with the rendered font size.
   TextStyle? textStyle;
+
+  /// The thickness of the outline drawn around each glyph, measured outward
+  /// from the glyph edge.
+  ///
+  /// Like the shadows of [textStyle], it is measured at a [fontScale] and
+  /// [scale] of 1 and grows with the rendered font size. `0` draws no
+  /// outline.
+  double outlineWidth;
+
+  /// The color of the outline. Only drawn when [outlineWidth] is greater than
+  /// `0`.
+  Color outlineColor;
+
+  static const _defaultOutlineColor = Color(0xFF000000);
+
+  /// Whether the layer draws an outline around its glyphs.
+  bool get hasOutline => outlineWidth > 0 && outlineColor.a > 0;
+
+  /// Parts of [text] that light up in [highlightColor] while the video plays
+  /// through them, such as the words of a caption as they are spoken.
+  ///
+  /// Only a video editor, which knows the playback position, shows them. When
+  /// more than one is active at the same time, the last one in the list wins.
+  ///
+  /// An exported layer carries an image per highlight in
+  /// `ExportedLayer.highlightBytes`, and `ExportedLayer.frames` says which
+  /// image to show when.
+  List<TextHighlight> highlights;
+
+  /// The text color of the active entry in [highlights].
+  Color highlightColor;
+
+  /// The index of the entry in [highlights] that is active [time] into the
+  /// video, or `null` when none is.
+  ///
+  /// Highlight times are measured from [startTime], so [time] is converted
+  /// first. Highlights are not clipped to the layer's own time range; the
+  /// layer is simply not visible outside it.
+  int? highlightIndexAt(Duration time) {
+    final elapsed = time - (startTime ?? Duration.zero);
+    for (var i = highlights.length - 1; i >= 0; i--) {
+      if (highlights[i].isActiveAt(elapsed)) return i;
+    }
+    return null;
+  }
 
   @override
   bool get isTextLayer => true;
@@ -246,6 +319,12 @@ class TextLayer extends Layer {
       if (maxTextWidth != null)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
+      if (highlights.isNotEmpty)
+        'highlights': highlights.map((h) => h.toMap()).toList(),
+      // Written without highlights as well: a later history step that only
+      // adds highlights is stored as a diff and would import the default.
+      if (highlightColor != kDefaultTextHighlightColor)
+        'highlightColor': highlightColor.toHex(),
       if (textStyle?.fontFamily != null) 'fontFamily': textStyle?.fontFamily,
       if (textStyle?.fontStyle != null) 'fontStyle': textStyle?.fontStyle!.name,
       if (textStyle?.fontWeight != null)
@@ -259,16 +338,13 @@ class TextLayer extends Layer {
       if (textStyle?.decoration != null)
         'decoration': textStyle?.decoration.toString(),
       if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
-        'shadows': textStyle!.shadows!
-            .map(
-              (s) => {
-                'color': s.color.toHex(),
-                'blurRadius': s.blurRadius,
-                'offsetX': s.offset.dx,
-                'offsetY': s.offset.dy,
-              },
-            )
-            .toList(),
+        'shadows': _shadowsToList(textStyle!.shadows!),
+      if (outlineWidth > 0)
+        'outlineWidth': outlineWidth.roundSmart(maxDecimalPlaces),
+      // Written without a width as well: a later history step that only
+      // sets the width is stored as a diff and would import the default.
+      if (outlineColor != _defaultOutlineColor)
+        'outlineColor': outlineColor.toHex(),
     };
     return result;
   }
@@ -295,6 +371,10 @@ class TextLayer extends Layer {
         'colorMode': LayerBackgroundMode.values[colorMode.index].name,
       if (paintLayer.customSecondaryColor != customSecondaryColor)
         'customSecondaryColor': customSecondaryColor,
+      if (!listEquals(paintLayer.highlights, highlights))
+        'highlights': highlights.map((h) => h.toMap()).toList(),
+      if (paintLayer.highlightColor != highlightColor)
+        'highlightColor': highlightColor.toHex(),
       if (paintLayer.textStyle?.fontFamily != textStyle?.fontFamily)
         'fontFamily': textStyle?.fontFamily,
       if (paintLayer.textStyle?.fontStyle != textStyle?.fontStyle)
@@ -311,18 +391,32 @@ class TextLayer extends Layer {
         'decoration': textStyle?.decoration.toString(),
       if (paintLayer.maxTextWidth != maxTextWidth)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
-      if (textStyle?.shadows != null && textStyle!.shadows!.isNotEmpty)
-        'shadows': textStyle!.shadows!
-            .map(
-              (s) => {
-                'color': s.color.toHex(),
-                'blurRadius': s.blurRadius,
-                'offsetX': s.offset.dx,
-                'offsetY': s.offset.dy,
-              },
-            )
-            .toList(),
+      // An empty list is written on purpose: the import merges each entry
+      // over the previous state, so a missing key would restore shadows the
+      // user removed.
+      if (!listEquals(
+        paintLayer.textStyle?.shadows ?? const [],
+        textStyle?.shadows ?? const [],
+      ))
+        'shadows': _shadowsToList(textStyle?.shadows ?? const []),
+      if (paintLayer.outlineWidth != outlineWidth)
+        'outlineWidth': outlineWidth.roundSmart(maxDecimalPlaces),
+      if (paintLayer.outlineColor != outlineColor)
+        'outlineColor': outlineColor.toHex(),
     };
+  }
+
+  static List<Map<String, dynamic>> _shadowsToList(List<Shadow> shadows) {
+    return shadows
+        .map(
+          (s) => {
+            'color': s.color.toHex(),
+            'blurRadius': s.blurRadius,
+            'offsetX': s.offset.dx,
+            'offsetY': s.offset.dy,
+          },
+        )
+        .toList();
   }
 
   /// Creates a copy of this [TextLayer] with the given fields replaced with
@@ -340,6 +434,10 @@ class TextLayer extends Layer {
     double? rotation,
     double? scale,
     double? maxTextWidth,
+    double? outlineWidth,
+    Color? outlineColor,
+    List<TextHighlight>? highlights,
+    Color? highlightColor,
     bool? hit,
     bool? flipX,
     bool? flipY,
@@ -369,6 +467,10 @@ class TextLayer extends Layer {
       align: align ?? this.align,
       fontScale: fontScale ?? this.fontScale,
       maxTextWidth: maxTextWidth ?? this.maxTextWidth,
+      outlineWidth: outlineWidth ?? this.outlineWidth,
+      outlineColor: outlineColor ?? this.outlineColor,
+      highlights: highlights ?? this.highlights,
+      highlightColor: highlightColor ?? this.highlightColor,
       offset: offset ?? this.offset,
       rotation: rotation ?? this.rotation,
       scale: scale ?? this.scale,
@@ -404,7 +506,11 @@ class TextLayer extends Layer {
       ..add(EnumProperty<TextAlign>('align', align))
       ..add(DoubleProperty('fontScale', fontScale))
       ..add(DoubleProperty('maxTextWidth', maxTextWidth))
+      ..add(DoubleProperty('outlineWidth', outlineWidth))
+      ..add(ColorProperty('outlineColor', outlineColor))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
+      ..add(IterableProperty<TextHighlight>('highlights', highlights))
+      ..add(ColorProperty('highlightColor', highlightColor))
       ..add(DiagnosticsProperty<bool>('hasHit', hit));
   }
 }

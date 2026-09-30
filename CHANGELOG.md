@@ -1,9 +1,21 @@
 # Changelog
 
-## 14.4.2
-- **FIX**(main-editor): Applying a crop keeps existing layers on the same point of the image. They used to jump when the image filled the editor by its width, such as on portrait screens.
-- **FIX**(crop-rotate-editor): Opening the crop editor on an already cropped image previews its layers on the image points the main editor shows them on.
-- **FIX**(import-export): Reopening a cropped image on a screen of another size keeps its layers on the same point of the image instead of drifting. The export records the editor body size for this; histories exported before it estimate that size from the crop.
+## 14.6.1
+- **FIX**(main-editor): Applying a crop keeps layers on the same image point instead of shifting them on portrait screens.
+- **FIX**(crop-rotate-editor): On a cropped image, layers are previewed and fly back on close at the image points the main editor shows them on.
+- **FIX**(import-export): Reopening a cropped history on another screen size keeps layers on their image points; exports now record `editorBodySize`.
+
+## 14.6.0
+- **FEAT**(layers): Add `TextLayer.highlights` / `highlightColor` to light up words of a text layer while the video plays through them; `ExportedLayer.highlightBytes` and `ExportedLayer.frames` carry them into the export (#876).
+- **FIX**(text-editor): Editing a text layer keeps its time range and animations.
+
+## 14.5.0
+- **FEAT**(text-editor): Add `TextLayer.outlineWidth` / `outlineColor` and `TextEditorState.setOutline` to outline text; its shadows are cast by the outlined glyphs.
+- **FIX**(layers): Text shadows grow with the layer's `scale` and `fontScale` like the text, instead of keeping their unscaled offset and blur.
+- **FIX**(layers): A text layer reserves room for its shadows and outline, so a layer capture no longer cuts them off.
+- **FIX**(import-export): Shadows removed from a text layer in a later history step no longer come back after an import.
+- **FIX**(text-editor): With `TextEditorStyle.inputShadows: null`, the input previews the shadows at the size the layer draws them.
+- **FIX**(text-editor): The input's rounded background lines up with the typed text when the text style sets a `height`.
 
 ## 14.4.1
 - **FIX**(crop-rotate-editor): Closing the editor while a resize is settling no longer throws `Bad state: Cannot add new events after calling close` (#858).
