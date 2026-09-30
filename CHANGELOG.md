@@ -1,5 +1,10 @@
 # Changelog
 
+## 14.6.1
+- **FIX**(main-editor): Applying a crop keeps layers on the same image point instead of shifting them on portrait screens.
+- **FIX**(crop-rotate-editor): On a cropped image, layers are previewed and fly back on close at the image points the main editor shows them on.
+- **FIX**(import-export): Reopening a cropped history on another screen size keeps layers on their image points; exports now record `editorBodySize`.
+
 ## 14.6.0
 - **FEAT**(layers): Add `TextLayer.highlights` / `highlightColor` to light up words of a text layer while the video plays through them; `ExportedLayer.highlightBytes` and `ExportedLayer.frames` carry them into the export (#876).
 - **FIX**(text-editor): Editing a text layer keeps its time range and animations.

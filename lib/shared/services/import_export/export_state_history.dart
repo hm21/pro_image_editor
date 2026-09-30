@@ -35,7 +35,12 @@ class ExportStateHistory {
     required this._contentRecorderCtrl,
     required this._context,
     this._configs = const ExportEditorConfigs(),
+    this.editorBodySize = Size.zero,
   });
+
+  /// Editor body the layers were laid out in. Layer offsets on a cropped
+  /// image depend on it. Empty when unknown.
+  final Size editorBodySize;
 
   /// The current position of the editor in the state history.
   ///
@@ -264,6 +269,15 @@ class ExportStateHistory {
         'height'.toSizeKey(minifier): _imageInfos.originalRenderedSize.height
             .roundSmart(maxDecimalPlaces),
       },
+      if (!editorBodySize.isEmpty)
+        'editorBodySize'.toMainKey(minifier): {
+          'width'.toSizeKey(minifier): editorBodySize.width.roundSmart(
+            maxDecimalPlaces,
+          ),
+          'height'.toSizeKey(minifier): editorBodySize.height.roundSmart(
+            maxDecimalPlaces,
+          ),
+        },
     };
   }
 

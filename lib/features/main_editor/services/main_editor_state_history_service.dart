@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
@@ -13,6 +14,7 @@ import '/shared/services/import_export/import_state_history.dart';
 import '/shared/services/import_export/models/export_state_history_configs.dart';
 import '/shared/utils/decode_image.dart';
 import '../controllers/main_editor_controllers.dart';
+import 'image_layer_frame.dart';
 import 'sizes_manager.dart';
 import 'state_manager.dart';
 
@@ -104,6 +106,7 @@ class MainEditorStateHistoryService {
       configs: configs,
       contentRecorderCtrl: controllers.screenshot,
       context: context,
+      editorBodySize: sizesManager.bodySize,
     );
   }
 
@@ -116,9 +119,16 @@ class MainEditorStateHistoryService {
     final processed = Set<Layer>.identity();
 
     for (EditorStateHistory el in import.stateHistory) {
+      final crop = import.configs.recalculateSizeAndPosition
+          ? _cropFrames(import, el.transformConfigs)
+          : null;
       for (Layer layer in el.layers) {
         if (!processed.add(layer)) continue;
-        if (import.configs.recalculateSizeAndPosition) {
+        if (crop != null) {
+          // The uncropped image fit does not describe where a crop window is
+          // painted, so keep the layer on its image point instead.
+          crop.exported.moveLayer(layer, crop.current);
+        } else if (import.configs.recalculateSizeAndPosition) {
           Size currentImageSize = sizesManager.decodedImageSize;
           Size lastRenderedImgSize = import.lastRenderedImgSize;
 
@@ -150,6 +160,70 @@ class MainEditorStateHistoryService {
       }
     }
   }
+
+  /// Frames of the cropped [transform] in the body the history was exported
+  /// in and in the current body, or null when the layers are rescaled with
+  /// the uncropped image fit instead.
+  ({ImageLayerFrame exported, ImageLayerFrame current})? _cropFrames(
+    ImportStateHistory import,
+    TransformConfigs? transform,
+  ) {
+    if (transform == null || transform.isEmpty) return null;
+    // Offsets of version 1.0.0 are not measured from the body center.
+    if (import.version == ExportImportVersion.version_1_0_0) return null;
+    final exportedBody = import.editorBodySize.isEmpty
+        ? _estimateExportedBody(import, transform)
+        : import.editorBodySize;
+    if (exportedBody == null) return null;
+
+    final exported = ImageLayerFrame.of(
+      transform: transform,
+      bodySize: exportedBody,
+      renderedImageSize: import.lastRenderedImgSize,
+    );
+    final current = ImageLayerFrame.of(
+      transform: transform,
+      bodySize: sizesManager.bodySize,
+      renderedImageSize: sizesManager.decodedImageSize,
+    );
+    if (exported == null || current == null) return null;
+    return (exported: exported, current: current);
+  }
+
+  /// Body of an export that predates [ImportStateHistory.editorBodySize], or
+  /// null when the export does not tell.
+  ///
+  /// [ImportStateHistory.lastRenderedImgSize] is the uncropped image fitted
+  /// to that body, so one side of the body is known. When the image fits the
+  /// current body the same way, as on the device it was exported on, that
+  /// body is used. Otherwise the other side comes from
+  /// [TransformConfigs.cropEditorScreenRatio], the aspect ratio of the crop
+  /// editor's area on the same screen.
+  Size? _estimateExportedBody(ImportStateHistory import, TransformConfigs t) {
+    final rendered = import.lastRenderedImgSize;
+    // A blank canvas or a video records its unscaled size, which is not
+    // fitted to the body.
+    if (rendered.isEmpty || _isSameSize(rendered, import.imgSize)) return null;
+
+    final body = sizesManager.bodySize;
+    if (!body.isEmpty) {
+      final fit = min(
+        body.width / rendered.width,
+        body.height / rendered.height,
+      );
+      if ((fit - 1).abs() < 0.001) return body;
+    }
+
+    final ratio = t.cropEditorScreenRatio;
+    if (!ratio.isFinite || ratio <= 0) return null;
+    if (ratio > rendered.aspectRatio) {
+      return Size(rendered.height * ratio, rendered.height);
+    }
+    return Size(rendered.width, rendered.width / ratio);
+  }
+
+  bool _isSameSize(Size a, Size b) =>
+      (a.width - b.width).abs() < 0.5 && (a.height - b.height).abs() < 0.5;
 
   Future<void> _precacheLayers(
     ImportStateHistory import,

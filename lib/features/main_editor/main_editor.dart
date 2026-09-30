@@ -44,6 +44,7 @@ import 'controllers/main_editor_controllers.dart';
 import 'mixins/main_editor_global_keys.dart';
 import 'providers/image_infos_provider.dart';
 import 'services/desktop_interaction_manager.dart';
+import 'services/image_layer_frame.dart';
 import 'services/layer_copy_manager.dart';
 import 'services/layer_drag_selection_service.dart';
 import 'services/layer_interaction_manager.dart';
@@ -2128,6 +2129,19 @@ class ProImageEditorState extends State<ProImageEditor>
               undoChanges: false,
               fitToScreenFactor: fitToScreenFactor,
             ).updatedLayers;
+            // The generator still provides rotation and flips. Its offsets
+            // are derived from crop editor units and drift when the crop and
+            // the body stick to different sides.
+            ImageLayerFrame.keepLayersOnImagePoint(
+              sources: stateManager.activeLayers,
+              targets: updatedLayers,
+              from: stateManager.transformConfigs,
+              to: transformConfigs,
+              bodySize: sizesManager.bodySize,
+              renderedImageSize:
+                  _imageInfos?.originalRenderedSize ??
+                  sizesManager.decodedImageSize,
+            );
 
             _imageInfos = null;
             unawaited(decodeImage(transformConfigs));
