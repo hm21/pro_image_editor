@@ -128,12 +128,14 @@ class _DeferredHitTargetRenderObject extends RenderProxyBox {
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    for (final painter in link.painters.reversed) {
+    for (final painter in _hitTestablePainters().reversed) {
+      final painterChild = painter.child;
+      if (painterChild == null) continue;
       final hit = result.addWithPaintTransform(
-        transform: painter.child!.getTransformTo(this),
+        transform: painterChild.getTransformTo(this),
         position: position,
         hitTest: (BoxHitTestResult result, Offset? position) {
-          return painter.child!.hitTest(result, position: position!);
+          return painterChild.hitTest(result, position: position!);
         },
       );
       if (hit) {
@@ -142,6 +144,72 @@ class _DeferredHitTargetRenderObject extends RenderProxyBox {
     }
     return child?.hitTest(result, position: position) ?? false;
   }
+
+  /// The painters that may take the pointer, bottom-most first.
+  ///
+  /// A deferred child is hit-tested directly, which skips every ancestor that
+  /// would normally decide whether, and in which order, it gets the pointer.
+  /// The render tree between this handler and the painters is walked instead:
+  ///
+  /// * A painter below an ignoring [IgnorePointer], an absorbing
+  ///   [AbsorbPointer] or an [Offstage] is left out. A layer outside its video
+  ///   time range is hidden behind such an [IgnorePointer] and kept catching
+  ///   touches meant for the visible layer underneath.
+  /// * The painters come in paint order rather than in the order they were
+  ///   attached. A layer that comes back into its time range is attached
+  ///   again, and took touches meant for the layer drawn on top of it.
+  ///
+  /// Painters outside this handler's subtree, linked through a shared
+  /// [DeferredPointerHandlerLink], keep their attach order and are tested
+  /// first, as before.
+  List<DeferPointerRenderObject> _hitTestablePainters() {
+    final painters = link.painters;
+    if (painters.isEmpty) return const [];
+
+    final paintersInSubtree = <DeferPointerRenderObject>{};
+    final ancestors = <RenderObject>{};
+    final external = <DeferPointerRenderObject>[];
+    for (final painter in painters) {
+      final path = <RenderObject>[];
+      var blocked = false;
+      RenderObject? node = painter.parent;
+      while (node != null && node != this && !ancestors.contains(node)) {
+        path.add(node);
+        blocked = blocked || _keepsPointerFromChildren(node);
+        node = node.parent;
+      }
+      if (node == null) {
+        if (!blocked) external.add(painter);
+      } else {
+        paintersInSubtree.add(painter);
+        ancestors.addAll(path);
+      }
+    }
+
+    final ordered = <DeferPointerRenderObject>[];
+    void visit(RenderObject node) {
+      node.visitChildren((child) {
+        if (paintersInSubtree.contains(child)) {
+          ordered.add(child as DeferPointerRenderObject);
+        }
+        if (ancestors.contains(child) && !_keepsPointerFromChildren(child)) {
+          visit(child);
+        }
+      });
+    }
+
+    visit(this);
+    return [...ordered, ...external];
+  }
+
+  /// Whether [node] keeps the pointer from its descendants in a normal hit
+  /// test.
+  static bool _keepsPointerFromChildren(RenderObject node) => switch (node) {
+    RenderIgnorePointer(:final ignoring) => ignoring,
+    RenderAbsorbPointer(:final absorbing) => absorbing,
+    RenderOffstage(:final offstage) => offstage,
+    _ => false,
+  };
 
   @override
   // paint all the children that want to be rendered on top
