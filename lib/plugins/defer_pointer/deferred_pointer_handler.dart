@@ -129,6 +129,7 @@ class _DeferredHitTargetRenderObject extends RenderProxyBox {
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
     for (final painter in link.painters.reversed) {
+      if (_isIgnoredByAncestor(painter)) continue;
       final hit = result.addWithPaintTransform(
         transform: painter.child!.getTransformTo(this),
         position: position,
@@ -141,6 +142,23 @@ class _DeferredHitTargetRenderObject extends RenderProxyBox {
       }
     }
     return child?.hitTest(result, position: position) ?? false;
+  }
+
+  /// Whether an [IgnorePointer] between [painter] and this handler is
+  /// ignoring.
+  ///
+  /// The deferred child is hit-tested directly, which skips every ancestor
+  /// that would normally decide whether it gets the pointer. A layer outside
+  /// its video time range is hidden behind such an [IgnorePointer], and
+  /// without this check it kept catching touches meant for the visible layer
+  /// underneath.
+  bool _isIgnoredByAncestor(DeferPointerRenderObject painter) {
+    RenderObject? node = painter.parent;
+    while (node != null && node != this) {
+      if (node is RenderIgnorePointer && node.ignoring) return true;
+      node = node.parent;
+    }
+    return false;
   }
 
   @override
