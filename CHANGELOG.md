@@ -2,6 +2,7 @@
 
 ## 14.6.2
 - **FIX**(layers): A layer outside its video time range no longer catches touches, so the visible layer underneath it can be selected and moved again.
+- **FIX**(layers): A layer coming back into its video time range no longer takes touches meant for the layer drawn on top of it.
 
 ## 14.6.1
 - **FIX**(main-editor): Applying a crop keeps layers on the same image point instead of shifting them on portrait screens.

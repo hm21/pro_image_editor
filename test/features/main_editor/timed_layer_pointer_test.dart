@@ -63,7 +63,13 @@ void main() {
   WidgetLayer timedLayer(String id, Duration start, Duration end) {
     return WidgetLayer(
       id: id,
-      widget: SizedBox(key: ValueKey('content-$id'), width: 100, height: 100),
+      // Opaque like the image or text of a real layer, so the topmost layer
+      // under the pointer is the only one that gets it.
+      widget: ColoredBox(
+        key: ValueKey('content-$id'),
+        color: const Color(0xFF000000),
+        child: const SizedBox(width: 100, height: 100),
+      ),
       startTime: start,
       endTime: end,
     );
@@ -122,6 +128,33 @@ void main() {
       tester,
     ) async {
       await pumpStackedLayers(tester, const Duration(seconds: 12));
+
+      await tester.tapAt(contentCenter(tester, 'upper'));
+      await tester.pump();
+
+      expect(tappedLayerIds, equals(['upper']));
+    });
+
+    testWidgets('a layer coming back into its time range stays below the '
+        'layer drawn on top of it', (tester) async {
+      final (state, controller) = await pumpVideoEditor(tester, tappedLayerIds);
+      state
+        ..addLayer(
+          timedLayer(
+            'lower',
+            const Duration(seconds: 5),
+            const Duration(seconds: 15),
+          ),
+          blockSelectLayer: true,
+        )
+        ..addLayer(
+          timedLayer('upper', Duration.zero, const Duration(seconds: 15)),
+          blockSelectLayer: true,
+        );
+      // The lower layer is built hidden first and is rebuilt when it shows up.
+      await tester.pump(const Duration(seconds: 1));
+      controller.setPlayTime(const Duration(seconds: 7));
+      await tester.pump(const Duration(seconds: 1));
 
       await tester.tapAt(contentCenter(tester, 'upper'));
       await tester.pump();
