@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_repaint_boundary.dart';
 
 import '../../../mock/mock_image.dart';
 
@@ -198,5 +199,46 @@ void main() {
         expect(bytes!, isNotEmpty);
       });
     });
+
+    testWidgets(
+      'captureAsPng reads the last paint of a layer laid out while hidden',
+      (WidgetTester tester) async {
+        final layer = EmojiLayer(emoji: '😀');
+        // Like the editor faded out by the route opened on done, while the
+        // layer's timeline window opens and it is laid out again.
+        Widget build({required bool hidden, required double maxWidth}) {
+          return Center(
+            child: Opacity(
+              opacity: hidden ? 0 : 1,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: LayerRepaintBoundary(
+                  key: layer.repaintBoundaryKey,
+                  child: const SizedBox.square(
+                    dimension: 4,
+                    child: ColoredBox(color: Color(0xFFFF0000)),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        await tester.pumpWidget(build(hidden: false, maxWidth: 100));
+        await tester.pumpWidget(build(hidden: true, maxWidth: 100));
+        await tester.pumpWidget(build(hidden: true, maxWidth: 50));
+
+        final bytes = await tester.runAsync(
+          () => layer.captureAsPng(
+            pixelRatio: 1,
+            applyTransforms: false,
+            format: ui.ImageByteFormat.rawRgba,
+          ),
+        );
+
+        expect(bytes, hasLength(4 * 4 * 4));
+        expect(bytes!.sublist(0, 4), [255, 0, 0, 255]);
+      },
+    );
   });
 }

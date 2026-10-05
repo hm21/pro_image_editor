@@ -10,6 +10,7 @@ class CensorConfigs {
     this.enableRoundArea = false,
     this.blurBlendMode = BlendMode.srcOver,
     this.pixelateBlendMode = BlendMode.srcOver,
+    this.pixelateInLayerSpace = false,
   });
 
   /// A boolean flag to enable or disable the use of a round area for the
@@ -53,6 +54,20 @@ class CensorConfigs {
   /// **Default** `BlendMode.srcOver`
   final BlendMode pixelateBlendMode;
 
+  /// Whether the pixelation is measured in the censor area's own coordinates.
+  ///
+  /// When `true`, [pixelBlockSize] is in the area's logical pixels, so the
+  /// blocks grow and shrink with the layer's scale, the editor's zoom and any
+  /// transform around the editor, as the blur does. The blocks start at the
+  /// area's top-left corner and take the color at their center, which is how
+  /// an export that pixelates the same area in its own pixels lines them up.
+  ///
+  /// When `false`, the blocks keep their size on screen whatever the area's
+  /// scale, and line up with the screen.
+  ///
+  /// **Default** `false`
+  final bool pixelateInLayerSpace;
+
   /// Returns a new [CensorConfigs] instance with updated values.
   ///
   /// If a parameter is not provided, the existing value is retained.
@@ -63,6 +78,7 @@ class CensorConfigs {
     bool? enableRoundArea,
     BlendMode? blurBlendMode,
     BlendMode? pixelateBlendMode,
+    bool? pixelateInLayerSpace,
   }) {
     return CensorConfigs(
       blurSigmaX: blurSigmaX ?? this.blurSigmaX,
@@ -71,6 +87,7 @@ class CensorConfigs {
       enableRoundArea: enableRoundArea ?? this.enableRoundArea,
       blurBlendMode: blurBlendMode ?? this.blurBlendMode,
       pixelateBlendMode: pixelateBlendMode ?? this.pixelateBlendMode,
+      pixelateInLayerSpace: pixelateInLayerSpace ?? this.pixelateInLayerSpace,
     );
   }
 }

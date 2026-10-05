@@ -2,6 +2,7 @@
 import 'dart:ui' as ui;
 
 // Flutter imports:
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 /// Renders a layer's untransformed content at [pixelRatio].
@@ -39,4 +40,26 @@ class LayerRepaintBoundary extends RepaintBoundary {
   /// Renders a text layer with one of its highlights active, or `null` when
   /// the layer has no highlights.
   final LayerHighlightRenderer? renderHighlight;
+
+  @override
+  RenderLayerRepaintBoundary createRenderObject(BuildContext context) {
+    return RenderLayerRepaintBoundary();
+  }
+}
+
+/// The render object of a [LayerRepaintBoundary].
+class RenderLayerRepaintBoundary extends RenderRepaintBoundary {
+  /// Captures the layer as it was last painted, or returns `null` when it has
+  /// never been painted.
+  ///
+  /// [toImage] asserts that no paint is pending. A layer whose timeline
+  /// window opens or closes while the editor is hidden, e.g. faded out by the
+  /// route opened on done, is moved in the tree and then waits for a paint
+  /// that only comes once the editor shows again. Moving it does not change
+  /// what it paints, so its last paint is its content; release builds, which
+  /// skip the assertion, capture exactly that.
+  Future<ui.Image>? toImageOfLastPaint({double pixelRatio = 1.0}) {
+    final offsetLayer = layer as OffsetLayer?;
+    return offsetLayer?.toImage(Offset.zero & size, pixelRatio: pixelRatio);
+  }
 }

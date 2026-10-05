@@ -513,6 +513,7 @@ class PaintCanvasState extends State<PaintCanvas> {
         strokeWidth: _paintCtrl.scaledStrokeWidth,
         fill: _paintCtrl.fill,
         opacity: _paintCtrl.opacity,
+        censorStrength: _paintCtrl.censorStrength,
       );
       widget.onCreated(rawLayer);
     }
@@ -618,8 +619,14 @@ class PaintCanvasState extends State<PaintCanvas> {
           item.hit = false;
         },
         child: item.mode == PaintMode.pixelate
-            ? PixelateAreaItem(censorConfigs: censorConfigs)
-            : BlurAreaItem(censorConfigs: censorConfigs),
+            ? PixelateAreaItem(
+                censorConfigs: censorConfigs,
+                strength: item.censorStrength,
+              )
+            : BlurAreaItem(
+                censorConfigs: censorConfigs,
+                strength: item.censorStrength,
+              ),
       ),
     );
   }

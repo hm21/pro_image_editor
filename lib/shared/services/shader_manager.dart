@@ -17,11 +17,24 @@ class ShaderManager {
   /// A map that stores loaded shaders by their mode.
   final Map<ShaderMode, FragmentShader> shaders = {};
 
+  /// The loaded programs by their mode, for widgets that need a shader whose
+  /// uniforms no other widget changes; see [createShader].
+  final Map<ShaderMode, FragmentProgram> programs = {};
+
   /// Whether [ImageFilter.shader] is supported on the current backend.
   bool get isShaderFilterSupported => ImageFilter.isShaderFilterSupported;
 
   /// Checks if a shader for the given [mode] is already loaded.
   bool containsShader(ShaderMode mode) => shaders.containsKey(mode);
+
+  /// A new shader of the loaded program for [mode], or `null` while it is not
+  /// loaded.
+  ///
+  /// [shaders] holds one shader per mode, shared by every widget. Its uniforms
+  /// are read when a frame is composed, so widgets that set different values
+  /// in the same frame need a shader each. The caller disposes it.
+  FragmentShader? createShader(ShaderMode mode) =>
+      programs[mode]?.fragmentShader();
 
   /// Loads a shader for the given [mode].
   /// If the shader is already loaded, it returns the cached version.
@@ -52,6 +65,7 @@ class ShaderManager {
 
     var program = await FragmentProgram.fromAsset(path);
 
+    programs[mode] = program;
     shaders[mode] = program.fragmentShader();
   }
 }

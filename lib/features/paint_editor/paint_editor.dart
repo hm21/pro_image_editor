@@ -872,6 +872,7 @@ class PaintEditorState extends State<PaintEditor>
       strokeWidth: rawLayer.strokeWidth,
       fill: rawLayer.fill,
       opacity: rawLayer.opacity,
+      censorStrength: rawLayer.censorStrength,
     );
 
     // Find extreme points of the paint layer
@@ -932,6 +933,26 @@ class PaintEditorState extends State<PaintEditor>
       offset: finalOffset * mainEditorSizeFactor,
       scale: mainEditorSizeFactor,
     );
+  }
+
+  /// Sets the strength of the censor areas drawn next; see
+  /// [PaintedModel.censorStrength]. `null` goes back to
+  /// `PaintEditorConfigs.censorConfigs`.
+  ///
+  /// The area drawn last in this session takes it as well when it was drawn
+  /// in the current mode, so a slider shows its effect on that area right
+  /// away. The change is not a history step of its own.
+  void setCensorStrength(double? value) {
+    paintCtrl.setCensorStrength(value);
+    final last = activeHistory.layers.lastOrNull;
+    if (last is PaintLayer &&
+        last.item.isCensorArea &&
+        last.item.mode == paintMode &&
+        !stateHistory.first.layers.contains(last) &&
+        last.item.censorStrength != value) {
+      last.item.censorStrength = value;
+      _layerStackStream.add(null);
+    }
   }
 
   /// Set the stroke width.

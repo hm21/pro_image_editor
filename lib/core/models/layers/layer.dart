@@ -503,8 +503,18 @@ class Layer {
     } else if (boundary?.renderContent case final renderContent?) {
       rawImage = await renderContent(effectivePixelRatio);
     } else {
-      rawImage = await (context.findRenderObject() as RenderRepaintBoundary)
-          .toImage(pixelRatio: effectivePixelRatio);
+      final renderObject = context.findRenderObject();
+      if (renderObject is RenderLayerRepaintBoundary) {
+        final image = renderObject.toImageOfLastPaint(
+          pixelRatio: effectivePixelRatio,
+        );
+        if (image == null) return null;
+        rawImage = await image;
+      } else {
+        rawImage = await (renderObject as RenderRepaintBoundary).toImage(
+          pixelRatio: effectivePixelRatio,
+        );
+      }
     }
 
     final bool needsTransform =

@@ -97,4 +97,5 @@ const Map<String, String> kMinifiedPaintKeys = {
   'strokeWidth': 's',
   'opacity': 't',
   'fill': 'f',
+  'censorStrength': 'cs',
 };

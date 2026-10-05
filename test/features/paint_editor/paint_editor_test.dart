@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:pro_image_editor/features/paint_editor/widgets/paint_canvas.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/widgets/censor/blur_area_item.dart';
 import 'package:pro_image_editor/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 import 'package:pro_image_editor/shared/widgets/slider_bottom_sheet.dart';
@@ -337,6 +338,58 @@ void main() {
 
       expect(editor.stateHistory.length, 2);
       expect(find.byType(LayerWidget), findsAtLeast(1));
+    });
+
+    testWidgets('setCensorStrength strengthens the area drawn last', (
+      WidgetTester tester,
+    ) async {
+      await pumpEditor(tester);
+      final editor = key.currentState!
+        ..addPainting(
+          PaintedModel(
+            mode: PaintMode.blur,
+            offsets: [Offset.zero, const Offset(100, 100)],
+            erasedOffsets: [],
+            color: Colors.white,
+            strokeWidth: 1,
+            opacity: 1,
+          ),
+        )
+        ..setMode(PaintMode.blur)
+        ..setCensorStrength(30);
+      await tester.pump();
+
+      final area = editor.activeHistory.layers.last as PaintLayer;
+      expect(area.item.censorStrength, 30);
+      expect(editor.paintCtrl.paintedModel.censorStrength, 30);
+      expect(
+        tester.widget<BlurAreaItem>(find.byType(BlurAreaItem)).strength,
+        30,
+      );
+    });
+
+    testWidgets('setCensorStrength leaves an area of another mode alone', (
+      WidgetTester tester,
+    ) async {
+      await pumpEditor(tester);
+      final editor = key.currentState!
+        ..addPainting(
+          PaintedModel(
+            mode: PaintMode.blur,
+            offsets: [Offset.zero, const Offset(100, 100)],
+            erasedOffsets: [],
+            color: Colors.white,
+            strokeWidth: 1,
+            opacity: 1,
+            censorStrength: 30,
+          ),
+        )
+        ..setMode(PaintMode.pixelate)
+        ..setCensorStrength(8);
+
+      final area = editor.activeHistory.layers.last as PaintLayer;
+      expect(area.item.censorStrength, 30);
+      expect(editor.paintCtrl.paintedModel.censorStrength, 8);
     });
 
     testWidgets('should undo the last action', (WidgetTester tester) async {

@@ -80,6 +80,7 @@ class PaintController extends ChangeNotifier {
     strokeWidth: strokeWidth,
     fill: fill,
     opacity: opacity,
+    censorStrength: censorStrength,
   );
 
   /// Returns the current paint mode (e.g., line, circle, rectangle).
@@ -173,6 +174,16 @@ class PaintController extends ChangeNotifier {
   /// Sets the current level of opacity.
   void setOpacity(double value) {
     opacity = value;
+    notifyListeners();
+  }
+
+  /// The strength of the censor areas drawn next, see
+  /// [PaintedModel.censorStrength].
+  double? censorStrength;
+
+  /// Sets the strength of the censor areas drawn next.
+  void setCensorStrength(double? value) {
+    censorStrength = value;
     notifyListeners();
   }
 

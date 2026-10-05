@@ -14,7 +14,12 @@ import 'constants/censor_backdrop_key.dart';
 class BlurAreaItem extends CensorAreaItem {
   /// Creates a [BlurAreaItem] with the specified [censorConfigs] and
   /// optional [size].
-  const BlurAreaItem({super.key, required super.censorConfigs, super.size});
+  const BlurAreaItem({
+    super.key,
+    required super.censorConfigs,
+    super.size,
+    super.strength,
+  });
 
   /// Builds a [BackdropFilter] that applies a blur effect based on the provided
   /// [censorConfigs].
@@ -28,8 +33,8 @@ class BlurAreaItem extends CensorAreaItem {
   }) {
     return BackdropFilter(
       filter: ImageFilter.blur(
-        sigmaX: censorConfigs.blurSigmaX,
-        sigmaY: censorConfigs.blurSigmaY,
+        sigmaX: strength ?? censorConfigs.blurSigmaX,
+        sigmaY: strength ?? censorConfigs.blurSigmaY,
       ),
       blendMode: censorConfigs.blurBlendMode,
       backdropGroupKey: kCensorBackdropGroupKey,
