@@ -210,4 +210,50 @@ void main() {
       expect(restored.items.length, 2);
     });
   });
+
+  group('PaintLayer censor strength', () {
+    PaintLayer censorLayer() => PaintLayer(
+      item: PaintedModel(
+        mode: PaintMode.pixelate,
+        offsets: [Offset.zero, const Offset(40, 20)],
+        erasedOffsets: [],
+        color: Colors.white,
+        strokeWidth: 1,
+        opacity: 1,
+        censorStrength: 18.5,
+      ),
+      rawSize: const Size(40, 20),
+      opacity: 1,
+    );
+
+    test('round-trips through toMap and fromMap', () {
+      final restored = Layer.fromMap(censorLayer().toMap()) as PaintLayer;
+
+      expect(restored.item.censorStrength, 18.5);
+    });
+
+    test('round-trips when minified', () {
+      final minifier = EditorKeyMinifier(enableMinify: true);
+      final minified = minifier.convertListOfLayerKeys([
+        censorLayer().toMap(enableMinify: true),
+      ]).first;
+
+      final restored =
+          Layer.fromMap(minified, minifier: minifier) as PaintLayer;
+
+      expect(restored.item.censorStrength, 18.5);
+    });
+
+    test('is absent from the map of an area that uses the configs', () {
+      final layer = censorLayer()..item.censorStrength = null;
+
+      final restored = Layer.fromMap(layer.toMap()) as PaintLayer;
+
+      expect(
+        (layer.toMap()['item'] as Map).containsKey('censorStrength'),
+        isFalse,
+      );
+      expect(restored.item.censorStrength, isNull);
+    });
+  });
 }

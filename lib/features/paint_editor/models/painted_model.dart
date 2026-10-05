@@ -35,6 +35,7 @@ class PaintedModel {
     required this.opacity,
     this.fill = false,
     this.hit = false,
+    this.censorStrength,
   }) : // The fields are private so that assigning them can drop the cached
        // `bounds`, which rules out an initializing formal here.
        // ignore: prefer_initializing_formals
@@ -76,6 +77,9 @@ class PaintedModel {
       ),
       fill: safeParseBool(map[keyConverter('fill')]),
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1),
+      censorStrength: map[keyConverter('censorStrength')] == null
+          ? null
+          : safeParseDouble(map[keyConverter('censorStrength')]),
     );
   }
 
@@ -106,6 +110,14 @@ class PaintedModel {
 
   /// The opacity for the drawing.
   double opacity;
+
+  /// How strongly a censor area hides what is beneath it: the blur sigma of a
+  /// [PaintMode.blur] area or the block size of a [PaintMode.pixelate] one,
+  /// measured like `CensorConfigs.blurSigmaX` and
+  /// `CensorConfigs.pixelBlockSize`.
+  ///
+  /// `null` uses those configs. Other modes ignore it.
+  double? censorStrength;
 
   /// A list of offsets representing the points of the shape or drawing.
   /// For shapes like circles and rectangles, it contains two points.
@@ -212,7 +224,7 @@ class PaintedModel {
   /// Returns:
   ///   - `true` if mode is [PaintMode.blur] or [PaintMode.pixelate]
   ///   - `false` for all other paint modes
-  bool get isCensorArea => mode == PaintMode.blur || mode == PaintMode.pixelate;
+  bool get isCensorArea => mode.isCensorMode;
 
   /// Determines whether the current paint mode supports being filled.
   ///
@@ -240,6 +252,7 @@ class PaintedModel {
       fill: fill,
       hit: hit,
       opacity: opacity,
+      censorStrength: censorStrength,
     );
   }
 
@@ -268,6 +281,8 @@ class PaintedModel {
       'strokeWidth': strokeWidth.roundSmart(maxDecimalPlaces),
       'opacity': opacity.roundSmart(maxDecimalPlaces),
       'fill': fill.minify(enableMinify),
+      if (censorStrength case final strength?)
+        'censorStrength': strength.roundSmart(maxDecimalPlaces),
     };
   }
 
@@ -280,6 +295,7 @@ class PaintedModel {
     fill,
     hit,
     id,
+    censorStrength,
     Object.hashAll(offsets),
     Object.hashAll(erasedOffsets),
   );
@@ -307,6 +323,7 @@ class PaintedModel {
         other.opacity == opacity &&
         other.fill == fill &&
         other.id == id &&
+        other.censorStrength == censorStrength &&
         isListEqual(other.offsets, offsets) &&
         isListEqual(other.erasedOffsets, erasedOffsets);
   }
@@ -323,6 +340,7 @@ class PaintedModel {
     List<ErasedOffset>? erasedOffsets,
     bool? fill,
     bool? hit,
+    double? censorStrength,
   }) {
     return PaintedModel(
       key: key ?? this.key,
@@ -334,6 +352,7 @@ class PaintedModel {
       strokeWidth: strokeWidth ?? this.strokeWidth,
       fill: fill ?? this.fill,
       hit: hit ?? this.hit,
+      censorStrength: censorStrength ?? this.censorStrength,
     );
   }
 
@@ -348,6 +367,7 @@ class PaintedModel {
       ..add(ColorProperty('color', color))
       ..add(DoubleProperty('strokeWidth', strokeWidth))
       ..add(DoubleProperty('opacity', opacity))
+      ..add(DoubleProperty('censorStrength', censorStrength))
       // Flags
       ..add(DiagnosticsProperty<bool>('fill', fill))
       ..add(DiagnosticsProperty<bool>('hit', hit))

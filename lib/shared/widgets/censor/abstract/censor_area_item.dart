@@ -16,7 +16,12 @@ abstract class CensorAreaItem extends StatelessWidget {
   /// optional [size].
   ///
   /// If [size] is `null`, the widget expands to fit its parent.
-  const CensorAreaItem({super.key, required this.censorConfigs, this.size});
+  const CensorAreaItem({
+    super.key,
+    required this.censorConfigs,
+    this.size,
+    this.strength,
+  });
 
   /// The dimensions of the censored area.
   ///
@@ -26,6 +31,10 @@ abstract class CensorAreaItem extends StatelessWidget {
   /// Configuration for the censoring effect, including blur intensity and
   /// shape.
   final CensorConfigs censorConfigs;
+
+  /// The strength of this area, overriding the one in [censorConfigs]; see
+  /// `PaintedModel.censorStrength`.
+  final double? strength;
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,10 @@
 # Changelog
 
+## 14.8.0
+- **FEAT**(paint-editor): Add `CensorConfigs.pixelateInLayerSpace` to measure pixelate blocks in the censor area's own pixels, so they scale with the layer like the blur does.
+- **FEAT**(paint-editor): Add `PaintedModel.censorStrength` and `PaintEditor.setCensorStrength` to give each censor area its own blur sigma or pixel block size.
+- **FIX**(layers): Capturing layers on done no longer fails in debug builds when a layer's video time range starts or ends while the editor is hidden.
+
 ## 14.7.0
 - **FEAT**(text-editor): Add `TextEditorConfigs.layerBounds` to wrap text layers at the canvas edges instead of letting them run past them when scaled up or moved.
 - **FEAT**(text-editor): Add `RoundedBackgroundText.maxWidth` and `softMaxWidth` to limit the width of the whole widget.

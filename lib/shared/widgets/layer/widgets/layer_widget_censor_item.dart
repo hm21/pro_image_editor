@@ -29,9 +29,17 @@ class LayerWidgetCensorItem extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (layer.item.mode) {
       case PaintMode.pixelate:
-        return PixelateAreaItem(censorConfigs: censorConfigs, size: layer.size);
+        return PixelateAreaItem(
+          censorConfigs: censorConfigs,
+          size: layer.size,
+          strength: layer.item.censorStrength,
+        );
       case PaintMode.blur:
-        return BlurAreaItem(censorConfigs: censorConfigs, size: layer.size);
+        return BlurAreaItem(
+          censorConfigs: censorConfigs,
+          size: layer.size,
+          strength: layer.item.censorStrength,
+        );
       default:
         throw UnimplementedError();
     }
