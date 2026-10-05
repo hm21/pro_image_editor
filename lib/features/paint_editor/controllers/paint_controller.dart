@@ -80,7 +80,7 @@ class PaintController extends ChangeNotifier {
     strokeWidth: strokeWidth,
     fill: fill,
     opacity: opacity,
-    censorStrength: censorStrength,
+    censorStrength: mode.isCensorMode ? censorStrength : null,
   );
 
   /// Returns the current paint mode (e.g., line, circle, rectangle).

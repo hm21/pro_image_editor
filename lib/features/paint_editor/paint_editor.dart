@@ -948,7 +948,7 @@ class PaintEditorState extends State<PaintEditor>
     if (last is PaintLayer &&
         last.item.isCensorArea &&
         last.item.mode == paintMode &&
-        !stateHistory.first.layers.contains(last) &&
+        !stateHistory.first.layers.any((layer) => layer.id == last.id) &&
         last.item.censorStrength != value) {
       last.item.censorStrength = value;
       _layerStackStream.add(null);

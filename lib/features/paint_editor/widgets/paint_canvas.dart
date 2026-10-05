@@ -513,7 +513,9 @@ class PaintCanvasState extends State<PaintCanvas> {
         strokeWidth: _paintCtrl.scaledStrokeWidth,
         fill: _paintCtrl.fill,
         opacity: _paintCtrl.opacity,
-        censorStrength: _paintCtrl.censorStrength,
+        censorStrength: _paintCtrl.mode.isCensorMode
+            ? _paintCtrl.censorStrength
+            : null,
       );
       widget.onCreated(rawLayer);
     }

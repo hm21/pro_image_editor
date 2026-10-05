@@ -224,7 +224,7 @@ class PaintedModel {
   /// Returns:
   ///   - `true` if mode is [PaintMode.blur] or [PaintMode.pixelate]
   ///   - `false` for all other paint modes
-  bool get isCensorArea => mode == PaintMode.blur || mode == PaintMode.pixelate;
+  bool get isCensorArea => mode.isCensorMode;
 
   /// Determines whether the current paint mode supports being filled.
   ///

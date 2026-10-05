@@ -392,6 +392,43 @@ void main() {
       expect(editor.paintCtrl.paintedModel.censorStrength, 8);
     });
 
+    testWidgets('setCensorStrength leaves an area from before the editor '
+        'opened alone', (WidgetTester tester) async {
+      final existing = PaintLayer(
+        item: PaintedModel(
+          mode: PaintMode.blur,
+          offsets: [Offset.zero, const Offset(100, 100)],
+          erasedOffsets: [],
+          color: Colors.white,
+          strokeWidth: 1,
+          opacity: 1,
+        ),
+        rawSize: const Size(100, 100),
+        opacity: 1,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintEditor.memory(
+              mockMemoryImage,
+              key: key,
+              initConfigs: PaintEditorInitConfigs(
+                theme: initConfigs.theme,
+                configs: initConfigs.configs,
+                layers: [existing],
+              ),
+            ),
+          ),
+        ),
+      );
+      final editor = key.currentState!
+        ..setMode(PaintMode.blur)
+        ..setCensorStrength(30);
+
+      expect(existing.item.censorStrength, isNull);
+      expect(editor.paintCtrl.paintedModel.censorStrength, 30);
+    });
+
     testWidgets('should undo the last action', (WidgetTester tester) async {
       await pumpEditor(tester);
 

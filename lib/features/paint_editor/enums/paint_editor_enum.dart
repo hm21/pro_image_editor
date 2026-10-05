@@ -73,6 +73,9 @@ enum PaintMode {
       this == PaintMode.freeStyleArrowStart ||
       this == PaintMode.freeStyleArrowEnd ||
       this == PaintMode.freeStyleArrowStartEnd;
+
+  /// Returns `true` if this mode draws a censor area, [blur] or [pixelate].
+  bool get isCensorMode => this == PaintMode.blur || this == PaintMode.pixelate;
 }
 
 /// Defines the available erasing modes.
