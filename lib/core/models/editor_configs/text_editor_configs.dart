@@ -223,9 +223,10 @@ class TextEditorConfigs
   /// expected to be centered on its [Layer.offset], as the default
   /// [layerFractionalOffset] places it.
   ///
-  /// The function receives the size of the editor body, which is the space
-  /// [Layer.offset] is measured in. Defaults to `null`, which leaves text
-  /// layers unconstrained.
+  /// The function receives the size of the main editor's body, which is the
+  /// space [Layer.offset] is measured in. Sub-editors pass the same size, so
+  /// layers wrap there as they do in the main editor. Defaults to `null`,
+  /// which leaves text layers unconstrained.
   ///
   /// The bounds only decide how layers are drawn and are not stored in them,
   /// so anything that renders the same layers outside this editor, such as a

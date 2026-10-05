@@ -19,7 +19,8 @@ class LayerWidgetTextItem extends StatefulWidget {
     required this.showMoveCursor,
     required this.onHitChanged,
     this.playTimeNotifier,
-    this.editorBodySize = Size.zero,
+    this.mainBodySize = Size.zero,
+    this.mainEditorLayer,
   });
 
   /// The text layer represented by this widget.
@@ -41,10 +42,18 @@ class LayerWidgetTextItem extends StatefulWidget {
   /// [TextLayer.highlights]. Without it no highlight is shown.
   final ValueListenable<Duration>? playTimeNotifier;
 
-  /// The size of the editor body the layer is laid out in, which
+  /// The size of the main editor's body, which
   /// [TextEditorConfigs.layerBounds] derives the area the layer stays inside
   /// from. An empty size sets no limit.
-  final Size editorBodySize;
+  final Size mainBodySize;
+
+  /// The layer [layer] was copied from, as the main editor places it in
+  /// [mainBodySize], when [layer] is drawn in another space, such as the
+  /// crop editor's preview of the uncropped image.
+  ///
+  /// The lines then wrap where they wrap in the main editor. Defaults to
+  /// [layer].
+  final TextLayer? mainEditorLayer;
 
   /// Renders [layer] laid out at [size] with the entry of
   /// [TextLayer.highlights] at [highlightIndex] active, or with none when
@@ -58,13 +67,15 @@ class LayerWidgetTextItem extends StatefulWidget {
     required TextEditorConfigs textEditorConfigs,
     required Size size,
     required double pixelRatio,
-    Size editorBodySize = Size.zero,
+    Size mainBodySize = Size.zero,
+    TextLayer? mainEditorLayer,
     int? highlightIndex,
   }) {
     return _buildText(
       layer: layer,
       textEditorConfigs: textEditorConfigs,
-      editorBodySize: editorBodySize,
+      mainBodySize: mainBodySize,
+      mainEditorLayer: mainEditorLayer,
       highlightIndex: highlightIndex,
     ).toImage(context, size: size, pixelRatio: pixelRatio);
   }
@@ -73,27 +84,32 @@ class LayerWidgetTextItem extends StatefulWidget {
   ///
   /// `max` is the longest line the bounds hold along the text, `soft` the
   /// room around the center of the layer before its lines reach an edge.
-  /// Both are [double.infinity] when nothing limits the layer.
+  /// Both are measured on [mainEditorLayer] in [mainBodySize] and are
+  /// [double.infinity] when nothing limits the layer.
   static ({double max, double soft}) _widthLimits(
     TextLayer layer,
     TextEditorConfigs textEditorConfigs,
-    Size editorBodySize,
+    Size mainBodySize,
+    TextLayer? mainEditorLayer,
   ) {
     final layerBounds = textEditorConfigs.layerBounds;
     // The body has no size before its first layout.
-    if (layerBounds == null ||
-        editorBodySize.isEmpty ||
-        !editorBodySize.isFinite) {
+    if (layerBounds == null || mainBodySize.isEmpty || !mainBodySize.isFinite) {
       return (max: double.infinity, soft: double.infinity);
     }
-    final bounds = layerBounds(editorBodySize);
+    final placed = mainEditorLayer ?? layer;
+    // A copy drawn in another space is scaled along with its widths.
+    final copyScale = placed.scale == 0 ? 1.0 : layer.scale / placed.scale;
+    final bounds = layerBounds(mainBodySize);
     return (
-      max: _lineLength(bounds, bounds.center, layer.rotation),
-      soft: _lineLength(
-        bounds,
-        editorBodySize.center(layer.offset),
-        layer.rotation,
-      ),
+      max: _lineLength(bounds, bounds.center, placed.rotation) * copyScale,
+      soft:
+          _lineLength(
+            bounds,
+            mainBodySize.center(placed.offset),
+            placed.rotation,
+          ) *
+          copyScale,
     );
   }
 
@@ -118,7 +134,8 @@ class LayerWidgetTextItem extends StatefulWidget {
   static RoundedBackgroundText _buildText({
     required TextLayer layer,
     required TextEditorConfigs textEditorConfigs,
-    required Size editorBodySize,
+    required Size mainBodySize,
+    required TextLayer? mainEditorLayer,
     required int? highlightIndex,
     Function(bool hasHit)? onHitTestResult,
   }) {
@@ -130,7 +147,12 @@ class LayerWidgetTextItem extends StatefulWidget {
     );
 
     final maxTextWidth = layer.maxTextWidth;
-    final widthLimits = _widthLimits(layer, textEditorConfigs, editorBodySize);
+    final widthLimits = _widthLimits(
+      layer,
+      textEditorConfigs,
+      mainBodySize,
+      mainEditorLayer,
+    );
 
     // Shadows and the outline are measured at the unscaled font size, so they
     // grow with the text when the layer is scaled.
@@ -269,7 +291,8 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
     return LayerWidgetTextItem._buildText(
       layer: widget.layer,
       textEditorConfigs: widget.textEditorConfigs,
-      editorBodySize: widget.editorBodySize,
+      mainBodySize: widget.mainBodySize,
+      mainEditorLayer: widget.mainEditorLayer,
       highlightIndex: _highlightIndex,
       onHitTestResult: _handleLayerHit,
     );

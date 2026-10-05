@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:pro_image_editor/core/models/editor_configs/text_editor_configs.dart';
-import 'package:pro_image_editor/core/models/layers/text_layer.dart';
+import 'package:pro_image_editor/core/models/transform_helper.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/widgets/layer/layer_stack.dart';
 import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 
 void main() {
@@ -78,7 +79,8 @@ void main() {
       Future<Size> pumpSized(
         WidgetTester tester,
         TextLayer layer, {
-        Size editorBodySize = bodySize,
+        Size mainBodySize = bodySize,
+        TextLayer? mainEditorLayer,
         Rect Function(Size editorBodySize)? layerBounds,
       }) async {
         final showMoveCursor = ValueNotifier(false);
@@ -96,7 +98,8 @@ void main() {
                     textEditorConfigs: TextEditorConfigs(
                       layerBounds: layerBounds,
                     ),
-                    editorBodySize: editorBodySize,
+                    mainBodySize: mainBodySize,
+                    mainEditorLayer: mainEditorLayer,
                     showMoveCursor: showMoveCursor,
                     onHitChanged: (_) {},
                   ),
@@ -224,7 +227,7 @@ void main() {
         final size = await pumpSized(
           tester,
           TextLayer(text: text, scale: 3),
-          editorBodySize: Size.zero,
+          mainBodySize: Size.zero,
           layerBounds: (editorBodySize) {
             calls++;
             return fullBody(editorBodySize);
@@ -233,6 +236,71 @@ void main() {
 
         expect(calls, 0);
         expect(size.width, greaterThan(bodySize.width));
+      });
+
+      testWidgets('wraps a copy in another space where the main editor wraps '
+          'the layer', (tester) async {
+        final mainEditorLayer = TextLayer(
+          text: 'ab cd ef',
+          offset: const Offset(100, 0),
+        );
+        final inMainEditor = await pumpSized(
+          tester,
+          mainEditorLayer,
+          layerBounds: fullBody,
+        );
+
+        // The crop editor draws a copy scaled onto the uncropped image.
+        final copy = TextLayer(text: 'ab cd ef', scale: 1.2);
+        final unwrapped = await pumpSized(tester, copy, layerBounds: fullBody);
+        final wrapped = await pumpSized(
+          tester,
+          copy,
+          mainEditorLayer: mainEditorLayer,
+          layerBounds: fullBody,
+        );
+
+        expect(unwrapped.height, lessThan(wrapped.height / 2));
+        expect(wrapped.width, closeTo(inMainEditor.width * 1.2, 1));
+        expect(wrapped.height, closeTo(inMainEditor.height * 1.2, 1));
+      });
+
+      testWidgets('wraps in a sub-editor as in the main editor', (
+        tester,
+      ) async {
+        Future<Size> pumpStack(Size editorBodySize) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Center(
+                child: SizedBox.fromSize(
+                  size: editorBodySize,
+                  child: LayerStack(
+                    configs: ProImageEditorConfigs(
+                      textEditor: TextEditorConfigs(layerBounds: fullBody),
+                    ),
+                    layers: [
+                      TextLayer(text: 'ab cd ef', offset: const Offset(100, 0)),
+                    ],
+                    overlayColor: Colors.black,
+                    transformHelper: TransformHelper(
+                      editorBodySize: editorBodySize,
+                      mainBodySize: bodySize,
+                      mainImageSize: bodySize,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          return tester.getSize(find.byType(RoundedBackgroundText));
+        }
+
+        final inMainEditor = await pumpStack(bodySize);
+        // The sub-editor's body is half the size and scales the layers down.
+        final inSubEditor = await pumpStack(bodySize / 2);
+
+        expect(inMainEditor.width, lessThanOrEqualTo(100));
+        expect(inSubEditor, inMainEditor);
       });
 
       testWidgets('keeps a narrower maxTextWidth of the layer', (tester) async {

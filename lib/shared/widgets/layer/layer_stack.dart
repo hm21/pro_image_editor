@@ -45,6 +45,8 @@ class LayerStack extends StatefulWidget {
     ),
     this.clipBehavior = Clip.hardEdge,
     this.suspendPaintLayerRasterCache = false,
+    this.mainBodySize,
+    this.mainEditorLayers,
   });
 
   /// The outside overlay color for layers.
@@ -97,6 +99,20 @@ class LayerStack extends StatefulWidget {
   /// transitions are handled by the stack itself.
   final bool suspendPaintLayerRasterCache;
 
+  /// The size of the main editor's body, which
+  /// [TextEditorConfigs.layerBounds] is measured in.
+  ///
+  /// Defaults to [TransformHelper.mainBodySize], or to
+  /// [TransformHelper.editorBodySize] when that is empty.
+  final Size? mainBodySize;
+
+  /// The layers of the main editor that [layers] were copied from, matched
+  /// by [Layer.id], when the copies are drawn in another space, such as the
+  /// crop editor's preview of the uncropped image.
+  ///
+  /// Text layers then wrap their lines where the main editor wraps them.
+  final List<Layer>? mainEditorLayers;
+
   @override
   State<LayerStack> createState() => _LayerStackState();
 }
@@ -114,6 +130,14 @@ class _LayerStackState extends State<LayerStack>
       widget.transformHelper.transformConfigs?.isNotEmpty == true
       ? widget.transformHelper.transformConfigs
       : null;
+
+  Size get _mainBodySize {
+    final mainBodySize =
+        widget.mainBodySize ?? widget.transformHelper.mainBodySize;
+    return mainBodySize.isEmpty
+        ? widget.transformHelper.editorBodySize
+        : mainBodySize;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,22 +176,36 @@ class _LayerStackState extends State<LayerStack>
   /// the device pixel ratio times that scale to stay one raster pixel per
   /// device pixel.
   List<Widget> _buildLayerChildren(BuildContext context) {
+    final mainEditorLayers = {
+      for (final layer in widget.mainEditorLayers ?? const <Layer>[])
+        layer.id: layer,
+    };
     return buildRasterCachedLayers(
       layers: widget.layers,
       editorBodySize: widget.transformHelper.editorBodySize,
       pixelRatio:
           MediaQuery.devicePixelRatioOf(context) * widget.transformHelper.scale,
       suspend: widget.suspendPaintLayerRasterCache,
-      buildLayer: _buildLayerWidget,
+      buildLayer: (layer, {required isRasterCached}) => _buildLayerWidget(
+        layer,
+        mainEditorLayer: mainEditorLayers[layer.id],
+        isRasterCached: isRasterCached,
+      ),
     );
   }
 
-  Widget _buildLayerWidget(Layer layer, {bool isRasterCached = false}) {
+  Widget _buildLayerWidget(
+    Layer layer, {
+    Layer? mainEditorLayer,
+    bool isRasterCached = false,
+  }) {
     return LayerWidget(
       key: widget.enableLayerKey ? layer.key : null,
       layer: layer,
       configs: widget.configs,
       editorBodySize: widget.transformHelper.editorBodySize,
+      mainBodySize: _mainBodySize,
+      mainEditorLayer: mainEditorLayer,
       isRasterCached: isRasterCached,
     );
   }

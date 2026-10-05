@@ -3044,6 +3044,10 @@ class CropRotateEditorState extends State<CropRotateEditor>
                       ),
                       configs: configs,
                       layers: _rawLayers,
+                      // Text layers wrap at the main editor's layer bounds
+                      // as they do there.
+                      mainBodySize: mainBodySize ?? editorBodySize,
+                      mainEditorLayers: _layers,
                       clipBehavior: Clip.none,
                       overlayColor: cropRotateEditorConfigs.style.background,
                       // The stack sits under the user zoom, the crop scale

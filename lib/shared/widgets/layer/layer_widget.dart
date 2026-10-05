@@ -47,6 +47,8 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
     this.callbacks = const ProImageEditorCallbacks(),
     this.playTimeNotifier,
     this.isRasterCached = false,
+    this.mainBodySize,
+    this.mainEditorLayer,
   });
   @override
   final ProImageEditorConfigs configs;
@@ -63,6 +65,23 @@ class LayerWidget extends StatefulWidget with SimpleConfigsAccess {
 
   /// The size of the editor's body area in logical pixels.
   final Size editorBodySize;
+
+  /// The size of the main editor's body, which
+  /// [TextEditorConfigs.layerBounds] is measured in. Defaults to
+  /// [editorBodySize].
+  ///
+  /// Sub-editors lay the layers out in their own body and scale them onto
+  /// the image, while the layers keep the main editor's units, so they pass
+  /// the main editor's body for text layers to wrap as they do there.
+  final Size? mainBodySize;
+
+  /// The layer [layer] was copied from, as the main editor places it in
+  /// [mainBodySize], when [layer] is drawn in another space, such as the
+  /// crop editor's preview of the uncropped image.
+  ///
+  /// A text layer then wraps its lines where the main editor wraps them.
+  /// Defaults to [layer].
+  final Layer? mainEditorLayer;
 
   /// Data for the layer.
   final Layer layer;
@@ -427,7 +446,9 @@ class _LayerWidgetState extends State<LayerWidget>
                       isSelected: _isSelected,
                       skipPaint: widget.isRasterCached,
                       playTimeNotifier: widget.playTimeNotifier,
-                      editorBodySize: widget.editorBodySize,
+                      mainBodySize:
+                          widget.mainBodySize ?? widget.editorBodySize,
+                      mainEditorLayer: widget.mainEditorLayer,
                       enableHitDetection:
                           _layerInteractionManager?.enabledHitDetection ??
                           false,
@@ -511,7 +532,8 @@ class _LayerContentItem extends StatelessWidget {
     required this.stickerEditorConfigs,
     required this.paintEditorConfigs,
     required this.designMode,
-    required this.editorBodySize,
+    required this.mainBodySize,
+    required this.mainEditorLayer,
     this.playTimeNotifier,
   });
 
@@ -527,8 +549,14 @@ class _LayerContentItem extends StatelessWidget {
   final StickerEditorConfigs stickerEditorConfigs;
   final PaintEditorConfigs paintEditorConfigs;
   final ImageEditorDesignMode designMode;
-  final Size editorBodySize;
+  final Size mainBodySize;
+  final Layer? mainEditorLayer;
   final ValueNotifier<Duration>? playTimeNotifier;
+
+  TextLayer? get _mainEditorTextLayer {
+    final mainEditorLayer = this.mainEditorLayer;
+    return mainEditorLayer is TextLayer ? mainEditorLayer : null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -548,7 +576,8 @@ class _LayerContentItem extends StatelessWidget {
           showMoveCursor: showMoveCursor,
           onHitChanged: onHitChanged,
           playTimeNotifier: playTimeNotifier,
-          editorBodySize: editorBodySize,
+          mainBodySize: mainBodySize,
+          mainEditorLayer: _mainEditorTextLayer,
         );
       case LayerWidgetType.widget:
         content = LayerWidgetCustomItem(
@@ -594,7 +623,8 @@ class _LayerContentItem extends StatelessWidget {
         textEditorConfigs: textEditorConfigs,
         size: box?.size ?? Size.zero,
         pixelRatio: pixelRatio,
-        editorBodySize: editorBodySize,
+        mainBodySize: mainBodySize,
+        mainEditorLayer: _mainEditorTextLayer,
         highlightIndex: highlightIndex,
       );
     }
