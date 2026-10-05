@@ -27,6 +27,8 @@ class RoundedBackgroundText extends StatelessWidget {
     this.backgroundColor,
     this.onHitTestResult,
     required this.maxTextWidth,
+    this.maxWidth = double.infinity,
+    this.softMaxWidth = double.infinity,
     this.cursorWidth = 0,
     this.enableHitBoxCorrection = false,
     this.leadingDistribution = TextLeadingDistribution.proportional,
@@ -47,6 +49,8 @@ class RoundedBackgroundText extends StatelessWidget {
     this.textAlign,
     this.onHitTestResult,
     required this.maxTextWidth,
+    this.maxWidth = double.infinity,
+    this.softMaxWidth = double.infinity,
     this.cursorWidth = 0,
     this.enableHitBoxCorrection = false,
     this.leadingDistribution = TextLeadingDistribution.proportional,
@@ -71,6 +75,23 @@ class RoundedBackgroundText extends StatelessWidget {
   /// The maximum width the text is allowed to occupy. If null, the text can
   /// expand freely.
   final double maxTextWidth;
+
+  /// The widest this widget may lay out, including the space it reserves
+  /// around the text for the hit box correction and the effects.
+  ///
+  /// Lines wrap so the widget never grows wider, which keeps the background,
+  /// outline and shadows inside this width too, and a word wider than this
+  /// is broken. [maxTextWidth] still applies when it is narrower. Defaults to
+  /// [double.infinity], which sets no limit.
+  final double maxWidth;
+
+  /// The widest this widget should lay out, measured like [maxWidth], as
+  /// long as that keeps its words whole.
+  ///
+  /// Lines wrap between words to stay within this width, but the widget
+  /// never gets narrower than its longest word for it; only [maxWidth]
+  /// breaks a word. Defaults to [double.infinity], which sets no limit.
+  final double softMaxWidth;
 
   /// The width of the text cursor when displayed.
   final double cursorWidth;
@@ -224,10 +245,20 @@ class RoundedBackgroundText extends StatelessWidget {
           )
         : Offset.zero;
 
-    painter.layout(maxWidth: maxTextWidth);
-    outlinePainter?.layout(maxWidth: maxTextWidth);
+    final reservedWidth = (horizontalSpace + effectSpace.dx) * 2;
+    var textMaxWidth = min(maxTextWidth, max(0.0, maxWidth - reservedWidth));
+    final textSoftMaxWidth = max(0.0, softMaxWidth - reservedWidth);
+    if (textSoftMaxWidth < textMaxWidth) {
+      // The longest word only reads after a layout; rounding up keeps it on
+      // one line when the text is laid out at exactly that width.
+      painter.layout();
+      final longestWord = painter.minIntrinsicWidth.ceilToDouble();
+      textMaxWidth = min(textMaxWidth, max(textSoftMaxWidth, longestWord));
+    }
+    painter.layout(maxWidth: textMaxWidth);
+    outlinePainter?.layout(maxWidth: textMaxWidth);
     for (final silhouette in silhouettePainters) {
-      silhouette.layout(maxWidth: maxTextWidth);
+      silhouette.layout(maxWidth: textMaxWidth);
     }
 
     return (
@@ -310,6 +341,14 @@ class RoundedBackgroundText extends StatelessWidget {
         ColorProperty('backgroundColor', backgroundColor, defaultValue: null),
       )
       ..add(DoubleProperty('maxTextWidth', maxTextWidth))
+      ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: double.infinity))
+      ..add(
+        DoubleProperty(
+          'softMaxWidth',
+          softMaxWidth,
+          defaultValue: double.infinity,
+        ),
+      )
       ..add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 0))
       ..add(
         FlagProperty(
