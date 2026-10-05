@@ -427,6 +427,7 @@ class _LayerWidgetState extends State<LayerWidget>
                       isSelected: _isSelected,
                       skipPaint: widget.isRasterCached,
                       playTimeNotifier: widget.playTimeNotifier,
+                      editorBodySize: widget.editorBodySize,
                       enableHitDetection:
                           _layerInteractionManager?.enabledHitDetection ??
                           false,
@@ -510,6 +511,7 @@ class _LayerContentItem extends StatelessWidget {
     required this.stickerEditorConfigs,
     required this.paintEditorConfigs,
     required this.designMode,
+    required this.editorBodySize,
     this.playTimeNotifier,
   });
 
@@ -525,6 +527,7 @@ class _LayerContentItem extends StatelessWidget {
   final StickerEditorConfigs stickerEditorConfigs;
   final PaintEditorConfigs paintEditorConfigs;
   final ImageEditorDesignMode designMode;
+  final Size editorBodySize;
   final ValueNotifier<Duration>? playTimeNotifier;
 
   @override
@@ -545,6 +548,7 @@ class _LayerContentItem extends StatelessWidget {
           showMoveCursor: showMoveCursor,
           onHitChanged: onHitChanged,
           playTimeNotifier: playTimeNotifier,
+          editorBodySize: editorBodySize,
         );
       case LayerWidgetType.widget:
         content = LayerWidgetCustomItem(
@@ -590,6 +594,7 @@ class _LayerContentItem extends StatelessWidget {
         textEditorConfigs: textEditorConfigs,
         size: box?.size ?? Size.zero,
         pixelRatio: pixelRatio,
+        editorBodySize: editorBodySize,
         highlightIndex: highlightIndex,
       );
     }

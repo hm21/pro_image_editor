@@ -66,6 +66,7 @@ class TextEditorConfigs
     this.icons = const TextEditorIcons(),
     this.widgets = const TextEditorWidgets(),
     this.enableImageBoundaryTextWrap = false,
+    this.layerBounds,
     this.resizeToAvoidBottomInset = true,
     this.composingTextDecoration = TextDecoration.none,
     this.spellCheckConfiguration,
@@ -205,6 +206,33 @@ class TextEditorConfigs
   /// Enable automatic text wrapping when text reach the image boundaries
   final bool enableImageBoundaryTextWrap;
 
+  /// Returns the area of the editor body that text layers keep their lines
+  /// inside, in the logical pixels of the body.
+  ///
+  /// A text layer otherwise keeps its line breaks wherever it is moved and
+  /// however far it is scaled, so it can run past the canvas edges. With
+  /// bounds set, its lines wrap where they would reach past an edge, measured
+  /// from the center of the layer along its text, so its rotation counts too.
+  /// Scaling a layer up or moving it towards an edge wraps its lines, and
+  /// scaling it down or moving it back unwraps them. The width covers the
+  /// whole layer, so its background, outline and shadows stay inside as well.
+  ///
+  /// Making room at an edge never wraps a layer narrower than its longest
+  /// word; only a word wider than the bounds themselves is broken.
+  /// [TextLayer.maxTextWidth] still applies when it is narrower. The layer is
+  /// expected to be centered on its [Layer.offset], as the default
+  /// [layerFractionalOffset] places it.
+  ///
+  /// The function receives the size of the editor body, which is the space
+  /// [Layer.offset] is measured in. Defaults to `null`, which leaves text
+  /// layers unconstrained.
+  ///
+  /// The bounds only decide how layers are drawn and are not stored in them,
+  /// so anything that renders the same layers outside this editor, such as a
+  /// `LayerRasterizer` capture, has to pass the same function to wrap their
+  /// lines the same way.
+  final Rect Function(Size editorBodySize)? layerBounds;
+
   /// Whether the Scaffold should resize to avoid the bottom inset (keyboard).
   ///
   /// When `true` (default), the editor will resize when the keyboard appears.
@@ -261,6 +289,7 @@ class TextEditorConfigs
     TextEditorIcons? icons,
     TextEditorWidgets? widgets,
     bool? enableImageBoundaryTextWrap,
+    Rect Function(Size editorBodySize)? layerBounds,
     bool? showBackgroundModeButton,
     bool? showFontScaleButton,
     bool? showTextAlignButton,
@@ -305,6 +334,7 @@ class TextEditorConfigs
       widgets: widgets ?? this.widgets,
       enableImageBoundaryTextWrap:
           enableImageBoundaryTextWrap ?? this.enableImageBoundaryTextWrap,
+      layerBounds: layerBounds ?? this.layerBounds,
       showBackgroundModeButton:
           showBackgroundModeButton ?? this.showBackgroundModeButton,
       showFontScaleButton: showFontScaleButton ?? this.showFontScaleButton,

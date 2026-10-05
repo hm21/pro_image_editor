@@ -238,6 +238,118 @@ void main() {
         expect(textSize(tester), plainSize);
       });
     });
+
+    group('maxWidth', () {
+      RoundedBackgroundTextPainter textPainter(WidgetTester tester) {
+        final renderObject = textRenderObject(tester) as RenderCustomPaint;
+        return renderObject.painter! as RoundedBackgroundTextPainter;
+      }
+
+      testWidgets('wraps the lines to fit the background and the effects', (
+        tester,
+      ) async {
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            'Hello wide world',
+            style: style.copyWith(shadows: const [shadow]),
+            backgroundColor: const Color(0xFF0000FF),
+            enableHitBoxCorrection: true,
+            outlineWidth: 3,
+            reserveEffectSpace: true,
+            maxTextWidth: double.infinity,
+            maxWidth: 300,
+          ),
+        );
+
+        expect(textSize(tester).width, lessThanOrEqualTo(300));
+        expect(
+          textPainter(tester).painter.computeLineMetrics(),
+          hasLength(greaterThan(1)),
+        );
+      });
+
+      testWidgets('sets no limit by default', (tester) async {
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            'Hello wide world',
+            style: style,
+            enableHitBoxCorrection: true,
+            maxTextWidth: double.infinity,
+          ),
+        );
+
+        expect(textSize(tester).width, greaterThan(300));
+        expect(textPainter(tester).painter.computeLineMetrics(), hasLength(1));
+      });
+    });
+
+    group('softMaxWidth', () {
+      RoundedBackgroundTextPainter textPainter(WidgetTester tester) {
+        final renderObject = textRenderObject(tester) as RenderCustomPaint;
+        return renderObject.painter! as RoundedBackgroundTextPainter;
+      }
+
+      List<String> lines(WidgetTester tester) {
+        final painter = textPainter(tester).painter;
+        final text = painter.plainText;
+        final lines = <String>[];
+        for (final line in painter.computeLineMetrics()) {
+          final position = painter.getPositionForOffset(
+            Offset(0, line.baseline),
+          );
+          final boundary = painter.getLineBoundary(position);
+          lines.add(text.substring(boundary.start, boundary.end).trim());
+        }
+        return lines;
+      }
+
+      testWidgets('wraps the lines between words', (tester) async {
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            'ab cd ef',
+            style: style,
+            maxTextWidth: double.infinity,
+            softMaxWidth: 200,
+          ),
+        );
+
+        expect(textSize(tester).width, lessThanOrEqualTo(200));
+        expect(lines(tester), ['ab cd', 'ef']);
+      });
+
+      testWidgets('keeps its longest word whole', (tester) async {
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            'Hello world',
+            style: style,
+            maxTextWidth: double.infinity,
+            softMaxWidth: 50,
+          ),
+        );
+
+        expect(lines(tester), ['Hello', 'world']);
+      });
+
+      testWidgets('still breaks a word wider than maxWidth', (tester) async {
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            'Hello world',
+            style: style,
+            maxTextWidth: double.infinity,
+            maxWidth: 120,
+            softMaxWidth: 50,
+          ),
+        );
+
+        expect(textSize(tester).width, lessThanOrEqualTo(120));
+        expect(lines(tester), hasLength(greaterThan(2)));
+      });
+    });
   });
 
   group('RoundedBackgroundTextField', () {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.7.0
+- **FEAT**(text-editor): Add `TextEditorConfigs.layerBounds` to keep text layers inside the canvas: a layer that would reach past an edge when it is scaled up or moved towards it wraps its lines, and unwraps them when it is scaled down or moved back. Lines wrap between words, so making room at an edge never breaks a word; only a word wider than the bounds is broken. The whole layer stays inside, background, outline and shadows included.
+- **FEAT**(text-editor): Add `RoundedBackgroundText.maxWidth` and `softMaxWidth` to limit the width of the whole widget.
+
 ## 14.6.2
 - **FIX**(layers): A layer outside its video time range no longer catches touches, so the visible layer underneath it can be selected and moved again.
 - **FIX**(layers): A layer coming back into its video time range no longer takes touches meant for the layer drawn on top of it.

@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/features/text_editor/utils/rounded_background_painter.dart';
+import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 
@@ -197,6 +198,66 @@ void main() {
           final exported = await Layer.captureAllLayers(
             layers: [plain, highlighted],
             pixelRatio: 2,
+            applyTransforms: false,
+          );
+
+          Future<Uint8List> pixels(Uint8List png) async {
+            final codec = await ui.instantiateImageCodec(png);
+            final image = (await codec.getNextFrame()).image;
+            final data = await image.toByteData();
+            image.dispose();
+            codec.dispose();
+            return data!.buffer.asUint8List();
+          }
+
+          expect(exported[1].highlightBytes, isNotEmpty);
+          expect(
+            await pixels(exported[1].bytes),
+            await pixels(exported[0].bytes),
+          );
+        });
+      });
+
+      testWidgets('renders a wrapped base exactly as the screen paints it', (
+        tester,
+      ) async {
+        // Fits on one line when centered, but sits near the right edge, so it
+        // has to wrap to stay inside.
+        TextLayer buildWrappedLayer() =>
+            buildLayer()..offset = const Offset(120, 0);
+        final plain = buildWrappedLayer()..highlights = [];
+        final highlighted = buildWrappedLayer();
+        final configs = ProImageEditorConfigs(
+          textEditor: TextEditorConfigs(
+            layerBounds: (editorBodySize) => Offset.zero & editorBodySize,
+          ),
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  for (final layer in [plain, highlighted])
+                    LayerWidget(
+                      editorBodySize: const Size(400, 400),
+                      layer: layer,
+                      configs: configs,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+        // 80 px from the right edge leaves room for 160 px.
+        expect(
+          tester.getSize(find.byType(RoundedBackgroundText).first).width,
+          lessThanOrEqualTo(160),
+        );
+
+        await tester.runAsync(() async {
+          final exported = await Layer.captureAllLayers(
+            layers: [plain, highlighted],
+            pixelRatio: 1,
             applyTransforms: false,
           );
 

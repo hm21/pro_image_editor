@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -18,6 +19,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     required this.showMoveCursor,
     required this.onHitChanged,
     this.playTimeNotifier,
+    this.editorBodySize = Size.zero,
   });
 
   /// The text layer represented by this widget.
@@ -39,6 +41,11 @@ class LayerWidgetTextItem extends StatefulWidget {
   /// [TextLayer.highlights]. Without it no highlight is shown.
   final ValueListenable<Duration>? playTimeNotifier;
 
+  /// The size of the editor body the layer is laid out in, which
+  /// [TextEditorConfigs.layerBounds] derives the area the layer stays inside
+  /// from. An empty size sets no limit.
+  final Size editorBodySize;
+
   /// Renders [layer] laid out at [size] with the entry of
   /// [TextLayer.highlights] at [highlightIndex] active, or with none when
   /// [highlightIndex] is `null`.
@@ -51,18 +58,67 @@ class LayerWidgetTextItem extends StatefulWidget {
     required TextEditorConfigs textEditorConfigs,
     required Size size,
     required double pixelRatio,
+    Size editorBodySize = Size.zero,
     int? highlightIndex,
   }) {
     return _buildText(
       layer: layer,
       textEditorConfigs: textEditorConfigs,
+      editorBodySize: editorBodySize,
       highlightIndex: highlightIndex,
     ).toImage(context, size: size, pixelRatio: pixelRatio);
+  }
+
+  /// How wide [layer] may be within [TextEditorConfigs.layerBounds].
+  ///
+  /// `max` is the longest line the bounds hold along the text, `soft` the
+  /// room around the center of the layer before its lines reach an edge.
+  /// Both are [double.infinity] when nothing limits the layer.
+  static ({double max, double soft}) _widthLimits(
+    TextLayer layer,
+    TextEditorConfigs textEditorConfigs,
+    Size editorBodySize,
+  ) {
+    final layerBounds = textEditorConfigs.layerBounds;
+    // The body has no size before its first layout.
+    if (layerBounds == null ||
+        editorBodySize.isEmpty ||
+        !editorBodySize.isFinite) {
+      return (max: double.infinity, soft: double.infinity);
+    }
+    final bounds = layerBounds(editorBodySize);
+    return (
+      max: _lineLength(bounds, bounds.center, layer.rotation),
+      soft: _lineLength(
+        bounds,
+        editorBodySize.center(layer.offset),
+        layer.rotation,
+      ),
+    );
+  }
+
+  /// The longest line at [angle] that is centered on [point] and stays
+  /// inside [bounds], or `0` when [point] lies outside them.
+  static double _lineLength(Rect bounds, Offset point, double angle) {
+    final cosine = cos(angle).abs();
+    final sine = sin(angle).abs();
+    var halfLength = double.infinity;
+    // A line parallel to an axis never reaches the edges across it.
+    if (cosine > precisionErrorTolerance) {
+      final room = min(point.dx - bounds.left, bounds.right - point.dx);
+      halfLength = min(halfLength, room / cosine);
+    }
+    if (sine > precisionErrorTolerance) {
+      final room = min(point.dy - bounds.top, bounds.bottom - point.dy);
+      halfLength = min(halfLength, room / sine);
+    }
+    return max(0.0, halfLength * 2);
   }
 
   static RoundedBackgroundText _buildText({
     required TextLayer layer,
     required TextEditorConfigs textEditorConfigs,
+    required Size editorBodySize,
     required int? highlightIndex,
     Function(bool hasHit)? onHitTestResult,
   }) {
@@ -74,6 +130,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     );
 
     final maxTextWidth = layer.maxTextWidth;
+    final widthLimits = _widthLimits(layer, textEditorConfigs, editorBodySize);
 
     // Shadows and the outline are measured at the unscaled font size, so they
     // grow with the text when the layer is scaled.
@@ -100,6 +157,8 @@ class LayerWidgetTextItem extends StatefulWidget {
       maxTextWidth: maxTextWidth == null
           ? double.infinity
           : maxTextWidth * layer.scale,
+      maxWidth: widthLimits.max,
+      softMaxWidth: widthLimits.soft,
       onHitTestResult: onHitTestResult,
       text: _highlightedSpan(layer, finalStyle, highlightIndex),
       backgroundColor: layer.background,
@@ -210,6 +269,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
     return LayerWidgetTextItem._buildText(
       layer: widget.layer,
       textEditorConfigs: widget.textEditorConfigs,
+      editorBodySize: widget.editorBodySize,
       highlightIndex: _highlightIndex,
       onHitTestResult: _handleLayerHit,
     );
