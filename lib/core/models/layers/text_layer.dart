@@ -344,6 +344,22 @@ class TextLayer extends Layer {
   /// [LayerAnimationType.wordByWord]. Empty for any other type.
   @visibleForTesting
   List<int> revealStepEnds(LayerAnimationType type) {
+    // The preview asks every frame and the export every sampled millisecond,
+    // so the steps are only worked out again once the text changes.
+    if (_revealStepsText != text) {
+      _revealSteps.clear();
+      _revealStepsText = text;
+    }
+    return _revealSteps[type] ??= List.unmodifiable(
+      _findRevealStepEnds(text, type),
+    );
+  }
+
+  /// The text [_revealSteps] were worked out for.
+  String? _revealStepsText;
+  final Map<LayerAnimationType, List<int>> _revealSteps = {};
+
+  static List<int> _findRevealStepEnds(String text, LayerAnimationType type) {
     switch (type) {
       case LayerAnimationType.typewriter:
         final ends = <int>[];

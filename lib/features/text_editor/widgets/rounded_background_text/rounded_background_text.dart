@@ -326,6 +326,7 @@ class RoundedBackgroundText extends StatelessWidget {
   /// metric of the style it is merged into and paints nothing.
   static final TextStyle _hiddenStyle = TextStyle(
     foreground: Paint()..color = const Color(0x00000000),
+    background: Paint()..color = const Color(0x00000000),
     shadows: const [],
     decoration: TextDecoration.none,
   );

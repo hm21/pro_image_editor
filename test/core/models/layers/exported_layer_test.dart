@@ -350,6 +350,33 @@ void main() {
 
           expect(describe(exported.frames), [(0, null, null)]);
         });
+
+        test('shows the whole text for a looping reveal without an end, '
+            'also after a highlight', () {
+          final exported = ExportedLayer(
+            layer: TextLayer(
+              text: 'Hi you',
+              highlights: [highlight(0, 2, 0, 400)],
+              animations: [
+                LayerAnimation(
+                  type: LayerAnimationType.typewriter,
+                  phase: AnimationPhase.loop,
+                  duration: ms(1000),
+                ),
+              ],
+            ),
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            highlightBytes: {0: first},
+            // What the loop would show 400 ms in, had it been sampled.
+            revealBytes: {const ExportedTextState(revealedLength: 1): none},
+          );
+
+          expect(describe(exported.frames), [
+            (1, null, ms(400)),
+            (0, ms(400), null),
+          ]);
+        });
       });
     });
 

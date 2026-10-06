@@ -413,6 +413,19 @@ void main() {
         expect(layer.revealedLengthAt(ms(1001)), 4);
       });
 
+      test('works the steps out again when the text changes', () {
+        final layer = revealing(
+          'ab',
+          LayerAnimationType.typewriter,
+          AnimationPhase.animateIn,
+        );
+        expect(layer.revealStepEnds(LayerAnimationType.typewriter), [1, 2]);
+
+        layer.text = 'ab c';
+        expect(layer.revealStepEnds(LayerAnimationType.typewriter), [1, 2, 4]);
+        expect(layer.revealStepEnds(LayerAnimationType.wordByWord), [2, 4]);
+      });
+
       test('reveals word by word', () {
         final layer = revealing(
           'Hello big\nworld',

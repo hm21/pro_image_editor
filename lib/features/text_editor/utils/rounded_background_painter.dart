@@ -507,7 +507,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     final painter = Paint()..color = backgroundColor;
 
     final background = _buildBackgroundPath();
-    _cachedPath = visibleLength == null ? background : null;
+    // Only the background of the whole text serves hit testing.
+    if (visibleLength == null) _cachedPath = background;
     canvas
       ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy)
       ..drawPath(background, painter);

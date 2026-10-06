@@ -80,7 +80,11 @@ class ExportedLayer {
     final frames = <ExportedLayerFrame>[];
     for (final span in textLayerTimeline(
       layer,
-      highlights: highlightBytes.isNotEmpty,
+      // The reveal images are keyed by the highlight they show as well, even
+      // when no image of a highlight alone was captured.
+      highlights:
+          highlightBytes.isNotEmpty ||
+          revealBytes.keys.any((state) => state.highlightIndex != null),
       reveals: revealBytes.isNotEmpty,
     )) {
       final frameBytes = _bytesFor(span.state);

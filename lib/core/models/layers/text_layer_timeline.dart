@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 
 import 'exported_layer.dart';
@@ -38,7 +40,8 @@ const Duration textRevealSampling = Duration(milliseconds: 1);
 /// A reveal's steps follow its easing curve, which an elastic or bounce
 /// curve can make go back and forth, so they are found by sampling the
 /// reveal every [textRevealSampling] rather than by solving for them. A
-/// [AnimationPhase.loop] reveal is only sampled when the layer has an end.
+/// [AnimationPhase.loop] reveal on a layer without an end never ends, so it
+/// is left out and the text shows whole while it would loop.
 ///
 /// The `ExportedLayer.frames` of a captured text layer follow these spans,
 /// and the capture records an image for each state they need.
@@ -52,6 +55,19 @@ List<TextLayerTimelineSpan> textLayerTimeline(
   // A layer without a start begins with the video, at zero.
   final origin = start ?? Duration.zero;
 
+  bool isEndlessLoop(LayerAnimation animation) =>
+      end == null &&
+      animation.isTextReveal &&
+      animation.phase == AnimationPhase.loop;
+  final revealing = !reveals || !layer.animations.any(isEndlessLoop)
+      ? layer
+      : layer.copyWith(
+          animations: [
+            for (final animation in layer.animations)
+              if (!isEndlessLoop(animation)) animation,
+          ],
+        );
+
   final cuts = <Duration>{
     if (highlights)
       for (final highlight in layer.highlights)
@@ -59,11 +75,11 @@ List<TextLayerTimelineSpan> textLayerTimeline(
           origin + highlight.startTime,
           origin + highlight.endTime,
         ],
-    if (reveals) ..._revealCuts(layer),
+    if (reveals) ..._revealCuts(revealing),
   }.where((cut) => cut > origin && (end == null || cut < end)).toList()..sort();
 
   ExportedTextState stateAt(Duration time) => ExportedTextState(
-    revealedLength: reveals ? layer.revealedLengthAt(time) : null,
+    revealedLength: reveals ? revealing.revealedLengthAt(time) : null,
     highlightIndex: highlights ? layer.highlightIndexAt(time) : null,
   );
 
@@ -90,47 +106,65 @@ List<TextLayerTimelineSpan> textLayerTimeline(
 
 /// The moments [layer]'s revealed text changes, found by sampling every
 /// window in which one of its reveals plays.
+///
+/// It may also return moments the text does not change at, such as the start
+/// of a window; [textLayerTimeline] merges the spans on either side of them.
 Set<Duration> _revealCuts(TextLayer layer) {
-  final start = layer.startTime ?? Duration.zero;
-  final end = layer.endTime;
+  final start = (layer.startTime ?? Duration.zero).inMicroseconds;
+  final end = layer.endTime?.inMicroseconds;
 
-  final windows = <(Duration, Duration)>[];
+  // The windows in microseconds, cut to the layer's range.
+  final windows = <(int, int)>[];
+  void addWindow(int from, int to) {
+    from = math.max(from, start);
+    if (end != null) to = math.min(to, end);
+    if (from < to) windows.add((from, to));
+  }
+
   for (final animation in layer.animations) {
     if (!animation.isTextReveal || animation.duration <= Duration.zero) {
       continue;
     }
-    final duration = animation.duration;
-    switch (animation.phase) {
-      case AnimationPhase.animateIn:
-        windows.add((start, start + duration));
-      case AnimationPhase.animateOut:
-        if (end != null) windows.add((end - duration, end));
-      case AnimationPhase.animateInOut:
-        windows.add((start, start + duration));
-        if (end != null) windows.add((end - duration, end));
-      case AnimationPhase.loop:
-        if (end != null) windows.add((start, end));
+    final duration = animation.duration.inMicroseconds;
+    final phase = animation.phase;
+    if (phase == AnimationPhase.loop) {
+      if (end != null) addWindow(start, end);
+      continue;
+    }
+    if (phase != AnimationPhase.animateOut) {
+      addWindow(start, start + duration);
+    }
+    if (phase != AnimationPhase.animateIn && end != null) {
+      addWindow(end - duration, end);
     }
   }
   if (windows.isEmpty) return const {};
 
-  final step = textRevealSampling.inMicroseconds;
-  final samples = <int>{
-    for (final (from, to) in windows) ...[
-      for (var us = from.inMicroseconds; us < to.inMicroseconds; us += step) us,
-      to.inMicroseconds,
-    ],
-  }.toList()..sort();
+  // Overlapping windows are sampled once.
+  windows.sort((a, b) => a.$1.compareTo(b.$1));
+  final merged = <(int, int)>[windows.first];
+  for (final (from, to) in windows.skip(1)) {
+    final (lastFrom, lastTo) = merged.last;
+    if (from <= lastTo) {
+      merged.last = (lastFrom, math.max(lastTo, to));
+    } else {
+      merged.add((from, to));
+    }
+  }
 
+  final step = textRevealSampling.inMicroseconds;
   final cuts = <Duration>{};
-  int? previous;
-  var first = true;
-  for (final us in samples) {
-    final time = Duration(microseconds: us);
-    final revealed = layer.revealedLengthAt(time);
-    if (first || revealed != previous) cuts.add(time);
-    previous = revealed;
-    first = false;
+  for (final (from, to) in merged) {
+    cuts.add(Duration(microseconds: from));
+    var previous = layer.revealedLengthAt(Duration(microseconds: from));
+    for (var us = from + step; ; us += step) {
+      if (us > to) us = to;
+      final time = Duration(microseconds: us);
+      final revealed = layer.revealedLengthAt(time);
+      if (revealed != previous) cuts.add(time);
+      previous = revealed;
+      if (us == to) break;
+    }
   }
   return cuts;
 }

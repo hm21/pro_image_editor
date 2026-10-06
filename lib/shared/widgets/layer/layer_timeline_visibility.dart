@@ -17,8 +17,8 @@ import '/shared/utils/timeline_progress.dart';
 /// the middle of a 5 s fade-in shows the layer at 50 %).
 ///
 /// When [Layer.animations] is not empty, the transition is phase-aware: each
-/// animation drives a fade, slide, or scale during the layer's enter window
-/// (`[startTime, startTime + duration]`) and/or exit window
+/// animation drives a fade, slide, scale, wiggle or bounce during the layer's
+/// enter window (`[startTime, startTime + duration]`) and/or exit window
 /// (`[endTime - duration, endTime]`). Multiple animations are composed, so the
 /// enter and leave phases can use distinct animation types — something the
 /// single `(child, animation)` [LayerTimelineConfigs.transitionBuilder] cannot
@@ -34,10 +34,9 @@ import '/shared/utils/timeline_progress.dart';
 /// box around the rotated layer as the exported image is. A
 /// [AnimationPhase.loop] repeats for as long as the layer is visible. Text
 /// reveals are drawn by the text layer itself. When [Layer.animations] is
-/// empty, the
-/// legacy fade convenience
-/// driven by [Layer.enterDuration] / [Layer.exitDuration] and the
-/// [LayerTimelineConfigs.transitionBuilder] is used instead.
+/// empty, the legacy fade convenience driven by [Layer.enterDuration] /
+/// [Layer.exitDuration] and the [LayerTimelineConfigs.transitionBuilder] is
+/// used instead.
 class LayerTimelineVisibility extends StatefulWidget {
   /// Creates a [LayerTimelineVisibility].
   const LayerTimelineVisibility({
@@ -180,7 +179,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   /// the exported result: each animation's progress is evaluated for its
   /// enter and/or exit phase, the most-visible (minimum) progress wins for an
   /// `animateInOut` animation, and the effects are composed (opacity
-  /// multiplies, slide offsets accumulate, scale multiplies).
+  /// multiplies, slide offsets accumulate, scale multiplies, wiggle angles and
+  /// bounce lifts add up).
   _TimelineFrame _computeFrame(Duration currentTime) {
     final layer = widget.layer;
     final start = layer.startTime;
