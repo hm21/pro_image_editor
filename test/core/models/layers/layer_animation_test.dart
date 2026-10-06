@@ -278,6 +278,107 @@ void main() {
         final restored = LayerAnimation.fromMap(original.toMap());
         expect(restored, original);
       });
+
+      test('wiggle loop roundtrip preserves its angle', () {
+        const original = LayerAnimation(
+          type: LayerAnimationType.wiggle,
+          phase: AnimationPhase.loop,
+          duration: Duration(milliseconds: 600),
+          curve: AnimationCurve.easeIn,
+          wiggleAngle: 0.3,
+        );
+        final restored = LayerAnimation.fromMap(original.toMap());
+        expect(restored, original);
+        expect(restored.wiggleAngle, 0.3);
+      });
+
+      test('bounce roundtrip preserves its height', () {
+        const original = LayerAnimation(
+          type: LayerAnimationType.bounce,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 800),
+          curve: AnimationCurve.bounceOut,
+          bounceHeight: 1.25,
+        );
+        final restored = LayerAnimation.fromMap(original.toMap());
+        expect(restored, original);
+        expect(restored.bounceHeight, 1.25);
+      });
+
+      test('text reveals round-trip', () {
+        for (final type in [
+          LayerAnimationType.typewriter,
+          LayerAnimationType.wordByWord,
+        ]) {
+          final original = LayerAnimation(
+            type: type,
+            phase: AnimationPhase.animateOut,
+            duration: const Duration(seconds: 1),
+          );
+          expect(LayerAnimation.fromMap(original.toMap()), original);
+        }
+      });
+    });
+
+    group('wiggle, bounce and text reveals', () {
+      test('leave angle and height unset by default', () {
+        const animation = LayerAnimation(
+          type: LayerAnimationType.wiggle,
+          phase: AnimationPhase.loop,
+          duration: Duration(milliseconds: 500),
+        );
+        expect(animation.wiggleAngle, isNull);
+        expect(animation.bounceHeight, isNull);
+      });
+
+      test('copyWith replaces angle and height', () {
+        const original = LayerAnimation(
+          type: LayerAnimationType.wiggle,
+          phase: AnimationPhase.loop,
+          duration: Duration(milliseconds: 500),
+        );
+        final updated = original.copyWith(wiggleAngle: 0.2, bounceHeight: 2);
+        expect(updated.wiggleAngle, 0.2);
+        expect(updated.bounceHeight, 2);
+      });
+
+      test('differ by angle and height', () {
+        const a = LayerAnimation(
+          type: LayerAnimationType.wiggle,
+          phase: AnimationPhase.loop,
+          duration: Duration(milliseconds: 500),
+          wiggleAngle: 0.1,
+        );
+        expect(a, isNot(a.copyWith(wiggleAngle: 0.2)));
+        expect(a, isNot(a.copyWith(bounceHeight: 1)));
+      });
+
+      test('only typewriter and word by word reveal text', () {
+        for (final type in LayerAnimationType.values) {
+          final animation = LayerAnimation(
+            type: type,
+            phase: AnimationPhase.animateIn,
+            duration: const Duration(seconds: 1),
+            slideDirection: SlideDirection.left,
+          );
+          expect(
+            animation.isTextReveal,
+            type == LayerAnimationType.typewriter ||
+                type == LayerAnimationType.wordByWord,
+            reason: type.name,
+          );
+        }
+      });
+
+      test('falls back to a fade for a type this version does not know', () {
+        final restored = LayerAnimation.fromMap(const {
+          'type': 'confetti',
+          'phase': 'loop',
+          'durationUs': 1000,
+        });
+        expect(restored.type, LayerAnimationType.fade);
+        expect(restored.phase, AnimationPhase.loop);
+      });
     });
 
     group('copyWith', () {
@@ -457,6 +558,10 @@ void main() {
         LayerAnimationType.fade,
         LayerAnimationType.slide,
         LayerAnimationType.scale,
+        LayerAnimationType.wiggle,
+        LayerAnimationType.bounce,
+        LayerAnimationType.typewriter,
+        LayerAnimationType.wordByWord,
       ]);
     });
 
@@ -492,6 +597,7 @@ void main() {
         AnimationPhase.animateIn,
         AnimationPhase.animateOut,
         AnimationPhase.animateInOut,
+        AnimationPhase.loop,
       ]);
     });
   });

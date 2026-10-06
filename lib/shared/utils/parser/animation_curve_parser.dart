@@ -2,41 +2,6 @@ import 'package:flutter/animation.dart';
 
 import '/core/models/layers/layer_animation.dart';
 
-/// Maps an [AnimationCurve] enum value to the equivalent Flutter [Curve].
-///
-/// Used to drive the in-editor video-timeline preview with the same easing the
-/// exported result uses.
-Curve curveFromAnimationCurve(AnimationCurve curve) {
-  switch (curve) {
-    case AnimationCurve.linear:
-      return Curves.linear;
-    case AnimationCurve.easeIn:
-      return Curves.easeIn;
-    case AnimationCurve.easeOut:
-      return Curves.easeOut;
-    case AnimationCurve.easeInOut:
-      return Curves.easeInOut;
-    case AnimationCurve.easeInCubic:
-      return Curves.easeInCubic;
-    case AnimationCurve.easeOutCubic:
-      return Curves.easeOutCubic;
-    case AnimationCurve.easeInOutCubic:
-      return Curves.easeInOutCubic;
-    case AnimationCurve.bounceIn:
-      return Curves.bounceIn;
-    case AnimationCurve.bounceOut:
-      return Curves.bounceOut;
-    case AnimationCurve.bounceInOut:
-      return Curves.bounceInOut;
-    case AnimationCurve.elasticIn:
-      return Curves.elasticIn;
-    case AnimationCurve.elasticOut:
-      return Curves.elasticOut;
-    case AnimationCurve.elasticInOut:
-      return Curves.elasticInOut;
-  }
-}
-
 /// Maps a Flutter [Curve] back to the closest [AnimationCurve] enum value.
 ///
 /// Returns [AnimationCurve.linear] for `null` or any curve without a direct

@@ -30,6 +30,7 @@ import 'layer_animation.dart';
 import 'layer_interaction.dart';
 import 'paint_layer.dart';
 import 'text_layer.dart';
+import 'text_layer_timeline.dart';
 import 'widget_layer.dart';
 
 export '/core/models/editor_configs/video/layer_timeline_configs.dart'
@@ -450,9 +451,9 @@ class Layer {
   /// [flipX] and [flipY] are applied to the output image. Set it to `false`
   /// to get the raw, un-transformed content.
   ///
-  /// A [TextLayer] with [TextLayer.highlights] is captured with none of them
-  /// active, whatever the playback position shows; [captureAllLayers]
-  /// captures the highlights as well.
+  /// A [TextLayer] with [TextLayer.highlights] or a text reveal is captured
+  /// with no highlight active and its whole text shown, whatever the playback
+  /// position shows; [captureAllLayers] captures the other states as well.
   ///
   /// Returns `null` if the layer is not currently mounted.
   Future<Uint8List?> captureAsPng({
@@ -471,11 +472,13 @@ class Layer {
     );
   }
 
-  /// Captures the layer like [captureAsPng], or with the entry of
-  /// [TextLayer.highlights] at [highlightIndex] active when it is given.
+  /// Captures the layer like [captureAsPng], or a [TextLayer] with the entry
+  /// of [TextLayer.highlights] at [highlightIndex] active and only the first
+  /// [revealedLength] UTF-16 code units of its text drawn, when either is
+  /// given.
   ///
-  /// Returns `null` when the layer is not mounted, or when [highlightIndex] is
-  /// given for a layer that has no highlights to render.
+  /// Returns `null` when the layer is not mounted, or when a text state is
+  /// given for a layer that has none to render.
   Future<Uint8List?> _capture({
     required double? pixelRatio,
     required double? basePixelRatio,
@@ -483,6 +486,7 @@ class Layer {
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
     int? highlightIndex,
+    int? revealedLength,
   }) async {
     final context = repaintBoundaryKey.currentContext;
     if (context == null) return null;
@@ -496,10 +500,14 @@ class Layer {
         ? boundaryWidget
         : null;
     final ui.Image rawImage;
-    if (highlightIndex != null) {
-      final renderHighlight = boundary?.renderHighlight;
-      if (renderHighlight == null) return null;
-      rawImage = await renderHighlight(effectivePixelRatio, highlightIndex);
+    if (highlightIndex != null || revealedLength != null) {
+      final renderTextState = boundary?.renderTextState;
+      if (renderTextState == null) return null;
+      rawImage = await renderTextState(
+        effectivePixelRatio,
+        highlightIndex: highlightIndex,
+        revealedLength: revealedLength,
+      );
     } else if (boundary?.renderContent case final renderContent?) {
       rawImage = await renderContent(effectivePixelRatio);
     } else {
@@ -612,8 +620,10 @@ class Layer {
   /// layer.
   ///
   /// A [TextLayer] with [TextLayer.highlights] is also captured once per
-  /// highlight, into [ExportedLayer.highlightBytes]; [ExportedLayer.frames]
-  /// lays those images out along the layer's time range.
+  /// highlight, into [ExportedLayer.highlightBytes], and one that reveals its
+  /// text once per step of the reveal, into [ExportedLayer.revealBytes];
+  /// [ExportedLayer.frames] lays those images out along the layer's time
+  /// range.
   static Future<List<ExportedLayer>> captureAllLayers({
     required List<Layer> layers,
     double? pixelRatio,
@@ -705,11 +715,58 @@ class Layer {
                   recorder: recorder,
                 )
               : const {},
+          revealBytes:
+              layer is TextLayer && layer.animations.any((a) => a.isTextReveal)
+              ? await layer._captureReveal(
+                  pixelRatio: pixelRatio,
+                  basePixelRatio: basePixelRatio,
+                  applyTransforms: applyTransforms,
+                  format: format,
+                  recorder: recorder,
+                )
+              : const {},
         ),
       );
     }
 
     return exported;
+  }
+
+  /// Captures this text layer once per state its text reveal shows only
+  /// part of the text in, as `ExportedLayer.frames` will look them up.
+  /// Empty for any other layer.
+  Future<Map<ExportedTextState, Uint8List>> _captureReveal({
+    required double? pixelRatio,
+    required double? basePixelRatio,
+    required bool applyTransforms,
+    required ui.ImageByteFormat format,
+    required ContentRecorderController? recorder,
+  }) async {
+    final layer = this;
+    if (layer is! TextLayer) return const {};
+
+    final states = {
+      for (final span in textLayerTimeline(
+        layer,
+        highlights: layer.highlights.any((h) => h.isValid),
+        reveals: true,
+      ))
+        if (span.state.revealedLength != null) span.state,
+    };
+    final captured = <ExportedTextState, Uint8List>{};
+    for (final state in states) {
+      final bytes = await _capture(
+        pixelRatio: pixelRatio,
+        basePixelRatio: basePixelRatio,
+        applyTransforms: applyTransforms,
+        format: format,
+        recorder: recorder,
+        highlightIndex: state.highlightIndex,
+        revealedLength: state.revealedLength,
+      );
+      if (bytes != null) captured[state] = bytes;
+    }
+    return captured;
   }
 
   /// Captures this text layer once per valid entry of

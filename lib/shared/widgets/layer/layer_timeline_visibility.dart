@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:flutter/rendering.dart' show RenderProxyBox;
+import 'package:flutter/rendering.dart' show BoxHitTestResult, RenderProxyBox;
 import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/video/layer_timeline_configs.dart';
 import '/core/models/layers/layer.dart';
-import '/shared/utils/parser/animation_curve_parser.dart';
+import '/shared/utils/layer_animation_progress.dart';
 import '/shared/utils/timeline_progress.dart';
 
 /// Controls layer visibility based on [Layer.startTime] / [Layer.endTime]
@@ -29,7 +29,12 @@ import '/shared/utils/timeline_progress.dart';
 /// start position of the caller's own, measured like [Layer.offset]. The scale
 /// effect is anchored on the layer's visual center (via
 /// [layerFractionalOffset]) so that a combined slide + scale enters straight
-/// instead of drifting diagonally. When [Layer.animations] is empty, the
+/// instead of drifting diagonally. A wiggle tilts the layer around the same
+/// center, and a bounce lifts it by a multiple of its height, measured on the
+/// box around the rotated layer as the exported image is. A
+/// [AnimationPhase.loop] repeats for as long as the layer is visible. Text
+/// reveals are drawn by the text layer itself. When [Layer.animations] is
+/// empty, the
 /// legacy fade convenience
 /// driven by [Layer.enterDuration] / [Layer.exitDuration] and the
 /// [LayerTimelineConfigs.transitionBuilder] is used instead.
@@ -192,52 +197,28 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       return _TimelineFrame.legacy(_computeLegacyProgress(currentTime));
     }
 
-    final effectiveStart = start ?? Duration.zero;
     double opacity = 1;
     double scale = 1;
+    double rotation = 0;
+    double lift = 0;
     Offset slideAbsolute = Offset.zero;
     Offset slideFractional = Offset.zero;
 
     for (final anim in layer.animations) {
-      final durationUs = anim.duration.inMicroseconds;
-      if (durationUs <= 0) continue;
-      final curve = curveFromAnimationCurve(anim.curve);
-
-      double? inProgress;
-      double? outProgress;
-
-      if (anim.phase == AnimationPhase.animateIn ||
-          anim.phase == AnimationPhase.animateInOut) {
-        final elapsed = (currentTime - effectiveStart).inMicroseconds;
-        if (elapsed < durationUs) {
-          inProgress = curve.transform((elapsed / durationUs).clamp(0.0, 1.0));
-        }
-      }
-
-      if ((anim.phase == AnimationPhase.animateOut ||
-              anim.phase == AnimationPhase.animateInOut) &&
-          end != null) {
-        final remaining = (end - currentTime).inMicroseconds;
-        if (remaining < durationUs) {
-          outProgress = curve.transform(
-            (remaining / durationUs).clamp(0.0, 1.0),
-          );
-        }
-      }
-
-      final double? progress;
-      if (inProgress != null && outProgress != null) {
-        progress = math.min(inProgress, outProgress);
-      } else {
-        progress = inProgress ?? outProgress;
-      }
+      final progress = layerAnimationProgress(
+        anim,
+        currentTime,
+        start: start,
+        end: end,
+      );
       if (progress == null) continue;
+      final p = progress.value;
 
       switch (anim.type) {
         case LayerAnimationType.fade:
-          opacity *= progress;
+          opacity *= p;
         case LayerAnimationType.slide:
-          final invP = 1.0 - progress;
+          final invP = 1.0 - p;
           final from = anim.slideFrom;
           if (from != null) {
             // A start point of the caller's own wins over the edge the
@@ -279,7 +260,20 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
           }
         case LayerAnimationType.scale:
           final from = anim.scaleFrom ?? 0.0;
-          scale *= from + (1.0 - from) * progress;
+          scale *= from + (1.0 - from) * p;
+        case LayerAnimationType.wiggle:
+          rotation +=
+              progress.swing *
+              (1.0 - p) *
+              (anim.wiggleAngle ?? LayerAnimation.defaultWiggleAngle);
+        case LayerAnimationType.bounce:
+          lift +=
+              (1.0 - p) *
+              (anim.bounceHeight ?? LayerAnimation.defaultBounceHeight);
+        case LayerAnimationType.typewriter:
+        case LayerAnimationType.wordByWord:
+          // The text layer reveals its own text (LayerWidgetTextItem).
+          break;
       }
     }
 
@@ -288,6 +282,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       slideAbsolute: slideAbsolute,
       slideFractional: slideFractional,
       scale: math.max(0.0, scale),
+      rotation: rotation,
+      lift: lift,
     );
   }
 
@@ -315,6 +311,18 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     }
 
     Widget result = child;
+    // The wiggle turns the layer before anything else moves it, around the
+    // same visual center the scale below is anchored on (see there). Turning
+    // and scaling around one point commute, so the order between the two
+    // does not matter; the native renderer turns first as well.
+    if (frame.rotation != 0.0) {
+      final fo = widget.layerFractionalOffset;
+      result = Transform.rotate(
+        angle: frame.rotation,
+        alignment: Alignment(2 * fo.dx, 2 * fo.dy),
+        child: result,
+      );
+    }
     if (frame.scale != 1.0) {
       // Anchor scaling on the layer's visual center rather than the layout
       // box center. The child paints its content shifted by
@@ -339,6 +347,13 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         child: result,
       );
     }
+    if (frame.lift != 0.0) {
+      result = _Lift(
+        lift: frame.lift,
+        layerRotation: widget.layer.rotation,
+        child: result,
+      );
+    }
     if (frame.slideAbsolute != Offset.zero) {
       result = Transform.translate(offset: frame.slideAbsolute, child: result);
     }
@@ -356,6 +371,8 @@ class _TimelineFrame {
     required this.slideAbsolute,
     required this.slideFractional,
     required this.scale,
+    this.rotation = 0,
+    this.lift = 0,
   }) : hidden = false,
        legacyProgress = 1;
 
@@ -365,6 +382,8 @@ class _TimelineFrame {
       slideAbsolute = Offset.zero,
       slideFractional = Offset.zero,
       scale = 1,
+      rotation = 0,
+      lift = 0,
       legacyProgress = 0;
 
   const _TimelineFrame.legacy(this.legacyProgress)
@@ -372,7 +391,9 @@ class _TimelineFrame {
       opacity = 1,
       slideAbsolute = Offset.zero,
       slideFractional = Offset.zero,
-      scale = 1;
+      scale = 1,
+      rotation = 0,
+      lift = 0;
 
   /// Whether the layer is outside its visible time range and should be hidden.
   final bool hidden;
@@ -393,6 +414,13 @@ class _TimelineFrame {
   /// The composed scale factor (phase-aware path).
   final double scale;
 
+  /// The composed wiggle tilt, clockwise, in radians (phase-aware path).
+  final double rotation;
+
+  /// How far a bounce lifts the layer, as a multiple of its height
+  /// (phase-aware path). See [_Lift].
+  final double lift;
+
   /// The curved progress (0–1) used by the legacy fade path.
   final double legacyProgress;
 
@@ -405,6 +433,8 @@ class _TimelineFrame {
         other.slideAbsolute == slideAbsolute &&
         other.slideFractional == slideFractional &&
         other.scale == scale &&
+        other.rotation == rotation &&
+        other.lift == lift &&
         other.legacyProgress == legacyProgress;
   }
 
@@ -415,6 +445,8 @@ class _TimelineFrame {
     slideAbsolute,
     slideFractional,
     scale,
+    rotation,
+    lift,
     legacyProgress,
   );
 }
@@ -441,5 +473,81 @@ class _RenderInvisibleButPainted extends RenderProxyBox {
   void paint(PaintingContext context, Offset offset) {
     if (child == null) return;
     context.pushOpacity(offset, 0, super.paint);
+  }
+}
+
+/// Moves its child up by [lift] times the height of the box around the layer
+/// when it is turned by [layerRotation].
+///
+/// The child is laid out unrotated — the layer's rotation is a paint-time
+/// transform inside it — while the video export captures the rotated layer
+/// into an image as tall as the box around it. Measuring the lift on that box
+/// keeps a bounce on a rotated layer as high as the exported one. Like
+/// [FractionalTranslation], it moves hit tests along with the paint.
+class _Lift extends SingleChildRenderObjectWidget {
+  const _Lift({
+    required this.lift,
+    required this.layerRotation,
+    required super.child,
+  });
+
+  final double lift;
+  final double layerRotation;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderLift(lift, layerRotation);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderLift renderObject) {
+    renderObject
+      ..lift = lift
+      ..layerRotation = layerRotation;
+  }
+}
+
+class _RenderLift extends RenderProxyBox {
+  _RenderLift(this._lift, this._layerRotation);
+
+  double _lift;
+  set lift(double value) {
+    if (value == _lift) return;
+    _lift = value;
+    markNeedsPaint();
+  }
+
+  double _layerRotation;
+  set layerRotation(double value) {
+    if (value == _layerRotation) return;
+    _layerRotation = value;
+    markNeedsPaint();
+  }
+
+  Offset get _offset {
+    final height =
+        size.width * math.sin(_layerRotation).abs() +
+        size.height * math.cos(_layerRotation).abs();
+    return Offset(0, -_lift * height);
+  }
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    return result.addWithPaintOffset(
+      offset: _offset,
+      position: position,
+      hitTest: (result, transformed) =>
+          super.hitTest(result, position: transformed),
+    );
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    super.paint(context, offset + _offset);
+  }
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    final offset = _offset;
+    transform.translateByDouble(offset.dx, offset.dy, 0, 1);
   }
 }

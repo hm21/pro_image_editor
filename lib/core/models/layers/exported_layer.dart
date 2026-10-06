@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import 'layer.dart';
+import 'text_layer_timeline.dart';
 
 /// Contains one exported layer with its encoded bytes and layout metadata.
 class ExportedLayer {
@@ -12,6 +13,7 @@ class ExportedLayer {
     required this.bytes,
     required this.logicalSize,
     this.highlightBytes = const {},
+    this.revealBytes = const {},
   });
 
   /// The source layer that was exported.
@@ -38,57 +40,103 @@ class ExportedLayer {
   /// when.
   final Map<int, Uint8List> highlightBytes;
 
+  /// Encoded images of a [TextLayer] whose text is only partly revealed by a
+  /// [LayerAnimationType.typewriter] or [LayerAnimationType.wordByWord]
+  /// animation, keyed by what each one shows. Every image has the size of
+  /// [bytes], since the hidden text keeps its place.
+  ///
+  /// Empty for a layer without such an animation. Use [frames] to find out
+  /// which image shows when.
+  final Map<ExportedTextState, Uint8List> revealBytes;
+
   /// The images to show over the layer's time range, in order and without
-  /// gaps: an image from [highlightBytes] while its highlight is active, and
-  /// [bytes] the rest of the time.
+  /// gaps: an image from [revealBytes] while the text is partly revealed,
+  /// one from [highlightBytes] while a highlight is active, and [bytes] the
+  /// rest of the time.
   ///
   /// The first frame starts at the layer's [Layer.startTime] and the last one
   /// ends at its [Layer.endTime]; either is `null` when the layer has none.
-  /// A layer without highlights yields a single frame of [bytes].
+  /// A layer without highlights or reveals yields a single frame of [bytes].
   ///
   /// A video renderer that draws each frame as its own timed overlay shows the
-  /// highlights exactly as the editor previews them. Enter and leave
-  /// animations then belong on the first and last frame respectively.
+  /// highlights and the reveal exactly as the editor previews them. The
+  /// layer's other animations then have to keep counting from the layer's own
+  /// range across all frames — in `pro_video_editor`, by giving every frame
+  /// the layer's animations together with its range as
+  /// `ImageLayer.animationStartTime` and `ImageLayer.animationEndTime`.
+  ///
+  /// A reveal is cut into frames at a resolution of one millisecond. A
+  /// [AnimationPhase.loop] reveal on a layer without an [Layer.endTime]
+  /// cannot be cut, as it never ends, and shows its whole text.
   List<ExportedLayerFrame> get frames {
     final layer = this.layer;
     final start = layer.startTime;
     final end = layer.endTime;
-    if (layer is! TextLayer || highlightBytes.isEmpty) {
+    if (layer is! TextLayer ||
+        (highlightBytes.isEmpty && revealBytes.isEmpty)) {
       return [ExportedLayerFrame(bytes: bytes, startTime: start, endTime: end)];
     }
 
-    // Every highlight edge that falls inside the layer's range starts a new
-    // interval; within one interval the active highlight cannot change. A
-    // layer without a start begins with the video, at zero.
-    final origin = start ?? Duration.zero;
-    final cuts =
-        <Duration>{
-            for (final highlight in layer.highlights)
-              if (highlight.isValid) ...[
-                origin + highlight.startTime,
-                origin + highlight.endTime,
-              ],
-          }.where((cut) => cut > origin && (end == null || cut < end)).toList()
-          ..sort();
-
-    final bounds = <Duration?>[start, ...cuts, end];
     final frames = <ExportedLayerFrame>[];
-    for (var i = 0; i < bounds.length - 1; i++) {
-      final from = bounds[i];
-      final to = bounds[i + 1];
-      final index = layer.highlightIndexAt(from ?? origin);
-      final frameBytes = index == null ? bytes : highlightBytes[index] ?? bytes;
-
+    for (final span in textLayerTimeline(
+      layer,
+      highlights: highlightBytes.isNotEmpty,
+      reveals: revealBytes.isNotEmpty,
+    )) {
+      final frameBytes = _bytesFor(span.state);
       if (frames.isNotEmpty && identical(frames.last.bytes, frameBytes)) {
-        frames.last = frames.last._extendedTo(to);
+        frames.last = frames.last._extendedTo(span.endTime);
       } else {
         frames.add(
-          ExportedLayerFrame(bytes: frameBytes, startTime: from, endTime: to),
+          ExportedLayerFrame(
+            bytes: frameBytes,
+            startTime: span.startTime,
+            endTime: span.endTime,
+          ),
         );
       }
     }
     return frames;
   }
+
+  Uint8List _bytesFor(ExportedTextState state) {
+    if (state.revealedLength != null) return revealBytes[state] ?? bytes;
+    if (state.highlightIndex case final index?) {
+      return highlightBytes[index] ?? bytes;
+    }
+    return bytes;
+  }
+}
+
+/// What a [TextLayer] shows at one moment: how much of its text is revealed
+/// and which of its highlights is active.
+@immutable
+class ExportedTextState {
+  /// Creates a state with the first [revealedLength] UTF-16 code units of the
+  /// text revealed and the highlight at [highlightIndex] active.
+  const ExportedTextState({this.revealedLength, this.highlightIndex});
+
+  /// How many UTF-16 code units of the text, from its start, show, or `null`
+  /// when all of it does. See [TextLayer.revealedLengthAt].
+  final int? revealedLength;
+
+  /// The index of the active entry in [TextLayer.highlights], or `null` when
+  /// none is active.
+  final int? highlightIndex;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ExportedTextState &&
+      other.revealedLength == revealedLength &&
+      other.highlightIndex == highlightIndex;
+
+  @override
+  int get hashCode => Object.hash(revealedLength, highlightIndex);
+
+  @override
+  String toString() =>
+      'ExportedTextState(revealedLength: $revealedLength, '
+      'highlightIndex: $highlightIndex)';
 }
 
 /// One image of an [ExportedLayer] and the time range it shows for.

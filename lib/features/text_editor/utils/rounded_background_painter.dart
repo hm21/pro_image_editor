@@ -32,6 +32,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     this.outlineColor = const Color(0xFF000000),
     this.silhouettePainters = const [],
     this.silhouetteShadows = const [],
+    this.visibleLength,
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -81,7 +82,18 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// carries none itself, since a text shadow only follows the bare glyphs.
   final List<Shadow> silhouetteShadows;
 
-  Path _buildBackgroundPath() {
+  /// How many UTF-16 code units of the text, from its start, are drawn, or
+  /// `null` when all of it is.
+  ///
+  /// The background then only covers that part, so it grows with a text that
+  /// types itself out: a line ends at its last drawn glyph and a line with
+  /// none gets no background. Hit testing still covers the whole text, so the
+  /// layer can be picked before its text has appeared.
+  final int? visibleLength;
+
+  /// The background behind the drawn text, or behind all of it when
+  /// [revealedOnly] is `false` (see [visibleLength]).
+  Path _buildBackgroundPath({bool revealedOnly = true}) {
     final metrics = painter.computeLineMetrics();
     if (metrics.isEmpty) return Path();
 
@@ -105,6 +117,12 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         cursorWidth: cursorWidth,
       );
     }).toList();
+
+    // Lines cut back to the part of them that is drawn; they end at that part
+    // whatever the alignment.
+    final cutLines = revealedOnly && visibleLength != null
+        ? _cutToVisible(helpers, visibleLength!)
+        : const <int>{};
 
     double? firstMaximalWidth;
 
@@ -142,7 +160,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
       final double startX = info.startX - paddingHorizontal;
       late final double endX;
-      if (isRightAlign) {
+      if (isRightAlign && !cutLines.contains(index)) {
         firstMaximalWidth ??= info.endX + paddingHorizontal;
         endX = firstMaximalWidth;
       } else {
@@ -193,6 +211,43 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     }
 
     return Path.combine(PathOperation.union, path, cornerPath);
+  }
+
+  /// Narrows every line of [helpers] to the glyphs among the first [visible]
+  /// UTF-16 code units, and empties a line with none, so it draws no
+  /// background. Returns the indices of the lines that were narrowed.
+  Set<int> _cutToVisible(List<LineMetricsModel> helpers, int visible) {
+    final boxes = visible <= 0
+        ? const <TextBox>[]
+        : painter.getBoxesForSelection(
+            TextSelection(baseOffset: 0, extentOffset: visible),
+          );
+    final cut = <int>{};
+    for (var i = 0; i < helpers.length; i++) {
+      final line = helpers[i];
+      double? left;
+      double? right;
+      for (final box in boxes) {
+        final centerY = (box.top + box.bottom) / 2;
+        if (centerY < line.startY || centerY > line.endY) continue;
+        left = left == null ? box.left : min(left, box.left);
+        right = right == null ? box.right : max(right, box.right);
+      }
+      if (left == null || right == null) {
+        line.overrideWidth = 0;
+        continue;
+      }
+      // A line drawn in full keeps its own metrics.
+      const tolerance = 0.5;
+      if (left <= line.startX + tolerance && right >= line.endX - tolerance) {
+        continue;
+      }
+      line
+        ..overrideX = left
+        ..overrideWidth = right - left;
+      cut.add(i);
+    }
+    return cut;
   }
 
   void _connectSimilarLineWidth({
@@ -451,10 +506,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final painter = Paint()..color = backgroundColor;
 
-    _cachedPath = _buildBackgroundPath();
+    final background = _buildBackgroundPath();
+    _cachedPath = visibleLength == null ? background : null;
     canvas
       ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy)
-      ..drawPath(_cachedPath!, painter);
+      ..drawPath(background, painter);
 
     _paintSilhouetteShadows(canvas);
     outlinePainter?.paint(canvas, Offset.zero);
@@ -496,11 +552,12 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     }
   }
 
+  /// The background of the whole text, which [hitTest] reads.
   Path? _cachedPath;
 
   @override
   bool? hitTest(Offset position) {
-    final path = _cachedPath ?? _buildBackgroundPath();
+    final path = _cachedPath ??= _buildBackgroundPath(revealedOnly: false);
 
     bool hasHit = path.contains(position - hitBoxCorrectionOffset);
 
@@ -528,7 +585,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         oldDelegate.textAlign != textAlign ||
         oldDelegate.hitBoxCorrectionOffset != hitBoxCorrectionOffset ||
         oldDelegate.textDirection != textDirection ||
-        oldDelegate.outerRadius != outerRadius;
+        oldDelegate.outerRadius != outerRadius ||
+        oldDelegate.visibleLength != visibleLength;
 
     if (changed) _cachedPath = null; // invalidate cache
 
@@ -553,7 +611,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         other.outlineWidth == outlineWidth &&
         other.outlineColor == outlineColor &&
         listEquals(other.silhouettePainters, silhouettePainters) &&
-        listEquals(other.silhouetteShadows, silhouetteShadows);
+        listEquals(other.silhouetteShadows, silhouetteShadows) &&
+        other.visibleLength == visibleLength;
   }
 
   @override
@@ -571,6 +630,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         outlineWidth.hashCode ^
         outlineColor.hashCode ^
         Object.hashAll(silhouettePainters) ^
-        Object.hashAll(silhouetteShadows);
+        Object.hashAll(silhouetteShadows) ^
+        visibleLength.hashCode;
   }
 }

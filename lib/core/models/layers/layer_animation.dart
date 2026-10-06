@@ -4,6 +4,12 @@ import '/shared/utils/parser/offset_parser.dart';
 import 'layer.dart';
 
 /// The type of animation to apply to a [Layer].
+///
+/// Every type moves the layer away from its resting state by an amount that
+/// follows the animation's progress: fully away at the start of an
+/// [AnimationPhase.animateIn], at rest once it ends, and back again over an
+/// [AnimationPhase.animateOut]. [AnimationPhase.loop] swings between the two
+/// over and over.
 enum LayerAnimationType {
   /// Fade opacity from 0 to 1 (in) or 1 to 0 (out).
   fade,
@@ -13,6 +19,39 @@ enum LayerAnimationType {
 
   /// Scale the layer from small to full size (in) or full to small (out).
   scale,
+
+  /// Tilt the layer around its center by up to [LayerAnimation.wiggleAngle].
+  ///
+  /// In and out, the layer turns between the tilted and the upright position;
+  /// an elastic or bounce [AnimationCurve] makes it wobble into place. In a
+  /// [AnimationPhase.loop] it tilts to one side and then to the other within
+  /// every cycle, so it wiggles for as long as it is visible.
+  wiggle,
+
+  /// Lift the layer by [LayerAnimation.bounceHeight] times its height.
+  ///
+  /// The height is that of the box the layer is drawn in, which for a
+  /// rotated layer is the box around it, as the exported image is. In, the
+  /// layer drops onto its resting place, out it rises from it; a bounce
+  /// [AnimationCurve] makes it bounce on landing. In a [AnimationPhase.loop]
+  /// it hops up and lands once per cycle.
+  bounce,
+
+  /// Reveal the text of a text layer letter by letter (in), or take it away
+  /// from the last letter back (out).
+  ///
+  /// Spaces and line breaks take no step of their own. The text keeps its
+  /// size and line breaks from the start, and its background, if any, grows
+  /// with the part that is revealed. Other layers ignore this type.
+  ///
+  /// A video renderer draws a layer as a fixed image, so an exported layer
+  /// carries an image per step; `ExportedLayer.frames` says which one shows
+  /// when.
+  typewriter,
+
+  /// Reveal the text of a text layer word by word (in), or take it away from
+  /// the last word back (out). Works like [typewriter] otherwise.
+  wordByWord,
 }
 
 /// Slide direction for slide animations.
@@ -73,7 +112,7 @@ enum AnimationCurve {
 }
 
 /// Whether the animation plays at the start, end, or both ends of the layer's
-/// time range.
+/// time range, or repeats throughout it.
 enum AnimationPhase {
   /// Animation plays at the beginning of the layer's visible range.
   animateIn,
@@ -83,6 +122,21 @@ enum AnimationPhase {
 
   /// Animation plays at both the beginning and end using the same duration.
   animateInOut,
+
+  /// Animation repeats for as long as the layer is visible, one cycle every
+  /// [LayerAnimation.duration], counted from the layer's start.
+  ///
+  /// Each cycle leaves the resting state and comes back to it: halfway
+  /// through, a fade has the layer invisible, a scale has it at
+  /// [LayerAnimation.scaleFrom] and a slide has it at the edge or the
+  /// [LayerAnimation.slideFrom] point. A [LayerAnimationType.wiggle] tilts to
+  /// one side in the first half of the cycle and to the other in the second.
+  ///
+  /// The [LayerAnimation.curve] shapes the way out like an [animateOut] and
+  /// the way back like an [animateIn]: with [AnimationCurve.easeIn] the layer
+  /// moves fastest at rest and slowest at the turning point, like a pendulum
+  /// or a hop.
+  loop,
 }
 
 /// A single animation applied to a [Layer] on the video timeline.
@@ -138,6 +192,8 @@ class LayerAnimation {
     this.slideDirection,
     this.slideFrom,
     this.scaleFrom,
+    this.wiggleAngle,
+    this.bounceHeight,
   }) : assert(
          type != LayerAnimationType.slide ||
              slideDirection != null ||
@@ -171,8 +227,18 @@ class LayerAnimation {
           ? safeParseOffset(Map<String, dynamic>.from(map['slideFrom'] as Map))
           : null,
       scaleFrom: (map['scaleFrom'] as num?)?.toDouble(),
+      wiggleAngle: (map['wiggleAngle'] as num?)?.toDouble(),
+      bounceHeight: (map['bounceHeight'] as num?)?.toDouble(),
     );
   }
+
+  /// How far a [LayerAnimationType.wiggle] tilts when [wiggleAngle] is not
+  /// set: 10°, in radians.
+  static const double defaultWiggleAngle = 0.17453292519943295;
+
+  /// How high a [LayerAnimationType.bounce] lifts the layer when
+  /// [bounceHeight] is not set: half its height.
+  static const double defaultBounceHeight = 0.5;
 
   /// Returns the enum value from [values] whose name matches [name], or `null`
   /// when [name] is not a [String] or has no match.
@@ -184,14 +250,15 @@ class LayerAnimation {
     return null;
   }
 
-  /// The kind of animation (fade, slide, scale).
+  /// The kind of animation (fade, slide, scale, wiggle, bounce, ...).
   final LayerAnimationType type;
 
   /// Whether this animation plays at the start, end, or both ends of the
-  /// layer's visible range.
+  /// layer's visible range, or repeats throughout it.
   final AnimationPhase phase;
 
-  /// How long the animation lasts in **video time**.
+  /// How long the animation lasts in **video time**, or one cycle of a
+  /// [AnimationPhase.loop].
   final Duration duration;
 
   /// The easing curve for the animation.
@@ -239,6 +306,25 @@ class LayerAnimation {
   /// layer starts at half size.
   final double? scaleFrom;
 
+  /// How far a [LayerAnimationType.wiggle] tilts the layer, in **radians**.
+  ///
+  /// Positive values tilt clockwise first, like [Layer.rotation]. Defaults to
+  /// [defaultWiggleAngle] when not set.
+  final double? wiggleAngle;
+
+  /// How high a [LayerAnimationType.bounce] lifts the layer, as a multiple of
+  /// its height: `0.5` lifts it by half its height.
+  ///
+  /// Defaults to [defaultBounceHeight] when not set.
+  final double? bounceHeight;
+
+  /// Whether this animation reveals the text of a text layer rather than
+  /// moving the layer: [LayerAnimationType.typewriter] or
+  /// [LayerAnimationType.wordByWord].
+  bool get isTextReveal =>
+      type == LayerAnimationType.typewriter ||
+      type == LayerAnimationType.wordByWord;
+
   /// Serializes this animation to a map.
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -251,6 +337,8 @@ class LayerAnimation {
           ? {'dx': slideFrom!.dx, 'dy': slideFrom!.dy}
           : null,
       'scaleFrom': scaleFrom,
+      'wiggleAngle': wiggleAngle,
+      'bounceHeight': bounceHeight,
     };
   }
 
@@ -263,6 +351,8 @@ class LayerAnimation {
     SlideDirection? slideDirection,
     Offset? slideFrom,
     double? scaleFrom,
+    double? wiggleAngle,
+    double? bounceHeight,
   }) {
     return LayerAnimation(
       type: type ?? this.type,
@@ -272,6 +362,8 @@ class LayerAnimation {
       slideDirection: slideDirection ?? this.slideDirection,
       slideFrom: slideFrom ?? this.slideFrom,
       scaleFrom: scaleFrom ?? this.scaleFrom,
+      wiggleAngle: wiggleAngle ?? this.wiggleAngle,
+      bounceHeight: bounceHeight ?? this.bounceHeight,
     );
   }
 
@@ -281,7 +373,9 @@ class LayerAnimation {
         'duration: $duration, curve: $curve'
         '${slideDirection != null ? ', slideDirection: $slideDirection' : ''}'
         '${slideFrom != null ? ', slideFrom: $slideFrom' : ''}'
-        '${scaleFrom != null ? ', scaleFrom: $scaleFrom' : ''})';
+        '${scaleFrom != null ? ', scaleFrom: $scaleFrom' : ''}'
+        '${wiggleAngle != null ? ', wiggleAngle: $wiggleAngle' : ''}'
+        '${bounceHeight != null ? ', bounceHeight: $bounceHeight' : ''})';
   }
 
   @override
@@ -293,7 +387,9 @@ class LayerAnimation {
         other.curve == curve &&
         other.slideDirection == slideDirection &&
         other.slideFrom == slideFrom &&
-        other.scaleFrom == scaleFrom;
+        other.scaleFrom == scaleFrom &&
+        other.wiggleAngle == wiggleAngle &&
+        other.bounceHeight == bounceHeight;
   }
 
   @override
@@ -304,6 +400,8 @@ class LayerAnimation {
         curve.hashCode ^
         slideDirection.hashCode ^
         slideFrom.hashCode ^
-        scaleFrom.hashCode;
+        scaleFrom.hashCode ^
+        wiggleAngle.hashCode ^
+        bounceHeight.hashCode;
   }
 }

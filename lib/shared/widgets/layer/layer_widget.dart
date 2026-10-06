@@ -610,22 +610,32 @@ class _LayerContentItem extends StatelessWidget {
     }
 
     final textLayer = layer is TextLayer ? layer as TextLayer : null;
-    final highlightedText = textLayer?.highlights.isNotEmpty == true
+    // Text whose look follows the playback position: its highlights or a
+    // reveal change what the boundary shows.
+    final timedText =
+        textLayer != null &&
+            (textLayer.highlights.isNotEmpty ||
+                textLayer.animations.any((a) => a.isTextReveal))
         ? textLayer
         : null;
-    Future<ui.Image> renderText(double pixelRatio, int? highlightIndex) {
+    Future<ui.Image> renderText(
+      double pixelRatio, {
+      int? highlightIndex,
+      int? revealedLength,
+    }) {
       final box =
           layer.repaintBoundaryKey.currentContext?.findRenderObject()
               as RenderBox?;
       return LayerWidgetTextItem.renderContent(
         context,
-        layer: highlightedText!,
+        layer: timedText!,
         textEditorConfigs: textEditorConfigs,
         size: box?.size ?? Size.zero,
         pixelRatio: pixelRatio,
         mainBodySize: mainBodySize,
         mainEditorLayer: _mainEditorTextLayer,
         highlightIndex: highlightIndex,
+        revealedLength: revealedLength,
       );
     }
 
@@ -633,18 +643,23 @@ class _LayerContentItem extends StatelessWidget {
       key: layer.repaintBoundaryKey,
       // The painters draw nothing while the strokes come from the raster
       // cache, so a capture has to render them from the model instead.
-      // Highlighted text is rendered from the model as well: on screen it
-      // shows whichever highlight the playback position is on.
+      // Timed text is rendered from the model as well: on screen it shows
+      // whichever highlight, and however much of a reveal, the playback
+      // position is on.
       renderContent: skipPaint
           ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
               layer as PaintLayer,
               pixelRatio: pixelRatio,
               paintEditorConfigs: paintEditorConfigs,
             )
-          : highlightedText != null
-          ? (pixelRatio) => renderText(pixelRatio, null)
+          : timedText != null
+          ? renderText
           : null,
-      renderHighlight: highlightedText != null ? renderText : null,
+      renderHighlight: timedText != null
+          ? (pixelRatio, highlightIndex) =>
+                renderText(pixelRatio, highlightIndex: highlightIndex)
+          : null,
+      renderTextState: timedText != null ? renderText : null,
       child: content,
     );
   }
