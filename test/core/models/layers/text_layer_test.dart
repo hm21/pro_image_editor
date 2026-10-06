@@ -365,5 +365,153 @@ void main() {
         expect(layer.copyWith(highlights: const []).highlights, isEmpty);
       });
     });
+
+    group('revealedLengthAt', () {
+      Duration ms(int value) => Duration(milliseconds: value);
+
+      TextLayer revealing(
+        String text,
+        LayerAnimationType type,
+        AnimationPhase phase, {
+        int durationMs = 1000,
+      }) => TextLayer(
+        text: text,
+        startTime: ms(1000),
+        endTime: ms(5000),
+        animations: [
+          LayerAnimation(type: type, phase: phase, duration: ms(durationMs)),
+        ],
+      );
+
+      test('types letters in one at a time, skipping spaces', () {
+        // Four letters over 1 s: each gets a quarter.
+        final layer = revealing(
+          'ab cd',
+          LayerAnimationType.typewriter,
+          AnimationPhase.animateIn,
+        );
+
+        // The first letter shows as soon as the animation starts.
+        expect(layer.revealedLengthAt(ms(1000)), 0);
+        expect(layer.revealedLengthAt(ms(1001)), 1);
+        expect(layer.revealedLengthAt(ms(1250)), 1);
+        expect(layer.revealedLengthAt(ms(1251)), 2);
+        // The space takes no step: the third step ends after "c".
+        expect(layer.revealedLengthAt(ms(1501)), 4);
+        expect(layer.revealedLengthAt(ms(1751)), isNull);
+        expect(layer.revealedLengthAt(ms(3000)), isNull);
+      });
+
+      test('counts a letter made of several code units as one step', () {
+        final layer = revealing(
+          '👍🏽a',
+          LayerAnimationType.typewriter,
+          AnimationPhase.animateIn,
+        );
+
+        expect(layer.revealStepEnds(LayerAnimationType.typewriter), [4, 5]);
+        expect(layer.revealedLengthAt(ms(1001)), 4);
+      });
+
+      test('works the steps out again when the text changes', () {
+        final layer = revealing(
+          'ab',
+          LayerAnimationType.typewriter,
+          AnimationPhase.animateIn,
+        );
+        expect(layer.revealStepEnds(LayerAnimationType.typewriter), [1, 2]);
+
+        layer.text = 'ab c';
+        expect(layer.revealStepEnds(LayerAnimationType.typewriter), [1, 2, 4]);
+        expect(layer.revealStepEnds(LayerAnimationType.wordByWord), [2, 4]);
+      });
+
+      test('reveals word by word', () {
+        final layer = revealing(
+          'Hello big\nworld',
+          LayerAnimationType.wordByWord,
+          AnimationPhase.animateIn,
+          durationMs: 900,
+        );
+
+        expect(layer.revealedLengthAt(ms(1000)), 0);
+        expect(layer.revealedLengthAt(ms(1001)), 5);
+        expect(layer.revealedLengthAt(ms(1301)), 9);
+        expect(layer.revealedLengthAt(ms(1601)), isNull);
+      });
+
+      test('takes the text away from the end when leaving', () {
+        final layer = revealing(
+          'abcd',
+          LayerAnimationType.typewriter,
+          AnimationPhase.animateOut,
+        );
+
+        expect(layer.revealedLengthAt(ms(4000)), isNull);
+        expect(layer.revealedLengthAt(ms(4300)), 3);
+        // The first letter stays until the animation ends.
+        expect(layer.revealedLengthAt(ms(4999)), 1);
+        expect(layer.revealedLengthAt(ms(5000)), 0);
+      });
+
+      test('types out and takes away again in a loop', () {
+        final layer = revealing(
+          'abcd',
+          LayerAnimationType.typewriter,
+          AnimationPhase.loop,
+        );
+
+        expect(layer.revealedLengthAt(ms(1000)), isNull);
+        expect(layer.revealedLengthAt(ms(1500)), 0);
+        expect(layer.revealedLengthAt(ms(2000)), isNull);
+        expect(layer.revealedLengthAt(ms(2500)), 0);
+      });
+
+      test('shows the least of two reveals playing at once', () {
+        final layer = TextLayer(
+          text: 'ab cd',
+          startTime: Duration.zero,
+          endTime: ms(1000),
+          animations: [
+            LayerAnimation(
+              type: LayerAnimationType.wordByWord,
+              phase: AnimationPhase.animateIn,
+              duration: ms(1000),
+            ),
+            LayerAnimation(
+              type: LayerAnimationType.typewriter,
+              phase: AnimationPhase.animateOut,
+              duration: ms(1000),
+            ),
+          ],
+        );
+
+        // Words: 1 of 2 ("ab"); letters: 2 of 4 ("ab").
+        expect(layer.revealedLengthAt(ms(400)), 2);
+        // Words: both ("ab cd"); letters: 1 of 4 ("a").
+        expect(layer.revealedLengthAt(ms(800)), 1);
+      });
+
+      test('ignores other animations and empty text', () {
+        final moving = TextLayer(
+          text: 'abc',
+          animations: [
+            LayerAnimation(
+              type: LayerAnimationType.wiggle,
+              phase: AnimationPhase.loop,
+              duration: ms(500),
+            ),
+          ],
+        );
+        final blank = revealing(
+          '  ',
+          LayerAnimationType.typewriter,
+          AnimationPhase.animateIn,
+        );
+
+        expect(moving.revealedLengthAt(ms(250)), isNull);
+        expect(blank.revealedLengthAt(ms(1500)), isNull);
+      });
+    });
   });
 }

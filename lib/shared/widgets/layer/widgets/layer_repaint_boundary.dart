@@ -13,6 +13,17 @@ typedef LayerContentRenderer = Future<ui.Image> Function(double pixelRatio);
 typedef LayerHighlightRenderer =
     Future<ui.Image> Function(double pixelRatio, int highlightIndex);
 
+/// Renders a text layer's untransformed content at [pixelRatio] with the
+/// entry of `TextLayer.highlights` at [highlightIndex] active (none when it is
+/// `null`) and only the first [revealedLength] UTF-16 code units of its text
+/// drawn (all of it when it is `null`).
+typedef LayerTextStateRenderer =
+    Future<ui.Image> Function(
+      double pixelRatio, {
+      int? highlightIndex,
+      int? revealedLength,
+    });
+
 /// The repaint boundary a layer's content paints into — what
 /// `Layer.captureAsPng` reads through `Layer.repaintBoundaryKey`.
 ///
@@ -21,9 +32,10 @@ typedef LayerHighlightRenderer =
 /// [renderContent] then supplies the pixels from the layer's model instead.
 /// It is `null` whenever the boundary holds the real paint.
 ///
-/// A text layer with `TextLayer.highlights` paints whichever highlight the
-/// playback position is on, so its capture comes from [renderContent] too,
-/// with no highlight active, and [renderHighlight] draws each highlight.
+/// A text layer with `TextLayer.highlights`, or one that reveals its text,
+/// paints whatever the playback position is on, so its capture comes from
+/// [renderContent] too, with no highlight active and the whole text shown,
+/// and [renderHighlight] and [renderTextState] draw the other states.
 class LayerRepaintBoundary extends RepaintBoundary {
   /// Creates the boundary for a layer's content.
   const LayerRepaintBoundary({
@@ -31,6 +43,7 @@ class LayerRepaintBoundary extends RepaintBoundary {
     required Widget super.child,
     this.renderContent,
     this.renderHighlight,
+    this.renderTextState,
   });
 
   /// Renders the content a capture should read instead of the boundary, or
@@ -40,6 +53,10 @@ class LayerRepaintBoundary extends RepaintBoundary {
   /// Renders a text layer with one of its highlights active, or `null` when
   /// the layer has no highlights.
   final LayerHighlightRenderer? renderHighlight;
+
+  /// Renders a text layer in any state its highlights and its text reveal
+  /// can be in, or `null` when the layer has neither.
+  final LayerTextStateRenderer? renderTextState;
 
   @override
   RenderLayerRepaintBoundary createRenderObject(BuildContext context) {

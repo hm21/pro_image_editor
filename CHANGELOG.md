@@ -1,5 +1,11 @@
 # Changelog
 
+## 14.9.0
+- **FEAT**(layers): Add `LayerAnimationType.typewriter` and `wordByWord` to reveal a text layer letter by letter or word by word, exported as one image per step in `ExportedLayer.revealBytes`.
+- **FEAT**(layers): Add `LayerAnimationType.wiggle`, `bounce` and `AnimationPhase.loop`, matching `pro_video_editor` 2.27.0.
+- **FEAT**(text-editor): Add `RoundedBackgroundText.visibleLength` to draw only the start of a text while laying out all of it.
+- **FIX**(layers): Ease the video timeline preview with the same curves as the `pro_video_editor` export.
+
 ## 14.8.0
 - **FEAT**(paint-editor): Add `CensorConfigs.pixelateInLayerSpace` to measure pixelate blocks in the censor area's own pixels, so they scale with the layer like the blur does.
 - **FEAT**(paint-editor): Add `PaintedModel.censorStrength` and `PaintEditor.setCensorStrength` to give each censor area its own blur sigma or pixel block size.

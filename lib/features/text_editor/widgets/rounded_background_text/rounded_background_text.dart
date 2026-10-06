@@ -35,6 +35,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
+    this.visibleLength,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -57,6 +58,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
+    this.visibleLength,
   });
 
   /// A flag to enable or disable hitBox correction for the text.
@@ -121,6 +123,15 @@ class RoundedBackgroundText extends StatelessWidget {
   ///
   /// The space is added on both sides, so the text keeps its center.
   final bool reserveEffectSpace;
+
+  /// How many UTF-16 code units of [text], counted from its start, are
+  /// painted, or `null` to paint all of it.
+  ///
+  /// The rest is laid out as if it were there, so the widget keeps its size
+  /// and its line breaks while it draws nothing of the hidden part — no
+  /// glyphs, no outline, no shadows and no background behind it. A text that
+  /// types itself out shows that way, its background growing with it.
+  final int? visibleLength;
 
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
@@ -188,9 +199,14 @@ class RoundedBackgroundText extends StatelessWidget {
     final hasOutline = _hasOutline;
 
     TextPainter createPainter(TextStyle Function(TextStyle style)? restyle) {
+      var content = restyle == null ? text : _restyleSpan(text, restyle);
+      // Hidden last, so no pass, the outline's included, paints that part.
+      if (visibleLength case final visible?) {
+        content = _hideAfter(content, visible);
+      }
       return TextPainter(
         text: TextSpan(
-          children: [restyle == null ? text : _restyleSpan(text, restyle)],
+          children: [content],
           style: restyle == null ? rootStyle : restyle(rootStyle),
         ),
         textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
@@ -276,6 +292,7 @@ class RoundedBackgroundText extends StatelessWidget {
         textDirection: Directionality.of(context),
         hitBoxCorrectionOffset:
             Offset(horizontalSpace, verticalSpace) + effectSpace,
+        visibleLength: visibleLength,
       ),
       size: Size(
         painter.width.clamp(0, constraints.maxWidth) +
@@ -303,6 +320,77 @@ class RoundedBackgroundText extends StatelessWidget {
       dy = max(dy, outlineWidth + shadow.offset.dy.abs() + blur);
     }
     return Offset(dx.ceilToDouble(), dy.ceilToDouble());
+  }
+
+  /// The style a hidden part of the text is laid out in: it keeps every
+  /// metric of the style it is merged into and paints nothing.
+  static final TextStyle _hiddenStyle = TextStyle(
+    foreground: Paint()..color = const Color(0x00000000),
+    background: Paint()..color = const Color(0x00000000),
+    shadows: const [],
+    decoration: TextDecoration.none,
+  );
+
+  /// A copy of [span] whose text after the first [visible] UTF-16 code units
+  /// is laid out in [_hiddenStyle].
+  ///
+  /// The hidden style is merged into the style of every span it reaches,
+  /// however deep, because a child's own paint would otherwise win over a
+  /// parent's. A placeholder counts as one code unit and is left as it is.
+  static InlineSpan _hideAfter(InlineSpan span, int visible) {
+    var remaining = visible;
+
+    TextStyle hidden(TextStyle? style) =>
+        (style ?? const TextStyle()).merge(_hiddenStyle);
+
+    InlineSpan walk(InlineSpan span) {
+      if (span is! TextSpan) {
+        remaining -= 1;
+        return span;
+      }
+      final text = span.text ?? '';
+      final children = span.children;
+      if (remaining >= text.length && (children == null || children.isEmpty)) {
+        remaining -= text.length;
+        return span;
+      }
+
+      final parts = <InlineSpan>[];
+      if (text.isNotEmpty) {
+        if (remaining >= text.length) {
+          parts.add(TextSpan(text: text));
+        } else if (remaining <= 0) {
+          parts.add(TextSpan(text: text, style: hidden(span.style)));
+        } else {
+          parts
+            ..add(TextSpan(text: text.substring(0, remaining)))
+            ..add(
+              TextSpan(
+                text: text.substring(remaining),
+                style: hidden(span.style),
+              ),
+            );
+        }
+        remaining -= text.length;
+      }
+      for (final child in children ?? const <InlineSpan>[]) {
+        parts.add(walk(child));
+      }
+      return TextSpan(
+        style: span.style,
+        children: parts,
+        recognizer: span.recognizer,
+        mouseCursor: span.mouseCursor,
+        onEnter: span.onEnter,
+        onExit: span.onExit,
+        semanticsLabel: span.semanticsLabel,
+        semanticsIdentifier: span.semanticsIdentifier,
+        locale: span.locale,
+        spellOut: span.spellOut,
+      );
+    }
+
+    return walk(span);
   }
 
   /// A copy of [span] whose own styles, where set, are passed through
@@ -373,6 +461,7 @@ class RoundedBackgroundText extends StatelessWidget {
       )
       ..add(DoubleProperty('outlineWidth', outlineWidth, defaultValue: 0))
       ..add(ColorProperty('outlineColor', outlineColor))
+      ..add(IntProperty('visibleLength', visibleLength, defaultValue: null))
       ..add(
         FlagProperty(
           'reserveEffectSpace',

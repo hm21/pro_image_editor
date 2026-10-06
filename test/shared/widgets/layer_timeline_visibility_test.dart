@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/core/models/editor_configs/video/layer_timeline_configs.dart';
@@ -443,6 +445,140 @@ void main() {
       );
       await seek(tester, notifier, Duration.zero);
       expect(scaleAlignment(tester), Alignment.center);
+    });
+  });
+
+  group('LayerTimelineVisibility wiggle, bounce and loop', () {
+    // The tilt of the [Transform.rotate] a wiggle adds, clockwise.
+    double tilt(WidgetTester tester) {
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      return math.atan2(matrix.storage[1], matrix.storage[0]);
+    }
+
+    Layer layerWith(LayerAnimation animation, {double rotation = 0}) => Layer(
+      startTime: Duration.zero,
+      endTime: const Duration(seconds: 10),
+      rotation: rotation,
+      animations: [animation],
+    );
+
+    testWidgets('wiggles to one side and then the other in a loop', (
+      tester,
+    ) async {
+      final layer = layerWith(
+        const LayerAnimation(
+          type: LayerAnimationType.wiggle,
+          phase: AnimationPhase.loop,
+          duration: Duration(seconds: 1),
+          wiggleAngle: 0.3,
+        ),
+      );
+      final notifier = await pumpVisibility(tester, layer);
+
+      await seek(tester, notifier, const Duration(milliseconds: 250));
+      expect(tilt(tester), closeTo(0.3, 1e-9));
+
+      await seek(tester, notifier, const Duration(milliseconds: 750));
+      expect(tilt(tester), closeTo(-0.3, 1e-9));
+
+      // Upright between the swings: no transform at all.
+      await seek(tester, notifier, const Duration(milliseconds: 1000));
+      expect(find.byType(Transform), findsNothing);
+    });
+
+    testWidgets('tilts around the visual center the scale is anchored on', (
+      tester,
+    ) async {
+      final layer = layerWith(
+        const LayerAnimation(
+          type: LayerAnimationType.wiggle,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+        ),
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, Duration.zero);
+
+      expect(
+        tester.widget<Transform>(find.byType(Transform)).alignment,
+        Alignment.topLeft,
+      );
+      expect(tilt(tester), closeTo(LayerAnimation.defaultWiggleAngle, 1e-9));
+    });
+
+    testWidgets('drops in from a multiple of the layer height', (tester) async {
+      final layer = layerWith(
+        const LayerAnimation(
+          type: LayerAnimationType.bounce,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+          bounceHeight: 2,
+        ),
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, const Duration(seconds: 2));
+      final rest = tester.getTopLeft(find.byKey(childKey));
+
+      // The child is 50 tall: half way in, it is lifted by 2 × 50 / 2.
+      await seek(tester, notifier, const Duration(milliseconds: 500));
+      expect(
+        tester.getTopLeft(find.byKey(childKey)),
+        rest - const Offset(0, 50),
+      );
+    });
+
+    testWidgets('measures the lift on the box around a rotated layer', (
+      tester,
+    ) async {
+      // Turned a quarter, the 100 × 50 child is drawn 100 tall.
+      final layer = layerWith(
+        const LayerAnimation(
+          type: LayerAnimationType.bounce,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+          bounceHeight: 1,
+        ),
+        rotation: math.pi / 2,
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, const Duration(seconds: 2));
+      final rest = tester.getTopLeft(find.byKey(childKey));
+
+      await seek(tester, notifier, Duration.zero);
+      final lifted = tester.getTopLeft(find.byKey(childKey));
+      expect(lifted.dx, closeTo(rest.dx, 1e-9));
+      expect(lifted.dy, closeTo(rest.dy - 100, 1e-9));
+    });
+
+    testWidgets('pulses in a scale loop', (tester) async {
+      final layer = layerWith(
+        const LayerAnimation(
+          type: LayerAnimationType.scale,
+          phase: AnimationPhase.loop,
+          duration: Duration(seconds: 1),
+          scaleFrom: 0.8,
+        ),
+      );
+      final notifier = await pumpVisibility(tester, layer);
+
+      await seek(tester, notifier, const Duration(milliseconds: 500));
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(matrix.storage[0], closeTo(0.8, 1e-9));
+    });
+
+    testWidgets('leaves a text reveal to the text layer', (tester) async {
+      final layer = layerWith(
+        const LayerAnimation(
+          type: LayerAnimationType.typewriter,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+        ),
+      );
+      final notifier = await pumpVisibility(tester, layer);
+      await seek(tester, notifier, const Duration(milliseconds: 500));
+
+      expect(find.byType(Transform), findsNothing);
+      expect(find.byType(Opacity), findsNothing);
     });
   });
 

@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '/core/constants/int_constants.dart';
 import '/shared/extensions/color_extension.dart';
 import '/shared/extensions/num_extension.dart';
+import '/shared/utils/layer_animation_progress.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/parser/int_parser.dart';
 import 'enums/layer_background_mode.dart';
@@ -295,6 +298,85 @@ class TextLayer extends Layer {
     }
     return null;
   }
+
+  /// How much of [text] shows [time] into the video while a
+  /// [LayerAnimationType.typewriter] or [LayerAnimationType.wordByWord]
+  /// animation plays: the length, in UTF-16 code units, of the part from the
+  /// start that is revealed, or `null` when all of it shows.
+  ///
+  /// A reveal at progress `p` (see `layerAnimationProgress`) shows the first
+  /// `ceil(p × n)` of its `n` steps, so the first letter or word appears as
+  /// soon as the animation starts and the text is whole only after the last
+  /// step has had its share. An animation out runs the same way backwards:
+  /// the first letter or word stays until it ends. Typewriter steps are the
+  /// letters (grapheme clusters) apart from spaces and line breaks, word steps
+  /// the runs between them. When several reveals play at once, the one
+  /// showing the least wins.
+  int? revealedLengthAt(Duration time) {
+    int? revealed;
+    for (final animation in animations) {
+      if (!animation.isTextReveal) continue;
+      final progress = layerAnimationProgress(
+        animation,
+        time,
+        start: startTime,
+        end: endTime,
+      );
+      if (progress == null) continue;
+      final ends = revealStepEnds(animation.type);
+      if (ends.isEmpty) continue;
+      // The tolerance keeps a step whose share is exactly used up from
+      // rounding into the next one.
+      final steps = (progress.value * ends.length - 1e-9).ceil().clamp(
+        0,
+        ends.length,
+      );
+      if (steps == ends.length) continue;
+      final length = steps == 0 ? 0 : ends[steps - 1];
+      revealed = revealed == null ? length : math.min(revealed, length);
+    }
+    return revealed;
+  }
+
+  /// Where each step of a [type] reveal ends in [text], as UTF-16 offsets
+  /// in ascending order: after each letter for a
+  /// [LayerAnimationType.typewriter], after each word for a
+  /// [LayerAnimationType.wordByWord]. Empty for any other type.
+  @visibleForTesting
+  List<int> revealStepEnds(LayerAnimationType type) {
+    // The preview asks every frame and the export every sampled millisecond,
+    // so the steps are only worked out again once the text changes.
+    if (_revealStepsText != text) {
+      _revealSteps.clear();
+      _revealStepsText = text;
+    }
+    return _revealSteps[type] ??= List.unmodifiable(
+      _findRevealStepEnds(text, type),
+    );
+  }
+
+  /// The text [_revealSteps] were worked out for.
+  String? _revealStepsText;
+  final Map<LayerAnimationType, List<int>> _revealSteps = {};
+
+  static List<int> _findRevealStepEnds(String text, LayerAnimationType type) {
+    switch (type) {
+      case LayerAnimationType.typewriter:
+        final ends = <int>[];
+        var offset = 0;
+        for (final letter in text.characters) {
+          offset += letter.length;
+          if (letter.trim().isNotEmpty) ends.add(offset);
+        }
+        return ends;
+      case LayerAnimationType.wordByWord:
+        return [for (final word in _revealWord.allMatches(text)) word.end];
+      default:
+        return const [];
+    }
+  }
+
+  static final _revealWord = RegExp(r'\S+');
 
   @override
   bool get isTextLayer => true;

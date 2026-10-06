@@ -39,7 +39,9 @@ class LayerWidgetTextItem extends StatefulWidget {
   final Function(bool hasHit) onHitChanged;
 
   /// The video playback position, which decides the active entry of
-  /// [TextLayer.highlights]. Without it no highlight is shown.
+  /// [TextLayer.highlights] and how much of a revealing text shows (see
+  /// [TextLayer.revealedLengthAt]). Without it no highlight is shown and the
+  /// whole text is.
   final ValueListenable<Duration>? playTimeNotifier;
 
   /// The size of the main editor's body, which
@@ -57,7 +59,8 @@ class LayerWidgetTextItem extends StatefulWidget {
 
   /// Renders [layer] laid out at [size] with the entry of
   /// [TextLayer.highlights] at [highlightIndex] active, or with none when
-  /// [highlightIndex] is `null`.
+  /// [highlightIndex] is `null`, and only the first [revealedLength] UTF-16
+  /// code units of its text drawn, or all of it when that is `null`.
   ///
   /// This is what a capture reads instead of the on-screen boundary, which
   /// shows whichever highlight the playback position happens to be on.
@@ -70,6 +73,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     Size mainBodySize = Size.zero,
     TextLayer? mainEditorLayer,
     int? highlightIndex,
+    int? revealedLength,
   }) {
     return _buildText(
       layer: layer,
@@ -77,6 +81,7 @@ class LayerWidgetTextItem extends StatefulWidget {
       mainBodySize: mainBodySize,
       mainEditorLayer: mainEditorLayer,
       highlightIndex: highlightIndex,
+      revealedLength: revealedLength,
     ).toImage(context, size: size, pixelRatio: pixelRatio);
   }
 
@@ -137,6 +142,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     required Size mainBodySize,
     required TextLayer? mainEditorLayer,
     required int? highlightIndex,
+    int? revealedLength,
     Function(bool hasHit)? onHitTestResult,
   }) {
     var fontSize = textEditorConfigs.initFontSize * layer.scale;
@@ -189,6 +195,7 @@ class LayerWidgetTextItem extends StatefulWidget {
       outlineWidth: layer.outlineWidth * effectScale,
       outlineColor: layer.outlineColor,
       reserveEffectSpace: true,
+      visibleLength: revealedLength,
     );
   }
 
@@ -237,12 +244,14 @@ class LayerWidgetTextItem extends StatefulWidget {
 
 class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
   int? _highlightIndex;
+  int? _revealedLength;
 
   @override
   void initState() {
     super.initState();
     widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
     _highlightIndex = _resolveHighlightIndex();
+    _revealedLength = _resolveRevealedLength();
   }
 
   @override
@@ -253,6 +262,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
     }
     _highlightIndex = _resolveHighlightIndex();
+    _revealedLength = _resolveRevealedLength();
   }
 
   @override
@@ -262,10 +272,23 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
   }
 
   /// The playback position moves every frame while a highlight stays on for a
-  /// whole word, so this only rebuilds when the active highlight changes.
+  /// whole word, so this only rebuilds when the active highlight or the
+  /// revealed part of the text changes.
   void _onPlayTimeChanged() {
     final index = _resolveHighlightIndex();
-    if (index != _highlightIndex) setState(() => _highlightIndex = index);
+    final revealed = _resolveRevealedLength();
+    if (index != _highlightIndex || revealed != _revealedLength) {
+      setState(() {
+        _highlightIndex = index;
+        _revealedLength = revealed;
+      });
+    }
+  }
+
+  int? _resolveRevealedLength() {
+    final playTime = widget.playTimeNotifier;
+    if (playTime == null) return null;
+    return widget.layer.revealedLengthAt(playTime.value);
   }
 
   int? _resolveHighlightIndex() {
@@ -294,6 +317,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       mainBodySize: widget.mainBodySize,
       mainEditorLayer: widget.mainEditorLayer,
       highlightIndex: _highlightIndex,
+      revealedLength: _revealedLength,
       onHitTestResult: _handleLayerHit,
     );
   }

@@ -233,6 +233,164 @@ void main() {
           (0, ms(400), ms(1000)),
         ]);
       });
+
+      group('with a text reveal', () {
+        final none = Uint8List.fromList([10]);
+        final one = Uint8List.fromList([11]);
+        final two = Uint8List.fromList([12]);
+
+        TextLayer revealing(AnimationPhase phase, {Duration? end}) => TextLayer(
+          text: 'Hi you',
+          startTime: ms(1000),
+          endTime: end ?? ms(3000),
+          animations: [
+            LayerAnimation(
+              type: LayerAnimationType.wordByWord,
+              phase: phase,
+              duration: ms(1000),
+            ),
+          ],
+        );
+
+        test('steps through the words, then shows the base', () {
+          final exported = ExportedLayer(
+            layer: revealing(AnimationPhase.animateIn),
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            revealBytes: {
+              const ExportedTextState(revealedLength: 0): none,
+              const ExportedTextState(revealedLength: 2): one,
+            },
+          );
+
+          expect(describe(exported.frames), [
+            (10, ms(1000), ms(1001)),
+            (11, ms(1001), ms(1501)),
+            (0, ms(1501), ms(3000)),
+          ]);
+        });
+
+        test('takes the words away at the end', () {
+          final exported = ExportedLayer(
+            layer: revealing(AnimationPhase.animateOut),
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            revealBytes: {
+              const ExportedTextState(revealedLength: 0): none,
+              const ExportedTextState(revealedLength: 2): one,
+            },
+          );
+
+          expect(describe(exported.frames), [
+            (0, ms(1000), ms(2500)),
+            (11, ms(2500), ms(3000)),
+          ]);
+        });
+
+        test('repeats a looping reveal for as long as the layer lasts', () {
+          final exported = ExportedLayer(
+            layer: revealing(AnimationPhase.loop, end: ms(3000)),
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            revealBytes: {
+              const ExportedTextState(revealedLength: 0): none,
+              const ExportedTextState(revealedLength: 2): one,
+            },
+          );
+
+          // Each 1 s cycle: whole, then one word, none, one word, whole.
+          final frames = describe(exported.frames);
+          expect(frames.map((f) => f.$1), [
+            0, 11, 10, 11, //
+            0, 11, 10, 11, //
+            0,
+          ]);
+          expect(frames.first.$2, ms(1000));
+          expect(frames.last.$3, ms(3000));
+        });
+
+        test('combines the reveal with an active highlight', () {
+          final exported = ExportedLayer(
+            layer: revealing(AnimationPhase.animateIn)
+              ..highlights = [highlight(0, 2, 0, 2000)],
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            highlightBytes: {0: first},
+            revealBytes: {
+              const ExportedTextState(revealedLength: 0, highlightIndex: 0):
+                  none,
+              const ExportedTextState(revealedLength: 2, highlightIndex: 0):
+                  two,
+            },
+          );
+
+          expect(describe(exported.frames), [
+            (10, ms(1000), ms(1001)),
+            (12, ms(1001), ms(1501)),
+            (1, ms(1501), ms(3000)),
+          ]);
+        });
+
+        test('shows the base for a looping reveal without an end', () {
+          final exported = ExportedLayer(
+            layer: TextLayer(
+              text: 'Hi you',
+              animations: [
+                LayerAnimation(
+                  type: LayerAnimationType.typewriter,
+                  phase: AnimationPhase.loop,
+                  duration: ms(1000),
+                ),
+              ],
+            ),
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            revealBytes: {const ExportedTextState(revealedLength: 0): none},
+          );
+
+          expect(describe(exported.frames), [(0, null, null)]);
+        });
+
+        test('shows the whole text for a looping reveal without an end, '
+            'also after a highlight', () {
+          final exported = ExportedLayer(
+            layer: TextLayer(
+              text: 'Hi you',
+              highlights: [highlight(0, 2, 0, 400)],
+              animations: [
+                LayerAnimation(
+                  type: LayerAnimationType.typewriter,
+                  phase: AnimationPhase.loop,
+                  duration: ms(1000),
+                ),
+              ],
+            ),
+            bytes: base,
+            logicalSize: const Size(10, 10),
+            highlightBytes: {0: first},
+            // What the loop would show 400 ms in, had it been sampled.
+            revealBytes: {const ExportedTextState(revealedLength: 1): none},
+          );
+
+          expect(describe(exported.frames), [
+            (1, null, ms(400)),
+            (0, ms(400), null),
+          ]);
+        });
+      });
+    });
+
+    group('ExportedTextState', () {
+      test('compares by value', () {
+        expect(
+          const ExportedTextState(revealedLength: 2, highlightIndex: 1),
+          const ExportedTextState(revealedLength: 2, highlightIndex: 1),
+        );
+        expect(
+          const ExportedTextState(revealedLength: 2),
+          isNot(const ExportedTextState(revealedLength: 2, highlightIndex: 0)),
+        );
+      });
     });
   });
 }
