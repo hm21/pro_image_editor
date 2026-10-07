@@ -1,5 +1,14 @@
 # Changelog
 
+## 14.10.0
+- **FEAT**(layers): Add `Layer.keyframes` to move, scale, turn and fade a layer between points in time in the video editor, eased with the same 13 curves as the animations and matching `pro_video_editor` 2.29.0. A transform gesture, keyboard turn or zoom on a layer with keyframes changes the keyframe at the playback position, adding one when there is none.
+- **FEAT**(layers): Add `LayerKeyframe.effects` to play loop animations such as a wiggle from one keyframe to the next, their cycles fitted so the layer rests on both keyframes. `Layer.keyframeEffects` places them on the video's timeline for an export.
+- **FEAT**(layers): Add `Layer.opacity` for every layer type. `captureAsPng` bakes it into the image, as a `PaintLayer` already did.
+- **FEAT**(main-editor): `setLayerTimeline` takes `keyframes`; `LayerTimelineConfigs.keyframeTolerance` sets how close the playback position has to be to a keyframe to change it.
+- **FEAT**(main-editor): `replaceLayer` takes `skipUpdateHistory` to preview a layer without recording a history step.
+- **FEAT**(layers): `captureAsPng` captures a layer its keyframes grow at their largest size (`Layer.keyframeCaptureGrowth`, at most 4x), so it stays sharp in an export.
+- **FIX**(layers): Grouping or ungrouping layers keeps their time range, animations, highlights and widget width.
+
 ## 14.9.0
 - **FEAT**(layers): Add `LayerAnimationType.typewriter` and `wordByWord` to reveal a text layer letter by letter or word by word, exported as one image per step in `ExportedLayer.revealBytes`.
 - **FEAT**(layers): Add `LayerAnimationType.wiggle`, `bounce` and `AnimationPhase.loop`, matching `pro_video_editor` 2.27.0.

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '/core/models/layers/layer_keyframe.dart';
+
 /// Signature for a builder that wraps a layer widget with an animated
 /// transition driven by [animation].
 ///
@@ -25,6 +27,7 @@ class LayerTimelineConfigs {
     this.enterCurve = Curves.easeIn,
     this.exitCurve = Curves.easeOut,
     this.transitionBuilder = defaultFadeTransition,
+    this.keyframeTolerance = kLayerKeyframeTolerance,
   });
 
   /// The curve applied to the fade-in animation.
@@ -37,6 +40,13 @@ class LayerTimelineConfigs {
   ///
   /// Defaults to a simple [FadeTransition].
   final LayerTimelineTransitionBuilder transitionBuilder;
+
+  /// How far the playback position may be from a keyframe for a transform
+  /// gesture on a layer with [Layer.keyframes] to change that keyframe rather
+  /// than add one next to it.
+  ///
+  /// Defaults to [kLayerKeyframeTolerance].
+  final Duration keyframeTolerance;
 
   /// The default transition – a simple fade.
   static Widget defaultFadeTransition(
@@ -51,11 +61,13 @@ class LayerTimelineConfigs {
     Curve? enterCurve,
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
+    Duration? keyframeTolerance,
   }) {
     return LayerTimelineConfigs(
       enterCurve: enterCurve ?? this.enterCurve,
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
+      keyframeTolerance: keyframeTolerance ?? this.keyframeTolerance,
     );
   }
 }

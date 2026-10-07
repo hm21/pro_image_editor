@@ -20,14 +20,15 @@ class PaintLayerMergeManager {
   ///
   /// A censor layer is excluded because its blur/pixelate effect cannot be
   /// baked into a shared frame. A layer that carries video-timeline scheduling
-  /// ([Layer.startTime] / [Layer.endTime]) or [Layer.animations] is excluded
-  /// too, because a single static merged layer cannot reproduce a per-source
-  /// appearance that changes over the timeline.
+  /// ([Layer.startTime] / [Layer.endTime]), [Layer.animations] or
+  /// [Layer.keyframes] is excluded too, because a single static merged layer
+  /// cannot reproduce a per-source appearance that changes over the timeline.
   static bool isMergeable(PaintLayer layer) {
     return !layer.isCensor &&
         layer.startTime == null &&
         layer.endTime == null &&
-        layer.animations.isEmpty;
+        layer.animations.isEmpty &&
+        !layer.hasKeyframes;
   }
 
   /// Returns the mergeable paint layers contained in [layers], preserving their

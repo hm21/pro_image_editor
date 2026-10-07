@@ -10,6 +10,7 @@ import '/core/models/editor_callbacks/main_editor/helper_lines/helper_lines_call
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/history/last_layer_interaction_position.dart';
 import '/core/models/layers/layer.dart';
+import '/features/main_editor/services/layer_copy_manager.dart';
 import '/shared/utils/debounce.dart';
 import '/shared/utils/unique_id_generator.dart';
 
@@ -319,96 +320,24 @@ class LayerInteractionManager {
     return hasChanges;
   }
 
-  /// Creates a copy of a layer with all its properties.
+  /// Creates a copy of a layer with all its properties, keeping its id and
+  /// key.
+  ///
+  /// [LayerCopyManager] copies every field, including the time range,
+  /// animations and keyframes, which a field list of its own here once left
+  /// out, so grouping or ungrouping a layer dropped them.
   Layer _copyLayer(Layer originalLayer) {
-    // Copy layer-specific properties based on layer type
-    if (originalLayer is TextLayer) {
-      return TextLayer(
-        id: originalLayer.id,
-        text: originalLayer.text,
-        textStyle: originalLayer.textStyle,
-        colorMode: originalLayer.colorMode,
-        color: originalLayer.color,
-        background: originalLayer.background,
-        align: originalLayer.align,
-        fontScale: originalLayer.fontScale,
-        customSecondaryColor: originalLayer.customSecondaryColor,
-        maxTextWidth: originalLayer.maxTextWidth,
-        outlineWidth: originalLayer.outlineWidth,
-        outlineColor: originalLayer.outlineColor,
-        hit: originalLayer.hit,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    } else if (originalLayer is EmojiLayer) {
-      return EmojiLayer(
-        id: originalLayer.id,
-        emoji: originalLayer.emoji,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    } else if (originalLayer is PaintLayer) {
-      return PaintLayer(
-        id: originalLayer.id,
-        items: [...originalLayer.items],
-        rawSize: originalLayer.rawSize,
-        opacity: originalLayer.opacity,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    } else if (originalLayer is WidgetLayer) {
-      return WidgetLayer(
-        id: originalLayer.id,
-        widget: originalLayer.widget,
-        exportConfigs: originalLayer.exportConfigs,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    }
+    final copy = _layerCopyManager.copyLayer(originalLayer);
+    if (!identical(copy, originalLayer)) return copy;
 
-    // Fallback for base Layer type
-    return Layer(
-      id: originalLayer.id,
-      key: originalLayer.key,
-      interaction: originalLayer.interaction,
-      offset: originalLayer.offset,
-      rotation: originalLayer.rotation,
-      scale: originalLayer.scale,
-      flipX: originalLayer.flipX,
-      flipY: originalLayer.flipY,
-      meta: originalLayer.meta,
-      boxConstraints: originalLayer.boxConstraints,
-      groupId: originalLayer.groupId,
-    );
+    // The copy manager hands a plain [Layer] back as it is.
+    return originalLayer.copyWith()
+      ..key = originalLayer.key
+      ..keyInternalSize = originalLayer.keyInternalSize
+      ..repaintBoundaryKey = originalLayer.repaintBoundaryKey;
   }
+
+  final _layerCopyManager = LayerCopyManager();
 
   /// Helper variable for scaling during rotation of a layer.
   double? rotateScaleLayerScaleHelper;

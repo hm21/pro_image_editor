@@ -8,6 +8,7 @@ import '/core/models/editor_configs/video/layer_timeline_configs.dart';
 import '/core/models/layers/layer.dart';
 import '/shared/utils/layer_animation_progress.dart';
 import '/shared/utils/timeline_progress.dart';
+import 'widgets/invisible_but_painted.dart';
 
 /// Controls layer visibility based on [Layer.startTime] / [Layer.endTime]
 /// relative to the current video time.
@@ -37,6 +38,14 @@ import '/shared/utils/timeline_progress.dart';
 /// empty, the legacy fade convenience driven by [Layer.enterDuration] /
 /// [Layer.exitDuration] and the [LayerTimelineConfigs.transitionBuilder] is
 /// used instead.
+///
+/// [Layer.keyframes] place the layer at every point of its time range. The
+/// widget's child is laid out at the layer's own placement, so the keyframed
+/// one is applied as the difference to it: the layer turns and scales around
+/// its visual center and moves by the difference in offset, and its opacity
+/// is the keyframes' own. The animations are composed on top of that, as the
+/// native renderer composes them on the keyframed placement, and so are the
+/// [LayerKeyframe.effects] between two keyframes while the playhead is there.
 class LayerTimelineVisibility extends StatefulWidget {
   /// Creates a [LayerTimelineVisibility].
   const LayerTimelineVisibility({
@@ -95,6 +104,9 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   /// The geometry [_frame] was computed from, so [_geometryChanged] can tell
   /// when the cached frame went stale.
   late Offset _framedLayerOffset;
+  late double _framedLayerScale;
+  late double _framedLayerRotation;
+  late List<LayerKeyframe> _framedKeyframes;
   late Offset _framedLayerCenter;
   late Size _framedCanvasSize;
 
@@ -104,8 +116,14 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   /// [Layer] is mutable and is mutated in place while it is dragged, so
   /// `oldWidget.layer.offset != widget.layer.offset` never fires — both
   /// widgets hold the same instance. The recorded values are compared instead.
+  ///
+  /// The keyframes are replaced, never changed in place, so a new list is a
+  /// change and the same list is none.
   bool get _geometryChanged =>
       _framedLayerOffset != widget.layer.offset ||
+      _framedLayerScale != widget.layer.scale ||
+      _framedLayerRotation != widget.layer.rotation ||
+      !identical(_framedKeyframes, widget.layer.keyframes) ||
       _framedLayerCenter != widget.layerCenter ||
       _framedCanvasSize != widget.canvasSize;
 
@@ -131,6 +149,7 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         oldWidget.layer.enterCurve != widget.layer.enterCurve ||
         oldWidget.layer.exitCurve != widget.layer.exitCurve ||
         !listEquals(oldWidget.layer.animations, widget.layer.animations) ||
+        !listEquals(oldWidget.layer.keyframes, widget.layer.keyframes) ||
         _geometryChanged;
     if (changed) {
       _frame = _frameFor(widget.playTimeNotifier.value);
@@ -153,6 +172,9 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   /// Computes the frame for [currentTime] and records the geometry it used.
   _TimelineFrame _frameFor(Duration currentTime) {
     _framedLayerOffset = widget.layer.offset;
+    _framedLayerScale = widget.layer.scale;
+    _framedLayerRotation = widget.layer.rotation;
+    _framedKeyframes = widget.layer.keyframes;
     _framedLayerCenter = widget.layerCenter;
     _framedCanvasSize = widget.canvasSize;
     return _computeFrame(currentTime);
@@ -176,11 +198,12 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   /// Computes the visual transform for [currentTime].
   ///
   /// Mirrors the native renderer in `pro_video_editor` so the preview matches
-  /// the exported result: each animation's progress is evaluated for its
-  /// enter and/or exit phase, the most-visible (minimum) progress wins for an
-  /// `animateInOut` animation, and the effects are composed (opacity
-  /// multiplies, slide offsets accumulate, scale multiplies, wiggle angles and
-  /// bounce lifts add up).
+  /// the exported result: the keyframed placement comes first, then each
+  /// animation's progress is evaluated for its enter and/or exit phase, the
+  /// most-visible (minimum) progress wins for an `animateInOut` animation, and
+  /// the effects are composed on the placement (opacity multiplies, slide
+  /// offsets accumulate, scale multiplies, wiggle angles and bounce lifts add
+  /// up).
   _TimelineFrame _computeFrame(Duration currentTime) {
     final layer = widget.layer;
     final start = layer.startTime;
@@ -193,23 +216,55 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       return const _TimelineFrame.hidden();
     }
 
-    if (layer.animations.isEmpty) {
-      return _TimelineFrame.legacy(_computeLegacyProgress(currentTime));
+    // The keyframed placement, as the difference to the placement the child
+    // is laid out with.
+    final placement = layer.keyframePlacementAt(currentTime);
+    final keyframeOffset = placement == null
+        ? Offset.zero
+        : placement.offset - layer.offset;
+    final keyframeScale = placement == null || layer.scale == 0
+        ? 1.0
+        : placement.scale / layer.scale;
+    // A layer flipped on one axis is mirrored after its own rotation, which
+    // turns it the other way on screen; the difference has to turn with it.
+    final mirrored = layer.flipX != layer.flipY;
+    final keyframeRotation = placement == null
+        ? 0.0
+        : (placement.rotation - layer.rotation) * (mirrored ? -1 : 1);
+    final keyframeOpacity = placement?.opacity ?? 1.0;
+
+    // The layer's own animations count over its time range, the keyframe
+    // effects over the stretch between their two keyframes.
+    final animations = <(LayerAnimation, Duration?, Duration?)>[
+      for (final anim in layer.animations) (anim, start, end),
+      for (final effect in layer.keyframeEffects)
+        if (effect.playsAt(currentTime))
+          (effect.animation, effect.start, effect.end),
+    ];
+
+    if (animations.isEmpty) {
+      return _TimelineFrame(
+        opacity: keyframeOpacity,
+        slideAbsolute: keyframeOffset,
+        scale: math.max(0.0, keyframeScale),
+        rotation: keyframeRotation,
+        legacyProgress: _computeLegacyProgress(currentTime),
+      );
     }
 
-    double opacity = 1;
-    double scale = 1;
-    double rotation = 0;
+    double opacity = keyframeOpacity;
+    double scale = keyframeScale;
+    double rotation = keyframeRotation;
     double lift = 0;
-    Offset slideAbsolute = Offset.zero;
+    Offset slideAbsolute = keyframeOffset;
     Offset slideFractional = Offset.zero;
 
-    for (final anim in layer.animations) {
+    for (final (anim, from, until) in animations) {
       final progress = layerAnimationProgress(
         anim,
         currentTime,
-        start: start,
-        end: end,
+        start: from,
+        end: until,
       );
       if (progress == null) continue;
       final p = progress.value;
@@ -223,40 +278,42 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
           if (from != null) {
             // A start point of the caller's own wins over the edge the
             // direction would otherwise pick. Both the point and the layer's
-            // resting place are measured like [Layer.offset], so their
+            // keyframed place are measured like [Layer.offset], so their
             // difference is the distance travelled — the layer's own size
             // cancels out and no fractional part is needed.
-            slideAbsolute += (from - layer.offset) * invP;
+            slideAbsolute += (from - layer.offset - keyframeOffset) * invP;
             break;
           }
           final direction = anim.slideDirection;
           if (direction == null) break;
-          final center = widget.layerCenter;
+          final center = widget.layerCenter + keyframeOffset;
           final canvas = widget.canvasSize;
           // Edge-aware displacement D = invP × (absolute + fractional), where
           // the absolute part is canvas pixels and the fractional part is ±0.5
-          // of the layer's displayed size. Together they move the layer's
-          // nearest edge exactly onto the canvas border. This must mirror the
-          // native renderer in `pro_video_editor` (ApplyAnimation.kt/.swift).
+          // of the layer's displayed size: its laid-out size, grown or shrunk
+          // by the keyframes. Together they move the layer's nearest edge
+          // exactly onto the canvas border. This must mirror the native
+          // renderer in `pro_video_editor` (ApplyAnimation.kt/.swift).
+          final half = 0.5 * invP * keyframeScale;
           switch (direction) {
             case SlideDirection.left:
               slideAbsolute = slideAbsolute.translate(-center.dx * invP, 0);
-              slideFractional = slideFractional.translate(-0.5 * invP, 0);
+              slideFractional = slideFractional.translate(-half, 0);
             case SlideDirection.right:
               slideAbsolute = slideAbsolute.translate(
                 (canvas.width - center.dx) * invP,
                 0,
               );
-              slideFractional = slideFractional.translate(0.5 * invP, 0);
+              slideFractional = slideFractional.translate(half, 0);
             case SlideDirection.top:
               slideAbsolute = slideAbsolute.translate(0, -center.dy * invP);
-              slideFractional = slideFractional.translate(0, -0.5 * invP);
+              slideFractional = slideFractional.translate(0, -half);
             case SlideDirection.bottom:
               slideAbsolute = slideAbsolute.translate(
                 0,
                 (canvas.height - center.dy) * invP,
               );
-              slideFractional = slideFractional.translate(0, 0.5 * invP);
+              slideFractional = slideFractional.translate(0, half);
           }
         case LayerAnimationType.scale:
           final from = anim.scaleFrom ?? 0.0;
@@ -267,9 +324,11 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
               (1.0 - p) *
               (anim.wiggleAngle ?? LayerAnimation.defaultWiggleAngle);
         case LayerAnimationType.bounce:
+          // The hop grows and shrinks with the layer's keyframed size.
           lift +=
               (1.0 - p) *
-              (anim.bounceHeight ?? LayerAnimation.defaultBounceHeight);
+              (anim.bounceHeight ?? LayerAnimation.defaultBounceHeight) *
+              keyframeScale;
         case LayerAnimationType.typewriter:
         case LayerAnimationType.wordByWord:
           // The text layer reveals its own text (LayerWidgetTextItem).
@@ -284,6 +343,11 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       scale: math.max(0.0, scale),
       rotation: rotation,
       lift: lift,
+      // Keyframe effects alone leave the legacy fade of a layer without
+      // animations in place.
+      legacyProgress: layer.animations.isEmpty
+          ? _computeLegacyProgress(currentTime)
+          : 1,
     );
   }
 
@@ -292,26 +356,21 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     final child = widget.child;
     final frame = _frame;
 
-    if (frame.hidden) {
-      return IgnorePointer(child: _InvisibleButPainted(child: child));
-    }
-
-    if (widget.layer.animations.isEmpty) {
-      final progress = frame.legacyProgress;
-      if (progress <= 0) {
-        return IgnorePointer(child: _InvisibleButPainted(child: child));
-      }
-      final builder =
-          widget.layer.transitionBuilder ?? widget.configs.transitionBuilder;
-      return builder(child, AlwaysStoppedAnimation<double>(progress));
-    }
-
-    if (frame.opacity <= 0) {
-      return IgnorePointer(child: _InvisibleButPainted(child: child));
+    if (frame.hidden || frame.opacity <= 0 || frame.legacyProgress <= 0) {
+      return IgnorePointer(child: InvisibleButPainted(child: child));
     }
 
     Widget result = child;
-    // The wiggle turns the layer before anything else moves it, around the
+    if (widget.layer.animations.isEmpty) {
+      final builder =
+          widget.layer.transitionBuilder ?? widget.configs.transitionBuilder;
+      result = builder(
+        child,
+        AlwaysStoppedAnimation<double>(frame.legacyProgress),
+      );
+    }
+    // The keyframes and the wiggle turn the layer before anything else moves
+    // it, around the
     // same visual center the scale below is anchored on (see there). Turning
     // and scaling around one point commute, so the order between the two
     // does not matter; the native renderer turns first as well.
@@ -369,12 +428,12 @@ class _TimelineFrame {
   const _TimelineFrame({
     required this.opacity,
     required this.slideAbsolute,
-    required this.slideFractional,
+    this.slideFractional = Offset.zero,
     required this.scale,
     this.rotation = 0,
     this.lift = 0,
-  }) : hidden = false,
-       legacyProgress = 1;
+    this.legacyProgress = 1,
+  }) : hidden = false;
 
   const _TimelineFrame.hidden()
     : hidden = true,
@@ -386,19 +445,10 @@ class _TimelineFrame {
       lift = 0,
       legacyProgress = 0;
 
-  const _TimelineFrame.legacy(this.legacyProgress)
-    : hidden = false,
-      opacity = 1,
-      slideAbsolute = Offset.zero,
-      slideFractional = Offset.zero,
-      scale = 1,
-      rotation = 0,
-      lift = 0;
-
   /// Whether the layer is outside its visible time range and should be hidden.
   final bool hidden;
 
-  /// The composed opacity (phase-aware path).
+  /// The composed opacity.
   final double opacity;
 
   /// The absolute (canvas-pixel) component of the composed slide offset
@@ -411,17 +461,21 @@ class _TimelineFrame {
   /// pushes the layer's nearest edge exactly onto the canvas border.
   final Offset slideFractional;
 
-  /// The composed scale factor (phase-aware path).
+  /// The composed scale factor: the keyframed scale relative to the laid-out
+  /// one, times any scale animation.
   final double scale;
 
-  /// The composed wiggle tilt, clockwise, in radians (phase-aware path).
+  /// The keyframed turn relative to the laid-out one plus the wiggle tilt,
+  /// clockwise on screen, in radians.
   final double rotation;
 
   /// How far a bounce lifts the layer, as a multiple of its height
   /// (phase-aware path). See [_Lift].
   final double lift;
 
-  /// The curved progress (0–1) used by the legacy fade path.
+  /// The curved progress (0–1) the legacy fade path, which only a layer
+  /// without animations takes, hands to the transition builder. The rest of
+  /// the frame then only carries the keyframed placement.
   final double legacyProgress;
 
   @override
@@ -449,31 +503,6 @@ class _TimelineFrame {
     lift,
     legacyProgress,
   );
-}
-
-/// Renders its child into the render tree (so [RepaintBoundary.toImage] works)
-/// but displays nothing on screen.
-///
-/// Unlike [Opacity] with alpha 0, which skips painting entirely, this widget
-/// uses [PaintingContext.pushOpacity] directly which always paints the child
-/// into an [OpacityLayer].
-class _InvisibleButPainted extends SingleChildRenderObjectWidget {
-  const _InvisibleButPainted({required super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderInvisibleButPainted();
-}
-
-class _RenderInvisibleButPainted extends RenderProxyBox {
-  @override
-  bool get alwaysNeedsCompositing => true;
-
-  @override
-  void paint(PaintingContext context, Offset offset) {
-    if (child == null) return;
-    context.pushOpacity(offset, 0, super.paint);
-  }
 }
 
 /// Moves its child up by [lift] times the height of the box around the layer

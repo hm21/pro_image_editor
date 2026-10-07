@@ -72,6 +72,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'animations': 'an',
   'highlights': 'hl',
   'highlightColor': 'hc',
+  'keyframes': 'kf',
 
   /// Only in version < 8.0.0
   'enableInteraction': 'ei',

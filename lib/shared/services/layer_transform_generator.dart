@@ -45,11 +45,10 @@ class LayerTransformGenerator {
     LayerCopyManager layerManager = LayerCopyManager();
 
     for (var el in layers) {
-      Layer layer = layerManager.copyLayer(el);
-      _rotateLayer(layer);
-      _translateLayer(layer);
-      _flipLayer(layer);
-      _zoomLayer(layer);
+      // The keyframes go first: each placement starts from the layer's flips
+      // as they were, as the layer's own placement does.
+      Layer layer = layerManager.copyLayer(el)..transformKeyframes(_transform);
+      _transform(layer);
 
       updatedLayers.add(layer);
     }
@@ -60,6 +59,14 @@ class LayerTransformGenerator {
   /// This list contains copies of the original layers, each modified according
   /// to the specified transformations.
   final List<Layer> updatedLayers = [];
+
+  /// Moves [layer], or a keyframe of it, with the image.
+  void _transform(Layer layer) {
+    _rotateLayer(layer);
+    _translateLayer(layer);
+    _flipLayer(layer);
+    _zoomLayer(layer);
+  }
 
   /// The active transformation configurations.
   ///

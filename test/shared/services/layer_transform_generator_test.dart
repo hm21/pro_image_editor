@@ -43,6 +43,53 @@ Layer _makeLayer({
 
 void main() {
   group('LayerTransformGenerator', () {
+    test('moves every keyframe the way it moves the layer', () {
+      // The first keyframe holds the layer's own placement, so it has to end
+      // up exactly where the layer does.
+      final layer =
+          Layer(
+              offset: const Offset(10, 20),
+              rotation: 0.3,
+              scale: 1.5,
+              flipY: true,
+            )
+            ..keyframes = const [
+              LayerKeyframe(
+                time: Duration.zero,
+                offset: Offset(10, 20),
+                rotation: 0.3,
+                scale: 1.5,
+              ),
+              LayerKeyframe(
+                time: Duration(seconds: 1),
+                offset: Offset(-30, 5),
+                rotation: -1,
+                scale: 0.5,
+              ),
+            ];
+
+      final generator = LayerTransformGenerator(
+        layers: [layer],
+        undoChanges: false,
+        activeTransformConfigs: _configs(),
+        newTransformConfigs: _configs(
+          angle: 1.5708,
+          flipX: true,
+          scaleUser: 2,
+          offset: const Offset(4, -6),
+        ),
+        layerDrawAreaSize: const Size(100, 100),
+      );
+
+      final updated = generator.updatedLayers.first;
+      final moved = updated.keyframes.first;
+      expect(moved.offset.dx, closeTo(updated.offset.dx, 1e-9));
+      expect(moved.offset.dy, closeTo(updated.offset.dy, 1e-9));
+      expect(moved.rotation, closeTo(updated.rotation, 1e-9));
+      expect(moved.scale, closeTo(updated.scale, 1e-9));
+      expect(updated.keyframes.last.offset, isNot(const Offset(-30, 5)));
+    });
+
     test('applies rotation transformation', () {
       final layer = _makeLayer(offset: const Offset(10, 20), rotation: 0.0);
       final active = _configs(angle: 0.0);

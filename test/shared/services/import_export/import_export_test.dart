@@ -299,6 +299,79 @@ void main() {
       },
     );
 
+    for (final minify in [false, true]) {
+      testWidgets('keeps keyframes and rescales them with the offset when the '
+          'history was recorded at another size '
+          '(${minify ? 'minified' : 'not minified'})', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+
+          editor.addLayer(
+            TextLayer(
+              text: 'moves',
+              offset: const Offset(20, 40),
+              opacity: 0.6,
+              keyframes: const [
+                LayerKeyframe(
+                  time: Duration.zero,
+                  offset: Offset(10, 20),
+                  scale: 1.5,
+                  curve: AnimationCurve.easeInOut,
+                ),
+                LayerKeyframe(
+                  time: Duration(seconds: 2),
+                  offset: Offset(-5, 0),
+                  rotation: 1,
+                  opacity: 0.5,
+                ),
+              ],
+            ),
+          );
+
+          final history = await editor.exportStateHistory(
+            configs: ExportEditorConfigs(
+              enableMinify: minify,
+              historySpan: ExportHistorySpan.current,
+            ),
+          );
+          final map = await history.toMap();
+          // Pretend the history was recorded on a canvas half this size, so
+          // the import has to scale every layer up by 2 on both axes.
+          final sizeKey = minify ? 'l' : 'lastRenderedImgSize';
+          final recorded = Map<String, dynamic>.from(map[sizeKey] as Map);
+          map[sizeKey] = {
+            for (final MapEntry(:key, :value) in recorded.entries)
+              key: (value as num) / 2,
+          };
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          final imported = editor.activeLayers.single;
+          expect(imported.opacity, 0.6);
+          expect(imported.keyframes, const [
+            LayerKeyframe(
+              time: Duration.zero,
+              offset: Offset(20, 40),
+              scale: 3,
+              curve: AnimationCurve.easeInOut,
+            ),
+            LayerKeyframe(
+              time: Duration(seconds: 2),
+              offset: Offset(-10, 0),
+              scale: 2,
+              rotation: 1,
+              opacity: 0.5,
+            ),
+          ]);
+        });
+      });
+    }
+
     testWidgets(
       'rasterizes a widget layer without export configs when background '
       'generation is off',

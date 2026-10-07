@@ -39,7 +39,7 @@ class PaintLayer extends Layer {
     PaintedModel? item,
     List<PaintedModel>? items,
     required this.rawSize,
-    required this.opacity,
+    required super.opacity,
     super.offset,
     super.rotation,
     super.scale,
@@ -59,6 +59,7 @@ class PaintLayer extends Layer {
     super.exitCurve,
     super.transitionBuilder,
     super.animations,
+    super.keyframes,
   }) : assert(
          item != null || (items != null && items.isNotEmpty),
          'Provide either `item` or a non-empty `items` list.',
@@ -117,6 +118,7 @@ class PaintLayer extends Layer {
       enterDuration: layer.enterDuration,
       exitDuration: layer.exitDuration,
       animations: layer.animations,
+      keyframes: layer.keyframes,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
       rawSize: Size(
         safeParseDouble(map[keyConverter('rawSize')]?['w'], fallback: 0),
@@ -150,9 +152,6 @@ class PaintLayer extends Layer {
 
   /// The raw size of the painted item before applying scaling.
   final Size rawSize;
-
-  /// The opacity level of the drawing.
-  double opacity;
 
   /// Returns the size of the layer after applying the scaling factor.
   Size get size => Size(rawSize.width * scale, rawSize.height * scale);
@@ -285,6 +284,7 @@ class PaintLayer extends Layer {
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
+    List<LayerKeyframe>? keyframes,
   }) {
     return PaintLayer(
       items: items ?? (item != null ? [item] : this.items),
@@ -308,6 +308,7 @@ class PaintLayer extends Layer {
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
+      keyframes: keyframes ?? this.keyframes,
     );
   }
 
@@ -315,7 +316,6 @@ class PaintLayer extends Layer {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DoubleProperty('opacity', opacity))
       ..add(DiagnosticsProperty<Size>('rawSize', rawSize))
       ..add(DiagnosticsProperty<Size>('size', size))
       ..add(IntProperty('itemsCount', items.length));

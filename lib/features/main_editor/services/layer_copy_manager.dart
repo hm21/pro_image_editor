@@ -135,6 +135,7 @@ class LayerCopyManager {
       outlineColor: layer.outlineColor,
       highlights: List<TextHighlight>.of(layer.highlights),
       highlightColor: layer.highlightColor,
+      opacity: layer.opacity,
       customSecondaryColor: layer.customSecondaryColor,
       interaction: layer.interaction.copyWith(),
       boxConstraints: layer.boxConstraints?.copyWith(),
@@ -146,6 +147,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
+      keyframes: layer.keyframes,
     )..groupId = layer.groupId;
   }
 
@@ -160,6 +162,7 @@ class LayerCopyManager {
       id: enableCopyId ? layer.id : null,
       key: enableCopyKey ? layer.key : null,
       emoji: layer.emoji,
+      opacity: layer.opacity,
       offset: Offset(layer.offset.dx + offset.dx, layer.offset.dy + offset.dy),
       rotation: layer.rotation,
       scale: layer.scale,
@@ -176,6 +179,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
+      keyframes: layer.keyframes,
     )..groupId = layer.groupId;
   }
 
@@ -190,6 +194,7 @@ class LayerCopyManager {
       id: enableCopyId ? layer.id : null,
       key: enableCopyKey ? layer.key : null,
       widget: layer.widget,
+      opacity: layer.opacity,
       offset: Offset(layer.offset.dx + offset.dx, layer.offset.dy + offset.dy),
       rotation: layer.rotation,
       scale: layer.scale,
@@ -208,6 +213,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
+      keyframes: layer.keyframes,
     )..groupId = layer.groupId;
   }
 
@@ -240,6 +246,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
+      keyframes: layer.keyframes,
     )..groupId = layer.groupId;
   }
 }

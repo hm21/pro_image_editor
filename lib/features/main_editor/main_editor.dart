@@ -601,6 +601,7 @@ class ProImageEditorState extends State<ProImageEditor>
       context: context,
       onUpdateUI: mainEditorCallbacks?.handleUpdateUI,
       setState: setState,
+      keyframeTime: () => _videoController?.playTimeNotifier.value,
     );
     sizesManager = SizesManager(configs: configs, context: context);
     layerInteractionManager.scaleDebounce = Debounce(
@@ -824,11 +825,25 @@ class ProImageEditorState extends State<ProImageEditor>
   /// - [layer]: The new `Layer` instance that will replace the existing layer
   ///   at the specified index.
   ///
+  /// Pass [skipUpdateHistory] to show [layer] without recording a history
+  /// step, e.g. while a slider previews a value: the current step then holds
+  /// [layer] itself and the selection is kept, as with [setLayerTimeline].
+  /// Replace it once more without the flag to record the final value.
+  ///
   /// Example usage:
   /// ```dart
   /// replaceLayer(index: 2, layer: newLayer);
   /// ```
-  void replaceLayer({required int index, required Layer layer}) {
+  void replaceLayer({
+    required int index,
+    required Layer layer,
+    bool skipUpdateHistory = false,
+  }) {
+    if (skipUpdateHistory) {
+      activeLayers[index] = layer;
+      _controllers.uiLayerCtrl.add(null);
+      return;
+    }
     layerInteractionManager.clearSelectedLayers();
 
     addHistory(
@@ -850,6 +865,11 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Pass [animations] to set the per-layer enter/leave animations (fade /
   /// slide / scale). When non-empty, they take over from the legacy
   /// [enterDuration] / [exitDuration] fade convenience.
+  ///
+  /// Pass [keyframes] to set the layer's placement over time (see
+  /// [Layer.keyframes]); an empty list removes them. Their times are measured
+  /// from the layer's start, so a new [startTime] alone moves them along with
+  /// the layer.
   void setLayerTimeline({
     required int index,
     Duration? startTime,
@@ -860,6 +880,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
+    List<LayerKeyframe>? keyframes,
     Map<String, dynamic>? meta,
     bool skipUpdateHistory = false,
   }) {
@@ -875,6 +896,7 @@ class ProImageEditorState extends State<ProImageEditor>
         (transitionBuilder == null ||
             transitionBuilder == current.transitionBuilder) &&
         (animations == null || listEquals(animations, current.animations)) &&
+        (keyframes == null || listEquals(keyframes, current.keyframes)) &&
         meta == null) {
       return;
     }
@@ -901,6 +923,7 @@ class ProImageEditorState extends State<ProImageEditor>
     if (animations != null) {
       layer.animations = List<LayerAnimation>.of(animations);
     }
+    if (keyframes != null) layer.keyframes = keyframes;
     if (meta != null) layer.meta = {...layer.meta ?? {}, ...meta};
 
     if (!skipUpdateHistory) {
@@ -1439,6 +1462,7 @@ class ProImageEditorState extends State<ProImageEditor>
     /// would otherwise corrupt the history/screenshot stack (issue #850).
     if (hasSelectedLayers && !isLayerBeingTransformed) {
       addHistory(blockCaptureScreenshot: true);
+      _startKeyframeEdit();
     }
     _checkInteractiveViewer();
     isLayerBeingTransformed = hasSelectedLayers;
@@ -1523,6 +1547,7 @@ class ProImageEditorState extends State<ProImageEditor>
         editorScaleOffset:
             interactiveViewer.currentState?.offset ?? Offset.zero,
       );
+      _recordKeyframeEdit();
       for (Layer layer in selectedLayers) {
         layer.key.currentState!.setState(() {});
       }
@@ -1568,11 +1593,43 @@ class ProImageEditorState extends State<ProImageEditor>
         editorScaleFactor: editorScaleFactor,
       );
     }
+    _recordKeyframeEdit();
     for (Layer layer in selectedLayers) {
       mainEditorCallbacks?.handleUpdateLayer(layer);
       layer.key.currentState?.setState(() {});
     }
     checkUpdateHelperLineUI();
+  }
+
+  /// The playback position a transform gesture writes to the keyframes of the
+  /// layers it moves, or `null` when no gesture runs or outside the video
+  /// editor.
+  ///
+  /// Taken when the gesture starts, so a video that keeps playing does not
+  /// spread one gesture over many keyframes.
+  Duration? _keyframeEditTime;
+
+  /// Lays every selected layer with keyframes out at the placement they give
+  /// it at the playback position, so the gesture moves what the user sees.
+  void _startKeyframeEdit() {
+    final time = _videoController?.playTimeNotifier.value;
+    _keyframeEditTime = time;
+    if (time == null) return;
+    for (final layer in selectedLayers) {
+      layer.applyKeyframePlacement(time);
+    }
+  }
+
+  /// Writes the placement of every selected layer with keyframes to its
+  /// keyframe at [_keyframeEditTime], adding one there when there is none.
+  void _recordKeyframeEdit() {
+    final time = _keyframeEditTime;
+    if (time == null) return;
+    final tolerance = configs.videoEditor.layerTimeline.keyframeTolerance;
+    for (final layer in selectedLayers) {
+      if (!layer.hasKeyframes) continue;
+      layer.setKeyframeAt(time, tolerance: tolerance);
+    }
   }
 
   /// Handle the end of a scaling operation.
@@ -1642,6 +1699,7 @@ class ProImageEditorState extends State<ProImageEditor>
     }
 
     isLayerBeingTransformed = false;
+    _keyframeEditTime = null;
     _checkInteractiveViewer();
     _controllers.uiLayerCtrl.add(null);
     layerInteractionManager.onScaleEnd();
@@ -1700,8 +1758,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Applies the result of a text editor session back to the layer stack.
   ///
   /// Restores all identity and transform properties (`id`, `key`, `offset`,
-  /// `scale`, `rotation`, etc.) from [original] onto [updatedLayer] so the
-  /// layer keeps its position in the editor.
+  /// `scale`, `rotation`, `keyframes`, `opacity`, etc.) from [original] onto
+  /// [updatedLayer] so the layer keeps its position in the editor.
   ///
   /// If [updatedLayer.text] is empty the layer is removed via [removeLayer].
   /// Otherwise the layer is replaced in place via [replaceLayer].
@@ -1725,7 +1783,9 @@ class ProImageEditorState extends State<ProImageEditor>
       ..boxConstraints = original.boxConstraints
       ..groupId = original.groupId
       ..interaction = original.interaction
-      ..meta = original.meta;
+      ..meta = original.meta
+      ..keyframes = original.keyframes
+      ..opacity = original.opacity;
 
     if (updatedLayer.text.isEmpty) {
       removeLayer(original);

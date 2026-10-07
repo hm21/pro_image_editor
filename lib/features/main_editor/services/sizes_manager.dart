@@ -169,10 +169,13 @@ class SizesManager {
       if (scaleFactor != 0) {
         for (var layer in el.layers) {
           if (!processed.add(layer)) continue;
-          layer
+          void rescale(Layer placement) => placement
             ..scale /= scaleFactor
-            ..offset /= scaleFactor
-            ..scaleSlideFrom(1 / scaleFactor, 1 / scaleFactor);
+            ..offset /= scaleFactor;
+          rescale(layer);
+          layer
+            ..scaleSlideFrom(1 / scaleFactor, 1 / scaleFactor)
+            ..transformKeyframes(rescale);
         }
       }
     }
