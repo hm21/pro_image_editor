@@ -69,6 +69,27 @@ void main() {
       );
     });
 
+    testWidgets('leaves the opacity of a layer with keyframes to them', (
+      tester,
+    ) async {
+      testLayer.keyframes = const [
+        LayerKeyframe(time: Duration.zero, offset: Offset.zero, opacity: 0.5),
+      ];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintEditorLayerEditor(
+              layer: testLayer,
+              configs: testConfigs,
+            ),
+          ),
+        ),
+      );
+
+      // Only the stroke width is left.
+      expect(find.byType(Slider), findsOneWidget);
+    });
+
     testWidgets('changes opacity on slider interaction', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

@@ -1,5 +1,12 @@
 # Changelog
 
+## 14.10.0
+- **FEAT**(layers): Add `Layer.keyframes` to move, scale, turn and fade a layer over time in the video editor, matching `pro_video_editor` 2.29.0; transform gestures edit the keyframe at the playhead.
+- **FEAT**(layers): Add `LayerKeyframe.effects` to play loop animations between two keyframes (`Layer.keyframeEffects`).
+- **FEAT**(layers): Add `Layer.opacity` for every layer type; `captureAsPng` bakes it in and captures keyframed layers at their largest size.
+- **FEAT**(main-editor): `setLayerTimeline` takes `keyframes`, `replaceLayer` takes `skipUpdateHistory`; add `LayerTimelineConfigs.keyframeTolerance`.
+- **FIX**(layers): Grouping or ungrouping layers keeps their time range, animations, highlights and widget width.
+
 ## 14.9.0
 - **FEAT**(layers): Add `LayerAnimationType.typewriter` and `wordByWord` to reveal a text layer letter by letter or word by word, exported as one image per step in `ExportedLayer.revealBytes`.
 - **FEAT**(layers): Add `LayerAnimationType.wiggle`, `bounce` and `AnimationPhase.loop`, matching `pro_video_editor` 2.27.0.

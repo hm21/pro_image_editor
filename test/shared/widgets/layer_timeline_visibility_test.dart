@@ -598,4 +598,212 @@ void main() {
       expect(find.byType(FadeTransition), findsOneWidget);
     });
   });
+
+  group('LayerTimelineVisibility keyframes', () {
+    // Anchor the transforms on the child's own center: the test child is not
+    // shifted by a fractional translation the way a real layer is.
+    const centered = Offset.zero;
+
+    Layer keyframedLayer({
+      bool flipX = false,
+      List<LayerAnimation>? animations,
+      Duration? enterDuration,
+    }) => Layer(
+      startTime: Duration.zero,
+      endTime: const Duration(seconds: 10),
+      flipX: flipX,
+      animations: animations,
+      enterDuration: enterDuration,
+      keyframes: const [
+        LayerKeyframe(time: Duration.zero, offset: Offset.zero),
+        LayerKeyframe(
+          time: Duration(seconds: 1),
+          offset: Offset(40, 20),
+          scale: 2,
+          rotation: math.pi / 2,
+          opacity: 0.5,
+        ),
+      ],
+    );
+
+    Offset topLeft(WidgetTester tester) =>
+        tester.getTopLeft(find.byKey(childKey));
+
+    testWidgets('moves, scales and turns the layer to its keyframed '
+        'placement', (tester) async {
+      final notifier = await pumpVisibility(
+        tester,
+        keyframedLayer(),
+        fractionalOffset: centered,
+      );
+      await seek(tester, notifier, Duration.zero);
+      final restCenter = tester.getCenter(find.byKey(childKey));
+      expect(find.byType(Opacity), findsNothing);
+
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      // The 100 × 50 child's top-left corner, (-50, -25) from its center,
+      // turned a quarter clockwise and doubled.
+      final corner = topLeft(tester) - restCenter - const Offset(40, 20);
+      expect(corner.dx, closeTo(50, 1e-6));
+      expect(corner.dy, closeTo(-100, 1e-6));
+      expect(tester.widget<Opacity>(find.byType(Opacity)).opacity, equals(0.5));
+    });
+
+    testWidgets('turns a layer flipped on one axis the other way, as it is '
+        'drawn mirrored', (tester) async {
+      final notifier = await pumpVisibility(
+        tester,
+        keyframedLayer(flipX: true),
+        fractionalOffset: centered,
+      );
+      await seek(tester, notifier, Duration.zero);
+      final restCenter = tester.getCenter(find.byKey(childKey));
+
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      final corner = topLeft(tester) - restCenter - const Offset(40, 20);
+      expect(corner.dx, closeTo(-50, 1e-6));
+      expect(corner.dy, closeTo(100, 1e-6));
+    });
+
+    testWidgets('turns the other way once the same layer is flipped in '
+        'place', (tester) async {
+      final layer = keyframedLayer();
+      final notifier = await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+      );
+      await seek(tester, notifier, Duration.zero);
+      final restCenter = tester.getCenter(find.byKey(childKey));
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      // A host flips the layer it already shows, at the same position.
+      layer.flipX = true;
+      await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+        reuse: notifier,
+      );
+
+      final corner = topLeft(tester) - restCenter - const Offset(40, 20);
+      expect(corner.dx, closeTo(-50, 1e-6));
+      expect(corner.dy, closeTo(100, 1e-6));
+    });
+
+    testWidgets('measures the difference to the placement the layer is laid '
+        'out with', (tester) async {
+      final layer = keyframedLayer()
+        ..offset = const Offset(40, 20)
+        ..scale = 2
+        ..rotation = math.pi / 2;
+      final notifier = await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+      );
+
+      // At the keyframe that matches the layout there is nothing to move.
+      await seek(tester, notifier, const Duration(seconds: 1));
+      expect(find.byType(Transform), findsNothing);
+    });
+
+    testWidgets('plays a keyframe effect between its two keyframes only', (
+      tester,
+    ) async {
+      final layer = Layer(
+        startTime: Duration.zero,
+        endTime: const Duration(seconds: 10),
+        keyframes: const [
+          LayerKeyframe(
+            time: Duration.zero,
+            offset: Offset.zero,
+            // Two hops of 500 ms between the keyframes.
+            effects: [
+              LayerAnimation(
+                type: LayerAnimationType.bounce,
+                phase: AnimationPhase.loop,
+                duration: Duration(milliseconds: 500),
+              ),
+            ],
+          ),
+          LayerKeyframe(time: Duration(seconds: 1), offset: Offset.zero),
+        ],
+      );
+      final notifier = await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+      );
+      await seek(tester, notifier, Duration.zero);
+      final rest = tester.getCenter(find.byKey(childKey));
+
+      // At the top of the first hop: half the 50 px child's height up.
+      await seek(tester, notifier, const Duration(milliseconds: 250));
+      expect(
+        tester.getCenter(find.byKey(childKey)) - rest,
+        const Offset(0, -25),
+      );
+
+      // Back down on the second keyframe, and still after it.
+      await seek(tester, notifier, const Duration(seconds: 1));
+      expect(tester.getCenter(find.byKey(childKey)), rest);
+      await seek(tester, notifier, const Duration(milliseconds: 1250));
+      expect(tester.getCenter(find.byKey(childKey)), rest);
+    });
+
+    testWidgets('keeps the legacy fade and places the faded layer', (
+      tester,
+    ) async {
+      final notifier = await pumpVisibility(
+        tester,
+        keyframedLayer(enterDuration: const Duration(seconds: 2)),
+        fractionalOffset: centered,
+      );
+      await seek(tester, notifier, Duration.zero);
+      final restCenter = tester.getCenter(find.byKey(childKey));
+
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      expect(find.byType(FadeTransition), findsOneWidget);
+      expect(
+        tester.getCenter(find.byKey(childKey)) - restCenter,
+        equals(const Offset(40, 20)),
+      );
+    });
+
+    testWidgets('slides in from the edge nearest the keyframed place', (
+      tester,
+    ) async {
+      final layer = keyframedLayer(
+        animations: const [
+          LayerAnimation(
+            type: LayerAnimationType.slide,
+            phase: AnimationPhase.animateIn,
+            duration: Duration(seconds: 2),
+            slideDirection: SlideDirection.left,
+          ),
+        ],
+      );
+      final notifier = await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+      );
+
+      // Half way into the slide, at the keyframe: the layer's center (50 +
+      // 40) has covered half its way to the left edge, and the fractional
+      // part half of the doubled layer's half width.
+      await seek(tester, notifier, const Duration(seconds: 1));
+      // The outermost transform is the translation.
+      final translate = tester
+          .widgetList<Transform>(find.byType(Transform))
+          .first
+          .transform;
+      expect(translate.storage[12], closeTo(40 - 90 * 0.5, 1e-9));
+      expect(slideFractional(tester), equals(const Offset(-0.5, 0)));
+    });
+  });
 }

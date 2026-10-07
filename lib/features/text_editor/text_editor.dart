@@ -369,6 +369,10 @@ class TextEditorState extends State<TextEditor>
         exitCurve: original?.exitCurve,
         transitionBuilder: original?.transitionBuilder,
         animations: original?.animations,
+        // Its placement over time and its opacity are not the editor's to
+        // change either.
+        keyframes: original?.keyframes,
+        opacity: original?.opacity ?? 1,
         // Highlights point into the text, so they only fit the text they
         // were made for.
         highlights: original?.text == text ? original?.highlights : null,

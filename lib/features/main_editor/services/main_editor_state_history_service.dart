@@ -142,13 +142,16 @@ class MainEditorStateHistoryService {
 
           double scale = (scaleWidth + scaleHeight) / 2;
 
-          layer
+          void rescale(Layer placement) => placement
             ..scale *= scale
             ..offset = Offset(
-              layer.offset.dx * scaleWidth,
-              layer.offset.dy * scaleHeight,
-            )
-            ..scaleSlideFrom(scaleWidth, scaleHeight);
+              placement.offset.dx * scaleWidth,
+              placement.offset.dy * scaleHeight,
+            );
+          rescale(layer);
+          layer
+            ..scaleSlideFrom(scaleWidth, scaleHeight)
+            ..transformKeyframes(rescale);
         }
 
         if (import.version == ExportImportVersion.version_1_0_0) {

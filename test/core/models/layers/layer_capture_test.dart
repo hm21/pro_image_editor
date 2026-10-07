@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -240,5 +242,185 @@ void main() {
         expect(bytes!.sublist(0, 4), [255, 0, 0, 255]);
       },
     );
+  });
+
+  group('Layer opacity', () {
+    Future<ProImageEditorState> pumpEditor(WidgetTester tester) async {
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            mockMemoryImage,
+            key: key,
+            callbacks: const ProImageEditorCallbacks(),
+            configs: const ProImageEditorConfigs(
+              progressIndicatorConfigs: ProgressIndicatorConfigs(
+                widgets: ProgressIndicatorWidgets(
+                  circularProgressIndicator: SizedBox.shrink(),
+                ),
+              ),
+              imageGeneration: ImageGenerationConfigs(
+                enableBackgroundGeneration: false,
+                enableIsolateGeneration: false,
+              ),
+            ),
+          ),
+        ),
+      );
+      return key.currentState!;
+    }
+
+    const contentKey = ValueKey('opaque-content');
+
+    WidgetLayer opaqueLayer({double opacity = 1, List<LayerKeyframe>? kf}) =>
+        WidgetLayer(
+          widget: const ColoredBox(
+            key: contentKey,
+            color: Color(0xFFFF0000),
+            child: SizedBox(width: 20, height: 20),
+          ),
+          opacity: opacity,
+          keyframes: kf,
+        );
+
+    /// The alpha of the pixel in the middle of [bytes], an RGBA image of a
+    /// square layer.
+    int centerAlpha(Uint8List bytes) {
+      final side = math.sqrt(bytes.length / 4).round();
+      final center = (side ~/ 2) * side + side ~/ 2;
+      return bytes[center * 4 + 3];
+    }
+
+    testWidgets('fades a layer on the canvas', (tester) async {
+      final editor = await pumpEditor(tester);
+      editor.addLayer(opaqueLayer(opacity: 0.5));
+      await tester.pumpAndSettle();
+
+      final opacity = tester.widget<Opacity>(
+        find.ancestor(
+          of: find.byKey(contentKey),
+          matching: find.byType(Opacity),
+        ),
+      );
+      expect(opacity.opacity, 0.5);
+    });
+
+    testWidgets('bakes the opacity into the captured image', (tester) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        final layer = opaqueLayer(opacity: 0.5);
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+
+        final faded = await layer.captureAsPng(
+          format: ui.ImageByteFormat.rawRgba,
+          pixelRatio: 1,
+        );
+        final raw = await layer.captureAsPng(
+          format: ui.ImageByteFormat.rawRgba,
+          pixelRatio: 1,
+          applyTransforms: false,
+        );
+
+        expect(centerAlpha(faded!), closeTo(128, 1));
+        expect(centerAlpha(raw!), 255);
+      });
+    });
+
+    for (final keyframed in [false, true]) {
+      testWidgets('draws a ${keyframed ? 'keyframed ' : ''}drawing with '
+          '${keyframed ? 'no' : 'its'} opacity', (tester) async {
+        await tester.runAsync(() async {
+          final editor = await pumpEditor(tester);
+          final layer = PaintLayer(
+            item: PaintedModel(
+              mode: PaintMode.rect,
+              offsets: const [Offset.zero, Offset(40, 40)],
+              erasedOffsets: const [],
+              color: const Color(0xFFFF0000),
+              strokeWidth: 2,
+              opacity: 1,
+              fill: true,
+            ),
+            rawSize: const Size(40, 40),
+            opacity: 0.5,
+            keyframes: keyframed
+                ? const [
+                    LayerKeyframe(time: Duration.zero, offset: Offset.zero),
+                  ]
+                : null,
+          );
+          editor.addLayer(layer);
+          await tester.pumpAndSettle();
+
+          final bytes = await layer.captureAsPng(
+            format: ui.ImageByteFormat.rawRgba,
+            pixelRatio: 1,
+          );
+
+          expect(centerAlpha(bytes!), closeTo(keyframed ? 255 : 128, 1));
+        });
+      });
+    }
+
+    for (final grows in [false, true]) {
+      testWidgets('captures a ${grows ? 'growing' : 'still'} layer at '
+          '${grows ? 'its largest keyframed' : 'its own'} size', (
+        tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpEditor(tester);
+          final layer = opaqueLayer(
+            kf: grows
+                ? const [
+                    LayerKeyframe(time: Duration.zero, offset: Offset.zero),
+                    LayerKeyframe(
+                      time: Duration(seconds: 1),
+                      offset: Offset.zero,
+                      scale: 2,
+                    ),
+                  ]
+                : null,
+          );
+          editor.addLayer(layer);
+          await tester.pumpAndSettle();
+
+          final bytes = await layer.captureAsPng(
+            format: ui.ImageByteFormat.rawRgba,
+            basePixelRatio: 1,
+          );
+
+          // The laid-out layer at a pixel ratio of 1, or twice that on each
+          // axis.
+          final size = layer.repaintBoundaryKey.currentContext!.size!;
+          final growth = grows ? 2 : 1;
+          expect(
+            bytes!.length,
+            (size.width * growth).round() * (size.height * growth).round() * 4,
+          );
+        });
+      });
+    }
+
+    testWidgets('leaves the opacity of a keyframed layer to its keyframes', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        final layer = opaqueLayer(
+          opacity: 0.5,
+          kf: const [LayerKeyframe(time: Duration.zero, offset: Offset.zero)],
+        );
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+
+        final bytes = await layer.captureAsPng(
+          format: ui.ImageByteFormat.rawRgba,
+          pixelRatio: 1,
+        );
+
+        expect(centerAlpha(bytes!), 255);
+      });
+    });
   });
 }

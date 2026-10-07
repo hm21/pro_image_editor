@@ -142,13 +142,28 @@ class ImageLayerFrame {
   /// in this frame, painted as [to].
   ///
   /// Only the offset, the scale and the slide distance of its animations
-  /// change. Rotation and flips are left to the caller.
+  /// change, and the same of every keyframe. Rotation and flips are left to
+  /// the caller.
   void moveLayer(Layer source, ImageLayerFrame to, {Layer? target}) {
     final ratio = to.pixelsPerImageWidth / pixelsPerImageWidth;
-    (target ?? source)
+    final layer = target ?? source;
+    final from = source.keyframes;
+    // The target's keyframes keep the rotation the caller gave them; only
+    // their offset and scale come from the source's, as for the layer.
+    final placed = layer.keyframes.length == from.length
+        ? layer.keyframes
+        : from;
+    layer
       ..offset = to.toLayer(toImage(source.offset))
       ..scale = source.scale * ratio
-      ..scaleSlideFrom(ratio, ratio);
+      ..scaleSlideFrom(ratio, ratio)
+      ..keyframes = [
+        for (var i = 0; i < placed.length; i++)
+          placed[i].copyWith(
+            offset: to.toLayer(toImage(from[i].offset)),
+            scale: from[i].scale * ratio,
+          ),
+      ];
   }
 
   Offset _flip(Offset v) => Offset(flipX ? -v.dx : v.dx, flipY ? -v.dy : v.dy);

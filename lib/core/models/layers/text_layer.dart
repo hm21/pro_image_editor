@@ -68,6 +68,8 @@ class TextLayer extends Layer {
     super.exitCurve,
     super.transitionBuilder,
     super.animations,
+    super.keyframes,
+    super.opacity,
   }) : highlights = highlights ?? <TextHighlight>[];
 
   /// Factory constructor for creating a TextLayer instance from a Layer
@@ -161,6 +163,8 @@ class TextLayer extends Layer {
       enterDuration: layer.enterDuration,
       exitDuration: layer.exitDuration,
       animations: layer.animations,
+      keyframes: layer.keyframes,
+      opacity: layer.opacity,
       text: map[keyConverter('text')] ?? '-',
       fontScale: fontScale,
       maxTextWidth: tryParseDouble(map[keyConverter('maxTextWidth')]),
@@ -537,6 +541,8 @@ class TextLayer extends Layer {
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
+    List<LayerKeyframe>? keyframes,
+    double? opacity,
   }) {
     return TextLayer(
       text: text ?? this.text,
@@ -571,6 +577,8 @@ class TextLayer extends Layer {
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
+      keyframes: keyframes ?? this.keyframes,
+      opacity: opacity ?? this.opacity,
     );
   }
 

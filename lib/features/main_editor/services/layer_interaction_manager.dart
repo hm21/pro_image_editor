@@ -10,6 +10,7 @@ import '/core/models/editor_callbacks/main_editor/helper_lines/helper_lines_call
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/history/last_layer_interaction_position.dart';
 import '/core/models/layers/layer.dart';
+import '/features/main_editor/services/layer_copy_manager.dart';
 import '/shared/utils/debounce.dart';
 import '/shared/utils/unique_id_generator.dart';
 
@@ -30,6 +31,7 @@ class LayerInteractionManager {
     required this.configs,
     this.onSelectedLayerChanged,
     required this.onSelectedLayersChanged,
+    this.keyframeTime,
   });
 
   /// An optional instance of [HelperLinesCallbacks] that defines callback
@@ -47,6 +49,26 @@ class LayerInteractionManager {
 
   /// Callback function to be called when the selected layer changes.
   final ValueChanged<Set<String>>? onSelectedLayersChanged;
+
+  /// The playback position layers with [Layer.keyframes] are drawn at, or
+  /// `null` outside the video editor. Other layers align to them there.
+  final Duration? Function()? keyframeTime;
+
+  /// How the keyframes of [layer] move, grow and turn it at [keyframeTime]
+  /// away from where it is laid out, or `null` when it is drawn there.
+  ({Offset shift, double growth, double rotation})? _keyframeShown(
+    Layer layer,
+  ) {
+    final time = keyframeTime?.call();
+    if (time == null) return null;
+    final placement = layer.keyframePlacementAt(time);
+    if (placement == null) return null;
+    return (
+      shift: placement.offset - layer.offset,
+      growth: layer.scale == 0 ? 1.0 : placement.scale / layer.scale,
+      rotation: placement.rotation,
+    );
+  }
 
   /// Debounce for scaling actions in the editor.
   late Debounce scaleDebounce;
@@ -319,96 +341,24 @@ class LayerInteractionManager {
     return hasChanges;
   }
 
-  /// Creates a copy of a layer with all its properties.
+  /// Creates a copy of a layer with all its properties, keeping its id and
+  /// key.
+  ///
+  /// [LayerCopyManager] copies every field, including the time range,
+  /// animations and keyframes, which a field list of its own here once left
+  /// out, so grouping or ungrouping a layer dropped them.
   Layer _copyLayer(Layer originalLayer) {
-    // Copy layer-specific properties based on layer type
-    if (originalLayer is TextLayer) {
-      return TextLayer(
-        id: originalLayer.id,
-        text: originalLayer.text,
-        textStyle: originalLayer.textStyle,
-        colorMode: originalLayer.colorMode,
-        color: originalLayer.color,
-        background: originalLayer.background,
-        align: originalLayer.align,
-        fontScale: originalLayer.fontScale,
-        customSecondaryColor: originalLayer.customSecondaryColor,
-        maxTextWidth: originalLayer.maxTextWidth,
-        outlineWidth: originalLayer.outlineWidth,
-        outlineColor: originalLayer.outlineColor,
-        hit: originalLayer.hit,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    } else if (originalLayer is EmojiLayer) {
-      return EmojiLayer(
-        id: originalLayer.id,
-        emoji: originalLayer.emoji,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    } else if (originalLayer is PaintLayer) {
-      return PaintLayer(
-        id: originalLayer.id,
-        items: [...originalLayer.items],
-        rawSize: originalLayer.rawSize,
-        opacity: originalLayer.opacity,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    } else if (originalLayer is WidgetLayer) {
-      return WidgetLayer(
-        id: originalLayer.id,
-        widget: originalLayer.widget,
-        exportConfigs: originalLayer.exportConfigs,
-        key: originalLayer.key,
-        interaction: originalLayer.interaction,
-        offset: originalLayer.offset,
-        rotation: originalLayer.rotation,
-        scale: originalLayer.scale,
-        flipX: originalLayer.flipX,
-        flipY: originalLayer.flipY,
-        meta: originalLayer.meta,
-        boxConstraints: originalLayer.boxConstraints,
-      )..groupId = originalLayer.groupId;
-    }
+    final copy = _layerCopyManager.copyLayer(originalLayer);
+    if (!identical(copy, originalLayer)) return copy;
 
-    // Fallback for base Layer type
-    return Layer(
-      id: originalLayer.id,
-      key: originalLayer.key,
-      interaction: originalLayer.interaction,
-      offset: originalLayer.offset,
-      rotation: originalLayer.rotation,
-      scale: originalLayer.scale,
-      flipX: originalLayer.flipX,
-      flipY: originalLayer.flipY,
-      meta: originalLayer.meta,
-      boxConstraints: originalLayer.boxConstraints,
-      groupId: originalLayer.groupId,
-    );
+    // The copy manager hands a plain [Layer] back as it is.
+    return originalLayer.copyWith()
+      ..key = originalLayer.key
+      ..keyInternalSize = originalLayer.keyInternalSize
+      ..repaintBoundaryKey = originalLayer.repaintBoundaryKey;
   }
+
+  final _layerCopyManager = LayerCopyManager();
 
   /// Helper variable for scaling during rotation of a layer.
   double? rotateScaleLayerScaleHelper;
@@ -545,10 +495,14 @@ class LayerInteractionManager {
     return _SnapFamily.other;
   }
 
-  Offset _snapLayerCenter(Layer layer) {
-    return layer.computeOffsetFromCenterFraction(
+  /// The center of [layer], where it is drawn at the playback position when
+  /// [shown] is set.
+  Offset _snapLayerCenter(Layer layer, {bool shown = false}) {
+    final center = layer.computeOffsetFromCenterFraction(
       _getFractionalLayerOffset(layer),
     );
+    if (!shown) return center;
+    return center + (_keyframeShown(layer)?.shift ?? Offset.zero);
   }
 
   List<Layer> _nearestSnapLayers(Layer active, List<Layer> others) {
@@ -560,7 +514,8 @@ class LayerInteractionManager {
     final activeCenter = _snapLayerCenter(active);
     final distances = <String, double>{
       for (final layer in others)
-        layer.id: (_snapLayerCenter(layer) - activeCenter).distance,
+        layer.id:
+            (_snapLayerCenter(layer, shown: true) - activeCenter).distance,
     };
     final ranked = [...others]
       ..sort((a, b) {
@@ -639,11 +594,18 @@ class LayerInteractionManager {
   ///
   /// Layers that support edge snapping expose their left, center and right
   /// edges; all others expose only their configured anchor.
-  List<_LayerSnapAnchor> _horizontalSnapAnchors(Layer layer) {
+  ///
+  /// With [shown], [layer] is measured where its keyframes draw it at
+  /// [keyframeTime] rather than where it is laid out.
+  List<_LayerSnapAnchor> _horizontalSnapAnchors(
+    Layer layer, {
+    bool shown = false,
+  }) {
     final fractionalOffset = _getFractionalLayerOffset(layer);
-    final double center = layer
-        .computeOffsetFromCenterFraction(fractionalOffset)
-        .dx;
+    final keyframed = shown ? _keyframeShown(layer) : null;
+    final double center =
+        layer.computeOffsetFromCenterFraction(fractionalOffset).dx +
+        (keyframed?.shift.dx ?? 0);
     final double localCenter = layer
         .computeLocalCenterOffset(fractionalOffset)
         .dx;
@@ -664,7 +626,11 @@ class LayerInteractionManager {
     // Use the rotated axis-aligned bounding box so the edges still match a
     // rotated layer (collapses to width/2 when the layer is not rotated).
     final double halfWidth =
-        _rotatedBoundingSize(size, layer.rotation).width / 2;
+        _rotatedBoundingSize(
+          size * (keyframed?.growth ?? 1),
+          keyframed?.rotation ?? layer.rotation,
+        ).width /
+        2;
     return [
       _LayerSnapAnchor(
         position: center - halfWidth,
@@ -685,11 +651,18 @@ class LayerInteractionManager {
   ///
   /// Layers that support edge snapping expose their top, center and bottom
   /// edges; all others expose only their configured anchor.
-  List<_LayerSnapAnchor> _verticalSnapAnchors(Layer layer) {
+  ///
+  /// With [shown], [layer] is measured where its keyframes draw it at
+  /// [keyframeTime] rather than where it is laid out.
+  List<_LayerSnapAnchor> _verticalSnapAnchors(
+    Layer layer, {
+    bool shown = false,
+  }) {
     final fractionalOffset = _getFractionalLayerOffset(layer);
-    final double center = layer
-        .computeOffsetFromCenterFraction(fractionalOffset)
-        .dy;
+    final keyframed = shown ? _keyframeShown(layer) : null;
+    final double center =
+        layer.computeOffsetFromCenterFraction(fractionalOffset).dy +
+        (keyframed?.shift.dy ?? 0);
     final double localCenter = layer
         .computeLocalCenterOffset(fractionalOffset)
         .dy;
@@ -709,7 +682,11 @@ class LayerInteractionManager {
     // Use the rotated axis-aligned bounding box so the edges still match a
     // rotated layer (collapses to height/2 when the layer is not rotated).
     final double halfHeight =
-        _rotatedBoundingSize(size, layer.rotation).height / 2;
+        _rotatedBoundingSize(
+          size * (keyframed?.growth ?? 1),
+          keyframed?.rotation ?? layer.rotation,
+        ).height /
+        2;
     return [
       _LayerSnapAnchor(
         position: center - halfHeight,
@@ -1012,8 +989,8 @@ class LayerInteractionManager {
       for (final layer in others) {
         final family = _snapFamily(layer);
         final anchors = horizontal
-            ? _horizontalSnapAnchors(layer)
-            : _verticalSnapAnchors(layer);
+            ? _horizontalSnapAnchors(layer, shown: true)
+            : _verticalSnapAnchors(layer, shown: true);
         for (final anchor in anchors) {
           if (anchor.kind == _SnapKind.center) {
             centerPositions.add(anchor.position);
@@ -1453,10 +1430,10 @@ class LayerInteractionManager {
 
     void addLayerAnchors(Layer layer) {
       final family = _snapFamily(layer);
-      for (final anchor in _horizontalSnapAnchors(layer)) {
+      for (final anchor in _horizontalSnapAnchors(layer, shown: true)) {
         addTarget(xTargets, anchor.position, kind: anchor.kind, family: family);
       }
-      for (final anchor in _verticalSnapAnchors(layer)) {
+      for (final anchor in _verticalSnapAnchors(layer, shown: true)) {
         addTarget(yTargets, anchor.position, kind: anchor.kind, family: family);
       }
     }

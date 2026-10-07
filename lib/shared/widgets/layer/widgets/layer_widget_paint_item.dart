@@ -50,11 +50,14 @@ class LayerWidgetPaintItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = layer.items;
+    // Keyframes carry the opacity of a layer that has them, applied around
+    // the whole layer (see [LayerTimelineVisibility]).
+    final layerOpacity = layer.hasKeyframes ? 1.0 : layer.opacity;
 
     if (items.length == 1) {
       // Fast path for the common single-stroke layer, where the layer opacity
       // is the only one that applies.
-      return _buildItem(items.first, opacity: layer.opacity);
+      return _buildItem(items.first, opacity: layerOpacity);
     }
 
     // Merged layer: stack every baked-in stroke, each with its own opacity.
@@ -68,9 +71,9 @@ class LayerWidgetPaintItem extends StatelessWidget {
     // below 1 has to fade the composed stack rather than each stroke on its
     // own. Merged layers keep an opacity of `1.0` and carry the fading in the
     // strokes themselves, so this stays unused in practice.
-    if (layer.opacity >= 1.0) return child;
+    if (layerOpacity >= 1.0) return child;
 
-    return Opacity(opacity: layer.opacity, child: child);
+    return Opacity(opacity: layerOpacity, child: child);
   }
 
   /// Builds a single stroke painter sized to the layer.

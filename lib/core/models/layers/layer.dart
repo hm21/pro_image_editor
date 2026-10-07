@@ -28,6 +28,7 @@ import 'emoji_layer.dart';
 import 'exported_layer.dart';
 import 'layer_animation.dart';
 import 'layer_interaction.dart';
+import 'layer_keyframe.dart';
 import 'paint_layer.dart';
 import 'text_layer.dart';
 import 'text_layer_timeline.dart';
@@ -37,6 +38,7 @@ export '/core/models/editor_configs/video/layer_timeline_configs.dart'
     show LayerTimelineTransitionBuilder;
 export 'emoji_layer.dart';
 export 'layer_animation.dart';
+export 'layer_keyframe.dart';
 export 'paint_layer.dart';
 export 'text_highlight.dart';
 export 'text_layer.dart';
@@ -65,12 +67,15 @@ class Layer {
     this.exitCurve,
     this.transitionBuilder,
     List<LayerAnimation>? animations,
+    this.opacity = 1,
+    List<LayerKeyframe>? keyframes,
   }) : key = key ??= GlobalKey(),
        keyInternalSize = GlobalKey(),
        repaintBoundaryKey = GlobalKey(),
        id = id ?? generateUniqueId(),
        interaction = interaction ?? LayerInteraction(),
-       animations = animations ?? <LayerAnimation>[];
+       animations = animations ?? <LayerAnimation>[],
+       _keyframes = _sortedUnmodifiable(keyframes ?? const []);
 
   /// Factory constructor for creating a Layer instance from a map and a list
   /// of stickers.
@@ -135,6 +140,12 @@ class Layer {
       animations: (map[keyConverter('animations')] as List<dynamic>?)
           ?.map(
             (e) => LayerAnimation.fromMap(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList(),
+      opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1),
+      keyframes: (map[keyConverter('keyframes')] as List<dynamic>?)
+          ?.map(
+            (e) => LayerKeyframe.fromMap(Map<String, dynamic>.from(e as Map)),
           )
           .toList(),
     );
@@ -228,6 +239,206 @@ class Layer {
   /// Mirrors the `animations` model in the sister package `pro_video_editor`
   /// so the in-editor preview matches the exported result.
   List<LayerAnimation> animations;
+
+  /// How opaque the layer is, from 0 (invisible) to 1.
+  ///
+  /// Applies while the layer has no [keyframes]; once it has some, their
+  /// opacity applies instead. A [PaintLayer] draws its strokes with it, so its
+  /// captured image carries it, and so does the image [captureAsPng] returns
+  /// for any other layer.
+  double opacity;
+
+  /// The layer's placement over time in the video editor.
+  ///
+  /// When not empty, the keyframes set where the layer is, how big it is, how
+  /// far it is turned and how opaque it is at every point of its time range
+  /// (see [LayerKeyframe]); [offset], [scale], [rotation] and [opacity] then
+  /// only lay the layer out. A transform gesture on a layer with keyframes
+  /// changes the keyframe at the playback position, adding one when there is
+  /// none (see [setKeyframeAt]).
+  ///
+  /// Sorted by [LayerKeyframe.time], which is measured from [startTime]; a
+  /// list assigned out of order is sorted. The list cannot be changed in
+  /// place, only replaced, so copies of the layer never share a change.
+  List<LayerKeyframe> get keyframes => _keyframes;
+  set keyframes(List<LayerKeyframe> value) =>
+      _keyframes = _sortedUnmodifiable(value);
+  List<LayerKeyframe> _keyframes;
+
+  static List<LayerKeyframe> _sortedUnmodifiable(
+    Iterable<LayerKeyframe> keyframes,
+  ) => List.unmodifiable(sortLayerKeyframes(keyframes));
+
+  /// Whether the layer has [keyframes].
+  bool get hasKeyframes => keyframes.isNotEmpty;
+
+  /// How much larger than its own [scale] the [keyframes] make the layer at
+  /// most, never below 1 and at most [kMaxKeyframeCaptureGrowth].
+  ///
+  /// [captureAsPng] captures a layer at this much more resolution when no
+  /// pixel ratio is given, so one that grows over time stays sharp in the
+  /// export instead of stretching the pixels of its smaller self.
+  double get keyframeCaptureGrowth {
+    if (keyframes.isEmpty || scale <= 0) return 1;
+    final largest = keyframes.map((k) => k.scale).reduce(math.max);
+    return (largest / scale).clamp(1.0, kMaxKeyframeCaptureGrowth);
+  }
+
+  /// The most [keyframeCaptureGrowth] raises a capture's resolution by, which
+  /// bounds the memory one keyframed layer can take.
+  static const double kMaxKeyframeCaptureGrowth = 4;
+
+  /// The point in video time [LayerKeyframe.time] is measured from.
+  Duration get keyframeOrigin => startTime ?? Duration.zero;
+
+  /// The placement the [keyframes] give the layer at [videoTime], or `null`
+  /// when it has none.
+  LayerPlacement? keyframePlacementAt(Duration videoTime) =>
+      layerKeyframePlacementAt(keyframes, videoTime - keyframeOrigin);
+
+  /// The loop effects the [keyframes] play between them, placed on the
+  /// video's timeline with their cycles fitted to their stretch. See
+  /// [LayerKeyframe.effects].
+  List<LayerKeyframeEffect> get keyframeEffects =>
+      layerKeyframeEffects(keyframes, origin: keyframeOrigin);
+
+  /// The placement the layer is laid out with: its own [offset], [scale],
+  /// [rotation] and [opacity].
+  LayerPlacement get restPlacement => LayerPlacement(
+    offset: offset,
+    scale: scale,
+    rotation: rotation,
+    opacity: opacity,
+  );
+
+  /// Index of the keyframe at [videoTime], or `-1` when there is none.
+  ///
+  /// A keyframe up to [tolerance] away counts as at [videoTime], so a
+  /// playback position a frame's rounding off still finds it.
+  int keyframeIndexAt(
+    Duration videoTime, {
+    Duration tolerance = kLayerKeyframeTolerance,
+  }) {
+    final time = videoTime - keyframeOrigin;
+    var best = -1;
+    Duration? bestDistance;
+    for (var i = 0; i < keyframes.length; i++) {
+      final distance = (keyframes[i].time - time).abs();
+      if (distance > tolerance) continue;
+      if (bestDistance == null || distance < bestDistance) {
+        best = i;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  }
+
+  /// Sets the layer's placement at [videoTime] as a keyframe.
+  ///
+  /// Replaces the keyframe at [videoTime] (see [keyframeIndexAt]) or adds one
+  /// there. [placement] defaults to the layer's [restPlacement], with the
+  /// opacity the keyframes give it there when it already has some. A new
+  /// keyframe takes [curve], or else the curve of the keyframe before it, so
+  /// the motion on either side keeps its easing; a replaced one keeps its own
+  /// time and curve unless [curve] is given.
+  void setKeyframeAt(
+    Duration videoTime, {
+    LayerPlacement? placement,
+    AnimationCurve? curve,
+    Duration tolerance = kLayerKeyframeTolerance,
+  }) {
+    final rest = restPlacement;
+    final value =
+        placement ??
+        LayerPlacement(
+          offset: rest.offset,
+          scale: rest.scale,
+          rotation: rest.rotation,
+          opacity: keyframePlacementAt(videoTime)?.opacity ?? rest.opacity,
+        );
+    final index = keyframeIndexAt(videoTime, tolerance: tolerance);
+    if (index >= 0) {
+      final existing = keyframes[index];
+      keyframes = [
+        ...keyframes.sublist(0, index),
+        existing.withPlacement(value).copyWith(curve: curve),
+        ...keyframes.sublist(index + 1),
+      ];
+      return;
+    }
+
+    final time = videoTime - keyframeOrigin;
+    AnimationCurve? previousCurve;
+    for (final keyframe in keyframes) {
+      if (keyframe.time > time) break;
+      previousCurve = keyframe.curve;
+    }
+    keyframes = [
+      ...keyframes,
+      LayerKeyframe.fromPlacement(
+        value,
+        time: time,
+        curve: curve ?? previousCurve ?? AnimationCurve.linear,
+      ),
+    ];
+  }
+
+  /// Removes the keyframe at [videoTime] (see [keyframeIndexAt]).
+  ///
+  /// Returns whether there was one. Removing the last keyframe leaves the
+  /// layer where its [restPlacement] puts it, so callers usually park it on
+  /// the removed keyframe's placement first (see [applyKeyframePlacement]).
+  bool removeKeyframeAt(
+    Duration videoTime, {
+    Duration tolerance = kLayerKeyframeTolerance,
+  }) {
+    final index = keyframeIndexAt(videoTime, tolerance: tolerance);
+    if (index < 0) return false;
+    keyframes = [...keyframes]..removeAt(index);
+    return true;
+  }
+
+  /// Lays the layer out at the placement its [keyframes] give it at
+  /// [videoTime], so it shows the same while it is moved by hand.
+  ///
+  /// Does nothing when the layer has no keyframes. The opacity is taken over
+  /// as well, so a layer whose last keyframe is removed afterwards keeps
+  /// looking the same.
+  void applyKeyframePlacement(Duration videoTime) {
+    final placement = keyframePlacementAt(videoTime);
+    if (placement == null) return;
+    offset = placement.offset;
+    scale = placement.scale;
+    rotation = placement.rotation;
+    opacity = placement.opacity;
+  }
+
+  /// Applies [transform], a change of the canvas the layer lies on, to every
+  /// keyframe the way it is applied to the layer itself.
+  ///
+  /// [transform] gets a layer placed like the keyframe, with this layer's
+  /// flips, and may change its [offset], [scale] and [rotation]. Call this
+  /// wherever a canvas change moves the layer, as with [scaleSlideFrom].
+  void transformKeyframes(void Function(Layer placement) transform) {
+    if (keyframes.isEmpty) return;
+    LayerKeyframe transformed(LayerKeyframe keyframe) {
+      final probe = Layer(
+        offset: keyframe.offset,
+        scale: keyframe.scale,
+        rotation: keyframe.rotation,
+        flipX: flipX,
+        flipY: flipY,
+      );
+      transform(probe);
+      return keyframe.copyWith(
+        offset: probe.offset,
+        scale: probe.scale,
+        rotation: probe.rotation,
+      );
+    }
+
+    keyframes = keyframes.map(transformed).toList();
+  }
 
   /// The animations effectively applied to this layer, deriving a fade from the
   /// legacy [enterDuration] / [exitDuration] when [animations] is empty.
@@ -384,6 +595,9 @@ class Layer {
       if (exitCurve != null) 'exitCurve': curveToString(exitCurve!),
       if (animations.isNotEmpty)
         'animations': animations.map((a) => a.toMap()).toList(),
+      if (opacity != 1) 'opacity': opacity.roundSmart(maxDecimalPlaces),
+      if (keyframes.isNotEmpty)
+        'keyframes': keyframes.map((k) => k.toMap()).toList(),
     };
   }
 
@@ -430,6 +644,12 @@ class Layer {
       if (layer.exitCurve != exitCurve) 'exitCurve': curveToString(exitCurve!),
       if (!listEquals(layer.animations, animations))
         'animations': animations.map((a) => a.toMap()).toList(),
+      if (layer.opacity != opacity)
+        'opacity': opacity.roundSmart(maxDecimalPlaces),
+      // An empty list is written too: the import merges this diff over the
+      // previous step, which would otherwise keep the removed keyframes.
+      if (!listEquals(layer.keyframes, keyframes))
+        'keyframes': keyframes.map((k) => k.toMap()).toList(),
     };
   }
 
@@ -440,16 +660,18 @@ class Layer {
   /// is currently drawn from the editor's raster cache paints nothing into
   /// that boundary; its content is then rendered from the model, so the
   /// result is the same either way. The [pixelRatio] controls the resolution
-  /// of the output image. When `null`, it defaults to
-  /// `devicePixelRatio * scale` to preserve sharpness for scaled and rotated
-  /// layers.
+  /// of the output image. When `null`, it defaults to [basePixelRatio], or
+  /// the device pixel ratio, raised by [keyframeCaptureGrowth] for a layer
+  /// whose keyframes grow it.
   ///
   /// The [format] controls the output byte format and defaults to PNG for
   /// backward compatibility.
   ///
   /// When [applyTransforms] is `true` (default), the layer's [rotation],
-  /// [flipX] and [flipY] are applied to the output image. Set it to `false`
-  /// to get the raw, un-transformed content.
+  /// [flipX], [flipY] and [opacity] are applied to the output image. Set it to
+  /// `false` to get the raw, un-transformed content. A layer with [keyframes]
+  /// is captured opaque, as their opacity changes over time; a [PaintLayer]
+  /// always carries the opacity it draws its strokes with.
   ///
   /// A [TextLayer] with [TextLayer.highlights] or a text reveal is captured
   /// with no highlight active and its whole text shown, whatever the playback
@@ -493,7 +715,7 @@ class Layer {
 
     final dpr =
         basePixelRatio ?? MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
-    final effectivePixelRatio = pixelRatio ?? dpr;
+    final effectivePixelRatio = pixelRatio ?? dpr * keyframeCaptureGrowth;
 
     final boundaryWidget = repaintBoundaryKey.currentWidget;
     final boundary = boundaryWidget is LayerRepaintBoundary
@@ -527,7 +749,13 @@ class Layer {
 
     final bool needsTransform =
         applyTransforms && (rotation != 0 || flipX || flipY);
-    if (!needsTransform) {
+    // A drawing paints its own opacity, and a keyframed layer's opacity is
+    // the keyframes' to apply.
+    final double bakedOpacity =
+        applyTransforms && !isPaintLayer && !hasKeyframes
+        ? opacity.clamp(0.0, 1.0)
+        : 1.0;
+    if (!needsTransform && bakedOpacity >= 1) {
       final bytes = await _encodeLayerImage(
         rawImage,
         format: format,
@@ -540,23 +768,28 @@ class Layer {
     final double w = rawImage.width.toDouble();
     final double h = rawImage.height.toDouble();
 
-    final double cosR = math.cos(rotation).abs();
-    final double sinR = math.sin(rotation).abs();
+    final double turn = needsTransform ? rotation : 0;
+    final double cosR = math.cos(turn).abs();
+    final double sinR = math.sin(turn).abs();
     final double newW = w * cosR + h * sinR;
     final double newH = w * sinR + h * cosR;
 
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder, Rect.fromLTWH(0, 0, newW, newH))
       ..translate(newW / 2, newH / 2);
-    if (flipX) canvas.scale(-1, 1);
-    if (flipY) canvas.scale(1, -1);
+    if (needsTransform) {
+      if (flipX) canvas.scale(-1, 1);
+      if (flipY) canvas.scale(1, -1);
+      canvas.rotate(rotation);
+    }
     canvas
-      ..rotate(rotation)
       ..translate(-w / 2, -h / 2)
       ..drawImage(
         rawImage,
         Offset.zero,
-        Paint()..filterQuality = FilterQuality.high,
+        Paint()
+          ..filterQuality = FilterQuality.high
+          ..color = Color.fromRGBO(0, 0, 0, bakedOpacity),
       );
 
     final picture = pictureRecorder.endRecording();
@@ -923,6 +1156,8 @@ class Layer {
         other.exitCurve == exitCurve &&
         other.transitionBuilder == transitionBuilder &&
         listEquals(other.animations, animations) &&
+        other.opacity == opacity &&
+        listEquals(other.keyframes, keyframes) &&
         mapIsEqual(other.meta, meta);
   }
 
@@ -945,7 +1180,9 @@ class Layer {
         enterCurve.hashCode ^
         exitCurve.hashCode ^
         transitionBuilder.hashCode ^
-        Object.hashAll(animations);
+        Object.hashAll(animations) ^
+        opacity.hashCode ^
+        Object.hashAll(keyframes);
   }
 
   /// Creates a copy of this [Layer] with the given fields replaced with
@@ -969,6 +1206,8 @@ class Layer {
     Curve? exitCurve,
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
+    double? opacity,
+    List<LayerKeyframe>? keyframes,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -989,6 +1228,8 @@ class Layer {
       exitCurve: exitCurve ?? this.exitCurve,
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
+      opacity: opacity ?? this.opacity,
+      keyframes: keyframes ?? this.keyframes,
     );
   }
 
@@ -1024,6 +1265,8 @@ class Layer {
           transitionBuilder,
         ),
       )
-      ..add(IterableProperty<LayerAnimation>('animations', animations));
+      ..add(IterableProperty<LayerAnimation>('animations', animations))
+      ..add(DoubleProperty('opacity', opacity))
+      ..add(IterableProperty<LayerKeyframe>('keyframes', keyframes));
   }
 }

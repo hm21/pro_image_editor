@@ -42,6 +42,7 @@ class DesktopInteractionManager {
     required this.setState,
     required this.configs,
     required this.callbacks,
+    this.keyframeTime,
   });
 
   /// The build context associated with the desktop interaction manager.
@@ -71,6 +72,31 @@ class DesktopInteractionManager {
 
   /// A class representing callbacks for the Image Editor.
   final ProImageEditorCallbacks callbacks;
+
+  /// The playback position a turn or zoom of a layer with [Layer.keyframes]
+  /// is written to, or `null` outside the video editor.
+  final Duration? Function()? keyframeTime;
+
+  /// Applies [change] to [layer]. A layer with keyframes is first laid out at
+  /// the placement they give it at [keyframeTime], and the changed placement
+  /// is written back to the keyframe there, so the change shows on screen.
+  /// A [change] that leaves the layer where it was, such as a scroll while
+  /// zooming is off, adds no keyframe.
+  void _transformLayer(Layer layer, void Function() change) {
+    final time = keyframeTime?.call();
+    if (time == null || !layer.hasKeyframes) {
+      change();
+      return;
+    }
+    layer.applyKeyframePlacement(time);
+    final before = layer.restPlacement;
+    change();
+    if (layer.restPlacement == before) return;
+    layer.setKeyframeAt(
+      time,
+      tolerance: configs.videoEditor.layerTimeline.keyframeTolerance,
+    );
+  }
 
   final _keyboard = KeyboardService();
 
@@ -144,11 +170,13 @@ class DesktopInteractionManager {
   }) {
     if (selectedLayers.isEmpty) return;
     for (Layer layer in selectedLayers) {
-      if (isLeftRotation) {
-        layer.rotation -= 0.087266;
-      } else {
-        layer.rotation += 0.087266;
-      }
+      _transformLayer(layer, () {
+        if (isLeftRotation) {
+          layer.rotation -= 0.087266;
+        } else {
+          layer.rotation += 0.087266;
+        }
+      });
     }
     setState(() {});
     onUpdateUI?.call();
@@ -163,13 +191,15 @@ class DesktopInteractionManager {
 
     for (Layer layer in selectedLayers) {
       double factor = 1.1;
-      if (isZoomIn) {
-        layer
-          ..scale /= factor
-          ..scale = max(0.1, layer.scale);
-      } else {
-        layer.scale *= factor;
-      }
+      _transformLayer(layer, () {
+        if (isZoomIn) {
+          layer
+            ..scale /= factor
+            ..scale = max(0.1, layer.scale);
+        } else {
+          layer.scale *= factor;
+        }
+      });
     }
 
     setState(() {});
@@ -185,25 +215,28 @@ class DesktopInteractionManager {
     if (event is! PointerScrollEvent || selectedLayers.isEmpty) return;
 
     for (Layer layer in selectedLayers) {
-      if (_keyboard.isShiftPressed) {
-        if (event.scrollDelta.dy > 0) {
-          layer.rotation -= 0.087266;
-        } else if (event.scrollDelta.dy < 0) {
-          layer.rotation += 0.087266;
-        }
-      } else {
-        double factor = 1.1;
-        if (interactiveViewer?.isInteractionEnabled == true) {
-          // only scale if interaction is enabled (that means we might zoom in/out)
+      _transformLayer(layer, () {
+        if (_keyboard.isShiftPressed) {
           if (event.scrollDelta.dy > 0) {
-            layer
-              ..scale /= factor
-              ..scale = max(0.1, layer.scale);
+            layer.rotation -= 0.087266;
           } else if (event.scrollDelta.dy < 0) {
-            layer.scale *= factor;
+            layer.rotation += 0.087266;
+          }
+        } else {
+          double factor = 1.1;
+          if (interactiveViewer?.isInteractionEnabled == true) {
+            // only scale if interaction is enabled (that means we might zoom
+            // in/out)
+            if (event.scrollDelta.dy > 0) {
+              layer
+                ..scale /= factor
+                ..scale = max(0.1, layer.scale);
+            } else if (event.scrollDelta.dy < 0) {
+              layer.scale *= factor;
+            }
           }
         }
-      }
+      });
     }
     setState(() {});
     onUpdateUI?.call();

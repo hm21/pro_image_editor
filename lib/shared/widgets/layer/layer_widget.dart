@@ -27,6 +27,7 @@ import '/shared/widgets/layer/widgets/layer_widget_paint_item.dart';
 import '/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 import 'interaction_helper/layer_interaction_helper_widget.dart';
 import 'layer_timeline_visibility.dart';
+import 'widgets/invisible_but_painted.dart';
 import 'widgets/layer_repaint_boundary.dart';
 import 'widgets/layer_widget_custom_item.dart';
 
@@ -359,17 +360,29 @@ class _LayerWidgetState extends State<LayerWidget>
     final adjustedTop =
         offsetY - overlayPadding.vertical * (_fractionalOffset.dy + 0.5);
 
+    Widget layerContent = Transform(
+      transform: transformMatrix,
+      alignment: Alignment.center,
+      child: _buildInteractionHandlers(),
+    );
+    // A drawing bakes its own opacity into its strokes, and keyframes carry
+    // the opacity of a layer that has them (see [LayerTimelineVisibility]).
+    // Applied inside the hero so the layer keeps it while it flies to or
+    // from a sub-editor, and like a hidden timed layer, an invisible one
+    // lets touches through to the layers below.
+    if (_layer.opacity < 1 && !_layer.isPaintLayer && !_layer.hasKeyframes) {
+      layerContent = _layer.opacity <= 0
+          ? IgnorePointer(child: InvisibleButPainted(child: layerContent))
+          : Opacity(opacity: _layer.opacity, child: layerContent);
+    }
+
     Widget content = FractionalTranslation(
       translation: _fractionalOffset,
       child: Hero(
         // Important that hero is above transform
         createRectTween: (begin, end) => RectTween(begin: begin, end: end),
         tag: _layer.id,
-        child: Transform(
-          transform: transformMatrix,
-          alignment: Alignment.center,
-          child: _buildInteractionHandlers(),
-        ),
+        child: layerContent,
       ),
     );
 
@@ -377,7 +390,8 @@ class _LayerWidgetState extends State<LayerWidget>
     if (playTime != null &&
         (_layer.startTime != null ||
             _layer.endTime != null ||
-            _layer.animations.isNotEmpty)) {
+            _layer.animations.isNotEmpty ||
+            _layer.hasKeyframes)) {
       content = LayerTimelineVisibility(
         layer: _layer,
         playTimeNotifier: playTime,

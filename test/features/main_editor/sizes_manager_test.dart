@@ -189,6 +189,39 @@ void main() {
       },
     );
 
+    testWidgets('rescales every keyframe together with the offset', (
+      tester,
+    ) async {
+      final sizesManager = await buildSizesManager(tester);
+      final textLayer = TextLayer(
+        text: 'Hello',
+        scale: initialScale,
+        offset: initialOffset,
+        keyframes: const [
+          LayerKeyframe(
+            time: Duration.zero,
+            offset: Offset(50, 100),
+            scale: 2,
+            rotation: 0.5,
+            opacity: 0.25,
+          ),
+        ],
+      );
+
+      sizesManager.recalculateLayerPosition(
+        history: [
+          EditorStateHistory(layers: [textLayer]),
+        ],
+        resizeEvent: resizeEvent,
+      );
+
+      final keyframe = textLayer.keyframes.single;
+      expect(keyframe.offset, const Offset(50, 100) / scaleFactor);
+      expect(keyframe.scale, closeTo(2 / scaleFactor, 1e-9));
+      expect(keyframe.rotation, 0.5);
+      expect(keyframe.opacity, 0.25);
+    });
+
     testWidgets(
       'still rescales every distinct copy in the normal per-entry-copy case',
       (tester) async {

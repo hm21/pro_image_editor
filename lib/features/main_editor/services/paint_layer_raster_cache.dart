@@ -175,6 +175,8 @@ class PaintLayerRasterCache extends ChangeNotifier {
     if (layer.isCensor) return false;
     if (layer.boxConstraints != null) return false;
     if (layer.animations.isNotEmpty) return false;
+    // A keyframed layer moves with the playback position.
+    if (layer.hasKeyframes) return false;
     if (_isPositive(layer.enterDuration) || _isPositive(layer.exitDuration)) {
       return false;
     }
@@ -642,7 +644,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
         layer.items.first,
         size: size,
         scale: layer.scale,
-        opacity: layer.opacity,
+        opacity: layer.hasKeyframes ? 1.0 : layer.opacity,
         paintEditorConfigs: paintEditorConfigs,
       );
       return;
