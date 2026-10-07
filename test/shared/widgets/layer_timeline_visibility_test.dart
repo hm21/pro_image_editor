@@ -667,6 +667,32 @@ void main() {
       expect(corner.dy, closeTo(100, 1e-6));
     });
 
+    testWidgets('turns the other way once the same layer is flipped in '
+        'place', (tester) async {
+      final layer = keyframedLayer();
+      final notifier = await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+      );
+      await seek(tester, notifier, Duration.zero);
+      final restCenter = tester.getCenter(find.byKey(childKey));
+      await seek(tester, notifier, const Duration(seconds: 1));
+
+      // A host flips the layer it already shows, at the same position.
+      layer.flipX = true;
+      await pumpVisibility(
+        tester,
+        layer,
+        fractionalOffset: centered,
+        reuse: notifier,
+      );
+
+      final corner = topLeft(tester) - restCenter - const Offset(40, 20);
+      expect(corner.dx, closeTo(-50, 1e-6));
+      expect(corner.dy, closeTo(100, 1e-6));
+    });
+
     testWidgets('measures the difference to the placement the layer is laid '
         'out with', (tester) async {
       final layer = keyframedLayer()

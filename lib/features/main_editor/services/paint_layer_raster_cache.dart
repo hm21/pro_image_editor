@@ -644,7 +644,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
         layer.items.first,
         size: size,
         scale: layer.scale,
-        opacity: layer.opacity,
+        opacity: layer.hasKeyframes ? 1.0 : layer.opacity,
         paintEditorConfigs: paintEditorConfigs,
       );
       return;

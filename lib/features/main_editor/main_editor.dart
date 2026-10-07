@@ -437,6 +437,7 @@ class ProImageEditorState extends State<ProImageEditor>
         onSelectedLayersChanged: mainEditorCallbacks?.onSelectedLayersChanged,
         helperLinesCallbacks: mainEditorCallbacks?.helperLines,
         configs: configs,
+        keyframeTime: () => _videoController?.playTimeNotifier.value,
       );
   late final _mouseService = MouseService(
     configs: configs,
@@ -469,6 +470,7 @@ class ProImageEditorState extends State<ProImageEditor>
     configs: configs,
     onUpdateLayers: () => _controllers.uiLayerCtrl.add(null),
     interactiveViewer: () => interactiveViewer.currentState,
+    playTime: () => _videoController?.playTimeNotifier.value,
   );
 
   /// The current theme used by the image editor.
@@ -828,7 +830,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Pass [skipUpdateHistory] to show [layer] without recording a history
   /// step, e.g. while a slider previews a value: the current step then holds
   /// [layer] itself and the selection is kept, as with [setLayerTimeline].
-  /// Replace it once more without the flag to record the final value.
+  /// To record the final value, first put the original layer back with the
+  /// flag, then replace it once more without it; otherwise the step before
+  /// the recorded one already holds the last preview and undo changes
+  /// nothing.
   ///
   /// Example usage:
   /// ```dart
@@ -944,6 +949,10 @@ class ProImageEditorState extends State<ProImageEditor>
     bool autoCorrectZoomOffset = true,
     bool autoCorrectZoomScale = true,
   }) {
+    // Applied to the layer and to every keyframe, which place it alike.
+    var shift = Offset.zero;
+    var shrink = 1.0;
+
     void correctOffset() {
       Offset fractionalOffset = const Offset(-0.5, -0.5);
       if (layer.isTextLayer) {
@@ -972,7 +981,7 @@ class ProImageEditorState extends State<ProImageEditor>
           dyCorrected = overlayPadding.bottom;
         }
 
-        layer.offset += Offset(dxCorrected, dyCorrected);
+        shift += Offset(dxCorrected, dyCorrected);
       }
     }
 
@@ -983,7 +992,7 @@ class ProImageEditorState extends State<ProImageEditor>
       final scaleDelta = viewer.scaleFactor;
 
       if (autoCorrectZoomScale) {
-        layer.scale /= scaleDelta;
+        shrink = scaleDelta;
       }
       if (autoCorrectZoomOffset) {
         final bodySize = sizesManager.bodySize;
@@ -997,9 +1006,15 @@ class ProImageEditorState extends State<ProImageEditor>
             ) /
             2;
 
-        layer.offset -= (viewer.offset + zoomOffset) / viewer.scaleFactor;
+        shift -= (viewer.offset + zoomOffset) / viewer.scaleFactor;
       }
     }
+
+    void place(Layer placement) => placement
+      ..offset += shift
+      ..scale /= shrink;
+    place(layer);
+    layer.transformKeyframes(place);
 
     addHistory(newLayer: layer, blockCaptureScreenshot: blockCaptureScreenshot);
 
@@ -1609,25 +1624,40 @@ class ProImageEditorState extends State<ProImageEditor>
   /// spread one gesture over many keyframes.
   Duration? _keyframeEditTime;
 
+  /// The placement each selected layer with keyframes was shown at when the
+  /// gesture started, until the gesture moves it.
+  final Map<String, LayerPlacement> _keyframeEditStart = {};
+
   /// Lays every selected layer with keyframes out at the placement they give
   /// it at the playback position, so the gesture moves what the user sees.
   void _startKeyframeEdit() {
     final time = _videoController?.playTimeNotifier.value;
     _keyframeEditTime = time;
+    _keyframeEditStart.clear();
     if (time == null) return;
     for (final layer in selectedLayers) {
+      if (!layer.hasKeyframes) continue;
       layer.applyKeyframePlacement(time);
+      _keyframeEditStart[layer.id] = layer.restPlacement;
     }
   }
 
   /// Writes the placement of every selected layer with keyframes to its
   /// keyframe at [_keyframeEditTime], adding one there when there is none.
+  ///
+  /// A layer the gesture has not moved yet, e.g. one that cannot be moved,
+  /// keeps its keyframes: an extra one would change its easing.
   void _recordKeyframeEdit() {
     final time = _keyframeEditTime;
     if (time == null) return;
     final tolerance = configs.videoEditor.layerTimeline.keyframeTolerance;
     for (final layer in selectedLayers) {
       if (!layer.hasKeyframes) continue;
+      final start = _keyframeEditStart[layer.id];
+      if (start != null) {
+        if (layer.restPlacement == start) continue;
+        _keyframeEditStart.remove(layer.id);
+      }
       layer.setKeyframeAt(time, tolerance: tolerance);
     }
   }
@@ -1700,6 +1730,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
     isLayerBeingTransformed = false;
     _keyframeEditTime = null;
+    _keyframeEditStart.clear();
     _checkInteractiveViewer();
     _controllers.uiLayerCtrl.add(null);
     layerInteractionManager.onScaleEnd();

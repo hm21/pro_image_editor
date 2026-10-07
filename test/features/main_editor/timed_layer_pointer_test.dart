@@ -135,6 +135,28 @@ void main() {
       expect(tappedLayerIds, equals(['upper']));
     });
 
+    testWidgets('a fully transparent upper layer lets the pointer reach the '
+        'layer underneath', (tester) async {
+      final (state, controller) = await pumpVideoEditor(tester, tappedLayerIds);
+      state
+        ..addLayer(
+          timedLayer('lower', Duration.zero, const Duration(seconds: 15)),
+          blockSelectLayer: true,
+        )
+        ..addLayer(
+          timedLayer('upper', Duration.zero, const Duration(seconds: 15))
+            ..opacity = 0,
+          blockSelectLayer: true,
+        );
+      controller.setPlayTime(const Duration(seconds: 7));
+      await tester.pump(const Duration(seconds: 1));
+
+      await tester.tapAt(contentCenter(tester, 'lower'));
+      await tester.pump();
+
+      expect(tappedLayerIds, equals(['lower']));
+    });
+
     testWidgets('a layer coming back into its time range stays below the '
         'layer drawn on top of it', (tester) async {
       final (state, controller) = await pumpVideoEditor(tester, tappedLayerIds);

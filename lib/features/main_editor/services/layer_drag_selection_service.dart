@@ -22,6 +22,7 @@ class LayerDragSelectionService {
   /// - [activeLayers]: Returns the currently visible layers.
   /// - [bodySize]: Provides the canvas or body size for offset calculations.
   /// - [onUpdateLayers]: Callback triggered when layer selection updates.
+  /// - [playTime]: The video's playback position, if any.
   LayerDragSelectionService({
     required this.configs,
     required this.layerInteractionManager,
@@ -29,6 +30,7 @@ class LayerDragSelectionService {
     required this.bodySize,
     required this.onUpdateLayers,
     required this.interactiveViewer,
+    this.playTime,
   });
 
   /// Drag selection configuration options.
@@ -49,6 +51,10 @@ class LayerDragSelectionService {
   /// The state for [ExtendedInteractiveViewer], managing the
   /// interactivity state.
   final ExtendedInteractiveViewerState? Function() interactiveViewer;
+
+  /// The playback position layers with [Layer.keyframes] are drawn at, or
+  /// `null` outside the video editor.
+  final Duration? Function()? playTime;
 
   /// Current drag selection rectangle.
   _DragRect _rect = _DragRect.empty();
@@ -156,14 +162,26 @@ class LayerDragSelectionService {
           : const Offset(-0.5, -0.5);
       fractionalOffset += const Offset(0.5, 0.5);
 
+      // A layer with keyframes is drawn where they put it at the playback
+      // position, grown and turned around its visual center.
+      final time = playTime?.call();
+      final placement = time == null ? null : layer.keyframePlacementAt(time);
+      final growth = placement == null || layer.scale == 0
+          ? 1.0
+          : placement.scale / layer.scale;
+
       final center =
-          layer.offset +
+          (placement?.offset ?? layer.offset) +
           Offset(
             size.width * fractionalOffset.dx,
             size.height * fractionalOffset.dy,
           );
 
-      final rotatedCorners = _getRotatedCorners(center, size, layer.rotation);
+      final rotatedCorners = _getRotatedCorners(
+        center,
+        size * growth,
+        placement?.rotation ?? layer.rotation,
+      );
 
       final layerPath = Path()
         ..moveTo(rotatedCorners[0].dx, rotatedCorners[0].dy)

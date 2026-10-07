@@ -146,16 +146,22 @@ class ImageLayerFrame {
   /// the caller.
   void moveLayer(Layer source, ImageLayerFrame to, {Layer? target}) {
     final ratio = to.pixelsPerImageWidth / pixelsPerImageWidth;
-    final keyframes = source.keyframes;
-    (target ?? source)
+    final layer = target ?? source;
+    final from = source.keyframes;
+    // The target's keyframes keep the rotation the caller gave them; only
+    // their offset and scale come from the source's, as for the layer.
+    final placed = layer.keyframes.length == from.length
+        ? layer.keyframes
+        : from;
+    layer
       ..offset = to.toLayer(toImage(source.offset))
       ..scale = source.scale * ratio
       ..scaleSlideFrom(ratio, ratio)
       ..keyframes = [
-        for (final keyframe in keyframes)
-          keyframe.copyWith(
-            offset: to.toLayer(toImage(keyframe.offset)),
-            scale: keyframe.scale * ratio,
+        for (var i = 0; i < placed.length; i++)
+          placed[i].copyWith(
+            offset: to.toLayer(toImage(from[i].offset)),
+            scale: from[i].scale * ratio,
           ),
       ];
   }

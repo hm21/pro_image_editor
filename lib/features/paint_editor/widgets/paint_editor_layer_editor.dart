@@ -75,7 +75,8 @@ class _PaintEditorLayerEditorState extends State<PaintEditorLayerEditor> {
             _buildPainting(),
             _buildBarColorPicker(),
             const SizedBox(height: 24),
-            _buildOpacity(),
+            // The keyframes of a layer that has them set its opacity.
+            if (!_layer.hasKeyframes) _buildOpacity(),
             _buildStrokeWidthSlider(),
             if (_paintItem.canBeFilled) _buildFillItem(),
             const SizedBox(height: 8),

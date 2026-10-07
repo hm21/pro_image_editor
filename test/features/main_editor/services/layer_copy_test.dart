@@ -52,6 +52,26 @@ void main() {
       expect(grouped.outlineColor, const Color(0xFFFF0000));
     });
 
+    test('a duplicate moves its keyframes with it', () {
+      final layer = EmojiLayer(
+        emoji: '😀',
+        offset: const Offset(10, 10),
+        keyframes: const [
+          LayerKeyframe(time: Duration.zero, offset: Offset(10, 10)),
+          LayerKeyframe(time: Duration(seconds: 1), offset: Offset(-5, 0)),
+        ],
+      );
+
+      final duplicate = LayerCopyManager().duplicateLayer(layer);
+
+      expect(duplicate.offset, const Offset(40, 40));
+      expect(duplicate.keyframes.map((k) => k.offset), const [
+        Offset(40, 40),
+        Offset(25, 30),
+      ]);
+      expect(layer.keyframes.first.offset, const Offset(10, 10));
+    });
+
     group('keeps the time range, animations, keyframes and opacity', () {
       const keyframes = [
         LayerKeyframe(time: Duration.zero, offset: Offset(1, 2)),

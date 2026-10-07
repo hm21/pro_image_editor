@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -175,6 +176,34 @@ void main() {
       expect(added.offset, equals(shown.offset));
     });
 
+    testWidgets('a drag that cannot move the layer adds no keyframe', (
+      tester,
+    ) async {
+      final (state, layer) = await pumpKeyframedLayer(tester);
+      liveLayer(state, layer.id).interaction.enableMove = false;
+      final center = tester.getCenter(find.byType(ProImageEditor));
+
+      await tester.dragFrom(center, const Offset(60, 30));
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(liveLayer(state, layer.id).keyframes, const [first, last]);
+    });
+
+    testWidgets('a scroll that changes nothing adds no keyframe', (
+      tester,
+    ) async {
+      final (state, layer) = await pumpKeyframedLayer(tester);
+      final center = tester.getCenter(find.byType(ProImageEditor));
+      final mouse = TestPointer(1, PointerDeviceKind.mouse);
+
+      await tester.sendEventToBinding(mouse.hover(center));
+      // Sideways: neither a turn nor a zoom.
+      await tester.sendEventToBinding(mouse.scroll(const Offset(20, 0)));
+      await tester.pump();
+
+      expect(liveLayer(state, layer.id).keyframes, const [first, last]);
+    });
+
     testWidgets('replaceLayer previews a layer without a history step', (
       tester,
     ) async {
@@ -196,6 +225,71 @@ void main() {
       state.replaceLayer(index: index, layer: layer.copyWith(opacity: 0.6));
       await tester.pump();
       expect(state.stateHistory.length, steps + 1);
+    });
+
+    testWidgets('replaceLayer records previewed values as one step that '
+        'undo takes back', (tester) async {
+      final (state, layer) = await pumpKeyframedLayer(tester);
+      final index = state.activeLayers.indexWhere((l) => l.id == layer.id);
+      final original = state.activeLayers[index];
+
+      for (final opacity in [0.8, 0.5, 0.3]) {
+        state.replaceLayer(
+          index: index,
+          layer: original.copyWith(opacity: opacity),
+          skipUpdateHistory: true,
+        );
+      }
+      // As documented: the original goes back before the final value is
+      // recorded.
+      state
+        ..replaceLayer(index: index, layer: original, skipUpdateHistory: true)
+        ..replaceLayer(index: index, layer: original.copyWith(opacity: 0.3));
+      await tester.pump();
+      expect(state.activeLayers[index].opacity, 0.3);
+
+      state.undoAction();
+      await tester.pump();
+      expect(state.activeLayers[index].opacity, original.opacity);
+    });
+
+    testWidgets('a drag selection picks a layer where its keyframes draw it', (
+      tester,
+    ) async {
+      final (state, controller) = await pumpVideoEditor(tester);
+      final layer = EmojiLayer(
+        emoji: '😀',
+        keyframes: const [
+          LayerKeyframe(time: Duration.zero, offset: Offset(150, 0)),
+        ],
+      );
+      state.addLayer(
+        layer,
+        blockSelectLayer: true,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+      controller.setPlayTime(const Duration(seconds: 2));
+      await tester.pump(const Duration(seconds: 1));
+      final shown = tester.getCenter(find.text('😀'));
+
+      Future<void> dragSelect(Offset from, Offset to) async {
+        await tester.dragFrom(from, to - from);
+        await tester.pump(const Duration(seconds: 1));
+      }
+
+      // Around the spot it is laid out at, 150 px to the left: empty.
+      final rest = shown - const Offset(150, 0);
+      await dragSelect(
+        rest - const Offset(40, 40),
+        rest + const Offset(40, 40),
+      );
+      expect(state.selectedLayers, isEmpty);
+
+      // From beside it, so the drag selects rather than moves it.
+      await dragSelect(shown - const Offset(90, 90), shown);
+      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+      expect(tester.getCenter(find.text('😀')), shown);
     });
 
     testWidgets('a layer without keyframes stays without them', (tester) async {

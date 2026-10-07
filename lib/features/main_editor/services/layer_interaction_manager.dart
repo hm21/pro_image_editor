@@ -31,6 +31,7 @@ class LayerInteractionManager {
     required this.configs,
     this.onSelectedLayerChanged,
     required this.onSelectedLayersChanged,
+    this.keyframeTime,
   });
 
   /// An optional instance of [HelperLinesCallbacks] that defines callback
@@ -48,6 +49,26 @@ class LayerInteractionManager {
 
   /// Callback function to be called when the selected layer changes.
   final ValueChanged<Set<String>>? onSelectedLayersChanged;
+
+  /// The playback position layers with [Layer.keyframes] are drawn at, or
+  /// `null` outside the video editor. Other layers align to them there.
+  final Duration? Function()? keyframeTime;
+
+  /// How the keyframes of [layer] move, grow and turn it at [keyframeTime]
+  /// away from where it is laid out, or `null` when it is drawn there.
+  ({Offset shift, double growth, double rotation})? _keyframeShown(
+    Layer layer,
+  ) {
+    final time = keyframeTime?.call();
+    if (time == null) return null;
+    final placement = layer.keyframePlacementAt(time);
+    if (placement == null) return null;
+    return (
+      shift: placement.offset - layer.offset,
+      growth: layer.scale == 0 ? 1.0 : placement.scale / layer.scale,
+      rotation: placement.rotation,
+    );
+  }
 
   /// Debounce for scaling actions in the editor.
   late Debounce scaleDebounce;
@@ -474,10 +495,14 @@ class LayerInteractionManager {
     return _SnapFamily.other;
   }
 
-  Offset _snapLayerCenter(Layer layer) {
-    return layer.computeOffsetFromCenterFraction(
+  /// The center of [layer], where it is drawn at the playback position when
+  /// [shown] is set.
+  Offset _snapLayerCenter(Layer layer, {bool shown = false}) {
+    final center = layer.computeOffsetFromCenterFraction(
       _getFractionalLayerOffset(layer),
     );
+    if (!shown) return center;
+    return center + (_keyframeShown(layer)?.shift ?? Offset.zero);
   }
 
   List<Layer> _nearestSnapLayers(Layer active, List<Layer> others) {
@@ -489,7 +514,8 @@ class LayerInteractionManager {
     final activeCenter = _snapLayerCenter(active);
     final distances = <String, double>{
       for (final layer in others)
-        layer.id: (_snapLayerCenter(layer) - activeCenter).distance,
+        layer.id:
+            (_snapLayerCenter(layer, shown: true) - activeCenter).distance,
     };
     final ranked = [...others]
       ..sort((a, b) {
@@ -568,11 +594,18 @@ class LayerInteractionManager {
   ///
   /// Layers that support edge snapping expose their left, center and right
   /// edges; all others expose only their configured anchor.
-  List<_LayerSnapAnchor> _horizontalSnapAnchors(Layer layer) {
+  ///
+  /// With [shown], [layer] is measured where its keyframes draw it at
+  /// [keyframeTime] rather than where it is laid out.
+  List<_LayerSnapAnchor> _horizontalSnapAnchors(
+    Layer layer, {
+    bool shown = false,
+  }) {
     final fractionalOffset = _getFractionalLayerOffset(layer);
-    final double center = layer
-        .computeOffsetFromCenterFraction(fractionalOffset)
-        .dx;
+    final keyframed = shown ? _keyframeShown(layer) : null;
+    final double center =
+        layer.computeOffsetFromCenterFraction(fractionalOffset).dx +
+        (keyframed?.shift.dx ?? 0);
     final double localCenter = layer
         .computeLocalCenterOffset(fractionalOffset)
         .dx;
@@ -593,7 +626,11 @@ class LayerInteractionManager {
     // Use the rotated axis-aligned bounding box so the edges still match a
     // rotated layer (collapses to width/2 when the layer is not rotated).
     final double halfWidth =
-        _rotatedBoundingSize(size, layer.rotation).width / 2;
+        _rotatedBoundingSize(
+          size * (keyframed?.growth ?? 1),
+          keyframed?.rotation ?? layer.rotation,
+        ).width /
+        2;
     return [
       _LayerSnapAnchor(
         position: center - halfWidth,
@@ -614,11 +651,18 @@ class LayerInteractionManager {
   ///
   /// Layers that support edge snapping expose their top, center and bottom
   /// edges; all others expose only their configured anchor.
-  List<_LayerSnapAnchor> _verticalSnapAnchors(Layer layer) {
+  ///
+  /// With [shown], [layer] is measured where its keyframes draw it at
+  /// [keyframeTime] rather than where it is laid out.
+  List<_LayerSnapAnchor> _verticalSnapAnchors(
+    Layer layer, {
+    bool shown = false,
+  }) {
     final fractionalOffset = _getFractionalLayerOffset(layer);
-    final double center = layer
-        .computeOffsetFromCenterFraction(fractionalOffset)
-        .dy;
+    final keyframed = shown ? _keyframeShown(layer) : null;
+    final double center =
+        layer.computeOffsetFromCenterFraction(fractionalOffset).dy +
+        (keyframed?.shift.dy ?? 0);
     final double localCenter = layer
         .computeLocalCenterOffset(fractionalOffset)
         .dy;
@@ -638,7 +682,11 @@ class LayerInteractionManager {
     // Use the rotated axis-aligned bounding box so the edges still match a
     // rotated layer (collapses to height/2 when the layer is not rotated).
     final double halfHeight =
-        _rotatedBoundingSize(size, layer.rotation).height / 2;
+        _rotatedBoundingSize(
+          size * (keyframed?.growth ?? 1),
+          keyframed?.rotation ?? layer.rotation,
+        ).height /
+        2;
     return [
       _LayerSnapAnchor(
         position: center - halfHeight,
@@ -941,8 +989,8 @@ class LayerInteractionManager {
       for (final layer in others) {
         final family = _snapFamily(layer);
         final anchors = horizontal
-            ? _horizontalSnapAnchors(layer)
-            : _verticalSnapAnchors(layer);
+            ? _horizontalSnapAnchors(layer, shown: true)
+            : _verticalSnapAnchors(layer, shown: true);
         for (final anchor in anchors) {
           if (anchor.kind == _SnapKind.center) {
             centerPositions.add(anchor.position);
@@ -1382,10 +1430,10 @@ class LayerInteractionManager {
 
     void addLayerAnchors(Layer layer) {
       final family = _snapFamily(layer);
-      for (final anchor in _horizontalSnapAnchors(layer)) {
+      for (final anchor in _horizontalSnapAnchors(layer, shown: true)) {
         addTarget(xTargets, anchor.position, kind: anchor.kind, family: family);
       }
-      for (final anchor in _verticalSnapAnchors(layer)) {
+      for (final anchor in _verticalSnapAnchors(layer, shown: true)) {
         addTarget(yTargets, anchor.position, kind: anchor.kind, family: family);
       }
     }

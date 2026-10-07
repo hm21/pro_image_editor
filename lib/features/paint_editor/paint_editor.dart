@@ -773,10 +773,12 @@ class PaintEditorState extends State<PaintEditor>
           return !listEquals(originalErased, allErased(layer));
         });
 
+        void rescale(Layer placement) => placement
+          ..offset *= scale
+          ..scale *= scale;
         final transformedLayers = newLayers.map((layer) {
-          return layer
-            ..offset *= scale
-            ..scale *= scale;
+          rescale(layer);
+          return layer..transformKeyframes(rescale);
         }).toList();
         Navigator.of(context).pop(
           PaintEditorResponse(

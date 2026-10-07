@@ -360,27 +360,31 @@ class _LayerWidgetState extends State<LayerWidget>
     final adjustedTop =
         offsetY - overlayPadding.vertical * (_fractionalOffset.dy + 0.5);
 
+    Widget layerContent = Transform(
+      transform: transformMatrix,
+      alignment: Alignment.center,
+      child: _buildInteractionHandlers(),
+    );
+    // A drawing bakes its own opacity into its strokes, and keyframes carry
+    // the opacity of a layer that has them (see [LayerTimelineVisibility]).
+    // Applied inside the hero so the layer keeps it while it flies to or
+    // from a sub-editor, and like a hidden timed layer, an invisible one
+    // lets touches through to the layers below.
+    if (_layer.opacity < 1 && !_layer.isPaintLayer && !_layer.hasKeyframes) {
+      layerContent = _layer.opacity <= 0
+          ? IgnorePointer(child: InvisibleButPainted(child: layerContent))
+          : Opacity(opacity: _layer.opacity, child: layerContent);
+    }
+
     Widget content = FractionalTranslation(
       translation: _fractionalOffset,
       child: Hero(
         // Important that hero is above transform
         createRectTween: (begin, end) => RectTween(begin: begin, end: end),
         tag: _layer.id,
-        child: Transform(
-          transform: transformMatrix,
-          alignment: Alignment.center,
-          child: _buildInteractionHandlers(),
-        ),
+        child: layerContent,
       ),
     );
-
-    // A drawing bakes its own opacity into its strokes, and keyframes carry
-    // the opacity of a layer that has them (see [LayerTimelineVisibility]).
-    if (_layer.opacity < 1 && !_layer.isPaintLayer && !_layer.hasKeyframes) {
-      content = _layer.opacity <= 0
-          ? InvisibleButPainted(child: content)
-          : Opacity(opacity: _layer.opacity, child: content);
-    }
 
     final playTime = widget.playTimeNotifier;
     if (playTime != null &&

@@ -350,7 +350,7 @@ LayerPlacement? layerKeyframePlacementAt(
   final last = keyframes.last;
   if (time >= last.time) return last.placement;
 
-  // The last keyframe at or before [time]; the loop above rules out both
+  // The last keyframe at or before [time]; the checks above rule out both
   // ends, so a later one always exists.
   var index = 0;
   for (var i = 1; i < keyframes.length; i++) {

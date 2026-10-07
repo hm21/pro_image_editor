@@ -106,12 +106,13 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   late Offset _framedLayerOffset;
   late double _framedLayerScale;
   late double _framedLayerRotation;
+  late bool _framedLayerMirrored;
   late List<LayerKeyframe> _framedKeyframes;
   late Offset _framedLayerCenter;
   late Size _framedCanvasSize;
 
-  /// Whether the geometry the slide animation reads has moved since [_frame]
-  /// was computed.
+  /// Whether the geometry the keyframes and the slide animation read has
+  /// moved since [_frame] was computed.
   ///
   /// [Layer] is mutable and is mutated in place while it is dragged, so
   /// `oldWidget.layer.offset != widget.layer.offset` never fires — both
@@ -123,6 +124,7 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       _framedLayerOffset != widget.layer.offset ||
       _framedLayerScale != widget.layer.scale ||
       _framedLayerRotation != widget.layer.rotation ||
+      _framedLayerMirrored != _isMirrored(widget.layer) ||
       !identical(_framedKeyframes, widget.layer.keyframes) ||
       _framedLayerCenter != widget.layerCenter ||
       _framedCanvasSize != widget.canvasSize;
@@ -169,11 +171,17 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     }
   }
 
+  /// Whether [layer] is flipped on one axis only. It is mirrored after its own
+  /// rotation, which turns it the other way on screen, so a keyframed turn
+  /// has to turn the other way as well.
+  static bool _isMirrored(Layer layer) => layer.flipX != layer.flipY;
+
   /// Computes the frame for [currentTime] and records the geometry it used.
   _TimelineFrame _frameFor(Duration currentTime) {
     _framedLayerOffset = widget.layer.offset;
     _framedLayerScale = widget.layer.scale;
     _framedLayerRotation = widget.layer.rotation;
+    _framedLayerMirrored = _isMirrored(widget.layer);
     _framedKeyframes = widget.layer.keyframes;
     _framedLayerCenter = widget.layerCenter;
     _framedCanvasSize = widget.canvasSize;
@@ -225,12 +233,9 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     final keyframeScale = placement == null || layer.scale == 0
         ? 1.0
         : placement.scale / layer.scale;
-    // A layer flipped on one axis is mirrored after its own rotation, which
-    // turns it the other way on screen; the difference has to turn with it.
-    final mirrored = layer.flipX != layer.flipY;
     final keyframeRotation = placement == null
         ? 0.0
-        : (placement.rotation - layer.rotation) * (mirrored ? -1 : 1);
+        : (placement.rotation - layer.rotation) * (_isMirrored(layer) ? -1 : 1);
     final keyframeOpacity = placement?.opacity ?? 1.0;
 
     // The layer's own animations count over its time range, the keyframe
@@ -370,10 +375,10 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       );
     }
     // The keyframes and the wiggle turn the layer before anything else moves
-    // it, around the
-    // same visual center the scale below is anchored on (see there). Turning
-    // and scaling around one point commute, so the order between the two
-    // does not matter; the native renderer turns first as well.
+    // it, around the same visual center the scale below is anchored on (see
+    // there). Turning and scaling around one point commute, so the order
+    // between the two does not matter; the native renderer turns first as
+    // well.
     if (frame.rotation != 0.0) {
       final fo = widget.layerFractionalOffset;
       result = Transform.rotate(

@@ -97,6 +97,19 @@ class LayerCopyManager {
         .toList();
   }
 
+  /// [keyframes] moved by [offset], as the copy's own offset is, so a
+  /// duplicate is drawn beside its original rather than on top of it.
+  static List<LayerKeyframe> _shiftKeyframes(
+    List<LayerKeyframe> keyframes,
+    Offset offset,
+  ) {
+    if (offset == Offset.zero) return keyframes;
+    return [
+      for (final keyframe in keyframes)
+        keyframe.copyWith(offset: keyframe.offset + offset),
+    ];
+  }
+
   /// Create a copy of a TextLayer instance.
   TextLayer createCopyTextLayer(
     TextLayer layer, {
@@ -147,7 +160,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
-      keyframes: layer.keyframes,
+      keyframes: _shiftKeyframes(layer.keyframes, offset),
     )..groupId = layer.groupId;
   }
 
@@ -179,7 +192,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
-      keyframes: layer.keyframes,
+      keyframes: _shiftKeyframes(layer.keyframes, offset),
     )..groupId = layer.groupId;
   }
 
@@ -213,7 +226,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
-      keyframes: layer.keyframes,
+      keyframes: _shiftKeyframes(layer.keyframes, offset),
     )..groupId = layer.groupId;
   }
 
@@ -246,7 +259,7 @@ class LayerCopyManager {
       exitCurve: layer.exitCurve,
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
-      keyframes: layer.keyframes,
+      keyframes: _shiftKeyframes(layer.keyframes, offset),
     )..groupId = layer.groupId;
   }
 }

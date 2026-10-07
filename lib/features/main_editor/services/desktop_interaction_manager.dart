@@ -80,6 +80,8 @@ class DesktopInteractionManager {
   /// Applies [change] to [layer]. A layer with keyframes is first laid out at
   /// the placement they give it at [keyframeTime], and the changed placement
   /// is written back to the keyframe there, so the change shows on screen.
+  /// A [change] that leaves the layer where it was, such as a scroll while
+  /// zooming is off, adds no keyframe.
   void _transformLayer(Layer layer, void Function() change) {
     final time = keyframeTime?.call();
     if (time == null || !layer.hasKeyframes) {
@@ -87,7 +89,9 @@ class DesktopInteractionManager {
       return;
     }
     layer.applyKeyframePlacement(time);
+    final before = layer.restPlacement;
     change();
+    if (layer.restPlacement == before) return;
     layer.setKeyframeAt(
       time,
       tolerance: configs.videoEditor.layerTimeline.keyframeTolerance,
