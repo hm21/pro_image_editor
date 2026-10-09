@@ -2602,7 +2602,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Moves a layer in the list to a new position.
   ///
   /// - `oldIndex` is the current index of the layer.
-  /// - `newIndex` is the desired index to move the layer to.
+  /// - `newIndex` is the index the layer ends up at, counted after it is
+  ///   removed. An index outside the layer list is ignored.
   ///
   /// Pass [skipUpdateHistory] to reorder the current history step instead of
   /// recording a new one, e.g. when a drag already recorded its step when it
@@ -2626,6 +2627,9 @@ class ProImageEditorState extends State<ProImageEditor>
     layers.insert(newIndex, layers.removeAt(oldIndex));
 
     if (skipUpdateHistory) {
+      // The step's background screenshot still shows the old order, so let
+      // the final capture take a new one.
+      stateManager.activeScreenshot?.broken = true;
       _controllers.uiLayerCtrl.add(null);
       return;
     }

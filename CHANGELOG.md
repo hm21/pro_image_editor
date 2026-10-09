@@ -1,7 +1,7 @@
 # Changelog
 
 ## 14.11.0
-- **FEAT**(main-editor): `moveLayerListPosition` takes `skipUpdateHistory` to reorder layers within the current history step, e.g. when a drag recorded its step on start; the layers are redrawn in their new order.
+- **FEAT**(main-editor): `moveLayerListPosition` takes `skipUpdateHistory` to reorder layers within the current history step and redraws them in their new order.
 - **FIX**(main-editor): `moveLayerListPosition` ignores a `newIndex` past the last layer instead of throwing a `RangeError`.
 
 ## 14.10.2

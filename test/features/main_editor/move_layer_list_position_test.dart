@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pro_image_editor/core/models/multi_threading/thread_capture_model.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 
@@ -117,6 +118,31 @@ void main() {
       await tester.pump();
 
       expect(drawnLayerIds(tester), ids);
+    });
+
+    testWidgets('with skipUpdateHistory invalidates the screenshot of the '
+        'current step only', (tester) async {
+      final (state, _) = await pumpThreeLayers(tester);
+      // Background generation is off here, so stand in one screenshot per
+      // recorded step, as the editor keeps them with it on.
+      final screenshots = [
+        for (var i = 1; i < state.stateManager.stateHistory.length; i++)
+          ThreadCaptureState(),
+      ];
+      state.stateManager.screenshots.addAll(screenshots);
+
+      state.moveLayerListPosition(
+        oldIndex: 2,
+        newIndex: 0,
+        skipUpdateHistory: true,
+      );
+      await tester.pumpAndSettle();
+
+      expect(state.stateManager.activeScreenshot, same(screenshots.last));
+      expect(
+        [for (final item in screenshots) item.broken],
+        [false, false, true],
+      );
     });
 
     testWidgets('ignores an index past the last layer', (tester) async {
