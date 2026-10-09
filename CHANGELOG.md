@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.10.2
+- **FIX**(main-editor): `onOpenSubEditor`, `onStartCloseSubEditor` and `onEndCloseSubEditor` report the tune editor as `SubEditor.tune` instead of `SubEditor.unknown`.
+
 ## 14.10.1
 - **FIX**(paint-editor): The partial eraser erases under the pointer when the layer stack is scaled, and at its own size on scaled or merged layers.
 
