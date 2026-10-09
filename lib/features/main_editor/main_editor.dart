@@ -1907,24 +1907,26 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
 
     SubEditor editorName = SubEditor.unknown;
+    // The tune editor is pushed inside a [HeroMode].
+    final editor = page is HeroMode ? page.child : page;
 
-    if (T is List<PaintLayer> || page is PaintEditor) {
+    if (editor is PaintEditor) {
       editorName = SubEditor.paint;
-    } else if (T is TextLayer || page is TextEditor) {
+    } else if (editor is TextEditor) {
       editorName = SubEditor.text;
-    } else if (T is TransformConfigs || page is CropRotateEditor) {
+    } else if (editor is CropRotateEditor) {
       editorName = SubEditor.cropRotate;
-    } else if (T is TuneAdjustmentMatrix || page is TuneEditor) {
+    } else if (editor is TuneEditor) {
       editorName = SubEditor.tune;
-    } else if (T is FilterMatrix || T is FilterState || page is FilterEditor) {
+    } else if (editor is FilterEditor) {
       editorName = SubEditor.filter;
-    } else if (T is double || page is BlurEditor) {
+    } else if (editor is BlurEditor) {
       editorName = SubEditor.blur;
-    } else if (page is EmojiEditor) {
+    } else if (editor is EmojiEditor) {
       editorName = SubEditor.emoji;
-    } else if (page is AudioEditorPage) {
+    } else if (editor is AudioEditorPage) {
       editorName = SubEditor.audio;
-    } else if (page is ClipsEditorPage) {
+    } else if (editor is ClipsEditorPage) {
       editorName = SubEditor.clips;
     }
 

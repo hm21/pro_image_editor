@@ -232,6 +232,32 @@ void main() {
       expect(find.byType(FilterEditor), findsOneWidget);
     });
 
+    testWidgets('Reports the TuneEditor to onOpenSubEditor', (
+      WidgetTester tester,
+    ) async {
+      final openedEditors = <SubEditor>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            mockMemoryImage,
+            configs: configs,
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {},
+              mainEditorCallbacks: MainEditorCallbacks(
+                onOpenSubEditor: openedEditors.add,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byKey(const ValueKey('open-tune-editor-btn')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TuneEditor), findsOneWidget);
+      expect(openedEditors, [SubEditor.tune]);
+    });
+
     testWidgets('Launches BlurEditor via button tap', (
       WidgetTester tester,
     ) async {
