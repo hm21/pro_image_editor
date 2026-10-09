@@ -435,9 +435,13 @@ class PaintCanvasState extends State<PaintCanvas> {
           -rotation,
         );
 
+        // The layer is drawn scaled by its own scale and the layer stack's,
+        // so both the pointer and the on-screen eraser radius map back into
+        // the strokes' coordinates through both.
+        final double itemScale = layerScale * stackScale;
         final erased = ErasedOffset(
-          offset: rotatedPosition / layerScale,
-          radius: widget.eraserRadius,
+          offset: rotatedPosition / itemScale,
+          radius: widget.eraserRadius / itemScale,
         );
 
         // Erase across every stroke of the layer, not just the first. A merged

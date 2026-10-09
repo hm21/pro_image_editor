@@ -4,10 +4,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:network_image_mock/network_image_mock.dart';
+import 'package:pro_image_editor/features/paint_editor/models/eraser_model.dart';
 import 'package:pro_image_editor/features/paint_editor/widgets/paint_canvas.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/censor/blur_area_item.dart';
 import 'package:pro_image_editor/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
+import 'package:pro_image_editor/shared/widgets/layer/layer_stack.dart';
 import 'package:pro_image_editor/shared/widgets/layer/layer_widget.dart';
 import 'package:pro_image_editor/shared/widgets/slider_bottom_sheet.dart';
 
@@ -783,6 +785,140 @@ void main() {
       await gesture.up();
 
       expect(viewer.transformMatrix4.getTranslation().x, isNot(0));
+    });
+  });
+
+  group('PaintEditor partial eraser', () {
+    // A main editor body smaller than this editor's scales the layer stack,
+    // as when the paint editor opens with more room than the main editor had.
+    Future<PaintEditorState> pumpScaledEditor(
+      WidgetTester tester, {
+      List<Layer>? layers,
+    }) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PaintEditor.memory(
+              mockMemoryImage,
+              key: key,
+              initConfigs: PaintEditorInitConfigs(
+                theme: ThemeData(),
+                mainBodySize: const Size(400, 300),
+                mainImageSize: const Size(400, 300),
+                layers: layers,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      return key.currentState!;
+    }
+
+    PaintLayer paintLayerOf(PaintEditorState editor) =>
+        editor.activeHistory.layers.whereType<PaintLayer>().single;
+
+    /// Where [point], in the coordinates of [layer]'s strokes, lands on
+    /// screen.
+    Offset onScreen(WidgetTester tester, PaintLayer layer, Offset point) {
+      final RenderBox box = tester.renderObject(
+        find.byWidgetPredicate(
+          (widget) => widget is CustomPaint && widget.painter is DrawPaintItem,
+        ),
+      );
+      return box.localToGlobal(point * layer.scale);
+    }
+
+    Future<void> eraseAt(WidgetTester tester, Offset position) async {
+      // The eraser acts on pointer moves only.
+      final TestGesture gesture = await tester.startGesture(
+        position - const Offset(2, 0),
+      );
+      await gesture.moveTo(position);
+      await gesture.up();
+      await tester.pump();
+    }
+
+    testWidgets('erases under the pointer on a stroke drawn in the editor', (
+      tester,
+    ) async {
+      final editor = await pumpScaledEditor(tester);
+
+      final Offset center = tester.getCenter(find.byType(PaintCanvas));
+      final Offset strokeStart = center - const Offset(150, 0);
+      final TestGesture stroke = await tester.startGesture(strokeStart);
+      for (var x = -120.0; x <= 150; x += 30) {
+        await stroke.moveTo(center + Offset(x, 0));
+      }
+      await stroke.up();
+      await tester.pump();
+
+      expect(
+        tester
+            .widget<LayerStack>(find.byType(LayerStack))
+            .transformHelper
+            .scale,
+        greaterThan(1.5),
+      );
+      final PaintLayer drawn = paintLayerOf(editor);
+      expect(
+        onScreen(tester, drawn, drawn.item.offsets.first!),
+        offsetMoreOrLessEquals(strokeStart),
+      );
+
+      editor.setMode(PaintMode.eraser);
+      await tester.pump();
+      final Offset target = center + const Offset(100, 0);
+      await eraseAt(tester, target);
+
+      final PaintLayer erased = paintLayerOf(editor);
+      final ErasedOffset spot = erased.item.erasedOffsets.single;
+      expect(
+        onScreen(tester, erased, spot.offset),
+        offsetMoreOrLessEquals(target),
+      );
+    });
+
+    testWidgets('erases the eraser size under the pointer on a scaled layer', (
+      tester,
+    ) async {
+      // A merged layer keeps an identity scale, unlike a freshly drawn one.
+      final editor = await pumpScaledEditor(
+        tester,
+        layers: [
+          PaintLayer(
+            item: PaintedModel(
+              mode: PaintMode.freeStyle,
+              offsets: const [Offset(0, 10), Offset(200, 10)],
+              erasedOffsets: [],
+              color: Colors.red,
+              strokeWidth: 6,
+              opacity: 1,
+            ),
+            rawSize: const Size(200, 20),
+            opacity: 1,
+          ),
+        ],
+      );
+      editor.setMode(PaintMode.eraser);
+      await tester.pump();
+
+      final PaintLayer layer = paintLayerOf(editor);
+      final Offset target = onScreen(tester, layer, const Offset(150, 10));
+      await eraseAt(tester, target);
+
+      final ErasedOffset spot = paintLayerOf(editor).item.erasedOffsets.single;
+      final Offset spotCenter = onScreen(tester, layer, spot.offset);
+      expect(spotCenter, offsetMoreOrLessEquals(target));
+      final Offset spotEdge = onScreen(
+        tester,
+        layer,
+        spot.offset + Offset(spot.radius, 0),
+      );
+      expect(
+        (spotEdge - spotCenter).distance,
+        moreOrLessEquals(editor.eraserRadius),
+      );
     });
   });
 

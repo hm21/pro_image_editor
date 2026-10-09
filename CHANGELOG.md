@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.10.1
+- **FIX**(paint-editor): The partial eraser erases under the pointer when the layer stack is scaled, and at its own size on scaled or merged layers.
+
 ## 14.10.0
 - **FEAT**(layers): Add `Layer.keyframes` to move, scale, turn and fade a layer over time in the video editor, matching `pro_video_editor` 2.29.0; transform gestures edit the keyframe at the playhead.
 - **FEAT**(layers): Add `LayerKeyframe.effects` to play loop animations between two keyframes (`Layer.keyframeEffects`).
