@@ -2602,21 +2602,39 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Moves a layer in the list to a new position.
   ///
   /// - `oldIndex` is the current index of the layer.
-  /// - `newIndex` is the desired index to move the layer to.
-  void moveLayerListPosition({required int oldIndex, required int newIndex}) {
+  /// - `newIndex` is the index the layer ends up at, counted after it is
+  ///   removed. An index outside the layer list is ignored.
+  ///
+  /// Pass [skipUpdateHistory] to reorder the current history step instead of
+  /// recording a new one, e.g. when a drag already recorded its step when it
+  /// started, as with [setLayerTimeline]. The layers are redrawn in their new
+  /// order either way.
+  void moveLayerListPosition({
+    required int oldIndex,
+    required int newIndex,
+    bool skipUpdateHistory = false,
+  }) {
     if (oldIndex == newIndex || oldIndex < 0 || newIndex < 0) return;
-
-    final layers = _layerCopyManager.copyLayerList(activeLayers);
-
-    if (oldIndex < layers.length && newIndex <= layers.length) {
-      final item = layers.removeAt(oldIndex);
-
-      // Insert directly at newIndex, no adjustment needed
-      layers.insert(newIndex, item);
-
-      addHistory(layers: layers);
-      setState(() {});
+    if (oldIndex >= activeLayers.length || newIndex >= activeLayers.length) {
+      return;
     }
+
+    final layers = skipUpdateHistory
+        ? activeLayers
+        : _layerCopyManager.copyLayerList(activeLayers);
+
+    // Insert directly at newIndex, no adjustment needed
+    layers.insert(newIndex, layers.removeAt(oldIndex));
+
+    if (skipUpdateHistory) {
+      // The step's background screenshot still shows the old order, so let
+      // the final capture take a new one.
+      stateManager.activeScreenshot?.broken = true;
+      _controllers.uiLayerCtrl.add(null);
+      return;
+    }
+    addHistory(layers: layers);
+    setState(() {});
   }
 
   /// Moves the given layer one step forward in the stack.

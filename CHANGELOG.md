@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.11.0
+- **FEAT**(main-editor): `moveLayerListPosition` takes `skipUpdateHistory` to reorder layers within the current history step and redraws them in their new order.
+- **FIX**(main-editor): `moveLayerListPosition` ignores a `newIndex` past the last layer instead of throwing a `RangeError`.
+
 ## 14.10.2
 - **FIX**(main-editor): `onOpenSubEditor`, `onStartCloseSubEditor` and `onEndCloseSubEditor` report the tune editor as `SubEditor.tune` instead of `SubEditor.unknown`.
 
