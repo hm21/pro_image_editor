@@ -662,7 +662,8 @@ class Layer {
   /// result is the same either way. The [pixelRatio] controls the resolution
   /// of the output image. When `null`, it defaults to [basePixelRatio], or
   /// the device pixel ratio, raised by [keyframeCaptureGrowth] for a layer
-  /// whose keyframes grow it.
+  /// whose keyframes grow it. [capturePixelRatio], when given, receives that
+  /// ratio and returns the one the layer is captured at instead.
   ///
   /// The [format] controls the output byte format and defaults to PNG for
   /// backward compatibility.
@@ -684,6 +685,7 @@ class Layer {
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
+    LayerCapturePixelRatio? capturePixelRatio,
   }) {
     return _capture(
       pixelRatio: pixelRatio,
@@ -691,6 +693,7 @@ class Layer {
       applyTransforms: applyTransforms,
       format: format,
       recorder: recorder,
+      capturePixelRatio: capturePixelRatio,
     );
   }
 
@@ -707,6 +710,7 @@ class Layer {
     required bool applyTransforms,
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
+    required LayerCapturePixelRatio? capturePixelRatio,
     int? highlightIndex,
     int? revealedLength,
   }) async {
@@ -715,7 +719,20 @@ class Layer {
 
     final dpr =
         basePixelRatio ?? MediaQuery.maybeDevicePixelRatioOf(context) ?? 3.0;
-    final effectivePixelRatio = pixelRatio ?? dpr * keyframeCaptureGrowth;
+    var effectivePixelRatio = pixelRatio ?? dpr * keyframeCaptureGrowth;
+    if (capturePixelRatio != null) {
+      final box = context.findRenderObject() as RenderBox?;
+      effectivePixelRatio = capturePixelRatio(
+        this,
+        box?.size ?? Size.zero,
+        effectivePixelRatio,
+      );
+      assert(
+        effectivePixelRatio > 0 && effectivePixelRatio.isFinite,
+        'capturePixelRatio must return a finite pixel ratio above 0, '
+        'got $effectivePixelRatio',
+      );
+    }
 
     final boundaryWidget = repaintBoundaryKey.currentWidget;
     final boundary = boundaryWidget is LayerRepaintBoundary
@@ -812,6 +829,9 @@ class Layer {
   ///
   /// If [format] is PNG and [recorder] is not provided, this method creates
   /// one recorder internally and reuses it for all layers.
+  ///
+  /// [capturePixelRatio] decides the pixel ratio of each layer, see
+  /// [captureAsPng].
   static Future<List<Uint8List?>> captureAllLayersAsBytes({
     required List<Layer> layers,
     double? pixelRatio,
@@ -819,6 +839,7 @@ class Layer {
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
+    LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     ContentRecorderController? localRecorder;
     ContentRecorderController? sharedRecorder = recorder;
@@ -838,6 +859,7 @@ class Layer {
             applyTransforms: applyTransforms,
             format: format,
             recorder: sharedRecorder,
+            capturePixelRatio: capturePixelRatio,
           ),
         );
       }
@@ -857,6 +879,10 @@ class Layer {
   /// text once per step of the reveal, into [ExportedLayer.revealBytes];
   /// [ExportedLayer.frames] lays those images out along the layer's time
   /// range.
+  ///
+  /// [capturePixelRatio] decides the pixel ratio of each layer, see
+  /// [captureAsPng]. It changes only the resolution of the images:
+  /// [ExportedLayer.logicalSize] stays the layer's laid-out size.
   static Future<List<ExportedLayer>> captureAllLayers({
     required List<Layer> layers,
     double? pixelRatio,
@@ -864,6 +890,7 @@ class Layer {
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
+    LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     ContentRecorderController? localRecorder;
     ContentRecorderController? sharedRecorder = recorder;
@@ -881,6 +908,7 @@ class Layer {
         applyTransforms: applyTransforms,
         format: format,
         recorder: sharedRecorder,
+        capturePixelRatio: capturePixelRatio,
       );
     } finally {
       if (localRecorder != null) {
@@ -896,6 +924,7 @@ class Layer {
     required bool applyTransforms,
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
+    required LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     final logicalSizes = <Size>[];
     for (var i = 0; i < layers.length; i++) {
@@ -924,6 +953,7 @@ class Layer {
       applyTransforms: applyTransforms,
       format: format,
       recorder: recorder,
+      capturePixelRatio: capturePixelRatio,
     );
 
     final exported = <ExportedLayer>[];
@@ -946,6 +976,7 @@ class Layer {
                   applyTransforms: applyTransforms,
                   format: format,
                   recorder: recorder,
+                  capturePixelRatio: capturePixelRatio,
                 )
               : const {},
           revealBytes:
@@ -956,6 +987,7 @@ class Layer {
                   applyTransforms: applyTransforms,
                   format: format,
                   recorder: recorder,
+                  capturePixelRatio: capturePixelRatio,
                 )
               : const {},
         ),
@@ -974,6 +1006,7 @@ class Layer {
     required bool applyTransforms,
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
+    required LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     final layer = this;
     if (layer is! TextLayer) return const {};
@@ -994,6 +1027,7 @@ class Layer {
         applyTransforms: applyTransforms,
         format: format,
         recorder: recorder,
+        capturePixelRatio: capturePixelRatio,
         highlightIndex: state.highlightIndex,
         revealedLength: state.revealedLength,
       );
@@ -1011,6 +1045,7 @@ class Layer {
     required bool applyTransforms,
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
+    required LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     final layer = this;
     if (layer is! TextLayer) return const {};
@@ -1024,6 +1059,7 @@ class Layer {
         applyTransforms: applyTransforms,
         format: format,
         recorder: recorder,
+        capturePixelRatio: capturePixelRatio,
         highlightIndex: i,
       );
       if (bytes != null) captured[i] = bytes;

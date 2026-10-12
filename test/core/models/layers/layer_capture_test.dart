@@ -202,6 +202,89 @@ void main() {
       });
     });
 
+    group('capturePixelRatio', () {
+      WidgetLayer squareLayer() => WidgetLayer(
+        widget: const ColoredBox(
+          color: Color(0xFFFF0000),
+          child: SizedBox(width: 20, height: 20),
+        ),
+      );
+
+      /// The width and height of a laid-out [layer] at [pixelRatio].
+      (int, int) pixelsAt(Layer layer, double pixelRatio) {
+        final size = layer.repaintBoundaryKey.currentContext!.size!;
+        return (
+          (size.width * pixelRatio).ceil(),
+          (size.height * pixelRatio).ceil(),
+        );
+      }
+
+      testWidgets('captures a layer at the pixel ratio it returns', (
+        tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpEditor(tester);
+          final layer = squareLayer();
+          editor.addLayer(layer);
+          await tester.pumpAndSettle();
+
+          final calls = <(Layer, Size, double)>[];
+          final bytes = await layer.captureAsPng(
+            format: ui.ImageByteFormat.rawRgba,
+            basePixelRatio: 2,
+            applyTransforms: false,
+            capturePixelRatio: (layer, size, pixelRatio) {
+              calls.add((layer, size, pixelRatio));
+              return 1;
+            },
+          );
+
+          expect(calls, hasLength(1));
+          expect(calls.single.$1, same(layer));
+          expect(
+            calls.single.$2,
+            layer.repaintBoundaryKey.currentContext!.size,
+          );
+          expect(calls.single.$3, 2);
+          final (width, height) = pixelsAt(layer, 1);
+          expect(bytes, hasLength(width * height * 4));
+        });
+      });
+
+      testWidgets('lowers only the layers it picks and keeps their sizes', (
+        tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpEditor(tester);
+          editor
+            ..addLayer(squareLayer())
+            ..addLayer(squareLayer());
+          await tester.pumpAndSettle();
+          // The editor mounts copies of the added layers.
+          final [full, reduced] = editor.activeLayers;
+
+          final exported = await Layer.captureAllLayers(
+            layers: [full, reduced],
+            basePixelRatio: 2,
+            applyTransforms: false,
+            format: ui.ImageByteFormat.rawRgba,
+            capturePixelRatio: (layer, size, pixelRatio) =>
+                identical(layer, reduced) ? pixelRatio / 4 : pixelRatio,
+          );
+
+          expect(exported, hasLength(2));
+          final (fullWidth, fullHeight) = pixelsAt(full, 2);
+          final (reducedWidth, reducedHeight) = pixelsAt(reduced, 0.5);
+          expect(exported[0].bytes, hasLength(fullWidth * fullHeight * 4));
+          expect(
+            exported[1].bytes,
+            hasLength(reducedWidth * reducedHeight * 4),
+          );
+          expect(exported[1].logicalSize, exported[0].logicalSize);
+        });
+      });
+    });
+
     testWidgets(
       'captureAsPng reads the last paint of a layer laid out while hidden',
       (WidgetTester tester) async {

@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 
 import '/plugins/image/src/formats/jpeg/jpeg_chroma.dart';
 import '/plugins/image/src/formats/png/png_filter.dart';
+import 'layer_capture_pixel_ratio.dart';
 import 'output_formats.dart';
 import 'processor_configs.dart';
 
 export '/plugins/image/src/formats/jpeg/jpeg_chroma.dart';
 export '/plugins/image/src/formats/png/png_filter.dart';
+export 'layer_capture_pixel_ratio.dart';
 export 'output_formats.dart';
 export 'processor_configs.dart';
 
@@ -28,6 +30,7 @@ class ImageGenerationConfigs {
     this.singleFrame = false,
     this.captureImageByteFormat = ImageByteFormat.rawRgba,
     this.customPixelRatio,
+    this.layerCapturePixelRatio,
     this.jpegQuality = 100,
     this.pngLevel = 6,
     this.pngFilter = PngFilter.none,
@@ -153,6 +156,21 @@ class ImageGenerationConfigs {
   /// a custom pixel ratio for proper scaling.
   final double? customPixelRatio;
 
+  /// Decides the pixel ratio each layer is captured at.
+  ///
+  /// Applies wherever layers are captured: on done when
+  /// `MainEditorConfigs.captureLayersOnDone` is enabled, in
+  /// `captureAllLayers` and `captureAllLayersWithMeta`, and in a
+  /// `LayerRasterizer` given these configs. Each layer's capture is otherwise
+  /// at [customPixelRatio], or the device pixel ratio, and its image grows
+  /// with the layer's scale.
+  ///
+  /// Use it to capture a layer whose image is not needed at full resolution
+  /// smaller, such as one the host draws by other means and keeps the image
+  /// of only as a fallback. When `null`, every layer is captured at the full
+  /// pixel ratio.
+  final LayerCapturePixelRatio? layerCapturePixelRatio;
+
   /// Configuration settings for the processor.
   ///
   /// Use this property to customize various processing options.
@@ -221,6 +239,7 @@ class ImageGenerationConfigs {
     bool? enableUseOriginalBytes,
     ImageByteFormat? captureImageByteFormat,
     double? customPixelRatio,
+    LayerCapturePixelRatio? layerCapturePixelRatio,
     ProcessorConfigs? processorConfigs,
     OutputFormat? outputFormat,
     bool? singleFrame,
@@ -246,6 +265,8 @@ class ImageGenerationConfigs {
       captureImageByteFormat:
           captureImageByteFormat ?? this.captureImageByteFormat,
       customPixelRatio: customPixelRatio ?? this.customPixelRatio,
+      layerCapturePixelRatio:
+          layerCapturePixelRatio ?? this.layerCapturePixelRatio,
       processorConfigs: processorConfigs ?? this.processorConfigs,
       outputFormat: outputFormat ?? this.outputFormat,
       singleFrame: singleFrame ?? this.singleFrame,
