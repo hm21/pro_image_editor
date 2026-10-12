@@ -477,6 +477,80 @@ void main() {
     );
 
     testWidgets(
+      'restores widget layer export configs changed in a later step',
+      (WidgetTester tester) async {
+        final editor = await pumpTestEditor(tester);
+        await tester.pumpAndSettle();
+
+        final layer = WidgetLayer(
+          widget: const SizedBox(),
+          exportConfigs: const WidgetLayerExportConfigs(
+            id: 'clip',
+            meta: {'file': 'a.mp4'},
+          ),
+        );
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+        editor.replaceLayer(
+          index: 0,
+          layer: layer.copyWith(
+            exportConfigs: const WidgetLayerExportConfigs(
+              id: 'clip',
+              meta: {'file': 'a.mp4', 'keyed': true},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        editor.replaceLayer(
+          index: 0,
+          layer: editor.activeLayers.single.copyWith(
+            offset: const Offset(12, 34),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final json = await pumpUntilDone(
+          tester,
+          editor
+              .exportStateHistory(
+                configs: const ExportEditorConfigs(
+                  enableMinify: true,
+                  historySpan: ExportHistorySpan.all,
+                ),
+              )
+              .then((history) => history.toJson()),
+        );
+        final loadedMeta = <Map<String, dynamic>?>[];
+        await pumpUntilDone(
+          tester,
+          editor.importStateHistory(
+            ImportStateHistory.fromJson(
+              json,
+              configs: ImportEditorConfigs(
+                mergeMode: ImportEditorMergeMode.replace,
+                widgetLoader: (id, {meta}) {
+                  loadedMeta.add(meta);
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // One load per history step: added, keyed, moved.
+        expect(loadedMeta, [
+          {'file': 'a.mp4'},
+          {'file': 'a.mp4', 'keyed': true},
+          {'file': 'a.mp4', 'keyed': true},
+        ]);
+        final imported = editor.activeLayers.single as WidgetLayer;
+        expect(imported.exportConfigs.meta, {'file': 'a.mp4', 'keyed': true});
+        expect(imported.offset, const Offset(12, 34));
+      },
+    );
+
+    testWidgets(
       'rasterizes a widget layer once when it spans several history steps',
       (WidgetTester tester) async {
         final editor = await pumpTestEditor(tester);
