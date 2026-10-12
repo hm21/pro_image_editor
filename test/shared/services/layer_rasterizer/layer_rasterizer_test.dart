@@ -112,6 +112,43 @@ void main() {
       );
     });
 
+    testWidgets('captures each layer at the pixel ratio the configs pick', (
+      tester,
+    ) async {
+      final rasterizer = LayerRasterizer();
+      addTearDown(rasterizer.dispose);
+
+      await tester.pumpWidget(buildHost(rasterizer));
+
+      final requested = <double>[];
+      final capture = rasterizer.capture(
+        layers: [textLayerMock],
+        editorBodySize: bodySize,
+        basePixelRatio: 3,
+        applyTransforms: false,
+        format: ui.ImageByteFormat.rawRgba,
+        configs: ProImageEditorConfigs(
+          imageGeneration: ImageGenerationConfigs(
+            layerCapturePixelRatio: (layer, size, pixelRatio) {
+              requested.add(pixelRatio);
+              return 1;
+            },
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump();
+      final captured = await tester.runAsync(() => capture);
+
+      expect(requested, [3]);
+      final size = captured!.single.logicalSize;
+      expect(
+        captured.single.bytes,
+        hasLength(size.width.ceil() * size.height.ceil() * 4),
+      );
+    });
+
     testWidgets('keeps its result when disposed mid-capture', (tester) async {
       // No `addTearDown(dispose)`: this test disposes it itself.
       final rasterizer = LayerRasterizer();
