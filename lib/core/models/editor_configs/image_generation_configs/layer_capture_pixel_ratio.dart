@@ -8,7 +8,8 @@ import '/core/models/layers/layer.dart';
 /// pixels before rotation, and [pixelRatio] the ratio the capture would use
 /// without this callback. Return [pixelRatio] to keep it, or a lower value
 /// for a layer whose image is not needed at full resolution. The result must
-/// be greater than 0.
+/// be finite and greater than 0; any other value asserts in debug builds and
+/// keeps [pixelRatio] in release builds.
 ///
 /// The memory a capture takes grows with the square of its pixel ratio and of
 /// the layer's size, so a large layer captured at full resolution can take

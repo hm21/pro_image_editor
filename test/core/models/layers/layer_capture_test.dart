@@ -283,6 +283,27 @@ void main() {
           expect(exported[1].logicalSize, exported[0].logicalSize);
         });
       });
+
+      testWidgets('asserts on a pixel ratio that is not above 0', (
+        tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpEditor(tester);
+          final layer = squareLayer();
+          editor.addLayer(layer);
+          await tester.pumpAndSettle();
+
+          for (final invalid in [0.0, -1.0, double.nan, double.infinity]) {
+            await expectLater(
+              layer.captureAsPng(
+                format: ui.ImageByteFormat.rawRgba,
+                capturePixelRatio: (_, _, _) => invalid,
+              ),
+              throwsAssertionError,
+            );
+          }
+        });
+      });
     });
 
     testWidgets(

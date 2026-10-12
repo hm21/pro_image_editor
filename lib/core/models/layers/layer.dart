@@ -722,16 +722,21 @@ class Layer {
     var effectivePixelRatio = pixelRatio ?? dpr * keyframeCaptureGrowth;
     if (capturePixelRatio != null) {
       final box = context.findRenderObject() as RenderBox?;
-      effectivePixelRatio = capturePixelRatio(
+      final requested = capturePixelRatio(
         this,
         box?.size ?? Size.zero,
         effectivePixelRatio,
       );
       assert(
-        effectivePixelRatio > 0 && effectivePixelRatio.isFinite,
+        requested > 0 && requested.isFinite,
         'capturePixelRatio must return a finite pixel ratio above 0, '
-        'got $effectivePixelRatio',
+        'got $requested',
       );
+      // A ratio derived from a zero-size layer, such as `720 / longestSide`,
+      // would otherwise make the capture throw in release.
+      if (requested > 0 && requested.isFinite) {
+        effectivePixelRatio = requested;
+      }
     }
 
     final boundaryWidget = repaintBoundaryKey.currentWidget;
