@@ -40,6 +40,81 @@ void main() {
       expect(map['y'], 20);
     });
 
+    group('toMapFromReference', () {
+      test('writes export configs that changed since the reference', () {
+        final reference = WidgetLayer(
+          widget: const SizedBox(),
+          id: 'layer_id',
+          exportConfigs: const WidgetLayerExportConfigs(
+            id: 'clip',
+            meta: {'file': 'a.mp4'},
+          ),
+        );
+        final layer = reference.copyWith(
+          exportConfigs: const WidgetLayerExportConfigs(
+            id: 'clip',
+            meta: {
+              'file': 'a.mp4',
+              'chromaKey': {'color': 0xFF00FF00},
+            },
+          ),
+        );
+
+        final map = layer.toMapFromReference(reference);
+
+        expect(map['exportConfigs'], {
+          'id': 'clip',
+          'meta': {
+            'file': 'a.mp4',
+            'chromaKey': {'color': 0xFF00FF00},
+          },
+        });
+      });
+
+      test('writes emptied export configs so the import clears them', () {
+        final reference = WidgetLayer(
+          widget: const SizedBox(),
+          id: 'layer_id',
+          exportConfigs: const WidgetLayerExportConfigs(id: 'clip'),
+        );
+        final layer = reference.copyWith(
+          exportConfigs: const WidgetLayerExportConfigs(),
+        );
+
+        final map = layer.toMapFromReference(reference);
+
+        expect(map['exportConfigs'], isEmpty);
+        expect(map.containsKey('exportConfigs'), isTrue);
+      });
+
+      test('omits export configs equal to the reference', () {
+        final reference = WidgetLayer(
+          widget: const SizedBox(),
+          id: 'layer_id',
+          exportConfigs: const WidgetLayerExportConfigs(
+            id: 'clip',
+            meta: {
+              'nested': {'value': 1},
+            },
+          ),
+        );
+        final layer = reference.copyWith(
+          offset: const Offset(10, 20),
+          exportConfigs: const WidgetLayerExportConfigs(
+            id: 'clip',
+            meta: {
+              'nested': {'value': 1},
+            },
+          ),
+        );
+
+        final map = layer.toMapFromReference(reference);
+
+        expect(map.containsKey('exportConfigs'), isFalse);
+        expect(map['x'], 10);
+      });
+    });
+
     test('should copy WidgetLayer with modified properties', () {
       const widget = Text('Test Widget');
       final layer = WidgetLayer(widget: widget, id: 'layer_id');

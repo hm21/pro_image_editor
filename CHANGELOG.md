@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.11.1
+- **FIX**(import-export): A widget layer's `exportConfigs` changed after the layer was added, such as its `meta` set through `replaceLayer`, survive a multi-step history export and import instead of falling back to their first value.
+
 ## 14.11.0
 - **FEAT**(main-editor): `moveLayerListPosition` takes `skipUpdateHistory` to reorder layers within the current history step and redraws them in their new order.
 - **FIX**(main-editor): `moveLayerListPosition` ignores a `newIndex` past the last layer instead of throwing a `RangeError`.
