@@ -200,6 +200,8 @@ class WidgetLayer extends Layer {
     int maxDecimalPlaces = kMaxSafeDecimalPlaces,
     bool enableMinify = false,
   }) {
+    var exportConfigMap = exportConfigs.toMap();
+
     return {
       ...super.toMapFromReference(
         layer,
@@ -211,8 +213,8 @@ class WidgetLayer extends Layer {
       // changed after the layer was added would otherwise keep their first
       // value. An emptied config is written too, to clear the previous one.
       if (layer is WidgetLayer &&
-          !mapIsEqual(layer.exportConfigs.toMap(), exportConfigs.toMap()))
-        'exportConfigs': exportConfigs.toMap(),
+          !mapIsEqual(layer.exportConfigs.toMap(), exportConfigMap))
+        'exportConfigs': exportConfigMap,
     };
   }
 

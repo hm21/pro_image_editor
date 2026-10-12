@@ -88,24 +88,19 @@ void main() {
       });
 
       test('omits export configs equal to the reference', () {
+        // Separate map instances, as an import produces: const literals would
+        // be canonicalized into one identical map.
+        Map<String, dynamic> meta() => {
+          'nested': {'value': 1},
+        };
         final reference = WidgetLayer(
           widget: const SizedBox(),
           id: 'layer_id',
-          exportConfigs: const WidgetLayerExportConfigs(
-            id: 'clip',
-            meta: {
-              'nested': {'value': 1},
-            },
-          ),
+          exportConfigs: WidgetLayerExportConfigs(id: 'clip', meta: meta()),
         );
         final layer = reference.copyWith(
           offset: const Offset(10, 20),
-          exportConfigs: const WidgetLayerExportConfigs(
-            id: 'clip',
-            meta: {
-              'nested': {'value': 1},
-            },
-          ),
+          exportConfigs: WidgetLayerExportConfigs(id: 'clip', meta: meta()),
         );
 
         final map = layer.toMapFromReference(reference);
