@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.13.0
+- **FEAT**(text-editor): Add `TextEditorConfigs.enableSubmitShortcut` to save the text with Ctrl+Enter or Cmd+Enter.
+
 ## 14.12.0
 - **FEAT**(layers): `ImageGenerationConfigs.layerCapturePixelRatio` lets the host capture individual layers at a lower pixel ratio.
 

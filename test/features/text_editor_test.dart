@@ -236,7 +236,8 @@ void main() {
   group('TextEditor submit shortcut', () {
     Future<(bool, TextLayer?)> submit(
       WidgetTester tester, {
-      required LogicalKeyboardKey modifier,
+      required LogicalKeyboardKey? modifier,
+      LogicalKeyboardKey enter = LogicalKeyboardKey.enter,
       bool? enabled,
     }) async {
       var closed = false;
@@ -272,9 +273,9 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(EditableText), testText);
-      await tester.sendKeyDownEvent(modifier);
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.sendKeyUpEvent(modifier);
+      if (modifier != null) await tester.sendKeyDownEvent(modifier);
+      await tester.sendKeyEvent(enter);
+      if (modifier != null) await tester.sendKeyUpEvent(modifier);
       await tester.pumpAndSettle();
       return (closed, result);
     }
@@ -299,6 +300,25 @@ void main() {
 
       expect(closed, isTrue);
       expect(result?.text, testText);
+    });
+
+    testWidgets('Ctrl+numpad Enter saves the text', (tester) async {
+      final (closed, result) = await submit(
+        tester,
+        modifier: LogicalKeyboardKey.controlLeft,
+        enter: LogicalKeyboardKey.numpadEnter,
+        enabled: true,
+      );
+
+      expect(closed, isTrue);
+      expect(result?.text, testText);
+    });
+
+    testWidgets('plain Enter does not save', (tester) async {
+      final (closed, _) = await submit(tester, modifier: null, enabled: true);
+
+      expect(closed, isFalse);
+      expect(find.byType(TextEditor), findsOneWidget);
     });
 
     testWidgets('is off by default', (tester) async {
