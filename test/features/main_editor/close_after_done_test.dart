@@ -22,7 +22,11 @@ void main() {
   /// unsaved changes.
   Future<ProImageEditorState> pushEditorWithChanges(
     WidgetTester tester,
-    ProImageEditorCallbacks Function(BuildContext routeContext) callbacks,
+    ProImageEditorCallbacks Function(
+      BuildContext routeContext,
+      ProImageEditorState Function() editor,
+    )
+    callbacks,
   ) async {
     final key = GlobalKey<ProImageEditorState>();
     await tester.pumpWidget(
@@ -35,7 +39,7 @@ void main() {
                   mockMemoryImage,
                   key: key,
                   configs: configs,
-                  callbacks: callbacks(routeContext),
+                  callbacks: callbacks(routeContext, () => key.currentState!),
                 ),
               ),
             ),
@@ -69,13 +73,12 @@ void main() {
 
   testWidgets('maybePop in onCloseEditor closes the editor when the pop scope '
       'is disabled', (tester) async {
-    late ProImageEditorState state;
-    state = await pushEditorWithChanges(
+    final state = await pushEditorWithChanges(
       tester,
-      (routeContext) => ProImageEditorCallbacks(
+      (routeContext, editor) => ProImageEditorCallbacks(
         onCompleteWithParameters: simulateCapture,
         onCloseEditor: (editorMode) async {
-          state.isPopScopeDisabled = true;
+          editor().isPopScopeDisabled = true;
           await WidgetsBinding.instance.endOfFrame;
           if (!routeContext.mounted) return;
           await Navigator.of(routeContext).maybePop();
@@ -92,13 +95,12 @@ void main() {
 
   testWidgets('a back gesture after done closes the editor once the loading '
       'dialog is gone', (tester) async {
-    late ProImageEditorState state;
     late BuildContext routeContext;
-    state = await pushEditorWithChanges(tester, (context) {
+    final state = await pushEditorWithChanges(tester, (context, editor) {
       routeContext = context;
       return ProImageEditorCallbacks(
         onCompleteWithParameters: simulateCapture,
-        onCloseEditor: (editorMode) => state.isPopScopeDisabled = true,
+        onCloseEditor: (editorMode) => editor().isPopScopeDisabled = true,
       );
     });
 
