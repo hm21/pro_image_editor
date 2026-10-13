@@ -46,6 +46,7 @@ class TextEditorConfigs
     this.showBackgroundModeButton = true,
     this.enableMainEditorZoomFactor = false,
     this.enableTapOutsideToSave = true,
+    this.enableSubmitShortcut = false,
     this.enableAutoOverflow = true,
     this.enableAutoWrapOnLayer = true,
     this.initFontSize = 24.0,
@@ -111,6 +112,12 @@ class TextEditorConfigs
   /// will not trigger the save action, requiring users to use the done
   /// button or other explicit save actions.
   final bool enableTapOutsideToSave;
+
+  /// Whether Ctrl+Enter or Cmd+Enter saves the text and closes the editor,
+  /// the same as the done button.
+  ///
+  /// Plain Enter still inserts a new line. Defaults to `false`.
+  final bool enableSubmitShortcut;
 
   /// The initial font size for text.
   final double initFontSize;
@@ -268,6 +275,7 @@ class TextEditorConfigs
     bool? showSelectFontStyleBottomBar,
     bool? enableMainEditorZoomFactor,
     bool? enableTapOutsideToSave,
+    bool? enableSubmitShortcut,
     bool? enableAutoOverflow,
     bool? enableAutoWrapOnLayer,
     Color? initialPrimaryColor,
@@ -310,6 +318,7 @@ class TextEditorConfigs
           enableMainEditorZoomFactor ?? this.enableMainEditorZoomFactor,
       enableTapOutsideToSave:
           enableTapOutsideToSave ?? this.enableTapOutsideToSave,
+      enableSubmitShortcut: enableSubmitShortcut ?? this.enableSubmitShortcut,
       enableAutoOverflow: enableAutoOverflow ?? this.enableAutoOverflow,
       enableAutoWrapOnLayer:
           enableAutoWrapOnLayer ?? this.enableAutoWrapOnLayer,

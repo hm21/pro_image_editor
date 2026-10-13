@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '/core/mixins/converted_callbacks.dart';
@@ -386,6 +387,25 @@ class TextEditorState extends State<TextEditor>
     textEditorCallbacks?.handleDone();
   }
 
+  /// Ctrl+Enter or Cmd+Enter calls [done]. Plain Enter is left to the text
+  /// field so it still inserts a new line.
+  late final Map<ShortcutActivator, VoidCallback> _submitShortcuts = {
+    for (final key in [
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.numpadEnter,
+    ])
+      for (final activator in [
+        SingleActivator(key, control: true, includeRepeats: false),
+        SingleActivator(key, meta: true, includeRepeats: false),
+      ])
+        activator: done,
+  };
+
+  Widget _withSubmitShortcut(Widget child) {
+    if (!textEditorConfigs.enableSubmitShortcut) return child;
+    return CallbackShortcuts(bindings: _submitShortcuts, child: child);
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -406,13 +426,15 @@ class TextEditorState extends State<TextEditor>
               child: MediaQuery.removePadding(
                 context: context,
                 removeBottom: !textEditorConfigs.safeArea.bottom,
-                child: Scaffold(
-                  resizeToAvoidBottomInset:
-                      textEditorConfigs.resizeToAvoidBottomInset,
-                  backgroundColor: textEditorConfigs.style.background,
-                  appBar: _buildAppBar(constraints),
-                  body: _buildBody(),
-                  bottomNavigationBar: _buildBottomBar(),
+                child: _withSubmitShortcut(
+                  Scaffold(
+                    resizeToAvoidBottomInset:
+                        textEditorConfigs.resizeToAvoidBottomInset,
+                    backgroundColor: textEditorConfigs.style.background,
+                    appBar: _buildAppBar(constraints),
+                    body: _buildBody(),
+                    bottomNavigationBar: _buildBottomBar(),
+                  ),
                 ),
               ),
             ),

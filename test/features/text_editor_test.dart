@@ -1,10 +1,10 @@
 // Flutter imports:
 // Package imports:
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:pro_image_editor/core/models/layers/layer.dart';
-import 'package:pro_image_editor/features/text_editor/text_editor.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/slider_bottom_sheet.dart';
 
 void main() {
@@ -230,6 +230,116 @@ void main() {
       expect(result?.startTime, const Duration(seconds: 1));
       expect(result?.highlights, isEmpty);
       expect(result?.highlightColor, const Color(0xFF00FF00));
+    });
+  });
+
+  group('TextEditor submit shortcut', () {
+    Future<(bool, TextLayer?)> submit(
+      WidgetTester tester, {
+      required LogicalKeyboardKey? modifier,
+      LogicalKeyboardKey enter = LogicalKeyboardKey.enter,
+      bool? enabled,
+    }) async {
+      var closed = false;
+      TextLayer? result;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                result = await Navigator.of(context).push<TextLayer>(
+                  MaterialPageRoute(
+                    builder: (_) => TextEditor(
+                      key: key,
+                      theme: ThemeData.dark(),
+                      configs: enabled == null
+                          ? const ProImageEditorConfigs()
+                          : ProImageEditorConfigs(
+                              textEditor: TextEditorConfigs(
+                                enableSubmitShortcut: enabled,
+                              ),
+                            ),
+                    ),
+                  ),
+                );
+                closed = true;
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(EditableText), testText);
+      if (modifier != null) await tester.sendKeyDownEvent(modifier);
+      await tester.sendKeyEvent(enter);
+      if (modifier != null) await tester.sendKeyUpEvent(modifier);
+      await tester.pumpAndSettle();
+      return (closed, result);
+    }
+
+    testWidgets('Ctrl+Enter saves the text', (tester) async {
+      final (closed, result) = await submit(
+        tester,
+        modifier: LogicalKeyboardKey.controlLeft,
+        enabled: true,
+      );
+
+      expect(closed, isTrue);
+      expect(result?.text, testText);
+    });
+
+    testWidgets('Cmd+Enter saves the text', (tester) async {
+      final (closed, result) = await submit(
+        tester,
+        modifier: LogicalKeyboardKey.metaLeft,
+        enabled: true,
+      );
+
+      expect(closed, isTrue);
+      expect(result?.text, testText);
+    });
+
+    testWidgets('Ctrl+numpad Enter saves the text', (tester) async {
+      final (closed, result) = await submit(
+        tester,
+        modifier: LogicalKeyboardKey.controlLeft,
+        enter: LogicalKeyboardKey.numpadEnter,
+        enabled: true,
+      );
+
+      expect(closed, isTrue);
+      expect(result?.text, testText);
+    });
+
+    testWidgets('plain Enter does not save', (tester) async {
+      final (closed, _) = await submit(tester, modifier: null, enabled: true);
+
+      expect(closed, isFalse);
+      expect(find.byType(TextEditor), findsOneWidget);
+    });
+
+    testWidgets('is off by default', (tester) async {
+      final (closed, _) = await submit(
+        tester,
+        modifier: LogicalKeyboardKey.controlLeft,
+      );
+
+      expect(closed, isFalse);
+      expect(find.byType(TextEditor), findsOneWidget);
+    });
+
+    testWidgets('does nothing when disabled', (tester) async {
+      final (closed, _) = await submit(
+        tester,
+        modifier: LogicalKeyboardKey.controlLeft,
+        enabled: false,
+      );
+
+      expect(closed, isFalse);
+      expect(find.byType(TextEditor), findsOneWidget);
     });
   });
 
