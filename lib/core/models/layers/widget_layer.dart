@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '/core/constants/int_constants.dart';
 import '/core/platform/io/io_helper.dart';
 import '/shared/services/import_export/types/widget_loader.dart';
+import '/shared/utils/map_utils.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/parser/int_parser.dart';
 import '../editor_image.dart';
@@ -199,6 +200,8 @@ class WidgetLayer extends Layer {
     int maxDecimalPlaces = kMaxSafeDecimalPlaces,
     bool enableMinify = false,
   }) {
+    var exportConfigMap = exportConfigs.toMap();
+
     return {
       ...super.toMapFromReference(
         layer,
@@ -206,6 +209,12 @@ class WidgetLayer extends Layer {
         enableMinify: enableMinify,
       ),
       if (layer is WidgetLayer && width != layer.width) 'width': width,
+      // The import merges this diff over the previous step, so export configs
+      // changed after the layer was added would otherwise keep their first
+      // value. An emptied config is written too, to clear the previous one.
+      if (layer is WidgetLayer &&
+          !mapIsEqual(layer.exportConfigs.toMap(), exportConfigMap))
+        'exportConfigs': exportConfigMap,
     };
   }
 

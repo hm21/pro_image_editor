@@ -154,7 +154,8 @@ class LayerRasterizer extends ChangeNotifier {
   /// forwarded to [Layer.captureAllLayers]. [basePixelRatio] defaults to
   /// `configs.imageGeneration.customPixelRatio` — the value the editor's own
   /// export path passes — so a captured layer matches the resolution of a
-  /// live-session export.
+  /// live-session export. `configs.imageGeneration.layerCapturePixelRatio`
+  /// then decides each layer's pixel ratio, as it does in the editor.
   ///
   /// Layers whose content loads asynchronously — network images, decoded
   /// assets, custom [WidgetLayer]s — are not painted yet one frame after
@@ -274,6 +275,7 @@ class LayerRasterizer extends ChangeNotifier {
             basePixelRatio ?? configs.imageGeneration.customPixelRatio,
         applyTransforms: applyTransforms,
         format: format,
+        capturePixelRatio: configs.imageGeneration.layerCapturePixelRatio,
       );
     } finally {
       _request = null;

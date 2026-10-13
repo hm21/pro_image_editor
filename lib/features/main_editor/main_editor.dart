@@ -2960,6 +2960,9 @@ class ProImageEditorState extends State<ProImageEditor>
   /// For PNG exports, this method reuses the editor's existing
   /// [ContentRecorderController] so isolate resources stay warm and can be
   /// processed efficiently across all layers.
+  ///
+  /// Each layer is captured at the pixel ratio
+  /// `ImageGenerationConfigs.layerCapturePixelRatio` returns for it, when set.
   Future<List<ExportedLayer>> captureAllLayersWithMeta({
     double? pixelRatio,
     double? basePixelRatio,
@@ -2985,6 +2988,7 @@ class ProImageEditorState extends State<ProImageEditor>
       recorder: format == ui.ImageByteFormat.png
           ? _controllers.screenshot
           : null,
+      capturePixelRatio: configs.imageGeneration.layerCapturePixelRatio,
     );
   }
 

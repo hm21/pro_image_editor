@@ -1,5 +1,11 @@
 # Changelog
 
+## 14.12.0
+- **FEAT**(layers): `ImageGenerationConfigs.layerCapturePixelRatio` lets the host capture individual layers at a lower pixel ratio.
+
+## 14.11.1
+- **FIX**(import-export): Widget layer `exportConfigs` changed after the layer was added survive a history export and import instead of reverting to their first value.
+
 ## 14.11.0
 - **FEAT**(main-editor): `moveLayerListPosition` takes `skipUpdateHistory` to reorder layers within the current history step and redraws them in their new order.
 - **FIX**(main-editor): `moveLayerListPosition` ignores a `newIndex` past the last layer instead of throwing a `RangeError`.
