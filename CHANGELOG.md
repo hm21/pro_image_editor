@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.13.1
+- **FIX**(main-editor): The editor can be closed with `maybePop` right after editing is done; the fading loading dialog no longer blocks it.
+
 ## 14.13.0
 - **FEAT**(text-editor): Add `TextEditorConfigs.enableSubmitShortcut` to save the text with Ctrl+Enter or Cmd+Enter.
 

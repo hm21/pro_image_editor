@@ -43,4 +43,10 @@ class LoadingOverlayDetails {
   /// This [GlobalKey] is used to manage the state of the opacity animation for
   /// the loading overlay, enabling smooth visual transitions.
   GlobalKey<LoadingDialogOverlayAnimationState> animationKey;
+
+  /// Whether the overlay is fading out.
+  ///
+  /// A fading overlay no longer counts as active, so it neither blocks the
+  /// route from popping nor gets hidden a second time.
+  bool isHiding = false;
 }
