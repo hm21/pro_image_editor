@@ -23,15 +23,20 @@ class LoadingDialog extends ChangeNotifier {
   /// The singleton instance of `LoadingDialog`.
   static final LoadingDialog instance = LoadingDialog._();
 
-  /// A list of active loading overlays.
+  /// The loading overlays on screen, including those fading out.
   final List<LoadingOverlayDetails> _overlays = [];
 
-  /// Returns `true` if there is an active overlay.
-  bool get hasActiveOverlay => _overlays.isNotEmpty;
+  /// The topmost overlay that is not fading out.
+  LoadingOverlayDetails? get _activeOverlay =>
+      _overlays.where((overlay) => !overlay.isHiding).lastOrNull;
 
-  /// Returns `true` if the topmost overlay is dismissible.
-  bool get isDismissible =>
-      _overlays.isNotEmpty ? _overlays.last.isDismissible : true;
+  /// Returns `true` if there is an active overlay.
+  ///
+  /// An overlay stops being active as soon as it starts to fade out.
+  bool get hasActiveOverlay => _activeOverlay != null;
+
+  /// Returns `true` if the topmost active overlay is dismissible.
+  bool get isDismissible => _activeOverlay?.isDismissible ?? true;
 
   /// Displays a loading dialog in the given [context].
   ///
@@ -58,13 +63,14 @@ class LoadingDialog extends ChangeNotifier {
     message ??= configs.i18n.various.loadingDialogMsg;
 
     var animationKey = GlobalKey<OpacityOverlayAnimationState>();
+    late final LoadingOverlayDetails details;
 
     OverlayEntry overlay = OverlayEntry(
       builder: (BuildContext context) => OpacityOverlayAnimation(
         key: animationKey,
         onAnimationDone: () {
           /// Remove the overlay after the animation is done.
-          _removeOverlay();
+          _removeOverlay(details);
         },
         child: configs.dialogConfigs.widgets.loadingDialog != null
             ? configs.dialogConfigs.widgets.loadingDialog!(message!, configs)
@@ -84,38 +90,37 @@ class LoadingDialog extends ChangeNotifier {
 
     Overlay.of(context).insert(overlay);
 
-    _overlays.add(
-      LoadingOverlayDetails(
-        entry: overlay,
-        isDismissible: isDismissible,
-        animationKey: animationKey,
-      ),
+    details = LoadingOverlayDetails(
+      entry: overlay,
+      isDismissible: isDismissible,
+      animationKey: animationKey,
     );
+    _overlays.add(details);
 
     notifyListeners();
   }
 
-  /// Hides the topmost loading dialog.
+  /// Hides the topmost active loading dialog.
   ///
   /// The method triggers the hide animation of the dialog,
   /// which will remove the overlay after the animation completes.
   void hide() {
-    if (_overlays.isNotEmpty) {
-      if (_overlays.last.animationKey.currentState == null) {
-        _removeOverlay();
+    final overlay = _activeOverlay;
+    if (overlay != null) {
+      overlay.isHiding = true;
+      final animation = overlay.animationKey.currentState;
+      if (animation == null) {
+        _removeOverlay(overlay);
       } else {
-        _overlays.last.animationKey.currentState!.hide();
+        animation.hide();
       }
     }
     notifyListeners();
   }
 
-  /// Removes the topmost overlay from the stack.
-  void _removeOverlay() {
-    if (_overlays.isNotEmpty) {
-      _overlays.last.entry.remove();
-      _overlays.removeLast();
-    }
+  /// Removes the given overlay from the stack.
+  void _removeOverlay(LoadingOverlayDetails overlay) {
+    if (_overlays.remove(overlay)) overlay.entry.remove();
   }
 
   /// Builds the default loading dialog widget.

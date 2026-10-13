@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.12.1
+- **FIX**(main-editor): The editor can be closed with `maybePop` right after editing is done; the fading loading dialog no longer blocks it.
+
 ## 14.12.0
 - **FEAT**(layers): `ImageGenerationConfigs.layerCapturePixelRatio` lets the host capture individual layers at a lower pixel ratio.
 
