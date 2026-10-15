@@ -161,6 +161,7 @@ class LayerCopyManager {
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
+      mask: layer.mask,
     )..groupId = layer.groupId;
   }
 
@@ -193,6 +194,7 @@ class LayerCopyManager {
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
+      mask: layer.mask,
     )..groupId = layer.groupId;
   }
 
@@ -227,6 +229,7 @@ class LayerCopyManager {
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
+      mask: layer.mask,
     )..groupId = layer.groupId;
   }
 
@@ -260,6 +263,7 @@ class LayerCopyManager {
       transitionBuilder: layer.transitionBuilder,
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
+      mask: layer.mask,
     )..groupId = layer.groupId;
   }
 }

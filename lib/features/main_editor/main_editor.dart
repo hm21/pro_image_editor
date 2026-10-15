@@ -1816,7 +1816,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ..interaction = original.interaction
       ..meta = original.meta
       ..keyframes = original.keyframes
-      ..opacity = original.opacity;
+      ..opacity = original.opacity
+      ..mask = original.mask;
 
     if (updatedLayer.text.isEmpty) {
       removeLayer(original);

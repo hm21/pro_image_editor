@@ -361,5 +361,16 @@ void main() {
       expect(PaintLayerMergeManager.canMerge([paint(), animated]), isFalse);
       expect(PaintLayerMergeManager.isMergeable(animated), isFalse);
     });
+
+    test('excludes layers carrying a mask', () {
+      final masked = _paintLayer(
+        mode: PaintMode.freeStyle,
+        offsets: const [Offset(0, 0), Offset(10, 10)],
+        rawSize: const Size(10, 10),
+      )..mask = const LayerMask(shape: LayerMaskShape.ellipse);
+
+      expect(PaintLayerMergeManager.canMerge([paint(), masked]), isFalse);
+      expect(PaintLayerMergeManager.isMergeable(masked), isFalse);
+    });
   });
 }

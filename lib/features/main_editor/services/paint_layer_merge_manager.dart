@@ -23,12 +23,15 @@ class PaintLayerMergeManager {
   /// ([Layer.startTime] / [Layer.endTime]), [Layer.animations] or
   /// [Layer.keyframes] is excluded too, because a single static merged layer
   /// cannot reproduce a per-source appearance that changes over the timeline.
+  /// So is a layer with a [Layer.mask]: the merged layer carries one mask at
+  /// most, measured in its own box, which is not the source's.
   static bool isMergeable(PaintLayer layer) {
     return !layer.isCensor &&
         layer.startTime == null &&
         layer.endTime == null &&
         layer.animations.isEmpty &&
-        !layer.hasKeyframes;
+        !layer.hasKeyframes &&
+        layer.mask == null;
   }
 
   /// Returns the mergeable paint layers contained in [layers], preserving their

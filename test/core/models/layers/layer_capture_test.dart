@@ -527,4 +527,100 @@ void main() {
       });
     });
   });
+  group('Layer mask', () {
+    Future<ProImageEditorState> pumpEditor(WidgetTester tester) async {
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            mockMemoryImage,
+            key: key,
+            callbacks: const ProImageEditorCallbacks(),
+            configs: const ProImageEditorConfigs(
+              progressIndicatorConfigs: ProgressIndicatorConfigs(
+                widgets: ProgressIndicatorWidgets(
+                  circularProgressIndicator: SizedBox.shrink(),
+                ),
+              ),
+              imageGeneration: ImageGenerationConfigs(
+                enableBackgroundGeneration: false,
+                enableIsolateGeneration: false,
+              ),
+            ),
+          ),
+        ),
+      );
+      return key.currentState!;
+    }
+
+    const contentKey = ValueKey('masked-content');
+    const circle = LayerMask(shape: LayerMaskShape.ellipse, size: Size(1, 1));
+
+    WidgetLayer maskedLayer() => WidgetLayer(
+      widget: const ColoredBox(
+        key: contentKey,
+        color: Color(0xFFFF0000),
+        child: SizedBox(width: 20, height: 20),
+      ),
+      mask: circle,
+    );
+
+    /// The alphas of the middle pixel and of the top-left one of [bytes], an
+    /// RGBA image of a square layer.
+    (int, int) centerAndCornerAlpha(Uint8List bytes) {
+      final side = math.sqrt(bytes.length / 4).round();
+      final center = (side ~/ 2) * side + side ~/ 2;
+      return (bytes[center * 4 + 3], bytes[3]);
+    }
+
+    testWidgets('masks a layer on the canvas', (tester) async {
+      final editor = await pumpEditor(tester);
+      editor.addLayer(maskedLayer());
+      await tester.pumpAndSettle();
+
+      final box = tester.widget<LayerMaskBox>(
+        find.ancestor(
+          of: find.byKey(contentKey),
+          matching: find.byType(LayerMaskBox),
+        ),
+      );
+      expect(box.mask, circle);
+    });
+
+    testWidgets('keeps the mask of a text layer whose text is edited', (
+      tester,
+    ) async {
+      final editor = await pumpEditor(tester);
+      final original = TextLayer(text: 'before', mask: circle);
+      editor.addLayer(original);
+      await tester.pumpAndSettle();
+
+      editor.applyTextLayerChanges(original, TextLayer(text: 'after'));
+      await tester.pumpAndSettle();
+
+      final edited = editor.activeLayers.single as TextLayer;
+      expect(edited.text, 'after');
+      expect(edited.mask, circle);
+    });
+
+    for (final applyTransforms in [true, false]) {
+      testWidgets('bakes the mask into the captured image '
+          '${applyTransforms ? 'with' : 'without'} transforms', (tester) async {
+        await tester.runAsync(() async {
+          final editor = await pumpEditor(tester);
+          final layer = maskedLayer();
+          editor.addLayer(layer);
+          await tester.pumpAndSettle();
+
+          final bytes = await layer.captureAsPng(
+            format: ui.ImageByteFormat.rawRgba,
+            pixelRatio: 1,
+            applyTransforms: applyTransforms,
+          );
+
+          expect(centerAndCornerAlpha(bytes!), (255, 0));
+        });
+      });
+    }
+  });
 }

@@ -29,6 +29,7 @@ import 'exported_layer.dart';
 import 'layer_animation.dart';
 import 'layer_interaction.dart';
 import 'layer_keyframe.dart';
+import 'layer_mask.dart';
 import 'paint_layer.dart';
 import 'text_layer.dart';
 import 'text_layer_timeline.dart';
@@ -39,6 +40,7 @@ export '/core/models/editor_configs/video/layer_timeline_configs.dart'
 export 'emoji_layer.dart';
 export 'layer_animation.dart';
 export 'layer_keyframe.dart';
+export 'layer_mask.dart';
 export 'paint_layer.dart';
 export 'text_highlight.dart';
 export 'text_layer.dart';
@@ -69,6 +71,7 @@ class Layer {
     List<LayerAnimation>? animations,
     this.opacity = 1,
     List<LayerKeyframe>? keyframes,
+    this.mask,
   }) : key = key ??= GlobalKey(),
        keyInternalSize = GlobalKey(),
        repaintBoundaryKey = GlobalKey(),
@@ -148,6 +151,11 @@ class Layer {
             (e) => LayerKeyframe.fromMap(Map<String, dynamic>.from(e as Map)),
           )
           .toList(),
+      mask: map[keyConverter('mask')] is Map
+          ? LayerMask.fromMap(
+              Map<String, dynamic>.from(map[keyConverter('mask')] as Map),
+            )
+          : null,
     );
 
     /// Determines the layer type from the map and returns the appropriate
@@ -247,6 +255,18 @@ class Layer {
   /// captured image carries it, and so does the image [captureAsPng] returns
   /// for any other layer.
   double opacity;
+
+  /// Shows the layer only inside a shape, or fades it out through a soft
+  /// edge; `null` shows the whole layer.
+  ///
+  /// The mask is measured in the layer's own box, so it moves, grows and
+  /// turns with the layer and its [keyframes]. It applies on the canvas and
+  /// [captureAsPng] bakes it into the captured image, whether or not
+  /// transforms are applied: unlike a turn or a flip, it changes the layer's
+  /// content rather than how that content is placed.
+  ///
+  /// Set it to `null` to remove the mask; [copyWith] cannot clear it.
+  LayerMask? mask;
 
   /// The layer's placement over time in the video editor.
   ///
@@ -598,6 +618,7 @@ class Layer {
       if (opacity != 1) 'opacity': opacity.roundSmart(maxDecimalPlaces),
       if (keyframes.isNotEmpty)
         'keyframes': keyframes.map((k) => k.toMap()).toList(),
+      if (mask != null) 'mask': mask!.toMap(),
     };
   }
 
@@ -650,6 +671,9 @@ class Layer {
       // previous step, which would otherwise keep the removed keyframes.
       if (!listEquals(layer.keyframes, keyframes))
         'keyframes': keyframes.map((k) => k.toMap()).toList(),
+      // `null` is written too, so a removed mask does not come back from the
+      // previous step on import.
+      if (layer.mask != mask) 'mask': mask?.toMap(),
     };
   }
 
@@ -672,7 +696,8 @@ class Layer {
   /// [flipX], [flipY] and [opacity] are applied to the output image. Set it to
   /// `false` to get the raw, un-transformed content. A layer with [keyframes]
   /// is captured opaque, as their opacity changes over time; a [PaintLayer]
-  /// always carries the opacity it draws its strokes with.
+  /// always carries the opacity it draws its strokes with. A [mask] is
+  /// applied either way.
   ///
   /// A [TextLayer] with [TextLayer.highlights] or a text reveal is captured
   /// with no highlight active and its whole text shown, whatever the playback
@@ -743,7 +768,7 @@ class Layer {
     final boundary = boundaryWidget is LayerRepaintBoundary
         ? boundaryWidget
         : null;
-    final ui.Image rawImage;
+    ui.Image rawImage;
     if (highlightIndex != null || revealedLength != null) {
       final renderTextState = boundary?.renderTextState;
       if (renderTextState == null) return null;
@@ -767,6 +792,15 @@ class Layer {
           pixelRatio: effectivePixelRatio,
         );
       }
+    }
+
+    // Every source above is unmasked — the canvas applies the mask outside
+    // the boundary, and the renderers draw from the model — so it is baked in
+    // here, before the image is turned, flipped or faded like the layer.
+    if (mask case final mask?) {
+      final masked = await mask.applyTo(rawImage);
+      rawImage.dispose();
+      rawImage = masked;
     }
 
     final bool needsTransform =
@@ -1199,6 +1233,7 @@ class Layer {
         listEquals(other.animations, animations) &&
         other.opacity == opacity &&
         listEquals(other.keyframes, keyframes) &&
+        other.mask == mask &&
         mapIsEqual(other.meta, meta);
   }
 
@@ -1223,7 +1258,8 @@ class Layer {
         transitionBuilder.hashCode ^
         Object.hashAll(animations) ^
         opacity.hashCode ^
-        Object.hashAll(keyframes);
+        Object.hashAll(keyframes) ^
+        mask.hashCode;
   }
 
   /// Creates a copy of this [Layer] with the given fields replaced with
@@ -1249,6 +1285,7 @@ class Layer {
     List<LayerAnimation>? animations,
     double? opacity,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -1271,6 +1308,7 @@ class Layer {
       animations: animations ?? this.animations,
       opacity: opacity ?? this.opacity,
       keyframes: keyframes ?? this.keyframes,
+      mask: mask ?? this.mask,
     );
   }
 
@@ -1308,6 +1346,7 @@ class Layer {
       )
       ..add(IterableProperty<LayerAnimation>('animations', animations))
       ..add(DoubleProperty('opacity', opacity))
-      ..add(IterableProperty<LayerKeyframe>('keyframes', keyframes));
+      ..add(IterableProperty<LayerKeyframe>('keyframes', keyframes))
+      ..add(DiagnosticsProperty<LayerMask>('mask', mask));
   }
 }

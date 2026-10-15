@@ -42,6 +42,7 @@ export 'core/models/layers/layer.dart';
 export 'core/models/layers/exported_layer.dart';
 export 'shared/services/layer_rasterizer/layer_rasterizer.dart';
 export 'shared/services/layer_rasterizer/layer_rasterizer_host.dart';
+export 'shared/widgets/layer/widgets/layer_mask_box.dart';
 export 'core/models/custom_widgets/layer_interaction_widgets.dart';
 export 'features/blur_editor/blur_editor.dart';
 export 'features/crop_rotate_editor/crop_rotate_editor.dart';

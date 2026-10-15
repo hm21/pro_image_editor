@@ -374,6 +374,9 @@ class TextEditorState extends State<TextEditor>
         // change either.
         keyframes: original?.keyframes,
         opacity: original?.opacity ?? 1,
+        // A mask is measured in the layer's own box, so it fits the edited
+        // text as well.
+        mask: original?.mask,
         // Highlights point into the text, so they only fit the text they
         // were made for.
         highlights: original?.text == text ? original?.highlights : null,
