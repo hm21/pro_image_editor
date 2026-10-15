@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.14.1
+- **FIX**(import-export): A state history export writes a paint layer's strokes once instead of again in every history step; after an import every step used to rewrite all of them. Exporting also skips comparing layer meta that copies share.
+
 ## 14.14.0
 - **FEAT**(layers): Add `Layer.mask` to show a layer only inside an ellipse, a rounded rectangle or a heart, or faded out across a soft linear edge; `LayerMaskBox` applies it to any widget and `LayerMask.toImage` renders it as an alpha matte.
 

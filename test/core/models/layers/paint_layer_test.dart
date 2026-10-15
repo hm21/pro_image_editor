@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pro_image_editor/features/main_editor/services/layer_copy_manager.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';
 
@@ -254,6 +255,58 @@ void main() {
         isFalse,
       );
       expect(restored.item.censorStrength, isNull);
+    });
+  });
+
+  group('PaintLayer toMapFromReference', () {
+    PaintLayer strokeLayer() => PaintLayer(
+      items: [
+        PaintedModel(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(1, 2), Offset(3, 4), Offset(5, 6)],
+          erasedOffsets: const [],
+          color: Colors.red,
+          strokeWidth: 4,
+          opacity: 1,
+        ),
+      ],
+      rawSize: const Size(10, 10),
+      opacity: 1,
+    );
+
+    test('omits the strokes of a layer the editor copied', () {
+      final layer = strokeLayer();
+      // Every history step holds such a copy of each layer.
+      final copy = LayerCopyManager().copyLayer(layer) as PaintLayer;
+
+      final diff = copy.toMapFromReference(layer);
+
+      expect(copy.items.first, isNot(layer.items.first));
+      expect(diff.containsKey('item'), isFalse);
+      expect(diff.containsKey('items'), isFalse);
+    });
+
+    test('omits the strokes of an unchanged layer after an import', () {
+      final layer = strokeLayer();
+      final map = layer.toMap();
+      // An import rebuilds the layer of each step from the same map, so
+      // consecutive steps hold separate but identical strokes.
+      final previousStep = PaintLayer.fromMap(layer, map);
+      final nextStep = PaintLayer.fromMap(layer, map);
+
+      final diff = nextStep.toMapFromReference(previousStep);
+
+      expect(diff.containsKey('item'), isFalse);
+    });
+
+    test('writes the strokes when a stroke changed', () {
+      final layer = strokeLayer();
+      final copy = LayerCopyManager().copyLayer(layer) as PaintLayer;
+      copy.items.first.offsets = const [Offset(1, 2), Offset(9, 9)];
+
+      final diff = copy.toMapFromReference(layer);
+
+      expect(diff['item'], isA<Map<String, dynamic>>());
     });
   });
 }

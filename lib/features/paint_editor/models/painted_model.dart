@@ -304,7 +304,20 @@ class PaintedModel {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
+    return other is PaintedModel && other.id == id && drawsSameAs(other);
+  }
+
+  /// Whether [other] draws the same stroke as this model, whatever its [id].
+  ///
+  /// Each [copy] and each [PaintedModel.fromMap] gets a new [id], so `==`
+  /// tells apart two copies of one stroke. The editor copies every layer into
+  /// each history step and an import rebuilds every step, so comparing the
+  /// strokes of two steps needs this instead.
+  bool drawsSameAs(PaintedModel other) {
+    if (identical(this, other)) return true;
+
     bool isListEqual(List<dynamic> list1, List<dynamic> list2) {
+      if (identical(list1, list2)) return true;
       if (list1.length != list2.length) return false;
 
       for (int i = 0; i < list1.length; i++) {
@@ -316,13 +329,11 @@ class PaintedModel {
       return true;
     }
 
-    return other is PaintedModel &&
-        other.mode == mode &&
+    return other.mode == mode &&
         other.color == color &&
         other.strokeWidth == strokeWidth &&
         other.opacity == opacity &&
         other.fill == fill &&
-        other.id == id &&
         other.censorStrength == censorStrength &&
         isListEqual(other.offsets, offsets) &&
         isListEqual(other.erasedOffsets, erasedOffsets);

@@ -10,6 +10,9 @@
 ///
 /// - Returns: A boolean value indicating whether the two objects are equal.
 bool mapIsEqual(dynamic a, dynamic b) {
+  // Layer copies share their meta maps, and the state history export compares
+  // every layer of every step, so skip walking a map compared with itself.
+  if (identical(a, b)) return true;
   if (a is Map && b is Map) {
     if (a.length != b.length) return false;
     for (var key in a.keys) {

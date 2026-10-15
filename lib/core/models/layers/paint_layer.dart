@@ -221,7 +221,10 @@ class PaintLayer extends Layer {
   }) {
     var paintLayer = layer as PaintLayer;
 
-    final bool itemsChanged = !_listEquals(paintLayer.items, items);
+    // By content, not `==`: each history step holds its own copy of every
+    // stroke, and a copy has a new id. With `==`, every step written after a
+    // copy carried the full stroke list of every paint layer again.
+    final bool itemsChanged = !_drawSameStrokes(paintLayer.items, items);
 
     return {
       ...super.toMapFromReference(
@@ -252,10 +255,10 @@ class PaintLayer extends Layer {
     };
   }
 
-  bool _listEquals(List<PaintedModel> a, List<PaintedModel> b) {
+  bool _drawSameStrokes(List<PaintedModel> a, List<PaintedModel> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
+      if (!a[i].drawsSameAs(b[i])) return false;
     }
     return true;
   }
