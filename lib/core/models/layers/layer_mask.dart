@@ -138,6 +138,30 @@ class LayerMask {
     );
   }
 
+  /// The point on a layer of [layerSize] the shape is centred on and turns
+  /// around.
+  Offset _pivot(Size layerSize) =>
+      Offset(center.dx * layerSize.width, center.dy * layerSize.height);
+
+  /// Turns by [rotation] around [pivot].
+  Matrix4 _turn(Offset pivot) => Matrix4.identity()
+    ..translateByDouble(pivot.dx, pivot.dy, 0, 1)
+    ..rotateZ(rotation)
+    ..translateByDouble(-pivot.dx, -pivot.dy, 0, 1);
+
+  /// How far a linear edge reaches from [pivot] on either side: to the
+  /// farthest corner of a layer of [layerSize], so it crosses the whole layer
+  /// even when [center] lies outside it.
+  static double _reach(Size layerSize, Offset pivot) {
+    final bounds = Offset.zero & layerSize;
+    return [
+      bounds.topLeft,
+      bounds.topRight,
+      bounds.bottomLeft,
+      bounds.bottomRight,
+    ].map((corner) => (corner - pivot).distance).reduce(math.max);
+  }
+
   /// The outline of the shape on a layer of [layerSize], turned by
   /// [rotation], in the layer's own coordinates.
   ///
@@ -145,23 +169,47 @@ class LayerMask {
   /// [center] that crosses the whole layer. Useful to draw the mask while it
   /// is edited.
   Path outline(Size layerSize) {
-    final pivot = Offset(
-      center.dx * layerSize.width,
-      center.dy * layerSize.height,
-    );
-    final turn = Matrix4.identity()
-      ..translateByDouble(pivot.dx, pivot.dy, 0, 1)
-      ..rotateZ(rotation)
-      ..translateByDouble(-pivot.dx, -pivot.dy, 0, 1);
+    final pivot = _pivot(layerSize);
+    final turn = _turn(pivot);
 
     if (shape == LayerMaskShape.linear) {
-      final reach = layerSize.width + layerSize.height;
+      final reach = _reach(layerSize, pivot);
       return (Path()
             ..moveTo(pivot.dx - reach, pivot.dy)
             ..lineTo(pivot.dx + reach, pivot.dy))
           .transform(turn.storage);
     }
     return _shapePath(shapeRect(layerSize)).transform(turn.storage);
+  }
+
+  /// The part of a layer of [layerSize] the mask shows, in the layer's own
+  /// coordinates, with its edge taken as hard whatever [feather] is.
+  ///
+  /// With [feather] `0` this is exactly what [paint] fills. `LayerMaskBox`
+  /// clips a hard-edged mask to it, so the edge stays sharp however large
+  /// the layer is drawn or captured.
+  Path area(Size layerSize) {
+    final pivot = _pivot(layerSize);
+    final Path shown;
+    if (shape == LayerMaskShape.linear) {
+      final reach = _reach(layerSize, pivot);
+      shown = Path()
+        ..addRect(
+          Rect.fromLTRB(
+            pivot.dx - reach,
+            pivot.dy - reach,
+            pivot.dx + reach,
+            pivot.dy,
+          ),
+        );
+    } else {
+      shown = _shapePath(shapeRect(layerSize));
+    }
+    return Path.combine(
+      invert ? PathOperation.difference : PathOperation.intersect,
+      Path()..addRect(Offset.zero & layerSize),
+      shown.transform(_turn(pivot).storage),
+    );
   }
 
   Path _shapePath(Rect rect) {
@@ -191,53 +239,46 @@ class LayerMask {
   /// it; only its alpha matters.
   void paint(Canvas canvas, Size layerSize) {
     if (layerSize.isEmpty) return;
-    final bounds = Offset.zero & layerSize;
     final featherPx = feather * layerSize.shortestSide;
-    final pivot = Offset(
-      center.dx * layerSize.width,
-      center.dy * layerSize.height,
-    );
+    if (featherPx <= 0) {
+      canvas.drawPath(
+        area(layerSize),
+        Paint()..color = const Color(0xFFFFFFFF),
+      );
+      return;
+    }
 
+    final bounds = Offset.zero & layerSize;
+    final pivot = _pivot(layerSize);
     canvas
       ..save()
       ..clipRect(bounds);
 
     if (shape == LayerMaskShape.linear) {
+      const shown = Color(0xFFFFFFFF);
+      const hidden = Color(0x00FFFFFF);
+      final reach = _reach(layerSize, pivot);
       canvas
         ..translate(pivot.dx, pivot.dy)
-        ..rotate(rotation);
-      final reach = layerSize.width + layerSize.height;
-      final paint = Paint()..color = const Color(0xFFFFFFFF);
-      if (featherPx <= 0) {
-        canvas.drawRect(
-          invert
-              ? Rect.fromLTRB(-reach, 0, reach, reach)
-              : Rect.fromLTRB(-reach, -reach, reach, 0),
-          paint,
-        );
-      } else {
-        const shown = Color(0xFFFFFFFF);
-        const hidden = Color(0x00FFFFFF);
-        paint.shader = ui.Gradient.linear(
-          Offset(0, -featherPx / 2),
-          Offset(0, featherPx / 2),
-          invert ? const [hidden, shown] : const [shown, hidden],
-        );
-        canvas.drawRect(Rect.fromLTRB(-reach, -reach, reach, reach), paint);
-      }
-      canvas.restore();
+        ..rotate(rotation)
+        ..drawRect(
+          Rect.fromLTRB(-reach, -reach, reach, reach),
+          Paint()
+            ..shader = ui.Gradient.linear(
+              Offset(0, -featherPx / 2),
+              Offset(0, featherPx / 2),
+              invert ? const [hidden, shown] : const [shown, hidden],
+            ),
+        )
+        ..restore();
       return;
     }
 
-    final shapePaint = Paint()..color = const Color(0xFFFFFFFF);
-    if (featherPx > 0) {
-      // A Gaussian edge goes from about 10 % to 90 % over 2.56 sigma, which
-      // is the distance [feather] promises.
-      shapePaint.maskFilter = MaskFilter.blur(
-        BlurStyle.normal,
-        featherPx / 2.56,
-      );
-    }
+    // A Gaussian edge goes from about 10 % to 90 % over 2.56 sigma, which is
+    // the distance [feather] promises.
+    final shapePaint = Paint()
+      ..color = const Color(0xFFFFFFFF)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, featherPx / 2.56);
 
     if (invert) {
       canvas

@@ -12,8 +12,8 @@ import '/core/models/layers/layer_mask.dart';
 /// across its soft edge.
 ///
 /// The mask is stretched over the child's box. It applies to everything the
-/// child paints, including a video [Texture] and other composited layers,
-/// because it is applied by the compositor rather than on a canvas.
+/// child paints, including a video [Texture] and other composited layers:
+/// a hard edge is a path clip, a [LayerMask.feather]ed one a shader mask.
 ///
 /// With [mask] `null` the child paints as it is.
 class LayerMaskBox extends SingleChildRenderObjectWidget {
@@ -25,10 +25,7 @@ class LayerMaskBox extends SingleChildRenderObjectWidget {
 
   @override
   RenderLayerMaskBox createRenderObject(BuildContext context) {
-    return RenderLayerMaskBox(
-      mask: mask,
-      devicePixelRatio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
-    );
+    return RenderLayerMaskBox(mask: mask);
   }
 
   @override
@@ -36,30 +33,28 @@ class LayerMaskBox extends SingleChildRenderObjectWidget {
     BuildContext context,
     RenderLayerMaskBox renderObject,
   ) {
-    renderObject
-      ..mask = mask
-      ..devicePixelRatio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    renderObject.mask = mask;
   }
 }
 
 /// The render object of a [LayerMaskBox].
 ///
-/// The mask is rasterized once into an image as sharp as the child is drawn
-/// on screen and reused until the mask, the box size or the needed
-/// resolution changes.
+/// A hard-edged mask clips the child to [LayerMask.area], which stays sharp
+/// at any resolution: when the editor is zoomed in, and when its image is
+/// captured at a higher pixel ratio than the screen's.
+///
+/// A [LayerMask.feather]ed mask is rasterized once into an image as sharp as
+/// the child is drawn on screen and reused until the mask, the box size or
+/// the needed resolution changes. A soft edge stays smooth when that image
+/// is scaled up for a capture.
 class RenderLayerMaskBox extends RenderProxyBox {
   /// Creates a [RenderLayerMaskBox].
-  RenderLayerMaskBox({
-    LayerMask? mask,
-    double devicePixelRatio = 1,
-    RenderBox? child,
-  }) : // The setters drop the cached mask image, so the fields stay private
-       // and the parameters cannot initialize them directly.
-       // ignore: prefer_initializing_formals
-       _mask = mask,
-       // ignore: prefer_initializing_formals
-       _devicePixelRatio = devicePixelRatio,
-       super(child);
+  RenderLayerMaskBox({LayerMask? mask, RenderBox? child})
+    : // The setter drops the cached mask, so the field stays private and the
+      // parameter cannot initialize it directly.
+      // ignore: prefer_initializing_formals
+      _mask = mask,
+      super(child);
 
   /// The longest side, in pixels, a mask image is rendered at.
   ///
@@ -73,34 +68,42 @@ class RenderLayerMaskBox extends RenderProxyBox {
   LayerMask? get mask => _mask;
   set mask(LayerMask? value) {
     if (value == _mask) return;
-    final hadMask = _mask != null;
+    final wasSoft = _isSoft;
     _mask = value;
     _disposeImage();
-    if (hadMask != (value != null)) markNeedsCompositingBitsUpdate();
+    _area = null;
+    if (wasSoft != _isSoft) markNeedsCompositingBitsUpdate();
     markNeedsPaint();
   }
 
-  double _devicePixelRatio;
-
-  /// The device pixel ratio the mask image is sized for.
-  double get devicePixelRatio => _devicePixelRatio;
-  set devicePixelRatio(double value) {
-    if (value == _devicePixelRatio) return;
-    _devicePixelRatio = value;
-    markNeedsPaint();
-  }
+  /// Whether the mask has a soft edge and so is applied as a shader mask.
+  bool get _isSoft => (_mask?.feather ?? 0) > 0;
 
   ui.Image? _image;
   Size _imageSize = Size.zero;
   double _imagePixelRatio = 0;
 
-  @override
-  bool get alwaysNeedsCompositing => child != null && _mask != null;
+  Path? _area;
+  Size _areaSize = Size.zero;
 
-  /// How many image pixels one logical pixel of this box needs: the screen's
-  /// pixel ratio times how much the box is scaled on the way to the screen.
+  @override
+  bool get alwaysNeedsCompositing => child != null && _isSoft;
+
+  /// The clip of a hard-edged [mask], kept while the box size does not
+  /// change: combining paths on every frame of a drag is not free.
+  Path _clipPath(LayerMask mask) {
+    if (_area case final area? when _areaSize == size) return area;
+    _areaSize = size;
+    return _area = mask.area(size);
+  }
+
+  /// How many image pixels one logical pixel of this box needs: how much the
+  /// box is scaled on the way to the screen's physical pixels.
+  ///
+  /// The transform to the root holds the screen's pixel ratio already, as
+  /// the root view scales logical to physical pixels.
   double _neededPixelRatio() {
-    var scale = 1.0;
+    var ratio = 1.0;
     if (attached) {
       final transform = getTransformTo(null);
       final scaleX = math.sqrt(
@@ -112,9 +115,8 @@ class RenderLayerMaskBox extends RenderProxyBox {
             transform.entry(1, 1) * transform.entry(1, 1),
       );
       final axisScale = math.max(scaleX, scaleY);
-      if (axisScale.isFinite && axisScale > 0) scale = axisScale;
+      if (axisScale.isFinite && axisScale > 0) ratio = axisScale;
     }
-    final ratio = _devicePixelRatio * scale;
     final longest = size.longestSide;
     if (longest <= 0) return ratio;
     return math.min(ratio, maxImageSide / longest);
@@ -155,6 +157,20 @@ class RenderLayerMaskBox extends RenderProxyBox {
       return;
     }
 
+    if (!_isSoft) {
+      final oldLayer = layer;
+      layer = context.pushClipPath(
+        needsCompositing,
+        offset,
+        Offset.zero & size,
+        _clipPath(mask),
+        super.paint,
+        clipBehavior: Clip.antiAlias,
+        oldLayer: oldLayer is ClipPathLayer ? oldLayer : null,
+      );
+      return;
+    }
+
     final image = _maskImage(mask);
     final shader = ui.ImageShader(
       image,
@@ -167,10 +183,12 @@ class RenderLayerMaskBox extends RenderProxyBox {
       ).storage,
       filterQuality: FilterQuality.medium,
     );
-    final maskLayer = ((layer as ShaderMaskLayer?) ?? ShaderMaskLayer())
-      ..shader = shader
-      ..maskRect = offset & size
-      ..blendMode = BlendMode.dstIn;
+    final oldLayer = layer;
+    final maskLayer =
+        (oldLayer is ShaderMaskLayer ? oldLayer : ShaderMaskLayer())
+          ..shader = shader
+          ..maskRect = offset & size
+          ..blendMode = BlendMode.dstIn;
     layer = maskLayer;
     context.pushLayer(maskLayer, super.paint, offset);
   }

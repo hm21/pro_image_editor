@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -222,6 +223,32 @@ void main() {
       });
     });
 
+    for (final feather in [0.0, 0.5]) {
+      testWidgets('crosses the whole layer with a '
+          '${feather > 0 ? 'feathered' : 'hard'} linear edge centred outside '
+          'it', (tester) async {
+        // A wide, short layer with the edge's centre far to its right: an
+        // edge that reached only as far as the layer is wide and high would
+        // stop short of its left end.
+        const layerSize = Size(200, 20);
+        final bytes = (await tester.runAsync(() async {
+          final image = await LayerMask(
+            shape: LayerMaskShape.linear,
+            center: const Offset(2, 0.5),
+            feather: feather,
+          ).toImage(layerSize);
+          final data = await image.toByteData();
+          image.dispose();
+          return data!.buffer.asUint8List();
+        }))!;
+
+        int alphaAt(int x, int y) => bytes[(y * 200 + x) * 4 + 3];
+        expect(alphaAt(5, 1), 255);
+        expect(alphaAt(195, 1), 255);
+        expect(alphaAt(5, 18), 0);
+      });
+    }
+
     testWidgets('fills the last row and column of an image rounded up to '
         'whole pixels', (tester) async {
       // 10.5 logical pixels become an 11-pixel image. An inverted mask hides
@@ -267,6 +294,113 @@ void main() {
           bytes.sublist((y * 40 + x) * 4, (y * 40 + x) * 4 + 4);
       expect(pixel(20, 20), [255, 0, 0, 255]);
       expect(pixel(1, 1)[3], 0);
+    });
+  });
+
+  group(LayerMaskBox, () {
+    const boundaryKey = ValueKey('mask-box-boundary');
+    const side = 20.0;
+
+    /// Paints a red square of [side] logical pixels through [mask] on a
+    /// screen of pixel ratio 1.
+    Future<void> pumpMasked(WidgetTester tester, LayerMask? mask) {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      return tester.pumpWidget(
+        Center(
+          child: RepaintBoundary(
+            key: boundaryKey,
+            child: LayerMaskBox(
+              mask: mask,
+              child: const ColoredBox(
+                color: Color(0xFFFF0000),
+                child: SizedBox.square(dimension: side),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    /// Captures the masked square at [pixelRatio] and returns the alpha at
+    /// each logical point in [points].
+    Future<List<int>> alphasAt(
+      WidgetTester tester,
+      List<Offset> points, {
+      double pixelRatio = 1,
+    }) async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(boundaryKey),
+      );
+      final bytes = (await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: pixelRatio);
+        final data = await image.toByteData();
+        image.dispose();
+        return data!.buffer.asUint8List();
+      }))!;
+      final width = (side * pixelRatio).round();
+      return [
+        for (final point in points)
+          bytes[((point.dy * pixelRatio).floor() * width +
+                      (point.dx * pixelRatio).floor()) *
+                  4 +
+              3],
+      ];
+    }
+
+    const circle = LayerMask(shape: LayerMaskShape.ellipse, size: Size(1, 1));
+    const center = Offset(side / 2, side / 2);
+    const corner = Offset(0.5, 0.5);
+
+    testWidgets('keeps a hard edge sharp in a capture sharper than the '
+        'screen', (tester) async {
+      await pumpMasked(tester, circle);
+
+      // A fifth of a logical pixel inside the circle's top-left edge: a
+      // mask rendered for the screen and stretched over the capture would
+      // leave it partly transparent.
+      final alphas = await alphasAt(tester, [
+        const Offset(3.1, 3.1),
+        center,
+        corner,
+      ], pixelRatio: 8);
+
+      expect(alphas, [255, 255, 0]);
+    });
+
+    testWidgets('fades the child out across a feathered edge', (tester) async {
+      await pumpMasked(tester, circle.copyWith(feather: 0.2));
+
+      final alphas = await alphasAt(tester, [
+        center,
+        const Offset(1, side / 2),
+        corner,
+      ]);
+
+      expect(alphas.first, 255);
+      expect(alphas[1], allOf(greaterThan(0), lessThan(255)));
+      expect(alphas.last, lessThan(alphas[1]));
+    });
+
+    testWidgets('switches between a hard edge, a soft one and none', (
+      tester,
+    ) async {
+      final inverted = circle.copyWith(invert: true);
+      for (final (mask, expected) in [
+        (inverted, [0, 255]),
+        (inverted.copyWith(feather: 0.05), [0, 255]),
+        (circle, [255, 0]),
+        (null, [255, 255]),
+        (circle.copyWith(feather: 0.05), [255, 0]),
+      ]) {
+        await pumpMasked(tester, mask);
+
+        expect(
+          await alphasAt(tester, [center, corner]),
+          expected,
+          reason: '$mask',
+        );
+      }
     });
   });
 
