@@ -237,7 +237,9 @@ class PaintLayer extends Layer {
           maxDecimalPlaces: maxDecimalPlaces,
           enableMinify: enableMinify,
         ),
-      if (itemsChanged && items.length > 1)
+      // Also when the previous step had several strokes: the import merges
+      // this diff over that step, which would otherwise keep its `items`.
+      if (itemsChanged && (items.length > 1 || paintLayer.items.length > 1))
         'items': items
             .map(
               (item) => item.toMap(
@@ -251,7 +253,6 @@ class PaintLayer extends Layer {
           'w': rawSize.width.roundSmart(maxDecimalPlaces),
           'h': rawSize.height.roundSmart(maxDecimalPlaces),
         },
-      if (paintLayer.opacity != opacity) 'opacity': opacity,
     };
   }
 

@@ -186,6 +186,32 @@ void main() {
       },
     );
 
+    testWidgets('rounds the changes of later steps like the references', (
+      WidgetTester tester,
+    ) async {
+      await tester.runAsync(() async {
+        final editor = await pumpTestEditor(tester);
+        final emoji = EmojiLayer(emoji: '🙂', offset: const Offset(10, 20));
+        editor
+          ..addLayer(emoji)
+          ..replaceLayer(
+            index: 0,
+            layer: emoji.copyWith(offset: const Offset(12.3456789, 20)),
+          );
+
+        final exported = await (await editor.exportStateHistory(
+          configs: const ExportEditorConfigs(
+            historySpan: ExportHistorySpan.all,
+            enableMinify: false,
+            maxDecimalPlaces: 2,
+          ),
+        )).toMap();
+
+        final lastLayers = (exported['history'] as List).last['layers'] as List;
+        expect(lastLayers.single['x'], 12.35);
+      });
+    });
+
     testWidgets('restores blur correctly after export/import', (
       WidgetTester tester,
     ) async {

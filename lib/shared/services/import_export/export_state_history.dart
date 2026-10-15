@@ -303,7 +303,11 @@ class ExportStateHistory {
         );
       }
       convertedLayers.add(
-        layer.toMapFromReference(lastLayerStateHelper[layer.id] ?? layer),
+        layer.toMapFromReference(
+          lastLayerStateHelper[layer.id] ?? layer,
+          maxDecimalPlaces: _configs.maxDecimalPlaces,
+          enableMinify: _configs.enableMinify,
+        ),
       );
     }
 

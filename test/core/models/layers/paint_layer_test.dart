@@ -308,5 +308,41 @@ void main() {
 
       expect(diff['item'], isA<Map<String, dynamic>>());
     });
+
+    test('drops the strokes a merged layer no longer holds on import', () {
+      final merged = strokeLayer()
+        ..items.add(
+          PaintedModel(
+            mode: PaintMode.line,
+            offsets: const [Offset(0, 0), Offset(8, 8)],
+            erasedOffsets: const [],
+            color: Colors.blue,
+            strokeWidth: 2,
+            opacity: 1,
+          ),
+        );
+      final reduced = LayerCopyManager().copyLayer(merged) as PaintLayer
+        ..items.removeLast();
+
+      final diff = reduced.toMapFromReference(merged);
+      // The import merges each diff over the previous step's map.
+      final restored = PaintLayer.fromMap(reduced, {
+        ...merged.toMap(),
+        ...diff,
+      });
+
+      expect(restored.items, hasLength(1));
+      expect(restored.item.toMap(), reduced.item.toMap());
+    });
+
+    test('rounds a changed opacity', () {
+      final layer = strokeLayer();
+      final copy = LayerCopyManager().copyLayer(layer) as PaintLayer
+        ..opacity = 0.123456;
+
+      final diff = copy.toMapFromReference(layer, maxDecimalPlaces: 2);
+
+      expect(diff['opacity'], 0.12);
+    });
   });
 }
