@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pro_image_editor/features/main_editor/services/layer_copy_manager.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';
 
@@ -254,6 +255,94 @@ void main() {
         isFalse,
       );
       expect(restored.item.censorStrength, isNull);
+    });
+  });
+
+  group('PaintLayer toMapFromReference', () {
+    PaintLayer strokeLayer() => PaintLayer(
+      items: [
+        PaintedModel(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(1, 2), Offset(3, 4), Offset(5, 6)],
+          erasedOffsets: const [],
+          color: Colors.red,
+          strokeWidth: 4,
+          opacity: 1,
+        ),
+      ],
+      rawSize: const Size(10, 10),
+      opacity: 1,
+    );
+
+    test('omits the strokes of a layer the editor copied', () {
+      final layer = strokeLayer();
+      // Every history step holds such a copy of each layer.
+      final copy = LayerCopyManager().copyLayer(layer) as PaintLayer;
+
+      final diff = copy.toMapFromReference(layer);
+
+      expect(copy.items.first, isNot(layer.items.first));
+      expect(diff.containsKey('item'), isFalse);
+      expect(diff.containsKey('items'), isFalse);
+    });
+
+    test('omits the strokes of an unchanged layer after an import', () {
+      final layer = strokeLayer();
+      final map = layer.toMap();
+      // An import rebuilds the layer of each step from the same map, so
+      // consecutive steps hold separate but identical strokes.
+      final previousStep = PaintLayer.fromMap(layer, map);
+      final nextStep = PaintLayer.fromMap(layer, map);
+
+      final diff = nextStep.toMapFromReference(previousStep);
+
+      expect(diff.containsKey('item'), isFalse);
+    });
+
+    test('writes the strokes when a stroke changed', () {
+      final layer = strokeLayer();
+      final copy = LayerCopyManager().copyLayer(layer) as PaintLayer;
+      copy.items.first.offsets = const [Offset(1, 2), Offset(9, 9)];
+
+      final diff = copy.toMapFromReference(layer);
+
+      expect(diff['item'], isA<Map<String, dynamic>>());
+    });
+
+    test('drops the strokes a merged layer no longer holds on import', () {
+      final merged = strokeLayer()
+        ..items.add(
+          PaintedModel(
+            mode: PaintMode.line,
+            offsets: const [Offset(0, 0), Offset(8, 8)],
+            erasedOffsets: const [],
+            color: Colors.blue,
+            strokeWidth: 2,
+            opacity: 1,
+          ),
+        );
+      final reduced = LayerCopyManager().copyLayer(merged) as PaintLayer
+        ..items.removeLast();
+
+      final diff = reduced.toMapFromReference(merged);
+      // The import merges each diff over the previous step's map.
+      final restored = PaintLayer.fromMap(reduced, {
+        ...merged.toMap(),
+        ...diff,
+      });
+
+      expect(restored.items, hasLength(1));
+      expect(restored.item.toMap(), reduced.item.toMap());
+    });
+
+    test('rounds a changed opacity', () {
+      final layer = strokeLayer();
+      final copy = LayerCopyManager().copyLayer(layer) as PaintLayer
+        ..opacity = 0.123456;
+
+      final diff = copy.toMapFromReference(layer, maxDecimalPlaces: 2);
+
+      expect(diff['opacity'], 0.12);
     });
   });
 }

@@ -130,6 +130,88 @@ void main() {
       });
     });
 
+    testWidgets(
+      'writes a stroke once while later steps copy it, and restores it',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+          final stroke = PaintLayer(
+            item: PaintedModel(
+              mode: PaintMode.freeStyle,
+              offsets: const [Offset(12.5, 40.25), Offset(80.75, 3.5)],
+              erasedOffsets: [],
+              color: const Color(0xFF00897B),
+              strokeWidth: 6,
+              opacity: 1,
+            ),
+            rawSize: const Size(70, 40),
+            opacity: 1,
+          );
+          // Each later step copies every layer, giving the stroke a new id.
+          editor
+            ..addLayer(stroke)
+            ..addLayer(emojiLayerMock)
+            ..addLayer(textLayerMock);
+
+          final exported = await (await editor.exportStateHistory(
+            configs: const ExportEditorConfigs(
+              historySpan: ExportHistorySpan.all,
+              enableMinify: false,
+            ),
+          )).toMap();
+
+          final steps = exported['history'] as List;
+          final strokeEntries = [
+            for (final step in steps)
+              for (final layer in (step['layers'] as List? ?? const []))
+                if (layer['id'] == stroke.id) layer as Map,
+          ];
+          expect(strokeEntries, hasLength(3));
+          expect(
+            strokeEntries.where((layer) => layer.containsKey('item')),
+            isEmpty,
+            reason: 'the stroke is written once, in the references',
+          );
+
+          final imported = ImportStateHistory.fromMap(
+            exported,
+            configs: importConfigs,
+          );
+          final restored = imported.stateHistory.last.layers
+              .whereType<PaintLayer>()
+              .single;
+          expect(restored.item.offsets, stroke.item.offsets);
+          expect(restored.item.drawsSameAs(stroke.item), isTrue);
+        });
+      },
+    );
+
+    testWidgets('rounds the changes of later steps like the references', (
+      WidgetTester tester,
+    ) async {
+      await tester.runAsync(() async {
+        final editor = await pumpTestEditor(tester);
+        final emoji = EmojiLayer(emoji: '🙂', offset: const Offset(10, 20));
+        editor
+          ..addLayer(emoji)
+          ..replaceLayer(
+            index: 0,
+            layer: emoji.copyWith(offset: const Offset(12.3456789, 20)),
+          );
+
+        final exported = await (await editor.exportStateHistory(
+          configs: const ExportEditorConfigs(
+            historySpan: ExportHistorySpan.all,
+            enableMinify: false,
+            maxDecimalPlaces: 2,
+          ),
+        )).toMap();
+
+        final lastLayers = (exported['history'] as List).last['layers'] as List;
+        expect(lastLayers.single['x'], 12.35);
+      });
+    });
+
     testWidgets('restores blur correctly after export/import', (
       WidgetTester tester,
     ) async {

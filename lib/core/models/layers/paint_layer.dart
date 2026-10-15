@@ -221,7 +221,10 @@ class PaintLayer extends Layer {
   }) {
     var paintLayer = layer as PaintLayer;
 
-    final bool itemsChanged = !_listEquals(paintLayer.items, items);
+    // By content, not `==`: each history step holds its own copy of every
+    // stroke, and a copy has a new id. With `==`, every step written after a
+    // copy carried the full stroke list of every paint layer again.
+    final bool itemsChanged = !_drawSameStrokes(paintLayer.items, items);
 
     return {
       ...super.toMapFromReference(
@@ -234,7 +237,9 @@ class PaintLayer extends Layer {
           maxDecimalPlaces: maxDecimalPlaces,
           enableMinify: enableMinify,
         ),
-      if (itemsChanged && items.length > 1)
+      // Also when the previous step had several strokes: the import merges
+      // this diff over that step, which would otherwise keep its `items`.
+      if (itemsChanged && (items.length > 1 || paintLayer.items.length > 1))
         'items': items
             .map(
               (item) => item.toMap(
@@ -248,14 +253,13 @@ class PaintLayer extends Layer {
           'w': rawSize.width.roundSmart(maxDecimalPlaces),
           'h': rawSize.height.roundSmart(maxDecimalPlaces),
         },
-      if (paintLayer.opacity != opacity) 'opacity': opacity,
     };
   }
 
-  bool _listEquals(List<PaintedModel> a, List<PaintedModel> b) {
+  bool _drawSameStrokes(List<PaintedModel> a, List<PaintedModel> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
+      if (!a[i].drawsSameAs(b[i])) return false;
     }
     return true;
   }

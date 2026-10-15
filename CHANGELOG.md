@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.14.1
+- **FIX**(import-export): State history exports write unchanged paint strokes once instead of in every history step.
+- **FIX**(import-export): History steps after the first apply `maxDecimalPlaces` and `enableMinify`, and a merged paint layer that lost strokes no longer gets them back on import.
+
 ## 14.14.0
 - **FEAT**(layers): Add `Layer.mask` to show a layer only inside an ellipse, a rounded rectangle or a heart, or faded out across a soft linear edge; `LayerMaskBox` applies it to any widget and `LayerMask.toImage` renders it as an alpha matte.
 

@@ -113,5 +113,30 @@ void main() {
       expect(mapIsEqual(null, 1), isFalse);
       expect(mapIsEqual({}, null), isFalse);
     });
+
+    test('does not walk a map compared with itself', () {
+      final value = _CountingValue();
+      final map = {
+        'children': [
+          {'value': value},
+        ],
+      };
+
+      expect(mapIsEqual(map, map), isTrue);
+      expect(value.comparisons, 0);
+    });
   });
+}
+
+class _CountingValue {
+  int comparisons = 0;
+
+  @override
+  bool operator ==(Object other) {
+    comparisons++;
+    return identical(this, other);
+  }
+
+  @override
+  int get hashCode => 0;
 }
