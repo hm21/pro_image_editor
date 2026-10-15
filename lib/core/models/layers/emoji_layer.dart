@@ -46,6 +46,7 @@ class EmojiLayer extends Layer {
     super.transitionBuilder,
     super.animations,
     super.keyframes,
+    super.mask,
     super.opacity,
   });
 
@@ -78,6 +79,7 @@ class EmojiLayer extends Layer {
       exitCurve: layer.exitCurve,
       animations: layer.animations,
       keyframes: layer.keyframes,
+      mask: layer.mask,
       opacity: layer.opacity,
       emoji: map[keyConverter('emoji')],
       boxConstraints: layer.boxConstraints,
@@ -145,6 +147,7 @@ class EmojiLayer extends Layer {
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
     double? opacity,
   }) {
     return EmojiLayer(
@@ -168,6 +171,7 @@ class EmojiLayer extends Layer {
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
+      mask: mask ?? this.mask,
       opacity: opacity ?? this.opacity,
     );
   }

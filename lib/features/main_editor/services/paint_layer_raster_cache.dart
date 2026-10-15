@@ -174,6 +174,8 @@ class PaintLayerRasterCache extends ChangeNotifier {
     if (excludedIds.contains(layer.id)) return false;
     if (layer.isCensor) return false;
     if (layer.boxConstraints != null) return false;
+    // The shared composite draws every member unmasked.
+    if (layer.mask != null) return false;
     if (layer.animations.isNotEmpty) return false;
     // A keyframed layer moves with the playback position.
     if (layer.hasKeyframes) return false;

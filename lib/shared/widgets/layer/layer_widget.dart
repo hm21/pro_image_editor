@@ -28,6 +28,7 @@ import '/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 import 'interaction_helper/layer_interaction_helper_widget.dart';
 import 'layer_timeline_visibility.dart';
 import 'widgets/invisible_but_painted.dart';
+import 'widgets/layer_mask_box.dart';
 import 'widgets/layer_repaint_boundary.dart';
 import 'widgets/layer_widget_custom_item.dart';
 
@@ -653,28 +654,34 @@ class _LayerContentItem extends StatelessWidget {
       );
     }
 
-    return LayerRepaintBoundary(
-      key: layer.repaintBoundaryKey,
-      // The painters draw nothing while the strokes come from the raster
-      // cache, so a capture has to render them from the model instead.
-      // Timed text is rendered from the model as well: on screen it shows
-      // whichever highlight, and however much of a reveal, the playback
-      // position is on.
-      renderContent: skipPaint
-          ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
-              layer as PaintLayer,
-              pixelRatio: pixelRatio,
-              paintEditorConfigs: paintEditorConfigs,
-            )
-          : timedText != null
-          ? renderText
-          : null,
-      renderHighlight: timedText != null
-          ? (pixelRatio, highlightIndex) =>
-                renderText(pixelRatio, highlightIndex: highlightIndex)
-          : null,
-      renderTextState: timedText != null ? renderText : null,
-      child: content,
+    // The mask sits outside the boundary: a capture reads the boundary or a
+    // renderer below and bakes the mask in itself (see `Layer.captureAsPng`),
+    // so masking inside would apply it twice.
+    return LayerMaskBox(
+      mask: layer.mask,
+      child: LayerRepaintBoundary(
+        key: layer.repaintBoundaryKey,
+        // The painters draw nothing while the strokes come from the raster
+        // cache, so a capture has to render them from the model instead.
+        // Timed text is rendered from the model as well: on screen it shows
+        // whichever highlight, and however much of a reveal, the playback
+        // position is on.
+        renderContent: skipPaint
+            ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
+                layer as PaintLayer,
+                pixelRatio: pixelRatio,
+                paintEditorConfigs: paintEditorConfigs,
+              )
+            : timedText != null
+            ? renderText
+            : null,
+        renderHighlight: timedText != null
+            ? (pixelRatio, highlightIndex) =>
+                  renderText(pixelRatio, highlightIndex: highlightIndex)
+            : null,
+        renderTextState: timedText != null ? renderText : null,
+        child: content,
+      ),
     );
   }
 }

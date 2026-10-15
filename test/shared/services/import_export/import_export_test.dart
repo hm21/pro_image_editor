@@ -372,6 +372,46 @@ void main() {
       });
     }
 
+    for (final minify in [false, true]) {
+      testWidgets('keeps a mask, and its removal, across history steps '
+          '(${minify ? 'minified' : 'not minified'})', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          const mask = LayerMask(
+            shape: LayerMaskShape.linear,
+            center: Offset(0.4, 0.6),
+            rotation: 0.3,
+            feather: 0.2,
+          );
+          final editor = await pumpTestEditor(tester);
+          editor
+            ..addLayer(TextLayer(text: 'masked', mask: mask))
+            ..replaceLayer(
+              index: 0,
+              layer: editor.activeLayers.single.copyWith()..mask = null,
+            );
+
+          final history = await editor.exportStateHistory(
+            configs: ExportEditorConfigs(
+              enableMinify: minify,
+              historySpan: ExportHistorySpan.all,
+            ),
+          );
+          final map = await history.toMap();
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          expect(editor.activeLayers.single.mask, isNull);
+          editor.undoAction();
+          expect(editor.activeLayers.single.mask, mask);
+        });
+      });
+    }
+
     testWidgets(
       'rasterizes a widget layer without export configs when background '
       'generation is off',

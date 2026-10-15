@@ -69,6 +69,7 @@ class TextLayer extends Layer {
     super.transitionBuilder,
     super.animations,
     super.keyframes,
+    super.mask,
     super.opacity,
   }) : highlights = highlights ?? <TextHighlight>[];
 
@@ -164,6 +165,7 @@ class TextLayer extends Layer {
       exitDuration: layer.exitDuration,
       animations: layer.animations,
       keyframes: layer.keyframes,
+      mask: layer.mask,
       opacity: layer.opacity,
       text: map[keyConverter('text')] ?? '-',
       fontScale: fontScale,
@@ -542,6 +544,7 @@ class TextLayer extends Layer {
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
     double? opacity,
   }) {
     return TextLayer(
@@ -578,6 +581,7 @@ class TextLayer extends Layer {
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
+      mask: mask ?? this.mask,
       opacity: opacity ?? this.opacity,
     );
   }

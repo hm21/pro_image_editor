@@ -60,6 +60,7 @@ class PaintLayer extends Layer {
     super.transitionBuilder,
     super.animations,
     super.keyframes,
+    super.mask,
   }) : assert(
          item != null || (items != null && items.isNotEmpty),
          'Provide either `item` or a non-empty `items` list.',
@@ -119,6 +120,7 @@ class PaintLayer extends Layer {
       exitDuration: layer.exitDuration,
       animations: layer.animations,
       keyframes: layer.keyframes,
+      mask: layer.mask,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
       rawSize: Size(
         safeParseDouble(map[keyConverter('rawSize')]?['w'], fallback: 0),
@@ -285,6 +287,7 @@ class PaintLayer extends Layer {
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
   }) {
     return PaintLayer(
       items: items ?? (item != null ? [item] : this.items),
@@ -309,6 +312,7 @@ class PaintLayer extends Layer {
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
+      mask: mask ?? this.mask,
     );
   }
 

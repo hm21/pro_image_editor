@@ -313,6 +313,19 @@ void main() {
       },
     );
 
+    test('leaves a masked layer live, since the composite is unmasked', () {
+      final cache = PaintLayerRasterCache();
+      final masked = _stroke(id: 'masked')
+        ..mask = const LayerMask(shape: LayerMaskShape.ellipse);
+      final plain = _stroke(id: 'plain');
+
+      final plan = _plan(cache, [masked, plain]);
+
+      expect(plan.runs, hasLength(1));
+      expect(plan.runs.single.layerIds, ['plain']);
+      cache.dispose();
+    });
+
     test('leaves modes with a custom path builder live', () {
       final cache = PaintLayerRasterCache();
       final configs = ProImageEditorConfigs(

@@ -55,6 +55,7 @@ class WidgetLayer extends Layer {
     super.transitionBuilder,
     super.animations,
     super.keyframes,
+    super.mask,
     super.opacity,
   });
 
@@ -144,6 +145,7 @@ class WidgetLayer extends Layer {
       exitDuration: layer.exitDuration,
       animations: layer.animations,
       keyframes: layer.keyframes,
+      mask: layer.mask,
       opacity: layer.opacity,
       widget: widget,
       width: layerWidth != null ? safeParseDouble(layerWidth) : null,
@@ -247,6 +249,7 @@ class WidgetLayer extends Layer {
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
     double? opacity,
   }) {
     return WidgetLayer(
@@ -272,6 +275,7 @@ class WidgetLayer extends Layer {
       transitionBuilder: transitionBuilder ?? this.transitionBuilder,
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
+      mask: mask ?? this.mask,
       opacity: opacity ?? this.opacity,
     );
   }

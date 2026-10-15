@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.14.0
+- **FEAT**(layers): Add `Layer.mask` to show a layer only inside an ellipse, a rounded rectangle or a heart, or faded out across a soft linear edge; `LayerMaskBox` applies it to any widget and `LayerMask.toImage` renders it as an alpha matte.
+
 ## 14.13.1
 - **FIX**(main-editor): The editor can be closed with `maybePop` right after editing is done; the fading loading dialog no longer blocks it.
 
