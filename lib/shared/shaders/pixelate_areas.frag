@@ -6,6 +6,11 @@
 /// renderer filters the backdrop once for all of them instead of once per
 /// area. Each area then shows the pass only inside its own clip, and a pixel
 /// takes the grid of the topmost area that covers it.
+///
+/// A pixel that no area covers takes the grid of the nearest one, so every
+/// pixel an area shows stays pixelated where the uniforms are off: they catch
+/// up one frame late with an area that moves without repainting, e.g. while
+/// the editor zooms, and only approximate an area under a perspective tilt.
 
 #define MAX_AREAS 32
 
@@ -37,7 +42,13 @@ void main() {
     vec2 device = coord / scale;
     int count = int(u_params.y);
 
-    frag_color = texture(u_texture_input, coord / u_size);
+    if (count <= 0) {
+        frag_color = texture(u_texture_input, coord / u_size);
+        return;
+    }
+
+    vec4 chosen = vec4(0.0);
+    float nearest = 0.0;
 
     for (int i = MAX_AREAS - 1; i >= 0; i--) {
         if (i >= count) {
@@ -50,23 +61,31 @@ void main() {
             dot(row0.xy, device) + row0.z,
             dot(row1.xy, device) + row1.z
         );
+        /// How far the pixel lies outside the area, in device pixels. A
+        /// device pixel spans this much of the unit square.
+        vec2 pixel = vec2(length(row0.xy), length(row1.xy));
+        vec2 beyond = max(-uv, uv - 1.0) / pixel;
+        float outside = grid.w > 0.5
+            ? (distance(uv, vec2(0.5)) - 0.5) / max(pixel.x, pixel.y)
+            : max(beyond.x, beyond.y);
         /// The area's clip is antialiased, so it also partly covers pixels
         /// whose centers lie up to a pixel outside it; those take its grid
-        /// as well. A device pixel spans this much of the unit square.
-        vec2 pixel = vec2(length(row0.xy), length(row1.xy));
-        bool inside = grid.w > 0.5
-            ? distance(uv, vec2(0.5)) <= 0.5 + max(pixel.x, pixel.y)
-            : all(greaterThanEqual(uv, -pixel)) &&
-                all(lessThanEqual(uv, vec2(1.0) + pixel));
-        if (inside) {
-            float block = grid.z * scale;
-            vec2 origin = grid.xy * scale;
-            vec2 cell = floor((coord - origin) / block);
-            frag_color = texture(
-                u_texture_input,
-                (origin + (cell + 0.5) * block) / u_size
-            );
+        /// as well.
+        if (outside <= 1.0) {
+            chosen = grid;
             break;
         }
+        if (i == count - 1 || outside < nearest) {
+            chosen = grid;
+            nearest = outside;
+        }
     }
+
+    float block = chosen.z * scale;
+    vec2 origin = chosen.xy * scale;
+    vec2 cell = floor((coord - origin) / block);
+    frag_color = texture(
+        u_texture_input,
+        (origin + (cell + 0.5) * block) / u_size
+    );
 }

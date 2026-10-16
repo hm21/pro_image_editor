@@ -273,6 +273,9 @@ class RenderLayerSpacePixelateFilter extends RenderProxyBox {
     return false;
   }
 
+  /// Whether the area's layer is part of the scene.
+  bool get _isInScene => layer?.attached ?? false;
+
   /// Where the area lies on screen and the grid it is pixelated in, or
   /// `null` while it has no area to pixelate.
   LayerSpacePixelateArea? _currentArea() {
@@ -419,7 +422,9 @@ class LayerSpacePixelateArea {
 /// The grids follow the areas' transforms to the screen. They are measured
 /// when an area paints and after every frame, since a parent transform can
 /// change without any area painting again, e.g. when the editor zooms. A
-/// change then updates the filter of every area without repainting it.
+/// change then updates the filter of every area without repainting it. Until
+/// then a pixel that no area covers in the pass takes the grid of the nearest
+/// one, so it stays pixelated.
 class LayerSpacePixelateGroup {
   /// Creates a group whose passes [createPass] makes, by default with the
   /// shader of `ShaderMode.pixelateAreas` once it is loaded.
@@ -512,10 +517,16 @@ class LayerSpacePixelateGroup {
       return;
     }
     if (_update()) SchedulerBinding.instance.scheduleFrame();
-    for (final member in _awaitingPaint) {
-      if (member.attached) member.markNeedsPaint();
-    }
-    _awaitingPaint.clear();
+    // An area that is not in the scene, e.g. while the editor is hidden
+    // behind a route, waits: its paint would be skipped and mark every hidden
+    // ancestor repaint boundary as needing paint instead, which a capture of
+    // those asserts against.
+    _awaitingPaint.removeWhere((member) {
+      if (!member.attached) return true;
+      if (!member._isInScene) return false;
+      member.markNeedsPaint();
+      return true;
+    });
     _scheduleCheck();
   }
 

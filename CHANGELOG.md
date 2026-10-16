@@ -1,7 +1,7 @@
 # Changelog
 
 ## 14.14.2
-- **PERF**(paint-editor): Blur and pixelate areas share their backdrop passes instead of each rendering an offscreen pass of its own. Blur areas no longer lose the shared pass when pixelate areas sit next to them, and areas pixelated in their own coordinates (`CensorConfigs.pixelateInLayerSpace`) are pixelated together, up to 32 in one pass. On an iPhone 12 Pro, opening the filter editor over 40 blur and pixelate areas peaked at 2492 MB and got the app killed; it now peaks at 1043 MB.
+- **PERF**(paint-editor): Blur and pixelate areas share their backdrop passes instead of each rendering its own, so many areas no longer run out of GPU memory.
 
 ## 14.14.1
 - **FIX**(import-export): State history exports write unchanged paint strokes once instead of in every history step.

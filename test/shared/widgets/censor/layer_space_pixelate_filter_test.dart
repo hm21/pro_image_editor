@@ -275,6 +275,44 @@ void main() {
       }
     });
 
+    testWidgets('waits until a hidden area is shown to repaint it', (
+      tester,
+    ) async {
+      Future<void> pumpHidden({required bool hidden}) {
+        return tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Offstage(
+              offstage: hidden,
+              child: RepaintBoundary(child: Stack(children: [area()])),
+            ),
+          ),
+        );
+      }
+
+      canCreatePass = false;
+      await pumpHidden(hidden: false);
+      await pumpHidden(hidden: true);
+
+      canCreatePass = true;
+      tester.binding.scheduleFrame();
+      await tester.pump();
+      await tester.pump();
+
+      // A repaint while hidden would mark the hidden boundary as needing
+      // paint, which a capture of it asserts against.
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byType(RepaintBoundary, skipOffstage: false),
+      );
+      expect(boundary.debugNeedsPaint, isFalse);
+
+      await pumpHidden(hidden: false);
+      await tester.pump();
+
+      final renderArea = renderAreas(tester).single;
+      expect(backdropOf(renderArea)!.filter, same(passes.single.filter));
+    });
+
     testWidgets('releases its passes once the last area leaves', (
       tester,
     ) async {
