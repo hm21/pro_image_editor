@@ -11,8 +11,8 @@ class ShaderManager {
   /// The singleton instance of `ShaderManager`.
   static final ShaderManager instance = ShaderManager._();
 
-  /// A future to ensure the shader is loaded only once.
-  Future<void>? _loadingFuture;
+  /// The loads in progress or done, so each shader is loaded only once.
+  final Map<ShaderMode, Future<void>> _loadingFutures = {};
 
   /// A map that stores loaded shaders by their mode.
   final Map<ShaderMode, FragmentShader> shaders = {};
@@ -47,8 +47,7 @@ class ShaderManager {
 
     if (shaders[mode] != null) return shaders[mode]!;
 
-    _loadingFuture ??= _loadShader(mode);
-    await _loadingFuture;
+    await (_loadingFutures[mode] ??= _loadShader(mode));
 
     return shaders[mode]!;
   }
@@ -60,6 +59,9 @@ class ShaderManager {
     switch (mode) {
       case ShaderMode.pixelate:
         path = kImageEditorPixelateShaderPath;
+        break;
+      case ShaderMode.pixelateAreas:
+        path = kImageEditorPixelateAreasShaderPath;
         break;
     }
 
@@ -74,4 +76,8 @@ class ShaderManager {
 enum ShaderMode {
   /// Applies a pixelation effect to the image.
   pixelate,
+
+  /// Pixelates many censor areas in one pass, each in its own grid; see
+  /// `LayerSpacePixelateGroup`.
+  pixelateAreas,
 }

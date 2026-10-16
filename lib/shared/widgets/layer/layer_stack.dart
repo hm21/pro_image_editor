@@ -6,6 +6,7 @@ import '/core/models/layers/layer.dart';
 import '/core/models/transform_helper.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 import '/features/crop_rotate_editor/widgets/crop_layer_painter.dart';
+import '/shared/widgets/censor/censor_scope.dart';
 import 'layer_widget.dart';
 import 'paint_layer_raster_cache_host.dart';
 
@@ -146,11 +147,13 @@ class _LayerStackState extends State<LayerStack>
         children: [
           Transform.scale(
             scale: widget.transformHelper.scale,
-            child: Stack(
-              fit: StackFit.expand,
-              alignment: Alignment.center,
-              clipBehavior: widget.clipBehavior,
-              children: _buildLayerChildren(context),
+            child: CensorScope(
+              child: Stack(
+                fit: StackFit.expand,
+                alignment: Alignment.center,
+                clipBehavior: widget.clipBehavior,
+                children: _buildLayerChildren(context),
+              ),
             ),
           ),
           if (widget.configs.imageGeneration.cropToImageBounds)

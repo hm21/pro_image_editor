@@ -11,6 +11,7 @@ import '/features/main_editor/controllers/main_editor_controllers.dart';
 import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/sizes_manager.dart';
 import '/plugins/defer_pointer/defer_pointer.dart';
+import '/shared/widgets/censor/censor_scope.dart';
 import '/shared/widgets/extended/mouse_region/extended_rebuild_mouse_region.dart';
 import '/shared/widgets/layer/layer_widget.dart';
 import '/shared/widgets/layer/paint_layer_raster_cache_host.dart';
@@ -279,9 +280,11 @@ class _MainEditorLayersState extends State<MainEditorLayers>
                     widget.onCheckInteractiveViewer();
                     setState(() {});
                   },
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: _buildLayerChildren(context),
+                  child: CensorScope(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: _buildLayerChildren(context),
+                    ),
                   ),
                 );
               },

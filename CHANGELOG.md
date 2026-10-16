@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.14.2
+- **PERF**(paint-editor): Blur and pixelate areas share their backdrop passes instead of each rendering its own, so many areas no longer run out of GPU memory.
+
 ## 14.14.1
 - **FIX**(import-export): State history exports write unchanged paint strokes once instead of in every history step.
 - **FIX**(import-export): History steps after the first apply `maxDecimalPlaces` and `enableMinify`, and a merged paint layer that lost strokes no longer gets them back on import.
