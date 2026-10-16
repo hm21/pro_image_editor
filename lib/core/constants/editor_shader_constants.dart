@@ -5,3 +5,8 @@
 /// image editor package.
 const kImageEditorPixelateShaderPath =
     'packages/pro_image_editor/lib/shared/shaders/pixelate.frag';
+
+/// The file path to the shader that pixelates many censor areas in one pass,
+/// each in blocks of its own grid.
+const kImageEditorPixelateAreasShaderPath =
+    'packages/pro_image_editor/lib/shared/shaders/pixelate_areas.frag';

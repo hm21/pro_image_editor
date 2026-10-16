@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
 import '/core/models/layers/layer.dart';
 import '/shared/widgets/censor/blur_area_item.dart';
+import '/shared/widgets/censor/censor_scope.dart';
 import '/shared/widgets/censor/pixelate_area_item.dart';
 import '../controllers/paint_controller.dart';
 import '../enums/paint_editor_enum.dart';
@@ -555,9 +556,11 @@ class PaintCanvasState extends State<PaintCanvas> {
           child: _paintCtrl.busy
               ? _paintCtrl.mode == PaintMode.blur ||
                         _paintCtrl.mode == PaintMode.pixelate
-                    ? Stack(
-                        fit: StackFit.expand,
-                        children: [_buildCensorItem(_paintCtrl.paintedModel)],
+                    ? CensorScope(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [_buildCensorItem(_paintCtrl.paintedModel)],
+                        ),
                       )
                     : _buildActiveStroke()
               : const SizedBox.expand(),

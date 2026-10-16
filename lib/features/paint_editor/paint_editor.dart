@@ -327,7 +327,11 @@ class PaintEditorState extends State<PaintEditor>
     /// Preload pixelate shader if enabled and supported
     if (paintEditorConfigs.tools.contains(PaintMode.pixelate) &&
         ShaderManager.instance.isShaderFilterSupported) {
-      ShaderManager.instance.loadShader(ShaderMode.pixelate);
+      ShaderManager.instance.loadShader(
+        paintEditorConfigs.censorConfigs.pixelateInLayerSpace
+            ? ShaderMode.pixelateAreas
+            : ShaderMode.pixelate,
+      );
     }
   }
 

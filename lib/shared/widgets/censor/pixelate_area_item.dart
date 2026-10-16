@@ -6,7 +6,7 @@ import '/core/models/editor_configs/paint_editor/censor_configs.dart';
 import '/features/main_editor/providers/image_infos_provider.dart';
 import '/shared/services/shader_manager.dart';
 import 'abstract/censor_area_item.dart';
-import 'constants/censor_backdrop_key.dart';
+import 'censor_scope.dart';
 import 'layer_space_pixelate_filter.dart';
 
 /// A widget that applies a pixelate effect to a defined area.
@@ -38,14 +38,18 @@ class PixelateAreaItem extends CensorAreaItem {
     required Widget child,
     required BuildContext context,
   }) {
+    final mode = censorConfigs.pixelateInLayerSpace
+        ? ShaderMode.pixelateAreas
+        : ShaderMode.pixelate;
+
     /// Shader already loaded
-    if (ShaderManager.instance.containsShader(ShaderMode.pixelate)) {
+    if (ShaderManager.instance.containsShader(mode)) {
       return _buildFilter(child: child, context: context);
     }
 
     /// Load shader
     return FutureBuilder(
-      future: ShaderManager.instance.loadShader(ShaderMode.pixelate),
+      future: ShaderManager.instance.loadShader(mode),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
@@ -69,19 +73,35 @@ class PixelateAreaItem extends CensorAreaItem {
 
     bool fitToWidth =
         ImageInfosProvider.maybeOf(context)?.imageFitToWidth ?? true;
+    final scope = CensorScope.of(context);
+    final blockSize = strength ?? censorConfigs.pixelBlockSize;
+
+    if (censorConfigs.pixelateInLayerSpace) {
+      return LayerSpacePixelateFilter(
+        group: scope.pixelateGroup,
+        blockSize: blockSize,
+        devicePixelRatio: devicePixelRatio,
+        deviceSize: physicalSize,
+        blendMode: censorConfigs.pixelateBlendMode,
+        fitToWidth: fitToWidth,
+        isOval: censorConfigs.enableRoundArea,
+        child: child,
+      );
+    }
 
     return _PixelateArea(
       censorConfigs: censorConfigs,
-      blockSize: strength ?? censorConfigs.pixelBlockSize,
+      blockSize: blockSize,
       devicePixelRatio: devicePixelRatio,
       deviceSize: physicalSize,
       fitToWidth: fitToWidth,
+      backdropKey: scope.pixelateKey,
       child: child,
     );
   }
 }
 
-/// Pixelates with a shader of its own.
+/// Pixelates in screen space with a shader of its own.
 ///
 /// [ImageFilter.shader] reads the shader's uniforms only when a new filter is
 /// first composed, so areas of different block sizes mounted in the same
@@ -94,6 +114,7 @@ class _PixelateArea extends StatefulWidget {
     required this.devicePixelRatio,
     required this.deviceSize,
     required this.fitToWidth,
+    required this.backdropKey,
     required this.child,
   });
 
@@ -102,6 +123,7 @@ class _PixelateArea extends StatefulWidget {
   final double devicePixelRatio;
   final Size deviceSize;
   final bool fitToWidth;
+  final BackdropKey backdropKey;
   final Widget child;
 
   @override
@@ -125,19 +147,6 @@ class _PixelateAreaState extends State<_PixelateArea> {
     final shader = _shader;
     if (shader == null) return widget.child;
 
-    if (widget.censorConfigs.pixelateInLayerSpace) {
-      return LayerSpacePixelateFilter(
-        shader: shader,
-        blockSize: widget.blockSize,
-        devicePixelRatio: widget.devicePixelRatio,
-        deviceSize: widget.deviceSize,
-        blendMode: widget.censorConfigs.pixelateBlendMode,
-        fitToWidth: widget.fitToWidth,
-        backdropKey: kCensorBackdropGroupKey,
-        child: widget.child,
-      );
-    }
-
     shader
       ..setFloat(2, widget.blockSize / widget.devicePixelRatio)
       ..setFloat(3, widget.deviceSize.width)
@@ -150,7 +159,7 @@ class _PixelateAreaState extends State<_PixelateArea> {
     return BackdropFilter(
       filter: ImageFilter.shader(shader),
       blendMode: widget.censorConfigs.pixelateBlendMode,
-      backdropGroupKey: kCensorBackdropGroupKey,
+      backdropGroupKey: widget.backdropKey,
       child: widget.child,
     );
   }
