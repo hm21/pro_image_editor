@@ -5,6 +5,7 @@ import '/core/constants/int_constants.dart';
 import '/features/paint_editor/models/painted_model.dart';
 import '/shared/extensions/num_extension.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
+import '/shared/services/import_export/utils/paint_stroke_import_cache.dart';
 import '/shared/utils/parser/double_parser.dart';
 import 'layer.dart';
 import 'layer_interaction.dart';
@@ -83,24 +84,38 @@ class PaintLayer extends Layer {
     /// (and payloads written by older versions for a single stroke) only carry
     /// a single `item` map, which is read as a one-element list.
     final rawItems = map[keyConverter('items')];
-    final List<PaintedModel> items;
-    if (rawItems is List && rawItems.isNotEmpty) {
-      items = rawItems
-          .map(
-            (el) => PaintedModel.fromMap(
-              Map<String, dynamic>.from(el as Map),
-              keyConverter: paintKeyConverter,
-            ),
-          )
-          .toList();
-    } else {
-      items = [
+    final hasItems = rawItems is List && rawItems.isNotEmpty;
+    final Object? rawStrokes = hasItems ? rawItems : map[keyConverter('item')];
+
+    List<PaintedModel> parseStrokes() {
+      if (hasItems) {
+        return rawItems
+            .map(
+              (el) => PaintedModel.fromMap(
+                Map<String, dynamic>.from(el as Map),
+                keyConverter: paintKeyConverter,
+              ),
+            )
+            .toList();
+      }
+      return [
         PaintedModel.fromMap(
           map[keyConverter('item')] ?? {},
           keyConverter: paintKeyConverter,
         ),
       ];
     }
+
+    /// During an import, steps that keep the strokes get copies of one parse,
+    /// which share their points (see [PaintedModel.copy]). The cached strokes
+    /// themselves are never handed out, so editing a layer cannot change what
+    /// later steps receive.
+    final shared = rawStrokes != null
+        ? PaintStrokeImportCache.lookup(rawStrokes, parseStrokes)
+        : null;
+    final List<PaintedModel> items = shared != null
+        ? [for (final stroke in shared) stroke.copy()]
+        : parseStrokes();
 
     /// Constructs and returns a PaintLayer instance with properties
     /// derived from the layer and map.

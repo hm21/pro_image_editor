@@ -123,8 +123,10 @@ class PaintedModel {
   /// For shapes like circles and rectangles, it contains two points.
   /// For [FreeStyle], it contains a list of points.
   ///
-  /// Assign a new list instead of mutating this one in place, otherwise
-  /// [bounds] keeps reporting the box of the previous points.
+  /// Assign a new list instead of mutating this one in place: [copy] shares
+  /// the list with every copy, including the ones the editor keeps for each
+  /// history step, and [bounds] would keep reporting the box of the previous
+  /// points.
   List<Offset?> get offsets => _offsets;
   set offsets(List<Offset?> value) {
     _offsets = value;
@@ -242,10 +244,15 @@ class PaintedModel {
   }
 
   /// Creates a copy of this PaintedModel instance.
+  ///
+  /// The copy shares [offsets] with this model, since points are only ever
+  /// replaced as a whole. The editor copies every stroke into each history
+  /// step, so a list of its own would store a long drawing once per undo
+  /// step. [erasedOffsets] is copied: the partial eraser adds to it in place.
   PaintedModel copy() {
     return PaintedModel(
       mode: mode,
-      offsets: [...offsets],
+      offsets: offsets,
       erasedOffsets: [...erasedOffsets],
       color: color,
       strokeWidth: strokeWidth,

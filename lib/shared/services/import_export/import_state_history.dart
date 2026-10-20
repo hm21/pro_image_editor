@@ -21,6 +21,7 @@ import './utils/history_compatibility/history_compatibility_layer_interaction.da
 import 'constants/export_import_version.dart';
 import 'models/import_state_history_configs.dart';
 import 'utils/key_minifier.dart';
+import 'utils/paint_stroke_import_cache.dart';
 
 /// This class represents the state history of an imported editor session.
 class ImportStateHistory {
@@ -57,6 +58,15 @@ class ImportStateHistory {
   factory ImportStateHistory.fromMap(
     Map<String, dynamic> map, {
     ImportEditorConfigs configs = const ImportEditorConfigs(),
+  }) {
+    return PaintStrokeImportCache.run(
+      () => ImportStateHistory._fromMap(map, configs: configs),
+    );
+  }
+
+  factory ImportStateHistory._fromMap(
+    Map<String, dynamic> map, {
+    required ImportEditorConfigs configs,
   }) {
     bool isMinified = map['m'] == true;
 
