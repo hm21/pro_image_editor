@@ -258,6 +258,35 @@ void main() {
     });
   });
 
+  group('PaintLayer.fromMap outside an import', () {
+    Map<String, dynamic> stroke(int color) => {
+      'mode': 'freeStyle',
+      'offsets': [
+        {'x': 0, 'y': 0},
+        {'x': 1, 'y': 1},
+      ],
+      'erasedOffsets': <Map<String, dynamic>>[],
+      'color': color,
+      'strokeWidth': 4,
+      'opacity': 1,
+    };
+
+    test('reads a map changed in place again', () {
+      final map = <String, dynamic>{
+        'type': 'paint',
+        'opacity': 1,
+        'rawSize': {'w': 10, 'h': 10},
+        'items': [stroke(0xFFFF0000), stroke(0xFF0000FF)],
+      };
+      Layer.fromMap(map);
+      (map['items'] as List)[0] = stroke(0xFF00FF00);
+
+      final layer = Layer.fromMap(map) as PaintLayer;
+
+      expect(layer.items.first.color, const Color(0xFF00FF00));
+    });
+  });
+
   group('PaintLayer toMapFromReference', () {
     PaintLayer strokeLayer() => PaintLayer(
       items: [

@@ -5,6 +5,7 @@ import '/core/constants/int_constants.dart';
 import '/features/paint_editor/models/painted_model.dart';
 import '/shared/extensions/num_extension.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
+import '/shared/services/import_export/utils/paint_stroke_import_cache.dart';
 import '/shared/utils/parser/double_parser.dart';
 import 'layer.dart';
 import 'layer_interaction.dart';
@@ -105,13 +106,16 @@ class PaintLayer extends Layer {
       ];
     }
 
-    final List<PaintedModel> items;
-    if (rawStrokes != null && (rawStrokes is List || rawStrokes is Map)) {
-      final parsed = _parsedStrokes[rawStrokes] ??= parseStrokes();
-      items = [for (final stroke in parsed) stroke.copy()];
-    } else {
-      items = parseStrokes();
-    }
+    /// During an import, steps that keep the strokes get copies of one parse,
+    /// which share their points (see [PaintedModel.copy]). The cached strokes
+    /// themselves are never handed out, so editing a layer cannot change what
+    /// later steps receive.
+    final shared = rawStrokes != null
+        ? PaintStrokeImportCache.lookup(rawStrokes, parseStrokes)
+        : null;
+    final List<PaintedModel> items = shared != null
+        ? [for (final stroke in shared) stroke.copy()]
+        : parseStrokes();
 
     /// Constructs and returns a PaintLayer instance with properties
     /// derived from the layer and map.
@@ -141,20 +145,6 @@ class PaintLayer extends Layer {
       boxConstraints: layer.boxConstraints,
     );
   }
-
-  /// The strokes already parsed from a raw `items` list or `item` map, by the
-  /// identity of that raw value.
-  ///
-  /// An import merges each history step over the step before it, so every
-  /// step that leaves a layer's strokes alone passes the very same raw list
-  /// here again. Parsing it anew gave each step its own copy of every point:
-  /// a drawing of 15,000 points in 900 undo steps took over 500 MB to open.
-  /// Each call now gets copies of the first parse, which share their points
-  /// (see [PaintedModel.copy]). The cached strokes themselves are never
-  /// handed out, so editing a layer cannot change what later steps receive.
-  static final Expando<List<PaintedModel>> _parsedStrokes = Expando(
-    'PaintLayer.parsedStrokes',
-  );
 
   /// The custom-painted strokes to display on the layer.
   ///

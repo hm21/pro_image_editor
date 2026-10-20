@@ -121,8 +121,8 @@ void main() {
         'opacity': 1,
       };
 
-      ImportStateHistory importSteps(List<Map<String, dynamic>> stepLayers) =>
-          ImportStateHistory.fromMap({
+      Map<String, dynamic> historyMap(List<Map<String, dynamic>> stepLayers) =>
+          {
             'version': ExportImportVersion.latest,
             'position': stepLayers.length - 1,
             'references': {
@@ -141,7 +141,10 @@ void main() {
                   'layers': [layer],
                 },
             ],
-          });
+          };
+
+      ImportStateHistory importSteps(List<Map<String, dynamic>> stepLayers) =>
+          ImportStateHistory.fromMap(historyMap(stepLayers));
 
       List<PaintedModel> strokesOf(ImportStateHistory history, int step) =>
           (history.stateHistory[step].layers.single as PaintLayer).items;
@@ -190,6 +193,19 @@ void main() {
         expect(strokesOf(history, 0), hasLength(2));
         expect(strokesOf(history, 1), hasLength(1));
         expect(strokesOf(history, 1).first.offsets.first, const Offset(20, 0));
+      });
+
+      test('a map changed in place is read again by the next import', () {
+        final map = historyMap([
+          {'id': 'drawing'},
+        ]);
+        ImportStateHistory.fromMap(map);
+        final reference = map['references']['drawing'] as Map<String, dynamic>;
+        (reference['items'] as List)[0] = stroke(30);
+
+        final history = ImportStateHistory.fromMap(map);
+
+        expect(strokesOf(history, 0).first.offsets.first, const Offset(30, 0));
       });
     });
   });
