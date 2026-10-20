@@ -70,14 +70,12 @@ void main() {
 
     testWidgets('keeps the size of an existing box', (tester) async {
       const box = TextLayerBox(size: Size(300, 90));
-      final result = await edit(
-        tester,
-        TextLayer(text: 'Hello', box: box),
-        (editor) {
-          expect(editor.boxEnabled, isTrue);
-          editor.textCtrl.text = 'Hello there';
-        },
-      );
+      final result = await edit(tester, TextLayer(text: 'Hello', box: box), (
+        editor,
+      ) {
+        expect(editor.boxEnabled, isTrue);
+        editor.textCtrl.text = 'Hello there';
+      });
 
       expect(result!.box, box);
     });
@@ -85,7 +83,10 @@ void main() {
     testWidgets('takes the text out of its box', (tester) async {
       final result = await edit(
         tester,
-        TextLayer(text: 'Hello', box: const TextLayerBox(size: Size(300, 90))),
+        TextLayer(
+          text: 'Hello',
+          box: const TextLayerBox(size: Size(300, 90)),
+        ),
         (editor) => editor.setBoxEnabled(false),
       );
 
