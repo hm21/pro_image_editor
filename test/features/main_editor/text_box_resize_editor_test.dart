@@ -72,41 +72,37 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'a box handle resizes the box, not the layer',
-    (tester) async {
-      final state = await pumpEditor(tester);
-      final layer = TextLayer(
-        text: 'Name',
-        scale: 1,
-        box: const TextLayerBox(size: Size(120, 40)),
-      );
-      state.addLayer(
-        layer,
-        autoCorrectZoomOffset: false,
-        autoCorrectZoomScale: false,
-      );
-      await tester.pumpAndSettle();
-      state.selectLayerById(layer.id);
-      await tester.pumpAndSettle();
+  testWidgets('a box handle resizes the box, not the layer', (tester) async {
+    final state = await pumpEditor(tester);
+    final layer = TextLayer(
+      text: 'Name',
+      scale: 1,
+      box: const TextLayerBox(size: Size(120, 40)),
+    );
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pumpAndSettle();
+    state.selectLayerById(layer.id);
+    await tester.pumpAndSettle();
 
-      expect(find.byType(TextLayerBoxHandles), findsOneWidget);
-      final text = tester.getRect(find.byType(RoundedBackgroundText));
+    expect(find.byType(TextLayerBoxHandles), findsOneWidget);
+    final text = tester.getRect(find.byType(RoundedBackgroundText));
 
-      await mouseDrag(
-        tester,
-        from: Offset(text.right, text.center.dy),
-        by: const Offset(40, 0),
-      );
+    await mouseDrag(
+      tester,
+      from: Offset(text.right, text.center.dy),
+      by: const Offset(40, 0),
+    );
 
-      final live = state.activeLayers.single as TextLayer;
-      expect(live.scale, 1);
-      // The edge follows the whole drag: 40 px, at a scale of 1.
-      expect(live.box!.size.width, closeTo(160, 0.001));
-      expect(live.box!.size.height, 40);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.linux),
-  );
+    final live = state.activeLayers.single as TextLayer;
+    expect(live.scale, 1);
+    // The edge follows the whole drag: 40 px, at a scale of 1.
+    expect(live.box!.size.width, closeTo(160, 0.001));
+    expect(live.box!.size.height, 40);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   group('a held box handle', () {
     Future<(ProImageEditorState, TextLayer)> pumpBoxedLayer(
@@ -142,56 +138,49 @@ void main() {
       return gesture;
     }
 
-    testWidgets(
-      'keeps resizing when held still past a long press',
-      (tester) async {
-        final (state, layer) = await pumpBoxedLayer(tester);
-        final text = tester.getRect(find.byType(RoundedBackgroundText));
-        final offset = layer.offset;
+    testWidgets('keeps resizing when held still past a long press', (
+      tester,
+    ) async {
+      final (state, layer) = await pumpBoxedLayer(tester);
+      final text = tester.getRect(find.byType(RoundedBackgroundText));
+      final offset = layer.offset;
 
-        final gesture = await press(tester, Offset(text.right, text.center.dy));
-        await tester.pump(const Duration(milliseconds: 700));
+      final gesture = await press(tester, Offset(text.right, text.center.dy));
+      await tester.pump(const Duration(milliseconds: 700));
+      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      expect(live(state).box!.size.width, closeTo(160, 0.001));
+      expect(live(state).offset, offset);
+      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+    testWidgets('keeps resizing through pauses longer than a long press', (
+      tester,
+    ) async {
+      final (state, layer) = await pumpBoxedLayer(tester);
+      final text = tester.getRect(find.byType(RoundedBackgroundText));
+
+      final gesture = await press(tester, Offset(text.center.dx, text.bottom));
+      for (var step = 1; step <= 3; step++) {
+        await gesture.moveBy(const Offset(0, 10));
+        await tester.pump(const Duration(milliseconds: 600));
+        expect(live(state).box!.size.height, closeTo(40 + step * 10, 0.001));
         expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+      }
+      expect(live(state).box!.size.width, 120);
 
-        await gesture.moveBy(const Offset(20, 0));
-        await tester.pump();
-        await gesture.moveBy(const Offset(20, 0));
-        await tester.pump();
-        expect(live(state).box!.size.width, closeTo(160, 0.001));
-        expect(live(state).offset, offset);
-        expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-
-        await gesture.up();
-        await tester.pumpAndSettle();
-        expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-      },
-      variant: TargetPlatformVariant.only(TargetPlatform.linux),
-    );
-
-    testWidgets(
-      'keeps resizing through pauses longer than a long press',
-      (tester) async {
-        final (state, layer) = await pumpBoxedLayer(tester);
-        final text = tester.getRect(find.byType(RoundedBackgroundText));
-
-        final gesture = await press(
-          tester,
-          Offset(text.center.dx, text.bottom),
-        );
-        for (var step = 1; step <= 3; step++) {
-          await gesture.moveBy(const Offset(0, 10));
-          await tester.pump(const Duration(milliseconds: 600));
-          expect(live(state).box!.size.height, closeTo(40 + step * 10, 0.001));
-          expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-        }
-        expect(live(state).box!.size.width, 120);
-
-        await gesture.up();
-        await tester.pumpAndSettle();
-        expect(live(state).box!.size.height, closeTo(70, 0.001));
-        expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-      },
-      variant: TargetPlatformVariant.only(TargetPlatform.linux),
-    );
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(live(state).box!.size.height, closeTo(70, 0.001));
+      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
   });
 }
