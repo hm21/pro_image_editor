@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/platform/io/io_helper.dart' show File;
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/shared/services/import_export/constants/export_import_version.dart';
 import 'package:pro_image_editor/shared/services/import_export/utils/key_minifier.dart';
 
 import 'constants/history_mock/mock_import_history_6_0_0.dart';
@@ -105,6 +106,91 @@ void main() {
       expect(result, [
         Uint8List.fromList([4, 5, 6]),
       ]);
+    });
+
+    group('paint strokes across history steps', () {
+      Map<String, dynamic> stroke(double x) => {
+        'mode': 'freeStyle',
+        'offsets': [
+          {'x': x, 'y': 0},
+          {'x': x + 1, 'y': 1},
+        ],
+        'erasedOffsets': <Map<String, dynamic>>[],
+        'color': 0xFFFF0000,
+        'strokeWidth': 4,
+        'opacity': 1,
+      };
+
+      ImportStateHistory importSteps(List<Map<String, dynamic>> stepLayers) =>
+          ImportStateHistory.fromMap({
+            'version': ExportImportVersion.latest,
+            'position': stepLayers.length - 1,
+            'references': {
+              'drawing': {
+                'id': 'drawing',
+                'type': 'paint',
+                'opacity': 1,
+                'rawSize': {'w': 10, 'h': 10},
+                'item': stroke(0),
+                'items': [stroke(0), stroke(5)],
+              },
+            },
+            'history': [
+              for (final layer in stepLayers)
+                {
+                  'layers': [layer],
+                },
+            ],
+          });
+
+      List<PaintedModel> strokesOf(ImportStateHistory history, int step) =>
+          (history.stateHistory[step].layers.single as PaintLayer).items;
+
+      test('steps that keep the strokes share their points', () {
+        final history = importSteps([
+          {'id': 'drawing'},
+          {'id': 'drawing', 'x': 4},
+          {'id': 'drawing', 'x': 8},
+        ]);
+
+        for (var step = 1; step < 3; step++) {
+          for (var i = 0; i < 2; i++) {
+            expect(
+              identical(
+                strokesOf(history, step)[i].offsets,
+                strokesOf(history, 0)[i].offsets,
+              ),
+              isTrue,
+            );
+          }
+        }
+      });
+
+      test('each step still holds strokes of its own', () {
+        final history = importSteps([
+          {'id': 'drawing'},
+          {'id': 'drawing', 'x': 4},
+        ]);
+
+        expect(
+          identical(strokesOf(history, 1).first, strokesOf(history, 0).first),
+          isFalse,
+        );
+      });
+
+      test('a step that rewrites the strokes reads its own points', () {
+        final history = importSteps([
+          {'id': 'drawing'},
+          {
+            'id': 'drawing',
+            'items': [stroke(20)],
+          },
+        ]);
+
+        expect(strokesOf(history, 0), hasLength(2));
+        expect(strokesOf(history, 1), hasLength(1));
+        expect(strokesOf(history, 1).first.offsets.first, const Offset(20, 0));
+      });
     });
   });
 }

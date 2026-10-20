@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.14.3
+- **PERF**(import-export): History steps that leave a paint layer's strokes unchanged share its points instead of each importing a copy, so opening a long history over a large drawing no longer takes hundreds of MB and several seconds. `PaintedModel.copy` now shares `offsets` with the original.
+
 ## 14.14.2
 - **PERF**(paint-editor): Blur and pixelate areas share their backdrop passes instead of each rendering its own, so many areas no longer run out of GPU memory.
 

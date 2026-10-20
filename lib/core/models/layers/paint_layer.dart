@@ -83,23 +83,34 @@ class PaintLayer extends Layer {
     /// (and payloads written by older versions for a single stroke) only carry
     /// a single `item` map, which is read as a one-element list.
     final rawItems = map[keyConverter('items')];
-    final List<PaintedModel> items;
-    if (rawItems is List && rawItems.isNotEmpty) {
-      items = rawItems
-          .map(
-            (el) => PaintedModel.fromMap(
-              Map<String, dynamic>.from(el as Map),
-              keyConverter: paintKeyConverter,
-            ),
-          )
-          .toList();
-    } else {
-      items = [
+    final hasItems = rawItems is List && rawItems.isNotEmpty;
+    final Object? rawStrokes = hasItems ? rawItems : map[keyConverter('item')];
+
+    List<PaintedModel> parseStrokes() {
+      if (hasItems) {
+        return rawItems
+            .map(
+              (el) => PaintedModel.fromMap(
+                Map<String, dynamic>.from(el as Map),
+                keyConverter: paintKeyConverter,
+              ),
+            )
+            .toList();
+      }
+      return [
         PaintedModel.fromMap(
           map[keyConverter('item')] ?? {},
           keyConverter: paintKeyConverter,
         ),
       ];
+    }
+
+    final List<PaintedModel> items;
+    if (rawStrokes != null && (rawStrokes is List || rawStrokes is Map)) {
+      final parsed = _parsedStrokes[rawStrokes] ??= parseStrokes();
+      items = [for (final stroke in parsed) stroke.copy()];
+    } else {
+      items = parseStrokes();
     }
 
     /// Constructs and returns a PaintLayer instance with properties
@@ -130,6 +141,20 @@ class PaintLayer extends Layer {
       boxConstraints: layer.boxConstraints,
     );
   }
+
+  /// The strokes already parsed from a raw `items` list or `item` map, by the
+  /// identity of that raw value.
+  ///
+  /// An import merges each history step over the step before it, so every
+  /// step that leaves a layer's strokes alone passes the very same raw list
+  /// here again. Parsing it anew gave each step its own copy of every point:
+  /// a drawing of 15,000 points in 900 undo steps took over 500 MB to open.
+  /// Each call now gets copies of the first parse, which share their points
+  /// (see [PaintedModel.copy]). The cached strokes themselves are never
+  /// handed out, so editing a layer cannot change what later steps receive.
+  static final Expando<List<PaintedModel>> _parsedStrokes = Expando(
+    'PaintLayer.parsedStrokes',
+  );
 
   /// The custom-painted strokes to display on the layer.
   ///
