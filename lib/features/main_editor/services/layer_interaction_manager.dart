@@ -367,6 +367,97 @@ class LayerInteractionManager {
   /// scaling operations.
   Size? rotateScaleLayerSizeHelper;
 
+  /// The edge or corner of the box of [activeInteractionLayer] a drag
+  /// resizes, or `null` while no box is resized.
+  ///
+  /// Set by [startTextBoxResize] when the user presses a box handle of the
+  /// selection overlay; the editor's scale gesture then resizes the box
+  /// instead of moving the layer (see [calculateTextBoxResize]).
+  TextLayerBoxHandle? textBoxResizeHandle;
+
+  /// Whether a drag resizes the box of a text layer.
+  bool get isResizingTextBox => textBoxResizeHandle != null;
+
+  String? _boxResizeLayerId;
+  TextLayerBox? _boxResizeStartBox;
+  Offset? _boxResizeStartOffset;
+  Offset? _boxResizeStartPointer;
+
+  /// Lets the next drag resize the box of [layer] at [handle].
+  ///
+  /// [pointerPosition] is where the handle was pressed, in global
+  /// coordinates; the drag is measured from there. Without it, the drag is
+  /// measured from the first update, which loses the distance the gesture
+  /// needed to start.
+  void startTextBoxResize(
+    TextLayer layer,
+    TextLayerBoxHandle handle, {
+    Offset? pointerPosition,
+  }) {
+    if (layer.box == null) return;
+    activeInteractionLayer = layer;
+    textBoxResizeHandle = handle;
+    _boxResizeLayerId = layer.id;
+    _boxResizeStartBox = layer.box;
+    _boxResizeStartOffset = layer.offset;
+    _boxResizeStartPointer = pointerPosition;
+  }
+
+  /// Ends the box resize [startTextBoxResize] began.
+  void endTextBoxResize() {
+    textBoxResizeHandle = null;
+    _boxResizeLayerId = null;
+    _boxResizeStartBox = null;
+    _boxResizeStartOffset = null;
+    _boxResizeStartPointer = null;
+  }
+
+  /// Resizes the box of the layer [startTextBoxResize] was called with to
+  /// follow the pointer of [details], keeping the edges opposite
+  /// [textBoxResizeHandle] in place, and returns that layer.
+  ///
+  /// The layer is looked up by id in [layers]: the history step the gesture
+  /// starts with copies the layers, and the copies are the ones shown. The
+  /// drag is measured on screen and divided by [editorScaleFactor], the
+  /// zoom of the canvas.
+  TextLayer? calculateTextBoxResize({
+    required ScaleUpdateDetails details,
+    required double editorScaleFactor,
+    required List<Layer> layers,
+  }) {
+    final layer = layers
+        .where((layer) => layer.id == _boxResizeLayerId)
+        .firstOrNull;
+    final handle = textBoxResizeHandle;
+    final startBox = _boxResizeStartBox;
+    final startOffset = _boxResizeStartOffset;
+    if (layer is! TextLayer ||
+        handle == null ||
+        startBox == null ||
+        startOffset == null) {
+      return null;
+    }
+
+    final pointer = details.focalPoint;
+    final startPointer = _boxResizeStartPointer ??= pointer;
+
+    final resized = TextLayerBox.resize(
+      size: startBox.size,
+      offset: startOffset,
+      handle: handle,
+      delta: (pointer - startPointer) / editorScaleFactor,
+      scale: layer.scale,
+      rotation: layer.rotation,
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+      fractionalOffset: _getFractionalLayerOffset(layer),
+    );
+    layer
+      ..box = startBox.copyWith(size: resized.size)
+      ..offset = resized.offset;
+    return layer;
+  }
+
   /// Represents the layer being interacted with during a
   /// scale or rotate gesture.
   ///

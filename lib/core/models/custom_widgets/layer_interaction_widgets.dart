@@ -1,5 +1,6 @@
 import 'utils/custom_widgets_typedef.dart';
 
+export '/shared/widgets/layer/interaction_helper/text_layer_box_handles.dart';
 export '/shared/widgets/layer/models/layer_item_interaction.dart';
 
 /// A class that defines a layer of interaction for custom widgets,

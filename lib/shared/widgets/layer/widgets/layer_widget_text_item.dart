@@ -180,8 +180,12 @@ class LayerWidgetTextItem extends StatefulWidget {
       finalStyle = style;
     }
 
+    final box = layer.box;
+
     return RoundedBackgroundText.rich(
       enableHitBoxCorrection: true,
+      // The box is in the layer's units, like maxTextWidth.
+      box: box?.copyWith(size: box.size * layer.scale),
       maxTextWidth: maxTextWidth == null
           ? double.infinity
           : maxTextWidth * layer.scale,

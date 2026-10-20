@@ -25,6 +25,7 @@ class LayerInteractionConfigs {
     this.enableLayerDragSelection = true,
     this.enableMobilePinchScale = true,
     this.enableMobilePinchRotate = true,
+    this.enableTextBoxResize = false,
     this.mouseButtonPrimaryAction = MouseButtonAction.selectOrSpaceMove,
     this.mouseButtonSecondaryAction = MouseButtonAction.pan,
     this.mouseButtonMiddleAction = MouseButtonAction.pan,
@@ -62,6 +63,15 @@ class LayerInteractionConfigs {
   /// (two-finger rotation).
   /// If `false`, pinch rotation is disabled.
   final bool enableMobilePinchRotate;
+
+  /// Whether the default selection overlay shows handles on the edges of a
+  /// text layer with a `TextLayer.box`, which resize the box without
+  /// scaling its text.
+  ///
+  /// A custom `LayerInteractionWidgets.overlayChildBuilder` can show its own
+  /// handles with `TextLayerBoxHandles` and
+  /// `LayerItemInteractions.textBoxResizeDown`, whatever this says.
+  final bool enableTextBoxResize;
 
   /// Determines whether the video controls should be hidden when the user
   /// interacts with the editor.
@@ -129,6 +139,7 @@ class LayerInteractionConfigs {
     bool? hideToolbarOnInteraction,
     bool? enableMobilePinchScale,
     bool? enableMobilePinchRotate,
+    bool? enableTextBoxResize,
     bool? hideVideoControlsOnInteraction,
     bool? keepSelectionOnInteraction,
     bool? enableKeyboardMultiSelection,
@@ -151,6 +162,7 @@ class LayerInteractionConfigs {
           enableMobilePinchScale ?? this.enableMobilePinchScale,
       enableMobilePinchRotate:
           enableMobilePinchRotate ?? this.enableMobilePinchRotate,
+      enableTextBoxResize: enableTextBoxResize ?? this.enableTextBoxResize,
       hideVideoControlsOnInteraction:
           hideVideoControlsOnInteraction ?? this.hideVideoControlsOnInteraction,
       keepSelectionOnInteraction:

@@ -45,6 +45,7 @@ class TextLayer extends Layer {
     this.align = TextAlign.left,
     this.fontScale = 1.0,
     this.maxTextWidth,
+    this.box,
     this.outlineWidth = 0,
     this.outlineColor = _defaultOutlineColor,
     List<TextHighlight>? highlights,
@@ -170,6 +171,11 @@ class TextLayer extends Layer {
       text: map[keyConverter('text')] ?? '-',
       fontScale: fontScale,
       maxTextWidth: tryParseDouble(map[keyConverter('maxTextWidth')]),
+      box: map[keyConverter('box')] is Map
+          ? TextLayerBox.fromMap(
+              Map<String, dynamic>.from(map[keyConverter('box')] as Map),
+            )
+          : null,
       outlineWidth: safeParseDouble(map[keyConverter('outlineWidth')]),
       outlineColor: outlineColor != null
           ? Color(safeParseInt(outlineColor))
@@ -252,6 +258,14 @@ class TextLayer extends Layer {
   /// If set, the text will be constrained to this width, and will wrap. If
   /// null, the text will not have a width constraint.
   double? maxTextWidth;
+
+  /// A fixed box the text is laid out in, or `null` for a layer that grows
+  /// with its text.
+  ///
+  /// The text wraps at the box width instead of [maxTextWidth], and the
+  /// background fills the box. Set it to `null` to remove the box;
+  /// [copyWith] cannot clear it.
+  TextLayerBox? box;
 
   /// A custom text style for the text. Be careful the editor allow not to
   /// import and export this style.
@@ -406,6 +420,7 @@ class TextLayer extends Layer {
       'type': 'text',
       if (maxTextWidth != null)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
+      if (box != null) 'box': box!.toMap(),
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
       if (highlights.isNotEmpty)
         'highlights': highlights.map((h) => h.toMap()).toList(),
@@ -479,6 +494,9 @@ class TextLayer extends Layer {
         'decoration': textStyle?.decoration.toString(),
       if (paintLayer.maxTextWidth != maxTextWidth)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
+      // `null` is written too, so a removed box does not come back from the
+      // previous step.
+      if (paintLayer.box != box) 'box': box?.toMap(),
       // An empty list is written on purpose: the import merges each entry
       // over the previous state, so a missing key would restore shadows the
       // user removed.
@@ -522,6 +540,7 @@ class TextLayer extends Layer {
     double? rotation,
     double? scale,
     double? maxTextWidth,
+    TextLayerBox? box,
     double? outlineWidth,
     Color? outlineColor,
     List<TextHighlight>? highlights,
@@ -558,6 +577,7 @@ class TextLayer extends Layer {
       align: align ?? this.align,
       fontScale: fontScale ?? this.fontScale,
       maxTextWidth: maxTextWidth ?? this.maxTextWidth,
+      box: box ?? this.box,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       outlineColor: outlineColor ?? this.outlineColor,
       highlights: highlights ?? this.highlights,
@@ -600,6 +620,7 @@ class TextLayer extends Layer {
       ..add(EnumProperty<TextAlign>('align', align))
       ..add(DoubleProperty('fontScale', fontScale))
       ..add(DoubleProperty('maxTextWidth', maxTextWidth))
+      ..add(DiagnosticsProperty<TextLayerBox>('box', box))
       ..add(DoubleProperty('outlineWidth', outlineWidth))
       ..add(ColorProperty('outlineColor', outlineColor))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
