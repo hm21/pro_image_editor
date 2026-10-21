@@ -33,6 +33,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     this.silhouettePainters = const [],
     this.silhouetteShadows = const [],
     this.visibleLength,
+    this.boxSize,
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -90,6 +91,13 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// none gets no background. Hit testing still covers the whole text, so the
   /// layer can be picked before its text has appeared.
   final int? visibleLength;
+
+  /// The size of the fixed box the text is laid out in, or `null` when the
+  /// background follows the lines.
+  ///
+  /// The background then fills the box as one rectangle, the text is clipped
+  /// to the box, and a hit anywhere in the box counts.
+  final Size? boxSize;
 
   /// The background behind the drawn text, or behind all of it when
   /// [revealedOnly] is `false` (see [visibleLength]).
@@ -506,6 +514,20 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final painter = Paint()..color = backgroundColor;
 
+    if (boxSize case final boxSize?) {
+      final box = Offset.zero & boxSize;
+      canvas
+        ..save()
+        ..clipRect(box)
+        ..drawRect(box, painter)
+        ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy);
+      _paintSilhouetteShadows(canvas);
+      outlinePainter?.paint(canvas, Offset.zero);
+      this.painter.paint(canvas, Offset.zero);
+      canvas.restore();
+      return;
+    }
+
     final background = _buildBackgroundPath();
     // Only the background of the whole text serves hit testing.
     if (visibleLength == null) _cachedPath = background;
@@ -558,6 +580,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
   @override
   bool? hitTest(Offset position) {
+    if (boxSize case final boxSize?) {
+      final hasHit = (Offset.zero & boxSize).contains(position);
+      onHitTestResult?.call(hasHit);
+      return hasHit;
+    }
     final path = _cachedPath ??= _buildBackgroundPath(revealedOnly: false);
 
     bool hasHit = path.contains(position - hitBoxCorrectionOffset);
@@ -587,7 +614,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         oldDelegate.hitBoxCorrectionOffset != hitBoxCorrectionOffset ||
         oldDelegate.textDirection != textDirection ||
         oldDelegate.outerRadius != outerRadius ||
-        oldDelegate.visibleLength != visibleLength;
+        oldDelegate.visibleLength != visibleLength ||
+        oldDelegate.boxSize != boxSize;
 
     if (changed) _cachedPath = null; // invalidate cache
 
@@ -613,7 +641,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         other.outlineColor == outlineColor &&
         listEquals(other.silhouettePainters, silhouettePainters) &&
         listEquals(other.silhouetteShadows, silhouetteShadows) &&
-        other.visibleLength == visibleLength;
+        other.visibleLength == visibleLength &&
+        other.boxSize == boxSize;
   }
 
   @override
@@ -632,6 +661,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         outlineColor.hashCode ^
         Object.hashAll(silhouettePainters) ^
         Object.hashAll(silhouetteShadows) ^
-        visibleLength.hashCode;
+        visibleLength.hashCode ^
+        boxSize.hashCode;
   }
 }

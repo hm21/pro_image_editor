@@ -98,6 +98,11 @@ class MainEditorLayersService {
 
   Set<String> _temporarySelectedIds = {};
   bool _isScaleInteractionActive = false;
+
+  /// Whether a handle of the selection overlay, such as the rotate/scale
+  /// button or a box handle, is pressed. The layer under it gets the press
+  /// as well, but must not treat it as its own tap or long press.
+  bool get isScaleInteractionActive => _isScaleInteractionActive;
   bool _helperIsPointerDownSelected = false;
   bool _helperEnforceMultiSelect = false;
   bool _helperMouseDownMultiSelect = false;
@@ -292,6 +297,31 @@ class MainEditorLayersService {
     callbacks.mainEditorCallbacks?.handleUpdateUI();
   }
 
+  /// Called when the user presses [handle] of the box of [layer] at the
+  /// global [pointerPosition] to resize it.
+  void handleTextBoxResizeDown(
+    TextLayer layer,
+    TextLayerBoxHandle handle,
+    Offset pointerPosition,
+  ) {
+    _isScaleInteractionActive = true;
+    layerInteraction.startTextBoxResize(
+      layer,
+      handle,
+      pointerPosition: pointerPosition,
+    );
+    onCheckInteractiveViewer();
+  }
+
+  /// Called when the user lets go of a box handle.
+  void handleTextBoxResizeUp() {
+    _isScaleInteractionActive = false;
+    layerInteraction.endTextBoxResize();
+    _validateClearLayer();
+    onCheckInteractiveViewer();
+    callbacks.mainEditorCallbacks?.handleUpdateUI();
+  }
+
   /// Removes the given layer from the canvas and updates the UI.
   void handleRemoveLayer(Layer layer) {
     state.removeLayer(layer);
@@ -368,9 +398,14 @@ class MainEditorLayersService {
     bool areLayersSelectable = false,
     bool isSelected = false,
   }) {
+    // A held handle is not a long press on the layer, even when the drag
+    // leaves the layer's offset alone, as resizing a box from its far edges
+    // does.
     if (!areLayersSelectable ||
         !_layerInteractionConfigs.enableLongPressMultiSelection ||
-        mouseService.validatePanAction()) {
+        mouseService.validatePanAction() ||
+        _isScaleInteractionActive ||
+        state.isLayerBeingTransformed) {
       return;
     }
 

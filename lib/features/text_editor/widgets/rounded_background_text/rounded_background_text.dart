@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '/core/models/layers/text_layer_box.dart';
 import '../../utils/rounded_background_painter.dart';
 
 /// Creates a [RoundedBackgroundText] widget with plain text and optional
@@ -36,6 +37,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
     this.visibleLength,
+    this.box,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -59,6 +61,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
     this.visibleLength,
+    this.box,
   });
 
   /// A flag to enable or disable hitBox correction for the text.
@@ -133,6 +136,16 @@ class RoundedBackgroundText extends StatelessWidget {
   /// types itself out shows that way, its background growing with it.
   final int? visibleLength;
 
+  /// A fixed box to lay the text out in, its size in logical pixels, or
+  /// `null` to size the widget to its text.
+  ///
+  /// The widget then takes the size of the box, the text wraps at its width
+  /// (less the padding and effect space) instead of [maxTextWidth],
+  /// [maxWidth] and [softMaxWidth], and [backgroundColor] fills the whole
+  /// box as one rectangle, which is also what hit testing reads. Text taller
+  /// than the box is clipped or shrunk, as [TextLayerBox.overflow] says.
+  final TextLayerBox? box;
+
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
   @override
@@ -198,6 +211,10 @@ class RoundedBackgroundText extends StatelessWidget {
     final shadows = style.shadows ?? const <Shadow>[];
     final hasOutline = _hasOutline;
 
+    // Below 1 while a box shrinks its text to fit, which the outline and the
+    // shadows follow.
+    var textScale = 1.0;
+
     TextPainter createPainter(TextStyle Function(TextStyle style)? restyle) {
       var content = restyle == null ? text : _restyleSpan(text, restyle);
       // Hidden last, so no pass, the outline's included, paints that part.
@@ -214,6 +231,9 @@ class RoundedBackgroundText extends StatelessWidget {
         textAlign: align,
         textWidthBasis: defaultTextStyle.textWidthBasis,
         textHeightBehavior: defaultTextStyle.textHeightBehavior,
+        textScaler: textScale == 1
+            ? TextScaler.noScaling
+            : TextScaler.linear(textScale),
       );
     }
 
@@ -228,15 +248,34 @@ class RoundedBackgroundText extends StatelessWidget {
     Paint strokePaint(Color color) => Paint()
       ..style = PaintingStyle.stroke
       // Half of the stroke lies inside the glyph, under the fill.
-      ..strokeWidth = outlineWidth * 2
+      ..strokeWidth = outlineWidth * 2 * textScale
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round
       ..color = color;
 
+    final effectSpace = reserveEffectSpace
+        ? _effectSpace(
+            outlineWidth: hasOutline ? outlineWidth : 0,
+            shadows: shadows,
+          )
+        : Offset.zero;
+
+    final box = this.box;
+    if (box != null && box.overflow == TextLayerBoxOverflow.shrink) {
+      textScale = _shrinkFactor(createPainter(null), box.size, effectSpace);
+    }
+    List<Shadow>? scaleShadows(List<Shadow>? shadows) => textScale == 1
+        ? shadows
+        : shadows?.map((shadow) => shadow.scale(textScale)).toList();
+
     // With an outline, the shadows are cast by the outlined glyphs, which the
     // painter draws from opaque silhouettes; the passes themselves draw none.
     final painter = createPainter(
-      hasOutline ? (style) => style.copyWith(shadows: const []) : null,
+      hasOutline
+          ? (style) => style.copyWith(shadows: const [])
+          : textScale == 1
+          ? null
+          : (style) => style.copyWith(shadows: scaleShadows(style.shadows)),
     );
     final outlinePainter = hasOutline
         ? createPainter(paintWith(strokePaint(outlineColor)))
@@ -254,12 +293,47 @@ class RoundedBackgroundText extends StatelessWidget {
     double horizontalSpace = enableHitBoxCorrection ? height * 0.3 : 0;
     double verticalSpace = enableHitBoxCorrection ? height * 0.1 : 0;
 
-    final effectSpace = reserveEffectSpace
-        ? _effectSpace(
-            outlineWidth: hasOutline ? outlineWidth : 0,
-            shadows: shadows,
-          )
-        : Offset.zero;
+    RoundedBackgroundTextPainter createBackgroundPainter(
+      Offset textOffset, {
+      Size? boxSize,
+    }) {
+      return RoundedBackgroundTextPainter(
+        backgroundColor: backgroundColor ?? Colors.transparent,
+        painter: painter,
+        outlinePainter: outlinePainter,
+        outlineWidth: hasOutline ? outlineWidth : 0,
+        outlineColor: outlineColor,
+        silhouettePainters: silhouettePainters,
+        silhouetteShadows: hasOutlineShadows
+            ? scaleShadows(shadows)!
+            : const [],
+        onHitTestResult: onHitTestResult,
+        textAlign: align,
+        cursorWidth: cursorWidth,
+        textDirection: Directionality.of(context),
+        hitBoxCorrectionOffset: textOffset,
+        visibleLength: visibleLength,
+        boxSize: boxSize,
+      );
+    }
+
+    if (box != null) {
+      final inset = Offset(horizontalSpace, verticalSpace) + effectSpace;
+      final room = _boxRoom(box.size, inset);
+      final textPainters = [painter, ?outlinePainter, ...silhouettePainters];
+      for (final textPainter in textPainters) {
+        textPainter.layout(minWidth: room.width, maxWidth: room.width);
+      }
+      final freeHeight = max(0.0, room.height - painter.height);
+      final textOffset = inset.translate(
+        0,
+        freeHeight * box.verticalAlign.factor,
+      );
+      return (
+        painter: createBackgroundPainter(textOffset, boxSize: box.size),
+        size: constraints.constrain(box.size),
+      );
+    }
 
     final reservedWidth = (horizontalSpace + effectSpace.dx) * 2;
     var textMaxWidth = min(maxTextWidth, max(0.0, maxWidth - reservedWidth));
@@ -278,21 +352,8 @@ class RoundedBackgroundText extends StatelessWidget {
     }
 
     return (
-      painter: RoundedBackgroundTextPainter(
-        backgroundColor: backgroundColor ?? Colors.transparent,
-        painter: painter,
-        outlinePainter: outlinePainter,
-        outlineWidth: hasOutline ? outlineWidth : 0,
-        outlineColor: outlineColor,
-        silhouettePainters: silhouettePainters,
-        silhouetteShadows: hasOutlineShadows ? shadows : const [],
-        onHitTestResult: onHitTestResult,
-        textAlign: align,
-        cursorWidth: cursorWidth,
-        textDirection: Directionality.of(context),
-        hitBoxCorrectionOffset:
-            Offset(horizontalSpace, verticalSpace) + effectSpace,
-        visibleLength: visibleLength,
+      painter: createBackgroundPainter(
+        Offset(horizontalSpace, verticalSpace) + effectSpace,
       ),
       size: Size(
         painter.width.clamp(0, constraints.maxWidth) +
@@ -301,6 +362,51 @@ class RoundedBackgroundText extends StatelessWidget {
             (verticalSpace + effectSpace.dy) * 2,
       ),
     );
+  }
+
+  /// The room a box of [size] leaves for its text inside [inset] on every
+  /// side.
+  static Size _boxRoom(Size size, Offset inset) {
+    return Size(
+      max(0.0, size.width - inset.dx * 2),
+      max(0.0, size.height - inset.dy * 2),
+    );
+  }
+
+  /// The largest text scale, down to [TextLayerBox.minShrinkFactor], at
+  /// which the text of [probe] fits a box of [boxSize] whose text keeps
+  /// [effectSpace] to its edges. Disposes [probe].
+  double _shrinkFactor(TextPainter probe, Size boxSize, Offset effectSpace) {
+    bool fits(double factor) {
+      probe.textScaler = TextScaler.linear(factor);
+      // The padding follows the line height, which shrinks with the text.
+      final lineHeight = probe.preferredLineHeight;
+      final inset = enableHitBoxCorrection
+          ? Offset(lineHeight * 0.3, lineHeight * 0.1) + effectSpace
+          : effectSpace;
+      final room = _boxRoom(boxSize, inset);
+      probe.layout(maxWidth: room.width);
+      return probe.height <= room.height;
+    }
+
+    try {
+      if (fits(1)) return 1;
+      var low = TextLayerBox.minShrinkFactor;
+      if (!fits(low)) return low;
+      var high = 1.0;
+      // Ten halvings settle the size within a thousandth of the range.
+      for (var i = 0; i < 10; i++) {
+        final middle = (low + high) / 2;
+        if (fits(middle)) {
+          low = middle;
+        } else {
+          high = middle;
+        }
+      }
+      return low;
+    } finally {
+      probe.dispose();
+    }
   }
 
   /// How far the outline and the shadows paint beyond the glyphs on each

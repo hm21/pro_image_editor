@@ -102,6 +102,42 @@ class TextEditorState extends State<TextEditor>
   Color get outlineColor => _outlineColor;
   Color _outlineColor = const Color(0xFF000000);
 
+  /// Whether the text goes into a fixed box (see [TextLayer.box]) when
+  /// editing is done.
+  bool get boxEnabled => _boxEnabled;
+  late bool _boxEnabled = widget.layer?.box != null;
+
+  /// Puts the text into a box, or takes it out of one, when editing is done.
+  ///
+  /// A layer that already has a box keeps its size. Otherwise the box is
+  /// sized to hold the text as it shows without one, so turning the box on
+  /// changes nothing until it is resized.
+  void setBoxEnabled(bool enabled) {
+    setState(() => _boxEnabled = enabled);
+  }
+
+  /// The box the edited layer gets for [text], wrapped at [maxTextWidth].
+  TextLayerBox? _resultBox(String text, double? maxTextWidth) {
+    if (!_boxEnabled) return null;
+    final original = widget.layer;
+    if (original?.box case final box?) return box;
+    final scale = original?.scale ?? 1;
+    return TextLayerBox.fit(
+      text: text,
+      style: selectedTextStyle.copyWith(
+        fontSize: _textFontSize,
+        shadows: selectedTextStyle.shadows
+            ?.map((shadow) => shadow.scale(_fontScale))
+            .toList(),
+      ),
+      maxTextWidth: maxTextWidth,
+      align: align,
+      outlineWidth: _outlineWidth * _fontScale,
+      // About two pixels on screen, whatever the layer's scale.
+      slack: 2 / (scale <= 0 ? 1 : scale),
+    );
+  }
+
   /// Sets the outline drawn around each glyph; a [width] of `0` removes it.
   ///
   /// Omitted values keep their current setting.
@@ -345,6 +381,11 @@ class TextEditorState extends State<TextEditor>
     if (textCtrl.text.trim().isNotEmpty || widget.layer != null) {
       final original = widget.layer;
       final text = textCtrl.text.trim();
+      final maxTextWidth =
+          (textEditorConfigs.enableAutoWrapOnLayer ||
+              textEditorConfigs.enableImageBoundaryTextWrap)
+          ? _maxTextWidth
+          : null;
       TextLayer layer = TextLayer(
         text: text,
         background: _backgroundColor,
@@ -356,11 +397,7 @@ class TextEditorState extends State<TextEditor>
         outlineWidth: _outlineWidth,
         outlineColor: _outlineColor,
         customSecondaryColor: _secondaryColor != null,
-        maxTextWidth:
-            (textEditorConfigs.enableAutoWrapOnLayer ||
-                textEditorConfigs.enableImageBoundaryTextWrap)
-            ? _maxTextWidth
-            : null,
+        maxTextWidth: maxTextWidth,
         // The editor changes how the text looks, not when it shows.
         startTime: original?.startTime,
         endTime: original?.endTime,
@@ -377,6 +414,7 @@ class TextEditorState extends State<TextEditor>
         // A mask is measured in the layer's own box, so it fits the edited
         // text as well.
         mask: original?.mask,
+        box: _resultBox(text, maxTextWidth ?? original?.maxTextWidth),
         // Highlights point into the text, so they only fit the text they
         // were made for.
         highlights: original?.text == text ? original?.highlights : null,

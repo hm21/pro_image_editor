@@ -60,6 +60,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'meta': 'm',
   'boxConstraints': 'bx',
   'maxTextWidth': 'mt',
+  'box': 'tb',
   'shadows': 'sh',
   'outlineWidth': 'ow',
   'outlineColor': 'oc',

@@ -1551,6 +1551,20 @@ class ProImageEditorState extends State<ProImageEditor>
 
     if (!hasSelectedLayers) return;
 
+    if (layerInteractionManager.isResizingTextBox) {
+      final layer = layerInteractionManager.calculateTextBoxResize(
+        details: details,
+        editorScaleFactor: interactiveViewer.currentState?.scaleFactor ?? 1.0,
+        layers: activeLayers,
+      );
+      if (layer != null) {
+        _recordKeyframeEdit();
+        mainEditorCallbacks?.handleUpdateLayer(layer);
+        layer.key.currentState?.setState(() {});
+      }
+      return;
+    }
+
     if (layerInteractionManager.rotateScaleLayerSizeHelper != null) {
       layerInteractionManager.calculateInteractiveButtonScaleRotate(
         configs: configs,

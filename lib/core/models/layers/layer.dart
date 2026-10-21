@@ -44,6 +44,7 @@ export 'layer_mask.dart';
 export 'paint_layer.dart';
 export 'text_highlight.dart';
 export 'text_layer.dart';
+export 'text_layer_box.dart';
 export 'widget_layer.dart';
 
 /// Represents a layer with common properties for widgets.

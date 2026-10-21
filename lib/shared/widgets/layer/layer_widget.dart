@@ -230,6 +230,8 @@ class _LayerWidgetState extends State<LayerWidget>
     }
     // Start long press detection
     _longPressTimer?.cancel();
+    // A press on a handle of the selection overlay reaches the layer too.
+    if (_layersService?.isScaleInteractionActive ?? false) return;
     _longPressTimer = Timer(_longPressThreshold, () {
       if (_lastDownEvent == null ||
           _lastLayerOffset == null ||
@@ -428,6 +430,17 @@ class _LayerWidgetState extends State<LayerWidget>
         _layer,
       ),
       onScaleRotateUp: (_) => _layersService?.handleScaleRotateUp(),
+      onTextBoxResizeDown: (event, handle) {
+        final layer = _layer;
+        if (layer is TextLayer) {
+          _layersService?.handleTextBoxResizeDown(
+            layer,
+            handle,
+            event.position,
+          );
+        }
+      },
+      onTextBoxResizeUp: (_) => _layersService?.handleTextBoxResizeUp(),
       onRemoveLayer: () => _layersService?.handleRemoveLayer(_layer),
       onDuplicate: widget.onDuplicate,
       onGroupLayers: _layersService?.handleGroupLayers,

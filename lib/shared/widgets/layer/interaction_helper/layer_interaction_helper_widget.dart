@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -16,6 +17,7 @@ import '/shared/widgets/reactive_widgets/reactive_custom_widget.dart';
 import '../models/layer_item_interaction.dart';
 import 'layer_interaction_border_painter.dart';
 import 'layer_interaction_button.dart';
+import 'text_layer_box_handles.dart';
 
 /// A stateful widget that provides interactive controls for manipulating
 /// layers in an image editor.
@@ -60,6 +62,8 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.onDuplicate,
     this.onScaleRotateDown,
     this.onScaleRotateUp,
+    this.onTextBoxResizeDown,
+    this.onTextBoxResizeUp,
     this.onGroupLayers,
     this.onUngroupLayers,
     this.selected = false,
@@ -117,6 +121,14 @@ class LayerInteractionHelperWidget extends StatefulWidget
   /// This callback is triggered when the user releases the button after scaling
   /// or rotating, finalizing the interaction.
   final Function(PointerUpEvent)? onScaleRotateUp;
+
+  /// Called when a handle of a text layer's box is pressed, to resize the
+  /// box with the drag that follows.
+  final void Function(PointerDownEvent event, TextLayerBoxHandle handle)?
+  onTextBoxResizeDown;
+
+  /// Called when the pressed box handle is let go.
+  final void Function(PointerUpEvent event)? onTextBoxResizeUp;
 
   /// Callback for grouping layers.
   ///
@@ -221,6 +233,9 @@ class _LayerInteractionHelperWidgetState
       scaleRotateUp: _handleScaleRotateUp,
       group: widget.onGroupLayers ?? () {},
       ungroup: widget.onUngroupLayers ?? () {},
+      textBoxResizeDown: (event, handle) =>
+          widget.onTextBoxResizeDown?.call(event, handle),
+      textBoxResizeUp: (event) => widget.onTextBoxResizeUp?.call(event),
     );
   }
 
@@ -366,6 +381,11 @@ class _LayerInteractionHelperWidgetState
 
   List<LayerInteractionItem> _buildDefaultInteractions() {
     return [
+      if (layerInteraction.enableTextBoxResize)
+        (rebuildStream, layer, interactions) => ReactiveWidget(
+          stream: rebuildStream,
+          builder: (_) => _buildTextBoxHandles(interactions),
+        ),
       if (_isLayerEditable())
         (rebuildStream, layer, interactions) => ReactiveWidget(
           stream: rebuildStream,
@@ -380,6 +400,27 @@ class _LayerInteractionHelperWidgetState
         builder: (_) => _buildRotateScaleButton(interactions),
       ),
     ];
+  }
+
+  Widget _buildTextBoxHandles(LayerItemInteractions interactions) {
+    final layer = _layer;
+    if (layer is! TextLayer || layer.box == null) {
+      return const SizedBox.shrink();
+    }
+    final style = layerInteraction.style;
+    // The corners hold the buttons, so only the edges get handles. The
+    // overlay is padded around the layer, which leaves room for them.
+    return Positioned.fill(
+      child: TextLayerBoxHandles(
+        handles: TextLayerBoxHandle.edges,
+        boxInset: style.overlayPadding,
+        size: math.min(12, style.overlayPadding.horizontal),
+        rotation: layer.rotation,
+        color: style.borderColor,
+        onResizeDown: interactions.textBoxResizeDown,
+        onResizeUp: interactions.textBoxResizeUp,
+      ),
+    );
   }
 
   Widget _buildRotateScaleButton(LayerItemInteractions interactions) {

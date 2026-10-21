@@ -144,6 +144,7 @@ class LayerCopyManager {
       flipY: layer.flipY,
       meta: layer.meta,
       maxTextWidth: layer.maxTextWidth,
+      box: layer.box,
       outlineWidth: layer.outlineWidth,
       outlineColor: layer.outlineColor,
       highlights: List<TextHighlight>.of(layer.highlights),
