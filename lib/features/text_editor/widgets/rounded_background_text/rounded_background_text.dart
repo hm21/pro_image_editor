@@ -36,6 +36,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
+    this.paintShadows = true,
     this.visibleLength,
     this.box,
   }) : text = TextSpan(text: text, style: style);
@@ -60,6 +61,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
+    this.paintShadows = true,
     this.visibleLength,
     this.box,
   });
@@ -126,6 +128,13 @@ class RoundedBackgroundText extends StatelessWidget {
   ///
   /// The space is added on both sides, so the text keeps its center.
   final bool reserveEffectSpace;
+
+  /// Whether the shadows of [text] are painted.
+  ///
+  /// When this is `false` those shadows still reserve their space, so the
+  /// text shrinks and sits where it would with them drawn, but this painter
+  /// draws none of them. An outline still casts its own. Defaults to `true`.
+  final bool paintShadows;
 
   /// How many UTF-16 code units of [text], counted from its start, are
   /// painted, or `null` to paint all of it.
@@ -270,8 +279,10 @@ class RoundedBackgroundText extends StatelessWidget {
 
     // With an outline, the shadows are cast by the outlined glyphs, which the
     // painter draws from opaque silhouettes; the passes themselves draw none.
+    // [paintShadows] keeps the same space while leaving the drawing to a
+    // caller that paints the shadows itself.
     final painter = createPainter(
-      hasOutline
+      hasOutline || !paintShadows
           ? (style) => style.copyWith(shadows: const [])
           : textScale == 1
           ? null
@@ -633,6 +644,14 @@ class RoundedBackgroundText extends StatelessWidget {
           'reserveEffectSpace',
           value: reserveEffectSpace,
           ifTrue: 'effect space reserved',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'paintShadows',
+          value: paintShadows,
+          ifFalse: 'shadows not painted',
+          defaultValue: true,
         ),
       );
   }

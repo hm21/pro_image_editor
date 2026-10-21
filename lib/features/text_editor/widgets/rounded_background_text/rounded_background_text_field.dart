@@ -183,10 +183,21 @@ class _RoundedBackgroundTextFieldState
       lineHeight * 0.3 + effect.dx,
       lineHeight * 0.1 + effect.dy,
     );
-    final glyphStyle = glyph.copyWith(
+    // An outline casts the shadows itself. Otherwise the field paints them,
+    // scaled with the font the way RoundedBackgroundText does.
+    List<Shadow>? fieldShadows;
+    if (outlined) {
+      fieldShadows = const <Shadow>[];
+    } else if (scale != 1) {
+      final shadows = glyph.shadows;
+      if (shadows != null) {
+        fieldShadows = [for (final shadow in shadows) shadow.scale(scale)];
+      }
+    }
+    final fieldStyle = glyph.copyWith(
       fontSize: shrunkSize,
       leadingDistribution: leading,
-      shadows: outlined ? const <Shadow>[] : null,
+      shadows: fieldShadows,
     );
     final vertical = switch (box.verticalAlign) {
       TextLayerBoxVerticalAlign.top => TextAlignVertical.top,
@@ -204,12 +215,17 @@ class _RoundedBackgroundTextFieldState
               child: IgnorePointer(
                 child: RoundedBackgroundText.rich(
                   maxTextWidth: widget.maxTextWidth,
+                  // The font stays at full size so this painter shrinks it,
+                  // and with it the outline and the shadows the outline
+                  // casts, the way the finished layer does. The field uses
+                  // the shrunk size. Bare shadows stay on the style so the
+                  // box keeps their space; the field paints those.
                   text: _textController.buildTextSpan(
                     context: context,
                     withComposing: true,
-                    style: glyphStyle.copyWith(
+                    style: glyph.copyWith(
                       color: const Color(0x00000000),
-                      shadows: outlined ? null : const <Shadow>[],
+                      leadingDistribution: leading,
                     ),
                   ),
                   box: box,
@@ -217,6 +233,8 @@ class _RoundedBackgroundTextFieldState
                   backgroundColor: widget.backgroundColor,
                   enableHitBoxCorrection: true,
                   leadingDistribution: leading,
+                  reserveEffectSpace: true,
+                  paintShadows: false,
                   outlineWidth: widget.outlineWidth,
                   outlineColor: widget.outlineColor,
                 ),
@@ -240,7 +258,7 @@ class _RoundedBackgroundTextFieldState
                     textInputAction: TextInputAction.newline,
                     scrollPhysics: const NeverScrollableScrollPhysics(),
                     scrollPadding: EdgeInsets.zero,
-                    style: glyphStyle,
+                    style: fieldStyle,
                     cursorColor: widget.configs.style.inputCursorColor,
                     cursorWidth: widget.cursorWidth,
                     cursorHeight: shrunkSize,
