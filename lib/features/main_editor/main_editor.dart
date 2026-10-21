@@ -1599,6 +1599,7 @@ class ProImageEditorState extends State<ProImageEditor>
         layers: activeLayers,
       );
       if (layer != null) {
+        _recordKeyframeEdit();
         mainEditorCallbacks?.handleUpdateLayer(layer);
         layer.key.currentState?.setState(() {});
       }

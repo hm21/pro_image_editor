@@ -211,7 +211,9 @@ class RoundedBackgroundText extends StatelessWidget {
     final shadows = style.shadows ?? const <Shadow>[];
     final hasOutline = _hasOutline;
 
-    var textScaler = TextScaler.noScaling;
+    // Below 1 while a box shrinks its text to fit, which the outline and the
+    // shadows follow.
+    var textScale = 1.0;
 
     TextPainter createPainter(TextStyle Function(TextStyle style)? restyle) {
       var content = restyle == null ? text : _restyleSpan(text, restyle);
@@ -229,7 +231,9 @@ class RoundedBackgroundText extends StatelessWidget {
         textAlign: align,
         textWidthBasis: defaultTextStyle.textWidthBasis,
         textHeightBehavior: defaultTextStyle.textHeightBehavior,
-        textScaler: textScaler,
+        textScaler: textScale == 1
+            ? TextScaler.noScaling
+            : TextScaler.linear(textScale),
       );
     }
 
@@ -244,7 +248,7 @@ class RoundedBackgroundText extends StatelessWidget {
     Paint strokePaint(Color color) => Paint()
       ..style = PaintingStyle.stroke
       // Half of the stroke lies inside the glyph, under the fill.
-      ..strokeWidth = outlineWidth * 2
+      ..strokeWidth = outlineWidth * 2 * textScale
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round
       ..color = color;
@@ -258,15 +262,20 @@ class RoundedBackgroundText extends StatelessWidget {
 
     final box = this.box;
     if (box != null && box.overflow == TextLayerBoxOverflow.shrink) {
-      textScaler = TextScaler.linear(
-        _shrinkFactor(createPainter(null), box.size, effectSpace),
-      );
+      textScale = _shrinkFactor(createPainter(null), box.size, effectSpace);
     }
+    List<Shadow>? scaleShadows(List<Shadow>? shadows) => textScale == 1
+        ? shadows
+        : shadows?.map((shadow) => shadow.scale(textScale)).toList();
 
     // With an outline, the shadows are cast by the outlined glyphs, which the
     // painter draws from opaque silhouettes; the passes themselves draw none.
     final painter = createPainter(
-      hasOutline ? (style) => style.copyWith(shadows: const []) : null,
+      hasOutline
+          ? (style) => style.copyWith(shadows: const [])
+          : textScale == 1
+          ? null
+          : (style) => style.copyWith(shadows: scaleShadows(style.shadows)),
     );
     final outlinePainter = hasOutline
         ? createPainter(paintWith(strokePaint(outlineColor)))
@@ -295,7 +304,9 @@ class RoundedBackgroundText extends StatelessWidget {
         outlineWidth: hasOutline ? outlineWidth : 0,
         outlineColor: outlineColor,
         silhouettePainters: silhouettePainters,
-        silhouetteShadows: hasOutlineShadows ? shadows : const [],
+        silhouetteShadows: hasOutlineShadows
+            ? scaleShadows(shadows)!
+            : const [],
         onHitTestResult: onHitTestResult,
         textAlign: align,
         cursorWidth: cursorWidth,

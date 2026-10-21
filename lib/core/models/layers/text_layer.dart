@@ -420,7 +420,7 @@ class TextLayer extends Layer {
       'type': 'text',
       if (maxTextWidth != null)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
-      if (box != null) 'box': box!.toMap(),
+      if (box != null) 'box': box!.toMap(maxDecimalPlaces: maxDecimalPlaces),
       if (customSecondaryColor) 'customSecondaryColor': customSecondaryColor,
       if (highlights.isNotEmpty)
         'highlights': highlights.map((h) => h.toMap()).toList(),
@@ -496,7 +496,8 @@ class TextLayer extends Layer {
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       // `null` is written too, so a removed box does not come back from the
       // previous step.
-      if (paintLayer.box != box) 'box': box?.toMap(),
+      if (paintLayer.box != box)
+        'box': box?.toMap(maxDecimalPlaces: maxDecimalPlaces),
       // An empty list is written on purpose: the import merges each entry
       // over the previous state, so a missing key would restore shadows the
       // user removed.
