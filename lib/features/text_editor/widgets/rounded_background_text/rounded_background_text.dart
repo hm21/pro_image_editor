@@ -362,10 +362,58 @@ class RoundedBackgroundText extends StatelessWidget {
     );
   }
 
+  /// How far an outline of [outlineWidth] and [shadows] paint beyond the
+  /// glyphs on each axis.
+  static Offset effectExtent({
+    required double outlineWidth,
+    required List<Shadow> shadows,
+  }) {
+    return _effectSpace(outlineWidth: outlineWidth, shadows: shadows);
+  }
+
+  /// The scale at which [text] in [style] fits a box of [boxSize], down to
+  /// [TextLayerBox.minShrinkFactor], matching what this widget paints for
+  /// [TextLayerBoxOverflow.shrink].
+  static double scaleForBox({
+    required InlineSpan text,
+    required TextStyle style,
+    required Size boxSize,
+    required bool enableHitBoxCorrection,
+    double outlineWidth = 0,
+    TextAlign textAlign = TextAlign.start,
+    TextLeadingDistribution leadingDistribution =
+        TextLeadingDistribution.proportional,
+    TextDirection textDirection = TextDirection.ltr,
+  }) {
+    final effectSpace = _effectSpace(
+      outlineWidth: outlineWidth,
+      shadows: style.shadows ?? const <Shadow>[],
+    );
+    final painter = TextPainter(
+      text: TextSpan(
+        children: [text],
+        style: TextStyle(leadingDistribution: leadingDistribution).merge(style),
+      ),
+      textAlign: textAlign,
+      textDirection: textDirection,
+    );
+    return shrinkToBox(
+      probe: painter,
+      boxSize: boxSize,
+      effectSpace: effectSpace,
+      enableHitBoxCorrection: enableHitBoxCorrection,
+    );
+  }
+
   /// The largest text scale, down to [TextLayerBox.minShrinkFactor], at
   /// which the text of [probe] fits a box of [boxSize] whose text keeps
   /// [effectSpace] to its edges. Disposes [probe].
-  double _shrinkFactor(TextPainter probe, Size boxSize, Offset effectSpace) {
+  static double shrinkToBox({
+    required TextPainter probe,
+    required Size boxSize,
+    required Offset effectSpace,
+    required bool enableHitBoxCorrection,
+  }) {
     bool fits(double factor) {
       probe.textScaler = TextScaler.linear(factor);
       // The padding follows the line height, which shrinks with the text.
@@ -396,6 +444,18 @@ class RoundedBackgroundText extends StatelessWidget {
     } finally {
       probe.dispose();
     }
+  }
+
+  /// The largest text scale, down to [TextLayerBox.minShrinkFactor], at
+  /// which the text of [probe] fits a box of [boxSize] whose text keeps
+  /// [effectSpace] to its edges. Disposes [probe].
+  double _shrinkFactor(TextPainter probe, Size boxSize, Offset effectSpace) {
+    return shrinkToBox(
+      probe: probe,
+      boxSize: boxSize,
+      effectSpace: effectSpace,
+      enableHitBoxCorrection: enableHitBoxCorrection,
+    );
   }
 
   /// How far the outline and the shadows paint beyond the glyphs on each
