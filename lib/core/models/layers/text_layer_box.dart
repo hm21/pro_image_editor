@@ -3,6 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/painting.dart';
 
+import '/core/constants/int_constants.dart';
+import '/shared/extensions/num_extension.dart';
+import '/shared/utils/parser/double_parser.dart';
+
 /// Where the text of a [TextLayerBox] sits when it is shorter than the box.
 enum TextLayerBoxVerticalAlign {
   /// The first line starts at the top of the box.
@@ -103,8 +107,8 @@ class TextLayerBox {
   factory TextLayerBox.fromMap(Map<String, dynamic> map) {
     return TextLayerBox(
       size: Size(
-        math.max(0, (map['width'] as num?)?.toDouble() ?? 0),
-        math.max(0, (map['height'] as num?)?.toDouble() ?? 0),
+        math.max(0, safeParseDouble(map['width'])),
+        math.max(0, safeParseDouble(map['height'])),
       ),
       verticalAlign: TextLayerBoxVerticalAlign.values.firstWhere(
         (align) => align.name == map['verticalAlign'],
@@ -240,13 +244,15 @@ class TextLayerBox {
     );
   }
 
-  /// Converts the box to a map, readable by [TextLayerBox.fromMap].
-  Map<String, dynamic> toMap() => <String, dynamic>{
-    'width': size.width,
-    'height': size.height,
-    'verticalAlign': verticalAlign.name,
-    'overflow': overflow.name,
-  };
+  /// Converts the box to a map, readable by [TextLayerBox.fromMap], with its
+  /// size rounded to [maxDecimalPlaces].
+  Map<String, dynamic> toMap({int maxDecimalPlaces = kMaxSafeDecimalPlaces}) =>
+      <String, dynamic>{
+        'width': size.width.roundSmart(maxDecimalPlaces),
+        'height': size.height.roundSmart(maxDecimalPlaces),
+        'verticalAlign': verticalAlign.name,
+        'overflow': overflow.name,
+      };
 
   /// Creates a copy with the given fields replaced.
   TextLayerBox copyWith({

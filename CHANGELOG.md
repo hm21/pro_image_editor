@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.15.0
+- **FEAT**(layers): Add `TextLayer.box` to lay a text out in a fixed box that clips or shrinks text that does not fit; `LayerInteractionConfigs.enableTextBoxResize` shows handles that resize the box without scaling the text, and `TextEditorState.setBoxEnabled` puts the edited text into a box.
+
 ## 14.14.3
 - **PERF**(import-export): History steps that leave a paint layer's strokes unchanged share its points instead of each importing a copy, so opening a long history over a large drawing no longer takes hundreds of MB and several seconds. `PaintedModel.copy` now shares `offsets` with the original.
 

@@ -398,8 +398,6 @@ class LayerInteractionManager {
     activeInteractionLayer = layer;
     textBoxResizeHandle = handle;
     _boxResizeLayerId = layer.id;
-    _boxResizeStartBox = layer.box;
-    _boxResizeStartOffset = layer.offset;
     _boxResizeStartPointer = pointerPosition;
   }
 
@@ -417,9 +415,10 @@ class LayerInteractionManager {
   /// [textBoxResizeHandle] in place, and returns that layer.
   ///
   /// The layer is looked up by id in [layers]: the history step the gesture
-  /// starts with copies the layers, and the copies are the ones shown. The
-  /// drag is measured on screen and divided by [editorScaleFactor], the
-  /// zoom of the canvas.
+  /// starts with copies the layers, and the copies are the ones shown. Its
+  /// box and offset are taken at the first update, once a layer with
+  /// keyframes has been laid out where they show it. The drag is measured on
+  /// screen and divided by [editorScaleFactor], the zoom of the canvas.
   TextLayer? calculateTextBoxResize({
     required ScaleUpdateDetails details,
     required double editorScaleFactor,
@@ -429,14 +428,10 @@ class LayerInteractionManager {
         .where((layer) => layer.id == _boxResizeLayerId)
         .firstOrNull;
     final handle = textBoxResizeHandle;
-    final startBox = _boxResizeStartBox;
-    final startOffset = _boxResizeStartOffset;
-    if (layer is! TextLayer ||
-        handle == null ||
-        startBox == null ||
-        startOffset == null) {
-      return null;
-    }
+    if (layer is! TextLayer || handle == null) return null;
+    final startBox = _boxResizeStartBox ??= layer.box;
+    final startOffset = _boxResizeStartOffset ??= layer.offset;
+    if (startBox == null) return null;
 
     final pointer = details.focalPoint;
     final startPointer = _boxResizeStartPointer ??= pointer;

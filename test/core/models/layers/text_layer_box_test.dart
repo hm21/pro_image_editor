@@ -39,6 +39,24 @@ void main() {
       expect(restored.verticalAlign, TextLayerBoxVerticalAlign.top);
       expect(restored.overflow, TextLayerBoxOverflow.clip);
     });
+
+    test('reads a size written as text', () {
+      final restored = TextLayerBox.fromMap(const {
+        'width': '120.5',
+        'height': '40',
+      });
+
+      expect(restored.size, const Size(120.5, 40));
+    });
+
+    test('rounds its size to the decimal places asked for', () {
+      const exact = TextLayerBox(size: Size(144.30656934306566, 40.004));
+
+      final map = exact.toMap(maxDecimalPlaces: 2);
+
+      expect(map['width'], 144.31);
+      expect(map['height'], 40);
+    });
   });
 
   group('TextLayerBox.resize', () {
@@ -185,6 +203,18 @@ void main() {
         resized.toMapFromReference(reference)['box'],
         resized.box!.toMap(),
       );
+    });
+
+    test('toMapFromReference rounds the box like the other values', () {
+      final reference = boxedLayer();
+      final resized = reference.copyWith(
+        box: box.copyWith(size: const Size(144.30656934306566, 80)),
+      );
+
+      final map = resized.toMapFromReference(reference, maxDecimalPlaces: 2);
+
+      expect(map['box']['width'], 144.31);
+      expect(resized.toMap(maxDecimalPlaces: 2)['box']['width'], 144.31);
     });
 
     test('toMapFromReference writes null when the box was removed', () {

@@ -134,6 +134,38 @@ void main() {
       expect(painter.painter.height, lessThanOrEqualTo(60 - padding * 2));
     });
 
+    for (final outlineWidth in [0.0, 4.0]) {
+      testWidgets('shrinks the shadows and an outline of $outlineWidth with '
+          'the text', (tester) async {
+        const shadow = Shadow(offset: Offset(4, 4), blurRadius: 2);
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            'one two three four five six seven eight',
+            style: style.copyWith(shadows: const [shadow]),
+            maxTextWidth: double.infinity,
+            enableHitBoxCorrection: true,
+            outlineWidth: outlineWidth,
+            box: const TextLayerBox(
+              size: Size(120, 60),
+              overflow: TextLayerBoxOverflow.shrink,
+            ),
+          ),
+        );
+
+        final painter = textPainter(tester);
+        final factor = painter.painter.textScaler.scale(1);
+        expect(factor, lessThan(1));
+        if (outlineWidth == 0) {
+          expect(painter.painter.text!.style!.shadows, [shadow.scale(factor)]);
+        } else {
+          final outline = painter.outlinePainter!.text!.style!.foreground!;
+          expect(outline.strokeWidth, closeTo(outlineWidth * 2 * factor, 1e-9));
+          expect(painter.silhouetteShadows, [shadow.scale(factor)]);
+        }
+      });
+    }
+
     testWidgets('clips text taller than the box by default', (tester) async {
       await pumpText(
         tester,

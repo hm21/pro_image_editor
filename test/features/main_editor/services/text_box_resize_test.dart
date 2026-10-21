@@ -94,6 +94,21 @@ void main() {
       expect(layer.box!.size, const Size(100, 40));
     });
 
+    test('starts from where the copy is shown at the first update', () {
+      final layer = boxedLayer();
+      final interactions = manager()
+        ..startTextBoxResize(layer, TextLayerBoxHandle.left);
+      // Keyframes lay the copy out where they show it once the gesture runs.
+      final copy = layer.copyWith(offset: const Offset(50, 60));
+      shown = [copy];
+
+      drag(interactions, Offset.zero);
+      drag(interactions, const Offset(-20, 0));
+
+      expect(copy.box!.size, const Size(110, 40));
+      expect(copy.offset, const Offset(30, 60));
+    });
+
     test('measures from where the handle was pressed', () {
       final layer = boxedLayer();
       final interactions = manager()
