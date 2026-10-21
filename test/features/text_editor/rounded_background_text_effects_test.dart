@@ -443,9 +443,7 @@ void main() {
       expect(editable.style.letterSpacing, 0);
     });
 
-    testWidgets('keeps a letter spacing set on the style', (
-      tester,
-    ) async {
+    testWidgets('keeps a letter spacing set on the style', (tester) async {
       final controller = TextEditingController(text: 'Name');
       final focusNode = FocusNode();
       addTearDown(controller.dispose);
