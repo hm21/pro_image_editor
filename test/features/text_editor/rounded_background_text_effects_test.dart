@@ -408,5 +408,78 @@ void main() {
       expect(outlineGlyph.dx, moreOrLessEquals(editableGlyph.dx, epsilon: 1));
       expect(outlineGlyph.dy, moreOrLessEquals(editableGlyph.dy, epsilon: 1));
     });
+
+    testWidgets('keeps the style letter spacing, not the text theme', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: 'Name');
+      final focusNode = FocusNode();
+      addTearDown(controller.dispose);
+      addTearDown(focusNode.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(letterSpacing: 8, fontSize: 16),
+            ),
+          ),
+          home: Scaffold(
+            body: Center(
+              child: RoundedBackgroundTextField(
+                controller: controller,
+                focusNode: focusNode,
+                configs: const TextEditorConfigs(),
+                style: const TextStyle(fontSize: 24, color: Color(0xFF000000)),
+                textAlign: TextAlign.left,
+                backgroundColor: const Color(0x00000000),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.style.letterSpacing, 0);
+    });
+
+    testWidgets('keeps a letter spacing set on the style', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: 'Name');
+      final focusNode = FocusNode();
+      addTearDown(controller.dispose);
+      addTearDown(focusNode.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(letterSpacing: 8, fontSize: 16, height: 2),
+            ),
+          ),
+          home: Scaffold(
+            body: Center(
+              child: RoundedBackgroundTextField(
+                controller: controller,
+                focusNode: focusNode,
+                configs: const TextEditorConfigs(),
+                style: const TextStyle(
+                  fontSize: 24,
+                  height: 1.4,
+                  letterSpacing: 1.25,
+                  color: Color(0xFF000000),
+                ),
+                textAlign: TextAlign.left,
+                backgroundColor: const Color(0x00000000),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.style.letterSpacing, 1.25);
+    });
   });
 }

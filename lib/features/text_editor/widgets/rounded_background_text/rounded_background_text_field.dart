@@ -339,8 +339,20 @@ class _RoundedBackgroundTextFieldState
   /// [widget.style] with the line height the editable text lays its glyphs
   /// out with. The background text uses it as well, so its rectangle and the
   /// outline it draws line up with the editable glyphs.
-  TextStyle get _glyphStyle =>
-      widget.style.copyWith(height: widget.configs.style.textHeight);
+  ///
+  /// The style does not inherit. A text field otherwise keeps the ambient
+  /// text theme's letter spacing wherever this style leaves it unset, and
+  /// the painted layer does not.
+  TextStyle get _glyphStyle {
+    final style = widget.style;
+    return style.copyWith(
+      inherit: false,
+      textBaseline: style.textBaseline ?? TextBaseline.alphabetic,
+      height: widget.configs.style.textHeight,
+      letterSpacing:
+          style.letterSpacing ?? widget.configs.style.inputLetterSpacing,
+    );
+  }
 
   /// The preferred line height for [_glyphStyle] at [fontSize], computed the
   /// same way [RoundedBackgroundText] lays the text out, so the hit-box padding

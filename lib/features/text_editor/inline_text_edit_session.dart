@@ -155,6 +155,17 @@ class InlineTextEditSession {
   Color _primaryColor;
   Color? _secondaryColor;
 
+  /// The color the fill and the background are chosen from, as in the
+  /// full-screen editor.
+  Color get primaryColor => _primaryColor;
+
+  /// Replaces [primaryColor]. A background without its own color follows.
+  void setPrimaryColor(Color color) {
+    if (_closed || color == _primaryColor) return;
+    _primaryColor = color;
+    onChanged();
+  }
+
   /// The color the glyphs are drawn in.
   Color get textColor {
     switch (backgroundColorMode) {
