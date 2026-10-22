@@ -62,6 +62,7 @@ class PaintLayer extends Layer {
     super.animations,
     super.keyframes,
     super.mask,
+    super.blendMode,
   }) : assert(
          item != null || (items != null && items.isNotEmpty),
          'Provide either `item` or a non-empty `items` list.',
@@ -136,6 +137,7 @@ class PaintLayer extends Layer {
       animations: layer.animations,
       keyframes: layer.keyframes,
       mask: layer.mask,
+      blendMode: layer.blendMode,
       opacity: safeParseDouble(map[keyConverter('opacity')], fallback: 1.0),
       rawSize: Size(
         safeParseDouble(map[keyConverter('rawSize')]?['w'], fallback: 0),
@@ -307,6 +309,7 @@ class PaintLayer extends Layer {
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
     LayerMask? mask,
+    BlendMode? blendMode,
   }) {
     return PaintLayer(
       items: items ?? (item != null ? [item] : this.items),
@@ -332,6 +335,7 @@ class PaintLayer extends Layer {
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
       mask: mask ?? this.mask,
+      blendMode: blendMode ?? this.blendMode,
     );
   }
 

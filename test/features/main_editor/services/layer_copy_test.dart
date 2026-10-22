@@ -72,7 +72,8 @@ void main() {
       expect(layer.keyframes.first.offset, const Offset(10, 10));
     });
 
-    group('keeps the time range, animations, keyframes, opacity and mask', () {
+    group('keeps the time range, animations, keyframes, opacity, mask and '
+        'blend mode', () {
       const keyframes = [
         LayerKeyframe(time: Duration.zero, offset: Offset(1, 2)),
         LayerKeyframe(time: Duration(seconds: 1), offset: Offset(3, 4)),
@@ -101,7 +102,8 @@ void main() {
             ..animations = animations
             ..keyframes = keyframes
             ..opacity = 0.4
-            ..mask = mask;
+            ..mask = mask
+            ..blendMode = BlendMode.screen;
           final other = TextLayer(text: 'Other');
           final manager =
               LayerInteractionManager(
@@ -120,6 +122,7 @@ void main() {
             expect(copy.keyframes, keyframes);
             expect(copy.opacity, 0.4);
             expect(copy.mask, mask);
+            expect(copy.blendMode, BlendMode.screen);
           }
 
           List<Layer>? grouped;

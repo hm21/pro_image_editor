@@ -73,6 +73,7 @@ class Layer {
     this.opacity = 1,
     List<LayerKeyframe>? keyframes,
     this.mask,
+    this.blendMode = BlendMode.srcOver,
   }) : key = key ??= GlobalKey(),
        keyInternalSize = GlobalKey(),
        repaintBoundaryKey = GlobalKey(),
@@ -157,6 +158,7 @@ class Layer {
               Map<String, dynamic>.from(map[keyConverter('mask')] as Map),
             )
           : null,
+      blendMode: _parseBlendMode(map[keyConverter('blendMode')]),
     );
 
     /// Determines the layer type from the map and returns the appropriate
@@ -269,6 +271,24 @@ class Layer {
   /// Set it to `null` to remove the mask; [copyWith] cannot clear it.
   LayerMask? mask;
 
+  /// How the layer is drawn onto what is beneath it: the image and the layers
+  /// before it.
+  ///
+  /// [BlendMode.srcOver], the default, draws the layer over them. The other
+  /// modes combine its colors with theirs, such as [BlendMode.multiply], which
+  /// tints the picture with a colored layer, or [BlendMode.screen], which adds
+  /// only the light of a layer recorded against black. The layer's [opacity],
+  /// [mask], timeline transitions and [keyframes] fade it before it is
+  /// blended, so a half transparent layer shows the picture halfway to the
+  /// blended color.
+  ///
+  /// It applies on the canvas, over a video [Texture] as well (see
+  /// [LayerBlendModeBox]), and in the image the editor generates.
+  /// [captureAsPng] leaves it out: the captured image is the layer's own
+  /// content, which a renderer that composites the layers itself, such as a
+  /// video exporter, draws with this mode.
+  BlendMode blendMode;
+
   /// The layer's placement over time in the video editor.
   ///
   /// When not empty, the keyframes set where the layer is, how big it is, how
@@ -289,6 +309,12 @@ class Layer {
   static List<LayerKeyframe> _sortedUnmodifiable(
     Iterable<LayerKeyframe> keyframes,
   ) => List.unmodifiable(sortLayerKeyframes(keyframes));
+
+  /// The [BlendMode] stored under its [Enum.name], or [BlendMode.srcOver] for
+  /// a layer stored without one.
+  static BlendMode _parseBlendMode(Object? name) =>
+      (name is String ? BlendMode.values.asNameMap()[name] : null) ??
+      BlendMode.srcOver;
 
   /// Whether the layer has [keyframes].
   bool get hasKeyframes => keyframes.isNotEmpty;
@@ -620,6 +646,7 @@ class Layer {
       if (keyframes.isNotEmpty)
         'keyframes': keyframes.map((k) => k.toMap()).toList(),
       if (mask != null) 'mask': mask!.toMap(),
+      if (blendMode != BlendMode.srcOver) 'blendMode': blendMode.name,
     };
   }
 
@@ -675,6 +702,9 @@ class Layer {
       // `null` is written too, so a removed mask does not come back from the
       // previous step on import.
       if (layer.mask != mask) 'mask': mask?.toMap(),
+      // [BlendMode.srcOver] is written too, so a removed blend mode does not
+      // come back from the previous step on import.
+      if (layer.blendMode != blendMode) 'blendMode': blendMode.name,
     };
   }
 
@@ -698,7 +728,8 @@ class Layer {
   /// `false` to get the raw, un-transformed content. A layer with [keyframes]
   /// is captured opaque, as their opacity changes over time; a [PaintLayer]
   /// always carries the opacity it draws its strokes with. A [mask] is
-  /// applied either way.
+  /// applied either way, and the [blendMode] never: it combines the layer with
+  /// what is beneath it, which the captured image does not hold.
   ///
   /// A [TextLayer] with [TextLayer.highlights] or a text reveal is captured
   /// with no highlight active and its whole text shown, whatever the playback
@@ -1235,6 +1266,7 @@ class Layer {
         other.opacity == opacity &&
         listEquals(other.keyframes, keyframes) &&
         other.mask == mask &&
+        other.blendMode == blendMode &&
         mapIsEqual(other.meta, meta);
   }
 
@@ -1260,7 +1292,8 @@ class Layer {
         Object.hashAll(animations) ^
         opacity.hashCode ^
         Object.hashAll(keyframes) ^
-        mask.hashCode;
+        mask.hashCode ^
+        blendMode.hashCode;
   }
 
   /// Creates a copy of this [Layer] with the given fields replaced with
@@ -1287,6 +1320,7 @@ class Layer {
     double? opacity,
     List<LayerKeyframe>? keyframes,
     LayerMask? mask,
+    BlendMode? blendMode,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -1310,6 +1344,7 @@ class Layer {
       opacity: opacity ?? this.opacity,
       keyframes: keyframes ?? this.keyframes,
       mask: mask ?? this.mask,
+      blendMode: blendMode ?? this.blendMode,
     );
   }
 
@@ -1348,6 +1383,13 @@ class Layer {
       ..add(IterableProperty<LayerAnimation>('animations', animations))
       ..add(DoubleProperty('opacity', opacity))
       ..add(IterableProperty<LayerKeyframe>('keyframes', keyframes))
-      ..add(DiagnosticsProperty<LayerMask>('mask', mask));
+      ..add(DiagnosticsProperty<LayerMask>('mask', mask))
+      ..add(
+        EnumProperty<BlendMode>(
+          'blendMode',
+          blendMode,
+          defaultValue: BlendMode.srcOver,
+        ),
+      );
   }
 }

@@ -1831,7 +1831,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ..meta = original.meta
       ..keyframes = original.keyframes
       ..opacity = original.opacity
-      ..mask = original.mask;
+      ..mask = original.mask
+      ..blendMode = original.blendMode;
 
     if (updatedLayer.text.isEmpty) {
       removeLayer(original);

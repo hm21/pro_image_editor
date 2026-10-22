@@ -372,5 +372,16 @@ void main() {
       expect(PaintLayerMergeManager.canMerge([paint(), masked]), isFalse);
       expect(PaintLayerMergeManager.isMergeable(masked), isFalse);
     });
+
+    test('excludes layers that blend with what is beneath them', () {
+      final blended = _paintLayer(
+        mode: PaintMode.freeStyle,
+        offsets: const [Offset(0, 0), Offset(10, 10)],
+        rawSize: const Size(10, 10),
+      )..blendMode = BlendMode.multiply;
+
+      expect(PaintLayerMergeManager.canMerge([paint(), blended]), isFalse);
+      expect(PaintLayerMergeManager.isMergeable(blended), isFalse);
+    });
   });
 }

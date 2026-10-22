@@ -56,6 +56,7 @@ class WidgetLayer extends Layer {
     super.animations,
     super.keyframes,
     super.mask,
+    super.blendMode,
     super.opacity,
   });
 
@@ -146,6 +147,7 @@ class WidgetLayer extends Layer {
       animations: layer.animations,
       keyframes: layer.keyframes,
       mask: layer.mask,
+      blendMode: layer.blendMode,
       opacity: layer.opacity,
       widget: widget,
       width: layerWidth != null ? safeParseDouble(layerWidth) : null,
@@ -250,6 +252,7 @@ class WidgetLayer extends Layer {
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
     LayerMask? mask,
+    BlendMode? blendMode,
     double? opacity,
   }) {
     return WidgetLayer(
@@ -276,6 +279,7 @@ class WidgetLayer extends Layer {
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
       mask: mask ?? this.mask,
+      blendMode: blendMode ?? this.blendMode,
       opacity: opacity ?? this.opacity,
     );
   }
