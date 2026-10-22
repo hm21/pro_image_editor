@@ -33,6 +33,7 @@ class InlineTextEditSession {
     required this.onCancel,
   }) {
     textCtrl.text = text;
+    _lastText = text;
     textCtrl.addListener(_handleText);
   }
 
@@ -127,8 +128,8 @@ class InlineTextEditSession {
   /// the click does not count as tapping off the edit.
   bool pointerOnLayer = false;
 
-  /// Set for the pointer-down that hit a format bar wrapped in
-  /// [InlineTextEditChrome].
+  /// Set while a pointer that went down on a format bar wrapped in
+  /// [InlineTextEditChrome] is pressed.
   bool pointerOnChrome = false;
 
   /// Alignment of the text.
@@ -201,8 +202,12 @@ class InlineTextEditSession {
     return Color.fromRGBO(channel, channel, channel, _primaryColor.a);
   }
 
+  String _lastText = '';
+
   void _handleText() {
-    if (_closed) return;
+    // The controller also notifies when only the selection moves.
+    if (_closed || textCtrl.text == _lastText) return;
+    _lastText = textCtrl.text;
     onTextChanged();
   }
 
@@ -300,6 +305,27 @@ class InlineTextEditSession {
     );
   }
 
+  /// Whether [buildResult] for [live] differs from [live] in anything this
+  /// session sets, so saving it is worth a history step.
+  bool hasChanges(TextLayer live) {
+    final result = buildResult(live);
+    final liveStyle =
+        live.textStyle ??
+        configs.customTextStyles?.first ??
+        configs.defaultTextStyle;
+    return result.text != live.text ||
+        result.color != live.color ||
+        result.background != live.background ||
+        result.align != live.align ||
+        result.fontScale != live.fontScale ||
+        result.colorMode != live.colorMode ||
+        result.textStyle != liveStyle ||
+        result.outlineWidth != live.outlineWidth ||
+        result.outlineColor != live.outlineColor ||
+        result.customSecondaryColor != live.customSecondaryColor ||
+        result.box != live.box;
+  }
+
   /// Writes the edit onto the layer.
   void done() {
     if (_closed) return;
@@ -358,9 +384,13 @@ class InlineTextEditChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A bar outside the editor never reaches the editor's own pointer
+    // handling, so the flag is cleared here once the pointer is released.
     return Listener(
       behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => session.pointerOnChrome = true,
+      onPointerUp: (_) => session.pointerOnChrome = false,
+      onPointerCancel: (_) => session.pointerOnChrome = false,
       child: child,
     );
   }

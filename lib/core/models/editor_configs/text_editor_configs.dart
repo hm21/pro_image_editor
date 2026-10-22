@@ -126,8 +126,10 @@ class TextEditorConfigs
   /// [ProImageEditorState.openTextEditor] open the full-screen text editor.
   /// When `true`, they leave the layer on the canvas and type into it.
   /// Clicking outside saves when [enableTapOutsideToSave] is set, and Escape
-  /// drops the edit. A host turns this on for the platforms where typing on
-  /// the layer fits; every other host keeps the full-screen editor.
+  /// drops the edit. [MainEditorCallbacks.onCreateTextLayer] and
+  /// [MainEditorCallbacks.onEditTextLayer] are not called then. A host turns
+  /// this on for the platforms where typing on the layer fits; every other
+  /// host keeps the full-screen editor.
   final bool enableInlineEditing;
 
   /// The initial font size for text.

@@ -369,9 +369,9 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       outlineWidth: session.outlineWidth * effectScale,
       outlineColor: session.outlineColor,
       box: scaledBox,
-      onChanged: (_) {
-        if (session.boxEnabled && layer.box == null) session.onTextChanged();
-      },
+      // The editor ends the edit on a click outside the layer. Any other
+      // click, on the padding, a handle or a format bar, keeps typing.
+      onTapOutside: (_) {},
     );
     if (scaledBox == null) {
       field = IntrinsicWidth(

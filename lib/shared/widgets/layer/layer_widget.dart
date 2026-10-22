@@ -205,6 +205,8 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Handles a secondary tap up event, typically for showing a context menu.
   void _onSecondaryTapUp(TapUpDetails details) {
     if (_isOutsideHitBox() || GestureManager.instance.isBlocked) return;
+    // The field being typed into shows its own menu.
+    if (_layersService?.state.inlineTextEdit?.layerId == _layer.id) return;
 
     _contextManager.open(
       context: context,

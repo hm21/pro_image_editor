@@ -31,6 +31,7 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
+    this.onTapOutside,
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.box,
@@ -85,6 +86,10 @@ class RoundedBackgroundTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.onSubmitted}
   final ValueChanged<String>? onSubmitted;
+
+  /// Called for a pointer-down outside the field, in place of the default
+  /// that takes the focus away on desktop platforms.
+  final TapRegionCallback? onTapOutside;
 
   /// The thickness of the outline drawn around each glyph, measured outward
   /// from the glyph edge. `0` draws no outline.
@@ -205,7 +210,7 @@ class _RoundedBackgroundTextFieldState
       TextLayerBoxVerticalAlign.bottom => TextAlignVertical.bottom,
     };
 
-    return SizedBox(
+    final boxed = SizedBox(
       width: box.size.width,
       height: box.size.height,
       child: ClipRect(
@@ -280,6 +285,7 @@ class _RoundedBackgroundTextFieldState
                     onChanged: widget.onChanged,
                     onEditingComplete: widget.onEditingComplete,
                     onSubmitted: widget.onSubmitted,
+                    onTapOutside: widget.onTapOutside,
                   ),
                 ),
               ),
@@ -287,6 +293,12 @@ class _RoundedBackgroundTextFieldState
           ],
         ),
       ),
+    );
+    // The painted text ignores the platform text scale, so the field does
+    // as well.
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: boxed,
     );
   }
 
@@ -495,6 +507,7 @@ class _RoundedBackgroundTextFieldState
           onChanged: widget.onChanged,
           onEditingComplete: widget.onEditingComplete,
           onSubmitted: widget.onSubmitted,
+          onTapOutside: widget.onTapOutside,
         ),
       ),
     );
