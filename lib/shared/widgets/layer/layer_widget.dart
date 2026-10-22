@@ -410,8 +410,15 @@ class _LayerWidgetState extends State<LayerWidget>
     // Around everything that fades the layer, its opacity and its timeline
     // transitions, so it blends with the canvas beneath it rather than
     // inside their layers. The selection overlay is drawn in an overlay of
-    // its own and stays unblended.
-    content = LayerBlendModeBox(blendMode: _layer.blendMode, child: content);
+    // its own and stays unblended. A censor area is never blended: it blurs
+    // or pixelates its backdrop, which inside the box is cleared, so it would
+    // hide nothing.
+    content = LayerBlendModeBox(
+      blendMode: _layerType == LayerWidgetType.censor
+          ? BlendMode.srcOver
+          : _layer.blendMode,
+      child: content,
+    );
 
     return Positioned(
       left: adjustedLeft,

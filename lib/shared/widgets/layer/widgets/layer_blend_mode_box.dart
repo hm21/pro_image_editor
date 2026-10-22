@@ -17,7 +17,12 @@ import 'package:flutter/widgets.dart';
 /// its own, such as an [Opacity], a [ShaderMask] or a [ColorFiltered]: the
 /// child blends with what was painted inside that layer, not with what lies
 /// under it. So anything that fades or filters the child belongs inside this
-/// box, between it and the child.
+/// box, between it and the child. A [BackdropFilter] inside the box, in
+/// turn, filters the cleared backdrop and so shows nothing.
+///
+/// Like a [BackdropFilter], the box reaches as far as the closest clip
+/// around it: a mode that changes the destination where the child is
+/// transparent, such as [BlendMode.dstIn], changes all of it.
 ///
 /// [BlendMode.srcOver] paints the child as it is, without a layer.
 class LayerBlendModeBox extends StatelessWidget {

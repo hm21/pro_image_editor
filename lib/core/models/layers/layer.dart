@@ -280,7 +280,12 @@ class Layer {
   /// only the light of a layer recorded against black. The layer's [opacity],
   /// [mask], timeline transitions and [keyframes] fade it before it is
   /// blended, so a half transparent layer shows the picture halfway to the
-  /// blended color.
+  /// blended color. A mode that changes what is beneath even where the layer
+  /// is transparent, such as [BlendMode.dstIn] or [BlendMode.clear], does so
+  /// across the whole canvas, not only under the layer.
+  ///
+  /// A censor [PaintLayer], one that blurs or pixelates, is never blended: it
+  /// shows a filtered copy of what is beneath it.
   ///
   /// It applies on the canvas, over a video [Texture] as well (see
   /// [LayerBlendModeBox]), and in the image the editor generates.

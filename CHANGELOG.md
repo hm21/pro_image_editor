@@ -1,7 +1,7 @@
 # Changelog
 
 ## 14.16.0
-- **FEAT**(layers): Add `Layer.blendMode` to draw a layer onto the image and the layers beneath it with a `BlendMode`, such as `multiply` to tint them or `screen` to add only the light of a layer shot against black. It survives copies, history steps and import/export, and the generated image honors it; `captureAsPng` leaves it out for renderers that composite the layers themselves. `LayerBlendModeBox` blends any widget the same way, a video `Texture` included.
+- **FEAT**(layers): Add `Layer.blendMode` to blend a layer with the image and the layers beneath it, such as `multiply` or `screen`; `LayerBlendModeBox` blends any widget the same way, a video `Texture` included.
 
 ## 14.15.0
 - **FEAT**(layers): Add `TextLayer.box` to lay a text out in a fixed box that clips or shrinks text that does not fit; `LayerInteractionConfigs.enableTextBoxResize` shows handles that resize the box without scaling the text, and `TextEditorState.setBoxEnabled` puts the edited text into a box.

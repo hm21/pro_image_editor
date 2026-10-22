@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_repaint_boundary.dart';
+import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_widget_censor_item.dart';
 
 import '../../../mock/mock_image.dart';
 
@@ -684,6 +685,36 @@ void main() {
       expect(
         find.descendant(of: box, matching: find.byType(Opacity)),
         findsWidgets,
+      );
+    });
+
+    testWidgets('leaves a censor area unblended', (tester) async {
+      final editor = await pumpEditor(tester);
+      editor.addLayer(
+        PaintLayer(
+          item: PaintedModel(
+            mode: PaintMode.blur,
+            offsets: const [Offset.zero, Offset(20, 20)],
+            erasedOffsets: const [],
+            color: Colors.black,
+            strokeWidth: 4,
+            opacity: 1,
+          ),
+          rawSize: const Size(20, 20),
+          opacity: 1,
+          blendMode: BlendMode.multiply,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Blended, it would blur the box's cleared backdrop and hide nothing.
+      final box = find.ancestor(
+        of: find.byType(LayerWidgetCensorItem),
+        matching: find.byType(LayerBlendModeBox),
+      );
+      expect(
+        tester.widget<LayerBlendModeBox>(box).blendMode,
+        BlendMode.srcOver,
       );
     });
 
