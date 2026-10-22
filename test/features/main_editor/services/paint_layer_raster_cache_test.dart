@@ -326,6 +326,18 @@ void main() {
       cache.dispose();
     });
 
+    test('leaves a blended layer live, since the composite draws over', () {
+      final cache = PaintLayerRasterCache();
+      final blended = _stroke(id: 'blended')..blendMode = BlendMode.screen;
+      final plain = _stroke(id: 'plain');
+
+      final plan = _plan(cache, [blended, plain]);
+
+      expect(plan.runs, hasLength(1));
+      expect(plan.runs.single.layerIds, ['plain']);
+      cache.dispose();
+    });
+
     test('leaves modes with a custom path builder live', () {
       final cache = PaintLayerRasterCache();
       final configs = ProImageEditorConfigs(

@@ -163,6 +163,7 @@ class LayerCopyManager {
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
       mask: layer.mask,
+      blendMode: layer.blendMode,
     )..groupId = layer.groupId;
   }
 
@@ -196,6 +197,7 @@ class LayerCopyManager {
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
       mask: layer.mask,
+      blendMode: layer.blendMode,
     )..groupId = layer.groupId;
   }
 
@@ -231,6 +233,7 @@ class LayerCopyManager {
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
       mask: layer.mask,
+      blendMode: layer.blendMode,
     )..groupId = layer.groupId;
   }
 
@@ -265,6 +268,7 @@ class LayerCopyManager {
       animations: List<LayerAnimation>.of(layer.animations),
       keyframes: _shiftKeyframes(layer.keyframes, offset),
       mask: layer.mask,
+      blendMode: layer.blendMode,
     )..groupId = layer.groupId;
   }
 }
