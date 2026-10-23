@@ -19,6 +19,7 @@ import '/features/main_editor/services/layer_interaction_manager.dart';
 import '/features/main_editor/services/main_editor_layers_service.dart';
 import '/features/main_editor/services/paint_layer_raster_cache.dart';
 import '/features/paint_editor/enums/paint_editor_enum.dart';
+import '/features/text_editor/inline_text_edit_session.dart';
 import '/shared/widgets/layer/enums/layer_widget_type_enum.dart';
 import '/shared/widgets/layer/services/layer_widget_context_menu.dart';
 import '/shared/widgets/layer/widgets/layer_widget_censor_item.dart';
@@ -205,6 +206,8 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Handles a secondary tap up event, typically for showing a context menu.
   void _onSecondaryTapUp(TapUpDetails details) {
     if (_isOutsideHitBox() || GestureManager.instance.isBlocked) return;
+    // The field being typed into shows its own menu.
+    if (_layersService?.state.inlineTextEdit?.layerId == _layer.id) return;
 
     _contextManager.open(
       context: context,
@@ -217,6 +220,11 @@ class _LayerWidgetState extends State<LayerWidget>
 
   /// Handles a pointer down event on the layer.
   void _onPointerDown(PointerDownEvent event) {
+    final session = _layersService?.state.inlineTextEdit;
+    if (session != null && session.layerId == _layer.id) {
+      session.pointerOnLayer = true;
+      return;
+    }
     if (GestureManager.instance.isBlocked) return;
     bool isLayerSelected = _isSelected;
 
@@ -255,6 +263,8 @@ class _LayerWidgetState extends State<LayerWidget>
   /// Handles a pointer up event on the layer.
   void _onPointerUp(PointerUpEvent event) {
     _longPressTimer?.cancel();
+    final session = _layersService?.state.inlineTextEdit;
+    if (session != null && session.layerId == _layer.id) return;
     if (GestureManager.instance.isBlocked) return;
     // Notify optional onTapUp callback
     _layersService?.handleTapUp(_layer);
@@ -429,11 +439,16 @@ class _LayerWidgetState extends State<LayerWidget>
 
   Widget _buildInteractionHandlers() {
     var interaction = _layer.interaction;
+    final inline = _layersService?.state.inlineTextEdit;
+    final editingThis = inline != null && inline.layerId == _layer.id
+        ? inline
+        : null;
     return LayerInteractionHelperWidget(
       layer: _layer,
       configs: configs,
       callbacks: callbacks,
       selected: _isSelected,
+      suppressTextBoxResize: editingThis != null && !editingThis.boxEnabled,
       onEditLayer: () => _layersService?.handleEditTap(_layer),
       forceIgnoreGestures:
           !(interaction.enableSelection || interaction.enableEdit),
@@ -485,6 +500,7 @@ class _LayerWidgetState extends State<LayerWidget>
                     child: _LayerContentItem(
                       layerType: _layerType,
                       layer: _layer,
+                      inlineEdit: editingThis,
                       isSelected: _isSelected,
                       skipPaint: widget.isRasterCached,
                       playTimeNotifier: widget.playTimeNotifier,
@@ -564,6 +580,7 @@ class _LayerContentItem extends StatelessWidget {
   const _LayerContentItem({
     required this.layerType,
     required this.layer,
+    required this.inlineEdit,
     required this.isSelected,
     required this.enableHitDetection,
     this.skipPaint = false,
@@ -581,6 +598,7 @@ class _LayerContentItem extends StatelessWidget {
 
   final LayerWidgetType layerType;
   final Layer layer;
+  final InlineTextEditSession? inlineEdit;
   final bool isSelected;
   final bool enableHitDetection;
   final bool skipPaint;
@@ -615,6 +633,7 @@ class _LayerContentItem extends StatelessWidget {
         content = LayerWidgetTextItem(
           layer: layer as TextLayer,
           textEditorConfigs: textEditorConfigs,
+          inlineEdit: inlineEdit,
           showMoveCursor: showMoveCursor,
           onHitChanged: onHitChanged,
           playTimeNotifier: playTimeNotifier,

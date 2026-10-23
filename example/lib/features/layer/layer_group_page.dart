@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '/features/layer/inline_text_example.dart';
 import '/features/layer/layer_export_example.dart';
 import '/features/layer/layer_grouping_example.dart';
 import '/features/layer/layer_rasterizer_example.dart';
@@ -50,6 +51,12 @@ class _LayerGroupPageState extends State<LayerGroupPage> {
             title: const Text('Resizable Text Boxes'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openExample(const TextBoxExample()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit_note_rounded),
+            title: const Text('Inline Text Editing'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openExample(const InlineTextExample()),
           ),
           ListTile(
             leading: const Icon(Icons.image_outlined),

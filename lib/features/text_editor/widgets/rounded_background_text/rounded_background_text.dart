@@ -36,6 +36,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
+    this.paintShadows = true,
     this.visibleLength,
     this.box,
   }) : text = TextSpan(text: text, style: style);
@@ -60,6 +61,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.reserveEffectSpace = false,
+    this.paintShadows = true,
     this.visibleLength,
     this.box,
   });
@@ -126,6 +128,13 @@ class RoundedBackgroundText extends StatelessWidget {
   ///
   /// The space is added on both sides, so the text keeps its center.
   final bool reserveEffectSpace;
+
+  /// Whether the shadows of [text] are painted.
+  ///
+  /// When this is `false` those shadows still reserve their space, so the
+  /// text shrinks and sits where it would with them drawn, but this painter
+  /// draws none of them. An outline still casts its own. Defaults to `true`.
+  final bool paintShadows;
 
   /// How many UTF-16 code units of [text], counted from its start, are
   /// painted, or `null` to paint all of it.
@@ -270,8 +279,10 @@ class RoundedBackgroundText extends StatelessWidget {
 
     // With an outline, the shadows are cast by the outlined glyphs, which the
     // painter draws from opaque silhouettes; the passes themselves draw none.
+    // [paintShadows] keeps the same space while leaving the drawing to a
+    // caller that paints the shadows itself.
     final painter = createPainter(
-      hasOutline
+      hasOutline || !paintShadows
           ? (style) => style.copyWith(shadows: const [])
           : textScale == 1
           ? null
@@ -373,10 +384,58 @@ class RoundedBackgroundText extends StatelessWidget {
     );
   }
 
+  /// How far an outline of [outlineWidth] and [shadows] paint beyond the
+  /// glyphs on each axis.
+  static Offset effectExtent({
+    required double outlineWidth,
+    required List<Shadow> shadows,
+  }) {
+    return _effectSpace(outlineWidth: outlineWidth, shadows: shadows);
+  }
+
+  /// The scale at which [text] in [style] fits a box of [boxSize], down to
+  /// [TextLayerBox.minShrinkFactor], matching what this widget paints for
+  /// [TextLayerBoxOverflow.shrink].
+  static double scaleForBox({
+    required InlineSpan text,
+    required TextStyle style,
+    required Size boxSize,
+    required bool enableHitBoxCorrection,
+    double outlineWidth = 0,
+    TextAlign textAlign = TextAlign.start,
+    TextLeadingDistribution leadingDistribution =
+        TextLeadingDistribution.proportional,
+    TextDirection textDirection = TextDirection.ltr,
+  }) {
+    final effectSpace = _effectSpace(
+      outlineWidth: outlineWidth,
+      shadows: style.shadows ?? const <Shadow>[],
+    );
+    final painter = TextPainter(
+      text: TextSpan(
+        children: [text],
+        style: TextStyle(leadingDistribution: leadingDistribution).merge(style),
+      ),
+      textAlign: textAlign,
+      textDirection: textDirection,
+    );
+    return shrinkToBox(
+      probe: painter,
+      boxSize: boxSize,
+      effectSpace: effectSpace,
+      enableHitBoxCorrection: enableHitBoxCorrection,
+    );
+  }
+
   /// The largest text scale, down to [TextLayerBox.minShrinkFactor], at
   /// which the text of [probe] fits a box of [boxSize] whose text keeps
   /// [effectSpace] to its edges. Disposes [probe].
-  double _shrinkFactor(TextPainter probe, Size boxSize, Offset effectSpace) {
+  static double shrinkToBox({
+    required TextPainter probe,
+    required Size boxSize,
+    required Offset effectSpace,
+    required bool enableHitBoxCorrection,
+  }) {
     bool fits(double factor) {
       probe.textScaler = TextScaler.linear(factor);
       // The padding follows the line height, which shrinks with the text.
@@ -407,6 +466,18 @@ class RoundedBackgroundText extends StatelessWidget {
     } finally {
       probe.dispose();
     }
+  }
+
+  /// The largest text scale, down to [TextLayerBox.minShrinkFactor], at
+  /// which the text of [probe] fits a box of [boxSize] whose text keeps
+  /// [effectSpace] to its edges. Disposes [probe].
+  double _shrinkFactor(TextPainter probe, Size boxSize, Offset effectSpace) {
+    return shrinkToBox(
+      probe: probe,
+      boxSize: boxSize,
+      effectSpace: effectSpace,
+      enableHitBoxCorrection: enableHitBoxCorrection,
+    );
   }
 
   /// How far the outline and the shadows paint beyond the glyphs on each
@@ -573,6 +644,14 @@ class RoundedBackgroundText extends StatelessWidget {
           'reserveEffectSpace',
           value: reserveEffectSpace,
           ifTrue: 'effect space reserved',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'paintShadows',
+          value: paintShadows,
+          ifFalse: 'shadows not painted',
+          defaultValue: true,
         ),
       );
   }

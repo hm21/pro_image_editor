@@ -71,6 +71,7 @@ class LayerInteractionHelperWidget extends StatefulWidget
     this.callbacks = const ProImageEditorCallbacks(),
     this.forceIgnoreGestures = false,
     this.enableVisibleOverlay = false,
+    this.suppressTextBoxResize = false,
   });
 
   /// The configuration settings for the image editor.
@@ -169,6 +170,12 @@ class LayerInteractionHelperWidget extends StatefulWidget
 
   /// A flag to enable or disable the visibility of the overlay.
   final bool enableVisibleOverlay;
+
+  /// Hides the box handles while an inline edit has the box turned off.
+  ///
+  /// The layer may still carry a [TextLayerBox] so turning the box back on
+  /// restores it. Defaults to `false`.
+  final bool suppressTextBoxResize;
 
   @override
   State<LayerInteractionHelperWidget> createState() =>
@@ -404,7 +411,9 @@ class _LayerInteractionHelperWidgetState
 
   Widget _buildTextBoxHandles(LayerItemInteractions interactions) {
     final layer = _layer;
-    if (layer is! TextLayer || layer.box == null) {
+    if (widget.suppressTextBoxResize ||
+        layer is! TextLayer ||
+        layer.box == null) {
       return const SizedBox.shrink();
     }
     final style = layerInteraction.style;

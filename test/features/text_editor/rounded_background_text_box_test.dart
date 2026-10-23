@@ -226,5 +226,110 @@ void main() {
         const Size(300, 60),
       );
     });
+
+    for (final outlineWidth in [0.0, 4.0]) {
+      testWidgets(
+        outlineWidth == 0
+            ? 'a shrinking box keeps its shadows while it is edited'
+            : 'a shrinking box keeps its outline while it is edited',
+        (tester) async {
+          const shadow = Shadow(offset: Offset(4, 4), blurRadius: 2);
+          const background = Color(0xFF336699);
+          final showMoveCursor = ValueNotifier(false);
+          addTearDown(showMoveCursor.dispose);
+          final layer = TextLayer(
+            text: 'one two three four five six seven eight',
+            textStyle: const TextStyle(shadows: [shadow]),
+            outlineWidth: outlineWidth,
+            // A filled background shows a shrink or offset that disagrees
+            // with the painted layer. The inline session uses this color
+            // only when the layer keeps its own secondary color.
+            background: outlineWidth == 0
+                ? background
+                : const Color(0xFFFFFFFF),
+            customSecondaryColor: outlineWidth == 0,
+            box: const TextLayerBox(
+              size: Size(120, 60),
+              overflow: TextLayerBoxOverflow.shrink,
+            ),
+          );
+          final session = InlineTextEditSession.start(
+            layer: layer,
+            configs: const TextEditorConfigs(),
+            onChanged: () {},
+            onTextChanged: () {},
+            onDone: () {},
+            onCancel: () {},
+          );
+          addTearDown(session.dispose);
+
+          Future<void> pumpItem({required bool editing}) {
+            return pumpText(
+              tester,
+              LayerWidgetTextItem(
+                layer: layer,
+                textEditorConfigs: const TextEditorConfigs(),
+                inlineEdit: editing ? session : null,
+                showMoveCursor: showMoveCursor,
+                onHitChanged: (_) {},
+              ),
+            );
+          }
+
+          await pumpItem(editing: false);
+          final committed = textPainter(tester);
+          final factor = committed.painter.textScaler.scale(1);
+          expect(factor, lessThan(1));
+          expect(factor, greaterThanOrEqualTo(TextLayerBox.minShrinkFactor));
+
+          await pumpItem(editing: true);
+          final editingPainter = textPainter(tester);
+          expect(
+            editingPainter.painter.textScaler.scale(1),
+            closeTo(factor, 1e-9),
+          );
+          expect(
+            editingPainter.hitBoxCorrectionOffset.dx,
+            closeTo(committed.hitBoxCorrectionOffset.dx, 0.01),
+          );
+          expect(
+            editingPainter.hitBoxCorrectionOffset.dy,
+            closeTo(committed.hitBoxCorrectionOffset.dy, 0.01),
+          );
+
+          if (outlineWidth == 0) {
+            // The field paints these. The background keeps their space and
+            // draws none, so a filled background does not shift or double.
+            expect(committed.backgroundColor, background);
+            expect(editingPainter.backgroundColor, background);
+            final shadows = committed.painter.text!.style!.shadows;
+            expect(shadows, [shadow.scale(factor)]);
+            expect(
+              tester.widget<TextField>(find.byType(TextField)).style?.shadows,
+              shadows,
+            );
+            expect(editingPainter.painter.text!.style!.shadows, isEmpty);
+          } else {
+            final stroke =
+                committed.outlinePainter!.text!.style!.foreground!.strokeWidth;
+            expect(stroke, closeTo(outlineWidth * 2 * factor, 1e-9));
+            expect(
+              editingPainter
+                  .outlinePainter!
+                  .text!
+                  .style!
+                  .foreground!
+                  .strokeWidth,
+              closeTo(stroke, 1e-9),
+            );
+            expect(committed.silhouetteShadows, [shadow.scale(factor)]);
+            expect(
+              editingPainter.silhouetteShadows,
+              committed.silhouetteShadows,
+            );
+          }
+        },
+      );
+    }
   });
 }

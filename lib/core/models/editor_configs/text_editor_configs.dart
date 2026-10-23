@@ -47,6 +47,7 @@ class TextEditorConfigs
     this.enableMainEditorZoomFactor = false,
     this.enableTapOutsideToSave = true,
     this.enableSubmitShortcut = false,
+    this.enableInlineEditing = false,
     this.enableAutoOverflow = true,
     this.enableAutoWrapOnLayer = true,
     this.initFontSize = 24.0,
@@ -118,6 +119,18 @@ class TextEditorConfigs
   ///
   /// Plain Enter still inserts a new line. Defaults to `false`.
   final bool enableSubmitShortcut;
+
+  /// Whether editing a text layer types on the layer, where it sits.
+  ///
+  /// When `false` (the default), [ProImageEditorState.editTextLayer] and
+  /// [ProImageEditorState.openTextEditor] open the full-screen text editor.
+  /// When `true`, they leave the layer on the canvas and type into it.
+  /// Clicking outside saves when [enableTapOutsideToSave] is set, and Escape
+  /// drops the edit. [MainEditorCallbacks.onCreateTextLayer] and
+  /// [MainEditorCallbacks.onEditTextLayer] are not called then. A host turns
+  /// this on for the platforms where typing on the layer fits; every other
+  /// host keeps the full-screen editor.
+  final bool enableInlineEditing;
 
   /// The initial font size for text.
   final double initFontSize;
@@ -276,6 +289,7 @@ class TextEditorConfigs
     bool? enableMainEditorZoomFactor,
     bool? enableTapOutsideToSave,
     bool? enableSubmitShortcut,
+    bool? enableInlineEditing,
     bool? enableAutoOverflow,
     bool? enableAutoWrapOnLayer,
     Color? initialPrimaryColor,
@@ -319,6 +333,7 @@ class TextEditorConfigs
       enableTapOutsideToSave:
           enableTapOutsideToSave ?? this.enableTapOutsideToSave,
       enableSubmitShortcut: enableSubmitShortcut ?? this.enableSubmitShortcut,
+      enableInlineEditing: enableInlineEditing ?? this.enableInlineEditing,
       enableAutoOverflow: enableAutoOverflow ?? this.enableAutoOverflow,
       enableAutoWrapOnLayer:
           enableAutoWrapOnLayer ?? this.enableAutoWrapOnLayer,

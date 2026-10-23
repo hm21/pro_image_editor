@@ -2,11 +2,14 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/text_editor_configs.dart';
 import '/core/models/layers/text_layer.dart';
+import '../../../../features/text_editor/inline_text_edit_session.dart';
 import '../../../../features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
+import '../../../../features/text_editor/widgets/rounded_background_text/rounded_background_text_field.dart';
 
 /// A widget representing a text layer in the sticker editor.
 class LayerWidgetTextItem extends StatefulWidget {
@@ -16,6 +19,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     super.key,
     required this.layer,
     required this.textEditorConfigs,
+    this.inlineEdit,
     required this.showMoveCursor,
     required this.onHitChanged,
     this.playTimeNotifier,
@@ -28,6 +32,10 @@ class LayerWidgetTextItem extends StatefulWidget {
 
   /// Configuration settings for the text editor.
   final TextEditorConfigs textEditorConfigs;
+
+  /// The edit in progress when [layer] is being typed into on the canvas,
+  /// or `null` while it is only painted.
+  final InlineTextEditSession? inlineEdit;
 
   /// Notifies whether the move cursor should be shown.
   final ValueNotifier<bool> showMoveCursor;
@@ -315,6 +323,8 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
 
   @override
   Widget build(BuildContext context) {
+    final session = widget.inlineEdit;
+    if (session != null) return _buildInline(session);
     return LayerWidgetTextItem._buildText(
       layer: widget.layer,
       textEditorConfigs: widget.textEditorConfigs,
@@ -323,6 +333,74 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       highlightIndex: _highlightIndex,
       revealedLength: _revealedLength,
       onHitTestResult: _handleLayerHit,
+    );
+  }
+
+  /// The layer's text as a field, at the same size the painted layer uses.
+  Widget _buildInline(InlineTextEditSession session) {
+    final layer = widget.layer;
+    final configs = widget.textEditorConfigs;
+    final fontSize = configs.initFontSize * layer.scale * session.fontScale;
+    final effectScale = layer.scale * session.fontScale;
+    final style = session.selectedTextStyle.copyWith(
+      fontSize: fontSize,
+      color: session.textColor,
+      shadows: session.selectedTextStyle.shadows
+          ?.map((shadow) => shadow.scale(effectScale))
+          .toList(),
+    );
+    final box = session.editingBox(layer);
+    final scaledBox = box?.copyWith(size: box.size * layer.scale);
+    final maxTextWidth = layer.maxTextWidth == null
+        ? 1000000.0
+        : layer.maxTextWidth! * layer.scale;
+
+    Widget field = RoundedBackgroundTextField(
+      key: ValueKey('inline-text-${layer.id}'),
+      controller: session.textCtrl,
+      focusNode: session.focusNode,
+      configs: configs,
+      style: style,
+      backgroundColor: session.backgroundColor,
+      textAlign: session.align,
+      maxTextWidth: maxTextWidth,
+      cursorWidth: 2,
+      cursorHeight: fontSize,
+      outlineWidth: session.outlineWidth * effectScale,
+      outlineColor: session.outlineColor,
+      box: scaledBox,
+      // The editor ends the edit on a click outside the layer. Any other
+      // click, on the padding, a handle or a format bar, keeps typing.
+      onTapOutside: (_) {},
+    );
+    if (scaledBox == null) {
+      field = IntrinsicWidth(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxTextWidth),
+          child: field,
+        ),
+      );
+    }
+
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): session.cancel,
+        if (configs.enableSubmitShortcut) ...{
+          const SingleActivator(LogicalKeyboardKey.enter, control: true):
+              session.done,
+          const SingleActivator(LogicalKeyboardKey.enter, meta: true):
+              session.done,
+          const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true):
+              session.done,
+          const SingleActivator(LogicalKeyboardKey.numpadEnter, meta: true):
+              session.done,
+        },
+      },
+      child: Listener(
+        behavior: HitTestBehavior.deferToChild,
+        onPointerDown: (_) => session.pointerOnText = true,
+        child: field,
+      ),
     );
   }
 }

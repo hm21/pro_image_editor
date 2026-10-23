@@ -491,6 +491,24 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Indicates whether a sub-editor is currently open.
   bool isSubEditorOpen = false;
 
+  /// The text layer being typed into on the canvas, when
+  /// [TextEditorConfigs.enableInlineEditing] is on.
+  InlineTextEditSession? get inlineTextEdit => _inlineTextEdit;
+  InlineTextEditSession? _inlineTextEdit;
+
+  /// The history entry that added the layer of [_inlineTextEdit] when the
+  /// edit made that layer, or `null` when it edits a layer that was there.
+  EditorStateHistory? _inlineTextEditAddedEntry;
+
+  /// The last pointer-down on the body landed on the inline field or its
+  /// format bar, or ended the inline edit, so the gesture it starts must not
+  /// move a layer or the canvas.
+  bool _holdInlineGesture = false;
+
+  /// The current scale gesture is held by [_holdInlineGesture], so its
+  /// updates and its end are ignored.
+  bool _ignoreInlineScale = false;
+
   /// Indicates whether a sub-editor is in the process of closing.
   bool isSubEditorClosing = false;
 
@@ -641,6 +659,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
   @override
   void dispose() {
+    final session = _inlineTextEdit;
+    _inlineTextEdit = null;
+    session?.finish(false);
+    session?.dispose();
     _videoController?.resolutionNotifier.removeListener(
       _onVideoResolutionChanged,
     );
@@ -675,6 +697,20 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Handle keyboard events
   bool _onKeyEvent(KeyEvent event) {
+    final session = _inlineTextEdit;
+    if (session != null) {
+      // The field owns the keys. Escape drops the edit after this event, so
+      // it is not also the editor's close shortcut.
+      if (event is KeyDownEvent &&
+          event.logicalKey == LogicalKeyboardKey.escape) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !identical(_inlineTextEdit, session)) return;
+          endInlineTextEdit(save: false);
+        });
+        return true;
+      }
+      return false;
+    }
     return _desktopInteractionManager.onKey(
       event,
       selectedLayers: selectedLayers,
@@ -1034,6 +1070,9 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// This method removes a layer from the editor and updates the editing state.
   void removeLayer(Layer layer, {bool blockCaptureScreenshot = false}) {
+    if (_inlineTextEdit?.layerId == layer.id) {
+      endInlineTextEdit(save: false);
+    }
     int layerPos = activeLayers.indexOf(layer);
     if (layerPos < 0) return;
 
@@ -1051,6 +1090,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method removes all layers from the editor and updates the editing
   /// state.
   void removeAllLayers() {
+    if (_inlineTextEdit != null) endInlineTextEdit(save: false);
     addHistory(layers: []);
     setState(() {});
   }
@@ -1424,6 +1464,9 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method is called when a scaling operation begins and initializes the
   /// necessary variables.
   void _onScaleStart(ScaleStartDetails details) {
+    _ignoreInlineScale = _holdInlineGesture;
+    if (_ignoreInlineScale) return;
+
     final int pointerCount = details.pointerCount;
     if (sizesManager.bodySize != sizesManager.editorSize) {
       _calcAppBarHeight();
@@ -1495,6 +1538,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method is called during a scaling operation and updates the selected
   /// layer's position and properties.
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (_ignoreInlineScale) return;
     final int pointerCount = details.pointerCount;
 
     mainEditorCallbacks?.handleScaleUpdate(details);
@@ -1681,6 +1725,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// This method is called when a scaling operation ends and resets helper
   /// lines and flags.
   void _onScaleEnd(ScaleEndDetails details) async {
+    if (_ignoreInlineScale) {
+      _ignoreInlineScale = false;
+      return;
+    }
     mainEditorCallbacks?.handleScaleEnd(details);
 
     /// Flutter's [ScaleGestureRecognizer] fires a spurious `onScaleEnd`
@@ -1712,6 +1760,9 @@ class ProImageEditorState extends State<ProImageEditor>
       for (Layer layer in layerInteractionManager.selectedLayersScaleStart) {
         activeLayers.remove(layer);
         mainEditorCallbacks?.handleRemoveLayer(layer);
+        if (_inlineTextEdit?.layerId == layer.id) {
+          endInlineTextEdit(save: false);
+        }
       }
       layerInteractionManager.clearSelectedLayers();
     }
@@ -1768,6 +1819,10 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// - [layerData]: The existing [TextLayer] to edit.
   void editTextLayer(TextLayer layerData) async {
+    if (textEditorConfigs.enableInlineEditing) {
+      beginInlineTextEdit(layerData);
+      return;
+    }
     final customCallback = mainEditorCallbacks?.onEditTextLayer;
     TextLayer? updatedLayer;
 
@@ -1816,6 +1871,19 @@ class ProImageEditorState extends State<ProImageEditor>
   /// - [original]: The original [TextLayer] before editing.
   /// - [updatedLayer]: The [TextLayer] returned by the editor.
   void applyTextLayerChanges(TextLayer original, TextLayer updatedLayer) {
+    _keepTextLayerPlacement(original, updatedLayer);
+
+    if (updatedLayer.text.isEmpty) {
+      removeLayer(original);
+      return;
+    }
+
+    int i = activeLayers.indexWhere((element) => element.id == original.id);
+    replaceLayer(index: i, layer: updatedLayer);
+  }
+
+  /// Copies the identity and the placement of [original] onto [updatedLayer].
+  void _keepTextLayerPlacement(TextLayer original, TextLayer updatedLayer) {
     updatedLayer
       ..id = original.id
       ..key = original.key
@@ -1833,14 +1901,197 @@ class ProImageEditorState extends State<ProImageEditor>
       ..opacity = original.opacity
       ..mask = original.mask
       ..blendMode = original.blendMode;
+  }
 
-    if (updatedLayer.text.isEmpty) {
-      removeLayer(original);
+  /// Types into [layer] where it sits, instead of opening the text editor.
+  ///
+  /// Does nothing when [TextEditorConfigs.enableInlineEditing] is off, so the
+  /// full-screen editor stays the way in. [selectAll] selects the current
+  /// text, which a new layer uses for its placeholder.
+  ///
+  /// An edit already in progress on another layer is saved first; one on
+  /// [layer] stays open. [done] on the session writes the text back through
+  /// [applyTextLayerChanges]; [cancel] leaves the layer as it was. Empty text
+  /// removes the layer, as the full-screen editor does.
+  void beginInlineTextEdit(TextLayer layer, {bool selectAll = false}) {
+    _beginInlineTextEdit(layer, selectAll: selectAll);
+  }
+
+  void _beginInlineTextEdit(
+    TextLayer layer, {
+    required bool selectAll,
+    EditorStateHistory? addedEntry,
+  }) {
+    if (!textEditorConfigs.enableInlineEditing || !mounted) return;
+    final open = _inlineTextEdit;
+    if (open != null && open.layerId == layer.id) {
+      open.focusNode.requestFocus();
       return;
     }
+    _saveInlineTextEdit();
+    final live = activeLayers
+        .whereType<TextLayer>()
+        .where((item) => item.id == layer.id)
+        .firstOrNull;
+    if (live == null) return;
 
-    int i = activeLayers.indexWhere((element) => element.id == original.id);
-    replaceLayer(index: i, layer: updatedLayer);
+    late final InlineTextEditSession session;
+    session = InlineTextEditSession.start(
+      layer: live,
+      configs: textEditorConfigs,
+      onChanged: () {
+        if (mounted && identical(_inlineTextEdit, session)) setState(() {});
+      },
+      onTextChanged: () {
+        if (!mounted || !identical(_inlineTextEdit, session)) return;
+        final current = activeLayers
+            .whereType<TextLayer>()
+            .where((item) => item.id == session.layerId)
+            .firstOrNull;
+        if (current != null && session.boxEnabled && current.box == null) {
+          setState(() {});
+        }
+      },
+      onDone: () => endInlineTextEdit(save: true),
+      onCancel: () => endInlineTextEdit(save: false),
+    );
+    _inlineTextEdit = session;
+    _inlineTextEditAddedEntry = addedEntry;
+    selectLayerById(live.id);
+    setState(() {});
+    mainEditorCallbacks?.handleUpdateUI();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !identical(_inlineTextEdit, session)) return;
+      session.focusNode.requestFocus();
+      final text = session.textCtrl.text;
+      session.textCtrl.selection = selectAll
+          ? TextSelection(baseOffset: 0, extentOffset: text.length)
+          : TextSelection.collapsed(offset: text.length);
+    });
+  }
+
+  /// Ends the inline text edit.
+  ///
+  /// [save] writes the session onto the layer. Otherwise the layer stays as
+  /// it was when editing began, because the session never changes it. A
+  /// save that changes nothing records no history step.
+  ///
+  /// A layer the edit added itself, through [openTextEditor], goes away
+  /// again when the edit is dropped or its text is empty. As long as nothing
+  /// else was recorded meanwhile, its text is written into the history step
+  /// that added it, so one undo removes the new text.
+  void endInlineTextEdit({required bool save}) {
+    final session = _inlineTextEdit;
+    if (session == null || session.closed) return;
+    final addedEntry = _inlineTextEditAddedEntry;
+    _inlineTextEdit = null;
+    _inlineTextEditAddedEntry = null;
+
+    final isNew = addedEntry != null;
+    final history = stateManager.stateHistory;
+    final untouched =
+        isNew &&
+        identical(history.last, addedEntry) &&
+        stateManager.historyPointer == history.length - 1;
+    final index = activeLayers.indexWhere((item) => item.id == session.layerId);
+    final live = index < 0 ? null : activeLayers[index];
+
+    var saved = false;
+    if (live is TextLayer) {
+      final result = save ? session.buildResult(live) : null;
+      saved = result != null;
+      if (result == null || result.text.isEmpty) {
+        if (untouched) {
+          _dropAddedTextLayer(live);
+        } else if (isNew || result != null) {
+          removeLayer(live);
+        }
+      } else if (untouched) {
+        _keepTextLayerPlacement(live, result);
+        replaceLayer(index: index, layer: result, skipUpdateHistory: true);
+        _takeScreenshot(replaceLastScreenshot: true);
+      } else if (session.hasChanges(live)) {
+        applyTextLayerChanges(live, result);
+      }
+    }
+    session.finish(saved);
+    if (mounted) {
+      setState(() {});
+      mainEditorCallbacks?.handleUpdateUI();
+      // The field stays in the tree until the next frame and may still get
+      // input until then.
+      WidgetsBinding.instance.addPostFrameCallback((_) => session.dispose());
+    } else {
+      session.dispose();
+    }
+  }
+
+  /// Drops the history step that added [layer] for an inline edit, which
+  /// is the last one, so neither undo nor redo shows the placeholder.
+  void _dropAddedTextLayer(TextLayer layer) {
+    mainEditorCallbacks?.handleRemoveLayer(layer);
+    layerInteractionManager.clearSelectedLayers();
+    stateManager.stateHistory.removeLast();
+    stateManager
+      ..historyPointer = stateManager.stateHistory.length - 1
+      ..updateActiveItems();
+    // The step was added with an empty screenshot.
+    final screenshots = stateManager.screenshots;
+    if (screenshots.isNotEmpty) screenshots.removeLast();
+    _checkInteractiveViewer();
+    _controllers.uiLayerCtrl.add(null);
+  }
+
+  /// Saves an open inline text edit before something else reads or replaces
+  /// the layers, such as undo or a sub-editor.
+  void _saveInlineTextEdit() {
+    if (_inlineTextEdit != null) endInlineTextEdit(save: true);
+  }
+
+  /// Handles a pointer-down on the editor body for the open inline edit.
+  ///
+  /// Saves the edit when the pointer landed off the layer, the field, and any
+  /// [InlineTextEditChrome]. Returns whether the gesture the pointer starts
+  /// must leave the layers and the canvas alone: one that ended the edit, or
+  /// one on the field that selects text instead.
+  bool _onInlinePointerDown() {
+    final session = _inlineTextEdit;
+    if (session == null) return false;
+    final onField = session.pointerOnText || session.pointerOnChrome;
+    final inside = onField || session.pointerOnLayer;
+    session
+      ..pointerOnText = false
+      ..pointerOnLayer = false
+      ..pointerOnChrome = false;
+    if (inside) return onField;
+    if (!textEditorConfigs.enableTapOutsideToSave) return false;
+    endInlineTextEdit(save: true);
+    return true;
+  }
+
+  /// Lets the gestures that follow a released pointer move layers again,
+  /// such as a trackpad pinch, which starts without a pointer-down.
+  ///
+  /// Cleared once the recognizers have handled the release, so a gesture
+  /// that restarts as one of several fingers lifts stays held.
+  void _releaseInlineGesture() {
+    if (!_holdInlineGesture) return;
+    scheduleMicrotask(() => _holdInlineGesture = false);
+  }
+
+  /// Writes the open inline edit onto its layer and waits until the field
+  /// has left the tree.
+  ///
+  /// Capture, export, and done all call this first. The typed text is only
+  /// in the session until then, so a dirty check or a screenshot taken
+  /// earlier would keep the previous layer and could record the caret.
+  /// Does nothing when no edit is open. Callers that must keep their old
+  /// synchronous start check [_inlineTextEdit] before awaiting this.
+  Future<void> commitInlineTextEdit() async {
+    if (_inlineTextEdit == null || !mounted) return;
+    endInlineTextEdit(save: true);
+    if (!mounted) return;
+    await WidgetsBinding.instance.endOfFrame;
   }
 
   /// Opens the paint editor to modify an existing [PaintLayer].
@@ -1916,6 +2167,7 @@ class ProImageEditorState extends State<ProImageEditor>
     Widget page, {
     Duration duration = const Duration(milliseconds: 300),
   }) {
+    _saveInlineTextEdit();
     layerInteractionManager.clearSelectedLayers();
     _checkInteractiveViewer();
     isSubEditorOpen = true;
@@ -2043,6 +2295,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// After closing the paint editor, any changes made are applied to the
   /// image's layers.
   void openPaintEditor() async {
+    _saveInlineTextEdit();
     var paintCallbacks =
         callbacks.paintEditorCallbacks ?? const PaintEditorCallbacks();
     var overridenPaintCallbacks = paintCallbacks.copyWith(
@@ -2173,6 +2426,10 @@ class ProImageEditorState extends State<ProImageEditor>
     /// Small Duration is important for a smooth hero animation
     Duration duration = const Duration(milliseconds: 150),
   }) async {
+    if (textEditorConfigs.enableInlineEditing) {
+      _openInlineTextEditor();
+      return;
+    }
     final customCallback = mainEditorCallbacks?.onCreateTextLayer;
     TextLayer? layer;
 
@@ -2203,11 +2460,58 @@ class ProImageEditorState extends State<ProImageEditor>
     mainEditorCallbacks?.handleUpdateUI();
   }
 
+  /// Adds a text layer and types into it on the canvas.
+  void _openInlineTextEditor() {
+    // Saved first, so nothing is recorded after the step that adds the text.
+    _saveInlineTextEdit();
+    final secondary = textEditorConfigs.initialSecondaryColor;
+    final layer = TextLayer(
+      text: i18n.textEditor.inputHintText,
+      maxTextWidth: _newInlineTextMaxWidth,
+      align: textEditorConfigs.initialTextAlign,
+      fontScale: textEditorConfigs.initFontScale,
+      colorMode: textEditorConfigs.initialBackgroundColorMode,
+      color: textEditorConfigs.initialPrimaryColor,
+      background: secondary ?? const Color(0xFFFFFFFF),
+      customSecondaryColor: secondary != null,
+      textStyle:
+          textEditorConfigs.customTextStyles?.first ??
+          textEditorConfigs.defaultTextStyle,
+    );
+    // The screenshot is taken once the text is written.
+    addLayer(layer, blockCaptureScreenshot: true);
+    _beginInlineTextEdit(
+      layer,
+      selectAll: true,
+      addedEntry: stateManager.stateHistory[stateManager.historyPointer],
+    );
+  }
+
+  /// The width a new inline text wraps at, the one the text editor gives a
+  /// new layer.
+  double? get _newInlineTextMaxWidth {
+    if (!textEditorConfigs.enableAutoWrapOnLayer &&
+        !textEditorConfigs.enableImageBoundaryTextWrap) {
+      return null;
+    }
+    // The text editor leaves 16 on each side and room for the cursor.
+    const inset = 32 + 2.0;
+    final imageSize = sizesManager.decodedImageSize;
+    if (textEditorConfigs.enableImageBoundaryTextWrap &&
+        imageSize != Size.zero) {
+      return imageSize.width - inset;
+    }
+    return textEditorConfigs.enableAutoOverflow
+        ? sizesManager.bodySize.width - inset
+        : null;
+  }
+
   /// Opens the crop rotate editor.
   ///
   /// This method opens the crop editor, allowing the user to crop and rotate
   /// the image.
   void openCropRotateEditor() async {
+    _saveInlineTextEdit();
     if (!_isInitialized) await _decodeImageCompleter.future;
 
     await openPage<TransformConfigs?>(
@@ -2288,6 +2592,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// and the UI is updated accordingly. If the operation is canceled or no
   /// adjustments are made, the current state remains unchanged.
   void openTuneEditor({bool enableHero = true}) async {
+    _saveInlineTextEdit();
     if (!mounted) return;
     List<TuneAdjustmentMatrix>? tuneAdjustments = await openPage(
       HeroMode(
@@ -2336,6 +2641,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// `Uint8List`. If no filter is applied or the operation is canceled, the
   /// original image is retained.
   void openFilterEditor() async {
+    _saveInlineTextEdit();
     if (!mounted) return;
     FilterState? filterState = await openPage(
       FilterEditor.autoSource(
@@ -2376,6 +2682,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the blur editor as a modal bottom sheet.
   void openBlurEditor() async {
+    _saveInlineTextEdit();
     if (!mounted) return;
     double? blur = await openPage(
       BlurEditor.autoSource(
@@ -2420,6 +2727,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// active and restored
   /// after its closure.
   void openEmojiEditor() async {
+    _saveInlineTextEdit();
     setState(() => layerInteractionManager.clearSelectedLayers());
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
@@ -2478,6 +2786,7 @@ class ProImageEditorState extends State<ProImageEditor>
 
   /// Opens the sticker editor as a modal bottom sheet.
   void openStickerEditor() async {
+    _saveInlineTextEdit();
     setState(() => layerInteractionManager.selectedLayerId = '');
     _checkInteractiveViewer();
     ServicesBinding.instance.keyboard.removeHandler(_onKeyEvent);
@@ -2529,6 +2838,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// After the editor closes, updates the current video controller
   /// with the selected [AudioTrack] and its start time.
   void openAudioEditor({bool enforceChooseTrackPage = false}) async {
+    _saveInlineTextEdit();
     if (!_isVideoEditor) {
       throw ArgumentError(
         'This editor can only be opened when editing videos, not images.',
@@ -2588,6 +2898,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// After the editor closes, updates the current video configuration
   /// with the trimmed or merged result.
   void openClipsEditor() async {
+    _saveInlineTextEdit();
     if (!_isVideoEditor) {
       throw ArgumentError(
         'This editor can only be opened when editing videos, not images.',
@@ -2702,6 +3013,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// the previous state.
   void undoAction() {
     GestureManager.instance.stopPropagation();
+    _saveInlineTextEdit();
     if (stateManager.canUndo) {
       setState(() {
         layerInteractionManager.clearSelectedLayers();
@@ -2721,6 +3033,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// decoded to reflect
   /// the next state.
   void redoAction() {
+    _saveInlineTextEdit();
     if (stateManager.canRedo) {
       setState(() {
         layerInteractionManager.clearSelectedLayers();
@@ -2777,6 +3090,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Before returning the edited image, a loading dialog is displayed to
   /// indicate that the operation is in progress.
   void doneEditing() async {
+    if (_inlineTextEdit != null) {
+      await commitInlineTextEdit();
+      if (!mounted) return;
+    }
     mainEditorCallbacks?.handleDone();
     if (_isProcessingFinalImage) return;
     if (!stateManager.canUndo && activeLayers.isEmpty) {
@@ -2919,6 +3236,11 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// Returns an empty [Uint8List] if the screenshot capture fails.
   Future<Uint8List> captureEditorImage() async {
+    if (_inlineTextEdit != null) {
+      await commitInlineTextEdit();
+      if (!mounted) return Uint8List.fromList([]);
+    }
+
     if (isSubEditorOpen) {
       Navigator.pop(context);
       if (!_pageOpenCompleter.isCompleted) await _pageOpenCompleter.future;
@@ -2985,6 +3307,11 @@ class ProImageEditorState extends State<ProImageEditor>
     bool applyTransforms = true,
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
   }) async {
+    if (_inlineTextEdit != null) {
+      await commitInlineTextEdit();
+      if (!mounted) return <ExportedLayer>[];
+    }
+
     if (isSubEditorOpen) {
       Navigator.pop(context);
       if (!_pageOpenCompleter.isCompleted) await _pageOpenCompleter.future;
@@ -3133,6 +3460,10 @@ class ProImageEditorState extends State<ProImageEditor>
   Future<ExportStateHistory> exportStateHistory({
     ExportEditorConfigs configs = const ExportEditorConfigs(),
   }) async {
+    if (_inlineTextEdit != null) {
+      await commitInlineTextEdit();
+      if (!mounted) throw ArgumentError('Context unmounted');
+    }
     if (_imageInfos == null) await decodeImage();
     if (_imageInfos == null) throw ArgumentError('Failed to decode the image');
     if (!mounted) throw ArgumentError('Context unmounted');
@@ -3494,6 +3825,7 @@ class ProImageEditorState extends State<ProImageEditor>
             : Listener(
                 behavior: HitTestBehavior.translucent,
                 onPointerDown: (details) {
+                  _holdInlineGesture = _onInlinePointerDown();
                   _lastDownEvent = details;
                   _tapDownTimestamp = DateTime.now();
                   _mouseService.onPointerDown(details);
@@ -3508,6 +3840,7 @@ class ProImageEditorState extends State<ProImageEditor>
                   mainEditorCallbacks?.onDoubleTap?.call();
                 },
                 onPointerUp: (event) {
+                  _releaseInlineGesture();
                   if (GestureManager.instance.isBlocked) return;
 
                   _mouseService.onPointerUp(event);
@@ -3532,6 +3865,7 @@ class ProImageEditorState extends State<ProImageEditor>
                     mainEditorCallbacks?.onTap?.call();
                   });
                 },
+                onPointerCancel: (_) => _releaseInlineGesture(),
                 onPointerSignal: isDesktop && hasSelectedLayers
                     ? (event) {
                         final hasMultiSelection = selectedLayers.length > 1;

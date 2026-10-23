@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
+import '/core/models/layers/text_layer_box.dart';
 import 'rounded_background_text.dart';
 
 /// A customizable text field widget that displays editable text over a
@@ -30,8 +31,10 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
+    this.onTapOutside,
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
+    this.box,
   });
 
   /// Controls the text being edited in the text editor.
@@ -84,12 +87,23 @@ class RoundedBackgroundTextField extends StatefulWidget {
   /// {@macro flutter.widgets.editableText.onSubmitted}
   final ValueChanged<String>? onSubmitted;
 
+  /// Called for a pointer-down outside the field, in place of the default
+  /// that takes the focus away on desktop platforms.
+  final TapRegionCallback? onTapOutside;
+
   /// The thickness of the outline drawn around each glyph, measured outward
   /// from the glyph edge. `0` draws no outline.
   final double outlineWidth;
 
   /// The color of the outline.
   final Color outlineColor;
+
+  /// A fixed box to lay the text out in, already scaled the way the layer
+  /// paints it, or `null` to size the field to its text.
+  ///
+  /// The text wraps at the box width, and [TextLayerBox.overflow] clips or
+  /// shrinks what does not fit, matching [RoundedBackgroundText].
+  final TextLayerBox? box;
 
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
@@ -127,6 +141,168 @@ class _RoundedBackgroundTextFieldState
 
   @override
   Widget build(BuildContext context) {
+    if (widget.box != null) return _buildBoxed(context);
+    return _buildFree(context);
+  }
+
+  /// The field filling [RoundedBackgroundTextField.box], clipped to it.
+  Widget _buildBoxed(BuildContext context) {
+    final box = widget.box!;
+    final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final glyph = _glyphStyle;
+    final fontSize =
+        glyph.fontSize ?? DefaultTextStyle.of(context).style.fontSize ?? 16;
+    final leading = widget.configs.style.leadingDistribution;
+    final outlined = widget._hasOutline;
+    final scale = box.overflow == TextLayerBoxOverflow.shrink
+        ? RoundedBackgroundText.scaleForBox(
+            text: TextSpan(text: _textController.text, style: glyph),
+            style: glyph,
+            boxSize: box.size,
+            enableHitBoxCorrection: true,
+            outlineWidth: outlined ? widget.outlineWidth : 0,
+            textAlign: widget.textAlign,
+            leadingDistribution: leading,
+            textDirection: direction,
+          )
+        : 1.0;
+    final shrunkSize = fontSize * scale;
+    final linePainter = TextPainter(
+      text: TextSpan(
+        text: 'A',
+        style: TextStyle(
+          leadingDistribution: leading,
+        ).merge(glyph.copyWith(fontSize: shrunkSize)),
+      ),
+      textDirection: direction,
+    )..layout();
+    final lineHeight = linePainter.preferredLineHeight;
+    linePainter.dispose();
+    final effect = RoundedBackgroundText.effectExtent(
+      outlineWidth: outlined ? widget.outlineWidth : 0,
+      shadows: glyph.shadows ?? const <Shadow>[],
+    );
+    final inset = EdgeInsets.fromLTRB(
+      lineHeight * 0.3 + effect.dx,
+      lineHeight * 0.1 + effect.dy,
+      lineHeight * 0.3 + effect.dx,
+      lineHeight * 0.1 + effect.dy,
+    );
+    // An outline casts the shadows itself. Otherwise the field paints them,
+    // scaled with the font the way RoundedBackgroundText does.
+    List<Shadow>? fieldShadows;
+    if (outlined) {
+      fieldShadows = const <Shadow>[];
+    } else if (scale != 1) {
+      final shadows = glyph.shadows;
+      if (shadows != null) {
+        fieldShadows = [for (final shadow in shadows) shadow.scale(scale)];
+      }
+    }
+    final fieldStyle = glyph.copyWith(
+      fontSize: shrunkSize,
+      leadingDistribution: leading,
+      shadows: fieldShadows,
+    );
+    final vertical = switch (box.verticalAlign) {
+      TextLayerBoxVerticalAlign.top => TextAlignVertical.top,
+      TextLayerBoxVerticalAlign.center => TextAlignVertical.center,
+      TextLayerBoxVerticalAlign.bottom => TextAlignVertical.bottom,
+    };
+
+    final boxed = SizedBox(
+      width: box.size.width,
+      height: box.size.height,
+      child: ClipRect(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: RoundedBackgroundText.rich(
+                  maxTextWidth: widget.maxTextWidth,
+                  // The font stays at full size so this painter shrinks it,
+                  // and with it the outline and the shadows the outline
+                  // casts, the way the finished layer does. The field uses
+                  // the shrunk size. Bare shadows stay on the style so the
+                  // box keeps their space; the field paints those.
+                  text: _textController.buildTextSpan(
+                    context: context,
+                    withComposing: true,
+                    style: glyph.copyWith(
+                      color: const Color(0x00000000),
+                      leadingDistribution: leading,
+                    ),
+                  ),
+                  box: box,
+                  textAlign: widget.textAlign,
+                  backgroundColor: widget.backgroundColor,
+                  enableHitBoxCorrection: true,
+                  leadingDistribution: leading,
+                  reserveEffectSpace: true,
+                  paintShadows: false,
+                  outlineWidth: widget.outlineWidth,
+                  outlineColor: widget.outlineColor,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Padding(
+                padding: inset,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: TextField(
+                    controller: _textController,
+                    focusNode: widget.focusNode,
+                    autofocus: widget.autofocus,
+                    expands: true,
+                    maxLines: null,
+                    textAlignVertical: vertical,
+                    textAlign: widget.textAlign,
+                    keyboardType: TextInputType.multiline,
+                    textCapitalization: TextCapitalization.sentences,
+                    textInputAction: TextInputAction.newline,
+                    scrollPhysics: const NeverScrollableScrollPhysics(),
+                    scrollPadding: EdgeInsets.zero,
+                    style: fieldStyle,
+                    cursorColor: widget.configs.style.inputCursorColor,
+                    cursorWidth: widget.cursorWidth,
+                    cursorHeight: shrunkSize,
+                    cursorRadius: widget.cursorRadius,
+                    enableInteractiveSelection: true,
+                    showCursor: true,
+                    autocorrect: widget.configs.enableAutocorrect,
+                    enableSuggestions: widget.configs.enableSuggestions,
+                    spellCheckConfiguration:
+                        widget.configs.spellCheckConfiguration,
+                    clipBehavior: Clip.hardEdge,
+                    decoration: InputDecoration.collapsed(
+                      hintText: _textController.text.isEmpty ? widget.hint : '',
+                      hintStyle:
+                          (widget.hintStyle ??
+                                  TextStyle(color: Theme.of(context).hintColor))
+                              .copyWith(fontSize: shrunkSize),
+                    ),
+                    onChanged: widget.onChanged,
+                    onEditingComplete: widget.onEditingComplete,
+                    onSubmitted: widget.onSubmitted,
+                    onTapOutside: widget.onTapOutside,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    // The painted text ignores the platform text scale, so the field does
+    // as well.
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: boxed,
+    );
+  }
+
+  Widget _buildFree(BuildContext context) {
     final defaultTextStyle = DefaultTextStyle.of(context);
 
     final fontSize =
@@ -175,8 +351,20 @@ class _RoundedBackgroundTextFieldState
   /// [widget.style] with the line height the editable text lays its glyphs
   /// out with. The background text uses it as well, so its rectangle and the
   /// outline it draws line up with the editable glyphs.
-  TextStyle get _glyphStyle =>
-      widget.style.copyWith(height: widget.configs.style.textHeight);
+  ///
+  /// The style does not inherit. A text field otherwise keeps the ambient
+  /// text theme's letter spacing wherever this style leaves it unset, and
+  /// the painted layer does not.
+  TextStyle get _glyphStyle {
+    final style = widget.style;
+    return style.copyWith(
+      inherit: false,
+      textBaseline: style.textBaseline ?? TextBaseline.alphabetic,
+      height: widget.configs.style.textHeight,
+      letterSpacing:
+          style.letterSpacing ?? widget.configs.style.inputLetterSpacing,
+    );
+  }
 
   /// The preferred line height for [_glyphStyle] at [fontSize], computed the
   /// same way [RoundedBackgroundText] lays the text out, so the hit-box padding
@@ -319,6 +507,7 @@ class _RoundedBackgroundTextFieldState
           onChanged: widget.onChanged,
           onEditingComplete: widget.onEditingComplete,
           onSubmitted: widget.onSubmitted,
+          onTapOutside: widget.onTapOutside,
         ),
       ),
     );
