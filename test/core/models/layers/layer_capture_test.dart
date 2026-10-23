@@ -207,8 +207,9 @@ void main() {
         );
         final box = Size(200 * visible.scale, 40 * visible.scale);
         Future<ui.Image> decode(Uint8List bytes) async =>
-            (await (await ui.instantiateImageCodec(bytes)).getNextFrame())
-                .image;
+            (await (await ui.instantiateImageCodec(
+              bytes,
+            )).getNextFrame()).image;
 
         final open = await decode(exported[0].bytes);
         expect(open.width.toDouble(), closeTo(box.width, 1));

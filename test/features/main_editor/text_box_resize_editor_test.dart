@@ -72,45 +72,49 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a box handle resizes the box, not the layer', (tester) async {
-    final state = await pumpEditor(tester);
-    final layer = TextLayer(
-      text: 'Name',
-      scale: 1,
-      box: const TextLayerBox(size: Size(120, 40)),
-    );
-    state.addLayer(
-      layer,
-      autoCorrectZoomOffset: false,
-      autoCorrectZoomScale: false,
-    );
-    await tester.pumpAndSettle();
-    state.selectLayerById(layer.id);
-    await tester.pumpAndSettle();
+  testWidgets(
+    'a box handle resizes the box, not the layer',
+    (tester) async {
+      final state = await pumpEditor(tester);
+      final layer = TextLayer(
+        text: 'Name',
+        scale: 1,
+        box: const TextLayerBox(size: Size(120, 40)),
+      );
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+      await tester.pumpAndSettle();
+      state.selectLayerById(layer.id);
+      await tester.pumpAndSettle();
 
-    expect(find.byType(TextLayerBoxHandles), findsOneWidget);
-    final text = tester.getRect(find.byType(RoundedBackgroundText));
+      expect(find.byType(TextLayerBoxHandles), findsOneWidget);
+      final text = tester.getRect(find.byType(RoundedBackgroundText));
 
-    await mouseDrag(
-      tester,
-      from: Offset(text.right, text.center.dy),
-      by: const Offset(40, 0),
-    );
+      await mouseDrag(
+        tester,
+        from: Offset(text.right, text.center.dy),
+        by: const Offset(40, 0),
+      );
 
-    final live = state.activeLayers.single as TextLayer;
-    expect(live.scale, 1);
-    // The edge follows the whole drag: 40 px, at a scale of 1.
-    expect(live.box!.size.width, closeTo(160, 0.001));
-    expect(live.box!.size.height, 40);
+      final live = state.activeLayers.single as TextLayer;
+      expect(live.scale, 1);
+      // The edge follows the whole drag: 40 px, at a scale of 1.
+      expect(live.box!.size.width, closeTo(160, 0.001));
+      expect(live.box!.size.height, 40);
 
-    // The drag was one history step.
-    state.undoAction();
-    await tester.pumpAndSettle();
-    expect(
-      (state.activeLayers.single as TextLayer).box!.size,
-      const Size(120, 40),
-    );
-  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+      // The drag was one history step.
+      state.undoAction();
+      await tester.pumpAndSettle();
+      expect(
+        (state.activeLayers.single as TextLayer).box!.size,
+        const Size(120, 40),
+      );
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 
   testWidgets('a box handle keeps the opposite edge of a layer with '
       'keyframes where they show it', (tester) async {
@@ -224,57 +228,62 @@ void main() {
       return gesture;
     }
 
-    testWidgets('keeps resizing when held still past a long press', (
-      tester,
-    ) async {
-      final (state, layer) = await pumpBoxedLayer(tester);
-      final text = tester.getRect(find.byType(RoundedBackgroundText));
-      final offset = layer.offset;
+    testWidgets(
+      'keeps resizing when held still past a long press',
+      (tester) async {
+        final (state, layer) = await pumpBoxedLayer(tester);
+        final text = tester.getRect(find.byType(RoundedBackgroundText));
+        final offset = layer.offset;
 
-      final gesture = await press(tester, Offset(text.right, text.center.dy));
-      await tester.pump(const Duration(milliseconds: 700));
-      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-
-      await gesture.moveBy(const Offset(20, 0));
-      await tester.pump();
-      await gesture.moveBy(const Offset(20, 0));
-      await tester.pump();
-      expect(live(state).box!.size.width, closeTo(160, 0.001));
-      expect(live(state).offset, offset);
-      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-
-      await gesture.up();
-      await tester.pumpAndSettle();
-      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
-
-    testWidgets('keeps resizing through pauses longer than a long press', (
-      tester,
-    ) async {
-      final (state, layer) = await pumpBoxedLayer(tester);
-      final text = tester.getRect(find.byType(RoundedBackgroundText));
-
-      final gesture = await press(tester, Offset(text.center.dx, text.bottom));
-      for (var step = 1; step <= 3; step++) {
-        await gesture.moveBy(const Offset(0, 10));
-        await tester.pump(const Duration(milliseconds: 600));
-        expect(live(state).box!.size.height, closeTo(40 + step * 10, 0.001));
+        final gesture = await press(tester, Offset(text.right, text.center.dy));
+        await tester.pump(const Duration(milliseconds: 700));
         expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-      }
-      expect(live(state).box!.size.width, 120);
 
-      await gesture.up();
-      await tester.pumpAndSettle();
-      expect(live(state).box!.size.height, closeTo(70, 0.001));
-      expect(state.selectedLayers.map((l) => l.id), [layer.id]);
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+        await gesture.moveBy(const Offset(20, 0));
+        await tester.pump();
+        await gesture.moveBy(const Offset(20, 0));
+        await tester.pump();
+        expect(live(state).box!.size.width, closeTo(160, 0.001));
+        expect(live(state).offset, offset);
+        expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
+    );
+
+    testWidgets(
+      'keeps resizing through pauses longer than a long press',
+      (tester) async {
+        final (state, layer) = await pumpBoxedLayer(tester);
+        final text = tester.getRect(find.byType(RoundedBackgroundText));
+
+        final gesture = await press(
+          tester,
+          Offset(text.center.dx, text.bottom),
+        );
+        for (var step = 1; step <= 3; step++) {
+          await gesture.moveBy(const Offset(0, 10));
+          await tester.pump(const Duration(milliseconds: 600));
+          expect(live(state).box!.size.height, closeTo(40 + step * 10, 0.001));
+          expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+        }
+        expect(live(state).box!.size.width, 120);
+
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(live(state).box!.size.height, closeTo(70, 0.001));
+        expect(state.selectedLayers.map((l) => l.id), [layer.id]);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
+    );
   });
 
   group('a box turned on during an edit and then resized', () {
     final inlineConfigs = topLeftConfigs.copyWith(
-      textEditor: topLeftConfigs.textEditor.copyWith(
-        enableInlineEditing: true,
-      ),
+      textEditor: topLeftConfigs.textEditor.copyWith(enableInlineEditing: true),
     );
 
     TextLayer live(ProImageEditorState state) =>
@@ -306,25 +315,27 @@ void main() {
       return state;
     }
 
-    testWidgets('undo after saving reaches the layer without a box', (
-      tester,
-    ) async {
-      final state = await resizeNewBox(tester);
-      final resized = live(state).box!;
-      state.inlineTextEdit?.textCtrl.text = 'Name here';
-      state.inlineTextEdit?.done();
-      await tester.pumpAndSettle();
-      expect(live(state).text, 'Name here');
-      expect(live(state).box, resized);
-
-      while (state.canUndo) {
-        state.undoAction();
+    testWidgets(
+      'undo after saving reaches the layer without a box',
+      (tester) async {
+        final state = await resizeNewBox(tester);
+        final resized = live(state).box!;
+        state.inlineTextEdit?.textCtrl.text = 'Name here';
+        state.inlineTextEdit?.done();
         await tester.pumpAndSettle();
-        if (live(state).box == null) break;
-      }
-      expect(live(state).text, 'Name');
-      expect(live(state).box, isNull);
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+        expect(live(state).text, 'Name here');
+        expect(live(state).box, resized);
+
+        while (state.canUndo) {
+          state.undoAction();
+          await tester.pumpAndSettle();
+          if (live(state).box == null) break;
+        }
+        expect(live(state).text, 'Name');
+        expect(live(state).box, isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
+    );
 
     testWidgets('cancelling keeps the resize as its own step, and undo '
         'reaches the layer without a box', (tester) async {

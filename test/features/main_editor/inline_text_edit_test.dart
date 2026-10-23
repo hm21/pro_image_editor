@@ -726,27 +726,29 @@ void main() {
     expect(state.inlineTextEdit, isNotNull);
   });
 
-  testWidgets('a click outside with a mouse saves without errors', (
-    tester,
-  ) async {
-    final state = await pumpEditor(tester);
-    final live = await addTextLayer(state, tester);
+  testWidgets(
+    'a click outside with a mouse saves without errors',
+    (tester) async {
+      final state = await pumpEditor(tester);
+      final live = await addTextLayer(state, tester);
 
-    state.beginInlineTextEdit(live);
-    await tester.pump();
-    await tester.enterText(find.byType(EditableText), 'Hello');
+      state.beginInlineTextEdit(live);
+      await tester.pump();
+      await tester.enterText(find.byType(EditableText), 'Hello');
 
-    final layerRect = tester.getRect(find.byType(LayerWidget));
-    await tester.tapAt(
-      layerRect.bottomCenter + const Offset(0, 80),
-      kind: PointerDeviceKind.mouse,
-    );
-    await tester.pumpAndSettle();
+      final layerRect = tester.getRect(find.byType(LayerWidget));
+      await tester.tapAt(
+        layerRect.bottomCenter + const Offset(0, 80),
+        kind: PointerDeviceKind.mouse,
+      );
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    expect(state.inlineTextEdit, isNull);
-    expect(state.activeLayers.whereType<TextLayer>().single.text, 'Hello');
-  }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+      expect(tester.takeException(), isNull);
+      expect(state.inlineTextEdit, isNull);
+      expect(state.activeLayers.whereType<TextLayer>().single.text, 'Hello');
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.macOS),
+  );
 
   testWidgets('undo while typing writes the text before it steps back', (
     tester,
@@ -802,128 +804,132 @@ void main() {
     expect(find.byType(EditableText), findsNothing);
   });
 
-  testWidgets('a format bar outside the editor keeps the edit and its focus', (
-    tester,
-  ) async {
-    final key = GlobalKey<ProImageEditorState>();
-    final bar = ValueNotifier(0);
-    addTearDown(bar.dispose);
-    var aligned = 0;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Column(
-          children: [
-            Expanded(
-              child: ProImageEditor.memory(
-                mockMemoryImage,
-                key: key,
-                configs: inlineConfigs,
-                callbacks: ProImageEditorCallbacks(
-                  onImageEditingComplete: (Uint8List bytes) async {},
+  testWidgets(
+    'a format bar outside the editor keeps the edit and its focus',
+    (tester) async {
+      final key = GlobalKey<ProImageEditorState>();
+      final bar = ValueNotifier(0);
+      addTearDown(bar.dispose);
+      var aligned = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Column(
+            children: [
+              Expanded(
+                child: ProImageEditor.memory(
+                  mockMemoryImage,
+                  key: key,
+                  configs: inlineConfigs,
+                  callbacks: ProImageEditorCallbacks(
+                    onImageEditingComplete: (Uint8List bytes) async {},
+                  ),
                 ),
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: bar,
-              builder: (context, _, _) {
-                final session = key.currentState?.inlineTextEdit;
-                if (session == null) return const SizedBox(height: 48);
-                return InlineTextEditChrome(
-                  session: session,
-                  child: SizedBox(
-                    height: 48,
-                    child: TextButton(
-                      onPressed: () {
-                        aligned++;
-                        session.toggleTextAlign();
-                      },
-                      child: const Text('Align'),
+              ValueListenableBuilder(
+                valueListenable: bar,
+                builder: (context, _, _) {
+                  final session = key.currentState?.inlineTextEdit;
+                  if (session == null) return const SizedBox(height: 48);
+                  return InlineTextEditChrome(
+                    session: session,
+                    child: SizedBox(
+                      height: 48,
+                      child: TextButton(
+                        onPressed: () {
+                          aligned++;
+                          session.toggleTextAlign();
+                        },
+                        child: const Text('Align'),
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final state = key.currentState!;
-    final live = await addTextLayer(state, tester);
-    state.beginInlineTextEdit(live);
-    bar.value++;
-    await tester.pump();
-    await tester.pump();
+      );
+      await tester.pumpAndSettle();
+      final state = key.currentState!;
+      final live = await addTextLayer(state, tester);
+      state.beginInlineTextEdit(live);
+      bar.value++;
+      await tester.pump();
+      await tester.pump();
 
-    await tester.tap(find.text('Align'), kind: PointerDeviceKind.mouse);
-    await tester.pump();
-    expect(aligned, 1);
-    expect(state.inlineTextEdit, isNotNull);
-    expect(state.inlineTextEdit!.focusNode.hasFocus, isTrue);
-    expect(state.inlineTextEdit!.align, TextAlign.center);
+      await tester.tap(find.text('Align'), kind: PointerDeviceKind.mouse);
+      await tester.pump();
+      expect(aligned, 1);
+      expect(state.inlineTextEdit, isNotNull);
+      expect(state.inlineTextEdit!.focusNode.hasFocus, isTrue);
+      expect(state.inlineTextEdit!.align, TextAlign.center);
 
-    final layerRect = tester.getRect(find.byType(LayerWidget));
-    await tester.tapAt(layerRect.bottomCenter + const Offset(0, 80));
-    await tester.pumpAndSettle();
-    expect(state.inlineTextEdit, isNull);
-    expect(
-      state.activeLayers.whereType<TextLayer>().single.align,
-      TextAlign.center,
-    );
-  }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+      final layerRect = tester.getRect(find.byType(LayerWidget));
+      await tester.tapAt(layerRect.bottomCenter + const Offset(0, 80));
+      await tester.pumpAndSettle();
+      expect(state.inlineTextEdit, isNull);
+      expect(
+        state.activeLayers.whereType<TextLayer>().single.align,
+        TextAlign.center,
+      );
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.macOS),
+  );
 
-  testWidgets('a box handle resizes the box while the text is typed', (
-    tester,
-  ) async {
-    final state = await pumpEditor(
-      tester,
-      configs: inlineConfigs.copyWith(
-        layerInteraction: const LayerInteractionConfigs(
-          selectable: LayerInteractionSelectable.enabled,
-          enableTextBoxResize: true,
+  testWidgets(
+    'a box handle resizes the box while the text is typed',
+    (tester) async {
+      final state = await pumpEditor(
+        tester,
+        configs: inlineConfigs.copyWith(
+          layerInteraction: const LayerInteractionConfigs(
+            selectable: LayerInteractionSelectable.enabled,
+            enableTextBoxResize: true,
+          ),
         ),
-      ),
-    );
-    final layer = TextLayer(
-      text: 'Name',
-      box: const TextLayerBox(size: Size(120, 40)),
-    );
-    state.addLayer(
-      layer,
-      autoCorrectZoomOffset: false,
-      autoCorrectZoomScale: false,
-    );
-    await tester.pumpAndSettle();
-    state.beginInlineTextEdit(layer);
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(EditableText), 'Hello');
-    final session = state.inlineTextEdit;
+      );
+      final layer = TextLayer(
+        text: 'Name',
+        box: const TextLayerBox(size: Size(120, 40)),
+      );
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+      await tester.pumpAndSettle();
+      state.beginInlineTextEdit(layer);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), 'Hello');
+      final session = state.inlineTextEdit;
 
-    final field = tester.getRect(find.byType(RoundedBackgroundTextField));
-    final gesture = await tester.startGesture(
-      Offset(field.right, field.center.dy),
-      kind: PointerDeviceKind.mouse,
-      buttons: kPrimaryMouseButton,
-    );
-    await tester.pump();
-    await gesture.moveBy(const Offset(20, 0));
-    await tester.pump();
-    await gesture.moveBy(const Offset(20, 0));
-    await tester.pump();
-    await gesture.up();
-    await tester.pumpAndSettle();
+      final field = tester.getRect(find.byType(RoundedBackgroundTextField));
+      final gesture = await tester.startGesture(
+        Offset(field.right, field.center.dy),
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      await tester.pump();
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
 
-    expect(state.inlineTextEdit, same(session));
-    expect(session!.focusNode.hasFocus, isTrue);
-    final resized = state.activeLayers.whereType<TextLayer>().single;
-    expect(resized.box!.size.width, closeTo(160, 0.001));
+      expect(state.inlineTextEdit, same(session));
+      expect(session!.focusNode.hasFocus, isTrue);
+      final resized = state.activeLayers.whereType<TextLayer>().single;
+      expect(resized.box!.size.width, closeTo(160, 0.001));
 
-    session.done();
-    await tester.pump();
-    final written = state.activeLayers.whereType<TextLayer>().single;
-    expect(written.text, 'Hello');
-    expect(written.box!.size.width, closeTo(160, 0.001));
-  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+      session.done();
+      await tester.pump();
+      final written = state.activeLayers.whereType<TextLayer>().single;
+      expect(written.text, 'Hello');
+      expect(written.box!.size.width, closeTo(160, 0.001));
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 
   group('entering an edit keeps the text where it was', () {
     /// The screen rect of the glyph [at]: of the field while editing, else
@@ -1034,11 +1040,15 @@ void main() {
 
             state.beginInlineTextEdit(layer);
             await tester.pump();
-            expect((firstGlyph(tester).topLeft - before.topLeft).distance,
-                lessThan(0.01));
+            expect(
+              (firstGlyph(tester).topLeft - before.topLeft).distance,
+              lessThan(0.01),
+            );
             await tester.pumpAndSettle();
-            expect((firstGlyph(tester).topLeft - before.topLeft).distance,
-                lessThan(0.01));
+            expect(
+              (firstGlyph(tester).topLeft - before.topLeft).distance,
+              lessThan(0.01),
+            );
           });
         }
       }

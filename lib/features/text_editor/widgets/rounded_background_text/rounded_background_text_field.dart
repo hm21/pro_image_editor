@@ -290,42 +290,42 @@ class _RoundedBackgroundTextFieldState
     final stack = Stack(
       clipBehavior: visible ? Clip.none : Clip.hardEdge,
       children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: RoundedBackgroundText.rich(
-                  maxTextWidth: widget.maxTextWidth,
-                  // The font stays at full size so this painter shrinks it,
-                  // and with it the outline and the shadows the outline
-                  // casts, the way the finished layer does. The field uses
-                  // the shrunk size. Bare shadows stay on the style so the
-                  // box keeps their space; the field paints those.
-                  text: _textController.buildTextSpan(
-                    context: context,
-                    withComposing: true,
-                    style: glyph.copyWith(
-                      color: const Color(0x00000000),
-                      leadingDistribution: leading,
-                    ),
-                  ),
-                  box: box,
-                  textAlign: widget.textAlign,
-                  backgroundColor: widget.backgroundColor,
-                  enableHitBoxCorrection: true,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: RoundedBackgroundText.rich(
+              maxTextWidth: widget.maxTextWidth,
+              // The font stays at full size so this painter shrinks it,
+              // and with it the outline and the shadows the outline
+              // casts, the way the finished layer does. The field uses
+              // the shrunk size. Bare shadows stay on the style so the
+              // box keeps their space; the field paints those.
+              text: _textController.buildTextSpan(
+                context: context,
+                withComposing: true,
+                style: glyph.copyWith(
+                  color: const Color(0x00000000),
                   leadingDistribution: leading,
-                  reserveEffectSpace: true,
-                  // Under gradient glyphs, which the field cannot draw.
-                  paintShadows: widget._hasGradient,
-                  outlineWidth: widget.outlineWidth,
-                  outlineColor: widget.outlineColor,
-                  gradient: widget.gradient,
                 ),
               ),
+              box: box,
+              textAlign: widget.textAlign,
+              backgroundColor: widget.backgroundColor,
+              enableHitBoxCorrection: true,
+              leadingDistribution: leading,
+              reserveEffectSpace: true,
+              // Under gradient glyphs, which the field cannot draw.
+              paintShadows: widget._hasGradient,
+              outlineWidth: widget.outlineWidth,
+              outlineColor: widget.outlineColor,
+              gradient: widget.gradient,
             ),
-            Positioned.fill(
-              child: Padding(padding: inset, child: textField),
-            ),
-          ],
-        );
+          ),
+        ),
+        Positioned.fill(
+          child: Padding(padding: inset, child: textField),
+        ),
+      ],
+    );
     final boxed = SizedBox(
       width: box.size.width,
       height: box.size.height,
