@@ -25,7 +25,7 @@ void main() {
       });
 
       test('falls back to an ellipse for a shape it does not know', () {
-        final read = LayerMask.fromMap({...mask.toMap(), 'shape': 'star'});
+        final read = LayerMask.fromMap({...mask.toMap(), 'shape': 'spiral'});
 
         expect(read.shape, LayerMaskShape.ellipse);
         expect(read.center, mask.center);
@@ -54,6 +54,26 @@ void main() {
         expect(bounds.top, closeTo(50, 0.01));
         expect(bounds.width, closeTo(100, 0.01));
         expect(bounds.height, closeTo(100, 0.01));
+      });
+
+      test('fills the box of every unturned shape', () {
+        const layerSize = Size(200, 400);
+        for (final shape in LayerMaskShape.values) {
+          if (shape == LayerMaskShape.linear) continue;
+          final mask = LayerMask(
+            shape: shape,
+            center: const Offset(0.4, 0.6),
+            size: const Size(0.5, 0.3),
+          );
+
+          final bounds = mask.outline(layerSize).getBounds();
+          final box = mask.shapeRect(layerSize);
+
+          expect(bounds.left, closeTo(box.left, 0.01), reason: shape.name);
+          expect(bounds.top, closeTo(box.top, 0.01), reason: shape.name);
+          expect(bounds.right, closeTo(box.right, 0.01), reason: shape.name);
+          expect(bounds.bottom, closeTo(box.bottom, 0.01), reason: shape.name);
+        }
       });
 
       test('turns a linear edge around the centre', () {
@@ -152,6 +172,47 @@ void main() {
 
         expect(alphas, [255, 0, 255, 0]);
       });
+
+      for (final (shape, shown, hidden) in [
+        (
+          LayerMaskShape.star,
+          const [Offset(0.5, 0.5), Offset(0.5, 0.06), Offset(0.95, 0.39)],
+          const [Offset(0.5, 0.97), Offset(0.85, 0.15), Offset(0.02, 0.8)],
+        ),
+        (
+          LayerMaskShape.triangle,
+          const [Offset(0.5, 0.1), Offset(0.05, 0.97), Offset(0.95, 0.97)],
+          const [Offset(0.15, 0.15), Offset(0.85, 0.15)],
+        ),
+        (
+          LayerMaskShape.diamond,
+          const [Offset(0.5, 0.05), Offset(0.95, 0.5), Offset(0.5, 0.5)],
+          const [Offset(0.2, 0.2), Offset(0.8, 0.8), corner],
+        ),
+        (
+          LayerMaskShape.hexagon,
+          const [Offset(0.5, 0.05), Offset(0.03, 0.5), Offset(0.97, 0.5)],
+          const [Offset(0.1, 0.1), Offset(0.9, 0.9), corner],
+        ),
+        (
+          LayerMaskShape.speechBubble,
+          const [Offset(0.5, 0.4), Offset(0.03, 0.4), Offset(0.2, 0.9)],
+          const [Offset(0.8, 0.9), Offset(0.05, 0.9), corner],
+        ),
+      ]) {
+        testWidgets('cuts a ${shape.name} filling its box', (tester) async {
+          final alphas = await alphasAt(
+            tester,
+            LayerMask(shape: shape, size: const Size(1, 1)),
+            [...shown, ...hidden],
+          );
+
+          expect(alphas, [
+            for (final _ in shown) 255,
+            for (final _ in hidden) 0,
+          ]);
+        });
+      }
 
       testWidgets('shows the layer above an unturned linear edge', (
         tester,

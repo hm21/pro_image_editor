@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.18.0
+- **FEAT**(layers): Add a star, a triangle, a diamond, a hexagon and a speech bubble to `LayerMaskShape`. A `switch` over `LayerMaskShape` has to handle the new values.
+
 ## 14.17.0
 - **FEAT**(main-editor): Add `TextEditorConfigs.enableInlineEditing` to type into a text layer on the canvas instead of opening the full-screen text editor; `InlineTextEditChrome` keeps a custom format bar from ending the edit.
 
