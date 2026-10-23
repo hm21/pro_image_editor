@@ -86,16 +86,25 @@ void main() {
               Rect screenRect() {
                 final render = tester.renderObject<RenderBox>(text);
                 return MatrixUtils.transformRect(
-                  render.getTransformTo(null), Offset.zero & render.size);
+                  render.getTransformTo(null),
+                  Offset.zero & render.size,
+                );
               }
+
               final before = screenRect();
               final originalOffset = layer.offset;
               void expectPosition(String reason) {
                 final after = screenRect();
-                expect((after.topLeft - before.topLeft).distance,
-                    lessThan(0.001), reason: reason);
-                expect((after.bottomRight - before.bottomRight).distance,
-                    lessThan(0.001), reason: reason);
+                expect(
+                  (after.topLeft - before.topLeft).distance,
+                  lessThan(0.001),
+                  reason: reason,
+                );
+                expect(
+                  (after.bottomRight - before.bottomRight).distance,
+                  lessThan(0.001),
+                  reason: reason,
+                );
               }
 
               // The first hit changes the hit notifier. Later hits must also
@@ -121,15 +130,18 @@ void main() {
             },
             variant: TargetPlatformVariant.only(
               kind == PointerDeviceKind.mouse
-                  ? TargetPlatform.linux : TargetPlatform.android),
+                  ? TargetPlatform.linux
+                  : TargetPlatform.android,
+            ),
           );
         }
       }
     }
   }
 
-  testWidgets('multi-selection keeps text, emoji and widget content in place',
-      (tester) async {
+  testWidgets('multi-selection keeps text, emoji and widget content in place', (
+    tester,
+  ) async {
     final state = await pumpEditor(tester, editorConfigs: topLeftConfigs);
     final layers = <Layer>[
       TextLayer(text: 'Name', offset: const Offset(-140, -60)),
@@ -142,19 +154,29 @@ void main() {
       ),
     ];
     for (final layer in layers) {
-      state.addLayer(layer,
-          autoCorrectZoomOffset: false, autoCorrectZoomScale: false);
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
     }
     state.unselectAllLayers();
     await tester.pumpAndSettle();
 
     Rect screenRect(Layer layer) {
       final render = tester.renderObject<RenderBox>(
-        find.byKey(state.activeLayers
-            .firstWhere((item) => item.id == layer.id).repaintBoundaryKey));
+        find.byKey(
+          state.activeLayers
+              .firstWhere((item) => item.id == layer.id)
+              .repaintBoundaryKey,
+        ),
+      );
       return MatrixUtils.transformRect(
-        render.getTransformTo(null), Offset.zero & render.size);
+        render.getTransformTo(null),
+        Offset.zero & render.size,
+      );
     }
+
     final before = [for (final layer in layers) screenRect(layer)];
     for (final select in [true, false, true]) {
       if (select) {
@@ -166,10 +188,16 @@ void main() {
         await tester.pump();
         for (var i = 0; i < layers.length; i++) {
           final after = screenRect(layers[i]);
-          expect((after.topLeft - before[i].topLeft).distance,
-              lessThan(0.001), reason: 'layer $i, frame $frame');
-          expect((after.bottomRight - before[i].bottomRight).distance,
-              lessThan(0.001), reason: 'layer $i, frame $frame');
+          expect(
+            (after.topLeft - before[i].topLeft).distance,
+            lessThan(0.001),
+            reason: 'layer $i, frame $frame',
+          );
+          expect(
+            (after.bottomRight - before[i].bottomRight).distance,
+            lessThan(0.001),
+            reason: 'layer $i, frame $frame',
+          );
         }
       }
       expect(state.selectedLayers.length, select ? layers.length : 0);
