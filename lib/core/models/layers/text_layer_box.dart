@@ -36,6 +36,11 @@ enum TextLayerBoxOverflow {
   /// [TextLayerBox.minShrinkFactor] of its size; what still does not fit is
   /// cut off.
   shrink,
+
+  /// Lines below the box are drawn past it, over whatever lies there, at
+  /// the text's own size. The background, the hit area and the layer's size
+  /// stay the box. A version that does not know this value reads [clip].
+  visible,
 }
 
 /// An edge or corner of a [TextLayerBox] that resizes it when dragged.

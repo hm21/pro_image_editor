@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -37,7 +39,16 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.outlineColor = const Color(0xFF000000),
     this.box,
     this.gradient,
+    this.textWrapWidth,
   });
+
+  /// Where the lines wrap, measured the way a painted layer wraps them: the
+  /// width of the glyphs, without the background padding around them.
+  ///
+  /// When set, the field lays its text out at exactly this width and sizes
+  /// itself with the padding added, so editing a layer keeps its line
+  /// breaks. [maxTextWidth] is then not used. Without a [box] only.
+  final double? textWrapWidth;
 
   /// Controls the text being edited in the text editor.
   final TextEditingController controller;
@@ -198,7 +209,7 @@ class _RoundedBackgroundTextFieldState
     final inset = EdgeInsets.fromLTRB(
       lineHeight * 0.3 + effect.dx,
       lineHeight * 0.1 + effect.dy,
-      lineHeight * 0.3 + effect.dx,
+      max(0.0, lineHeight * 0.3 + effect.dx - _caretMargin),
       lineHeight * 0.1 + effect.dy,
     );
     // An outline casts the shadows itself, and gradient glyphs are drawn
@@ -226,13 +237,59 @@ class _RoundedBackgroundTextFieldState
       TextLayerBoxVerticalAlign.center => TextAlignVertical.center,
       TextLayerBoxVerticalAlign.bottom => TextAlignVertical.bottom,
     };
+    // Text taller than the box shows past it, as the painted layer draws
+    // it: the field grows with its lines instead of scrolling inside the box.
+    final visible = box.overflow == TextLayerBoxOverflow.visible;
 
-    final boxed = SizedBox(
-      width: box.size.width,
-      height: box.size.height,
-      child: ClipRect(
-        child: Stack(
-          children: [
+    Widget textField = Material(
+      type: MaterialType.transparency,
+      child: TextField(
+        controller: _textController,
+        focusNode: widget.focusNode,
+        autofocus: widget.autofocus,
+        expands: !visible,
+        maxLines: null,
+        textAlignVertical: visible ? null : vertical,
+        textAlign: widget.textAlign,
+        keyboardType: TextInputType.multiline,
+        textCapitalization: TextCapitalization.sentences,
+        textInputAction: TextInputAction.newline,
+        scrollPhysics: const NeverScrollableScrollPhysics(),
+        scrollPadding: EdgeInsets.zero,
+        style: fieldStyle,
+        cursorColor: widget.configs.style.inputCursorColor,
+        cursorWidth: widget.cursorWidth,
+        cursorHeight: shrunkSize,
+        cursorRadius: widget.cursorRadius,
+        enableInteractiveSelection: true,
+        showCursor: true,
+        autocorrect: widget.configs.enableAutocorrect,
+        enableSuggestions: widget.configs.enableSuggestions,
+        spellCheckConfiguration: widget.configs.spellCheckConfiguration,
+        clipBehavior: visible ? Clip.none : Clip.hardEdge,
+        decoration: InputDecoration.collapsed(
+          hintText: _textController.text.isEmpty ? widget.hint : '',
+          hintStyle:
+              (widget.hintStyle ??
+                      TextStyle(color: Theme.of(context).hintColor))
+                  .copyWith(fontSize: shrunkSize),
+        ),
+        onChanged: widget.onChanged,
+        onEditingComplete: widget.onEditingComplete,
+        onSubmitted: widget.onSubmitted,
+        onTapOutside: widget.onTapOutside,
+      ),
+    );
+    if (visible) {
+      textField = CustomSingleChildLayout(
+        delegate: _OverflowBelowLayout(box.verticalAlign.factor),
+        child: textField,
+      );
+    }
+
+    final stack = Stack(
+      clipBehavior: visible ? Clip.none : Clip.hardEdge,
+      children: [
             Positioned.fill(
               child: IgnorePointer(
                 child: RoundedBackgroundText.rich(
@@ -265,53 +322,14 @@ class _RoundedBackgroundTextFieldState
               ),
             ),
             Positioned.fill(
-              child: Padding(
-                padding: inset,
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: TextField(
-                    controller: _textController,
-                    focusNode: widget.focusNode,
-                    autofocus: widget.autofocus,
-                    expands: true,
-                    maxLines: null,
-                    textAlignVertical: vertical,
-                    textAlign: widget.textAlign,
-                    keyboardType: TextInputType.multiline,
-                    textCapitalization: TextCapitalization.sentences,
-                    textInputAction: TextInputAction.newline,
-                    scrollPhysics: const NeverScrollableScrollPhysics(),
-                    scrollPadding: EdgeInsets.zero,
-                    style: fieldStyle,
-                    cursorColor: widget.configs.style.inputCursorColor,
-                    cursorWidth: widget.cursorWidth,
-                    cursorHeight: shrunkSize,
-                    cursorRadius: widget.cursorRadius,
-                    enableInteractiveSelection: true,
-                    showCursor: true,
-                    autocorrect: widget.configs.enableAutocorrect,
-                    enableSuggestions: widget.configs.enableSuggestions,
-                    spellCheckConfiguration:
-                        widget.configs.spellCheckConfiguration,
-                    clipBehavior: Clip.hardEdge,
-                    decoration: InputDecoration.collapsed(
-                      hintText: _textController.text.isEmpty ? widget.hint : '',
-                      hintStyle:
-                          (widget.hintStyle ??
-                                  TextStyle(color: Theme.of(context).hintColor))
-                              .copyWith(fontSize: shrunkSize),
-                    ),
-                    onChanged: widget.onChanged,
-                    onEditingComplete: widget.onEditingComplete,
-                    onSubmitted: widget.onSubmitted,
-                    onTapOutside: widget.onTapOutside,
-                  ),
-                ),
-              ),
+              child: Padding(padding: inset, child: textField),
             ),
           ],
-        ),
-      ),
+        );
+    final boxed = SizedBox(
+      width: box.size.width,
+      height: box.size.height,
+      child: visible ? stack : ClipRect(child: stack),
     );
     // The painted text ignores the platform text scale, so the field does
     // as well.
@@ -336,30 +354,50 @@ class _RoundedBackgroundTextFieldState
     final lineHeight = _preferredLineHeight(fontSize);
     final hitBoxHorizontal = lineHeight * 0.3;
     final hitBoxVertical = lineHeight * 0.1;
+    final wrapWidth = widget.textWrapWidth;
+
+    Widget field = Stack(
+      clipBehavior: Clip.none,
+      alignment: switch (widget.textAlign) {
+        TextAlign.end => AlignmentDirectional.centerEnd,
+        TextAlign.start => AlignmentDirectional.centerStart,
+        TextAlign.left => Alignment.centerLeft,
+        TextAlign.right => Alignment.centerRight,
+        TextAlign.center || _ => Alignment.topCenter,
+      },
+      children: [
+        if (_textController.text.isNotEmpty)
+          _buildBackgroundText(
+            hitBoxHorizontal: hitBoxHorizontal,
+            wrapWidth: wrapWidth,
+          ),
+        _buildEditableText(
+          fontSize: fontSize,
+          hitBoxHorizontal: hitBoxHorizontal,
+          hitBoxVertical: hitBoxVertical,
+        ),
+      ],
+    );
+    if (wrapWidth != null) {
+      // The editable glyphs get the wrap width: the field adds the padding
+      // on both sides, minus the caret room it gives back on the right,
+      // which the text field keeps inside.
+      field = ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: wrapWidth + hitBoxHorizontal * 2),
+        child: field,
+      );
+    }
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: switch (widget.textAlign) {
-          TextAlign.end => AlignmentDirectional.centerEnd,
-          TextAlign.start => AlignmentDirectional.centerStart,
-          TextAlign.left => Alignment.centerLeft,
-          TextAlign.right => Alignment.centerRight,
-          TextAlign.center || _ => Alignment.topCenter,
-        },
-        children: [
-          if (_textController.text.isNotEmpty)
-            _buildBackgroundText(hitBoxHorizontal: hitBoxHorizontal),
-          _buildEditableText(
-            fontSize: fontSize,
-            hitBoxHorizontal: hitBoxHorizontal,
-            hitBoxVertical: hitBoxVertical,
-          ),
-        ],
-      ),
+      child: field,
     );
   }
+
+  /// The room a text field keeps after each line for its caret, which the
+  /// laid-out layer does not have. Flutter's `RenderEditable` reserves the
+  /// cursor width plus a one pixel gap.
+  double get _caretMargin => widget.cursorWidth + 1;
 
   double? _cachedLineHeight;
   double? _cachedLineHeightFontSize;
@@ -379,7 +417,8 @@ class _RoundedBackgroundTextFieldState
     return style.copyWith(
       inherit: false,
       textBaseline: style.textBaseline ?? TextBaseline.alphabetic,
-      height: widget.configs.style.textHeight,
+      // A layer's own line height, as the painted layer uses it.
+      height: style.height ?? widget.configs.style.textHeight,
       letterSpacing:
           style.letterSpacing ?? widget.configs.style.inputLetterSpacing,
     );
@@ -422,7 +461,10 @@ class _RoundedBackgroundTextFieldState
     return lineHeight;
   }
 
-  Widget _buildBackgroundText({required double hitBoxHorizontal}) {
+  Widget _buildBackgroundText({
+    required double hitBoxHorizontal,
+    double? wrapWidth,
+  }) {
     // The editable text paints the glyphs and, without an outline, their
     // shadows. With an outline, the outline has to sit under the glyphs and
     // cast the shadows, so this background text paints both instead. A
@@ -452,6 +494,7 @@ class _RoundedBackgroundTextFieldState
           // that same reduced width. Otherwise the two disagree on the wrap
           // column and the line count changes when editing completes.
           maxTextWidth:
+              wrapWidth ??
               widget.maxTextWidth - widget.cursorWidth - 2 * hitBoxHorizontal,
           cursorWidth: widget.cursorWidth,
           textAlign: widget.textAlign,
@@ -475,10 +518,13 @@ class _RoundedBackgroundTextFieldState
     return Padding(
       // Inset the editable glyphs by the same hit-box padding the background
       // rectangle reserves, so the visible text stays centered inside the box
-      // and aligns with the finished layer.
-      padding: EdgeInsets.symmetric(
-        horizontal: hitBoxHorizontal,
-        vertical: hitBoxVertical,
+      // and aligns with the finished layer. The field keeps room for the
+      // caret at the end of each line, taken from the padding on that side.
+      padding: EdgeInsets.fromLTRB(
+        hitBoxHorizontal,
+        hitBoxVertical,
+        max(0.0, hitBoxHorizontal - _caretMargin),
+        hitBoxVertical,
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -604,4 +650,27 @@ class _RoundedBackgroundTextFieldState
         ),
       );
   }
+}
+
+/// Lays the field of a box whose text shows past it out at the box width
+/// and as tall as its lines, placed like the painted layer places its text:
+/// shorter text by the box's vertical alignment, taller text from the top.
+class _OverflowBelowLayout extends SingleChildLayoutDelegate {
+  const _OverflowBelowLayout(this.alignFactor);
+
+  final double alignFactor;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return BoxConstraints.tightFor(width: constraints.maxWidth);
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    return Offset(0, max(0.0, size.height - childSize.height) * alignFactor);
+  }
+
+  @override
+  bool shouldRelayout(_OverflowBelowLayout oldDelegate) =>
+      oldDelegate.alignFactor != alignFactor;
 }

@@ -1,9 +1,12 @@
 // Dart imports:
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 // Flutter imports:
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+
+import '/features/text_editor/utils/rounded_background_painter.dart';
 
 /// Renders a layer's untransformed content at [pixelRatio].
 typedef LayerContentRenderer = Future<ui.Image> Function(double pixelRatio);
@@ -77,6 +80,34 @@ class RenderLayerRepaintBoundary extends RenderRepaintBoundary {
   /// skip the assertion, capture exactly that.
   Future<ui.Image>? toImageOfLastPaint({double pixelRatio = 1.0}) {
     final offsetLayer = layer as OffsetLayer?;
-    return offsetLayer?.toImage(Offset.zero & size, pixelRatio: pixelRatio);
+    return offsetLayer?.toImage(captureBounds, pixelRatio: pixelRatio);
+  }
+
+  /// What a capture reads, in this boundary's coordinates: the boundary,
+  /// grown by the text a box shows past itself
+  /// (`TextLayerBoxOverflow.visible`).
+  ///
+  /// It grows by the same amount on both sides of an axis, so the image
+  /// keeps the layer's center, where an export places it.
+  Rect get captureBounds {
+    var drawn = Offset.zero & size;
+    void visit(RenderObject child) {
+      final text = child is RenderCustomPaint ? child.painter : null;
+      if (text is RoundedBackgroundTextPainter &&
+          text.boxSize != null &&
+          !text.clipToBox) {
+        final glyphs = (text.hitBoxCorrectionOffset & text.painter.size)
+            .inflate(text.outlineWidth);
+        drawn = drawn.expandToInclude(
+          MatrixUtils.transformRect(child.getTransformTo(this), glyphs),
+        );
+      }
+      child.visitChildren(visit);
+    }
+
+    visitChildren(visit);
+    final dx = math.max(math.max(-drawn.left, drawn.right - size.width), 0.0);
+    final dy = math.max(math.max(-drawn.top, drawn.bottom - size.height), 0.0);
+    return Rect.fromLTRB(-dx, -dy, size.width + dx, size.height + dy);
   }
 }

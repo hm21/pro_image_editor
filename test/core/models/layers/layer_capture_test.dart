@@ -179,6 +179,49 @@ void main() {
       });
     });
 
+    testWidgets('a box that shows its overflow captures the text past it, '
+        'centered on the layer', (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        TextLayer boxed(TextLayerBoxOverflow overflow) => TextLayer(
+          text: 'one\ntwo\nthree\nfour',
+          background: const Color(0xFF000000),
+          box: TextLayerBox(size: const Size(200, 40), overflow: overflow),
+        );
+        editor
+          ..addLayer(
+            boxed(TextLayerBoxOverflow.visible),
+            autoCorrectZoomScale: false,
+          )
+          ..addLayer(
+            boxed(TextLayerBoxOverflow.clip),
+            autoCorrectZoomScale: false,
+          );
+        await tester.pumpAndSettle();
+        final visible = editor.activeLayers[0] as TextLayer;
+
+        final exported = await Layer.captureAllLayers(
+          layers: editor.activeLayers,
+          pixelRatio: 1,
+          applyTransforms: false,
+        );
+        final box = Size(200 * visible.scale, 40 * visible.scale);
+        Future<ui.Image> decode(Uint8List bytes) async =>
+            (await (await ui.instantiateImageCodec(bytes)).getNextFrame())
+                .image;
+
+        final open = await decode(exported[0].bytes);
+        expect(open.width.toDouble(), closeTo(box.width, 1));
+        expect(open.height.toDouble(), greaterThan(box.height * 2));
+        expect(exported[0].logicalSize.height, closeTo(open.height, 1));
+        expect(exported[0].logicalSize.width, closeTo(open.width, 1));
+
+        final cut = await decode(exported[1].bytes);
+        expect(cut.height.toDouble(), closeTo(box.height, 1));
+        expect(exported[1].logicalSize.height, closeTo(box.height, 0.01));
+      });
+    });
+
     // Note: ProImageEditorState.captureAllLayersWithMeta and
     // captureAllLayers use `await WidgetsBinding.instance.endOfFrame`
     // which hangs in test environments. They are thin wrappers around

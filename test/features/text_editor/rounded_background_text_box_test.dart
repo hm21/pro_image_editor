@@ -184,6 +184,34 @@ void main() {
       );
     });
 
+    testWidgets('draws text taller than the box past it, at its own size, '
+        'when the overflow is visible', (tester) async {
+      await pumpText(
+        tester,
+        boxedText(
+          'one two three four five six seven eight',
+          const TextLayerBox(
+            size: Size(120, 60),
+            overflow: TextLayerBoxOverflow.visible,
+          ),
+        ),
+      );
+
+      final painter = textPainter(tester);
+      expect(painter.painter.textScaler, TextScaler.noScaling);
+      expect(painter.painter.height, greaterThan(60));
+      expect(painter.clipToBox, isFalse);
+      expect(
+        tester.renderObject(find.byType(RoundedBackgroundText)),
+        isNot(paints..clipRect()),
+      );
+      expect(
+        tester.getSize(find.byType(RoundedBackgroundText)),
+        const Size(120, 60),
+      );
+      expect(painter.hitTest(const Offset(60, 70)), isFalse);
+    });
+
     testWidgets('counts a hit anywhere in the box', (tester) async {
       final hits = <bool>[];
       await pumpText(

@@ -376,8 +376,8 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
     );
     final box = session.editingBox(layer);
     final scaledBox = box?.copyWith(size: box.size * layer.scale);
-    final maxTextWidth = layer.maxTextWidth == null
-        ? 1000000.0
+    final wrapWidth = layer.maxTextWidth == null
+        ? null
         : layer.maxTextWidth! * layer.scale;
 
     Widget field = RoundedBackgroundTextField(
@@ -388,7 +388,8 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       style: style,
       backgroundColor: session.backgroundColor,
       textAlign: session.align,
-      maxTextWidth: maxTextWidth,
+      // Wraps where the painted layer wraps, so the lines keep their breaks.
+      textWrapWidth: wrapWidth,
       cursorWidth: 2,
       cursorHeight: fontSize,
       outlineWidth: session.outlineWidth * effectScale,
@@ -399,14 +400,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       // click, on the padding, a handle or a format bar, keeps typing.
       onTapOutside: (_) {},
     );
-    if (scaledBox == null) {
-      field = IntrinsicWidth(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxTextWidth),
-          child: field,
-        ),
-      );
-    }
+    if (scaledBox == null) field = IntrinsicWidth(child: field);
 
     return CallbackShortcuts(
       bindings: {

@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pro_image_editor/features/text_editor/utils/rounded_background_painter.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
 import 'package:pro_image_editor/features/text_editor/widgets/rounded_background_text/rounded_background_text_field.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -225,6 +226,192 @@ void main() {
     await tester.pump();
 
     expect(state.activeLayers.whereType<TextLayer>(), isEmpty);
+  });
+
+  testWidgets('clearing the text of a text box keeps the empty box', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    const box = TextLayerBox(size: Size(200, 60));
+    final layer = TextLayer(text: 'Name', box: box);
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+    final history = state.stateManager.historyPointer;
+    state.beginInlineTextEdit(layer);
+    await tester.pump();
+
+    state.inlineTextEdit!.textCtrl.text = '   ';
+    state.inlineTextEdit!.done();
+    await tester.pump();
+
+    final kept = state.activeLayers.whereType<TextLayer>().single;
+    expect(kept.text, isEmpty);
+    expect(kept.box, box);
+    expect(state.stateManager.historyPointer, history + 1);
+
+    state.undoAction();
+    await tester.pump();
+    expect(state.activeLayers.whereType<TextLayer>().single.text, 'Name');
+  });
+
+  testWidgets('applyTextLayerChanges keeps an emptied text box', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    const box = TextLayerBox(size: Size(200, 60));
+    final layer = TextLayer(text: 'Name', box: box);
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+
+    state.applyTextLayerChanges(layer, TextLayer(text: '', box: box));
+    await tester.pump();
+    expect(state.activeLayers.whereType<TextLayer>().single.text, isEmpty);
+
+    final plain = TextLayer(text: 'Plain');
+    state.addLayer(
+      plain,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+    state.applyTextLayerChanges(plain, TextLayer(text: ''));
+    await tester.pump();
+    expect(state.activeLayers.whereType<TextLayer>().single.box, box);
+  });
+
+  testWidgets('a box that shows its overflow lets the field grow past it', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    final layer = TextLayer(
+      text: 'A longer text that wraps over several lines here',
+      box: const TextLayerBox(
+        size: Size(200, 40),
+        overflow: TextLayerBoxOverflow.visible,
+      ),
+    );
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pumpAndSettle();
+
+    state.beginInlineTextEdit(layer);
+    await tester.pumpAndSettle();
+
+    final field = tester
+        .state<EditableTextState>(find.byType(EditableText))
+        .renderEditable;
+    expect(field.size.height, greaterThan(40));
+    expect(
+      find.ancestor(
+        of: find.byType(EditableText),
+        matching: find.byType(ClipRect),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('setFontScale resizes the text and keeps the box', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    const box = TextLayerBox(size: Size(200, 60));
+    final layer = TextLayer(text: 'Name', fontScale: 1, box: box);
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+    state.beginInlineTextEdit(layer);
+    await tester.pump();
+
+    final session = state.inlineTextEdit!..setFontScale(100);
+    expect(session.fontScale, const TextEditorConfigs().maxFontScale);
+    session
+      ..setFontScale(0.5)
+      ..done();
+    await tester.pump();
+
+    final written = state.activeLayers.whereType<TextLayer>().single;
+    expect(written.fontScale, 0.5);
+    expect(written.box, box);
+  });
+
+  group('turning the box on during an edit', () {
+    Future<(ProImageEditorState, TextLayer)> start(WidgetTester tester) async {
+      final state = await pumpEditor(tester);
+      final layer = TextLayer(text: 'Name');
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+      await tester.pump();
+      state.beginInlineTextEdit(layer);
+      await tester.pump();
+      state.inlineTextEdit!.setBoxEnabled(true);
+      await tester.pump();
+      return (state, layer);
+    }
+
+    TextLayer live(ProImageEditorState state) =>
+        state.activeLayers.whereType<TextLayer>().single;
+
+    testWidgets('shows the box on the layer and follows the typing', (
+      tester,
+    ) async {
+      final (state, _) = await start(tester);
+      final shown = live(state).box;
+      expect(shown, isNotNull);
+
+      state.inlineTextEdit!.textCtrl.text = 'A much longer name';
+      await tester.pump();
+      expect(live(state).box!.size.width, greaterThan(shown!.size.width));
+
+      state.inlineTextEdit!.setBoxEnabled(false);
+      await tester.pump();
+      expect(live(state).box, isNull);
+    });
+
+    testWidgets('a dropped edit leaves the layer without a box', (
+      tester,
+    ) async {
+      final (state, _) = await start(tester);
+      final history = state.stateManager.historyPointer;
+
+      state.endInlineTextEdit(save: false);
+      await tester.pump();
+
+      expect(live(state).box, isNull);
+      expect(state.stateManager.historyPointer, history);
+    });
+
+    testWidgets('a saved edit keeps the box, and one undo takes it away', (
+      tester,
+    ) async {
+      final (state, _) = await start(tester);
+      final shown = live(state).box;
+
+      state.inlineTextEdit!.done();
+      await tester.pump();
+      expect(live(state).box, shown);
+
+      state.undoAction();
+      await tester.pump();
+      expect(live(state).box, isNull);
+      expect(live(state).text, 'Name');
+    });
   });
 
   testWidgets('a text box keeps its size while it is edited', (tester) async {
@@ -737,4 +924,124 @@ void main() {
     expect(written.text, 'Hello');
     expect(written.box!.size.width, closeTo(160, 0.001));
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  group('entering an edit keeps the text where it was', () {
+    /// The screen rect of the glyph [at]: of the field while editing, else
+    /// of the painted layer.
+    Rect firstGlyph(WidgetTester tester, {int at = 0}) {
+      final first = TextSelection(baseOffset: at, extentOffset: at + 1);
+      final editable = find.byType(EditableText);
+      if (editable.evaluate().isNotEmpty) {
+        final render = tester.state<EditableTextState>(editable).renderEditable;
+        final glyph = render.getBoxesForSelection(first).first.toRect();
+        return MatrixUtils.transformRect(render.getTransformTo(null), glyph);
+      }
+      final paint = find.byWidgetPredicate(
+        (widget) =>
+            widget is CustomPaint &&
+            widget.painter is RoundedBackgroundTextPainter,
+      );
+      final painter =
+          tester.widget<CustomPaint>(paint).painter!
+              as RoundedBackgroundTextPainter;
+      final glyph = painter.painter
+          .getBoxesForSelection(first)
+          .first
+          .toRect()
+          .shift(painter.hitBoxCorrectionOffset);
+      final box = tester.renderObject<RenderBox>(paint);
+      return MatrixUtils.transformRect(box.getTransformTo(null), glyph);
+    }
+
+    for (final height in [1.0, 1.5]) {
+      testWidgets('a layer with its own line height $height stays put', (
+        tester,
+      ) async {
+        final state = await pumpEditor(tester);
+        final layer = TextLayer(
+          text: 'Name\nhere',
+          scale: 2,
+          textStyle: TextStyle(height: height),
+        );
+        state.addLayer(
+          layer,
+          autoCorrectZoomOffset: false,
+          autoCorrectZoomScale: false,
+        );
+        await tester.pumpAndSettle();
+        final before = firstGlyph(tester);
+
+        state.beginInlineTextEdit(layer);
+        await tester.pumpAndSettle();
+        expect(
+          (firstGlyph(tester).topLeft - before.topLeft).distance,
+          lessThan(0.01),
+        );
+      });
+    }
+
+    for (final align in [TextAlign.left, TextAlign.center, TextAlign.right]) {
+      testWidgets('wrapped text keeps its line breaks, ${align.name}', (
+        tester,
+      ) async {
+        const text = 'A longer text that wraps over several lines here';
+        final state = await pumpEditor(tester);
+        final layer = TextLayer(text: text, align: align, maxTextWidth: 200);
+        state.addLayer(
+          layer,
+          autoCorrectZoomOffset: false,
+          autoCorrectZoomScale: false,
+        );
+        await tester.pumpAndSettle();
+        final before = firstGlyph(tester, at: text.length - 1);
+
+        state.beginInlineTextEdit(layer);
+        await tester.pumpAndSettle();
+        expect(
+          (firstGlyph(tester, at: text.length - 1).topLeft - before.topLeft)
+              .distance,
+          lessThan(0.01),
+        );
+      });
+    }
+
+    for (final anchor in [Offset.zero, const Offset(-0.5, -0.5)]) {
+      for (final align in [TextAlign.left, TextAlign.center, TextAlign.right]) {
+        for (final boxed in [false, true]) {
+          testWidgets('anchored at $anchor, ${align.name}, '
+              '${boxed ? 'in a box' : 'free'}', (tester) async {
+            final state = await pumpEditor(
+              tester,
+              configs: inlineConfigs.copyWith(
+                textEditor: inlineConfigs.textEditor.copyWith(
+                  layerFractionalOffset: anchor,
+                ),
+              ),
+            );
+            final layer = TextLayer(
+              text: 'Name here',
+              scale: 2,
+              align: align,
+              box: boxed ? const TextLayerBox(size: Size(150, 60)) : null,
+            );
+            state.addLayer(
+              layer,
+              autoCorrectZoomOffset: false,
+              autoCorrectZoomScale: false,
+            );
+            await tester.pumpAndSettle();
+            final before = firstGlyph(tester);
+
+            state.beginInlineTextEdit(layer);
+            await tester.pump();
+            expect((firstGlyph(tester).topLeft - before.topLeft).distance,
+                lessThan(0.01));
+            await tester.pumpAndSettle();
+            expect((firstGlyph(tester).topLeft - before.topLeft).distance,
+                lessThan(0.01));
+          });
+        }
+      }
+    }
+  });
 }

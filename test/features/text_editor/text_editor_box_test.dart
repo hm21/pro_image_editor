@@ -10,8 +10,9 @@ void main() {
   Future<TextLayer?> edit(
     WidgetTester tester,
     TextLayer? layer,
-    void Function(TextEditorState editor) change,
-  ) async {
+    void Function(TextEditorState editor) change, {
+    ProImageEditorConfigs configs = const ProImageEditorConfigs(),
+  }) async {
     TextLayer? result;
     await tester.pumpWidget(
       MaterialApp(
@@ -24,6 +25,7 @@ void main() {
                     key: key,
                     theme: ThemeData.dark(),
                     layer: layer,
+                    configs: configs,
                   ),
                 ),
               );
@@ -66,6 +68,23 @@ void main() {
       expect(box.size.height, greaterThan(0));
       expect(box.overflow, TextLayerBoxOverflow.shrink);
       expect(box.verticalAlign, TextLayerBoxVerticalAlign.top);
+    });
+
+    testWidgets('fits a box with the overflow the configs ask for', (
+      tester,
+    ) async {
+      final result = await edit(
+        tester,
+        TextLayer(text: 'Hello'),
+        (editor) => editor.setBoxEnabled(true),
+        configs: const ProImageEditorConfigs(
+          textEditor: TextEditorConfigs(
+            boxOverflow: TextLayerBoxOverflow.visible,
+          ),
+        ),
+      );
+
+      expect(result!.box!.overflow, TextLayerBoxOverflow.visible);
     });
 
     testWidgets('keeps the size of an existing box', (tester) async {

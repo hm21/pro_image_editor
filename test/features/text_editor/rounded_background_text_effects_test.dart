@@ -444,8 +444,6 @@ void main() {
       addTearDown(controller.dispose);
       addTearDown(focusNode.dispose);
 
-      // The editable text lays its glyphs out with `TextEditorStyle
-      // .textHeight`, which overrides a line height set on the style.
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -455,7 +453,7 @@ void main() {
                   controller: controller,
                   focusNode: focusNode,
                   configs: const TextEditorConfigs(),
-                  style: style.copyWith(height: 1.5),
+                  style: style,
                   maxTextWidth: 400,
                   textAlign: TextAlign.center,
                   backgroundColor: const Color(0xFF000000),

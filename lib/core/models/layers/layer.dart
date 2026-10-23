@@ -1009,7 +1009,11 @@ class Layer {
       final box =
           layer.repaintBoundaryKey.currentContext?.findRenderObject()
               as RenderBox?;
-      var size = box?.size ?? Size.zero;
+      // The size of what the capture reads, which text showing past its box
+      // grows.
+      var size = box is RenderLayerRepaintBoundary
+          ? box.captureBounds.size
+          : box?.size ?? Size.zero;
 
       if (applyTransforms && (layer.rotation != 0)) {
         final double cosR = math.cos(layer.rotation).abs();

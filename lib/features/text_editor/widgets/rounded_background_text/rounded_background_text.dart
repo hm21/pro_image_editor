@@ -397,6 +397,7 @@ class RoundedBackgroundText extends StatelessWidget {
         hitBoxCorrectionOffset: textOffset,
         visibleLength: visibleLength,
         boxSize: boxSize,
+        clipToBox: box?.overflow != TextLayerBoxOverflow.visible,
       );
     }
 

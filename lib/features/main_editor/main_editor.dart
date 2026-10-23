@@ -1877,8 +1877,10 @@ class ProImageEditorState extends State<ProImageEditor>
   /// `scale`, `rotation`, `keyframes`, `opacity`, etc.) from [original] onto
   /// [updatedLayer] so the layer keeps its position in the editor.
   ///
-  /// If [updatedLayer.text] is empty the layer is removed via [removeLayer].
-  /// Otherwise the layer is replaced in place via [replaceLayer].
+  /// If [updatedLayer.text] is empty the layer is removed via [removeLayer],
+  /// unless both layers have a [TextLayer.box]: a box keeps its size and
+  /// stays where it is, like an empty field on a form. Otherwise the layer
+  /// is replaced in place via [replaceLayer].
   ///
   /// This method is called internally by [editTextLayer] but is also exposed
   /// publicly so custom [MainEditorCallbacks.onEditTextLayer] implementations
@@ -1889,7 +1891,7 @@ class ProImageEditorState extends State<ProImageEditor>
   void applyTextLayerChanges(TextLayer original, TextLayer updatedLayer) {
     _keepTextLayerPlacement(original, updatedLayer);
 
-    if (updatedLayer.text.isEmpty) {
+    if (updatedLayer.text.isEmpty && !_keepsEmptyBox(original, updatedLayer)) {
       removeLayer(original);
       return;
     }
@@ -1897,6 +1899,11 @@ class ProImageEditorState extends State<ProImageEditor>
     int i = activeLayers.indexWhere((element) => element.id == original.id);
     replaceLayer(index: i, layer: updatedLayer);
   }
+
+  /// Whether a text layer emptied by an edit stays: it had a box before the
+  /// edit and still has one.
+  bool _keepsEmptyBox(TextLayer original, TextLayer updatedLayer) =>
+      original.box != null && updatedLayer.box != null;
 
   /// Copies the identity and the placement of [original] onto [updatedLayer].
   void _keepTextLayerPlacement(TextLayer original, TextLayer updatedLayer) {
@@ -1952,21 +1959,22 @@ class ProImageEditorState extends State<ProImageEditor>
     if (live == null) return;
 
     late final InlineTextEditSession session;
+    TextLayer? current() => activeLayers
+        .whereType<TextLayer>()
+        .where((item) => item.id == session.layerId)
+        .firstOrNull;
     session = InlineTextEditSession.start(
       layer: live,
       configs: textEditorConfigs,
       onChanged: () {
-        if (mounted && identical(_inlineTextEdit, session)) setState(() {});
+        if (!mounted || !identical(_inlineTextEdit, session)) return;
+        if (current() case final layer?) session.showBoxOn(layer);
+        setState(() {});
       },
       onTextChanged: () {
         if (!mounted || !identical(_inlineTextEdit, session)) return;
-        final current = activeLayers
-            .whereType<TextLayer>()
-            .where((item) => item.id == session.layerId)
-            .firstOrNull;
-        if (current != null && session.boxEnabled && current.box == null) {
-          setState(() {});
-        }
+        final layer = current();
+        if (layer != null && session.showBoxOn(layer)) setState(() {});
       },
       onDone: () => endInlineTextEdit(save: true),
       onCancel: () => endInlineTextEdit(save: false),
@@ -2014,9 +2022,14 @@ class ProImageEditorState extends State<ProImageEditor>
 
     var saved = false;
     if (live is TextLayer) {
+      session.hideShownBox(live);
       final result = save ? session.buildResult(live) : null;
       saved = result != null;
-      if (result == null || result.text.isEmpty) {
+      final emptied =
+          result != null &&
+          result.text.isEmpty &&
+          (isNew || !_keepsEmptyBox(live, result));
+      if (result == null || emptied) {
         if (untouched) {
           _dropAddedTextLayer(live);
         } else if (isNew || result != null) {
