@@ -26,6 +26,14 @@ void main() {
       expect(copy.outlineColor, const Color(0xFFFF0000));
       expect(copy.textStyle?.shadows, layer.textStyle?.shadows);
     });
+
+    test('keeps a text layer that does not wrap at the layer bounds', () {
+      final layer = TextLayer(text: 'Wide', wrapAtLayerBounds: false);
+
+      final copy = LayerCopyManager().copyLayer(layer) as TextLayer;
+
+      expect(copy.wrapAtLayerBounds, isFalse);
+    });
   });
 
   group(LayerInteractionManager, () {

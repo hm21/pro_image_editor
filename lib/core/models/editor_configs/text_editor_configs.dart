@@ -234,8 +234,12 @@ class TextEditorConfigs
   /// bounds set, its lines wrap where they would reach past an edge, measured
   /// from the center of the layer along its text, so its rotation counts too.
   /// Scaling a layer up or moving it towards an edge wraps its lines, and
-  /// scaling it down or moving it back unwraps them. The width covers the
-  /// whole layer, so its background, outline and shadows stay inside as well.
+  /// scaling it down or moving it back unwraps them. What shows stays
+  /// inside: the glyphs with their outline, and the background with its
+  /// padding where one is drawn. The fading edge of a shadow and the
+  /// transparent space a layer reserves around its text may reach past the
+  /// bounds. A layer whose [TextLayer.wrapAtLayerBounds] is `false` ignores
+  /// the bounds.
   ///
   /// Making room at an edge never wraps a layer narrower than its longest
   /// word; only a word wider than the bounds themselves is broken.

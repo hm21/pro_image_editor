@@ -245,9 +245,17 @@ void main() {
         return renderObject.painter! as RoundedBackgroundTextPainter;
       }
 
-      testWidgets('wraps the lines to fit the background and the effects', (
-        tester,
-      ) async {
+      /// The width of [text] in [style] on a single line.
+      double lineWidth(String text, TextStyle style) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        addTearDown(painter.dispose);
+        return painter.width;
+      }
+
+      testWidgets('wraps the lines to fit the background', (tester) async {
         await pumpText(
           tester,
           RoundedBackgroundText(
@@ -262,11 +270,86 @@ void main() {
           ),
         );
 
-        expect(textSize(tester).width, lessThanOrEqualTo(300));
+        final painter = textPainter(tester).painter;
+        // The background reaches 0.3 lines past the glyphs on each side.
+        final backgroundWidth =
+            painter.width + painter.preferredLineHeight * 0.3 * 2;
+        expect(backgroundWidth, lessThanOrEqualTo(300));
+        expect(painter.computeLineMetrics(), hasLength(greaterThan(1)));
+      });
+
+      testWidgets('lets the transparent padding and the shadows of text '
+          'without a background reach past it', (tester) async {
+        const text = 'Hello wide world';
+        final maxWidth = lineWidth(text, style).ceilToDouble() + 1;
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            text,
+            style: style.copyWith(shadows: const [shadow]),
+            enableHitBoxCorrection: true,
+            reserveEffectSpace: true,
+            maxTextWidth: double.infinity,
+            maxWidth: maxWidth,
+          ),
+        );
+
+        expect(textPainter(tester).painter.computeLineMetrics(), hasLength(1));
+        expect(textSize(tester).width, greaterThan(maxWidth));
+      });
+
+      testWidgets('keeps the outline of text without a background within it', (
+        tester,
+      ) async {
+        const text = 'Hello wide world';
+        await pumpText(
+          tester,
+          RoundedBackgroundText(
+            text,
+            style: style,
+            enableHitBoxCorrection: true,
+            outlineWidth: 3,
+            maxTextWidth: double.infinity,
+            maxWidth: lineWidth(text, style).ceilToDouble() + 1,
+          ),
+        );
+
         expect(
           textPainter(tester).painter.computeLineMetrics(),
           hasLength(greaterThan(1)),
         );
+      });
+
+      testWidgets('wrapsAtMaxWidth reports a width that wraps the text', (
+        tester,
+      ) async {
+        const text = 'Hello wide world';
+        final narrow = RoundedBackgroundText(
+          text,
+          style: style,
+          maxTextWidth: double.infinity,
+          maxWidth: lineWidth(text, style) / 2,
+        );
+        await pumpText(tester, narrow);
+
+        final context = tester.element(find.byType(RoundedBackgroundText));
+        expect(narrow.wrapsAtMaxWidth(context), isTrue);
+      });
+
+      testWidgets('wrapsAtMaxWidth ignores a width the text fits in', (
+        tester,
+      ) async {
+        const text = 'Hello wide world';
+        final wide = RoundedBackgroundText(
+          text,
+          style: style,
+          maxTextWidth: double.infinity,
+          maxWidth: lineWidth(text, style).ceilToDouble() + 1,
+        );
+        await pumpText(tester, wide);
+
+        final context = tester.element(find.byType(RoundedBackgroundText));
+        expect(wide.wrapsAtMaxWidth(context), isFalse);
       });
 
       testWidgets('sets no limit by default', (tester) async {
