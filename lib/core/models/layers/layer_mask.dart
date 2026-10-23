@@ -219,28 +219,36 @@ class LayerMask {
   /// four fifths, and below it a tail from the body's bottom edge, near its
   /// left end, down to the bottom of [rect].
   ///
-  /// Built in [rect]'s own coordinates rather than stretched from a unit box,
-  /// so the corners stay round when the box is not square.
+  /// Built at [rect]'s own size rather than stretched from a unit box, so the
+  /// corners stay round when the box is not square. A [rect] with a negative
+  /// width or height mirrors the bubble, as it mirrors the other shapes,
+  /// instead of turning its corners inside out.
   static Path _speechBubble(Rect rect) {
-    final bodyBottom = rect.top + rect.height * 0.8;
+    final width = rect.width.abs();
+    final height = rect.height.abs();
+    final bodyBottom = height * 0.8;
     // At most a fifth of the body's width, so a corner never reaches the
     // tail.
-    final r = math.min(rect.width, bodyBottom - rect.top) * 0.2;
+    final r = math.min(width, bodyBottom) * 0.2;
     final radius = Radius.circular(r);
-    return Path()
-      ..moveTo(rect.left + r, rect.top)
-      ..lineTo(rect.right - r, rect.top)
-      ..arcToPoint(Offset(rect.right, rect.top + r), radius: radius)
-      ..lineTo(rect.right, bodyBottom - r)
-      ..arcToPoint(Offset(rect.right - r, bodyBottom), radius: radius)
-      ..lineTo(rect.left + rect.width * 0.42, bodyBottom)
-      ..lineTo(rect.left + rect.width * 0.12, rect.bottom)
-      ..lineTo(rect.left + rect.width * 0.2, bodyBottom)
-      ..lineTo(rect.left + r, bodyBottom)
-      ..arcToPoint(Offset(rect.left, bodyBottom - r), radius: radius)
-      ..lineTo(rect.left, rect.top + r)
-      ..arcToPoint(Offset(rect.left + r, rect.top), radius: radius)
+    final bubble = Path()
+      ..moveTo(r, 0)
+      ..lineTo(width - r, 0)
+      ..arcToPoint(Offset(width, r), radius: radius)
+      ..lineTo(width, bodyBottom - r)
+      ..arcToPoint(Offset(width - r, bodyBottom), radius: radius)
+      ..lineTo(width * 0.42, bodyBottom)
+      ..lineTo(width * 0.12, height)
+      ..lineTo(width * 0.2, bodyBottom)
+      ..lineTo(r, bodyBottom)
+      ..arcToPoint(Offset(0, bodyBottom - r), radius: radius)
+      ..lineTo(0, r)
+      ..arcToPoint(Offset(r, 0), radius: radius)
       ..close();
+    final place = Matrix4.identity()
+      ..translateByDouble(rect.left, rect.top, 0, 1)
+      ..scaleByDouble(rect.width.sign, rect.height.sign, 1, 1);
+    return bubble.transform(place.storage);
   }
 
   /// The box [size] describes on a layer of [layerSize], centred on [center]

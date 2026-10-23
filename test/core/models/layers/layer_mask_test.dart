@@ -214,6 +214,34 @@ void main() {
         });
       }
 
+      for (final (size, shown, hidden) in [
+        (
+          const Size(-1, 1),
+          const [Offset(0.5, 0.4), Offset(0.97, 0.4), Offset(0.8, 0.9)],
+          const [Offset(0.2, 0.9), corner, Offset(0.98, 0.02)],
+        ),
+        (
+          const Size(1, -1),
+          const [Offset(0.5, 0.6), Offset(0.03, 0.6), Offset(0.2, 0.1)],
+          const [Offset(0.8, 0.1), Offset(0.02, 0.98), Offset(0.98, 0.98)],
+        ),
+      ]) {
+        testWidgets('mirrors a speech bubble in a box of size $size', (
+          tester,
+        ) async {
+          final alphas = await alphasAt(
+            tester,
+            LayerMask(shape: LayerMaskShape.speechBubble, size: size),
+            [...shown, ...hidden],
+          );
+
+          expect(alphas, [
+            for (final _ in shown) 255,
+            for (final _ in hidden) 0,
+          ]);
+        });
+      }
+
       testWidgets('shows the layer above an unturned linear edge', (
         tester,
       ) async {
