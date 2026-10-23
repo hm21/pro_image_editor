@@ -30,6 +30,9 @@ class TextLayer extends Layer {
   /// (default is TextAlign.left).
   /// The [outlineWidth] and [outlineColor] parameters draw an outline around
   /// each glyph (no outline by default).
+  /// The [wrapAtLayerBounds] parameter lets the layer reach past
+  /// `TextEditorConfigs.layerBounds` instead of wrapping its lines there
+  /// (it wraps by default).
   /// The other optional parameters such as [textStyle], [offset], [rotation],
   /// [scale], [id], [flipX], and [flipY]
   /// can be used to customize the position, appearance, and behavior of the
@@ -48,6 +51,7 @@ class TextLayer extends Layer {
     this.box,
     this.outlineWidth = 0,
     this.outlineColor = _defaultOutlineColor,
+    this.wrapAtLayerBounds = true,
     List<TextHighlight>? highlights,
     this.highlightColor = kDefaultTextHighlightColor,
     super.offset,
@@ -182,6 +186,7 @@ class TextLayer extends Layer {
       outlineColor: outlineColor != null
           ? Color(safeParseInt(outlineColor))
           : _defaultOutlineColor,
+      wrapAtLayerBounds: map[keyConverter('wrapAtLayerBounds')] ?? true,
       textStyle:
           fontFamily != null ||
               wordSpacing != null ||
@@ -292,6 +297,14 @@ class TextLayer extends Layer {
 
   /// Whether the layer draws an outline around its glyphs.
   bool get hasOutline => outlineWidth > 0 && outlineColor.a > 0;
+
+  /// Whether the lines wrap where the layer would reach past
+  /// `TextEditorConfigs.layerBounds`.
+  ///
+  /// When `false`, the layer keeps its line breaks however far it is scaled
+  /// or moved, so large text can run past the edges of the bounds, where an
+  /// export cuts it off. Without `layerBounds` it changes nothing.
+  bool wrapAtLayerBounds;
 
   /// Parts of [text] that light up in [highlightColor] while the video plays
   /// through them, such as the words of a caption as they are spoken.
@@ -450,6 +463,7 @@ class TextLayer extends Layer {
       // sets the width is stored as a diff and would import the default.
       if (outlineColor != _defaultOutlineColor)
         'outlineColor': outlineColor.toHex(),
+      if (!wrapAtLayerBounds) 'wrapAtLayerBounds': wrapAtLayerBounds,
     };
     return result;
   }
@@ -512,6 +526,10 @@ class TextLayer extends Layer {
         'outlineWidth': outlineWidth.roundSmart(maxDecimalPlaces),
       if (paintLayer.outlineColor != outlineColor)
         'outlineColor': outlineColor.toHex(),
+      // `true` is written too, so wrapping that is turned back on does not
+      // import the previous step's `false`.
+      if (paintLayer.wrapAtLayerBounds != wrapAtLayerBounds)
+        'wrapAtLayerBounds': wrapAtLayerBounds,
     };
   }
 
@@ -546,6 +564,7 @@ class TextLayer extends Layer {
     TextLayerBox? box,
     double? outlineWidth,
     Color? outlineColor,
+    bool? wrapAtLayerBounds,
     List<TextHighlight>? highlights,
     Color? highlightColor,
     bool? hit,
@@ -584,6 +603,7 @@ class TextLayer extends Layer {
       box: box ?? this.box,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       outlineColor: outlineColor ?? this.outlineColor,
+      wrapAtLayerBounds: wrapAtLayerBounds ?? this.wrapAtLayerBounds,
       highlights: highlights ?? this.highlights,
       highlightColor: highlightColor ?? this.highlightColor,
       offset: offset ?? this.offset,
@@ -628,6 +648,7 @@ class TextLayer extends Layer {
       ..add(DiagnosticsProperty<TextLayerBox>('box', box))
       ..add(DoubleProperty('outlineWidth', outlineWidth))
       ..add(ColorProperty('outlineColor', outlineColor))
+      ..add(DiagnosticsProperty<bool>('wrapAtLayerBounds', wrapAtLayerBounds))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
       ..add(IterableProperty<TextHighlight>('highlights', highlights))
       ..add(ColorProperty('highlightColor', highlightColor))

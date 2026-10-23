@@ -303,6 +303,22 @@ void main() {
         expect(inSubEditor, inMainEditor);
       });
 
+      testWidgets('ignores the bounds for a layer that does not wrap at '
+          'them', (tester) async {
+        final size = await pumpSized(
+          tester,
+          TextLayer(text: text, scale: 3, wrapAtLayerBounds: false),
+          layerBounds: fullBody,
+        );
+        final unbounded = await pumpSized(
+          tester,
+          TextLayer(text: text, scale: 3),
+        );
+
+        expect(size, unbounded);
+        expect(size.width, greaterThan(bodySize.width));
+      });
+
       testWidgets('keeps a narrower maxTextWidth of the layer', (tester) async {
         final size = await pumpSized(
           tester,

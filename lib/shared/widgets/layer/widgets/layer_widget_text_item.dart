@@ -93,7 +93,28 @@ class LayerWidgetTextItem extends StatefulWidget {
     ).toImage(context, size: size, pixelRatio: pixelRatio);
   }
 
-  /// How wide [layer] may be within [TextEditorConfigs.layerBounds].
+  /// Whether [TextEditorConfigs.layerBounds] wrap [layer], placed in
+  /// [mainBodySize], onto more lines than it takes without them.
+  ///
+  /// `false` for a layer that does not [TextLayer.wrapAtLayerBounds], since
+  /// the bounds then do not limit it.
+  static bool wrapsAtLayerBounds(
+    BuildContext context, {
+    required TextLayer layer,
+    required TextEditorConfigs textEditorConfigs,
+    required Size mainBodySize,
+  }) {
+    return _buildText(
+      layer: layer,
+      textEditorConfigs: textEditorConfigs,
+      mainBodySize: mainBodySize,
+      mainEditorLayer: null,
+      highlightIndex: null,
+    ).wrapsAtMaxWidth(context);
+  }
+
+  /// How wide [layer] may be within [TextEditorConfigs.layerBounds], which
+  /// sets no limit for a layer that does not [TextLayer.wrapAtLayerBounds].
   ///
   /// `max` is the longest line the bounds hold along the text, `soft` the
   /// room around the center of the layer before its lines reach an edge.
@@ -107,7 +128,10 @@ class LayerWidgetTextItem extends StatefulWidget {
   ) {
     final layerBounds = textEditorConfigs.layerBounds;
     // The body has no size before its first layout.
-    if (layerBounds == null || mainBodySize.isEmpty || !mainBodySize.isFinite) {
+    if (layerBounds == null ||
+        !layer.wrapAtLayerBounds ||
+        mainBodySize.isEmpty ||
+        !mainBodySize.isFinite) {
       return (max: double.infinity, soft: double.infinity);
     }
     final placed = mainEditorLayer ?? layer;

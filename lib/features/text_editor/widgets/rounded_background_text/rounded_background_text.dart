@@ -83,13 +83,16 @@ class RoundedBackgroundText extends StatelessWidget {
   /// expand freely.
   final double maxTextWidth;
 
-  /// The widest this widget may lay out, including the space it reserves
-  /// around the text for the hit box correction and the effects.
+  /// The widest the drawn text may be: its glyphs with their outline, and
+  /// its background with the padding around the text when [backgroundColor]
+  /// shows.
   ///
-  /// Lines wrap so the widget never grows wider, which keeps the background,
-  /// outline and shadows inside this width too, and a word wider than this
-  /// is broken. [maxTextWidth] still applies when it is narrower. Defaults to
-  /// [double.infinity], which sets no limit.
+  /// Lines wrap to keep that within this width, and a word wider than this
+  /// is broken. The widget itself may be wider by the transparent space it
+  /// reserves for the hit box correction and the effects, and the fading
+  /// edge of a shadow may reach past it, so text without a background can
+  /// reach right up to this width. [maxTextWidth] still applies when it is
+  /// narrower. Defaults to [double.infinity], which sets no limit.
   final double maxWidth;
 
   /// The widest this widget should lay out, measured like [maxWidth], as
@@ -197,20 +200,54 @@ class RoundedBackgroundText extends StatelessWidget {
       );
     } finally {
       picture.dispose();
-      painter.painter.dispose();
-      painter.outlinePainter?.dispose();
-      for (final silhouette in painter.silhouettePainters) {
-        silhouette.dispose();
-      }
+      _disposeTextPainters(painter);
+    }
+  }
+
+  /// Whether [maxWidth] or [softMaxWidth] wrap the text onto more lines than
+  /// it takes without them.
+  ///
+  /// [context] supplies the inherited text style and direction, as it does
+  /// for [toImage]. Text in a [box] wraps at the box, so neither width ever
+  /// wraps it.
+  bool wrapsAtMaxWidth(BuildContext context) {
+    if (box != null) return false;
+    if (maxWidth == double.infinity && softMaxWidth == double.infinity) {
+      return false;
+    }
+    const constraints = BoxConstraints();
+    final limited = _layout(context, constraints).painter;
+    final unlimited = _layout(
+      context,
+      constraints,
+      applyWidthLimits: false,
+    ).painter;
+    try {
+      return limited.painter.computeLineMetrics().length >
+          unlimited.painter.computeLineMetrics().length;
+    } finally {
+      _disposeTextPainters(limited);
+      _disposeTextPainters(unlimited);
+    }
+  }
+
+  static void _disposeTextPainters(RoundedBackgroundTextPainter painter) {
+    painter.painter.dispose();
+    painter.outlinePainter?.dispose();
+    for (final silhouette in painter.silhouettePainters) {
+      silhouette.dispose();
     }
   }
 
   /// Lays the text out within [constraints] and returns the painter that
   /// draws it together with the size it paints at.
+  ///
+  /// Without [applyWidthLimits], [maxWidth] and [softMaxWidth] are ignored.
   ({RoundedBackgroundTextPainter painter, Size size}) _layout(
     BuildContext context,
-    BoxConstraints constraints,
-  ) {
+    BoxConstraints constraints, {
+    bool applyWidthLimits = true,
+  }) {
     final defaultTextStyle = DefaultTextStyle.of(context);
     final style = text.style ?? defaultTextStyle.style;
     final align = textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start;
@@ -346,9 +383,18 @@ class RoundedBackgroundText extends StatelessWidget {
       );
     }
 
-    final reservedWidth = (horizontalSpace + effectSpace.dx) * 2;
-    var textMaxWidth = min(maxTextWidth, max(0.0, maxWidth - reservedWidth));
-    final textSoftMaxWidth = max(0.0, softMaxWidth - reservedWidth);
+    // Only what shows counts against maxWidth: the background's padding,
+    // which RoundedBackgroundTextPainter makes 0.3 lines wide, or else the
+    // outline. The hit box padding and the effect space are transparent.
+    final hasBackground = (backgroundColor?.a ?? 0) > 0;
+    final drawnMargin = max(
+      hasBackground ? height * 0.3 : 0.0,
+      hasOutline ? outlineWidth : 0.0,
+    );
+    final maxWidth = applyWidthLimits ? this.maxWidth : double.infinity;
+    final softMaxWidth = applyWidthLimits ? this.softMaxWidth : double.infinity;
+    var textMaxWidth = min(maxTextWidth, max(0.0, maxWidth - drawnMargin * 2));
+    final textSoftMaxWidth = max(0.0, softMaxWidth - drawnMargin * 2);
     if (textSoftMaxWidth < textMaxWidth) {
       // The longest word only reads after a layout; rounding up keeps it on
       // one line when the text is laid out at exactly that width.

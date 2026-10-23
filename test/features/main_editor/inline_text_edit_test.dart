@@ -105,6 +105,29 @@ void main() {
     expect(written.blendMode, BlendMode.multiply);
   });
 
+  testWidgets('typing on the layer keeps it from wrapping at the bounds', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    final layer = TextLayer(text: 'Name', scale: 1, wrapAtLayerBounds: false);
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+
+    state.beginInlineTextEdit(layer, selectAll: true);
+    await tester.pump();
+    await tester.enterText(find.byType(EditableText), 'Hello');
+    state.inlineTextEdit!.done();
+    await tester.pump();
+
+    final written = state.activeLayers.whereType<TextLayer>().single;
+    expect(written.text, 'Hello');
+    expect(written.wrapAtLayerBounds, isFalse);
+  });
+
   testWidgets('clearing the text removes the layer', (tester) async {
     final state = await pumpEditor(tester);
     final layer = TextLayer(text: 'Name');

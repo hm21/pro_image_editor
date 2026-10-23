@@ -154,6 +154,65 @@ void main() {
     });
   });
 
+  group('TextEditor wrapAtLayerBounds', () {
+    Future<TextLayer?> edit(
+      WidgetTester tester, {
+      TextLayer? layer,
+      void Function(TextEditorState editor)? change,
+    }) async {
+      TextLayer? result;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                result = await Navigator.of(context).push<TextLayer>(
+                  MaterialPageRoute(
+                    builder: (_) => TextEditor(
+                      key: key,
+                      layer: layer,
+                      theme: ThemeData.dark(),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      final editor = key.currentState!;
+      if (layer == null) editor.textCtrl.text = testText;
+      change?.call(editor);
+      editor.done();
+      await tester.pumpAndSettle();
+      return result;
+    }
+
+    testWidgets('writes the wrapping set via setWrapAtLayerBounds', (
+      tester,
+    ) async {
+      final result = await edit(
+        tester,
+        change: (editor) => editor.setWrapAtLayerBounds(false),
+      );
+
+      expect(result?.wrapAtLayerBounds, isFalse);
+    });
+
+    testWidgets('keeps the wrapping of an edited layer', (tester) async {
+      final result = await edit(
+        tester,
+        layer: TextLayer(text: testText, wrapAtLayerBounds: false),
+      );
+
+      expect(result?.wrapAtLayerBounds, isFalse);
+    });
+  });
+
   group('TextEditor timeline', () {
     const highlight = TextHighlight(
       start: 0,

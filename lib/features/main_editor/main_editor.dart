@@ -30,6 +30,7 @@ import '/shared/utils/file_constructor_utils.dart';
 import '/shared/utils/transparent_image_generator_utils.dart';
 import '/shared/widgets/adaptive_dialog.dart';
 import '/shared/widgets/extended/interactive_viewer/extended_interactive_viewer.dart';
+import '/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 import '/shared/widgets/screen_resize_detector.dart';
 import '../audio_editor/audio_editor_page.dart';
 import '../audio_editor/models/audio_editor_response.dart';
@@ -1801,6 +1802,21 @@ class ProImageEditorState extends State<ProImageEditor>
     layerInteractionManager.onScaleEnd();
     _layerDragSelectionService.endDragging();
     setState(() {});
+  }
+
+  /// Whether [TextEditorConfigs.layerBounds] wrap [layer] onto more lines
+  /// than it takes without them, as the canvas lays it out now.
+  ///
+  /// A host can offer to turn [TextLayer.wrapAtLayerBounds] off only while
+  /// that changes anything. Always `false` for a layer that does not wrap at
+  /// the bounds, and before the editor body has a size.
+  bool textLayerWrapsAtBounds(TextLayer layer) {
+    return LayerWidgetTextItem.wrapsAtLayerBounds(
+      context,
+      layer: layer,
+      textEditorConfigs: textEditorConfigs,
+      mainBodySize: sizesManager.bodySize,
+    );
   }
 
   /// Opens the text editor to modify an existing [TextLayer].

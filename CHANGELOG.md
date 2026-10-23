@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.19.0
+- **FEAT**(text-editor): Add `TextLayer.wrapAtLayerBounds` to let a text layer run past `TextEditorConfigs.layerBounds` instead of wrapping there; `TextEditorState.setWrapAtLayerBounds` sets it for the edited text, and `ProImageEditorState.textLayerWrapsAtBounds` tells whether the bounds currently wrap a layer.
+- **FIX**(text-editor): Text layers wrap at `TextEditorConfigs.layerBounds` only when what they draw reaches an edge, the glyphs with their outline or the background, so large text without a background no longer wraps short of the edges.
+
 ## 14.18.0
 - **FEAT**(layers): Add a star, a triangle, a diamond, a hexagon and a speech bubble to `LayerMaskShape`. A `switch` over `LayerMaskShape` has to handle the new values.
 
