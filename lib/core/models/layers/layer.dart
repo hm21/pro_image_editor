@@ -42,6 +42,7 @@ export 'layer_animation.dart';
 export 'layer_keyframe.dart';
 export 'layer_mask.dart';
 export 'paint_layer.dart';
+export 'text_gradient.dart';
 export 'text_highlight.dart';
 export 'text_layer.dart';
 export 'text_layer_box.dart';

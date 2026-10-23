@@ -241,6 +241,92 @@ void main() {
       });
     });
 
+    group('gradient', () {
+      const gradient = TextGradient(
+        colors: [Color(0xFFFF0000), Color(0xFF00FF00), Color(0xFF0000FF)],
+        stops: [0, 0.25, 1],
+        angle: 1.5,
+      );
+
+      test('has none by default', () {
+        final textLayer = TextLayer(text: 'Sample Text');
+
+        expect(textLayer.gradient, isNull);
+        expect(textLayer.hasGradient, isFalse);
+        expect(textLayer.toMap(), isNot(contains('gradient')));
+      });
+
+      test('survives a map round trip', () {
+        final restored =
+            Layer.fromMap(
+                  TextLayer(text: 'Sample Text', gradient: gradient).toMap(),
+                )
+                as TextLayer;
+
+        expect(restored.gradient, gradient);
+        expect(restored.hasGradient, isTrue);
+      });
+
+      test('round-trips through minified keys', () {
+        final minifier = EditorKeyMinifier(enableMinify: true);
+        final layer = TextLayer(text: 'Sample Text', gradient: gradient);
+        final minified = {
+          for (final entry in layer.toMap().entries)
+            minifier.convertLayerKey(entry.key): entry.value,
+        };
+
+        final restored =
+            Layer.fromMap(minified, minifier: minifier) as TextLayer;
+
+        expect(restored.gradient, gradient);
+      });
+
+      test('fromMap drops a gradient that cannot be drawn', () {
+        final map = TextLayer(text: 'Sample Text').toMap()
+          ..['gradient'] = {
+            'colors': [0xFFFF0000],
+            'angle': 0,
+          };
+
+        final restored = Layer.fromMap(map) as TextLayer;
+
+        expect(restored.gradient, isNull);
+      });
+
+      test('is kept by copyWith unless replaced', () {
+        final textLayer = TextLayer(text: 'Sample Text', gradient: gradient);
+        const other = TextGradient(
+          colors: [Color(0xFFFFFFFF), Color(0xFF000000)],
+        );
+
+        expect(textLayer.copyWith(text: 'Other').gradient, gradient);
+        expect(textLayer.copyWith(gradient: other).gradient, other);
+      });
+
+      test('a later step that removes it does not import it again', () {
+        final reference = TextLayer(text: 'Sample Text', gradient: gradient);
+        final updated = reference.copyWith()..gradient = null;
+
+        // The import merges each history entry over the previous state.
+        final restored = TextLayer.fromMap(reference, {
+          ...reference.toMap(),
+          ...updated.toMapFromReference(reference),
+        });
+
+        expect(restored.gradient, isNull);
+      });
+
+      test('toMapFromReference omits a gradient that did not change', () {
+        final reference = TextLayer(text: 'Sample Text', gradient: gradient);
+
+        final map = reference
+            .copyWith(text: 'Other')
+            .toMapFromReference(reference);
+
+        expect(map, isNot(contains('gradient')));
+      });
+    });
+
     group('highlights', () {
       const hello = TextHighlight(
         start: 0,

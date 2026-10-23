@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
+import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer_box.dart';
 import 'rounded_background_text.dart';
 
@@ -35,6 +36,7 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.box,
+    this.gradient,
   });
 
   /// Controls the text being edited in the text editor.
@@ -105,7 +107,18 @@ class RoundedBackgroundTextField extends StatefulWidget {
   /// shrinks what does not fit, matching [RoundedBackgroundText].
   final TextLayerBox? box;
 
+  /// A color gradient that fills the glyphs in place of the color of
+  /// [style], or `null` to fill them with that color.
+  final TextGradient? gradient;
+
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
+
+  bool get _hasGradient => gradient?.isValid ?? false;
+
+  /// Whether the background text paints the shadows, which it does whenever
+  /// it paints something the shadows must fall under: an outline or the
+  /// gradient glyphs.
+  bool get _backgroundPaintsShadows => _hasOutline || _hasGradient;
 
   @override
   State<RoundedBackgroundTextField> createState() =>
@@ -188,10 +201,12 @@ class _RoundedBackgroundTextFieldState
       lineHeight * 0.3 + effect.dx,
       lineHeight * 0.1 + effect.dy,
     );
-    // An outline casts the shadows itself. Otherwise the field paints them,
-    // scaled with the font the way RoundedBackgroundText does.
+    // An outline casts the shadows itself, and gradient glyphs are drawn
+    // beneath the field, which would otherwise cast its shadows over them.
+    // Otherwise the field paints them, scaled with the font the way
+    // RoundedBackgroundText does.
     List<Shadow>? fieldShadows;
-    if (outlined) {
+    if (widget._backgroundPaintsShadows) {
       fieldShadows = const <Shadow>[];
     } else if (scale != 1) {
       final shadows = glyph.shadows;
@@ -203,6 +218,8 @@ class _RoundedBackgroundTextFieldState
       fontSize: shrunkSize,
       leadingDistribution: leading,
       shadows: fieldShadows,
+      // The gradient glyphs beneath show through.
+      color: widget._hasGradient ? const Color(0x00000000) : null,
     );
     final vertical = switch (box.verticalAlign) {
       TextLayerBoxVerticalAlign.top => TextAlignVertical.top,
@@ -239,9 +256,11 @@ class _RoundedBackgroundTextFieldState
                   enableHitBoxCorrection: true,
                   leadingDistribution: leading,
                   reserveEffectSpace: true,
-                  paintShadows: false,
+                  // Under gradient glyphs, which the field cannot draw.
+                  paintShadows: widget._hasGradient,
                   outlineWidth: widget.outlineWidth,
                   outlineColor: widget.outlineColor,
+                  gradient: widget.gradient,
                 ),
               ),
             ),
@@ -406,11 +425,14 @@ class _RoundedBackgroundTextFieldState
   Widget _buildBackgroundText({required double hitBoxHorizontal}) {
     // The editable text paints the glyphs and, without an outline, their
     // shadows. With an outline, the outline has to sit under the glyphs and
-    // cast the shadows, so this background text paints both instead.
+    // cast the shadows, so this background text paints both instead. A
+    // gradient is laid across the lines this text knows, so it fills the
+    // glyphs here as well; the editable glyphs stay clear, and the shadows
+    // move here so they fall under the gradient glyphs rather than over them.
     final style = _glyphStyle.copyWith(
       color: Colors.transparent,
       leadingDistribution: widget.configs.style.leadingDistribution,
-      shadows: widget._hasOutline ? null : const [],
+      shadows: widget._backgroundPaintsShadows ? null : const [],
     );
 
     return Positioned(
@@ -439,6 +461,7 @@ class _RoundedBackgroundTextFieldState
           enableHitBoxCorrection: true,
           outlineWidth: widget.outlineWidth,
           outlineColor: widget.outlineColor,
+          gradient: widget.gradient,
         ),
       ),
     );
@@ -477,7 +500,8 @@ class _RoundedBackgroundTextFieldState
           style: _glyphStyle.copyWith(
             fontSize: fontSize,
             leadingDistribution: widget.configs.style.leadingDistribution,
-            shadows: widget._hasOutline ? const [] : null,
+            shadows: widget._backgroundPaintsShadows ? const [] : null,
+            color: widget._hasGradient ? Colors.transparent : null,
           ),
           spellCheckConfiguration: widget.configs.spellCheckConfiguration,
           decoration: InputDecoration.collapsed(
@@ -524,6 +548,13 @@ class _RoundedBackgroundTextFieldState
       ..add(ColorProperty('backgroundColor', widget.backgroundColor))
       ..add(DoubleProperty('outlineWidth', widget.outlineWidth))
       ..add(ColorProperty('outlineColor', widget.outlineColor))
+      ..add(
+        DiagnosticsProperty<TextGradient>(
+          'gradient',
+          widget.gradient,
+          defaultValue: null,
+        ),
+      )
       ..add(DoubleProperty('maxTextWidth', widget.maxTextWidth))
       ..add(DoubleProperty('cursorWidth', widget.cursorWidth))
       ..add(

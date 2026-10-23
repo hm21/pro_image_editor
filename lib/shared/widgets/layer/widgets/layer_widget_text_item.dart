@@ -230,6 +230,7 @@ class LayerWidgetTextItem extends StatefulWidget {
       leadingDistribution: textEditorConfigs.style.leadingDistribution,
       outlineWidth: layer.outlineWidth * effectScale,
       outlineColor: layer.outlineColor,
+      gradient: layer.gradient,
       reserveEffectSpace: true,
       visibleLength: revealedLength,
     );
@@ -392,6 +393,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       cursorHeight: fontSize,
       outlineWidth: session.outlineWidth * effectScale,
       outlineColor: session.outlineColor,
+      gradient: session.gradient,
       box: scaledBox,
       // The editor ends the edit on a click outside the layer. Any other
       // click, on the padding, a handle or a format bar, keeps typing.

@@ -102,6 +102,18 @@ class TextEditorState extends State<TextEditor>
   Color get outlineColor => _outlineColor;
   Color _outlineColor = const Color(0xFF000000);
 
+  /// The color gradient that fills the glyphs in place of the text color, or
+  /// `null` when they are filled with the text color. See
+  /// [TextLayer.gradient].
+  TextGradient? get gradient => _gradient;
+  TextGradient? _gradient;
+
+  /// Fills the glyphs with [gradient] in place of the text color, or with the
+  /// text color again when it is `null`.
+  void setGradient(TextGradient? gradient) {
+    setState(() => _gradient = gradient);
+  }
+
   /// Whether the text goes into a fixed box (see [TextLayer.box]) when
   /// editing is done.
   bool get boxEnabled => _boxEnabled;
@@ -235,6 +247,7 @@ class TextEditorState extends State<TextEditor>
       _fontScale = widget.layer!.fontScale;
       _outlineWidth = widget.layer!.outlineWidth;
       _outlineColor = widget.layer!.outlineColor;
+      _gradient = widget.layer!.gradient;
       backgroundColorMode = widget.layer!.colorMode;
       if (widget.layer!.customSecondaryColor) {
         _primaryColor = widget.layer!.color;
@@ -407,6 +420,7 @@ class TextEditorState extends State<TextEditor>
         textStyle: selectedTextStyle,
         outlineWidth: _outlineWidth,
         outlineColor: _outlineColor,
+        gradient: _gradient,
         wrapAtLayerBounds: _wrapAtLayerBounds,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth: maxTextWidth,
@@ -614,6 +628,7 @@ class TextEditorState extends State<TextEditor>
       cursorWidth: _cursorWidth,
       outlineWidth: _outlineWidth * _fontScale,
       outlineColor: _outlineColor,
+      gradient: _gradient,
     );
   }
 
@@ -640,6 +655,7 @@ class TextEditorState extends State<TextEditor>
       ..add(DoubleProperty('fontScale', _fontScale))
       ..add(DoubleProperty('outlineWidth', _outlineWidth))
       ..add(ColorProperty('outlineColor', _outlineColor))
+      ..add(DiagnosticsProperty<TextGradient>('gradient', _gradient))
       ..add(ColorProperty('primaryColor', primaryColor))
       ..add(ColorProperty('secondaryColor', secondaryColor))
       ..add(DiagnosticsProperty<Size>('editorBodySize', editorBodySize));

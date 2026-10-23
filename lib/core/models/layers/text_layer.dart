@@ -30,6 +30,8 @@ class TextLayer extends Layer {
   /// (default is TextAlign.left).
   /// The [outlineWidth] and [outlineColor] parameters draw an outline around
   /// each glyph (no outline by default).
+  /// The [gradient] parameter fills the glyphs with a color gradient in place
+  /// of [color] (none by default).
   /// The [wrapAtLayerBounds] parameter lets the layer reach past
   /// `TextEditorConfigs.layerBounds` instead of wrapping its lines there
   /// (it wraps by default).
@@ -51,6 +53,7 @@ class TextLayer extends Layer {
     this.box,
     this.outlineWidth = 0,
     this.outlineColor = _defaultOutlineColor,
+    this.gradient,
     this.wrapAtLayerBounds = true,
     List<TextHighlight>? highlights,
     this.highlightColor = kDefaultTextHighlightColor,
@@ -151,6 +154,11 @@ class TextLayer extends Layer {
     }).toList();
 
     final outlineColor = map[keyConverter('outlineColor')];
+    final gradient = map[keyConverter('gradient')] is Map
+        ? TextGradient.fromMap(
+            Map<String, dynamic>.from(map[keyConverter('gradient')] as Map),
+          )
+        : null;
 
     /// Constructs and returns a TextLayer instance with properties derived
     /// from the map.
@@ -186,6 +194,7 @@ class TextLayer extends Layer {
       outlineColor: outlineColor != null
           ? Color(safeParseInt(outlineColor))
           : _defaultOutlineColor,
+      gradient: gradient != null && gradient.isValid ? gradient : null,
       wrapAtLayerBounds: map[keyConverter('wrapAtLayerBounds')] ?? true,
       textStyle:
           fontFamily != null ||
@@ -297,6 +306,18 @@ class TextLayer extends Layer {
 
   /// Whether the layer draws an outline around its glyphs.
   bool get hasOutline => outlineWidth > 0 && outlineColor.a > 0;
+
+  /// A color gradient that fills the glyphs in place of [color], or `null`
+  /// to fill them with [color].
+  ///
+  /// It spans the whole text, so a text that types itself out keeps each
+  /// letter in its final color. An outline, the shadows and the active entry
+  /// of [highlights] keep their own colors. Set it to `null` to remove the
+  /// gradient; [copyWith] cannot clear it.
+  TextGradient? gradient;
+
+  /// Whether the glyphs are filled with [gradient] rather than [color].
+  bool get hasGradient => gradient?.isValid ?? false;
 
   /// Whether the lines wrap where the layer would reach past
   /// `TextEditorConfigs.layerBounds`.
@@ -463,6 +484,8 @@ class TextLayer extends Layer {
       // sets the width is stored as a diff and would import the default.
       if (outlineColor != _defaultOutlineColor)
         'outlineColor': outlineColor.toHex(),
+      if (gradient != null)
+        'gradient': gradient!.toMap(maxDecimalPlaces: maxDecimalPlaces),
       if (!wrapAtLayerBounds) 'wrapAtLayerBounds': wrapAtLayerBounds,
     };
     return result;
@@ -526,6 +549,10 @@ class TextLayer extends Layer {
         'outlineWidth': outlineWidth.roundSmart(maxDecimalPlaces),
       if (paintLayer.outlineColor != outlineColor)
         'outlineColor': outlineColor.toHex(),
+      // `null` is written too, so a removed gradient does not come back from
+      // the previous step.
+      if (paintLayer.gradient != gradient)
+        'gradient': gradient?.toMap(maxDecimalPlaces: maxDecimalPlaces),
       // `true` is written too, so wrapping that is turned back on does not
       // import the previous step's `false`.
       if (paintLayer.wrapAtLayerBounds != wrapAtLayerBounds)
@@ -564,6 +591,7 @@ class TextLayer extends Layer {
     TextLayerBox? box,
     double? outlineWidth,
     Color? outlineColor,
+    TextGradient? gradient,
     bool? wrapAtLayerBounds,
     List<TextHighlight>? highlights,
     Color? highlightColor,
@@ -603,6 +631,7 @@ class TextLayer extends Layer {
       box: box ?? this.box,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       outlineColor: outlineColor ?? this.outlineColor,
+      gradient: gradient ?? this.gradient,
       wrapAtLayerBounds: wrapAtLayerBounds ?? this.wrapAtLayerBounds,
       highlights: highlights ?? this.highlights,
       highlightColor: highlightColor ?? this.highlightColor,
@@ -648,6 +677,7 @@ class TextLayer extends Layer {
       ..add(DiagnosticsProperty<TextLayerBox>('box', box))
       ..add(DoubleProperty('outlineWidth', outlineWidth))
       ..add(ColorProperty('outlineColor', outlineColor))
+      ..add(DiagnosticsProperty<TextGradient>('gradient', gradient))
       ..add(DiagnosticsProperty<bool>('wrapAtLayerBounds', wrapAtLayerBounds))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
       ..add(IterableProperty<TextHighlight>('highlights', highlights))
