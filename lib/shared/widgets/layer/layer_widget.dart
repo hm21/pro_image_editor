@@ -439,6 +439,10 @@ class _LayerWidgetState extends State<LayerWidget>
 
   Widget _buildInteractionHandlers() {
     var interaction = _layer.interaction;
+    // Hit detection can rebuild the inner listener without rebuilding the
+    // layer's position. Keep its selection padding in sync with the outer
+    // positioning from this build until the whole layer rebuilds.
+    final isSelected = _isSelected;
     final inline = _layersService?.state.inlineTextEdit;
     final editingThis = inline != null && inline.layerId == _layer.id
         ? inline
@@ -447,7 +451,7 @@ class _LayerWidgetState extends State<LayerWidget>
       layer: _layer,
       configs: configs,
       callbacks: callbacks,
-      selected: _isSelected,
+      selected: isSelected,
       suppressTextBoxResize: editingThis != null && !editingThis.boxEnabled,
       onEditLayer: () => _layersService?.handleEditTap(_layer),
       forceIgnoreGestures:
@@ -492,7 +496,7 @@ class _LayerWidgetState extends State<LayerWidget>
                 onPointerDown: _onPointerDown,
                 onPointerUp: _onPointerUp,
                 child: Padding(
-                  padding: !_isSelected
+                  padding: !isSelected
                       ? EdgeInsets.zero
                       : layerInteraction.style.overlayPadding,
                   child: FittedBox(
@@ -501,7 +505,7 @@ class _LayerWidgetState extends State<LayerWidget>
                       layerType: _layerType,
                       layer: _layer,
                       inlineEdit: editingThis,
-                      isSelected: _isSelected,
+                      isSelected: isSelected,
                       skipPaint: widget.isRasterCached,
                       playTimeNotifier: widget.playTimeNotifier,
                       mainBodySize:
