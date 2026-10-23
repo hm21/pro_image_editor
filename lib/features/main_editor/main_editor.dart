@@ -1899,7 +1899,8 @@ class ProImageEditorState extends State<ProImageEditor>
       ..meta = original.meta
       ..keyframes = original.keyframes
       ..opacity = original.opacity
-      ..mask = original.mask;
+      ..mask = original.mask
+      ..blendMode = original.blendMode;
   }
 
   /// Types into [layer] where it sits, instead of opening the text editor.

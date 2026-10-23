@@ -494,6 +494,43 @@ void main() {
       });
     }
 
+    for (final minify in [false, true]) {
+      testWidgets('keeps a blend mode, and its removal, across history steps '
+          '(${minify ? 'minified' : 'not minified'})', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+          editor
+            ..addLayer(
+              TextLayer(text: 'blended', blendMode: BlendMode.difference),
+            )
+            ..replaceLayer(
+              index: 0,
+              layer: editor.activeLayers.single.copyWith()
+                ..blendMode = BlendMode.srcOver,
+            );
+
+          final history = await editor.exportStateHistory(
+            configs: ExportEditorConfigs(
+              enableMinify: minify,
+              historySpan: ExportHistorySpan.all,
+            ),
+          );
+          final map = await history.toMap();
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          expect(editor.activeLayers.single.blendMode, BlendMode.srcOver);
+          editor.undoAction();
+          expect(editor.activeLayers.single.blendMode, BlendMode.difference);
+        });
+      });
+    }
+
     testWidgets(
       'rasterizes a widget layer without export configs when background '
       'generation is off',

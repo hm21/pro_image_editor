@@ -80,6 +80,31 @@ void main() {
     expect(find.byType(EditableText), findsNothing);
   });
 
+  testWidgets('typing on the layer keeps its blend mode', (tester) async {
+    final state = await pumpEditor(tester);
+    final layer = TextLayer(
+      text: 'Name',
+      scale: 1,
+      blendMode: BlendMode.multiply,
+    );
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+
+    state.beginInlineTextEdit(layer, selectAll: true);
+    await tester.pump();
+    await tester.enterText(find.byType(EditableText), 'Hello');
+    state.inlineTextEdit!.done();
+    await tester.pump();
+
+    final written = state.activeLayers.whereType<TextLayer>().single;
+    expect(written.text, 'Hello');
+    expect(written.blendMode, BlendMode.multiply);
+  });
+
   testWidgets('clearing the text removes the layer', (tester) async {
     final state = await pumpEditor(tester);
     final layer = TextLayer(text: 'Name');

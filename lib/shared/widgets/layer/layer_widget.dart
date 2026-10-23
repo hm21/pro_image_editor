@@ -29,6 +29,7 @@ import '/shared/widgets/layer/widgets/layer_widget_text_item.dart';
 import 'interaction_helper/layer_interaction_helper_widget.dart';
 import 'layer_timeline_visibility.dart';
 import 'widgets/invisible_but_painted.dart';
+import 'widgets/layer_blend_mode_box.dart';
 import 'widgets/layer_mask_box.dart';
 import 'widgets/layer_repaint_boundary.dart';
 import 'widgets/layer_widget_custom_item.dart';
@@ -415,6 +416,19 @@ class _LayerWidgetState extends State<LayerWidget>
         child: content,
       );
     }
+
+    // Around everything that fades the layer, its opacity and its timeline
+    // transitions, so it blends with the canvas beneath it rather than
+    // inside their layers. The selection overlay is drawn in an overlay of
+    // its own and stays unblended. A censor area is never blended: it blurs
+    // or pixelates its backdrop, which inside the box is cleared, so it would
+    // hide nothing.
+    content = LayerBlendModeBox(
+      blendMode: _layerType == LayerWidgetType.censor
+          ? BlendMode.srcOver
+          : _layer.blendMode,
+      child: content,
+    );
 
     return Positioned(
       left: adjustedLeft,

@@ -47,6 +47,7 @@ class EmojiLayer extends Layer {
     super.animations,
     super.keyframes,
     super.mask,
+    super.blendMode,
     super.opacity,
   });
 
@@ -80,6 +81,7 @@ class EmojiLayer extends Layer {
       animations: layer.animations,
       keyframes: layer.keyframes,
       mask: layer.mask,
+      blendMode: layer.blendMode,
       opacity: layer.opacity,
       emoji: map[keyConverter('emoji')],
       boxConstraints: layer.boxConstraints,
@@ -148,6 +150,7 @@ class EmojiLayer extends Layer {
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
     LayerMask? mask,
+    BlendMode? blendMode,
     double? opacity,
   }) {
     return EmojiLayer(
@@ -172,6 +175,7 @@ class EmojiLayer extends Layer {
       animations: animations ?? this.animations,
       keyframes: keyframes ?? this.keyframes,
       mask: mask ?? this.mask,
+      blendMode: blendMode ?? this.blendMode,
       opacity: opacity ?? this.opacity,
     );
   }

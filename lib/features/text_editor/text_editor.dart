@@ -414,6 +414,7 @@ class TextEditorState extends State<TextEditor>
         // A mask is measured in the layer's own box, so it fits the edited
         // text as well.
         mask: original?.mask,
+        blendMode: original?.blendMode ?? BlendMode.srcOver,
         box: _resultBox(text, maxTextWidth ?? original?.maxTextWidth),
         // Highlights point into the text, so they only fit the text they
         // were made for.

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_repaint_boundary.dart';
+import 'package:pro_image_editor/shared/widgets/layer/widgets/layer_widget_censor_item.dart';
 
 import '../../../mock/mock_image.dart';
 
@@ -622,5 +623,194 @@ void main() {
         });
       });
     }
+  });
+  group('Layer blend mode', () {
+    Future<ProImageEditorState> pumpEditor(
+      WidgetTester tester, {
+      Uint8List? image,
+    }) async {
+      final key = GlobalKey<ProImageEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProImageEditor.memory(
+            image ?? mockMemoryImage,
+            key: key,
+            callbacks: const ProImageEditorCallbacks(),
+            configs: const ProImageEditorConfigs(
+              progressIndicatorConfigs: ProgressIndicatorConfigs(
+                widgets: ProgressIndicatorWidgets(
+                  circularProgressIndicator: SizedBox.shrink(),
+                ),
+              ),
+              imageGeneration: ImageGenerationConfigs(
+                enableBackgroundGeneration: false,
+                enableIsolateGeneration: false,
+              ),
+            ),
+          ),
+        ),
+      );
+      return key.currentState!;
+    }
+
+    const contentKey = ValueKey('blended-content');
+
+    WidgetLayer blendedLayer({double opacity = 1}) => WidgetLayer(
+      widget: const ColoredBox(
+        key: contentKey,
+        color: Color(0xFFFF0000),
+        child: SizedBox(width: 20, height: 20),
+      ),
+      opacity: opacity,
+      blendMode: BlendMode.multiply,
+    );
+
+    testWidgets('blends a layer on the canvas, outside its opacity', (
+      tester,
+    ) async {
+      final editor = await pumpEditor(tester);
+      editor.addLayer(blendedLayer(opacity: 0.5));
+      await tester.pumpAndSettle();
+
+      final box = find.ancestor(
+        of: find.byKey(contentKey),
+        matching: find.byType(LayerBlendModeBox),
+      );
+      expect(
+        tester.widget<LayerBlendModeBox>(box).blendMode,
+        BlendMode.multiply,
+      );
+      // A fade outside the box would end the backdrop at its own layer, so
+      // the layer would blend with nothing.
+      expect(
+        find.descendant(of: box, matching: find.byType(Opacity)),
+        findsWidgets,
+      );
+    });
+
+    testWidgets('leaves a censor area unblended', (tester) async {
+      final editor = await pumpEditor(tester);
+      editor.addLayer(
+        PaintLayer(
+          item: PaintedModel(
+            mode: PaintMode.blur,
+            offsets: const [Offset.zero, Offset(20, 20)],
+            erasedOffsets: const [],
+            color: Colors.black,
+            strokeWidth: 4,
+            opacity: 1,
+          ),
+          rawSize: const Size(20, 20),
+          opacity: 1,
+          blendMode: BlendMode.multiply,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Blended, it would blur the box's cleared backdrop and hide nothing.
+      final box = find.ancestor(
+        of: find.byType(LayerWidgetCensorItem),
+        matching: find.byType(LayerBlendModeBox),
+      );
+      expect(
+        tester.widget<LayerBlendModeBox>(box).blendMode,
+        BlendMode.srcOver,
+      );
+    });
+
+    testWidgets('keeps the blend mode of a text layer whose text is edited', (
+      tester,
+    ) async {
+      final editor = await pumpEditor(tester);
+      final original = TextLayer(text: 'before', blendMode: BlendMode.screen);
+      editor.addLayer(original);
+      await tester.pumpAndSettle();
+
+      editor.applyTextLayerChanges(original, TextLayer(text: 'after'));
+      await tester.pumpAndSettle();
+
+      final edited = editor.activeLayers.single as TextLayer;
+      expect(edited.text, 'after');
+      expect(edited.blendMode, BlendMode.screen);
+    });
+
+    testWidgets('blends a layer into the generated image', (tester) async {
+      await tester.runAsync(() async {
+        // A 64 x 64 image of 0x8040C0.
+        final recorder = ui.PictureRecorder();
+        ui.Canvas(recorder).drawRect(
+          const Rect.fromLTWH(0, 0, 64, 64),
+          Paint()..color = const Color(0xFF8040C0),
+        );
+        final picture = recorder.endRecording();
+        final image = await picture.toImage(64, 64);
+        final png = (await image.toByteData(
+          format: ui.ImageByteFormat.png,
+        ))!.buffer.asUint8List();
+
+        /// The RGB in the middle of the image the editor generates.
+        Future<List<int>> middleOfGeneratedImage(
+          ProImageEditorState editor,
+        ) async {
+          final codec = await ui.instantiateImageCodec(
+            await editor.captureEditorImage(),
+          );
+          final result = (await codec.getNextFrame()).image;
+          final data = (await result.toByteData())!;
+          final i = (result.height ~/ 2 * result.width + result.width ~/ 2) * 4;
+          return [data.getUint8(i), data.getUint8(i + 1), data.getUint8(i + 2)];
+        }
+
+        void expectNear(List<int> actual, List<int> expected) {
+          for (var c = 0; c < 3; c++) {
+            expect(
+              (actual[c] - expected[c]).abs(),
+              lessThanOrEqualTo(3),
+              reason: 'got $actual, expected $expected',
+            );
+          }
+        }
+
+        final editor = await pumpEditor(tester, image: png);
+        // Decoded, so the image is there to blend with.
+        await tester.pumpAndSettle();
+        expectNear(await middleOfGeneratedImage(editor), [0x80, 0x40, 0xC0]);
+
+        editor.addLayer(
+          WidgetLayer(
+            // Larger than the image shows, so it covers all of it.
+            widget: const ColoredBox(
+              color: Color(0xFF60A020),
+              child: SizedBox(width: 2000, height: 2000),
+            ),
+            blendMode: BlendMode.multiply,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 0x80 * 0x60, 0x40 * 0xA0, 0xC0 * 0x20, each over 255.
+        expectNear(await middleOfGeneratedImage(editor), [48, 40, 24]);
+      });
+    });
+
+    testWidgets('leaves the blend mode out of the captured image', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        final layer = blendedLayer();
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+
+        final bytes = (await layer.captureAsPng(
+          format: ui.ImageByteFormat.rawRgba,
+          pixelRatio: 1,
+        ))!;
+
+        // The layer's own red, not red multiplied with the image beneath.
+        final middle = bytes.length ~/ 8 * 4;
+        expect(bytes.sublist(middle, middle + 4), [255, 0, 0, 255]);
+      });
+    });
   });
 }

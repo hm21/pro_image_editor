@@ -299,6 +299,7 @@ class InlineTextEditSession {
       keyframes: live.keyframes,
       opacity: live.opacity,
       mask: live.mask,
+      blendMode: live.blendMode,
       box: editingBox(live),
       highlights: originalText == text ? live.highlights : null,
       highlightColor: live.highlightColor,
