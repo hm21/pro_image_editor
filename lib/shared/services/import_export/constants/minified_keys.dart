@@ -65,6 +65,7 @@ const Map<String, String> kMinifiedLayerKeys = {
   'outlineWidth': 'ow',
   'outlineColor': 'oc',
   'gradient': 'gr',
+  'wrapAtLayerBounds': 'wb',
   'startTime': 'st',
   'endTime': 'et',
   'enterDuration': 'ed',

@@ -135,6 +135,46 @@ void main() {
       });
     });
 
+    group('wrapAtLayerBounds', () {
+      test('wraps by default without writing it', () {
+        final textLayer = TextLayer(text: 'Sample Text');
+
+        expect(textLayer.wrapAtLayerBounds, isTrue);
+        expect(textLayer.toMap(), isNot(contains('wrapAtLayerBounds')));
+      });
+
+      test('survives a map round trip', () {
+        final textLayer = TextLayer(
+          text: 'Sample Text',
+          wrapAtLayerBounds: false,
+        );
+
+        final restored = TextLayer.fromMap(
+          TextLayer(text: 'Base Layer'),
+          textLayer.toMap(),
+        );
+
+        expect(restored.wrapAtLayerBounds, isFalse);
+        expect(textLayer.copyWith(text: 'Other').wrapAtLayerBounds, isFalse);
+      });
+
+      test('turns back on in a later history step', () {
+        final reference = TextLayer(
+          text: 'Sample Text',
+          wrapAtLayerBounds: false,
+        );
+        final updated = reference.copyWith(wrapAtLayerBounds: true);
+
+        // The import merges each history entry over the previous state.
+        final restored = TextLayer.fromMap(reference, {
+          ...reference.toMap(),
+          ...updated.toMapFromReference(reference),
+        });
+
+        expect(restored.wrapAtLayerBounds, isTrue);
+      });
+    });
+
     group('toMapFromReference', () {
       const shadow = Shadow(
         color: Color(0x80000000),

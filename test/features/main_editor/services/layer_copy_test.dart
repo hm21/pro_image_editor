@@ -38,6 +38,14 @@ void main() {
 
       expect(copy.gradient, gradient);
     });
+
+    test('keeps a text layer that does not wrap at the layer bounds', () {
+      final layer = TextLayer(text: 'Wide', wrapAtLayerBounds: false);
+
+      final copy = LayerCopyManager().copyLayer(layer) as TextLayer;
+
+      expect(copy.wrapAtLayerBounds, isFalse);
+    });
   });
 
   group(LayerInteractionManager, () {

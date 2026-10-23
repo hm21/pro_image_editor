@@ -1,7 +1,9 @@
 # Changelog
 
 ## 14.19.0
-- **FEAT**(layers): Add `TextLayer.gradient` to fill the letters of a text with a linear color gradient (`TextGradient`) instead of a single color. The gradient spans the whole text, so a text that types itself out keeps each letter in its final color; `TextEditorState.setGradient` and `InlineTextEditSession.setGradient` set it while the text is edited.
+- **FEAT**(layers): Add `TextLayer.gradient` to fill the letters of a text with a linear `TextGradient`.
+- **FEAT**(text-editor): Add `TextLayer.wrapAtLayerBounds` to let a text run past `TextEditorConfigs.layerBounds`; `ProImageEditorState.textLayerWrapsAtBounds` tells whether the bounds wrap a layer.
+- **FIX**(text-editor): Text without a background no longer wraps short of `TextEditorConfigs.layerBounds`; only what a layer draws has to fit.
 
 ## 14.18.0
 - **FEAT**(layers): Add a star, a triangle, a diamond, a hexagon and a speech bubble to `LayerMaskShape`. A `switch` over `LayerMaskShape` has to handle the new values.

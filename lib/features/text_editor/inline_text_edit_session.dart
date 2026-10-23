@@ -302,6 +302,7 @@ class InlineTextEditSession {
       outlineWidth: outlineWidth,
       outlineColor: outlineColor,
       gradient: gradient,
+      wrapAtLayerBounds: live.wrapAtLayerBounds,
       customSecondaryColor: _secondaryColor != null,
       maxTextWidth: live.maxTextWidth,
       startTime: live.startTime,

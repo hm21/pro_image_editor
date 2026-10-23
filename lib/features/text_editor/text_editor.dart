@@ -150,6 +150,17 @@ class TextEditorState extends State<TextEditor>
     );
   }
 
+  /// Whether the edited layer wraps its lines at
+  /// [TextEditorConfigs.layerBounds]. See [TextLayer.wrapAtLayerBounds].
+  bool get wrapAtLayerBounds => _wrapAtLayerBounds;
+  late bool _wrapAtLayerBounds = widget.layer?.wrapAtLayerBounds ?? true;
+
+  /// Sets whether the edited layer wraps its lines at
+  /// [TextEditorConfigs.layerBounds] or may reach past them.
+  void setWrapAtLayerBounds(bool wrap) {
+    setState(() => _wrapAtLayerBounds = wrap);
+  }
+
   /// Sets the outline drawn around each glyph; a [width] of `0` removes it.
   ///
   /// Omitted values keep their current setting.
@@ -410,6 +421,7 @@ class TextEditorState extends State<TextEditor>
         outlineWidth: _outlineWidth,
         outlineColor: _outlineColor,
         gradient: _gradient,
+        wrapAtLayerBounds: _wrapAtLayerBounds,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth: maxTextWidth,
         // The editor changes how the text looks, not when it shows.
