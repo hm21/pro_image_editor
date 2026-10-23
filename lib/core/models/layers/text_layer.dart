@@ -30,6 +30,8 @@ class TextLayer extends Layer {
   /// (default is TextAlign.left).
   /// The [outlineWidth] and [outlineColor] parameters draw an outline around
   /// each glyph (no outline by default).
+  /// The [gradient] parameter fills the glyphs with a color gradient in place
+  /// of [color] (none by default).
   /// The other optional parameters such as [textStyle], [offset], [rotation],
   /// [scale], [id], [flipX], and [flipY]
   /// can be used to customize the position, appearance, and behavior of the
@@ -48,6 +50,7 @@ class TextLayer extends Layer {
     this.box,
     this.outlineWidth = 0,
     this.outlineColor = _defaultOutlineColor,
+    this.gradient,
     List<TextHighlight>? highlights,
     this.highlightColor = kDefaultTextHighlightColor,
     super.offset,
@@ -147,6 +150,11 @@ class TextLayer extends Layer {
     }).toList();
 
     final outlineColor = map[keyConverter('outlineColor')];
+    final gradient = map[keyConverter('gradient')] is Map
+        ? TextGradient.fromMap(
+            Map<String, dynamic>.from(map[keyConverter('gradient')] as Map),
+          )
+        : null;
 
     /// Constructs and returns a TextLayer instance with properties derived
     /// from the map.
@@ -182,6 +190,7 @@ class TextLayer extends Layer {
       outlineColor: outlineColor != null
           ? Color(safeParseInt(outlineColor))
           : _defaultOutlineColor,
+      gradient: gradient != null && gradient.isValid ? gradient : null,
       textStyle:
           fontFamily != null ||
               wordSpacing != null ||
@@ -292,6 +301,18 @@ class TextLayer extends Layer {
 
   /// Whether the layer draws an outline around its glyphs.
   bool get hasOutline => outlineWidth > 0 && outlineColor.a > 0;
+
+  /// A color gradient that fills the glyphs in place of [color], or `null`
+  /// to fill them with [color].
+  ///
+  /// It spans the whole text, so a text that types itself out keeps each
+  /// letter in its final color. An outline, the shadows and the active entry
+  /// of [highlights] keep their own colors. Set it to `null` to remove the
+  /// gradient; [copyWith] cannot clear it.
+  TextGradient? gradient;
+
+  /// Whether the glyphs are filled with [gradient] rather than [color].
+  bool get hasGradient => gradient?.isValid ?? false;
 
   /// Parts of [text] that light up in [highlightColor] while the video plays
   /// through them, such as the words of a caption as they are spoken.
@@ -450,6 +471,8 @@ class TextLayer extends Layer {
       // sets the width is stored as a diff and would import the default.
       if (outlineColor != _defaultOutlineColor)
         'outlineColor': outlineColor.toHex(),
+      if (gradient != null)
+        'gradient': gradient!.toMap(maxDecimalPlaces: maxDecimalPlaces),
     };
     return result;
   }
@@ -512,6 +535,10 @@ class TextLayer extends Layer {
         'outlineWidth': outlineWidth.roundSmart(maxDecimalPlaces),
       if (paintLayer.outlineColor != outlineColor)
         'outlineColor': outlineColor.toHex(),
+      // `null` is written too, so a removed gradient does not come back from
+      // the previous step.
+      if (paintLayer.gradient != gradient)
+        'gradient': gradient?.toMap(maxDecimalPlaces: maxDecimalPlaces),
     };
   }
 
@@ -546,6 +573,7 @@ class TextLayer extends Layer {
     TextLayerBox? box,
     double? outlineWidth,
     Color? outlineColor,
+    TextGradient? gradient,
     List<TextHighlight>? highlights,
     Color? highlightColor,
     bool? hit,
@@ -584,6 +612,7 @@ class TextLayer extends Layer {
       box: box ?? this.box,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       outlineColor: outlineColor ?? this.outlineColor,
+      gradient: gradient ?? this.gradient,
       highlights: highlights ?? this.highlights,
       highlightColor: highlightColor ?? this.highlightColor,
       offset: offset ?? this.offset,
@@ -628,6 +657,7 @@ class TextLayer extends Layer {
       ..add(DiagnosticsProperty<TextLayerBox>('box', box))
       ..add(DoubleProperty('outlineWidth', outlineWidth))
       ..add(ColorProperty('outlineColor', outlineColor))
+      ..add(DiagnosticsProperty<TextGradient>('gradient', gradient))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
       ..add(IterableProperty<TextHighlight>('highlights', highlights))
       ..add(ColorProperty('highlightColor', highlightColor))

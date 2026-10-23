@@ -25,6 +25,7 @@ class TextEditorInput extends StatefulWidget {
   /// - [textCtrl]: The text editing controller for managing input content.
   /// - [outlineWidth]: The outline thickness at [textFontSize].
   /// - [outlineColor]: The color of the outline.
+  /// - [gradient]: The color gradient that fills the glyphs, if any.
   const TextEditorInput({
     super.key,
     required this.callbacks,
@@ -44,6 +45,7 @@ class TextEditorInput extends StatefulWidget {
     required this.cursorWidth,
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
+    this.gradient,
   });
 
   /// Optional callbacks for text editor interactions.
@@ -97,6 +99,10 @@ class TextEditorInput extends StatefulWidget {
 
   /// The color of the outline.
   final Color outlineColor;
+
+  /// A color gradient that fills the glyphs in place of [textColor], or
+  /// `null` to fill them with [textColor].
+  final TextGradient? gradient;
 
   @override
   State<TextEditorInput> createState() => _TextEditorInputState();
@@ -232,6 +238,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
             ),
             outlineWidth: widget.outlineWidth,
             outlineColor: widget.outlineColor,
+            gradient: widget.gradient,
 
             /// If we edit an layer we focus to the textfield after the
             /// hero animation is done

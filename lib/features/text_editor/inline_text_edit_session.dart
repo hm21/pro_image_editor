@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '/core/models/editor_configs/text_editor_configs.dart';
 import '/core/models/layers/enums/layer_background_mode.dart';
+import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer.dart';
 import '/core/models/layers/text_layer_box.dart';
 
@@ -24,6 +25,7 @@ class InlineTextEditSession {
     required this.fontScale,
     required this.outlineWidth,
     required this.outlineColor,
+    required this.gradient,
     required this.boxEnabled,
     required this._primaryColor,
     required this._secondaryColor,
@@ -73,6 +75,7 @@ class InlineTextEditSession {
       fontScale: layer.fontScale,
       outlineWidth: layer.outlineWidth,
       outlineColor: layer.outlineColor,
+      gradient: layer.gradient,
       boxEnabled: layer.box != null,
       primaryColor: primary,
       secondaryColor: secondary,
@@ -149,6 +152,18 @@ class InlineTextEditSession {
 
   /// Color of the outline.
   Color outlineColor;
+
+  /// The color gradient that fills the glyphs in place of [textColor], or
+  /// `null` when they are filled with [textColor]. See [TextLayer.gradient].
+  TextGradient? gradient;
+
+  /// Fills the glyphs with [gradient] in place of [textColor], or with
+  /// [textColor] again when it is `null`.
+  void setGradient(TextGradient? gradient) {
+    if (_closed || gradient == this.gradient) return;
+    this.gradient = gradient;
+    onChanged();
+  }
 
   /// Whether the text keeps a [TextLayerBox].
   bool boxEnabled;
@@ -286,6 +301,7 @@ class InlineTextEditSession {
       textStyle: selectedTextStyle,
       outlineWidth: outlineWidth,
       outlineColor: outlineColor,
+      gradient: gradient,
       customSecondaryColor: _secondaryColor != null,
       maxTextWidth: live.maxTextWidth,
       startTime: live.startTime,
@@ -323,6 +339,7 @@ class InlineTextEditSession {
         result.textStyle != liveStyle ||
         result.outlineWidth != live.outlineWidth ||
         result.outlineColor != live.outlineColor ||
+        result.gradient != live.gradient ||
         result.customSecondaryColor != live.customSecondaryColor ||
         result.box != live.box;
   }

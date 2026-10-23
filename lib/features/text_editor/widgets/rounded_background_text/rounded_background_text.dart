@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer_box.dart';
 import '../../utils/rounded_background_painter.dart';
 
@@ -39,6 +40,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.paintShadows = true,
     this.visibleLength,
     this.box,
+    this.gradient,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -64,6 +66,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.paintShadows = true,
     this.visibleLength,
     this.box,
+    this.gradient,
   });
 
   /// A flag to enable or disable hitBox correction for the text.
@@ -155,6 +158,17 @@ class RoundedBackgroundText extends StatelessWidget {
   /// than the box is clipped or shrunk, as [TextLayerBox.overflow] says.
   final TextLayerBox? box;
 
+  /// A color gradient that fills the glyphs in place of the color of the
+  /// text style, or `null` to fill them with that color.
+  ///
+  /// It runs across the box around all the lines of [text], hidden ones
+  /// included (see [visibleLength]), so a text that types itself out keeps
+  /// each letter in the color it has once the whole text shows. Parts of
+  /// [text] whose own style sets a color keep it, and the outline and the
+  /// shadows are not filled. A gradient that is not [TextGradient.isValid] is
+  /// ignored.
+  final TextGradient? gradient;
+
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
   @override
@@ -224,17 +238,26 @@ class RoundedBackgroundText extends StatelessWidget {
     // shadows follow.
     var textScale = 1.0;
 
-    TextPainter createPainter(TextStyle Function(TextStyle style)? restyle) {
+    InlineSpan buildSpan(
+      TextStyle Function(TextStyle style)? restyle, {
+      Paint? fill,
+    }) {
       var content = restyle == null ? text : _restyleSpan(text, restyle);
+      var root = restyle == null ? rootStyle : restyle(rootStyle);
+      if (fill != null) {
+        content = _fillWith(content, fill);
+        root = root.copyWith(foreground: fill);
+      }
       // Hidden last, so no pass, the outline's included, paints that part.
       if (visibleLength case final visible?) {
         content = _hideAfter(content, visible);
       }
+      return TextSpan(children: [content], style: root);
+    }
+
+    TextPainter createPainter(TextStyle Function(TextStyle style)? restyle) {
       return TextPainter(
-        text: TextSpan(
-          children: [content],
-          style: restyle == null ? rootStyle : restyle(rootStyle),
-        ),
+        text: buildSpan(restyle),
         textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
         maxLines: defaultTextStyle.maxLines,
         textAlign: align,
@@ -281,13 +304,25 @@ class RoundedBackgroundText extends StatelessWidget {
     // painter draws from opaque silhouettes; the passes themselves draw none.
     // [paintShadows] keeps the same space while leaving the drawing to a
     // caller that paints the shadows itself.
-    final painter = createPainter(
-      hasOutline || !paintShadows
-          ? (style) => style.copyWith(shadows: const [])
-          : textScale == 1
-          ? null
-          : (style) => style.copyWith(shadows: scaleShadows(style.shadows)),
-    );
+    final TextStyle Function(TextStyle style)? fillRestyle =
+        hasOutline || !paintShadows
+        ? (style) => style.copyWith(shadows: const [])
+        : textScale == 1
+        ? null
+        : (style) => style.copyWith(shadows: scaleShadows(style.shadows));
+    final painter = createPainter(fillRestyle);
+
+    // The gradient runs across the lines, which are only known once the text
+    // is laid out. Only the paint changes, so the layout is kept.
+    void fillWithGradient(double minWidth, double maxWidth) {
+      final gradient = this.gradient;
+      if (gradient == null || !gradient.isValid) return;
+      final shader = gradient.createShader(_linesBounds(painter));
+      painter
+        ..text = buildSpan(fillRestyle, fill: Paint()..shader = shader)
+        ..layout(minWidth: minWidth, maxWidth: maxWidth);
+    }
+
     final outlinePainter = hasOutline
         ? createPainter(paintWith(strokePaint(outlineColor)))
         : null;
@@ -335,6 +370,7 @@ class RoundedBackgroundText extends StatelessWidget {
       for (final textPainter in textPainters) {
         textPainter.layout(minWidth: room.width, maxWidth: room.width);
       }
+      fillWithGradient(room.width, room.width);
       final freeHeight = max(0.0, room.height - painter.height);
       final textOffset = inset.translate(
         0,
@@ -357,6 +393,7 @@ class RoundedBackgroundText extends StatelessWidget {
       textMaxWidth = min(textMaxWidth, max(textSoftMaxWidth, longestWord));
     }
     painter.layout(maxWidth: textMaxWidth);
+    fillWithGradient(0, textMaxWidth);
     outlinePainter?.layout(maxWidth: textMaxWidth);
     for (final silhouette in silhouettePainters) {
       silhouette.layout(maxWidth: textMaxWidth);
@@ -499,6 +536,56 @@ class RoundedBackgroundText extends StatelessWidget {
     return Offset(dx.ceilToDouble(), dy.ceilToDouble());
   }
 
+  /// The box around the lines [painter] laid out: from the left edge of the
+  /// line that starts furthest left to the right edge of the one that ends
+  /// furthest right, over the full height of the text.
+  ///
+  /// Empty lines are left out. Without any glyphs, the box is the size of
+  /// [painter].
+  static Rect _linesBounds(TextPainter painter) {
+    var left = double.infinity;
+    var right = double.negativeInfinity;
+    for (final line in painter.computeLineMetrics()) {
+      if (line.width <= 0) continue;
+      left = min(left, line.left);
+      right = max(right, line.left + line.width);
+    }
+    if (right <= left) return Offset.zero & painter.size;
+    return Rect.fromLTRB(left, 0, right, painter.height);
+  }
+
+  /// A copy of [span] filled with [paint]: its own style takes [paint] as its
+  /// foreground, which every descendant inherits unless it sets a color of
+  /// its own.
+  ///
+  /// Such a color is turned into a foreground as well, because a foreground
+  /// set on an ancestor would otherwise paint over it.
+  static InlineSpan _fillWith(InlineSpan span, Paint paint) {
+    if (span is! TextSpan) return span;
+
+    TextStyle keepOwnColor(TextStyle style) {
+      final color = style.color;
+      if (color == null || style.foreground != null) return style;
+      return style.copyWith(foreground: Paint()..color = color);
+    }
+
+    return TextSpan(
+      text: span.text,
+      style: (span.style ?? const TextStyle()).copyWith(foreground: paint),
+      children: span.children
+          ?.map((child) => _restyleSpan(child, keepOwnColor))
+          .toList(),
+      recognizer: span.recognizer,
+      mouseCursor: span.mouseCursor,
+      onEnter: span.onEnter,
+      onExit: span.onExit,
+      semanticsLabel: span.semanticsLabel,
+      semanticsIdentifier: span.semanticsIdentifier,
+      locale: span.locale,
+      spellOut: span.spellOut,
+    );
+  }
+
   /// The style a hidden part of the text is laid out in: it keeps every
   /// metric of the style it is merged into and paints nothing.
   static final TextStyle _hiddenStyle = TextStyle(
@@ -639,6 +726,13 @@ class RoundedBackgroundText extends StatelessWidget {
       ..add(DoubleProperty('outlineWidth', outlineWidth, defaultValue: 0))
       ..add(ColorProperty('outlineColor', outlineColor))
       ..add(IntProperty('visibleLength', visibleLength, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextGradient>(
+          'gradient',
+          gradient,
+          defaultValue: null,
+        ),
+      )
       ..add(
         FlagProperty(
           'reserveEffectSpace',

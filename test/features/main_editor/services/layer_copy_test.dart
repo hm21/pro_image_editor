@@ -26,6 +26,18 @@ void main() {
       expect(copy.outlineColor, const Color(0xFFFF0000));
       expect(copy.textStyle?.shadows, layer.textStyle?.shadows);
     });
+
+    test('keeps the gradient of a text layer', () {
+      const gradient = TextGradient(
+        colors: [Color(0xFFFF0000), Color(0xFF0000FF)],
+        angle: 1,
+      );
+      final layer = TextLayer(text: 'Gradient', gradient: gradient);
+
+      final copy = LayerCopyManager().copyLayer(layer) as TextLayer;
+
+      expect(copy.gradient, gradient);
+    });
   });
 
   group(LayerInteractionManager, () {

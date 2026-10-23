@@ -105,6 +105,86 @@ void main() {
     expect(written.blendMode, BlendMode.multiply);
   });
 
+  group('gradient', () {
+    const gradient = TextGradient(
+      colors: [Color(0xFFFF0000), Color(0xFF0000FF)],
+    );
+
+    Future<ProImageEditorState> editGradientLayer(
+      WidgetTester tester, {
+      TextLayerBox? box,
+    }) async {
+      final state = await pumpEditor(tester);
+      final layer = TextLayer(
+        text: 'Name',
+        scale: 1,
+        box: box,
+        gradient: gradient,
+      );
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+      await tester.pump();
+      state.beginInlineTextEdit(layer);
+      await tester.pump();
+      return state;
+    }
+
+    RoundedBackgroundText fieldBackground(WidgetTester tester) =>
+        tester.widget<RoundedBackgroundText>(
+          find.descendant(
+            of: find.byType(RoundedBackgroundTextField),
+            matching: find.byType(RoundedBackgroundText),
+          ),
+        );
+
+    TextField field(WidgetTester tester) =>
+        tester.widget<TextField>(find.byType(TextField));
+
+    testWidgets('typing on the layer keeps its gradient', (tester) async {
+      final state = await editGradientLayer(tester);
+
+      expect(fieldBackground(tester).gradient, gradient);
+      expect(field(tester).style?.color, const Color(0x00000000));
+
+      await tester.enterText(find.byType(EditableText), 'Hello');
+      state.inlineTextEdit!.done();
+      await tester.pump();
+
+      final written = state.activeLayers.whereType<TextLayer>().single;
+      expect(written.text, 'Hello');
+      expect(written.gradient, gradient);
+    });
+
+    testWidgets('a text box being typed shows the gradient', (tester) async {
+      await editGradientLayer(
+        tester,
+        box: const TextLayerBox(size: Size(120, 40)),
+      );
+
+      expect(fieldBackground(tester).gradient, gradient);
+      expect(fieldBackground(tester).paintShadows, isTrue);
+      expect(field(tester).style?.color, const Color(0x00000000));
+    });
+
+    testWidgets('removing the gradient while typing is saved', (tester) async {
+      final state = await editGradientLayer(tester);
+
+      final session = state.inlineTextEdit!..setGradient(null);
+      await tester.pump();
+      expect(
+        session.hasChanges(state.activeLayers.whereType<TextLayer>().single),
+        isTrue,
+      );
+      session.done();
+      await tester.pump();
+
+      expect(state.activeLayers.whereType<TextLayer>().single.gradient, isNull);
+    });
+  });
+
   testWidgets('clearing the text removes the layer', (tester) async {
     final state = await pumpEditor(tester);
     final layer = TextLayer(text: 'Name');
