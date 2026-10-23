@@ -19,6 +19,28 @@ enum LayerMaskShape {
   /// A heart filling the mask's box, its tip at the bottom while unturned.
   heart,
 
+  /// A five-pointed star filling the mask's box, a point at the top while
+  /// unturned.
+  star,
+
+  /// A triangle filling the mask's box, its tip at the middle of the top and
+  /// its base along the bottom while unturned; equilateral when the box is
+  /// about 1.15 times as wide as it is high.
+  triangle,
+
+  /// A diamond filling the mask's box, its corners on the middle of each side
+  /// of the box.
+  diamond,
+
+  /// A hexagon filling the mask's box, a corner at the top and one at the
+  /// bottom while unturned; regular when the box is about 0.87 times as wide
+  /// as it is high.
+  hexagon,
+
+  /// A speech bubble filling the mask's box: a rounded body with a tail
+  /// pointing down from its bottom left while unturned.
+  speechBubble,
+
   /// A straight edge through [LayerMask.center], turned by
   /// [LayerMask.rotation].
   ///
@@ -128,6 +150,107 @@ class LayerMask {
     ..cubicTo(1, 0.50572, 0.83, 0.67357, 0.5725, 0.92861)
     ..close();
 
+  /// The corners of a five-pointed star, a point at the top, fitted to a
+  /// unit box.
+  ///
+  /// The inner corners lie at a little under half the radius of the points,
+  /// as on the Material Design star: plumper than a pentagram, so more of the
+  /// layer shows.
+  static final List<Offset> _unitStar = () {
+    const innerRadius = 0.455;
+    final corners = [
+      for (var i = 0; i < 10; i++)
+        Offset.fromDirection(
+          -math.pi / 2 + i * math.pi / 5,
+          i.isEven ? 1 : innerRadius,
+        ),
+    ];
+    // The points reach the top and both sides of the circle around the star,
+    // but the two at the bottom stop short of it.
+    final bounds = Rect.fromPoints(
+      Offset(corners[8].dx, corners[0].dy),
+      Offset(corners[2].dx, corners[4].dy),
+    );
+    return [
+      for (final corner in corners)
+        Offset(
+          (corner.dx - bounds.left) / bounds.width,
+          (corner.dy - bounds.top) / bounds.height,
+        ),
+    ];
+  }();
+
+  /// The corners of a triangle, its tip at the top, in a unit box.
+  static const List<Offset> _unitTriangle = [
+    Offset(0.5, 0),
+    Offset(1, 1),
+    Offset(0, 1),
+  ];
+
+  /// The corners of a diamond in a unit box.
+  static const List<Offset> _unitDiamond = [
+    Offset(0.5, 0),
+    Offset(1, 0.5),
+    Offset(0.5, 1),
+    Offset(0, 0.5),
+  ];
+
+  /// The corners of a hexagon with a corner at the top, in a unit box.
+  static const List<Offset> _unitHexagon = [
+    Offset(0.5, 0),
+    Offset(1, 0.25),
+    Offset(1, 0.75),
+    Offset(0.5, 1),
+    Offset(0, 0.75),
+    Offset(0, 0.25),
+  ];
+
+  /// [corners], in fractions of [rect], joined into a closed outline.
+  static Path _polygon(List<Offset> corners, Rect rect) => Path()
+    ..addPolygon([
+      for (final corner in corners)
+        Offset(
+          rect.left + corner.dx * rect.width,
+          rect.top + corner.dy * rect.height,
+        ),
+    ], true);
+
+  /// A speech bubble filling [rect]: a body with round corners over its top
+  /// four fifths, and below it a tail from the body's bottom edge, near its
+  /// left end, down to the bottom of [rect].
+  ///
+  /// Built at [rect]'s own size rather than stretched from a unit box, so the
+  /// corners stay round when the box is not square. A [rect] with a negative
+  /// width or height mirrors the bubble, as it mirrors the other shapes,
+  /// instead of turning its corners inside out.
+  static Path _speechBubble(Rect rect) {
+    final width = rect.width.abs();
+    final height = rect.height.abs();
+    final bodyBottom = height * 0.8;
+    // At most a fifth of the body's width, so a corner never reaches the
+    // tail.
+    final r = math.min(width, bodyBottom) * 0.2;
+    final radius = Radius.circular(r);
+    final bubble = Path()
+      ..moveTo(r, 0)
+      ..lineTo(width - r, 0)
+      ..arcToPoint(Offset(width, r), radius: radius)
+      ..lineTo(width, bodyBottom - r)
+      ..arcToPoint(Offset(width - r, bodyBottom), radius: radius)
+      ..lineTo(width * 0.42, bodyBottom)
+      ..lineTo(width * 0.12, height)
+      ..lineTo(width * 0.2, bodyBottom)
+      ..lineTo(r, bodyBottom)
+      ..arcToPoint(Offset(0, bodyBottom - r), radius: radius)
+      ..lineTo(0, r)
+      ..arcToPoint(Offset(r, 0), radius: radius)
+      ..close();
+    final place = Matrix4.identity()
+      ..translateByDouble(rect.left, rect.top, 0, 1)
+      ..scaleByDouble(rect.width.sign, rect.height.sign, 1, 1);
+    return bubble.transform(place.storage);
+  }
+
   /// The box [size] describes on a layer of [layerSize], centred on [center]
   /// and not yet turned.
   Rect shapeRect(Size layerSize) {
@@ -225,6 +348,16 @@ class LayerMask {
           ..translateByDouble(rect.left, rect.top, 0, 1)
           ..scaleByDouble(rect.width, rect.height, 1, 1);
         return _unitHeart().transform(scale.storage);
+      case LayerMaskShape.star:
+        return _polygon(_unitStar, rect);
+      case LayerMaskShape.triangle:
+        return _polygon(_unitTriangle, rect);
+      case LayerMaskShape.diamond:
+        return _polygon(_unitDiamond, rect);
+      case LayerMaskShape.hexagon:
+        return _polygon(_unitHexagon, rect);
+      case LayerMaskShape.speechBubble:
+        return _speechBubble(rect);
       case LayerMaskShape.linear:
         return Path()..addRect(rect);
     }
