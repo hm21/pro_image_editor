@@ -1,10 +1,10 @@
 # Changelog
 
 ## 14.20.0
-- **FEAT**(text-editor): Add `TextLayerBoxOverflow.visible` to draw lines that do not fit past a text box, and `TextEditorConfigs.boxOverflow` to pick it for the boxes the editors fit. A `switch` over `TextLayerBoxOverflow` has to handle the new value.
-- **FEAT**(main-editor): Add `InlineTextEditSession.setFontScale` to resize the text of an edit on the canvas.
-- **FIX**(main-editor): Clearing the text of a text box keeps the empty box instead of removing the layer.
-- **FIX**(main-editor): A box turned on while typing on the canvas shows its handles, and the text no longer moves or wraps differently when that edit starts.
+- **FEAT**(text-editor): Add `TextLayerBoxOverflow.visible` and `TextEditorConfigs.boxOverflow` to draw lines that do not fit past a text box; a `switch` over `TextLayerBoxOverflow` must handle the new value.
+- **FEAT**(main-editor): Add `InlineTextEditSession.setFontScale` to resize the text while typing on the canvas.
+- **FIX**(main-editor): Clearing the text of a text box keeps the empty box.
+- **FIX**(main-editor): Text no longer moves when an edit on the canvas starts, and a box turned on while typing shows its handles.
 
 ## 14.19.0
 - **FEAT**(layers): Add `TextLayer.gradient` to fill the letters of a text with a linear `TextGradient`.
