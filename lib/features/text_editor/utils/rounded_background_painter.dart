@@ -34,6 +34,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     this.silhouetteShadows = const [],
     this.visibleLength,
     this.boxSize,
+    this.clipToBox = true,
+    this.effectSpace = Offset.zero,
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -96,8 +98,18 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// background follows the lines.
   ///
   /// The background then fills the box as one rectangle, the text is clipped
-  /// to the box, and a hit anywhere in the box counts.
+  /// to the box unless [clipToBox] is `false`, and a hit anywhere in the box
+  /// counts.
   final Size? boxSize;
+
+  /// Whether text past [boxSize] is cut off at the box, which
+  /// [TextLayerBoxOverflow.visible] turns off.
+  final bool clipToBox;
+
+  /// How far the outline and the shadows paint beyond the glyphs on each
+  /// axis, which a capture of text drawn past its box (see [clipToBox])
+  /// makes room for.
+  final Offset effectSpace;
 
   /// The background behind the drawn text, or behind all of it when
   /// [revealedOnly] is `false` (see [visibleLength]).
@@ -516,9 +528,9 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
     if (boxSize case final boxSize?) {
       final box = Offset.zero & boxSize;
+      canvas.save();
+      if (clipToBox) canvas.clipRect(box);
       canvas
-        ..save()
-        ..clipRect(box)
         ..drawRect(box, painter)
         ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy);
       _paintSilhouetteShadows(canvas);
@@ -615,7 +627,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         oldDelegate.textDirection != textDirection ||
         oldDelegate.outerRadius != outerRadius ||
         oldDelegate.visibleLength != visibleLength ||
-        oldDelegate.boxSize != boxSize;
+        oldDelegate.boxSize != boxSize ||
+        oldDelegate.clipToBox != clipToBox;
 
     if (changed) _cachedPath = null; // invalidate cache
 
@@ -642,7 +655,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         listEquals(other.silhouettePainters, silhouettePainters) &&
         listEquals(other.silhouetteShadows, silhouetteShadows) &&
         other.visibleLength == visibleLength &&
-        other.boxSize == boxSize;
+        other.boxSize == boxSize &&
+        other.clipToBox == clipToBox;
   }
 
   @override
@@ -662,6 +676,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         Object.hashAll(silhouettePainters) ^
         Object.hashAll(silhouetteShadows) ^
         visibleLength.hashCode ^
-        boxSize.hashCode;
+        boxSize.hashCode ^
+        clipToBox.hashCode;
   }
 }

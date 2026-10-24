@@ -30,6 +30,11 @@ class ExportedLayer {
   /// This already includes the layer's scale factor (text layers bake it into
   /// font size, paint layers into the canvas size, etc.), so it matches the
   /// unrotated size the layer occupies in the editor.
+  ///
+  /// A text whose [TextLayer.box] shows lines past itself
+  /// ([TextLayerBoxOverflow.visible]) is captured with those lines unless
+  /// the layer has a [Layer.mask]. The image is then larger than the box by
+  /// the same amount on opposite sides, so it stays centered on the layer.
   final Size logicalSize;
 
   /// Encoded images of a [TextLayer] with one of its [TextLayer.highlights]

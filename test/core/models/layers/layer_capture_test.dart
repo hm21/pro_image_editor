@@ -179,6 +179,164 @@ void main() {
       });
     });
 
+    testWidgets('a box that shows its overflow captures the text past it, '
+        'centered on the layer', (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        TextLayer boxed(TextLayerBoxOverflow overflow) => TextLayer(
+          text: 'one\ntwo\nthree\nfour',
+          background: const Color(0xFF000000),
+          box: TextLayerBox(size: const Size(200, 40), overflow: overflow),
+        );
+        editor
+          ..addLayer(
+            boxed(TextLayerBoxOverflow.visible),
+            autoCorrectZoomScale: false,
+          )
+          ..addLayer(
+            boxed(TextLayerBoxOverflow.clip),
+            autoCorrectZoomScale: false,
+          );
+        await tester.pumpAndSettle();
+        final visible = editor.activeLayers[0] as TextLayer;
+
+        final exported = await Layer.captureAllLayers(
+          layers: editor.activeLayers,
+          pixelRatio: 1,
+          applyTransforms: false,
+        );
+        final box = Size(200 * visible.scale, 40 * visible.scale);
+        Future<ui.Image> decode(Uint8List bytes) async =>
+            (await (await ui.instantiateImageCodec(
+              bytes,
+            )).getNextFrame()).image;
+
+        final open = await decode(exported[0].bytes);
+        expect(open.width.toDouble(), closeTo(box.width, 1));
+        expect(open.height.toDouble(), greaterThan(box.height * 2));
+        expect(exported[0].logicalSize.height, closeTo(open.height, 1));
+        expect(exported[0].logicalSize.width, closeTo(open.width, 1));
+
+        final cut = await decode(exported[1].bytes);
+        expect(cut.height.toDouble(), closeTo(box.height, 1));
+        expect(exported[1].logicalSize.height, closeTo(box.height, 0.01));
+      });
+    });
+
+    group('a box that shows its overflow', () {
+      Future<ui.Image> decode(Uint8List bytes) async =>
+          (await (await ui.instantiateImageCodec(bytes)).getNextFrame()).image;
+
+      TextLayer boxed({
+        List<TextHighlight> highlights = const [],
+        LayerMask? mask,
+        List<Shadow>? shadows,
+        Color background = const Color(0xFF000000),
+      }) => TextLayer(
+        text: 'one\ntwo\nthree\nfour',
+        background: background,
+        highlights: highlights,
+        mask: mask,
+        textStyle: shadows == null ? null : TextStyle(shadows: shadows),
+        box: const TextLayerBox(
+          size: Size(200, 40),
+          overflow: TextLayerBoxOverflow.visible,
+        ),
+      );
+
+      Future<ExportedLayer> export(WidgetTester tester, TextLayer layer) async {
+        final editor = await pumpEditor(tester);
+        editor.addLayer(layer, autoCorrectZoomScale: false);
+        await tester.pumpAndSettle();
+        final exported = await Layer.captureAllLayers(
+          layers: editor.activeLayers,
+          pixelRatio: 1,
+          applyTransforms: false,
+        );
+        return exported.single;
+      }
+
+      testWidgets('captures its highlights at the size of the capture', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final exported = await export(
+            tester,
+            boxed(
+              highlights: const [
+                TextHighlight(
+                  start: 0,
+                  end: 3,
+                  startTime: Duration.zero,
+                  endTime: Duration(seconds: 1),
+                ),
+              ],
+            ),
+          );
+
+          final plain = await decode(exported.bytes);
+          final highlighted = await decode(exported.highlightBytes[0]!);
+          expect(plain.height.toDouble(), greaterThan(40 * 2));
+          expect(exported.logicalSize.height, closeTo(plain.height, 1));
+          expect(highlighted.width, plain.width);
+          expect(highlighted.height, plain.height);
+        });
+      });
+
+      testWidgets('keeps a masked layer at its box', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final exported = await export(
+            tester,
+            boxed(
+              mask: const LayerMask(
+                shape: LayerMaskShape.rectangle,
+                size: Size(1, 1),
+              ),
+            ),
+          );
+
+          final image = await decode(exported.bytes);
+          final boxHeight = 40 * exported.layer.scale;
+          expect(image.height.toDouble(), closeTo(boxHeight, 1));
+          expect(exported.logicalSize.height, closeTo(boxHeight, 0.01));
+        });
+      });
+
+      testWidgets('makes room for the shadows of the lines past it', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final exported = await export(
+            tester,
+            boxed(
+              background: const Color(0x00000000),
+              shadows: const [
+                Shadow(color: Color(0xFFFF0000), offset: Offset(0, 12)),
+              ],
+            ),
+          );
+
+          // The black glyphs cast a red shadow 12 pixels down, all of which
+          // the image holds below the last line.
+          final image = await decode(exported.bytes);
+          final pixels = (await image.toByteData())!;
+          var glyphBottom = -1;
+          for (var y = 0; y < image.height; y++) {
+            for (var x = 0; x < image.width; x++) {
+              final i = (y * image.width + x) * 4;
+              if (pixels.getUint8(i) < 50 && pixels.getUint8(i + 3) > 200) {
+                glyphBottom = y;
+                break;
+              }
+            }
+          }
+          expect(image.height - 1 - glyphBottom, greaterThanOrEqualTo(11));
+        });
+      });
+    });
+
     // Note: ProImageEditorState.captureAllLayersWithMeta and
     // captureAllLayers use `await WidgetsBinding.instance.endOfFrame`
     // which hangs in test environments. They are thin wrappers around

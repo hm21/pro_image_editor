@@ -72,12 +72,15 @@ class LayerWidgetTextItem extends StatefulWidget {
   ///
   /// This is what a capture reads instead of the on-screen boundary, which
   /// shows whichever highlight the playback position happens to be on.
+  /// [bounds] is the part of the layer the image holds, see
+  /// [RoundedBackgroundText.toImage].
   static Future<ui.Image> renderContent(
     BuildContext context, {
     required TextLayer layer,
     required TextEditorConfigs textEditorConfigs,
     required Size size,
     required double pixelRatio,
+    Rect? bounds,
     Size mainBodySize = Size.zero,
     TextLayer? mainEditorLayer,
     int? highlightIndex,
@@ -90,7 +93,7 @@ class LayerWidgetTextItem extends StatefulWidget {
       mainEditorLayer: mainEditorLayer,
       highlightIndex: highlightIndex,
       revealedLength: revealedLength,
-    ).toImage(context, size: size, pixelRatio: pixelRatio);
+    ).toImage(context, size: size, pixelRatio: pixelRatio, bounds: bounds);
   }
 
   /// Whether [TextEditorConfigs.layerBounds] wrap [layer], placed in
@@ -376,8 +379,8 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
     );
     final box = session.editingBox(layer);
     final scaledBox = box?.copyWith(size: box.size * layer.scale);
-    final maxTextWidth = layer.maxTextWidth == null
-        ? 1000000.0
+    final wrapWidth = layer.maxTextWidth == null
+        ? null
         : layer.maxTextWidth! * layer.scale;
 
     Widget field = RoundedBackgroundTextField(
@@ -388,7 +391,8 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       style: style,
       backgroundColor: session.backgroundColor,
       textAlign: session.align,
-      maxTextWidth: maxTextWidth,
+      // Wraps where the painted layer wraps, so the lines keep their breaks.
+      textWrapWidth: wrapWidth,
       cursorWidth: 2,
       cursorHeight: fontSize,
       outlineWidth: session.outlineWidth * effectScale,
@@ -399,14 +403,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       // click, on the padding, a handle or a format bar, keeps typing.
       onTapOutside: (_) {},
     );
-    if (scaledBox == null) {
-      field = IntrinsicWidth(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxTextWidth),
-          child: field,
-        ),
-      );
-    }
+    if (scaledBox == null) field = IntrinsicWidth(child: field);
 
     return CallbackShortcuts(
       bindings: {

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../custom_widgets/text_editor_widgets.dart';
 import '../icons/text_editor_icons.dart';
 import '../layers/enums/layer_background_mode.dart';
+import '../layers/text_layer_box.dart';
 import '../styles/text_editor_style.dart';
 import 'utils/base_editor_layer_configs.dart';
 import 'utils/base_sub_editor_configs.dart';
@@ -48,6 +49,7 @@ class TextEditorConfigs
     this.enableTapOutsideToSave = true,
     this.enableSubmitShortcut = false,
     this.enableInlineEditing = false,
+    this.boxOverflow = TextLayerBoxOverflow.shrink,
     this.enableAutoOverflow = true,
     this.enableAutoWrapOnLayer = true,
     this.initFontSize = 24.0,
@@ -131,6 +133,14 @@ class TextEditorConfigs
   /// this on for the platforms where typing on the layer fits; every other
   /// host keeps the full-screen editor.
   final bool enableInlineEditing;
+
+  /// What a text box the editor makes does with text that does not fit.
+  ///
+  /// Sets [TextLayerBox.overflow] on the boxes the box button of the text
+  /// editor and of an edit on the canvas fit to their text. Boxes a host
+  /// creates itself carry their own. Defaults to
+  /// [TextLayerBoxOverflow.shrink].
+  final TextLayerBoxOverflow boxOverflow;
 
   /// The initial font size for text.
   final double initFontSize;
@@ -294,6 +304,7 @@ class TextEditorConfigs
     bool? enableTapOutsideToSave,
     bool? enableSubmitShortcut,
     bool? enableInlineEditing,
+    TextLayerBoxOverflow? boxOverflow,
     bool? enableAutoOverflow,
     bool? enableAutoWrapOnLayer,
     Color? initialPrimaryColor,
@@ -338,6 +349,7 @@ class TextEditorConfigs
           enableTapOutsideToSave ?? this.enableTapOutsideToSave,
       enableSubmitShortcut: enableSubmitShortcut ?? this.enableSubmitShortcut,
       enableInlineEditing: enableInlineEditing ?? this.enableInlineEditing,
+      boxOverflow: boxOverflow ?? this.boxOverflow,
       enableAutoOverflow: enableAutoOverflow ?? this.enableAutoOverflow,
       enableAutoWrapOnLayer:
           enableAutoWrapOnLayer ?? this.enableAutoWrapOnLayer,

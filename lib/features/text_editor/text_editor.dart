@@ -147,6 +147,7 @@ class TextEditorState extends State<TextEditor>
       outlineWidth: _outlineWidth * _fontScale,
       // About two pixels on screen, whatever the layer's scale.
       slack: 2 / (scale <= 0 ? 1 : scale),
+      overflow: textEditorConfigs.boxOverflow,
     );
   }
 

@@ -182,6 +182,17 @@ class InlineTextEditSession {
     onChanged();
   }
 
+  /// Replaces [fontScale], kept between `TextEditorConfigs.minFontScale`
+  /// and `TextEditorConfigs.maxFontScale`. The text grows or shrinks inside
+  /// the layer. A box the layer has keeps its size; one [showBoxOn] fits to
+  /// the text fits it again.
+  void setFontScale(double scale) {
+    final next = scale.clamp(configs.minFontScale, configs.maxFontScale);
+    if (_closed || next == fontScale) return;
+    fontScale = next;
+    onChanged();
+  }
+
   /// The color the glyphs are drawn in.
   Color get textColor {
     switch (backgroundColorMode) {
@@ -259,7 +270,7 @@ class InlineTextEditSession {
   ///
   /// A layer that already has a box keeps that box, including a resize made
   /// during the edit. Otherwise the box is fitted to the text and stored when
-  /// the edit is saved.
+  /// the edit is saved; until then [showBoxOn] shows it on the layer.
   void setBoxEnabled(bool enabled) {
     boxEnabled = enabled;
     onChanged();
@@ -274,6 +285,79 @@ class InlineTextEditSession {
     if (!boxEnabled) return null;
     final existing = live.box;
     if (existing != null) return existing;
+    return _fitBox(live);
+  }
+
+  /// The box [showBoxOn] put on the live layer, while it is still there.
+  TextLayerBox? _shownBox;
+
+  /// The layer object [_shownBox] was put on. History steps hold their own
+  /// copies of the layers, so this object belongs to the step the edit
+  /// started in.
+  TextLayer? _shownOn;
+
+  /// Shows the box this edit fits to its text on [live], so its handles
+  /// show and can resize it while the text is edited.
+  ///
+  /// The box follows the text as it is typed until it is resized. A box the
+  /// layer had, or one resized during the edit, is left alone. Turning the
+  /// box off takes the shown one away again. Returns whether [live]
+  /// changed.
+  bool showBoxOn(TextLayer live) {
+    _settleShownBox(live);
+    final shown = _shownBox;
+    final ours = shown != null && live.box == shown;
+    if (!boxEnabled) {
+      if (!ours) return false;
+      live.box = null;
+      _shownBox = null;
+      return true;
+    }
+    if (live.box != null && !ours) return false;
+    final fitted = _fitBox(live);
+    if (fitted == live.box) return false;
+    live.box = _shownBox = fitted;
+    _shownOn = live;
+    return true;
+  }
+
+  /// Takes the box [showBoxOn] put on the layer away again, before the edit
+  /// ends. The saved layer brings its own, and a dropped edit leaves the
+  /// layer as it was.
+  ///
+  /// [live] is the layer as it is now, or `null` when it was removed during
+  /// the edit; the history step it was in then gets it back without the box.
+  void hideShownBox(TextLayer? live) {
+    if (live != null) _settleShownBox(live);
+    final shown = _shownBox;
+    if (shown != null) {
+      if (live?.box == shown) live!.box = null;
+      if (_shownOn?.box == shown) _shownOn!.box = null;
+    }
+    _shownBox = null;
+    _shownOn = null;
+  }
+
+  /// When a history step was taken since the box was shown, [live] is that
+  /// step's copy, and the step before gets its layer back without the box.
+  ///
+  /// The copy goes on following the text while it has the shown box, as
+  /// after moving or rotating the layer. A box resized since then, which
+  /// takes a step of its own, stays on the copy and is left alone.
+  void _settleShownBox(TextLayer live) {
+    final shownOn = _shownOn;
+    if (shownOn == null || identical(shownOn, live)) return;
+    final shown = _shownBox;
+    if (shownOn.box == shown) shownOn.box = null;
+    if (live.box == shown) {
+      _shownOn = live;
+    } else {
+      _shownBox = null;
+      _shownOn = null;
+    }
+  }
+
+  TextLayerBox _fitBox(TextLayer live) {
     final fontSize = configs.initFontSize * fontScale;
     return TextLayerBox.fit(
       text: textCtrl.text.isEmpty ? ' ' : textCtrl.text,
@@ -285,6 +369,7 @@ class InlineTextEditSession {
       align: align,
       outlineWidth: outlineWidth * fontScale,
       slack: 2 / (live.scale <= 0 ? 1 : live.scale),
+      overflow: configs.boxOverflow,
     );
   }
 

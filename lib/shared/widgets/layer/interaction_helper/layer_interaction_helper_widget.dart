@@ -197,8 +197,20 @@ class _LayerInteractionHelperWidgetState
   Layer get _layer => widget.layer;
 
   @override
+  void initState() {
+    super.initState();
+    // A layer can be selected as it is added, such as a new text typed on
+    // the canvas; it shows its overlay without waiting for an update.
+    _syncOverlay();
+  }
+
+  @override
   void didUpdateWidget(covariant LayerInteractionHelperWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _syncOverlay();
+  }
+
+  void _syncOverlay() {
     _isOverlayVisibleNotifier.value = widget.selected;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;

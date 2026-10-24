@@ -269,4 +269,73 @@ void main() {
       expect(state.selectedLayers.map((l) => l.id), [layer.id]);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
   });
+
+  group('a box turned on during an edit and then resized', () {
+    final inlineConfigs = topLeftConfigs.copyWith(
+      textEditor: topLeftConfigs.textEditor.copyWith(enableInlineEditing: true),
+    );
+
+    TextLayer live(ProImageEditorState state) =>
+        state.activeLayers.whereType<TextLayer>().single;
+
+    Future<ProImageEditorState> resizeNewBox(WidgetTester tester) async {
+      final state = await pumpEditor(tester, editorConfigs: inlineConfigs);
+      final layer = TextLayer(text: 'Name', scale: 1);
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+      await tester.pumpAndSettle();
+      state.beginInlineTextEdit(layer);
+      await tester.pumpAndSettle();
+      state.inlineTextEdit!.setBoxEnabled(true);
+      await tester.pumpAndSettle();
+      expect(find.byType(TextLayerBoxHandles), findsOneWidget);
+
+      final fitted = live(state).box!;
+      final text = tester.getRect(find.byType(RoundedBackgroundText).first);
+      await mouseDrag(
+        tester,
+        from: Offset(text.right, text.center.dy),
+        by: const Offset(40, 0),
+      );
+      expect(live(state).box!.size.width, closeTo(fitted.size.width + 40, 1));
+      return state;
+    }
+
+    testWidgets('undo after saving reaches the layer without a box', (
+      tester,
+    ) async {
+      final state = await resizeNewBox(tester);
+      final resized = live(state).box!;
+      state.inlineTextEdit?.textCtrl.text = 'Name here';
+      state.inlineTextEdit?.done();
+      await tester.pumpAndSettle();
+      expect(live(state).text, 'Name here');
+      expect(live(state).box, resized);
+
+      while (state.canUndo) {
+        state.undoAction();
+        await tester.pumpAndSettle();
+        if (live(state).box == null) break;
+      }
+      expect(live(state).text, 'Name');
+      expect(live(state).box, isNull);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+    testWidgets('cancelling keeps the resize as its own step, and undo '
+        'reaches the layer without a box', (tester) async {
+      final state = await resizeNewBox(tester);
+      final resized = live(state).box!;
+      state.endInlineTextEdit(save: false);
+      await tester.pumpAndSettle();
+      expect(live(state).box, resized);
+
+      state.undoAction();
+      await tester.pumpAndSettle();
+      expect(live(state).text, 'Name');
+      expect(live(state).box, isNull);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+  });
 }

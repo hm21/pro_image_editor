@@ -787,7 +787,9 @@ class Layer {
       final box = context.findRenderObject() as RenderBox?;
       final requested = capturePixelRatio(
         this,
-        box?.size ?? Size.zero,
+        box is RenderLayerRepaintBoundary
+            ? box.captureBounds.size
+            : box?.size ?? Size.zero,
         effectivePixelRatio,
       );
       assert(
@@ -959,7 +961,7 @@ class Layer {
   ///
   /// [capturePixelRatio] decides the pixel ratio of each layer, see
   /// [captureAsPng]. It changes only the resolution of the images:
-  /// [ExportedLayer.logicalSize] stays the layer's laid-out size.
+  /// [ExportedLayer.logicalSize] stays the logical size of what is captured.
   static Future<List<ExportedLayer>> captureAllLayers({
     required List<Layer> layers,
     double? pixelRatio,
@@ -1009,7 +1011,11 @@ class Layer {
       final box =
           layer.repaintBoundaryKey.currentContext?.findRenderObject()
               as RenderBox?;
-      var size = box?.size ?? Size.zero;
+      // The size of what the capture reads, which text showing past its box
+      // grows.
+      var size = box is RenderLayerRepaintBoundary
+          ? box.captureBounds.size
+          : box?.size ?? Size.zero;
 
       if (applyTransforms && (layer.rotation != 0)) {
         final double cosR = math.cos(layer.rotation).abs();

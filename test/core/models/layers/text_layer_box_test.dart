@@ -23,6 +23,11 @@ void main() {
       expect(plain.overflow, TextLayerBoxOverflow.clip);
     });
 
+    test('round-trips visible overflow', () {
+      final open = box.copyWith(overflow: TextLayerBoxOverflow.visible);
+      expect(TextLayerBox.fromMap(open.toMap()), open);
+    });
+
     test('survives a map round trip', () {
       expect(TextLayerBox.fromMap(box.toMap()), box);
     });

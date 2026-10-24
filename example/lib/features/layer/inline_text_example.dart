@@ -13,9 +13,9 @@ import '/core/mixin/example_helper.dart';
 /// The editor opens with a text layer already on the image. Editing it, or
 /// adding a new text from the bottom bar, turns the layer into a text field
 /// where it sits instead of opening the full-screen text editor. A format
-/// bar above the image changes the alignment, the background, the box and
-/// the color while typing. Clicking outside the layer or Ctrl/Cmd+Enter
-/// saves the text, and Escape drops the edit.
+/// bar above the image changes the alignment, the background, the box, the
+/// text size and the color while typing. Clicking outside the layer or
+/// Ctrl/Cmd+Enter saves the text, and Escape drops the edit.
 ///
 /// Example usage:
 /// ```dart
@@ -95,6 +95,10 @@ class _InlineTextExampleState extends State<InlineTextExample>
           /// Types into the layer instead of opening the text editor.
           enableInlineEditing: true,
 
+          /// A box made with the box button keeps the text size and shows
+          /// lines that do not fit below it.
+          boxOverflow: TextLayerBoxOverflow.visible,
+
           /// Ctrl/Cmd+Enter saves the text.
           enableSubmitShortcut: true,
         ),
@@ -149,6 +153,20 @@ class _InlineTextExampleState extends State<InlineTextExample>
                       onPressed: () =>
                           session.setBoxEnabled(!session.boxEnabled),
                       icon: const Icon(Icons.crop_free),
+                    ),
+                    IconButton(
+                      tooltip: 'Smaller text',
+                      color: Colors.white,
+                      onPressed: () =>
+                          session.setFontScale(session.fontScale - 0.1),
+                      icon: const Icon(Icons.text_decrease),
+                    ),
+                    IconButton(
+                      tooltip: 'Larger text',
+                      color: Colors.white,
+                      onPressed: () =>
+                          session.setFontScale(session.fontScale + 0.1),
+                      icon: const Icon(Icons.text_increase),
                     ),
                     for (final color in _colors)
                       _buildColorButton(session, color),
