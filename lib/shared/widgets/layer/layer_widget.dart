@@ -134,7 +134,6 @@ class _LayerWidgetState extends State<LayerWidget>
 
   /// Flag to control the display of a move cursor.
   final _showMoveCursor = ValueNotifier(false);
-  final _lastHitState = ValueNotifier(false);
 
   late final _contextManager = LayerWidgetContextMenu(
     i18nLayerInteraction: i18n.layerInteraction,
@@ -197,7 +196,6 @@ class _LayerWidgetState extends State<LayerWidget>
 
   @override
   void dispose() {
-    _lastHitState.dispose();
     _showMoveCursor.dispose();
     _longPressTimer?.cancel();
     super.dispose();
@@ -358,7 +356,6 @@ class _LayerWidgetState extends State<LayerWidget>
       (_layer as TextLayer).hit = false;
     }
     _showMoveCursor.value = false;
-    _lastHitState.value = false;
   }
 
   @override
@@ -481,50 +478,43 @@ class _LayerWidgetState extends State<LayerWidget>
         hoverCursor: layerInteraction.style.hoverCursor,
         onHoverEnter: _onHoverEnter,
         onHoverExit: _onHoverLeave,
-        child: ValueListenableBuilder(
-          valueListenable: _lastHitState,
-          builder: (_, _, _) {
-            return GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerDown: _onPointerDown,
-                onPointerUp: _onPointerUp,
-                child: Padding(
-                  padding: !_isSelected
-                      ? EdgeInsets.zero
-                      : layerInteraction.style.overlayPadding,
-                  child: FittedBox(
-                    key: _layer.keyInternalSize,
-                    child: _LayerContentItem(
-                      layerType: _layerType,
-                      layer: _layer,
-                      inlineEdit: editingThis,
-                      isSelected: _isSelected,
-                      skipPaint: widget.isRasterCached,
-                      playTimeNotifier: widget.playTimeNotifier,
-                      mainBodySize:
-                          widget.mainBodySize ?? widget.editorBodySize,
-                      mainEditorLayer: widget.mainEditorLayer,
-                      enableHitDetection:
-                          _layerInteractionManager?.enabledHitDetection ??
-                          false,
-                      showMoveCursor: _showMoveCursor,
-                      onHitChanged: (state) {
-                        _lastHitState.value = state;
-                      },
-                      emojiEditorConfigs: emojiEditorConfigs,
-                      textEditorConfigs: textEditorConfigs,
-                      stickerEditorConfigs: stickerEditorConfigs,
-                      paintEditorConfigs: paintEditorConfigs,
-                      designMode: designMode,
-                    ),
-                  ),
+        // Hovering in or out of the content must not rebuild it: the text's
+        // layout builder would lay it out and paint it again, which makes it
+        // shake on screen.
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onSecondaryTapUp: isDesktop ? _onSecondaryTapUp : null,
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: _onPointerDown,
+            onPointerUp: _onPointerUp,
+            child: Padding(
+              padding: !_isSelected
+                  ? EdgeInsets.zero
+                  : layerInteraction.style.overlayPadding,
+              child: FittedBox(
+                key: _layer.keyInternalSize,
+                child: _LayerContentItem(
+                  layerType: _layerType,
+                  layer: _layer,
+                  inlineEdit: editingThis,
+                  isSelected: _isSelected,
+                  skipPaint: widget.isRasterCached,
+                  playTimeNotifier: widget.playTimeNotifier,
+                  mainBodySize: widget.mainBodySize ?? widget.editorBodySize,
+                  mainEditorLayer: widget.mainEditorLayer,
+                  enableHitDetection:
+                      _layerInteractionManager?.enabledHitDetection ?? false,
+                  showMoveCursor: _showMoveCursor,
+                  emojiEditorConfigs: emojiEditorConfigs,
+                  textEditorConfigs: textEditorConfigs,
+                  stickerEditorConfigs: stickerEditorConfigs,
+                  paintEditorConfigs: paintEditorConfigs,
+                  designMode: designMode,
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
@@ -585,7 +575,6 @@ class _LayerContentItem extends StatelessWidget {
     required this.enableHitDetection,
     this.skipPaint = false,
     required this.showMoveCursor,
-    required this.onHitChanged,
     required this.emojiEditorConfigs,
     required this.textEditorConfigs,
     required this.stickerEditorConfigs,
@@ -603,7 +592,6 @@ class _LayerContentItem extends StatelessWidget {
   final bool enableHitDetection;
   final bool skipPaint;
   final ValueNotifier<bool> showMoveCursor;
-  final ValueChanged<bool> onHitChanged;
   final EmojiEditorConfigs emojiEditorConfigs;
   final TextEditorConfigs textEditorConfigs;
   final StickerEditorConfigs stickerEditorConfigs;
@@ -635,7 +623,6 @@ class _LayerContentItem extends StatelessWidget {
           textEditorConfigs: textEditorConfigs,
           inlineEdit: inlineEdit,
           showMoveCursor: showMoveCursor,
-          onHitChanged: onHitChanged,
           playTimeNotifier: playTimeNotifier,
           mainBodySize: mainBodySize,
           mainEditorLayer: _mainEditorTextLayer,
@@ -651,7 +638,6 @@ class _LayerContentItem extends StatelessWidget {
           isSelected: isSelected,
           enableHitDetection: enableHitDetection,
           skipPaint: skipPaint,
-          onHitChanged: onHitChanged,
           paintEditorConfigs: paintEditorConfigs,
         );
       case LayerWidgetType.censor:

@@ -5,6 +5,7 @@
 - **FEAT**(main-editor): Add `InlineTextEditSession.setFontScale` to resize the text while typing on the canvas.
 - **FIX**(main-editor): Clearing the text of a text box keeps the empty box.
 - **FIX**(main-editor): Text no longer moves when an edit on the canvas starts, and a box turned on while typing shows its handles.
+- **FIX**(layers): Text layers no longer shift slightly on hover or when they are first selected.
 
 ## 14.19.0
 - **FEAT**(layers): Add `TextLayer.gradient` to fill the letters of a text with a linear `TextGradient`.

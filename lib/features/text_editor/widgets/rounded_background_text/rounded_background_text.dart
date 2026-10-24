@@ -180,7 +180,11 @@ class RoundedBackgroundText extends StatelessWidget {
       builder: (context, constraints) {
         final layout = _layout(context, constraints);
         return CustomPaint(
-          isComplex: true,
+          // A raster cached picture is drawn at whole pixels and the live one
+          // at the text's exact position, so the text shifts slightly once
+          // the engine starts caching it, e.g. on the first hover after it
+          // is painted.
+          willChange: true,
           painter: layout.painter,
           size: layout.size,
         );
