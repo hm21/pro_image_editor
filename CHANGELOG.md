@@ -1,7 +1,7 @@
 # Changelog
 
 ## 14.20.0
-- **FIX**(layers): Text layers no longer shift by a fraction of a pixel when the mouse moves over them or when they are first selected.
+- **FIX**(layers): Text layers no longer shift slightly on hover or when they are first selected.
 
 ## 14.19.0
 - **FEAT**(layers): Add `TextLayer.gradient` to fill the letters of a text with a linear `TextGradient`.
