@@ -10,9 +10,10 @@ import '/core/mixin/example_helper.dart';
 
 /// A widget that demonstrates text layers in a fixed, resizable box.
 ///
-/// The editor opens with a boxed text layer already on the image. Drag the
-/// handles on its edges to resize the box: the text wraps and shrinks to fit,
-/// but its size does not change. The text editor gets a "Text box" chip
+/// The editor opens with two boxed text layers already on the image. Drag
+/// the handles on their edges to resize a box: the text of the first wraps
+/// and shrinks to fit, the second keeps its text size and draws the lines
+/// that do not fit below the box. The text editor gets a "Text box" chip
 /// that puts new or edited text into a box, or takes it out of one.
 ///
 /// Example usage:
@@ -45,6 +46,17 @@ class _TextBoxExampleState extends State<TextBoxExample>
           size: Size(260, 120),
           verticalAlign: TextLayerBoxVerticalAlign.center,
           overflow: TextLayerBoxOverflow.shrink,
+        ),
+      ),
+    );
+    editorKey.currentState!.addLayer(
+      TextLayer(
+        text: 'This box keeps the text size. Lines that do not fit are '
+            'drawn below the box.',
+        offset: const Offset(0, 160),
+        box: const TextLayerBox(
+          size: Size(260, 60),
+          overflow: TextLayerBoxOverflow.visible,
         ),
       ),
     );
