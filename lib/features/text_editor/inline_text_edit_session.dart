@@ -184,7 +184,8 @@ class InlineTextEditSession {
 
   /// Replaces [fontScale], kept between `TextEditorConfigs.minFontScale`
   /// and `TextEditorConfigs.maxFontScale`. The text grows or shrinks inside
-  /// the layer; a box keeps its size.
+  /// the layer. A box the layer has keeps its size; one [showBoxOn] fits to
+  /// the text fits it again.
   void setFontScale(double scale) {
     final next = scale.clamp(configs.minFontScale, configs.maxFontScale);
     if (_closed || next == fontScale) return;
@@ -320,26 +321,40 @@ class InlineTextEditSession {
     return true;
   }
 
-  /// Takes the box [showBoxOn] put on [live] away again, before the edit
+  /// Takes the box [showBoxOn] put on the layer away again, before the edit
   /// ends. The saved layer brings its own, and a dropped edit leaves the
   /// layer as it was.
-  void hideShownBox(TextLayer live) {
-    _settleShownBox(live);
+  ///
+  /// [live] is the layer as it is now, or `null` when it was removed during
+  /// the edit; the history step it was in then gets it back without the box.
+  void hideShownBox(TextLayer? live) {
+    if (live != null) _settleShownBox(live);
     final shown = _shownBox;
-    if (shown != null && live.box == shown) live.box = null;
+    if (shown != null) {
+      if (live?.box == shown) live!.box = null;
+      if (_shownOn?.box == shown) _shownOn!.box = null;
+    }
     _shownBox = null;
     _shownOn = null;
   }
 
-  /// When a history step was taken since the box was shown, as resizing it
-  /// takes one, [live] is that step's copy and keeps the box from then on.
-  /// The step the edit started in gets its layer back without it.
+  /// When a history step was taken since the box was shown, [live] is that
+  /// step's copy, and the step before gets its layer back without the box.
+  ///
+  /// The copy goes on following the text while it has the shown box, as
+  /// after moving or rotating the layer. A box resized since then, which
+  /// takes a step of its own, stays on the copy and is left alone.
   void _settleShownBox(TextLayer live) {
     final shownOn = _shownOn;
     if (shownOn == null || identical(shownOn, live)) return;
-    if (shownOn.box == _shownBox) shownOn.box = null;
-    _shownBox = null;
-    _shownOn = null;
+    final shown = _shownBox;
+    if (shownOn.box == shown) shownOn.box = null;
+    if (live.box == shown) {
+      _shownOn = live;
+    } else {
+      _shownBox = null;
+      _shownOn = null;
+    }
   }
 
   TextLayerBox _fitBox(TextLayer live) {

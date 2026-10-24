@@ -72,12 +72,15 @@ class LayerWidgetTextItem extends StatefulWidget {
   ///
   /// This is what a capture reads instead of the on-screen boundary, which
   /// shows whichever highlight the playback position happens to be on.
+  /// [bounds] is the part of the layer the image holds, see
+  /// [RoundedBackgroundText.toImage].
   static Future<ui.Image> renderContent(
     BuildContext context, {
     required TextLayer layer,
     required TextEditorConfigs textEditorConfigs,
     required Size size,
     required double pixelRatio,
+    Rect? bounds,
     Size mainBodySize = Size.zero,
     TextLayer? mainEditorLayer,
     int? highlightIndex,
@@ -90,7 +93,7 @@ class LayerWidgetTextItem extends StatefulWidget {
       mainEditorLayer: mainEditorLayer,
       highlightIndex: highlightIndex,
       revealedLength: revealedLength,
-    ).toImage(context, size: size, pixelRatio: pixelRatio);
+    ).toImage(context, size: size, pixelRatio: pixelRatio, bounds: bounds);
   }
 
   /// Whether [TextEditorConfigs.layerBounds] wrap [layer], placed in

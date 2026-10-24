@@ -412,6 +412,99 @@ void main() {
       expect(live(state).box, isNull);
       expect(live(state).text, 'Name');
     });
+
+    // Moving, scaling or rotating the layer takes a history step, which
+    // copies the layer with the box shown on it.
+    testWidgets('a history step during the edit keeps the box following', (
+      tester,
+    ) async {
+      final (state, _) = await start(tester);
+      final shown = live(state).box!;
+      state.addHistory();
+      await tester.pump();
+
+      state.inlineTextEdit!.textCtrl.text = 'A much longer name';
+      await tester.pump();
+      expect(live(state).box!.size.width, greaterThan(shown.size.width));
+
+      state.inlineTextEdit!.setBoxEnabled(false);
+      await tester.pump();
+      expect(live(state).box, isNull);
+    });
+
+    testWidgets('a dropped edit after a history step leaves no box', (
+      tester,
+    ) async {
+      final (state, _) = await start(tester);
+      state.addHistory();
+      await tester.pump();
+
+      state.endInlineTextEdit(save: false);
+      await tester.pump();
+      expect(live(state).box, isNull);
+
+      state.undoAction();
+      await tester.pump();
+      expect(live(state).box, isNull);
+    });
+
+    testWidgets('a layer removed during the edit leaves no box behind', (
+      tester,
+    ) async {
+      final (state, _) = await start(tester);
+      // As dragging the layer onto the remove area does.
+      state.addHistory();
+      state.activeLayers.removeWhere((layer) => layer is TextLayer);
+      state.endInlineTextEdit(save: false);
+      await tester.pump();
+
+      state.undoAction();
+      await tester.pump();
+      expect(live(state).box, isNull);
+    });
+  });
+
+  testWidgets('a tap on a line drawn past the box puts the caret there', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+    final layer = TextLayer(
+      text: 'one\ntwo\nthree\nfour',
+      box: const TextLayerBox(
+        size: Size(200, 40),
+        overflow: TextLayerBoxOverflow.visible,
+      ),
+    );
+    state.addLayer(
+      layer,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pumpAndSettle();
+    state.beginInlineTextEdit(layer);
+    await tester.pumpAndSettle();
+    final session = state.inlineTextEdit!
+      ..textCtrl.selection = const TextSelection.collapsed(offset: 0);
+    await tester.pump();
+
+    final field = tester
+        .state<EditableTextState>(find.byType(EditableText))
+        .renderEditable;
+    final lastLine = field.localToGlobal(
+      Offset(field.size.width / 2, field.size.height - 4),
+    );
+    final box = tester.getRect(find.byType(RoundedBackgroundTextField));
+    expect(box.contains(lastLine), isFalse);
+
+    await tester.tapAt(lastLine);
+    await tester.pumpAndSettle();
+
+    expect(state.inlineTextEdit, same(session));
+    final text = session.textCtrl.text;
+    expect(
+      session.textCtrl.selection.baseOffset,
+      greaterThan(text.lastIndexOf('\n')),
+    );
   });
 
   testWidgets('a text box keeps its size while it is edited', (tester) async {

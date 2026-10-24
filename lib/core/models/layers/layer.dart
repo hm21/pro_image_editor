@@ -787,7 +787,9 @@ class Layer {
       final box = context.findRenderObject() as RenderBox?;
       final requested = capturePixelRatio(
         this,
-        box?.size ?? Size.zero,
+        box is RenderLayerRepaintBoundary
+            ? box.captureBounds.size
+            : box?.size ?? Size.zero,
         effectivePixelRatio,
       );
       assert(
@@ -959,7 +961,7 @@ class Layer {
   ///
   /// [capturePixelRatio] decides the pixel ratio of each layer, see
   /// [captureAsPng]. It changes only the resolution of the images:
-  /// [ExportedLayer.logicalSize] stays the layer's laid-out size.
+  /// [ExportedLayer.logicalSize] stays the logical size of what is captured.
   static Future<List<ExportedLayer>> captureAllLayers({
     required List<Layer> layers,
     double? pixelRatio,

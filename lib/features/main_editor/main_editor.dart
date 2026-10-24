@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart' show RenderEditable;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -1830,7 +1831,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// properties (`id`, `key`, `offset`, `scale`, `rotation`, etc.) are
   /// restored from the original [layerData] to prevent unintended drift.
   ///
-  /// If the returned text is empty, the layer is removed via [removeLayer].
+  /// If the returned text is empty, the layer is removed via [removeLayer],
+  /// unless it keeps a [TextLayer.box] (see [applyTextLayerChanges]).
   /// Otherwise the layer is replaced in place via [replaceLayer].
   ///
   /// - [layerData]: The existing [TextLayer] to edit.
@@ -1935,7 +1937,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// An edit already in progress on another layer is saved first; one on
   /// [layer] stays open. [done] on the session writes the text back through
   /// [applyTextLayerChanges]; [cancel] leaves the layer as it was. Empty text
-  /// removes the layer, as the full-screen editor does.
+  /// removes the layer, as the full-screen editor does, unless the layer had
+  /// a box before the edit and still has one.
   void beginInlineTextEdit(TextLayer layer, {bool selectAll = false}) {
     _beginInlineTextEdit(layer, selectAll: selectAll);
   }
@@ -2021,8 +2024,8 @@ class ProImageEditorState extends State<ProImageEditor>
     final live = index < 0 ? null : activeLayers[index];
 
     var saved = false;
+    session.hideShownBox(live is TextLayer ? live : null);
     if (live is TextLayer) {
-      session.hideShownBox(live);
       final result = save ? session.buildResult(live) : null;
       saved = result != null;
       final emptied =
@@ -2083,10 +2086,13 @@ class ProImageEditorState extends State<ProImageEditor>
   /// [InlineTextEditChrome]. Returns whether the gesture the pointer starts
   /// must leave the layers and the canvas alone: one that ended the edit, or
   /// one on the field that selects text instead.
-  bool _onInlinePointerDown() {
+  bool _onInlinePointerDown(Offset position) {
     final session = _inlineTextEdit;
     if (session == null) return false;
-    final onField = session.pointerOnText || session.pointerOnChrome;
+    final onField =
+        session.pointerOnText ||
+        session.pointerOnChrome ||
+        (!session.pointerOnLayer && _tapInlineTextPastBox(session, position));
     final inside = onField || session.pointerOnLayer;
     session
       ..pointerOnText = false
@@ -2095,6 +2101,40 @@ class ProImageEditorState extends State<ProImageEditor>
     if (inside) return onField;
     if (!textEditorConfigs.enableTapOutsideToSave) return false;
     endInlineTextEdit(save: true);
+    return true;
+  }
+
+  /// Puts the caret where [position], a global position, lands on a line
+  /// the box of the layer being typed shows past itself
+  /// ([TextLayerBoxOverflow.visible]), and returns whether it landed there.
+  ///
+  /// Hit testing stops at the box, so a pointer on those lines reaches
+  /// neither the field nor the layer.
+  bool _tapInlineTextPastBox(InlineTextEditSession session, Offset position) {
+    // A box handle the pointer went down on resizes the box instead.
+    if (layerInteractionManager.isResizingTextBox ||
+        layerInteractionManager.rotateScaleLayerSizeHelper != null) {
+      return false;
+    }
+    RenderEditable? editable;
+    void visit(RenderObject child) {
+      if (editable != null) return;
+      if (child is RenderEditable) {
+        editable = child;
+      } else {
+        child.visitChildren(visit);
+      }
+    }
+
+    final root = session.focusNode.context?.findRenderObject();
+    if (root == null) return false;
+    visit(root);
+    final field = editable;
+    if (field == null || !field.attached || !field.hasSize) return false;
+    if (!(Offset.zero & field.size).contains(field.globalToLocal(position))) {
+      return false;
+    }
+    field.selectPositionAt(from: position, cause: SelectionChangedCause.tap);
     return true;
   }
 
@@ -3854,7 +3894,7 @@ class ProImageEditorState extends State<ProImageEditor>
             : Listener(
                 behavior: HitTestBehavior.translucent,
                 onPointerDown: (details) {
-                  _holdInlineGesture = _onInlinePointerDown();
+                  _holdInlineGesture = _onInlinePointerDown(details.position);
                   _lastDownEvent = details;
                   _tapDownTimestamp = DateTime.now();
                   _mouseService.onPointerDown(details);

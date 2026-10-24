@@ -693,6 +693,8 @@ class _LayerContentItem extends StatelessWidget {
         textEditorConfigs: textEditorConfigs,
         size: box?.size ?? Size.zero,
         pixelRatio: pixelRatio,
+        // As much as a capture of the boundary itself reads.
+        bounds: box is RenderLayerRepaintBoundary ? box.captureBounds : null,
         mainBodySize: mainBodySize,
         mainEditorLayer: _mainEditorTextLayer,
         highlightIndex: highlightIndex,
@@ -726,6 +728,7 @@ class _LayerContentItem extends StatelessWidget {
                   renderText(pixelRatio, highlightIndex: highlightIndex)
             : null,
         renderTextState: timedText != null ? renderText : null,
+        captureOverflow: layer.mask == null,
         child: content,
       ),
     );

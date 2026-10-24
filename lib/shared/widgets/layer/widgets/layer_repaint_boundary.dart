@@ -47,6 +47,7 @@ class LayerRepaintBoundary extends RepaintBoundary {
     this.renderContent,
     this.renderHighlight,
     this.renderTextState,
+    this.captureOverflow = true,
   });
 
   /// Renders the content a capture should read instead of the boundary, or
@@ -61,14 +62,35 @@ class LayerRepaintBoundary extends RepaintBoundary {
   /// can be in, or `null` when the layer has neither.
   final LayerTextStateRenderer? renderTextState;
 
+  /// Whether a capture includes the text a box shows past itself, see
+  /// [RenderLayerRepaintBoundary.captureBounds].
+  ///
+  /// `false` for a masked layer: the mask cuts its content off at the
+  /// layer's size, so nothing past it shows.
+  final bool captureOverflow;
+
   @override
   RenderLayerRepaintBoundary createRenderObject(BuildContext context) {
-    return RenderLayerRepaintBoundary();
+    return RenderLayerRepaintBoundary(captureOverflow: captureOverflow);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderLayerRepaintBoundary renderObject,
+  ) {
+    renderObject.captureOverflow = captureOverflow;
   }
 }
 
 /// The render object of a [LayerRepaintBoundary].
 class RenderLayerRepaintBoundary extends RenderRepaintBoundary {
+  /// Creates the render object of a [LayerRepaintBoundary].
+  RenderLayerRepaintBoundary({this.captureOverflow = true});
+
+  /// Whether [captureBounds] grows by the text a box shows past itself.
+  bool captureOverflow;
+
   /// Captures the layer as it was last painted, or returns `null` when it has
   /// never been painted.
   ///
@@ -88,16 +110,24 @@ class RenderLayerRepaintBoundary extends RenderRepaintBoundary {
   /// (`TextLayerBoxOverflow.visible`).
   ///
   /// It grows by the same amount on both sides of an axis, so the image
-  /// keeps the layer's center, where an export places it.
+  /// keeps the layer's center, where an export places it. It does not grow
+  /// without [captureOverflow].
   Rect get captureBounds {
     var drawn = Offset.zero & size;
+    if (!captureOverflow) return drawn;
     void visit(RenderObject child) {
       final text = child is RenderCustomPaint ? child.painter : null;
       if (text is RoundedBackgroundTextPainter &&
           text.boxSize != null &&
           !text.clipToBox) {
-        final glyphs = (text.hitBoxCorrectionOffset & text.painter.size)
-            .inflate(text.outlineWidth);
+        // With the outline and the shadows around the glyphs.
+        final effect = text.effectSpace;
+        final glyphs = Rect.fromLTRB(
+          text.hitBoxCorrectionOffset.dx - effect.dx,
+          text.hitBoxCorrectionOffset.dy - effect.dy,
+          text.hitBoxCorrectionOffset.dx + text.painter.width + effect.dx,
+          text.hitBoxCorrectionOffset.dy + text.painter.height + effect.dy,
+        );
         drawn = drawn.expandToInclude(
           MatrixUtils.transformRect(child.getTransformTo(this), glyphs),
         );

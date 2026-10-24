@@ -196,21 +196,29 @@ class RoundedBackgroundText extends StatelessWidget {
   /// The result matches what `RenderRepaintBoundary.toImage` reads from a
   /// boundary directly around this widget, without the widget having to be
   /// on screen in that state.
+  ///
+  /// [bounds] is the part of the text the image holds, in the coordinates
+  /// of [size], such as one grown by lines a [box] shows past itself.
+  /// Defaults to `Offset.zero & size`.
   Future<ui.Image> toImage(
     BuildContext context, {
     required Size size,
     required double pixelRatio,
+    Rect? bounds,
   }) async {
+    final area = bounds ?? Offset.zero & size;
     final painter = _layout(context, BoxConstraints.loose(size)).painter;
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder)..scale(pixelRatio);
+    final canvas = Canvas(recorder)
+      ..scale(pixelRatio)
+      ..translate(-area.left, -area.top);
     painter.paint(canvas, size);
 
     final picture = recorder.endRecording();
     try {
       return await picture.toImage(
-        (size.width * pixelRatio).ceil(),
-        (size.height * pixelRatio).ceil(),
+        (area.width * pixelRatio).ceil(),
+        (area.height * pixelRatio).ceil(),
       );
     } finally {
       picture.dispose();
@@ -376,6 +384,7 @@ class RoundedBackgroundText extends StatelessWidget {
     double horizontalSpace = enableHitBoxCorrection ? height * 0.3 : 0;
     double verticalSpace = enableHitBoxCorrection ? height * 0.1 : 0;
 
+    final overflowsBox = box?.overflow == TextLayerBoxOverflow.visible;
     RoundedBackgroundTextPainter createBackgroundPainter(
       Offset textOffset, {
       Size? boxSize,
@@ -397,7 +406,13 @@ class RoundedBackgroundText extends StatelessWidget {
         hitBoxCorrectionOffset: textOffset,
         visibleLength: visibleLength,
         boxSize: boxSize,
-        clipToBox: box?.overflow != TextLayerBoxOverflow.visible,
+        clipToBox: !overflowsBox,
+        effectSpace: overflowsBox
+            ? _effectSpace(
+                outlineWidth: hasOutline ? outlineWidth : 0,
+                shadows: shadows,
+              )
+            : Offset.zero,
       );
     }
 

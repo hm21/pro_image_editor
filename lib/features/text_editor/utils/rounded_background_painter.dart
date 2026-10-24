@@ -35,6 +35,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     this.visibleLength,
     this.boxSize,
     this.clipToBox = true,
+    this.effectSpace = Offset.zero,
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -104,6 +105,11 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// Whether text past [boxSize] is cut off at the box, which
   /// [TextLayerBoxOverflow.visible] turns off.
   final bool clipToBox;
+
+  /// How far the outline and the shadows paint beyond the glyphs on each
+  /// axis, which a capture of text drawn past its box (see [clipToBox])
+  /// makes room for.
+  final Offset effectSpace;
 
   /// The background behind the drawn text, or behind all of it when
   /// [revealedOnly] is `false` (see [visibleLength]).
