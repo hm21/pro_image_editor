@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.20.0
+- **FIX**(layers): Text layers no longer shift by a fraction of a pixel when the mouse moves over them or when they are first selected.
+
 ## 14.19.0
 - **FEAT**(layers): Add `TextLayer.gradient` to fill the letters of a text with a linear `TextGradient`.
 - **FEAT**(text-editor): Add `TextLayer.wrapAtLayerBounds` to let a text run past `TextEditorConfigs.layerBounds`; `ProImageEditorState.textLayerWrapsAtBounds` tells whether the bounds wrap a layer.
