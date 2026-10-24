@@ -21,7 +21,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     required this.textEditorConfigs,
     this.inlineEdit,
     required this.showMoveCursor,
-    required this.onHitChanged,
+    this.onHitChanged,
     this.playTimeNotifier,
     this.mainBodySize = Size.zero,
     this.mainEditorLayer,
@@ -44,7 +44,7 @@ class LayerWidgetTextItem extends StatefulWidget {
   ///
   /// The [onHitChanged] function takes a boolean parameter [hasHit] which
   /// indicates whether a hit has occurred (true) or not (false).
-  final Function(bool hasHit) onHitChanged;
+  final Function(bool hasHit)? onHitChanged;
 
   /// The video playback position, which decides the active entry of
   /// [TextLayer.highlights] and how much of a revealing text shows (see
@@ -343,7 +343,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       showMoveCursor.value = hasHit;
     }
     layer.hit = hasHit;
-    widget.onHitChanged(hasHit);
+    widget.onHitChanged?.call(hasHit);
   }
 
   @override
