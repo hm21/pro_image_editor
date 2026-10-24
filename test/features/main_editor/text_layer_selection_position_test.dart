@@ -27,7 +27,7 @@ void main() {
     ),
   );
 
-  // The companion app anchors text by its top-left corner.
+  // Text anchored by its top-left corner instead of its center.
   final topLeftConfigs = configs.copyWith(
     textEditor: const TextEditorConfigs(layerFractionalOffset: Offset.zero),
   );
@@ -107,8 +107,8 @@ void main() {
                 );
               }
 
-              // The first hit changes the hit notifier. Later hits must also
-              // keep the content in place when selecting and deselecting it.
+              // The first tap selects the layer. Neither it nor the taps after
+              // it may move the content, on any frame.
               for (var attempt = 0; attempt < 3; attempt++) {
                 final gesture = await tester.startGesture(
                   before.center,
