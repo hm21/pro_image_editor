@@ -912,7 +912,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Pass [keyframes] to set the layer's placement over time (see
   /// [Layer.keyframes]); an empty list removes them. Their times are measured
   /// from the layer's start, so a new [startTime] alone moves them along with
-  /// the layer.
+  /// the layer. So are the keyframes of a [Layer.mask]; pass [mask] to set
+  /// one rebased onto a new start.
   void setLayerTimeline({
     required int index,
     Duration? startTime,
@@ -924,6 +925,7 @@ class ProImageEditorState extends State<ProImageEditor>
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
     Map<String, dynamic>? meta,
     bool skipUpdateHistory = false,
   }) {
@@ -940,6 +942,7 @@ class ProImageEditorState extends State<ProImageEditor>
             transitionBuilder == current.transitionBuilder) &&
         (animations == null || listEquals(animations, current.animations)) &&
         (keyframes == null || listEquals(keyframes, current.keyframes)) &&
+        (mask == null || mask == current.mask) &&
         meta == null) {
       return;
     }
@@ -967,6 +970,7 @@ class ProImageEditorState extends State<ProImageEditor>
       layer.animations = List<LayerAnimation>.of(animations);
     }
     if (keyframes != null) layer.keyframes = keyframes;
+    if (mask != null) layer.mask = mask;
     if (meta != null) layer.meta = {...layer.meta ?? {}, ...meta};
 
     if (!skipUpdateHistory) {

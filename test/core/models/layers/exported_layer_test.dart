@@ -24,6 +24,29 @@ void main() {
       expect(exported.logicalSize, size);
     });
 
+    test('boxSize defaults to logicalSize', () {
+      final layer = TextLayer(text: 'Hello');
+      final bytes = Uint8List.fromList([1, 2, 3]);
+
+      expect(
+        ExportedLayer(
+          layer: layer,
+          bytes: bytes,
+          logicalSize: const Size(100, 50),
+        ).boxSize,
+        const Size(100, 50),
+      );
+      expect(
+        ExportedLayer(
+          layer: layer,
+          bytes: bytes,
+          logicalSize: const Size(100, 50),
+          boxSize: const Size(80, 40),
+        ).boxSize,
+        const Size(80, 40),
+      );
+    });
+
     test('works with EmojiLayer', () {
       final layer = EmojiLayer(emoji: '😀');
       final bytes = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47]);

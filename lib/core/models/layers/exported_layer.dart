@@ -12,9 +12,10 @@ class ExportedLayer {
     required this.layer,
     required this.bytes,
     required this.logicalSize,
+    Size? boxSize,
     this.highlightBytes = const {},
     this.revealBytes = const {},
-  });
+  }) : boxSize = boxSize ?? logicalSize;
 
   /// The source layer that was exported.
   final Layer layer;
@@ -36,6 +37,15 @@ class ExportedLayer {
   /// the layer has a [Layer.mask]. The image is then larger than the box by
   /// the same amount on opposite sides, so it stays centered on the layer.
   final Size logicalSize;
+
+  /// The logical size of the layer's own box, before it is turned: the box
+  /// its [Layer.mask] is measured in.
+  ///
+  /// The same as [logicalSize] unless the layer was captured with its
+  /// rotation applied, which makes [logicalSize] the box around the turned
+  /// layer. A renderer that applies a mask itself, such as one with
+  /// [LayerMask.keyframes], places it in the captured image with this.
+  final Size boxSize;
 
   /// Encoded images of a [TextLayer] with one of its [TextLayer.highlights]
   /// active, keyed by the highlight's index. Every image has the size of

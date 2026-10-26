@@ -1018,6 +1018,7 @@ class Layer {
     required LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     final logicalSizes = <Size>[];
+    final boxSizes = <Size>[];
     for (var i = 0; i < layers.length; i++) {
       final layer = layers[i];
       final box =
@@ -1029,6 +1030,7 @@ class Layer {
           ? box.captureBounds.size
           : box?.size ?? Size.zero;
 
+      boxSizes.add(size);
       if (applyTransforms && (layer.rotation != 0)) {
         final double cosR = math.cos(layer.rotation).abs();
         final double sinR = math.sin(layer.rotation).abs();
@@ -1061,6 +1063,7 @@ class Layer {
           layer: layer,
           bytes: bytes,
           logicalSize: logicalSizes[i],
+          boxSize: boxSizes[i],
           // Only highlighted text pays for the extra captures, or even an
           // extra await: a layer without highlights completes exactly as
           // before.

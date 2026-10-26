@@ -2,6 +2,8 @@
 
 ## 14.21.0
 - **FEAT**(layers): Add `LayerMask.keyframes` to move, resize, turn and soften a shape mask over time, on its own and on top of the layer's motion; `LayerMask.at` gives the mask at one moment, `Layer.maskAt` reads it on the video timeline, and `LayerMask.withKeyframeAt` / `withoutKeyframeAt` edit the keyframes. The canvas draws a keyframed mask at the playback position, and `Layer.captureAsPng` leaves it out of the captured image for a renderer to apply frame by frame.
+- **FEAT**(main-editor): `ProImageEditorState.setLayerTimeline` takes a `mask`, so a trimmed start can rebase its keyframes with the layer's own.
+- **FEAT**(layers): Add `ExportedLayer.boxSize`, the layer's box before it is turned, which a renderer needs to place a mask in the image of a turned layer.
 
 ## 14.20.0
 - **FEAT**(text-editor): Add `TextLayerBoxOverflow.visible` and `TextEditorConfigs.boxOverflow` to draw lines that do not fit past a text box; a `switch` over `TextLayerBoxOverflow` must handle the new value.
