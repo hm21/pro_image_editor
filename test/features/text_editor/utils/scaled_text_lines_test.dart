@@ -258,53 +258,61 @@ void main() {
         );
       });
 
-      test('spreads a gradient as its painter does', () async {
-        const gradient = TextGradient(
-          colors: [Color(0xFFFF0000), Color(0xFF0000FF)],
-        );
-        TextSpan span(Shader shader) => TextSpan(
-          text: 'One two three',
-          style: style.copyWith(foreground: Paint()..shader = shader),
-        );
-        final probe = layout(
-          span(gradient.createShader(Rect.zero)),
-          maxWidth: 1000,
-        );
-        final bounds = Offset.zero & probe.size;
-        probe.dispose();
-        final source = layout(
-          span(gradient.createShader(bounds)),
-          maxWidth: 1000,
-        );
-        final scaled = ScaledTextLines.create(
-          source,
-          scale: 120 / 5.25,
-          emojiScale: 120 / 32,
-          gradient: gradient,
-          gradientBounds: bounds,
-        )!;
+      // Across the lines and down them, where the copies' baselines lie
+      // below their own origin.
+      for (final angle in [0.0, pi / 2, pi / 4]) {
+        test('spreads a gradient at $angle as its painter does', () async {
+          final gradient = TextGradient(
+            colors: const [Color(0xFFFF0000), Color(0xFF0000FF)],
+            angle: angle,
+          );
+          TextSpan span(Shader shader) => TextSpan(
+            text: 'One two three',
+            style: style.copyWith(foreground: Paint()..shader = shader),
+          );
+          final probe = layout(
+            span(gradient.createShader(Rect.zero)),
+            maxWidth: 1000,
+          );
+          final bounds = Offset.zero & probe.size;
+          probe.dispose();
+          final source = layout(
+            span(gradient.createShader(bounds)),
+            maxWidth: 1000,
+          );
+          final scaled = ScaledTextLines.create(
+            source,
+            scale: 120 / 5.25,
+            emojiScale: 120 / 32,
+            gradient: gradient,
+            gradientBounds: bounds,
+          )!;
 
-        // Painted at the origin, where the text's shader lies.
-        final size = source.size;
-        final real = await render(size, (c) => source.paint(c, Offset.zero));
-        final copied = await render(size, (c) => scaled.paint(c, Offset.zero));
-        final width = size.width.ceil();
-        var compared = 0;
-        var difference = 0;
-        for (var i = 0; i < real.lengthInBytes; i += 4) {
-          // Only inside glyphs both draw, away from antialiased edges.
-          if (real.getUint8(i + 3) < 255 || copied.getUint8(i + 3) < 255) {
-            continue;
+          // Painted at the origin, where the text's shader lies.
+          final size = source.size;
+          final real = await render(size, (c) => source.paint(c, Offset.zero));
+          final copied = await render(
+            size,
+            (c) => scaled.paint(c, Offset.zero),
+          );
+          final width = size.width.ceil();
+          var compared = 0;
+          var difference = 0;
+          for (var i = 0; i < real.lengthInBytes; i += 4) {
+            // Only inside glyphs both draw, away from antialiased edges.
+            if (real.getUint8(i + 3) < 255 || copied.getUint8(i + 3) < 255) {
+              continue;
+            }
+            compared++;
+            difference += (real.getUint8(i) - copied.getUint8(i)).abs();
+            difference += (real.getUint8(i + 2) - copied.getUint8(i + 2)).abs();
           }
-          compared++;
-          difference += (real.getUint8(i) - copied.getUint8(i)).abs();
-          difference += (real.getUint8(i + 2) - copied.getUint8(i + 2)).abs();
-        }
-        expect(compared, greaterThan(width));
-        expect(difference / compared, lessThan(8));
-        scaled.dispose();
-        source.dispose();
-      });
+          expect(compared, greaterThan(width));
+          expect(difference / compared, lessThan(8));
+          scaled.dispose();
+          source.dispose();
+        });
+      }
     });
   });
 }

@@ -315,11 +315,15 @@ class _ScaledRun {
   final double scale;
 
   void paint(Canvas canvas, Offset offset) {
+    // Painted at the origin of its own coordinates, where its gradient was
+    // spread: a shader does not move with the offset a paragraph is painted
+    // at.
     canvas
       ..save()
       ..translate(offset.dx + target.dx, offset.dy + target.dy)
-      ..scale(scale);
-    painter.paint(canvas, -anchor);
+      ..scale(scale)
+      ..translate(-anchor.dx, -anchor.dy);
+    painter.paint(canvas, Offset.zero);
     canvas.restore();
   }
 
