@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../models/line_metrics_model.dart';
+import 'scaled_text_lines.dart';
 
 /// A [CustomPainter] that paints text with a rounded background, optional
 /// padding, and an optional cursor indicator.
@@ -36,6 +37,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     this.boxSize,
     this.clipToBox = true,
     this.effectSpace = Offset.zero,
+    this.scaledText = const {},
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -110,6 +112,22 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// axis, which a capture of text drawn past its box (see [clipToBox])
   /// makes room for.
   final Offset effectSpace;
+
+  /// Draws the glyphs of the text painters it holds in place of those
+  /// painters, for text large enough to be drawn from a smaller font (see
+  /// [ScaledTextLines]). Layout, background and hit testing still read the
+  /// painters themselves.
+  final Map<TextPainter, ScaledTextLines> scaledText;
+
+  /// Draws the glyphs of [textPainter] at [offset].
+  void _paintText(Canvas canvas, TextPainter textPainter, Offset offset) {
+    final scaled = scaledText[textPainter];
+    if (scaled != null) {
+      scaled.paint(canvas, offset);
+    } else {
+      textPainter.paint(canvas, offset);
+    }
+  }
 
   /// The background behind the drawn text, or behind all of it when
   /// [revealedOnly] is `false` (see [visibleLength]).
@@ -534,8 +552,10 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         ..drawRect(box, painter)
         ..translate(hitBoxCorrectionOffset.dx, hitBoxCorrectionOffset.dy);
       _paintSilhouetteShadows(canvas);
-      outlinePainter?.paint(canvas, Offset.zero);
-      this.painter.paint(canvas, Offset.zero);
+      if (outlinePainter case final outline?) {
+        _paintText(canvas, outline, Offset.zero);
+      }
+      _paintText(canvas, this.painter, Offset.zero);
       canvas.restore();
       return;
     }
@@ -548,8 +568,10 @@ class RoundedBackgroundTextPainter extends CustomPainter {
       ..drawPath(background, painter);
 
     _paintSilhouetteShadows(canvas);
-    outlinePainter?.paint(canvas, Offset.zero);
-    this.painter.paint(canvas, Offset.zero);
+    if (outlinePainter case final outline?) {
+      _paintText(canvas, outline, Offset.zero);
+    }
+    _paintText(canvas, this.painter, Offset.zero);
   }
 
   /// Draws every shadow of [silhouetteShadows] as the tinted, blurred
@@ -581,7 +603,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
               : null,
       );
       for (final silhouette in silhouettePainters) {
-        silhouette.paint(canvas, shadow.offset);
+        _paintText(canvas, silhouette, shadow.offset);
       }
       canvas.restore();
     }
@@ -628,7 +650,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         oldDelegate.outerRadius != outerRadius ||
         oldDelegate.visibleLength != visibleLength ||
         oldDelegate.boxSize != boxSize ||
-        oldDelegate.clipToBox != clipToBox;
+        oldDelegate.clipToBox != clipToBox ||
+        !mapEquals(oldDelegate.scaledText, scaledText);
 
     if (changed) _cachedPath = null; // invalidate cache
 
@@ -656,7 +679,8 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         listEquals(other.silhouetteShadows, silhouetteShadows) &&
         other.visibleLength == visibleLength &&
         other.boxSize == boxSize &&
-        other.clipToBox == clipToBox;
+        other.clipToBox == clipToBox &&
+        mapEquals(other.scaledText, scaledText);
   }
 
   @override
@@ -677,6 +701,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         Object.hashAll(silhouetteShadows) ^
         visibleLength.hashCode ^
         boxSize.hashCode ^
-        clipToBox.hashCode;
+        clipToBox.hashCode ^
+        Object.hashAllUnordered(scaledText.values);
   }
 }

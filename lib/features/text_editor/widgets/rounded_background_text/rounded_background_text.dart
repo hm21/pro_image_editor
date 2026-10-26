@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer_box.dart';
 import '../../utils/rounded_background_painter.dart';
+import '../../utils/scaled_text_lines.dart';
 
 /// Creates a [RoundedBackgroundText] widget with plain text and optional
 /// styling.
@@ -174,6 +175,46 @@ class RoundedBackgroundText extends StatelessWidget {
 
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
+  /// Text with a font larger than this, in logical pixels, draws its glyphs
+  /// from a copy set in a font of [_glyphFontSize], scaled up to its size.
+  ///
+  /// Impeller rasterizes every glyph into one atlas shared by all text, at
+  /// the font size times the canvas scale, with the canvas scale capped at
+  /// 48. That includes glyphs it then draws as paths, which it does above
+  /// 250 device pixels. The glyphs of a huge font can need more room than the
+  /// atlas has, and once growing it fails, Impeller draws every glyph added
+  /// later from the wrong place, so new text anywhere in the app shows
+  /// garbled until the engine restarts.
+  ///
+  /// Drawn from the smaller font, the atlas holds a glyph at no more than
+  /// [_glyphFontSize] times 48 pixels. The text keeps its layout, and
+  /// Impeller still draws it at its real size: from the atlas while that is
+  /// small and as paths beyond, as it would draw the text in its own font.
+  static const double _scaledGlyphThreshold = 64;
+
+  /// The font size the glyphs of large text are drawn from, see
+  /// [_scaledGlyphThreshold].
+  ///
+  /// Just above 250 / 48, so the canvas scale reaches Impeller's cap of 48
+  /// where Impeller starts to draw the text as paths. Below that the atlas
+  /// holds each glyph at the size it shows; above it, every size of the text
+  /// shares the entries at the cap, so resizing a layer reuses them instead
+  /// of adding a set of glyphs per frame. With a larger font, resizing
+  /// outlined text that way left glyphs already in the atlas corrupted, on
+  /// Metal and on Vulkan alike.
+  static const double _glyphFontSize = 5.25;
+
+  /// The font size the emoji of large text are drawn from.
+  ///
+  /// A color emoji font sets emoji wider for their size below about 24
+  /// points (Apple Color Emoji by a quarter), so emoji are drawn from a size
+  /// at which they keep their proportions. They are rasterized into an atlas
+  /// of their own, apart from the rest of the text.
+  static const double _emojiGlyphFontSize = 32;
+
+  /// The font size Flutter uses for a style that sets none.
+  static const double _defaultFontSize = 14;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -258,6 +299,9 @@ class RoundedBackgroundText extends StatelessWidget {
   }
 
   static void _disposeTextPainters(RoundedBackgroundTextPainter painter) {
+    for (final lines in painter.scaledText.values) {
+      lines.dispose();
+    }
     painter.painter.dispose();
     painter.outlinePainter?.dispose();
     for (final silhouette in painter.silhouettePainters) {
@@ -348,13 +392,24 @@ class RoundedBackgroundText extends StatelessWidget {
     List<Shadow>? scaleShadows(List<Shadow>? shadows) => textScale == 1
         ? shadows
         : shadows?.map((shadow) => shadow.scale(textScale)).toList();
+    final glyphScale = _glyphScale(
+      style,
+      textScale: textScale,
+      textAlign: align,
+      maxLines: defaultTextStyle.maxLines,
+    );
 
     // With an outline, the shadows are cast by the outlined glyphs, which the
     // painter draws from opaque silhouettes; the passes themselves draw none.
+    // Glyphs drawn from a smaller font cast them from silhouettes too: the
+    // blur of a text shadow does not shrink in step with its font.
     // [paintShadows] keeps the same space while leaving the drawing to a
     // caller that paints the shadows itself.
+    final scaledShadows = glyphScale != 1 && paintShadows;
+    final castsSilhouetteShadows =
+        shadows.isNotEmpty && (hasOutline || scaledShadows);
     final TextStyle Function(TextStyle style)? fillRestyle =
-        hasOutline || !paintShadows
+        hasOutline || !paintShadows || scaledShadows
         ? (style) => style.copyWith(shadows: const [])
         : textScale == 1
         ? null
@@ -375,13 +430,41 @@ class RoundedBackgroundText extends StatelessWidget {
     final outlinePainter = hasOutline
         ? createPainter(paintWith(strokePaint(outlineColor)))
         : null;
-    final hasOutlineShadows = hasOutline && shadows.isNotEmpty;
-    final silhouettePainters = hasOutlineShadows
+    final silhouettePainters = castsSilhouetteShadows
         ? [
-            createPainter(paintWith(strokePaint(const Color(0xFF000000)))),
+            if (hasOutline)
+              createPainter(paintWith(strokePaint(const Color(0xFF000000)))),
             createPainter(paintWith(Paint()..color = const Color(0xFF000000))),
           ]
         : const <TextPainter>[];
+
+    // Built once the passes are laid out, see [_scaledGlyphThreshold].
+    Map<TextPainter, ScaledTextLines> scaleGlyphs() {
+      if (glyphScale == 1) return const {};
+      final gradient = this.gradient;
+      final scaled = <TextPainter, ScaledTextLines>{};
+      for (final textPainter in [
+        painter,
+        ?outlinePainter,
+        ...silhouettePainters,
+      ]) {
+        final lines = ScaledTextLines.create(
+          textPainter,
+          scale: glyphScale,
+          emojiScale: max(
+            1.0,
+            glyphScale * _glyphFontSize / _emojiGlyphFontSize,
+          ),
+          gradient:
+              identical(textPainter, painter) && (gradient?.isValid ?? false)
+              ? gradient
+              : null,
+          gradientBounds: _linesBounds(painter),
+        );
+        if (lines != null) scaled[textPainter] = lines;
+      }
+      return scaled;
+    }
 
     double height = painter.preferredLineHeight;
 
@@ -400,7 +483,7 @@ class RoundedBackgroundText extends StatelessWidget {
         outlineWidth: hasOutline ? outlineWidth : 0,
         outlineColor: outlineColor,
         silhouettePainters: silhouettePainters,
-        silhouetteShadows: hasOutlineShadows
+        silhouetteShadows: castsSilhouetteShadows
             ? scaleShadows(shadows)!
             : const [],
         onHitTestResult: onHitTestResult,
@@ -417,6 +500,7 @@ class RoundedBackgroundText extends StatelessWidget {
                 shadows: shadows,
               )
             : Offset.zero,
+        scaledText: scaleGlyphs(),
       );
     }
 
@@ -476,6 +560,35 @@ class RoundedBackgroundText extends StatelessWidget {
             (verticalSpace + effectSpace.dy) * 2,
       ),
     );
+  }
+
+  /// How many times larger than [_glyphFontSize] the largest font of the
+  /// text is drawn, once that is above [_scaledGlyphThreshold], or 1 when the
+  /// glyphs are drawn from the text's own font.
+  ///
+  /// [textScale] is the factor a box shrinks the text by.
+  double _glyphScale(
+    TextStyle rootStyle, {
+    required double textScale,
+    required TextAlign textAlign,
+    required int? maxLines,
+  }) {
+    var largest = rootStyle.fontSize ?? _defaultFontSize;
+    void visit(InlineSpan span) {
+      final size = span.style?.fontSize;
+      if (size != null && size > largest) largest = size;
+      if (span is TextSpan) span.children?.forEach(visit);
+    }
+
+    visit(text);
+    final size = largest * textScale;
+    if (size <= _scaledGlyphThreshold) return 1;
+    final canDraw = ScaledTextLines.canDraw(
+      text,
+      textAlign: textAlign,
+      maxLines: maxLines,
+    );
+    return canDraw ? size / _glyphFontSize : 1;
   }
 
   /// The room a box of [size] leaves for its text inside [inset] on every

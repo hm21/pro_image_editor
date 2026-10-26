@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.21.1
+- **FIX**(text-editor): Text scaled up very large no longer corrupts Impeller's glyph atlas, which garbled text across the whole app until a restart.
+
 ## 14.21.0
 - **FEAT**(layers): Add `LayerMask.keyframes` to animate a shape mask over time (`LayerMask.at`, `Layer.maskAt`); `Layer.captureAsPng` leaves a keyframed mask to the renderer.
 - **FEAT**(main-editor): `setLayerTimeline` takes a `mask` to rebase its keyframes with a trimmed start.
