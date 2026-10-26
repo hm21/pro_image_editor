@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.21.1
+- **FIX**(text-editor): A text layer scaled up very large no longer leaves text across the whole app garbled until it restarts. Impeller keeps glyphs in one atlas shared by all text, and huge glyphs could overflow it; text above 64 pixels now draws its glyphs from a small font scaled up to its size, while its layout, background and hit testing stay as before.
+
 ## 14.21.0
 - **FEAT**(layers): Add `LayerMask.keyframes` to animate a shape mask over time (`LayerMask.at`, `Layer.maskAt`); `Layer.captureAsPng` leaves a keyframed mask to the renderer.
 - **FEAT**(main-editor): `setLayerTimeline` takes a `mask` to rebase its keyframes with a trimmed start.
