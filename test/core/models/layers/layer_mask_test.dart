@@ -612,6 +612,28 @@ void main() {
 
       expect(await leftAndRightAlpha(tester), (255, 0));
     });
+
+    testWidgets('listens to its play time only while it is attached', (
+      tester,
+    ) async {
+      final first = _PlayTime(Duration.zero);
+      final second = _PlayTime(const Duration(seconds: 1));
+      addTearDown(first.dispose);
+      addTearDown(second.dispose);
+      await pumpMasked(tester, playTime: first);
+
+      expect(first.listened, isTrue);
+
+      await pumpMasked(tester, playTime: second);
+
+      expect(first.listened, isFalse);
+      expect(second.listened, isTrue);
+      expect(await leftAndRightAlpha(tester), (0, 255));
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(second.listened, isFalse);
+    });
   });
 
   group('Layer.mask', () {
@@ -871,4 +893,11 @@ void main() {
       expect(Layer.fromMap(layer.toMap()).mask, keyframed);
     });
   });
+}
+
+/// A play time that tells whether anything listens to it.
+class _PlayTime extends ValueNotifier<Duration> {
+  _PlayTime(super.value);
+
+  bool get listened => hasListeners;
 }

@@ -38,8 +38,8 @@ class ExportedLayer {
   /// the same amount on opposite sides, so it stays centered on the layer.
   final Size logicalSize;
 
-  /// The logical size of the layer's own box, before it is turned: the box
-  /// its [Layer.mask] is measured in.
+  /// The logical size of the captured layer before it is turned; for a layer
+  /// with a [Layer.mask], the box the mask is measured in.
   ///
   /// The same as [logicalSize] unless the layer was captured with its
   /// rotation applied, which makes [logicalSize] the box around the turned
