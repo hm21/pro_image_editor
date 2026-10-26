@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -493,6 +494,126 @@ void main() {
     });
   });
 
+  group('$LayerMaskBox with keyframes', () {
+    const boundaryKey = ValueKey('timed-mask-box-boundary');
+    const side = 20.0;
+
+    /// A circle on the left half of the square at 0 that moves to its right
+    /// half at 1 s.
+    final moving =
+        const LayerMask(
+          shape: LayerMaskShape.ellipse,
+          size: Size(0.5, 0.5),
+        ).withKeyframes(const [
+          LayerMaskKeyframe(
+            time: Duration.zero,
+            center: Offset(0.25, 0.5),
+            size: Size(0.5, 0.5),
+          ),
+          LayerMaskKeyframe(
+            time: Duration(seconds: 1),
+            center: Offset(0.75, 0.5),
+            size: Size(0.5, 0.5),
+          ),
+        ]);
+
+    Future<void> pumpMasked(
+      WidgetTester tester, {
+      ValueListenable<Duration>? playTime,
+      Duration keyframeOrigin = Duration.zero,
+      double feather = 0,
+    }) {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final mask = feather == 0
+          ? moving
+          : moving.withKeyframes([
+              for (final keyframe in moving.keyframes)
+                keyframe.copyWith(feather: feather),
+            ]);
+      return tester.pumpWidget(
+        Center(
+          child: RepaintBoundary(
+            key: boundaryKey,
+            child: LayerMaskBox(
+              mask: mask,
+              playTime: playTime,
+              keyframeOrigin: keyframeOrigin,
+              child: const ColoredBox(
+                color: Color(0xFFFF0000),
+                child: SizedBox.square(dimension: side),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    /// The alpha of the masked square at its left and right quarter points.
+    Future<(int, int)> leftAndRightAlpha(WidgetTester tester) async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(boundaryKey),
+      );
+      final bytes = (await tester.runAsync(() async {
+        final image = await boundary.toImage();
+        final data = await image.toByteData();
+        image.dispose();
+        return data!.buffer.asUint8List();
+      }))!;
+      int alphaAt(double x) =>
+          bytes[((side ~/ 2) * side.toInt() + x.floor()) * 4 + 3];
+      return (alphaAt(side / 4), alphaAt(side * 3 / 4));
+    }
+
+    testWidgets('moves the shape as the play time moves', (tester) async {
+      final playTime = ValueNotifier(Duration.zero);
+      addTearDown(playTime.dispose);
+      await pumpMasked(tester, playTime: playTime);
+
+      expect(await leftAndRightAlpha(tester), (255, 0));
+
+      playTime.value = const Duration(seconds: 1);
+      await tester.pump();
+
+      expect(await leftAndRightAlpha(tester), (0, 255));
+    });
+
+    testWidgets('moves a soft shape as the play time moves', (tester) async {
+      final playTime = ValueNotifier(Duration.zero);
+      addTearDown(playTime.dispose);
+      await pumpMasked(tester, playTime: playTime, feather: 0.05);
+
+      final (startLeft, startRight) = await leftAndRightAlpha(tester);
+      expect(startLeft, greaterThan(startRight));
+
+      playTime.value = const Duration(seconds: 1);
+      await tester.pump();
+
+      final (endLeft, endRight) = await leftAndRightAlpha(tester);
+      expect(endRight, greaterThan(endLeft));
+    });
+
+    testWidgets('reads the keyframes from the origin on', (tester) async {
+      final playTime = ValueNotifier(const Duration(seconds: 1));
+      addTearDown(playTime.dispose);
+      await pumpMasked(
+        tester,
+        playTime: playTime,
+        keyframeOrigin: const Duration(seconds: 1),
+      );
+
+      expect(await leftAndRightAlpha(tester), (255, 0));
+    });
+
+    testWidgets('shows the mask at its start without a play time', (
+      tester,
+    ) async {
+      await pumpMasked(tester);
+
+      expect(await leftAndRightAlpha(tester), (255, 0));
+    });
+  });
+
   group('Layer.mask', () {
     const mask = LayerMask(shape: LayerMaskShape.heart, feather: 0.05);
 
@@ -538,6 +659,216 @@ void main() {
       for (final layer in layers) {
         expect(layer.copyWith().mask, mask, reason: '${layer.runtimeType}');
       }
+    });
+  });
+
+  group('$LayerMask keyframes', () {
+    const mask = LayerMask(
+      shape: LayerMaskShape.rectangle,
+      center: Offset(0.5, 0.5),
+      size: Size(0.4, 0.4),
+      cornerRadius: 0.3,
+      invert: true,
+    );
+    const first = LayerMaskKeyframe(
+      time: Duration(seconds: 1),
+      center: Offset(0.2, 0.2),
+      size: Size(0.2, 0.2),
+      curve: AnimationCurve.easeOut,
+    );
+    const second = LayerMaskKeyframe(
+      time: Duration(seconds: 3),
+      center: Offset(0.8, 0.8),
+      size: Size(0.6, 0.6),
+      rotation: 1,
+      feather: 0.2,
+    );
+    final keyframed = mask.withKeyframes(const [second, first]);
+
+    test('withKeyframes sorts the keyframes', () {
+      expect(keyframed.keyframes, [first, second]);
+      expect(keyframed.hasKeyframes, isTrue);
+      expect(mask.hasKeyframes, isFalse);
+    });
+
+    test('are written by toMap and read by fromMap, sorted', () {
+      final map = keyframed.toMap();
+      map['keyframes'] = (map['keyframes'] as List).reversed.toList();
+
+      expect(LayerMask.fromMap(map), keyframed);
+      expect(mask.toMap(), isNot(contains('keyframes')));
+    });
+
+    test('count for equality', () {
+      expect(keyframed, isNot(mask));
+      expect(keyframed, mask.withKeyframes(const [first, second]));
+      expect(
+        keyframed.hashCode,
+        mask.withKeyframes(const [first, second]).hashCode,
+      );
+      expect(keyframed.still, mask);
+    });
+
+    test('copyWith keeps them unless given and sorts what it is given', () {
+      expect(keyframed.copyWith(invert: false).keyframes, [first, second]);
+      expect(mask.copyWith(keyframes: const [second, first]), keyframed);
+    });
+
+    test('at gives the still mask the keyframes make there', () {
+      final atStart = keyframed.at(Duration.zero);
+      expect(atStart.hasKeyframes, isFalse);
+      expect(atStart.center, first.center);
+      expect(atStart.size, first.size);
+      expect(atStart.shape, mask.shape);
+      expect(atStart.cornerRadius, mask.cornerRadius);
+      expect(atStart.invert, isTrue);
+
+      final atEnd = keyframed.at(const Duration(seconds: 5));
+      expect(atEnd.center, second.center);
+      expect(atEnd.rotation, second.rotation);
+      expect(atEnd.feather, second.feather);
+
+      expect(mask.at(const Duration(seconds: 2)), same(mask));
+    });
+
+    test('keyframeIndexAt finds the nearest keyframe within the tolerance', () {
+      expect(keyframed.keyframeIndexAt(const Duration(milliseconds: 1005)), 0);
+      expect(keyframed.keyframeIndexAt(const Duration(milliseconds: 1100)), -1);
+      expect(
+        keyframed.keyframeIndexAt(
+          const Duration(milliseconds: 1100),
+          tolerance: const Duration(milliseconds: 200),
+        ),
+        0,
+      );
+    });
+
+    group('withKeyframeAt', () {
+      const shown = LayerMask(
+        shape: LayerMaskShape.rectangle,
+        center: Offset(0.4, 0.6),
+        size: Size(0.3, 0.5),
+        rotation: 0.25,
+        feather: 0.1,
+        cornerRadius: 0.3,
+        invert: true,
+      );
+
+      test('replaces the keyframe there, keeping its time and curve', () {
+        final updated = keyframed.withKeyframeAt(
+          const Duration(milliseconds: 1004),
+          geometry: shown,
+        );
+
+        expect(updated.keyframes, [first.withGeometryOf(shown), second]);
+      });
+
+      test('adds one with the curve of the keyframe before it', () {
+        final updated = keyframed.withKeyframeAt(
+          const Duration(seconds: 2),
+          geometry: shown,
+        );
+
+        expect(updated.keyframes, hasLength(3));
+        expect(
+          updated.keyframes[1],
+          LayerMaskKeyframe.fromMask(
+            shown,
+            time: const Duration(seconds: 2),
+            curve: first.curve,
+          ),
+        );
+      });
+
+      test('takes the curve it is given', () {
+        final updated = keyframed.withKeyframeAt(
+          const Duration(seconds: 1),
+          curve: AnimationCurve.bounceIn,
+        );
+
+        expect(updated.keyframes.first.curve, AnimationCurve.bounceIn);
+      });
+
+      test('holds the mask itself when no geometry is given', () {
+        final updated = mask.withKeyframeAt(Duration.zero);
+
+        expect(updated.keyframes, [
+          LayerMaskKeyframe.fromMask(mask, time: Duration.zero),
+        ]);
+        expect(updated.still, mask);
+      });
+
+      test('takes over the shape, corners and inversion of the geometry', () {
+        final updated = keyframed.withKeyframeAt(
+          const Duration(seconds: 1),
+          geometry: shown.copyWith(shape: LayerMaskShape.heart, invert: false),
+        );
+
+        expect(updated.shape, LayerMaskShape.heart);
+        expect(updated.invert, isFalse);
+        expect(updated.keyframes, hasLength(2));
+      });
+    });
+
+    group('withoutKeyframeAt', () {
+      test('removes the keyframe there', () {
+        expect(
+          keyframed.withoutKeyframeAt(const Duration(seconds: 3)).keyframes,
+          [first],
+        );
+      });
+
+      test('returns the mask itself when there is none there', () {
+        expect(
+          keyframed.withoutKeyframeAt(const Duration(seconds: 2)),
+          same(keyframed),
+        );
+      });
+
+      test('leaves the mask as it showed when the last one goes', () {
+        final single = mask.withKeyframes(const [second]);
+
+        final removed = single.withoutKeyframeAt(const Duration(seconds: 3));
+
+        expect(removed.hasKeyframes, isFalse);
+        expect(removed.center, second.center);
+        expect(removed.size, second.size);
+        expect(removed.rotation, second.rotation);
+        expect(removed.feather, second.feather);
+        expect(removed.invert, isTrue);
+      });
+    });
+
+    test('Layer.maskAt reads them from the layer\'s start on', () {
+      final layer = Layer(
+        startTime: const Duration(seconds: 2),
+        mask: keyframed,
+      );
+
+      expect(
+        layer.maskAt(const Duration(seconds: 3)),
+        keyframed.at(const Duration(seconds: 1)),
+      );
+      expect(Layer().maskAt(Duration.zero), isNull);
+    });
+
+    test('a history step that drops them does not bring them back', () {
+      final previous = EmojiLayer(emoji: '😀', mask: keyframed);
+      final current = previous.copyWith()..mask = keyframed.still;
+
+      // The import merges a step's diff over the layer of the step before.
+      final merged = Layer.fromMap({
+        ...previous.toMap(),
+        ...current.toMapFromReference(previous),
+      });
+
+      expect(merged.mask, keyframed.still);
+    });
+
+    test('Layer.fromMap reads them back', () {
+      final layer = TextLayer(text: 'masked', mask: keyframed);
+
+      expect(Layer.fromMap(layer.toMap()).mask, keyframed);
     });
   });
 }

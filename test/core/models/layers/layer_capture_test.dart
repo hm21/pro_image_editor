@@ -781,6 +781,25 @@ void main() {
         });
       });
     }
+
+    testWidgets('leaves a mask with keyframes out of the captured image', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        final layer = maskedLayer()
+          ..mask = circle.withKeyframeAt(Duration.zero);
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+
+        final bytes = await layer.captureAsPng(
+          format: ui.ImageByteFormat.rawRgba,
+          pixelRatio: 1,
+        );
+
+        expect(centerAndCornerAlpha(bytes!), (255, 255));
+      });
+    });
   });
   group('Layer blend mode', () {
     Future<ProImageEditorState> pumpEditor(
