@@ -693,6 +693,8 @@ class _LayerContentItem extends StatelessWidget {
     // so masking inside would apply it twice.
     return LayerMaskBox(
       mask: layer.mask,
+      playTime: playTimeNotifier,
+      keyframeOrigin: layer.keyframeOrigin,
       child: LayerRepaintBoundary(
         key: layer.repaintBoundaryKey,
         // The painters draw nothing while the strokes come from the raster

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show immutable;
+import 'package:flutter/foundation.dart' show immutable, listEquals;
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart' show Matrix4;
 
@@ -61,9 +61,17 @@ enum LayerMaskShape {
 /// the shape, not at all outside, and partly across a [feather]ed edge.
 /// [invert] swaps inside and outside. On the canvas it is applied by
 /// `LayerWidget`, and [Layer.captureAsPng] bakes it into the captured image.
+///
+/// With [keyframes] the shape changes over time, on its own and on top of the
+/// layer's motion: it moves, grows, turns and softens from one keyframe to the
+/// next, so it can reveal the layer or wipe across it. [at] gives the still
+/// mask the keyframes make at one moment.
 @immutable
 class LayerMask {
   /// Creates a [LayerMask].
+  ///
+  /// [keyframes] must be sorted by [LayerMaskKeyframe.time];
+  /// [withKeyframes] sorts them.
   const LayerMask({
     required this.shape,
     this.center = const Offset(0.5, 0.5),
@@ -72,6 +80,7 @@ class LayerMask {
     this.feather = 0,
     this.cornerRadius = 0,
     this.invert = false,
+    this.keyframes = const [],
   }) : assert(feather >= 0, '[feather] must not be negative'),
        assert(
          cornerRadius >= 0 && cornerRadius <= 1,
@@ -105,6 +114,11 @@ class LayerMask {
         1.0,
       ),
       invert: map['invert'] == true,
+      keyframes: sortLayerMaskKeyframes([
+        for (final keyframe in map['keyframes'] as List? ?? const [])
+          if (keyframe is Map)
+            LayerMaskKeyframe.fromMap(Map<String, dynamic>.from(keyframe)),
+      ]),
     );
   }
 
@@ -137,6 +151,141 @@ class LayerMask {
 
   /// Whether the layer shows outside the shape instead of inside it.
   final bool invert;
+
+  /// How the shape changes over time, sorted by [LayerMaskKeyframe.time].
+  ///
+  /// When not empty, the keyframes set the [center], [size], [rotation] and
+  /// [feather] at every point of the layer's time range, and the mask's own
+  /// values only apply while it has none. The shape, its corners and whether
+  /// it is inverted stay as they are. [outline], [area], [paint] and the
+  /// images this mask renders draw its own values; draw [at] a moment to show
+  /// the mask the keyframes make there.
+  final List<LayerMaskKeyframe> keyframes;
+
+  /// Whether the mask has [keyframes].
+  bool get hasKeyframes => keyframes.isNotEmpty;
+
+  /// The still mask the [keyframes] make [time] after the time they are
+  /// measured from (see [LayerMaskKeyframe.time]), or this mask itself when it
+  /// has none.
+  LayerMask at(Duration time) {
+    final keyframe = layerMaskKeyframeAt(keyframes, time);
+    if (keyframe == null) return this;
+    return LayerMask(
+      shape: shape,
+      center: keyframe.center,
+      size: keyframe.size,
+      rotation: keyframe.rotation,
+      feather: keyframe.feather,
+      cornerRadius: cornerRadius,
+      invert: invert,
+    );
+  }
+
+  /// This mask without its [keyframes].
+  LayerMask get still => hasKeyframes ? withKeyframes(const []) : this;
+
+  /// Index of the keyframe at [time], or `-1` when there is none.
+  ///
+  /// A keyframe up to [tolerance] away counts as at [time], so a playback
+  /// position a frame's rounding off still finds it.
+  int keyframeIndexAt(
+    Duration time, {
+    Duration tolerance = kLayerKeyframeTolerance,
+  }) {
+    var best = -1;
+    Duration? bestDistance;
+    for (var i = 0; i < keyframes.length; i++) {
+      final distance = (keyframes[i].time - time).abs();
+      if (distance > tolerance) continue;
+      if (bestDistance == null || distance < bestDistance) {
+        best = i;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  }
+
+  /// A copy whose keyframe at [time] (see [keyframeIndexAt]) holds the center,
+  /// size, rotation and softness of [geometry], adding one there when there is
+  /// none.
+  ///
+  /// [geometry] defaults to this mask's own values; its shape, corners and
+  /// inversion are taken over too, so the mask shows [geometry] at [time]. A
+  /// new keyframe takes [curve], or else the curve of the keyframe before it,
+  /// so the change on either side keeps its easing; a replaced one keeps its
+  /// own time and curve unless [curve] is given.
+  LayerMask withKeyframeAt(
+    Duration time, {
+    LayerMask? geometry,
+    AnimationCurve? curve,
+    Duration tolerance = kLayerKeyframeTolerance,
+  }) {
+    final value = geometry ?? this;
+    final index = keyframeIndexAt(time, tolerance: tolerance);
+    if (index >= 0) {
+      final existing = keyframes[index];
+      return _withShapeOf(value).withKeyframes([
+        ...keyframes.sublist(0, index),
+        existing.withGeometryOf(value).copyWith(curve: curve),
+        ...keyframes.sublist(index + 1),
+      ]);
+    }
+
+    AnimationCurve? previousCurve;
+    for (final keyframe in keyframes) {
+      if (keyframe.time > time) break;
+      previousCurve = keyframe.curve;
+    }
+    return _withShapeOf(value).withKeyframes([
+      ...keyframes,
+      LayerMaskKeyframe.fromMask(
+        value,
+        time: time,
+        curve: curve ?? previousCurve ?? AnimationCurve.linear,
+      ),
+    ]);
+  }
+
+  /// A copy without the keyframe at [time] (see [keyframeIndexAt]), or this
+  /// mask when there is none there.
+  ///
+  /// Removing the last keyframe leaves the mask as it showed at [time], rather
+  /// than with the values it had before its first keyframe.
+  LayerMask withoutKeyframeAt(
+    Duration time, {
+    Duration tolerance = kLayerKeyframeTolerance,
+  }) {
+    final index = keyframeIndexAt(time, tolerance: tolerance);
+    if (index < 0) return this;
+    if (keyframes.length == 1) return at(time);
+    return withKeyframes([...keyframes]..removeAt(index));
+  }
+
+  /// A copy whose keyframes are [keyframes], sorted by
+  /// [LayerMaskKeyframe.time].
+  LayerMask withKeyframes(List<LayerMaskKeyframe> keyframes) => LayerMask(
+    shape: shape,
+    center: center,
+    size: size,
+    rotation: rotation,
+    feather: feather,
+    cornerRadius: cornerRadius,
+    invert: invert,
+    keyframes: sortLayerMaskKeyframes(keyframes),
+  );
+
+  /// This mask with the values of [other], its keyframes kept.
+  LayerMask _withShapeOf(LayerMask other) => LayerMask(
+    shape: other.shape,
+    center: other.center,
+    size: other.size,
+    rotation: other.rotation,
+    feather: other.feather,
+    cornerRadius: other.cornerRadius,
+    invert: other.invert,
+    keyframes: keyframes,
+  );
 
   /// The Material Design heart (24 dp `favorite` icon), fitted to a unit box.
   static Path _unitHeart() => Path()
@@ -512,9 +661,13 @@ class LayerMask {
     'feather': feather,
     'cornerRadius': cornerRadius,
     'invert': invert,
+    if (keyframes.isNotEmpty)
+      'keyframes': [for (final keyframe in keyframes) keyframe.toMap()],
   };
 
   /// Creates a copy with the given fields replaced.
+  ///
+  /// [keyframes] are sorted by [LayerMaskKeyframe.time].
   LayerMask copyWith({
     LayerMaskShape? shape,
     Offset? center,
@@ -523,6 +676,7 @@ class LayerMask {
     double? feather,
     double? cornerRadius,
     bool? invert,
+    List<LayerMaskKeyframe>? keyframes,
   }) {
     return LayerMask(
       shape: shape ?? this.shape,
@@ -532,6 +686,9 @@ class LayerMask {
       feather: feather ?? this.feather,
       cornerRadius: cornerRadius ?? this.cornerRadius,
       invert: invert ?? this.invert,
+      keyframes: keyframes == null
+          ? this.keyframes
+          : sortLayerMaskKeyframes(keyframes),
     );
   }
 
@@ -545,16 +702,25 @@ class LayerMask {
         other.rotation == rotation &&
         other.feather == feather &&
         other.cornerRadius == cornerRadius &&
-        other.invert == invert;
+        other.invert == invert &&
+        listEquals(other.keyframes, keyframes);
   }
 
   @override
-  int get hashCode =>
-      Object.hash(shape, center, size, rotation, feather, cornerRadius, invert);
+  int get hashCode => Object.hash(
+    shape,
+    center,
+    size,
+    rotation,
+    feather,
+    cornerRadius,
+    invert,
+    Object.hashAll(keyframes),
+  );
 
   @override
   String toString() =>
       'LayerMask(shape: ${shape.name}, center: $center, size: $size, '
       'rotation: $rotation, feather: $feather, cornerRadius: $cornerRadius, '
-      'invert: $invert)';
+      'invert: $invert, keyframes: $keyframes)';
 }

@@ -781,6 +781,70 @@ void main() {
         });
       });
     }
+
+    testWidgets('setLayerTimeline sets a mask with the new start', (
+      tester,
+    ) async {
+      final editor = await pumpEditor(tester);
+      editor.addLayer(maskedLayer());
+      await tester.pumpAndSettle();
+      final rebased = circle.withKeyframeAt(const Duration(seconds: 1));
+
+      editor.setLayerTimeline(
+        index: 0,
+        startTime: const Duration(seconds: 2),
+        mask: rebased,
+      );
+
+      final layer = editor.activeLayers.single;
+      expect(layer.startTime, const Duration(seconds: 2));
+      expect(layer.mask, rebased);
+    });
+
+    testWidgets('captureAllLayers keeps the box of a turned layer apart from '
+        'the box around it', (tester) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        final layer = maskedLayer()..rotation = math.pi / 2;
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+
+        final exported = (await Layer.captureAllLayers(
+          layers: editor.activeLayers,
+        )).single;
+        final unturned = (await Layer.captureAllLayers(
+          layers: editor.activeLayers,
+          applyTransforms: false,
+        )).single;
+
+        // A quarter turn swaps the sides of the box around the layer.
+        expect(exported.boxSize, unturned.logicalSize);
+        expect(
+          exported.logicalSize.width,
+          closeTo(exported.boxSize.height, 1e-6),
+        );
+        expect(unturned.boxSize, unturned.logicalSize);
+      });
+    });
+
+    testWidgets('leaves a mask with keyframes out of the captured image', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        final editor = await pumpEditor(tester);
+        final layer = maskedLayer()
+          ..mask = circle.withKeyframeAt(Duration.zero);
+        editor.addLayer(layer);
+        await tester.pumpAndSettle();
+
+        final bytes = await layer.captureAsPng(
+          format: ui.ImageByteFormat.rawRgba,
+          pixelRatio: 1,
+        );
+
+        expect(centerAndCornerAlpha(bytes!), (255, 255));
+      });
+    });
   });
   group('Layer blend mode', () {
     Future<ProImageEditorState> pumpEditor(

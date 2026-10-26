@@ -41,6 +41,7 @@ export 'emoji_layer.dart';
 export 'layer_animation.dart';
 export 'layer_keyframe.dart';
 export 'layer_mask.dart';
+export 'layer_mask_keyframe.dart';
 export 'paint_layer.dart';
 export 'text_gradient.dart';
 export 'text_highlight.dart';
@@ -267,7 +268,9 @@ class Layer {
   /// turns with the layer and its [keyframes]. It applies on the canvas and
   /// [captureAsPng] bakes it into the captured image, whether or not
   /// transforms are applied: unlike a turn or a flip, it changes the layer's
-  /// content rather than how that content is placed.
+  /// content rather than how that content is placed. A mask with its own
+  /// [LayerMask.keyframes] changes over time, measured from [keyframeOrigin]
+  /// (see [maskAt]); the capture leaves it out, for a renderer to apply.
   ///
   /// Set it to `null` to remove the mask; [copyWith] cannot clear it.
   LayerMask? mask;
@@ -348,6 +351,12 @@ class Layer {
   /// when it has none.
   LayerPlacement? keyframePlacementAt(Duration videoTime) =>
       layerKeyframePlacementAt(keyframes, videoTime - keyframeOrigin);
+
+  /// The still mask the layer shows through at [videoTime]: [mask] as its
+  /// [LayerMask.keyframes] make it then, which are measured from
+  /// [keyframeOrigin] like the layer's own [keyframes]. `null` when the layer
+  /// has no mask.
+  LayerMask? maskAt(Duration videoTime) => mask?.at(videoTime - keyframeOrigin);
 
   /// The loop effects the [keyframes] play between them, placed on the
   /// video's timeline with their cycles fitted to their stretch. See
@@ -735,7 +744,9 @@ class Layer {
   /// is captured opaque, as their opacity changes over time; a [PaintLayer]
   /// always carries the opacity it draws its strokes with. A [mask] is
   /// applied either way, and the [blendMode] never: it combines the layer with
-  /// what is beneath it, which the captured image does not hold.
+  /// what is beneath it, which the captured image does not hold. Neither is a
+  /// mask with [LayerMask.keyframes], which changes over time: a renderer
+  /// applies it to the image over the layer's box, frame by frame.
   ///
   /// A [TextLayer] with [TextLayer.highlights] or a text reveal is captured
   /// with no highlight active and its whole text shown, whatever the playback
@@ -836,8 +847,9 @@ class Layer {
 
     // Every source above is unmasked — the canvas applies the mask outside
     // the boundary, and the renderers draw from the model — so it is baked in
-    // here, before the image is turned, flipped or faded like the layer.
-    if (mask case final mask?) {
+    // here, before the image is turned, flipped or faded like the layer. A
+    // mask that changes over time is left to the renderer.
+    if (mask case final mask? when !mask.hasKeyframes) {
       final masked = await mask.applyTo(rawImage);
       rawImage.dispose();
       rawImage = masked;
@@ -1006,6 +1018,7 @@ class Layer {
     required LayerCapturePixelRatio? capturePixelRatio,
   }) async {
     final logicalSizes = <Size>[];
+    final boxSizes = <Size>[];
     for (var i = 0; i < layers.length; i++) {
       final layer = layers[i];
       final box =
@@ -1017,6 +1030,7 @@ class Layer {
           ? box.captureBounds.size
           : box?.size ?? Size.zero;
 
+      boxSizes.add(size);
       if (applyTransforms && (layer.rotation != 0)) {
         final double cosR = math.cos(layer.rotation).abs();
         final double sinR = math.sin(layer.rotation).abs();
@@ -1049,6 +1063,7 @@ class Layer {
           layer: layer,
           bytes: bytes,
           logicalSize: logicalSizes[i],
+          boxSize: boxSizes[i],
           // Only highlighted text pays for the extra captures, or even an
           // extra await: a layer without highlights completes exactly as
           // before.

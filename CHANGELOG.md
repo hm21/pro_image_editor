@@ -1,5 +1,10 @@
 # Changelog
 
+## 14.21.0
+- **FEAT**(layers): Add `LayerMask.keyframes` to animate a shape mask over time (`LayerMask.at`, `Layer.maskAt`); `Layer.captureAsPng` leaves a keyframed mask to the renderer.
+- **FEAT**(main-editor): `setLayerTimeline` takes a `mask` to rebase its keyframes with a trimmed start.
+- **FEAT**(layers): Add `ExportedLayer.boxSize`, the unturned box a renderer places a mask in.
+
 ## 14.20.0
 - **FEAT**(text-editor): Add `TextLayerBoxOverflow.visible` and `TextEditorConfigs.boxOverflow` to draw lines that do not fit past a text box; a `switch` over `TextLayerBoxOverflow` must handle the new value.
 - **FEAT**(main-editor): Add `InlineTextEditSession.setFontScale` to resize the text while typing on the canvas.
