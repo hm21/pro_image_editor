@@ -18,12 +18,12 @@ import 'widgets/invisible_but_painted.dart';
 /// the middle of a 5 s fade-in shows the layer at 50 %).
 ///
 /// When [Layer.animations] is not empty, the transition is phase-aware: each
-/// animation drives a fade, slide, scale, wiggle or bounce during the layer's
-/// enter window (`[startTime, startTime + duration]`) and/or exit window
-/// (`[endTime - duration, endTime]`). Multiple animations are composed, so the
-/// enter and leave phases can use distinct animation types — something the
-/// single `(child, animation)` [LayerTimelineConfigs.transitionBuilder] cannot
-/// express. The slide effect is edge-aware: using [canvasSize] and
+/// animation drives a fade, slide, scale, wiggle, bounce, spin or flip during
+/// the layer's enter window (`[startTime, startTime + duration]`) and/or exit
+/// window (`[endTime - duration, endTime]`). Multiple animations are composed,
+/// so the enter and leave phases can use distinct animation types — something
+/// the single `(child, animation)` [LayerTimelineConfigs.transitionBuilder]
+/// cannot express. The slide effect is edge-aware: using [canvasSize] and
 /// [layerCenter] it pushes the layer just past the nearest canvas edge (rather
 /// than by its own size), so even an off-center layer leaves the visible area
 /// completely. A [LayerAnimation.slideFrom] point replaces that edge with a
@@ -32,12 +32,13 @@ import 'widgets/invisible_but_painted.dart';
 /// [layerFractionalOffset]) so that a combined slide + scale enters straight
 /// instead of drifting diagonally. A wiggle tilts the layer around the same
 /// center, and a bounce lifts it by a multiple of its height, measured on the
-/// box around the rotated layer as the exported image is. A
-/// [AnimationPhase.loop] repeats for as long as the layer is visible. Text
-/// reveals are drawn by the text layer itself. When [Layer.animations] is
-/// empty, the legacy fade convenience driven by [Layer.enterDuration] /
-/// [Layer.exitDuration] and the [LayerTimelineConfigs.transitionBuilder] is
-/// used instead.
+/// box around the rotated layer as the exported image is. A spin turns it
+/// around that center too, and a flip squeezes it across the axis it turns
+/// around before anything turns it. A [AnimationPhase.loop] repeats for as
+/// long as the layer is visible. Text reveals are drawn by the text layer
+/// itself. When [Layer.animations] is empty, the legacy fade convenience
+/// driven by [Layer.enterDuration] / [Layer.exitDuration] and the
+/// [LayerTimelineConfigs.transitionBuilder] is used instead.
 ///
 /// [Layer.keyframes] place the layer at every point of its time range. The
 /// widget's child is laid out at the layer's own placement, so the keyframed
@@ -210,8 +211,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
   /// animation's progress is evaluated for its enter and/or exit phase, the
   /// most-visible (minimum) progress wins for an `animateInOut` animation, and
   /// the effects are composed on the placement (opacity multiplies, slide
-  /// offsets accumulate, scale multiplies, wiggle angles and bounce lifts add
-  /// up).
+  /// offsets accumulate, scale multiplies, wiggle and spin angles and bounce
+  /// lifts add up, flip squeezes multiply).
   _TimelineFrame _computeFrame(Duration currentTime) {
     final layer = widget.layer;
     final start = layer.startTime;
@@ -260,6 +261,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     double opacity = keyframeOpacity;
     double scale = keyframeScale;
     double rotation = keyframeRotation;
+    double flipX = 1;
+    double flipY = 1;
     double lift = 0;
     Offset slideAbsolute = keyframeOffset;
     Offset slideFractional = Offset.zero;
@@ -334,6 +337,17 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
               (1.0 - p) *
               (anim.bounceHeight ?? LayerAnimation.defaultBounceHeight) *
               keyframeScale;
+        case LayerAnimationType.spin:
+          rotation += 2 * math.pi * progress.turn;
+        case LayerAnimationType.flip:
+          // A layer drawn flat shows a turn around an axis as its width
+          // across it.
+          final squeeze = math.cos(2 * math.pi * progress.turn);
+          if (anim.flipAxis == FlipAxis.horizontal) {
+            flipY *= squeeze;
+          } else {
+            flipX *= squeeze;
+          }
         case LayerAnimationType.typewriter:
         case LayerAnimationType.wordByWord:
           // The text layer reveals its own text (LayerWidgetTextItem).
@@ -347,6 +361,8 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
       slideFractional: slideFractional,
       scale: math.max(0.0, scale),
       rotation: rotation,
+      flipX: flipX,
+      flipY: flipY,
       lift: lift,
       // Keyframe effects alone leave the legacy fade of a layer without
       // animations in place.
@@ -374,11 +390,22 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         AlwaysStoppedAnimation<double>(frame.legacyProgress),
       );
     }
-    // The keyframes and the wiggle turn the layer before anything else moves
-    // it, around the same visual center the scale below is anchored on (see
-    // there). Turning and scaling around one point commute, so the order
-    // between the two does not matter; the native renderer turns first as
-    // well.
+    // A flip squeezes the layer as it is laid out, before anything turns it,
+    // as the native renderer squeezes the image it is handed.
+    if (frame.flipX != 1.0 || frame.flipY != 1.0) {
+      final fo = widget.layerFractionalOffset;
+      result = Transform.scale(
+        scaleX: frame.flipX,
+        scaleY: frame.flipY,
+        alignment: Alignment(2 * fo.dx, 2 * fo.dy),
+        child: result,
+      );
+    }
+    // The keyframes, the wiggle and the spin turn the layer before anything
+    // else moves it, around the same visual center the scale below is
+    // anchored on (see there). Turning and scaling evenly around one point
+    // commute, so the order between the two does not matter; the native
+    // renderer turns first as well.
     if (frame.rotation != 0.0) {
       final fo = widget.layerFractionalOffset;
       result = Transform.rotate(
@@ -436,6 +463,8 @@ class _TimelineFrame {
     this.slideFractional = Offset.zero,
     required this.scale,
     this.rotation = 0,
+    this.flipX = 1,
+    this.flipY = 1,
     this.lift = 0,
     this.legacyProgress = 1,
   }) : hidden = false;
@@ -447,6 +476,8 @@ class _TimelineFrame {
       slideFractional = Offset.zero,
       scale = 1,
       rotation = 0,
+      flipX = 1,
+      flipY = 1,
       lift = 0,
       legacyProgress = 0;
 
@@ -470,9 +501,17 @@ class _TimelineFrame {
   /// one, times any scale animation.
   final double scale;
 
-  /// The keyframed turn relative to the laid-out one plus the wiggle tilt,
-  /// clockwise on screen, in radians.
+  /// The keyframed turn relative to the laid-out one plus the wiggle tilt
+  /// and the spin, clockwise on screen, in radians.
   final double rotation;
+
+  /// How far a flip squeezes the layer across its vertical axis: `1` as laid
+  /// out, `0` edge-on, `-1` mirrored. See [flipY] for the horizontal axis.
+  final double flipX;
+
+  /// How far a flip squeezes the layer across its horizontal axis; see
+  /// [flipX].
+  final double flipY;
 
   /// How far a bounce lifts the layer, as a multiple of its height
   /// (phase-aware path). See [_Lift].
@@ -493,6 +532,8 @@ class _TimelineFrame {
         other.slideFractional == slideFractional &&
         other.scale == scale &&
         other.rotation == rotation &&
+        other.flipX == flipX &&
+        other.flipY == flipY &&
         other.lift == lift &&
         other.legacyProgress == legacyProgress;
   }
@@ -505,6 +546,8 @@ class _TimelineFrame {
     slideFractional,
     scale,
     rotation,
+    flipX,
+    flipY,
     lift,
     legacyProgress,
   );

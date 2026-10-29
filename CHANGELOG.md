@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.22.0
+- **FEAT**(layers): Add `LayerAnimationType.spin` and `LayerAnimationType.flip` (around a `FlipAxis`) to turn a layer by `LayerAnimation.turns`; a `switch` over `LayerAnimationType` must handle the new values.
+
 ## 14.21.1
 - **FIX**(text-editor): Text scaled up very large no longer corrupts Impeller's glyph atlas, which garbled text across the whole app until a restart.
 

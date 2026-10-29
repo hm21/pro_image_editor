@@ -70,8 +70,9 @@ double _elasticOut(double t) {
 /// How far an animation has brought a layer back to rest at one moment.
 @immutable
 class LayerAnimationProgress {
-  /// Creates a progress of [value], tilting a wiggle to [swing].
-  const LayerAnimationProgress(this.value, {this.swing = 1});
+  /// Creates a progress of [value], tilting a wiggle to [swing] and turning a
+  /// spin or a flip by [turn].
+  const LayerAnimationProgress(this.value, {this.swing = 1, this.turn = 0});
 
   /// `1` at rest and `0` fully away (faded out, at the edge, tilted all the
   /// way). An elastic or bounce curve can overshoot either end.
@@ -81,18 +82,34 @@ class LayerAnimationProgress {
   /// of a loop cycle, `1` otherwise.
   final double swing;
 
+  /// How far a [LayerAnimationType.spin] or [LayerAnimationType.flip] has the
+  /// layer turned, in full turns, clockwise for a positive value: from
+  /// `-`[LayerAnimation.turns] to `0` over an in-animation, so it turns into
+  /// place the same way it turns away over an out-animation, from `0` to
+  /// [LayerAnimation.turns]. A loop counts on by [LayerAnimation.turns] every
+  /// cycle; whole turns are taken off, as they look the same. `0` for any
+  /// other type.
+  final double turn;
+
   @override
   bool operator ==(Object other) =>
       other is LayerAnimationProgress &&
       other.value == value &&
-      other.swing == swing;
+      other.swing == swing &&
+      other.turn == turn;
 
   @override
-  int get hashCode => Object.hash(value, swing);
+  int get hashCode => Object.hash(value, swing, turn);
 
   @override
-  String toString() => 'LayerAnimationProgress($value, swing: $swing)';
+  String toString() =>
+      'LayerAnimationProgress($value, swing: $swing, turn: $turn)';
 }
+
+/// Whether [type] turns the layer by [LayerAnimation.turns]: a spin or a
+/// flip.
+bool _turns(LayerAnimationType type) =>
+    type == LayerAnimationType.spin || type == LayerAnimationType.flip;
 
 /// The progress of [animation] at [time] into the video, or `null` when it
 /// does not play then.
@@ -106,7 +123,9 @@ class LayerAnimationProgress {
 /// A [AnimationPhase.loop] plays over the whole range, one cycle per duration
 /// counted from [start]: the eased value runs from rest to fully away at half
 /// a cycle and back. A wiggle runs that twice per cycle, once to each side
-/// (see [LayerAnimationProgress.swing]).
+/// (see [LayerAnimationProgress.swing]). A spin and a flip turn on instead,
+/// by [LayerAnimation.turns] eased over each cycle (see
+/// [LayerAnimationProgress.turn]).
 ///
 /// Mirrors `animationProgress` in the native renderer of `pro_video_editor`,
 /// down to the whole microseconds the cycle position is taken from.
@@ -125,6 +144,18 @@ LayerAnimationProgress? layerAnimationProgress(
   if (animation.phase == AnimationPhase.loop) {
     final elapsed = math.max(0, time.inMicroseconds - startUs);
     final inCycle = elapsed % durationUs;
+    if (_turns(animation.type)) {
+      final turns = animation.turns ?? LayerAnimation.defaultTurns;
+      // The cycles already done, without their whole turns, so a long video
+      // does not lose precision.
+      final done = (elapsed ~/ durationUs * turns) % 1;
+      return LayerAnimationProgress(
+        1,
+        turn:
+            done +
+            turns * applyLayerAnimationCurve(curve, inCycle / durationUs),
+      );
+    }
     if (animation.type == LayerAnimationType.wiggle) {
       // Each half of the cycle is one swing out and back.
       final inSwing = (2 * inCycle) % durationUs;
@@ -165,9 +196,19 @@ LayerAnimationProgress? layerAnimationProgress(
   }
 
   // The animation further from rest wins.
-  if (inProgress != null && outProgress != null) {
-    return LayerAnimationProgress(math.min(inProgress, outProgress));
+  final double progress;
+  final bool entering;
+  if (inProgress != null && (outProgress == null || inProgress < outProgress)) {
+    progress = inProgress;
+    entering = true;
+  } else if (outProgress != null) {
+    progress = outProgress;
+    entering = false;
+  } else {
+    return null;
   }
-  final progress = inProgress ?? outProgress;
-  return progress == null ? null : LayerAnimationProgress(progress);
+  if (!_turns(animation.type)) return LayerAnimationProgress(progress);
+  final away =
+      (1 - progress) * (animation.turns ?? LayerAnimation.defaultTurns);
+  return LayerAnimationProgress(progress, turn: entering ? -away : away);
 }
