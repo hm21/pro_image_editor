@@ -650,6 +650,30 @@ void main() {
       expect(paintedBox(tester).width, closeTo(100, 1e-9));
     });
 
+    testWidgets('flips around the vertical axis without one of its own', (
+      tester,
+    ) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateOut,
+          duration: Duration(seconds: 1),
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // Half a turn on its way out, it shows its mirror image sideways.
+      await seek(tester, notifier, const Duration(milliseconds: 9500));
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(matrix.storage[0], closeTo(-1, 1e-9));
+      expect(matrix.storage[5], closeTo(1, 1e-9));
+
+      // Three quarters of a turn, it is edge-on across its width.
+      await seek(tester, notifier, const Duration(milliseconds: 9750));
+      expect(paintedBox(tester).width, closeTo(0, 1e-9));
+      expect(paintedBox(tester).height, closeTo(50, 1e-9));
+    });
+
     testWidgets('squeezes the layer before turning it', (tester) async {
       final layer = layerWith(const [
         LayerAnimation(

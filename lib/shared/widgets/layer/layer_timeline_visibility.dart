@@ -19,12 +19,11 @@ import 'widgets/invisible_but_painted.dart';
 ///
 /// When [Layer.animations] is not empty, the transition is phase-aware: each
 /// animation drives a fade, slide, scale, wiggle, bounce, spin or flip during
-/// the layer's
-/// enter window (`[startTime, startTime + duration]`) and/or exit window
-/// (`[endTime - duration, endTime]`). Multiple animations are composed, so the
-/// enter and leave phases can use distinct animation types — something the
-/// single `(child, animation)` [LayerTimelineConfigs.transitionBuilder] cannot
-/// express. The slide effect is edge-aware: using [canvasSize] and
+/// the layer's enter window (`[startTime, startTime + duration]`) and/or exit
+/// window (`[endTime - duration, endTime]`). Multiple animations are composed,
+/// so the enter and leave phases can use distinct animation types — something
+/// the single `(child, animation)` [LayerTimelineConfigs.transitionBuilder]
+/// cannot express. The slide effect is edge-aware: using [canvasSize] and
 /// [layerCenter] it pushes the layer just past the nearest canvas edge (rather
 /// than by its own size), so even an off-center layer leaves the visible area
 /// completely. A [LayerAnimation.slideFrom] point replaces that edge with a
@@ -36,11 +35,10 @@ import 'widgets/invisible_but_painted.dart';
 /// box around the rotated layer as the exported image is. A spin turns it
 /// around that center too, and a flip squeezes it across the axis it turns
 /// around before anything turns it. A [AnimationPhase.loop] repeats for as
-/// long as the layer is visible. Text
-/// reveals are drawn by the text layer itself. When [Layer.animations] is
-/// empty, the legacy fade convenience driven by [Layer.enterDuration] /
-/// [Layer.exitDuration] and the [LayerTimelineConfigs.transitionBuilder] is
-/// used instead.
+/// long as the layer is visible. Text reveals are drawn by the text layer
+/// itself. When [Layer.animations] is empty, the legacy fade convenience
+/// driven by [Layer.enterDuration] / [Layer.exitDuration] and the
+/// [LayerTimelineConfigs.transitionBuilder] is used instead.
 ///
 /// [Layer.keyframes] place the layer at every point of its time range. The
 /// widget's child is laid out at the layer's own placement, so the keyframed
