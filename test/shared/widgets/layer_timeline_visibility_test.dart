@@ -582,6 +582,99 @@ void main() {
     });
   });
 
+  group('LayerTimelineVisibility spin and flip', () {
+    Layer layerWith(List<LayerAnimation> animations) => Layer(
+      startTime: Duration.zero,
+      endTime: const Duration(seconds: 10),
+      animations: animations,
+    );
+
+    // The width and height of the box around the child as it is painted.
+    Size paintedBox(WidgetTester tester) {
+      final box = tester.renderObject<RenderBox>(find.byKey(childKey));
+      final corners = [
+        box.localToGlobal(Offset.zero),
+        box.localToGlobal(Offset(box.size.width, 0)),
+        box.localToGlobal(Offset(0, box.size.height)),
+        box.localToGlobal(box.size.bottomRight(Offset.zero)),
+      ];
+      double extent(double Function(Offset) axis) =>
+          corners.map(axis).reduce(math.max) -
+          corners.map(axis).reduce(math.min);
+      return Size(extent((c) => c.dx), extent((c) => c.dy));
+    }
+
+    testWidgets('spins into place clockwise', (tester) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.spin,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // A quarter of a turn done, three quarters to go: turned a quarter
+      // clockwise from where it started.
+      await seek(tester, notifier, const Duration(milliseconds: 250));
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(
+        math.atan2(matrix.storage[1], matrix.storage[0]),
+        closeTo(math.pi / 2, 1e-9),
+      );
+    });
+
+    testWidgets('squeezes a flip across the axis it turns around', (
+      tester,
+    ) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+          turns: 0.5,
+          flipAxis: FlipAxis.horizontal,
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // Half a turn away, it shows its mirror image.
+      await seek(tester, notifier, Duration.zero);
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(matrix.storage[0], closeTo(1, 1e-9));
+      expect(matrix.storage[5], closeTo(-1, 1e-9));
+
+      // A quarter turn away, it is edge-on.
+      await seek(tester, notifier, const Duration(milliseconds: 500));
+      expect(paintedBox(tester).height, closeTo(0, 1e-9));
+      expect(paintedBox(tester).width, closeTo(100, 1e-9));
+    });
+
+    testWidgets('squeezes the layer before turning it', (tester) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.spin,
+          phase: AnimationPhase.loop,
+          duration: Duration(seconds: 4),
+        ),
+        LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.loop,
+          duration: Duration(milliseconds: 1200),
+          flipAxis: FlipAxis.horizontal,
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // A quarter spin and five sixths of a flip: the 100 × 50 child is
+      // squeezed to 100 × 25 and then stood on end.
+      await seek(tester, notifier, const Duration(seconds: 1));
+      final box = paintedBox(tester);
+      expect(box.width, closeTo(25, 1e-9));
+      expect(box.height, closeTo(100, 1e-9));
+    });
+  });
+
   group('LayerTimelineVisibility legacy fade path', () {
     testWidgets('uses the transitionBuilder when animations is empty', (
       tester,

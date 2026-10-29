@@ -9,7 +9,7 @@ import 'layer.dart';
 /// follows the animation's progress: fully away at the start of an
 /// [AnimationPhase.animateIn], at rest once it ends, and back again over an
 /// [AnimationPhase.animateOut]. [AnimationPhase.loop] swings between the two
-/// over and over.
+/// over and over; a [spin] and a [flip] keep turning instead.
 enum LayerAnimationType {
   /// Fade opacity from 0 to 1 (in) or 1 to 0 (out).
   fade,
@@ -52,6 +52,41 @@ enum LayerAnimationType {
   /// Reveal the text of a text layer word by word (in), or take it away from
   /// the last word back (out). Works like [typewriter] otherwise.
   wordByWord,
+
+  /// Turn the layer around its center by [LayerAnimation.turns] full turns.
+  ///
+  /// In, the layer turns into place, out it turns away from it, both
+  /// clockwise for a positive [LayerAnimation.turns]. In a
+  /// [AnimationPhase.loop] it keeps turning the same way, by
+  /// [LayerAnimation.turns] every cycle; with [AnimationCurve.linear] it
+  /// turns at an even pace without stopping.
+  spin,
+
+  /// Turn the layer around its vertical or horizontal axis like a card, by
+  /// [LayerAnimation.turns] full turns; see [LayerAnimation.flipAxis].
+  ///
+  /// The layer is drawn flat, so the turn shows as a squeeze across the axis:
+  /// to nothing at a quarter turn and to a mirror image at half a turn. A
+  /// quarter turn in starts edge-on, where nothing shows, and turns the layer
+  /// to face the viewer; full turns flip it over that often. In a
+  /// [AnimationPhase.loop] it keeps turning, by [LayerAnimation.turns] every
+  /// cycle, like a [spin].
+  ///
+  /// The squeeze follows the image of the layer as it is laid out, its own
+  /// [Layer.rotation] included, as the exported image is; the turns of
+  /// keyframes, a [spin] and a [wiggle] turn the squeezed layer.
+  flip,
+}
+
+/// The axis a [LayerAnimationType.flip] turns a layer around.
+enum FlipAxis {
+  /// Turn around the vertical axis: the layer turns sideways, its left and
+  /// right edges trading places.
+  vertical,
+
+  /// Turn around the horizontal axis: the layer turns over, its top and
+  /// bottom edges trading places.
+  horizontal,
 }
 
 /// Slide direction for slide animations.
@@ -136,6 +171,11 @@ enum AnimationPhase {
   /// the way back like an [animateIn]: with [AnimationCurve.easeIn] the layer
   /// moves fastest at rest and slowest at the turning point, like a pendulum
   /// or a hop.
+  ///
+  /// A [LayerAnimationType.spin] and a [LayerAnimationType.flip] do not turn
+  /// back: they turn on by [LayerAnimation.turns] every cycle, which the
+  /// [LayerAnimation.curve] eases from start to end, so each cycle picks up
+  /// where the last one stopped.
   loop,
 }
 
@@ -194,6 +234,8 @@ class LayerAnimation {
     this.scaleFrom,
     this.wiggleAngle,
     this.bounceHeight,
+    this.turns,
+    this.flipAxis,
   }) : assert(
          type != LayerAnimationType.slide ||
              slideDirection != null ||
@@ -229,6 +271,8 @@ class LayerAnimation {
       scaleFrom: (map['scaleFrom'] as num?)?.toDouble(),
       wiggleAngle: (map['wiggleAngle'] as num?)?.toDouble(),
       bounceHeight: (map['bounceHeight'] as num?)?.toDouble(),
+      turns: (map['turns'] as num?)?.toDouble(),
+      flipAxis: _enumByName(FlipAxis.values, map['flipAxis']),
     );
   }
 
@@ -240,6 +284,10 @@ class LayerAnimation {
   /// [bounceHeight] is not set: half its height.
   static const double defaultBounceHeight = 0.5;
 
+  /// How far a [LayerAnimationType.spin] or [LayerAnimationType.flip] turns
+  /// the layer when [turns] is not set: once all the way round.
+  static const double defaultTurns = 1;
+
   /// Returns the enum value from [values] whose name matches [name], or `null`
   /// when [name] is not a [String] or has no match.
   static T? _enumByName<T extends Enum>(List<T> values, Object? name) {
@@ -250,7 +298,7 @@ class LayerAnimation {
     return null;
   }
 
-  /// The kind of animation (fade, slide, scale, wiggle, bounce, ...).
+  /// The kind of animation (fade, slide, scale, wiggle, bounce, spin, ...).
   final LayerAnimationType type;
 
   /// Whether this animation plays at the start, end, or both ends of the
@@ -318,6 +366,21 @@ class LayerAnimation {
   /// Defaults to [defaultBounceHeight] when not set.
   final double? bounceHeight;
 
+  /// How far a [LayerAnimationType.spin] or [LayerAnimationType.flip] turns
+  /// the layer, in full turns: `1` once all the way round, `0.25` a quarter
+  /// of the way. In a [AnimationPhase.loop] this is how far it turns in one
+  /// cycle.
+  ///
+  /// A spin turns clockwise for a positive value, like [Layer.rotation], and
+  /// counter-clockwise for a negative one; a flip looks the same either way.
+  /// Defaults to [defaultTurns] when not set.
+  final double? turns;
+
+  /// The axis a [LayerAnimationType.flip] turns the layer around.
+  ///
+  /// Defaults to [FlipAxis.vertical] when not set.
+  final FlipAxis? flipAxis;
+
   /// Whether this animation reveals the text of a text layer rather than
   /// moving the layer: [LayerAnimationType.typewriter] or
   /// [LayerAnimationType.wordByWord].
@@ -339,6 +402,8 @@ class LayerAnimation {
       'scaleFrom': scaleFrom,
       'wiggleAngle': wiggleAngle,
       'bounceHeight': bounceHeight,
+      'turns': turns,
+      'flipAxis': flipAxis?.name,
     };
   }
 
@@ -353,6 +418,8 @@ class LayerAnimation {
     double? scaleFrom,
     double? wiggleAngle,
     double? bounceHeight,
+    double? turns,
+    FlipAxis? flipAxis,
   }) {
     return LayerAnimation(
       type: type ?? this.type,
@@ -364,6 +431,8 @@ class LayerAnimation {
       scaleFrom: scaleFrom ?? this.scaleFrom,
       wiggleAngle: wiggleAngle ?? this.wiggleAngle,
       bounceHeight: bounceHeight ?? this.bounceHeight,
+      turns: turns ?? this.turns,
+      flipAxis: flipAxis ?? this.flipAxis,
     );
   }
 
@@ -375,7 +444,9 @@ class LayerAnimation {
         '${slideFrom != null ? ', slideFrom: $slideFrom' : ''}'
         '${scaleFrom != null ? ', scaleFrom: $scaleFrom' : ''}'
         '${wiggleAngle != null ? ', wiggleAngle: $wiggleAngle' : ''}'
-        '${bounceHeight != null ? ', bounceHeight: $bounceHeight' : ''})';
+        '${bounceHeight != null ? ', bounceHeight: $bounceHeight' : ''}'
+        '${turns != null ? ', turns: $turns' : ''}'
+        '${flipAxis != null ? ', flipAxis: $flipAxis' : ''})';
   }
 
   @override
@@ -389,7 +460,9 @@ class LayerAnimation {
         other.slideFrom == slideFrom &&
         other.scaleFrom == scaleFrom &&
         other.wiggleAngle == wiggleAngle &&
-        other.bounceHeight == bounceHeight;
+        other.bounceHeight == bounceHeight &&
+        other.turns == turns &&
+        other.flipAxis == flipAxis;
   }
 
   @override
@@ -402,6 +475,8 @@ class LayerAnimation {
         slideFrom.hashCode ^
         scaleFrom.hashCode ^
         wiggleAngle.hashCode ^
-        bounceHeight.hashCode;
+        bounceHeight.hashCode ^
+        turns.hashCode ^
+        flipAxis.hashCode;
   }
 }

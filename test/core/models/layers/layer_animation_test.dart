@@ -381,6 +381,77 @@ void main() {
       });
     });
 
+    group('spin and flip', () {
+      test('leave turns and axis unset by default', () {
+        const animation = LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 500),
+        );
+        expect(animation.turns, isNull);
+        expect(animation.flipAxis, isNull);
+        expect(animation.toMap()['turns'], isNull);
+        expect(animation.toMap()['flipAxis'], isNull);
+      });
+
+      test('round-trip their turns and axis', () {
+        const flip = LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateOut,
+          duration: Duration(milliseconds: 600),
+          turns: 0.25,
+          flipAxis: FlipAxis.horizontal,
+        );
+        expect(LayerAnimation.fromMap(flip.toMap()), flip);
+
+        const spin = LayerAnimation(
+          type: LayerAnimationType.spin,
+          phase: AnimationPhase.loop,
+          duration: Duration(seconds: 2),
+          turns: -3,
+        );
+        expect(LayerAnimation.fromMap(spin.toMap()), spin);
+      });
+
+      test('read whole turns and drop an axis they do not know', () {
+        final restored = LayerAnimation.fromMap(const {
+          'type': 'flip',
+          'phase': 'animateIn',
+          'durationUs': 1000,
+          'turns': 2,
+          'flipAxis': 'diagonal',
+        });
+        expect(restored.turns, 2.0);
+        expect(restored.flipAxis, isNull);
+      });
+
+      test('copyWith replaces turns and axis', () {
+        const original = LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 500),
+        );
+        final updated = original.copyWith(
+          turns: 0.5,
+          flipAxis: FlipAxis.horizontal,
+        );
+        expect(updated.turns, 0.5);
+        expect(updated.flipAxis, FlipAxis.horizontal);
+      });
+
+      test('differ by turns and axis', () {
+        const a = LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(milliseconds: 500),
+          turns: 1,
+          flipAxis: FlipAxis.vertical,
+        );
+        expect(a, isNot(a.copyWith(turns: 2)));
+        expect(a, isNot(a.copyWith(flipAxis: FlipAxis.horizontal)));
+      });
+    });
+
     group('copyWith', () {
       test('returns an equal copy when no fields are provided', () {
         const original = LayerAnimation(
@@ -562,7 +633,13 @@ void main() {
         LayerAnimationType.bounce,
         LayerAnimationType.typewriter,
         LayerAnimationType.wordByWord,
+        LayerAnimationType.spin,
+        LayerAnimationType.flip,
       ]);
+    });
+
+    test('FlipAxis has expected values', () {
+      expect(FlipAxis.values, [FlipAxis.vertical, FlipAxis.horizontal]);
     });
 
     test('SlideDirection has expected values', () {
