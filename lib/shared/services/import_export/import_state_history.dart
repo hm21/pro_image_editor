@@ -130,10 +130,24 @@ class ImportStateHistory {
             historyItem[minifier.convertHistoryKey('layers')] ?? [],
           )) {
             String id = rawLayer['id'];
+            final lastLayerState = lastLayerStateHelper[id] ?? {};
             Map<String, dynamic> convertedLayerMap = {
-              ...lastLayerStateHelper[id] ?? {},
+              ...lastLayerState,
               ...rawLayer,
             };
+
+            /// A step writes only the interaction settings that changed, so
+            /// they are merged over the previous ones rather than replacing
+            /// them, which would reset the others to their defaults.
+            final interactionKey = minifier.convertLayerKey('interaction');
+            final lastInteraction = lastLayerState[interactionKey];
+            final interaction = rawLayer[interactionKey];
+            if (lastInteraction is Map && interaction is Map) {
+              convertedLayerMap[interactionKey] = <String, dynamic>{
+                ...Map<String, dynamic>.from(lastInteraction),
+                ...Map<String, dynamic>.from(interaction),
+              };
+            }
 
             if (version == ExportImportVersion.version_5_0_0) {
               historyCompatibilityLayerInteraction(

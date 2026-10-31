@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.23.0
+- **FEAT**(layers): Add `LayerInteraction.bounds`, `minScale` and `maxScale` to keep one layer inside an area and within a scale range.
+- **FIX**(import-export): A history step that changes one interaction setting of a layer no longer resets its other settings on import.
+
 ## 14.22.0
 - **FEAT**(layers): Add `LayerAnimationType.spin` and `LayerAnimationType.flip` (around a `FlipAxis`) to turn a layer by `LayerAnimation.turns`; a `switch` over `LayerAnimationType` must handle the new values.
 

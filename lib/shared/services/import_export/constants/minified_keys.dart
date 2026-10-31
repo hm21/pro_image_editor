@@ -91,6 +91,8 @@ const Map<String, String> kMinifiedLayerInteractionKeys = {
   'enableRotate': 'r',
   'enableSelection': 't',
   'enableEdit': 'e',
+  'minScale': 'n',
+  'maxScale': 'x',
 };
 
 /// A constant map containing minified paint-item keys for import/export
