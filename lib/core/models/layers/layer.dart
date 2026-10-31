@@ -675,6 +675,11 @@ class Layer {
     int maxDecimalPlaces = kMaxSafeDecimalPlaces,
     bool enableMinify = false,
   }) {
+    // Empty when only [LayerInteraction.bounds] changed, which is not stored.
+    final interactionChanges = interaction.toMapFromReference(
+      layer.interaction,
+      enableMinify: enableMinify,
+    );
     return {
       'id': id,
       if (layer.offset.dx != offset.dx)
@@ -687,11 +692,7 @@ class Layer {
       if (layer.flipX != flipX) 'flipX': flipX.minify(enableMinify),
       if (layer.flipY != flipY) 'flipY': flipY.minify(enableMinify),
       if (!mapIsEqual(layer.meta, meta)) 'meta': meta,
-      if (layer.interaction != interaction)
-        'interaction': interaction.toMapFromReference(
-          layer.interaction,
-          enableMinify: enableMinify,
-        ),
+      if (interactionChanges.isNotEmpty) 'interaction': interactionChanges,
       if (layer.boxConstraints != boxConstraints)
         'boxConstraints': boxConstraints!.toMap(
           maxDecimalPlaces: maxDecimalPlaces,

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '/features/layer/inline_text_example.dart';
 import '/features/layer/layer_export_example.dart';
 import '/features/layer/layer_grouping_example.dart';
+import '/features/layer/layer_limits_example.dart';
 import '/features/layer/layer_rasterizer_example.dart';
 import '/features/layer/layer_select_design_example.dart';
 import '/features/layer/selectable_layer_example.dart';
@@ -45,6 +46,12 @@ class _LayerGroupPageState extends State<LayerGroupPage> {
             title: const Text('Always-Selectable'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _openExample(const SelectableLayerExample()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.fit_screen_outlined),
+            title: const Text('Move and Scale Limits'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openExample(const LayerLimitsExample()),
           ),
           ListTile(
             leading: const Icon(Icons.crop_free),

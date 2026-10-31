@@ -624,6 +624,12 @@ class ProImageEditorState extends State<ProImageEditor>
       onUpdateUI: mainEditorCallbacks?.handleUpdateUI,
       setState: setState,
       keyframeTime: () => _videoController?.playTimeNotifier.value,
+      applyLayerLimits: (layer, laidOutScale) =>
+          layerInteractionManager.applyLayerLimits(
+            layer,
+            editorBodySize: sizesManager.bodySize,
+            laidOutScale: laidOutScale,
+          ),
     );
     sizesManager = SizesManager(configs: configs, context: context);
     layerInteractionManager.scaleDebounce = Debounce(
@@ -1525,6 +1531,9 @@ class ProImageEditorState extends State<ProImageEditor>
     /// mid-gesture pointer change (e.g. a third finger touching down), which
     /// would otherwise corrupt the history/screenshot stack (issue #850).
     if (hasSelectedLayers && !isLayerBeingTransformed) {
+      // Before the history step copies the layers, which are laid out only a
+      // frame later, and before keyframes place them elsewhere.
+      layerInteractionManager.measureLayerSizes(selectedLayers);
       addHistory(blockCaptureScreenshot: true);
       _startKeyframeEdit();
     }

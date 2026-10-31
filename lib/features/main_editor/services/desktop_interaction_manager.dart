@@ -43,6 +43,7 @@ class DesktopInteractionManager {
     required this.configs,
     required this.callbacks,
     this.keyframeTime,
+    this.applyLayerLimits,
   });
 
   /// The build context associated with the desktop interaction manager.
@@ -77,20 +78,27 @@ class DesktopInteractionManager {
   /// is written to, or `null` outside the video editor.
   final Duration? Function()? keyframeTime;
 
+  /// Keeps a layer a shortcut changed within the limits of its
+  /// [Layer.interaction], given the scale it was laid out at before.
+  final void Function(Layer layer, double laidOutScale)? applyLayerLimits;
+
   /// Applies [change] to [layer]. A layer with keyframes is first laid out at
   /// the placement they give it at [keyframeTime], and the changed placement
   /// is written back to the keyframe there, so the change shows on screen.
   /// A [change] that leaves the layer where it was, such as a scroll while
   /// zooming is off, adds no keyframe.
   void _transformLayer(Layer layer, void Function() change) {
+    final laidOutScale = layer.scale;
     final time = keyframeTime?.call();
     if (time == null || !layer.hasKeyframes) {
       change();
+      applyLayerLimits?.call(layer, laidOutScale);
       return;
     }
     layer.applyKeyframePlacement(time);
     final before = layer.restPlacement;
     change();
+    applyLayerLimits?.call(layer, laidOutScale);
     if (layer.restPlacement == before) return;
     layer.setKeyframeAt(
       time,
