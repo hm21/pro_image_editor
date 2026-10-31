@@ -1567,11 +1567,14 @@ class LayerInteractionManager {
   /// is small enough again, and the rotation helper line moves with it.
   void _keepTransformedLayerInBounds(Layer layer, Size editorBodySize) {
     if (layer.interaction.bounds == null) return;
+    // Where the previous step left it, which the rotation helper line was
+    // placed at.
+    final shownOffset = layer.offset;
     layer.offset = _unconstrainedOffsets[layer.id] ?? layer.offset;
-    final shift = _keepInsideBounds(layer, editorBodySize);
+    _keepInsideBounds(layer, editorBodySize);
     if (showRotationHelperLine) {
-      rotationHelperLineX += shift.dx;
-      rotationHelperLineY += shift.dy;
+      rotationHelperLineX += layer.offset.dx - shownOffset.dx;
+      rotationHelperLineY += layer.offset.dy - shownOffset.dy;
     }
   }
 

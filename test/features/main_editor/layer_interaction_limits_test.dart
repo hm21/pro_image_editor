@@ -397,6 +397,63 @@ void main() {
       await tester.pumpAndSettle();
     });
 
+    testWidgets('the rotation helper line stays on a layer the bounds push', (
+      tester,
+    ) async {
+      final state = await pumpEditor(
+        tester,
+        configs: configsWith(
+          helperLines: const HelperLineConfigs(
+            showVerticalLine: false,
+            showHorizontalLine: false,
+            showLayerAlignLine: false,
+          ),
+        ),
+      );
+      final manager = state.layerInteractionManager;
+      final bounds = centeredBounds(state.sizesManager.bodySize);
+      final layer = await addSelectedLayer(
+        tester,
+        state,
+        offset: Offset(bounds.width / 2 - 50, 0),
+        interaction: LayerInteraction(bounds: centeredBounds),
+      );
+
+      final center = layerCenter(tester, layer);
+      final finger1 = await tester.startGesture(
+        center - const Offset(30, 0),
+        pointer: 1,
+      );
+      final finger2 = await tester.startGesture(
+        center + const Offset(30, 0),
+        pointer: 2,
+      );
+      await tester.pump();
+      var lineShown = false;
+      for (var i = 1; i <= 40; i++) {
+        final angle = (pi / 64) * i;
+        final arm = Offset(30 * cos(angle), 30 * sin(angle));
+        await finger1.moveTo(center - arm);
+        await finger2.moveTo(center + arm);
+        await tester.pump(const Duration(milliseconds: 16));
+        if (!manager.showRotationHelperLine) continue;
+        lineShown = true;
+        final live = liveLayer(state, layer.id);
+        final layerCenter = state.sizesManager.bodySize.center(live.offset);
+        expect(live.offset.dx, lessThan(bounds.width / 2 - 50));
+        expect(
+          Offset(manager.rotationHelperLineX, manager.rotationHelperLineY),
+          offsetMoreOrLessEquals(layerCenter, epsilon: tolerance),
+          reason: 'step $i',
+        );
+      }
+      expect(lineShown, isTrue);
+
+      await finger1.up();
+      await finger2.up();
+      await tester.pumpAndSettle();
+    });
+
     testWidgets('applyLayerLimits moves a layer changed by code inside', (
       tester,
     ) async {

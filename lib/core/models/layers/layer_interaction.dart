@@ -159,8 +159,9 @@ class LayerInteraction {
   /// The scroll and keyboard shortcuts on a desktop keep it inside as well.
   ///
   /// The area applies only when the layer is moved: a layer that is added or
-  /// changed outside it by code stays where it is until then. Each layer of
-  /// a multi-selection stops at its own area.
+  /// changed outside it by code stays where it is until then, and so does a
+  /// text box widened past it by its resize handles. Each layer of a
+  /// multi-selection stops at its own area.
   ///
   /// A function cannot be stored, so an exported state does not hold the
   /// area: set it again on the layers after an import. Copies of the layer,

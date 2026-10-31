@@ -1,7 +1,7 @@
 # Changelog
 
 ## 14.23.0
-- **FEAT**(layers): Add `LayerInteraction.bounds` to keep a layer inside an area while it is moved, pinched or rotated, and `LayerInteraction.minScale` / `maxScale` to limit how far one layer scales; `LayerInteractionManager.applyLayerLimits` applies them to a layer changed by code.
+- **FEAT**(layers): Add `LayerInteraction.bounds`, `minScale` and `maxScale` to keep one layer inside an area and within a scale range.
 - **FIX**(import-export): A history step that changes one interaction setting of a layer no longer resets its other settings on import.
 
 ## 14.22.0
