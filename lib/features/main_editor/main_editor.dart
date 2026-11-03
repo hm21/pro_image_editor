@@ -1840,8 +1840,7 @@ class ProImageEditorState extends State<ProImageEditor>
   /// A host can offer to turn [TextLayer.wrapAtLayerBounds] off only while
   /// that changes anything. Always `false` for a layer that does not wrap at
   /// the bounds, before the editor body has a size, and while the editor is
-  /// out of the tree, where it cannot lay text out although it is still
-  /// [mounted].
+  /// out of the tree, even when it is still [mounted].
   bool textLayerWrapsAtBounds(TextLayer layer) {
     if (!_isActive) return false;
     return LayerWidgetTextItem.wrapsAtLayerBounds(

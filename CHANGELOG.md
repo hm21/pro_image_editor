@@ -1,7 +1,7 @@
 # Changelog
 
 ## 14.23.1
-- **FIX**(main-editor): `textLayerWrapsAtBounds` returns `false` instead of throwing while the editor is out of the tree, such as when a host rebuilds in the frame that removes the editor.
+- **FIX**(main-editor): `textLayerWrapsAtBounds` returns `false` instead of throwing while the editor is out of the tree.
 
 ## 14.23.0
 - **FEAT**(layers): Add `LayerInteraction.bounds`, `minScale` and `maxScale` to keep one layer inside an area and within a scale range.
