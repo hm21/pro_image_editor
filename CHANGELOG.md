@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.23.1
+- **FIX**(main-editor): `textLayerWrapsAtBounds` returns `false` instead of throwing while the editor is out of the tree.
+
 ## 14.23.0
 - **FEAT**(layers): Add `LayerInteraction.bounds`, `minScale` and `maxScale` to keep one layer inside an area and within a scale range.
 - **FIX**(import-export): A history step that changes one interaction setting of a layer no longer resets its other settings on import.
