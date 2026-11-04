@@ -123,6 +123,67 @@ void main() {
       expect(ctrl.mode, PaintMode.freeStyle);
     });
 
+    for (final (:recordsStroke, :label) in [
+      (recordsStroke: true, label: 'records every point'),
+      (recordsStroke: false, label: 'records only start and end'),
+    ]) {
+      testWidgets('a custom mode $label when it is '
+          '${recordsStroke ? '' : 'not '}a free-style custom mode', (
+        WidgetTester tester,
+      ) async {
+        final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
+        final configs = PaintEditorConfigs(
+          customPathBuilders: {PaintMode.custom1: _PolylineBuilder.new},
+          freeStyleCustomModes: recordsStroke ? {PaintMode.custom1} : {},
+        );
+        final ctrl = PaintController(
+          color: Colors.red,
+          mode: PaintMode.custom1,
+          fill: false,
+          strokeWidth: 1,
+          strokeMultiplier: 1,
+          opacity: 1,
+          freeStyleCustomModes: configs.freeStyleCustomModes,
+        );
+        PaintedModel? created;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PaintCanvas(
+                layers: const [],
+                key: canvasKey,
+                drawAreaSize: const Size(1000, 1000),
+                editorBodySize: const Size(1000, 1000),
+                layerStackScaleFactor: 1,
+                paintCtrl: ctrl,
+                eraserMode: EraserMode.partial,
+                eraserRadius: 8.0,
+                paintEditorConfigs: configs,
+                onRefresh: () {},
+                onCreated: (PaintedModel item) => created = item,
+                onRemoveLayer: (List<String> value) {},
+                onRemovePartialStart: () {},
+                onRemovePartialEnd: (bool hasRemovedAreas) {},
+                onTap: (TapDownDetails details) {},
+              ),
+            ),
+          ),
+        );
+
+        final center = tester.getCenter(find.byKey(canvasKey));
+        final gesture = await tester.startGesture(center);
+        await gesture.moveTo(center + const Offset(0, 50));
+        await gesture.moveTo(center + const Offset(50, 0));
+        await gesture.moveTo(center + const Offset(50, 50));
+        await gesture.up();
+        await tester.pump();
+
+        expect(created, isNotNull);
+        expect(created!.mode, PaintMode.custom1);
+        expect(created!.offsets, hasLength(recordsStroke ? 4 : 2));
+      });
+    }
+
     testWidgets('cancelActiveDrawing discards an in-progress stroke', (
       WidgetTester tester,
     ) async {
@@ -508,4 +569,24 @@ void main() {
       });
     });
   });
+}
+
+/// Draws [PaintedModel.offsets] as one connected line.
+class _PolylineBuilder extends PathBuilderBase {
+  _PolylineBuilder({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
+
+  @override
+  Path build() {
+    final points = offsets.whereType<Offset>().map((o) => o * scale).toList();
+    if (points.isEmpty) return path;
+    path.moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+    return path;
+  }
 }

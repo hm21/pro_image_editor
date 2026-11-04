@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.24.0
+- **FEAT**(paint-editor): Add `PaintEditorConfigs.freeStyleCustomModes` so a custom paint mode records the whole stroke, like `PaintMode.freeStyle`, and its custom path builder can draw a brush.
+
 ## 14.23.1
 - **FIX**(main-editor): `textLayerWrapsAtBounds` returns `false` instead of throwing while the editor is out of the tree.
 

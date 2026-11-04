@@ -304,6 +304,7 @@ class PaintEditorState extends State<PaintEditor>
       color: paintEditorConfigs.style.initialColor,
       opacity: paintEditorConfigs.style.initialOpacity,
       strokeMultiplier: 1,
+      freeStyleCustomModes: paintEditorConfigs.freeStyleCustomModes,
     );
 
     _isFillMode = paintEditorConfigs.isInitiallyFilled;
@@ -887,7 +888,7 @@ class PaintEditorState extends State<PaintEditor>
     Size size = layerRect.size;
 
     bool onlyStrokeMode =
-        rawLayer.mode.isFreeStyleMode ||
+        paintEditorConfigs.isFreeStyleMode(rawLayer.mode) ||
         rawLayer.mode == PaintMode.line ||
         rawLayer.mode == PaintMode.dashLine ||
         rawLayer.mode == PaintMode.dashDotLine ||

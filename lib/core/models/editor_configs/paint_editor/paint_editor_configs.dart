@@ -87,6 +87,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.icons = const PaintEditorIcons(),
     this.widgets = const PaintEditorWidgets(),
     this.customPathBuilders = const {},
+    this.freeStyleCustomModes = const {},
   }) : assert(
          maxScale >= minScale,
          'maxScale must be greater than or equal to minScale',
@@ -310,6 +311,28 @@ class PaintEditorConfigs extends ZoomConfigs
   /// ```
   final Map<PaintMode, CustomPathBuilderFactory> customPathBuilders;
 
+  /// The custom paint modes that record every point of a drag, like
+  /// [PaintMode.freeStyle], instead of only its start and end.
+  ///
+  /// Only [PaintMode.custom1], [PaintMode.custom2] and [PaintMode.custom3]
+  /// take effect; their [customPathBuilders] then receive the whole stroke in
+  /// [PaintedModel.offsets], so they can draw brushes rather than shapes.
+  ///
+  /// Example:
+  /// ```dart
+  /// PaintEditorConfigs(
+  ///   customPathBuilders: {PaintMode.custom1: NeonBrushBuilder.new},
+  ///   freeStyleCustomModes: {PaintMode.custom1},
+  /// )
+  /// ```
+  final Set<PaintMode> freeStyleCustomModes;
+
+  /// Whether [mode] records every point of a drag: one of the built-in
+  /// freehand modes or a mode in [freeStyleCustomModes].
+  bool isFreeStyleMode(PaintMode mode) =>
+      mode.isFreeStyleMode ||
+      (mode.isCustomMode && freeStyleCustomModes.contains(mode));
+
   /// Creates a copy of this `PaintEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -360,6 +383,7 @@ class PaintEditorConfigs extends ZoomConfigs
     double? dashDotLineSpacingFactor,
     double? dashDotLineWidthFactor,
     Map<PaintMode, CustomPathBuilderFactory>? customPathBuilders,
+    Set<PaintMode>? freeStyleCustomModes,
   }) {
     return PaintEditorConfigs(
       layerFractionalOffset:
@@ -417,6 +441,7 @@ class PaintEditorConfigs extends ZoomConfigs
       dashDotLineWidthFactor:
           dashDotLineWidthFactor ?? this.dashDotLineWidthFactor,
       customPathBuilders: customPathBuilders ?? this.customPathBuilders,
+      freeStyleCustomModes: freeStyleCustomModes ?? this.freeStyleCustomModes,
     );
   }
 }

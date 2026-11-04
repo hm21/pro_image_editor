@@ -74,6 +74,13 @@ enum PaintMode {
       this == PaintMode.freeStyleArrowEnd ||
       this == PaintMode.freeStyleArrowStartEnd;
 
+  /// Returns `true` if this mode is drawn by a custom path builder:
+  /// [custom1], [custom2] or [custom3].
+  bool get isCustomMode =>
+      this == PaintMode.custom1 ||
+      this == PaintMode.custom2 ||
+      this == PaintMode.custom3;
+
   /// Returns `true` if this mode draws a censor area, [blur] or [pixelate].
   bool get isCensorMode => this == PaintMode.blur || this == PaintMode.pixelate;
 }
