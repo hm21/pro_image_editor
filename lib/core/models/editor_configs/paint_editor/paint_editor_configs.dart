@@ -319,6 +319,11 @@ class PaintEditorConfigs extends ZoomConfigs
   /// take effect; their [customPathBuilders] then receive the whole stroke in
   /// [PaintedModel.offsets], so they can draw brushes rather than shapes.
   ///
+  /// A brush can extend [PathBuilderFreestyle] to reuse its path and its hit
+  /// test, which runs once per point instead of along the drawn length. One
+  /// that overrides [PathBuilderBase.draw] with several draw calls paints them
+  /// through [PathBuilderBase.drawInLayer], so the eraser clears all of them.
+  ///
   /// Example:
   /// ```dart
   /// PaintEditorConfigs(
