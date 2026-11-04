@@ -91,7 +91,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
     Widget painter = CustomPaint(
       size: layer.size,
       willChange: willChange,
-      isComplex: item.mode.isFreeStyleMode,
+      isComplex: paintEditorConfigs.isFreeStyleMode(item.mode),
       painter: DrawPaintItem(
         item: item,
         scale: layer.scale,

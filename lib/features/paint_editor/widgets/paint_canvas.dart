@@ -148,10 +148,7 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
   bool get _isFreeStyleMode =>
-      _paintCtrl.mode == PaintMode.freeStyle ||
-      _paintCtrl.mode == PaintMode.freeStyleArrowStart ||
-      _paintCtrl.mode == PaintMode.freeStyleArrowEnd ||
-      _paintCtrl.mode == PaintMode.freeStyleArrowStartEnd;
+      widget.paintEditorConfigs.isFreeStyleMode(_paintCtrl.mode);
 
   @override
   void initState() {

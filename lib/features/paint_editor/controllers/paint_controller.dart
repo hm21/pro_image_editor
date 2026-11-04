@@ -16,6 +16,8 @@ class PaintController extends ChangeNotifier {
   /// - `fill`: Whether the initial mode should fill the shape
   /// (e.g., circle or rectangle).
   /// - `strokeMultiplier`: The multiplier for the stroke width.
+  /// - `freeStyleCustomModes`: The custom modes that record every point of a
+  /// drag; see `PaintEditorConfigs.freeStyleCustomModes`.
   PaintController({
     required double strokeWidth,
     required Color color,
@@ -23,6 +25,7 @@ class PaintController extends ChangeNotifier {
     required bool fill,
     required int strokeMultiplier,
     required this.opacity,
+    this.freeStyleCustomModes = const {},
   }) {
     _strokeWidth = strokeWidth;
     _color = color;
@@ -46,6 +49,10 @@ class PaintController extends ChangeNotifier {
   /// The opacity for the drawing
   late double opacity;
 
+  /// The custom modes that record every point of a drag, like
+  /// [PaintMode.freeStyle].
+  final Set<PaintMode> freeStyleCustomModes;
+
   /// List of offsets representing points on the canvas during paint.
   final List<Offset?> _offsets = [];
 
@@ -68,10 +75,8 @@ class PaintController extends ChangeNotifier {
   PaintedModel get paintedModel => PaintedModel(
     mode: mode,
     offsets:
-        mode == PaintMode.freeStyle ||
-            mode == PaintMode.freeStyleArrowStart ||
-            mode == PaintMode.freeStyleArrowEnd ||
-            mode == PaintMode.freeStyleArrowStartEnd ||
+        mode.isFreeStyleMode ||
+            (mode.isCustomMode && freeStyleCustomModes.contains(mode)) ||
             mode == PaintMode.polygon
         ? [..._offsets]
         : [start, end],
