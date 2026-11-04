@@ -13,6 +13,7 @@ import 'censor_configs.dart';
 
 export '/features/paint_editor/models/path_builder/custom_path_builder.dart';
 export '/features/paint_editor/models/path_builder/path_builder_base.dart';
+export '/features/paint_editor/models/path_builder/path_builder_freestyle.dart';
 export '../../custom_widgets/paint_editor_widgets.dart';
 export '../../icons/paint_editor_icons.dart';
 export '../../styles/paint_editor_style.dart';

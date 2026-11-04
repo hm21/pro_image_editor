@@ -6,7 +6,6 @@ import 'path_builder_arrow.dart';
 import 'path_builder_circle.dart';
 import 'path_builder_dash_dot_line.dart';
 import 'path_builder_dash_line.dart';
-import 'path_builder_freestyle.dart';
 import 'path_builder_hexagon.dart';
 import 'path_builder_line.dart';
 import 'path_builder_polygon.dart';
@@ -191,23 +190,49 @@ abstract class PathBuilderBase {
       return;
     }
 
+    drawInLayer(
+      canvas: canvas,
+      size: size,
+      paintContent: () {
+        canvas.drawPath(path, painter);
+        // Fill path (second)
+        _drawFillPath(canvas, secondPath);
+      },
+    );
+  }
+
+  /// Runs [paintContent], which may issue several draw calls, through one
+  /// offscreen that fades the result by [opacity] and clears the erased areas
+  /// of [item] from it.
+  ///
+  /// For custom builders that override [draw]: calls that each carried the
+  /// opacity would blend against each other, and the eraser would miss them.
+  /// Paints straight to [canvas] when there is nothing to fade or clear.
+  @protected
+  void drawInLayer({
+    required Canvas canvas,
+    required Size size,
+    required VoidCallback paintContent,
+  }) {
+    final double alpha = opacity.clamp(0.0, 1.0);
+    if (alpha >= 1 && item.erasedOffsets.isEmpty) {
+      paintContent();
+      return;
+    }
+
     final strokeWidth = item.strokeWidth;
     final doubleStrokeWidth = item.strokeWidth * 2;
-    canvas
-      ..saveLayer(
-        Rect.fromLTWH(
-          -strokeWidth,
-          -strokeWidth,
-          size.width + doubleStrokeWidth,
-          size.height + doubleStrokeWidth,
-        ),
-        // Only the alpha of this paint matters; it fades the composed result.
-        Paint()..color = Color.fromRGBO(0, 0, 0, alpha),
-      )
-      ..drawPath(path, painter);
-
-    // Fill path (second)
-    _drawFillPath(canvas, secondPath);
+    canvas.saveLayer(
+      Rect.fromLTWH(
+        -strokeWidth,
+        -strokeWidth,
+        size.width + doubleStrokeWidth,
+        size.height + doubleStrokeWidth,
+      ),
+      // Only the alpha of this paint matters; it fades the composed result.
+      Paint()..color = Color.fromRGBO(0, 0, 0, alpha),
+    );
+    paintContent();
 
     if (item.erasedOffsets.isNotEmpty) {
       // Build erase path

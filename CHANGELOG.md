@@ -2,6 +2,7 @@
 
 ## 14.24.0
 - **FEAT**(paint-editor): Add `PaintEditorConfigs.freeStyleCustomModes` so a custom paint mode records the whole stroke, like `PaintMode.freeStyle`, and its custom path builder can draw a brush.
+- **FEAT**(paint-editor): Export `PathBuilderFreestyle` and add `PathBuilderBase.drawInLayer`, so a custom brush that overrides `draw` with several draw calls keeps the opacity and the eraser working.
 
 ## 14.23.1
 - **FIX**(main-editor): `textLayerWrapsAtBounds` returns `false` instead of throwing while the editor is out of the tree.
