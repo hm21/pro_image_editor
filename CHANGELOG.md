@@ -1,9 +1,9 @@
 # Changelog
 
 ## 14.25.0
-- **FIX**(sub-editors): In a video, the paint, filter, tune, blur and crop editors show each layer as the main editor does at the playback position: hidden outside its time range and placed by its keyframes and animations, instead of showing every layer at once.
-- **FIX**(paint-editor): In a video, the eraser no longer erases layers that are hidden at the playback position, and it erases keyframed layers where their keyframes place them.
-- **FEAT**(layers): Add `Layer.isWithinTimeRange`, whether a video time lies between the layer's `startTime` and `endTime`.
+- **FIX**(sub-editors): In a video, the paint, filter, tune, blur and crop editors show layers at the playback position (time range, keyframes, animations) instead of all at once.
+- **FIX**(paint-editor): In a video, the eraser skips layers hidden at the playback position and hits keyframed layers where they are shown.
+- **FEAT**(layers): Add `Layer.isWithinTimeRange`.
 
 ## 14.24.0
 - **FEAT**(paint-editor): Add `PaintEditorConfigs.freeStyleCustomModes` so a custom paint mode records the whole stroke, like `PaintMode.freeStyle`, and its custom path builder can draw a brush.

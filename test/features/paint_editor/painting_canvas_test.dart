@@ -636,6 +636,37 @@ void main() {
         await eraseAcross(tester, center + const Offset(0, -200));
         expect(removed, [layer.id]);
       });
+
+      testWidgets('leaves a layer alone that its keyframes fade out', (
+        WidgetTester tester,
+      ) async {
+        final playTime = ValueNotifier(Duration.zero);
+        addTearDown(playTime.dispose);
+        final removed = <String>[];
+        final layer = stroke()
+          ..keyframes = const [
+            LayerKeyframe(time: Duration.zero, offset: Offset.zero, opacity: 0),
+            LayerKeyframe(time: Duration(seconds: 1), offset: Offset.zero),
+          ];
+        final canvasKey = await pumpEraser(
+          tester,
+          eraserMode: EraserMode.object,
+          layers: [layer],
+          onRemovePartialStart: () {},
+          onRemovePartialEnd: (_) {},
+          onRemoveLayer: removed.addAll,
+          playTimeNotifier: playTime,
+        );
+        final Offset center =
+            tester.getTopLeft(find.byKey(canvasKey)) + const Offset(500, 500);
+
+        await eraseAcross(tester, center);
+        expect(removed, isEmpty);
+
+        playTime.value = const Duration(seconds: 1);
+        await eraseAcross(tester, center);
+        expect(removed, [layer.id]);
+      });
     });
   });
 }

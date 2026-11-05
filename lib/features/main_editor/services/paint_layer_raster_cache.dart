@@ -185,12 +185,9 @@ class PaintLayerRasterCache extends ChangeNotifier {
       return false;
     }
     if (layer.transitionBuilder != null) return false;
-    final start = layer.startTime;
-    final end = layer.endTime;
     if (playTime != null) {
-      if (start != null && playTime < start) return false;
-      if (end != null && playTime > end) return false;
-      if ((start != null || end != null) &&
+      if (!layer.isWithinTimeRange(playTime)) return false;
+      if ((layer.startTime != null || layer.endTime != null) &&
           configs.videoEditor.layerTimeline.transitionBuilder !=
               LayerTimelineConfigs.defaultFadeTransition) {
         return false;

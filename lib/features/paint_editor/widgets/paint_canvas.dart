@@ -427,6 +427,8 @@ class PaintCanvasState extends State<PaintCanvas> {
       final placement = playTime == null
           ? null
           : paintLayer.keyframePlacementAt(playTime);
+      // Faded out by its keyframes, the layer shows nothing there.
+      if (placement != null && placement.opacity <= 0) continue;
       final layerScale = placement?.scale ?? paintLayer.scale;
       Offset position = focalPoint - editorHalfSize;
 

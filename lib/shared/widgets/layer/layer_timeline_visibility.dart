@@ -218,10 +218,7 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
     final start = layer.startTime;
     final end = layer.endTime;
 
-    final outside =
-        (start != null && currentTime < start) ||
-        (end != null && currentTime > end);
-    if (outside) {
+    if (!layer.isWithinTimeRange(currentTime)) {
       return const _TimelineFrame.hidden();
     }
 
