@@ -331,6 +331,7 @@ class BlurEditorState extends State<BlurEditor>
                       overlayColor: blurEditorConfigs.style.background,
                       configs: configs,
                       layers: layers!,
+                      playTimeNotifier: videoController?.playTimeNotifier,
                       clipBehavior: Clip.none,
                     ),
                   if (blurEditorConfigs.widgets.bodyItemsRecorded != null)

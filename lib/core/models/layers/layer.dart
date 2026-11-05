@@ -344,6 +344,12 @@ class Layer {
   /// bounds the memory one keyframed layer can take.
   static const double kMaxKeyframeCaptureGrowth = 4;
 
+  /// Whether [videoTime] lies between [startTime] and [endTime], both
+  /// inclusive. A missing bound does not limit that side.
+  bool isWithinTimeRange(Duration videoTime) =>
+      (startTime == null || videoTime >= startTime!) &&
+      (endTime == null || videoTime <= endTime!);
+
   /// The point in video time [LayerKeyframe.time] is measured from.
   Duration get keyframeOrigin => startTime ?? Duration.zero;
 

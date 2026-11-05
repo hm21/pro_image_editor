@@ -213,6 +213,22 @@ class PaintLayerRasterCache extends ChangeNotifier {
   static bool _isPositive(Duration? duration) =>
       duration != null && duration > Duration.zero;
 
+  /// Which paint layers of [layers] lie within their timeline window at
+  /// [playTime], as a hash.
+  ///
+  /// It changes exactly when one of them enters or leaves its window, which
+  /// moves it between the cache and live rendering, so a host rebuilds only
+  /// then rather than on every playback tick.
+  static int timelineSignature(List<Layer> layers, Duration? playTime) {
+    var signature = 17;
+    for (final layer in layers) {
+      if (layer is! PaintLayer) continue;
+      final visible = playTime == null || layer.isWithinTimeRange(playTime);
+      signature = Object.hash(signature, layer.id, visible);
+    }
+    return signature;
+  }
+
   /// Groups the cacheable members of [layers] into runs.
   ///
   /// [editorBodySize] places each layer the way `LayerWidget` does;
