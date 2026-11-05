@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.25.1
+- **FIX**(video): A layer, filter or tune adjustment is hidden at its exact `endTime`, so its time range is `[startTime, endTime)` like a clip's in a composition. It used to show at `endTime` in the preview while `pro_video_editor` composes clips without it, and two layers whose ranges touch both showed at the seam.
+
 ## 14.25.0
 - **FIX**(sub-editors): In a video, the paint, filter, tune, blur and crop editors show layers at the playback position (time range, keyframes, animations) instead of all at once.
 - **FIX**(paint-editor): In a video, the eraser skips layers hidden at the playback position and hits keyframed layers where they are shown.

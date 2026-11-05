@@ -79,6 +79,24 @@ void main() {
       expect(_isHidden(second), isFalse);
     });
 
+    testWidgets('hides a layer at its end time, as the export does', (
+      tester,
+    ) async {
+      final first = _caption('First', startMs: 0, endMs: 1000);
+      final second = _caption('Second', startMs: 1000, endMs: 2000);
+      playTime.value = const Duration(milliseconds: 999);
+      await _pumpStack(tester, [first, second], playTimeNotifier: playTime);
+
+      expect(_isHidden(first), isFalse);
+      expect(_isHidden(second), isTrue);
+
+      playTime.value = const Duration(seconds: 1);
+      await tester.pump();
+
+      expect(_isHidden(first), isTrue);
+      expect(_isHidden(second), isFalse);
+    });
+
     testWidgets('shows every layer without a play time', (tester) async {
       final first = _caption('First', startMs: 0, endMs: 1000);
       final second = _caption('Second', startMs: 1500, endMs: 2500);

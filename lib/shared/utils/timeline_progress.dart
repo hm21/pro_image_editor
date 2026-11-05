@@ -7,7 +7,8 @@ import 'package:flutter/animation.dart';
 /// - During enter ([startTime] → [startTime] + [enterDuration]) → 0.0…1.0
 /// - Fully visible region → 1.0
 /// - During exit ([endTime] - [exitDuration] → [endTime]) → 1.0…0.0
-/// - After [endTime] → 0.0
+/// - At or after [endTime] → 0.0, as the range is half-open like
+///   `Layer.isWithinTimeRange`
 /// - If both [startTime] and [endTime] are `null` → always 1.0
 double computeTimelineProgress({
   required Duration currentTime,
@@ -21,7 +22,7 @@ double computeTimelineProgress({
   Curve? exitCurve,
 }) {
   if (startTime != null && currentTime < startTime) return 0.0;
-  if (endTime != null && currentTime > endTime) return 0.0;
+  if (endTime != null && currentTime >= endTime) return 0.0;
 
   if (startTime != null &&
       enterDuration != null &&

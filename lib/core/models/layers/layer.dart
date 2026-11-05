@@ -204,7 +204,9 @@ class Layer {
 
   /// The time at which this layer stops being visible.
   ///
-  /// Only used in the video editor. When `null`, the layer is always visible.
+  /// The layer is shown up to, but not at, this time; see
+  /// [isWithinTimeRange]. Only used in the video editor. When `null`, the
+  /// layer is always visible.
   Duration? endTime;
 
   /// How long the fade-in animation lasts in **video time**.
@@ -344,11 +346,15 @@ class Layer {
   /// bounds the memory one keyframed layer can take.
   static const double kMaxKeyframeCaptureGrowth = 4;
 
-  /// Whether [videoTime] lies between [startTime] and [endTime], both
-  /// inclusive. A missing bound does not limit that side.
+  /// Whether the layer shows at [videoTime]: from [startTime] up to, but not
+  /// at, [endTime]. A missing bound does not limit that side.
+  ///
+  /// The range is half-open like a clip's in a composition, so a video
+  /// renderer and this preview agree on the frame at [endTime], and a layer
+  /// split into frames that touch shows exactly one of them at the seam.
   bool isWithinTimeRange(Duration videoTime) =>
       (startTime == null || videoTime >= startTime!) &&
-      (endTime == null || videoTime <= endTime!);
+      (endTime == null || videoTime < endTime!);
 
   /// The point in video time [LayerKeyframe.time] is measured from.
   Duration get keyframeOrigin => startTime ?? Duration.zero;
