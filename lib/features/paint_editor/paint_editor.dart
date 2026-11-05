@@ -1162,6 +1162,7 @@ class PaintEditorState extends State<PaintEditor>
                           layers: activeHistory.layers,
                           transformHelper: _layerStackTransformHelper,
                           overlayColor: paintEditorConfigs.style.background,
+                          playTimeNotifier: videoController?.playTimeNotifier,
                           clipBehavior: Clip.none,
                           enableLayerKey: true,
                           suspendPaintLayerRasterCache:
@@ -1253,6 +1254,7 @@ class PaintEditorState extends State<PaintEditor>
       layers: activeHistory.layers,
       eraserMode: eraserMode,
       eraserRadius: eraserRadius,
+      playTimeNotifier: videoController?.playTimeNotifier,
       onTap: (details) =>
           callbacks.paintEditorCallbacks?.onTap?.call(this, details),
       onRemoveLayer: (removeIdList) {

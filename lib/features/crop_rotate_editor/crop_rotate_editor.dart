@@ -3050,6 +3050,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                       mainEditorLayers: _layers,
                       clipBehavior: Clip.none,
                       overlayColor: cropRotateEditorConfigs.style.background,
+                      playTimeNotifier: videoController?.playTimeNotifier,
                       // The stack sits under the user zoom, the crop scale
                       // and the rotation, flip and tilt transforms, all of
                       // them animated; a raster rendered for scale 1 would
@@ -3107,6 +3108,7 @@ class CropRotateEditorState extends State<CropRotateEditor>
                   layers: _layers,
                   clipBehavior: Clip.none,
                   overlayColor: cropRotateEditorConfigs.style.background,
+                  playTimeNotifier: videoController?.playTimeNotifier,
                   // Only shown for the hero flight, which renders live.
                   suspendPaintLayerRasterCache: true,
                 ),
