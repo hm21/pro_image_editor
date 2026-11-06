@@ -92,7 +92,7 @@ void main() {
   });
 
   group('Layer.isWithinTimeRange', () {
-    test('includes both bounds and excludes everything outside them', () {
+    test('includes the start and excludes the end', () {
       final layer = Layer(
         startTime: const Duration(seconds: 1),
         endTime: const Duration(seconds: 2),
@@ -100,11 +100,22 @@ void main() {
 
       expect(layer.isWithinTimeRange(const Duration(milliseconds: 999)), false);
       expect(layer.isWithinTimeRange(const Duration(seconds: 1)), true);
-      expect(layer.isWithinTimeRange(const Duration(seconds: 2)), true);
       expect(
-        layer.isWithinTimeRange(const Duration(milliseconds: 2001)),
-        false,
+        layer.isWithinTimeRange(
+          const Duration(seconds: 2) - const Duration(microseconds: 1),
+        ),
+        true,
       );
+      expect(layer.isWithinTimeRange(const Duration(seconds: 2)), false);
+    });
+
+    test('shows exactly one of two layers that touch', () {
+      final first = Layer(endTime: const Duration(seconds: 1));
+      final second = Layer(startTime: const Duration(seconds: 1));
+
+      const seam = Duration(seconds: 1);
+      expect(first.isWithinTimeRange(seam), false);
+      expect(second.isWithinTimeRange(seam), true);
     });
 
     test('leaves a side without a bound open', () {

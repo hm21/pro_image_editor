@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.25.1
+- **FIX**(video): Layers, filters and tune adjustments are hidden at their exact `endTime` (`[startTime, endTime)`), matching the video export.
+
 ## 14.25.0
 - **FIX**(sub-editors): In a video, the paint, filter, tune, blur and crop editors show layers at the playback position (time range, keyframes, animations) instead of all at once.
 - **FIX**(paint-editor): In a video, the eraser skips layers hidden at the playback position and hits keyframed layers where they are shown.
