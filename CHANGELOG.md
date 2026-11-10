@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.25.2
+- **FIX**(audio-editor): The default audio track tile no longer reports a ListTile background error in debug mode, and its tap and selected colors paint above the dimmed track list.
+
 ## 14.25.1
 - **FIX**(video): Layers, filters and tune adjustments are hidden at their exact `endTime` (`[startTime, endTime)`), matching the video export.
 

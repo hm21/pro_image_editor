@@ -41,23 +41,28 @@ class AudioTrackListTile extends StatelessWidget {
           audioTrack,
           onTap,
         ) ??
-        ListTile(
-          selected: isSelected,
-          selectedColor: style.selectedTrackColor,
-          selectedTileColor: style.selectedTrackBackground,
-          leading: _buildLeading(),
-          title: Text(
-            audioTrack.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        // Own Material so the tile's ink and selected background paint above
+        // the editor's dimmed track list instead of underneath it.
+        Material(
+          type: MaterialType.transparency,
+          child: ListTile(
+            selected: isSelected,
+            selectedColor: style.selectedTrackColor,
+            selectedTileColor: style.selectedTrackBackground,
+            leading: _buildLeading(),
+            title: Text(
+              audioTrack.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              audioTrack.subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: _buildTrailing(context),
+            onTap: onTap,
           ),
-          subtitle: Text(
-            audioTrack.subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: _buildTrailing(context),
-          onTap: onTap,
         );
   }
 
