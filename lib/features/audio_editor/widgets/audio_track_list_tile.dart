@@ -37,7 +37,7 @@ class AudioTrackListTile extends StatelessWidget {
 
   Widget _buildAudioTile(BuildContext context) {
     final style = configs.audioEditor.style;
-   return configs.audioEditor.widgets.audioTrackItem?.call(
+    return configs.audioEditor.widgets.audioTrackItem?.call(
           audioTrack,
           onTap,
         ) ??
@@ -52,13 +52,9 @@ class AudioTrackListTile extends StatelessWidget {
               audioTrack.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              style: style.trackTitle,
             ),
-            subtitle: Text(
-              audioTrack.subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: _buildTrailing(context),
+            trailing: _buildTrailing(style),
             onTap: onTap,
           ),
         );
