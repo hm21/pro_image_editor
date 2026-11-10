@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.26.0
+- **FEAT**(layers): Add `LayerAnimationType.drawOn` to draw a paint layer's strokes in the order they were drawn, or take them away in reverse; a `switch` over `LayerAnimationType` must handle the new value.
+- **FEAT**(video): A paint layer that draws itself exports one image per frame in `ExportedLayer.drawOnBytes`, at `ImageGenerationConfigs.drawOnFrameRate`.
+
 ## 14.25.2
 - **FIX**(audio-editor): The default audio track tile no longer reports a ListTile background error in debug mode, and its tap and selected colors paint above the dimmed track list.
 

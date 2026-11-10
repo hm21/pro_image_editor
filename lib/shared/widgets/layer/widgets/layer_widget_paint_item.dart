@@ -6,7 +6,11 @@ import '/core/models/layers/paint_layer.dart';
 import '/features/paint_editor/widgets/draw_paint_item.dart';
 
 /// A widget representing a paint layer in the sticker editor.
-class LayerWidgetPaintItem extends StatelessWidget {
+///
+/// A layer with a `LayerAnimationType.drawOn` animation draws as much of its
+/// strokes as [playTimeNotifier] has reached, see
+/// [PaintLayer.drawnFractionAt]. Without a notifier it shows them whole.
+class LayerWidgetPaintItem extends StatefulWidget {
   /// Creates a [LayerWidgetPaintItem] with the given paint layer and
   /// configuration settings.
   const LayerWidgetPaintItem({
@@ -17,6 +21,7 @@ class LayerWidgetPaintItem extends StatelessWidget {
     this.willChange = false,
     this.skipPaint = false,
     this.onHitChanged,
+    this.playTimeNotifier,
     required this.paintEditorConfigs,
   });
 
@@ -47,9 +52,72 @@ class LayerWidgetPaintItem extends StatelessWidget {
   /// indicates whether a hit has occurred (true) or not (false).
   final Function(bool hasHit)? onHitChanged;
 
+  /// The current playback position of a video, which decides how far a
+  /// layer that draws itself has drawn its strokes.
+  final ValueListenable<Duration>? playTimeNotifier;
+
+  @override
+  State<LayerWidgetPaintItem> createState() => _LayerWidgetPaintItemState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    layer.debugFillProperties(properties);
+  }
+}
+
+class _LayerWidgetPaintItemState extends State<LayerWidgetPaintItem> {
+  /// How far the strokes are drawn, or `null` when they show whole.
+  double? _drawnFraction;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
+    _drawnFraction = _resolveDrawnFraction();
+  }
+
+  @override
+  void didUpdateWidget(covariant LayerWidgetPaintItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.playTimeNotifier != widget.playTimeNotifier) {
+      oldWidget.playTimeNotifier?.removeListener(_onPlayTimeChanged);
+      widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
+    }
+    _drawnFraction = _resolveDrawnFraction();
+  }
+
+  @override
+  void dispose() {
+    widget.playTimeNotifier?.removeListener(_onPlayTimeChanged);
+    super.dispose();
+  }
+
+  /// The playback position moves every frame, while a layer outside its
+  /// draw-on window shows the same whole drawing, so this only rebuilds when
+  /// the drawn part changes.
+  void _onPlayTimeChanged() {
+    final drawn = _resolveDrawnFraction();
+    if (drawn != _drawnFraction) setState(() => _drawnFraction = drawn);
+  }
+
+  double? _resolveDrawnFraction() {
+    final playTime = widget.playTimeNotifier;
+    if (playTime == null || !widget.layer.drawsOn) return null;
+    return widget.layer.drawnFractionAt(playTime.value);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final layer = widget.layer;
     final items = layer.items;
+    final drawnFraction = _drawnFraction;
+    final drawn = drawnFraction == null
+        ? null
+        : layer.drawnItemsAt(
+            drawnFraction,
+            paintEditorConfigs: widget.paintEditorConfigs,
+          );
     // Keyframes carry the opacity of a layer that has them, applied around
     // the whole layer (see [LayerTimelineVisibility]).
     final layerOpacity = layer.hasKeyframes ? 1.0 : layer.opacity;
@@ -57,13 +125,26 @@ class LayerWidgetPaintItem extends StatelessWidget {
     if (items.length == 1) {
       // Fast path for the common single-stroke layer, where the layer opacity
       // is the only one that applies.
-      return _buildItem(items.first, opacity: layerOpacity);
+      return _PaintItem(
+        layer: layer,
+        item: items.first,
+        drawn: drawn == null ? items.first : drawn.first,
+        opacity: layerOpacity,
+        host: widget,
+      );
     }
 
     // Merged layer: stack every baked-in stroke, each with its own opacity.
     final Widget child = Stack(
       children: [
-        for (final item in items) _buildItem(item, opacity: item.opacity),
+        for (final (index, item) in items.indexed)
+          _PaintItem(
+            layer: layer,
+            item: item,
+            drawn: drawn == null ? item : drawn[index],
+            opacity: item.opacity,
+            host: widget,
+          ),
       ],
     );
 
@@ -75,31 +156,57 @@ class LayerWidgetPaintItem extends StatelessWidget {
 
     return Opacity(opacity: layerOpacity, child: child);
   }
+}
 
-  /// Builds a single stroke painter sized to the layer.
-  ///
-  /// [opacity] is handed to the painter, which multiplies it into the stroke
-  /// color instead of wrapping the item in an `Opacity`. That widget renders
-  /// the layer into an offscreen buffer on every frame - the most expensive
-  /// primitive on mobile GPUs - while the painted result is identical for a
-  /// single draw call. A custom path builder may issue several draw calls that
-  /// would then blend against each other, so those keep the wrapper.
-  Widget _buildItem(PaintedModel item, {required double opacity}) {
+/// A single stroke painter sized to the layer.
+///
+/// [opacity] is handed to the painter, which multiplies it into the stroke
+/// color instead of wrapping the item in an `Opacity`. That widget renders
+/// the layer into an offscreen buffer on every frame - the most expensive
+/// primitive on mobile GPUs - while the painted result is identical for a
+/// single draw call. A custom path builder may issue several draw calls that
+/// would then blend against each other, so those keep the wrapper.
+///
+/// [drawn] is as much of [item] as a draw-on animation has drawn, [item]
+/// itself when it shows whole, or `null` when none of it shows yet; the
+/// painter hit-tests [item] either way.
+class _PaintItem extends StatelessWidget {
+  const _PaintItem({
+    required this.layer,
+    required this.item,
+    required this.drawn,
+    required this.opacity,
+    required this.host,
+  });
+
+  final PaintLayer layer;
+  final PaintedModel item;
+  final PaintedModel? drawn;
+  final double opacity;
+
+  /// The widget whose settings the stroke is painted with.
+  final LayerWidgetPaintItem host;
+
+  @override
+  Widget build(BuildContext context) {
+    final paintEditorConfigs = host.paintEditorConfigs;
+    final drawn = this.drawn;
     final bool canBakeOpacity = !paintEditorConfigs.customPathBuilders
-        .containsKey(item.mode);
+        .containsKey((drawn ?? item).mode);
 
     Widget painter = CustomPaint(
       size: layer.size,
-      willChange: willChange,
+      willChange: host.willChange,
       isComplex: paintEditorConfigs.isFreeStyleMode(item.mode),
       painter: DrawPaintItem(
         item: item,
+        paintedItem: identical(drawn, item) ? null : drawn,
         scale: layer.scale,
         opacity: canBakeOpacity ? opacity : 1.0,
-        skipPaint: skipPaint,
-        selected: isSelected,
-        enabledHitDetection: enableHitDetection,
-        onHitChanged: onHitChanged,
+        skipPaint: host.skipPaint || drawn == null,
+        selected: host.isSelected,
+        enabledHitDetection: host.enableHitDetection,
+        onHitChanged: host.onHitChanged,
         paintEditorConfigs: paintEditorConfigs,
       ),
     );
@@ -109,11 +216,5 @@ class LayerWidgetPaintItem extends StatelessWidget {
     }
 
     return painter;
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    layer.debugFillProperties(properties);
   }
 }

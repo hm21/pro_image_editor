@@ -31,6 +31,7 @@ class ImageGenerationConfigs {
     this.captureImageByteFormat = ImageByteFormat.rawRgba,
     this.customPixelRatio,
     this.layerCapturePixelRatio,
+    this.drawOnFrameRate = 30,
     this.jpegQuality = 100,
     this.pngLevel = 6,
     this.pngFilter = PngFilter.none,
@@ -52,6 +53,7 @@ class ImageGenerationConfigs {
          customPixelRatio == null || customPixelRatio > 0,
          'customPixelRatio must be greater than 0',
        ),
+       assert(drawOnFrameRate > 0, 'drawOnFrameRate must be greater than 0'),
        assert(
          captureImageByteFormat != ImageByteFormat.png,
          'ImageByteFormat.png is not supported. '
@@ -171,6 +173,16 @@ class ImageGenerationConfigs {
   /// pixel ratio.
   final LayerCapturePixelRatio? layerCapturePixelRatio;
 
+  /// How many images per second a paint layer that draws itself
+  /// (`LayerAnimationType.drawOn`) is captured as while it draws.
+  ///
+  /// A video renderer shows each image as a fixed overlay until the next
+  /// one, so set this to the frame rate of the video the layers go over:
+  /// every frame then shows the drawing exactly as far as the editor
+  /// previews it at that time. Applies wherever [layerCapturePixelRatio]
+  /// does. Defaults to 30.
+  final int drawOnFrameRate;
+
   /// Configuration settings for the processor.
   ///
   /// Use this property to customize various processing options.
@@ -240,6 +252,7 @@ class ImageGenerationConfigs {
     ImageByteFormat? captureImageByteFormat,
     double? customPixelRatio,
     LayerCapturePixelRatio? layerCapturePixelRatio,
+    int? drawOnFrameRate,
     ProcessorConfigs? processorConfigs,
     OutputFormat? outputFormat,
     bool? singleFrame,
@@ -267,6 +280,7 @@ class ImageGenerationConfigs {
       customPixelRatio: customPixelRatio ?? this.customPixelRatio,
       layerCapturePixelRatio:
           layerCapturePixelRatio ?? this.layerCapturePixelRatio,
+      drawOnFrameRate: drawOnFrameRate ?? this.drawOnFrameRate,
       processorConfigs: processorConfigs ?? this.processorConfigs,
       outputFormat: outputFormat ?? this.outputFormat,
       singleFrame: singleFrame ?? this.singleFrame,
