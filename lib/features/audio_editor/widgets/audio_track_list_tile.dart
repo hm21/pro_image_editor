@@ -52,9 +52,13 @@ class AudioTrackListTile extends StatelessWidget {
               audioTrack.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: style.trackTitle,
             ),
-            trailing: _buildTrailing(style),
+            subtitle: Text(
+              audioTrack.subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: _buildTrailing(context),
             onTap: onTap,
           ),
         );
