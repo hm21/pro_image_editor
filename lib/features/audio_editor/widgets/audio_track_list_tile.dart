@@ -37,27 +37,30 @@ class AudioTrackListTile extends StatelessWidget {
 
   Widget _buildAudioTile(BuildContext context) {
     final style = configs.audioEditor.style;
-    return configs.audioEditor.widgets.audioTrackItem?.call(
+   return configs.audioEditor.widgets.audioTrackItem?.call(
           audioTrack,
           onTap,
         ) ??
-        ListTile(
-          selected: isSelected,
-          selectedColor: style.selectedTrackColor,
-          selectedTileColor: style.selectedTrackBackground,
-          leading: _buildLeading(),
-          title: Text(
-            audioTrack.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        Material(
+          color: Colors.transparent,
+          child: ListTile(
+            selected: isSelected,
+            selectedColor: style.selectedTrackColor,
+            selectedTileColor: style.selectedTrackBackground,
+            leading: _buildLeading(),
+            title: Text(
+              audioTrack.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              audioTrack.subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: _buildTrailing(context),
+            onTap: onTap,
           ),
-          subtitle: Text(
-            audioTrack.subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: _buildTrailing(context),
-          onTap: onTap,
         );
   }
 
