@@ -353,7 +353,7 @@ void main() {
         expect(a, isNot(a.copyWith(bounceHeight: 1)));
       });
 
-      test('only typewriter and word by word reveal text', () {
+      test('only the reveals draw what the layer shows', () {
         for (final type in LayerAnimationType.values) {
           final animation = LayerAnimation(
             type: type,
@@ -365,6 +365,11 @@ void main() {
             animation.isTextReveal,
             type == LayerAnimationType.typewriter ||
                 type == LayerAnimationType.wordByWord,
+            reason: type.name,
+          );
+          expect(
+            animation.isDrawOn,
+            type == LayerAnimationType.drawOn,
             reason: type.name,
           );
         }
@@ -635,6 +640,7 @@ void main() {
         LayerAnimationType.wordByWord,
         LayerAnimationType.spin,
         LayerAnimationType.flip,
+        LayerAnimationType.drawOn,
       ]);
     });
 

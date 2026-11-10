@@ -3432,6 +3432,7 @@ class ProImageEditorState extends State<ProImageEditor>
           ? _controllers.screenshot
           : null,
       capturePixelRatio: configs.imageGeneration.layerCapturePixelRatio,
+      drawOnFrameRate: configs.imageGeneration.drawOnFrameRate,
     );
   }
 

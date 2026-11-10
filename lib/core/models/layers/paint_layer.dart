@@ -1,11 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '/core/constants/int_constants.dart';
-import '/features/paint_editor/models/painted_model.dart';
+import '/core/models/editor_configs/paint_editor/paint_editor_configs.dart';
+import '/features/paint_editor/utils/paint_draw_on.dart';
 import '/shared/extensions/num_extension.dart';
 import '/shared/services/import_export/utils/key_minifier.dart';
 import '/shared/services/import_export/utils/paint_stroke_import_cache.dart';
+import '/shared/utils/layer_animation_progress.dart';
 import '/shared/utils/parser/double_parser.dart';
 import 'layer.dart';
 import 'layer_interaction.dart';
@@ -189,6 +193,59 @@ class PaintLayer extends Layer {
   /// Whether this layer represents a censor area (blur / pixelate). A censor
   /// layer always holds a single censor stroke.
   bool get isCensor => items.any((item) => item.isCensorArea);
+
+  /// Whether one of [animations] draws the strokes of this layer, a
+  /// [LayerAnimationType.drawOn]. A censor area ignores it.
+  bool get drawsOn =>
+      !isCensor && animations.any((animation) => animation.isDrawOn);
+
+  /// How much of the drawing shows [time] into the video while a
+  /// [LayerAnimationType.drawOn] animation plays: the share of the length of
+  /// all [items] together that is drawn, from `0` (nothing) to just below
+  /// `1`, or `null` when the whole drawing shows.
+  ///
+  /// The share is the animation's progress (see `layerAnimationProgress`),
+  /// so the pen follows its easing curve; where an elastic or bounce curve
+  /// overshoots, the whole drawing shows. An animation out runs the same way
+  /// backwards and takes the end of the last stroke away first. When several
+  /// play at once, the one showing the least wins. [drawnItemsAt] turns the
+  /// share into the strokes to draw.
+  double? drawnFractionAt(Duration time) {
+    if (isCensor) return null;
+    double? drawn;
+    for (final animation in animations) {
+      if (!animation.isDrawOn) continue;
+      final progress = layerAnimationProgress(
+        animation,
+        time,
+        start: startTime,
+        end: endTime,
+      );
+      if (progress == null || progress.value >= 1) continue;
+      final value = math.max(progress.value, 0.0);
+      drawn = drawn == null ? value : math.min(drawn, value);
+    }
+    return drawn;
+  }
+
+  /// [items] as far as they are drawn at [fraction] of the drawing's length:
+  /// one entry per item in the same order, the item itself once it is drawn
+  /// whole, a copy cut off where the pen is while it is drawn, and `null`
+  /// before the pen reaches it.
+  ///
+  /// The pen draws the strokes in the order of [items], which is the order
+  /// they were drawn in, also for a layer merged from several. Each stroke
+  /// takes a share of the drawing that follows its length, see
+  /// [drawnPaintStrokes]. [paintEditorConfigs] supplies the custom path
+  /// builders the strokes are drawn with.
+  List<PaintedModel?> drawnItemsAt(
+    double fraction, {
+    PaintEditorConfigs paintEditorConfigs = const PaintEditorConfigs(),
+  }) => drawnPaintStrokes(
+    items,
+    fraction,
+    paintEditorConfigs: paintEditorConfigs,
+  );
 
   @override
   bool get isPaintLayer => true;

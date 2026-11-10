@@ -638,6 +638,7 @@ class _LayerContentItem extends StatelessWidget {
           isSelected: isSelected,
           enableHitDetection: enableHitDetection,
           skipPaint: skipPaint,
+          playTimeNotifier: playTimeNotifier,
           paintEditorConfigs: paintEditorConfigs,
         );
       case LayerWidgetType.censor:
@@ -688,6 +689,17 @@ class _LayerContentItem extends StatelessWidget {
       );
     }
 
+    // A drawing that draws itself shows only as much as the playback
+    // position has drawn.
+    final drawsOn = layer is PaintLayer && (layer as PaintLayer).drawsOn;
+    Future<ui.Image> renderPaint(double pixelRatio, {double? drawnFraction}) =>
+        PaintLayerRasterCache.renderLayerContent(
+          layer as PaintLayer,
+          pixelRatio: pixelRatio,
+          paintEditorConfigs: paintEditorConfigs,
+          drawnFraction: drawnFraction,
+        );
+
     // The mask sits outside the boundary: a capture reads the boundary or a
     // renderer below and bakes the mask in itself (see `Layer.captureAsPng`),
     // so masking inside would apply it twice.
@@ -699,15 +711,11 @@ class _LayerContentItem extends StatelessWidget {
         key: layer.repaintBoundaryKey,
         // The painters draw nothing while the strokes come from the raster
         // cache, so a capture has to render them from the model instead.
-        // Timed text is rendered from the model as well: on screen it shows
-        // whichever highlight, and however much of a reveal, the playback
-        // position is on.
-        renderContent: skipPaint
-            ? (pixelRatio) => PaintLayerRasterCache.renderLayerContent(
-                layer as PaintLayer,
-                pixelRatio: pixelRatio,
-                paintEditorConfigs: paintEditorConfigs,
-              )
+        // Timed text and a drawing that draws itself are rendered from the
+        // model as well: on screen they show whichever highlight, and however
+        // much of a reveal or a drawing, the playback position is on.
+        renderContent: skipPaint || drawsOn
+            ? renderPaint
             : timedText != null
             ? renderText
             : null,
@@ -716,6 +724,10 @@ class _LayerContentItem extends StatelessWidget {
                   renderText(pixelRatio, highlightIndex: highlightIndex)
             : null,
         renderTextState: timedText != null ? renderText : null,
+        renderPaintState: drawsOn
+            ? (pixelRatio, drawnFraction) =>
+                  renderPaint(pixelRatio, drawnFraction: drawnFraction)
+            : null,
         captureOverflow: layer.mask == null,
         child: content,
       ),

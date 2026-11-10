@@ -349,6 +349,9 @@ class _LayerTimelineVisibilityState extends State<LayerTimelineVisibility> {
         case LayerAnimationType.wordByWord:
           // The text layer reveals its own text (LayerWidgetTextItem).
           break;
+        case LayerAnimationType.drawOn:
+          // The paint layer draws its own strokes (LayerWidgetPaintItem).
+          break;
       }
     }
 

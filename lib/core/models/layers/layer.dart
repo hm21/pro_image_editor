@@ -31,6 +31,7 @@ import 'layer_interaction.dart';
 import 'layer_keyframe.dart';
 import 'layer_mask.dart';
 import 'paint_layer.dart';
+import 'paint_layer_timeline.dart';
 import 'text_layer.dart';
 import 'text_layer_timeline.dart';
 import 'widget_layer.dart';
@@ -787,10 +788,11 @@ class Layer {
   /// Captures the layer like [captureAsPng], or a [TextLayer] with the entry
   /// of [TextLayer.highlights] at [highlightIndex] active and only the first
   /// [revealedLength] UTF-16 code units of its text drawn, when either is
-  /// given.
+  /// given, or a [PaintLayer] with its strokes drawn [drawnFraction] of the
+  /// way.
   ///
-  /// Returns `null` when the layer is not mounted, or when a text state is
-  /// given for a layer that has none to render.
+  /// Returns `null` when the layer is not mounted, or when a text or paint
+  /// state is given for a layer that has none to render.
   Future<Uint8List?> _capture({
     required double? pixelRatio,
     required double? basePixelRatio,
@@ -800,6 +802,7 @@ class Layer {
     required LayerCapturePixelRatio? capturePixelRatio,
     int? highlightIndex,
     int? revealedLength,
+    double? drawnFraction,
   }) async {
     final context = repaintBoundaryKey.currentContext;
     if (context == null) return null;
@@ -833,7 +836,11 @@ class Layer {
         ? boundaryWidget
         : null;
     ui.Image rawImage;
-    if (highlightIndex != null || revealedLength != null) {
+    if (drawnFraction != null) {
+      final renderPaintState = boundary?.renderPaintState;
+      if (renderPaintState == null) return null;
+      rawImage = await renderPaintState(effectivePixelRatio, drawnFraction);
+    } else if (highlightIndex != null || revealedLength != null) {
       final renderTextState = boundary?.renderTextState;
       if (renderTextState == null) return null;
       rawImage = await renderTextState(
@@ -980,7 +987,9 @@ class Layer {
   ///
   /// A [TextLayer] with [TextLayer.highlights] is also captured once per
   /// highlight, into [ExportedLayer.highlightBytes], and one that reveals its
-  /// text once per step of the reveal, into [ExportedLayer.revealBytes];
+  /// text once per step of the reveal, into [ExportedLayer.revealBytes]; a
+  /// [PaintLayer] that draws itself is captured once per frame at
+  /// [drawOnFrameRate] while it draws, into [ExportedLayer.drawOnBytes].
   /// [ExportedLayer.frames] lays those images out along the layer's time
   /// range.
   ///
@@ -995,7 +1004,9 @@ class Layer {
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
     LayerCapturePixelRatio? capturePixelRatio,
+    int drawOnFrameRate = 30,
   }) async {
+    assert(drawOnFrameRate > 0, 'drawOnFrameRate must be greater than 0');
     ContentRecorderController? localRecorder;
     ContentRecorderController? sharedRecorder = recorder;
 
@@ -1013,6 +1024,7 @@ class Layer {
         format: format,
         recorder: sharedRecorder,
         capturePixelRatio: capturePixelRatio,
+        drawOnFrameRate: drawOnFrameRate,
       );
     } finally {
       if (localRecorder != null) {
@@ -1029,6 +1041,7 @@ class Layer {
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
     required LayerCapturePixelRatio? capturePixelRatio,
+    required int drawOnFrameRate,
   }) async {
     final logicalSizes = <Size>[];
     final boxSizes = <Size>[];
@@ -1101,11 +1114,58 @@ class Layer {
                   capturePixelRatio: capturePixelRatio,
                 )
               : const {},
+          drawOnBytes: layer is PaintLayer && layer.drawsOn
+              ? await layer._captureDrawOn(
+                  pixelRatio: pixelRatio,
+                  basePixelRatio: basePixelRatio,
+                  applyTransforms: applyTransforms,
+                  format: format,
+                  recorder: recorder,
+                  capturePixelRatio: capturePixelRatio,
+                  frameRate: drawOnFrameRate,
+                )
+              : const {},
+          drawOnFrameRate: drawOnFrameRate,
         ),
       );
     }
 
     return exported;
+  }
+
+  /// Captures this paint layer once per fraction its drawing is partly drawn
+  /// at over the frames at [frameRate], as `ExportedLayer.frames` will look
+  /// them up. Empty for any other layer.
+  Future<Map<double, Uint8List>> _captureDrawOn({
+    required double? pixelRatio,
+    required double? basePixelRatio,
+    required bool applyTransforms,
+    required ui.ImageByteFormat format,
+    required ContentRecorderController? recorder,
+    required LayerCapturePixelRatio? capturePixelRatio,
+    required int frameRate,
+  }) async {
+    final layer = this;
+    if (layer is! PaintLayer) return const {};
+
+    final fractions = {
+      for (final span in paintLayerTimeline(layer, frameRate: frameRate))
+        ?span.drawnFraction,
+    };
+    final captured = <double, Uint8List>{};
+    for (final fraction in fractions) {
+      final bytes = await _capture(
+        pixelRatio: pixelRatio,
+        basePixelRatio: basePixelRatio,
+        applyTransforms: applyTransforms,
+        format: format,
+        recorder: recorder,
+        capturePixelRatio: capturePixelRatio,
+        drawnFraction: fraction,
+      );
+      if (bytes != null) captured[fraction] = bytes;
+    }
+    return captured;
   }
 
   /// Captures this text layer once per state its text reveal shows only

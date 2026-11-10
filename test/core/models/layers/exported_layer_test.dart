@@ -403,6 +403,74 @@ void main() {
       });
     });
 
+    group('frames of a drawing that draws itself', () {
+      Duration ms(int value) => Duration(milliseconds: value);
+
+      PaintLayer drawing(AnimationPhase phase) => PaintLayer(
+        item: PaintedModel(
+          mode: PaintMode.freeStyle,
+          offsets: const [Offset(0, 0), Offset(10, 0)],
+          erasedOffsets: const [],
+          color: const Color(0xFF000000),
+          strokeWidth: 2,
+          opacity: 1,
+        ),
+        rawSize: const Size(10, 10),
+        opacity: 1,
+        startTime: ms(1000),
+        endTime: ms(3000),
+        animations: [
+          LayerAnimation(
+            type: LayerAnimationType.drawOn,
+            phase: phase,
+            duration: ms(200),
+          ),
+        ],
+      );
+
+      /// Each frame as (the one byte identifying its image, start, end).
+      List<(int, Duration?, Duration?)> describe(
+        List<ExportedLayerFrame> frames,
+      ) => [
+        for (final frame in frames)
+          (frame.bytes.single, frame.startTime, frame.endTime),
+      ];
+
+      test('shows one image a frame while it draws, then the whole', () {
+        final exported = ExportedLayer(
+          layer: drawing(AnimationPhase.animateIn),
+          bytes: Uint8List.fromList([0]),
+          logicalSize: const Size(10, 10),
+          drawOnFrameRate: 10,
+          drawOnBytes: {
+            0: Uint8List.fromList([10]),
+            0.5: Uint8List.fromList([15]),
+          },
+        );
+
+        expect(describe(exported.frames), [
+          (10, ms(1000), ms(1100)),
+          (15, ms(1100), ms(1200)),
+          (0, ms(1200), ms(3000)),
+        ]);
+      });
+
+      test('shows the whole drawing for a step that was not captured', () {
+        final exported = ExportedLayer(
+          layer: drawing(AnimationPhase.animateOut),
+          bytes: Uint8List.fromList([0]),
+          logicalSize: const Size(10, 10),
+          drawOnFrameRate: 10,
+          // The last frame shows half of it, which is not among these.
+          drawOnBytes: {
+            0.25: Uint8List.fromList([15]),
+          },
+        );
+
+        expect(describe(exported.frames), [(0, ms(1000), ms(3000))]);
+      });
+    });
+
     group('ExportedTextState', () {
       test('compares by value', () {
         expect(

@@ -76,6 +76,22 @@ enum LayerAnimationType {
   /// [Layer.rotation] included, as the exported image is; the turns of
   /// keyframes, a [spin] and a [wiggle] turn the squeezed layer.
   flip,
+
+  /// Draw the strokes of a paint layer one after the other, in the order and
+  /// direction they were drawn (in), or take them away from the end of the
+  /// last stroke back (out).
+  ///
+  /// The pen moves at an even pace along all strokes together, so each
+  /// stroke takes a share of the duration that follows its length; a
+  /// drawing of dots only gives every dot the same share. Erased parts stay
+  /// erased the whole time, and a filled shape is outlined first and filled
+  /// once its outline is complete. Other layers ignore this type.
+  ///
+  /// A video renderer draws a layer as a fixed image, so an exported layer
+  /// carries an image per step, one per frame at
+  /// `ImageGenerationConfigs.drawOnFrameRate`; `ExportedLayer.frames` says
+  /// which one shows when.
+  drawOn,
 }
 
 /// The axis a [LayerAnimationType.flip] turns a layer around.
@@ -387,6 +403,10 @@ class LayerAnimation {
   bool get isTextReveal =>
       type == LayerAnimationType.typewriter ||
       type == LayerAnimationType.wordByWord;
+
+  /// Whether this animation draws the strokes of a paint layer rather than
+  /// moving the layer: [LayerAnimationType.drawOn].
+  bool get isDrawOn => type == LayerAnimationType.drawOn;
 
   /// Serializes this animation to a map.
   Map<String, dynamic> toMap() {
