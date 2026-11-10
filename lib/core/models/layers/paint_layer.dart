@@ -196,8 +196,11 @@ class PaintLayer extends Layer {
 
   /// Whether one of [animations] draws the strokes of this layer, a
   /// [LayerAnimationType.drawOn]. A censor area ignores it.
+  ///
+  /// The preview asks on every playback tick, so the animations, usually
+  /// none, are checked before the strokes.
   bool get drawsOn =>
-      !isCensor && animations.any((animation) => animation.isDrawOn);
+      animations.any((animation) => animation.isDrawOn) && !isCensor;
 
   /// How much of the drawing shows [time] into the video while a
   /// [LayerAnimationType.drawOn] animation plays: the share of the length of
@@ -211,7 +214,7 @@ class PaintLayer extends Layer {
   /// play at once, the one showing the least wins. [drawnItemsAt] turns the
   /// share into the strokes to draw.
   double? drawnFractionAt(Duration time) {
-    if (isCensor) return null;
+    if (!drawsOn) return null;
     double? drawn;
     for (final animation in animations) {
       if (!animation.isDrawOn) continue;
