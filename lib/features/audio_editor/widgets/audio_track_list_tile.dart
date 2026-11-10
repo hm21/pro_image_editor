@@ -41,8 +41,10 @@ class AudioTrackListTile extends StatelessWidget {
           audioTrack,
           onTap,
         ) ??
+        // Own Material so the tile's ink and selected background paint above
+        // the editor's dimmed track list instead of underneath it.
         Material(
-          color: Colors.transparent,
+          type: MaterialType.transparency,
           child: ListTile(
             selected: isSelected,
             selectedColor: style.selectedTrackColor,
