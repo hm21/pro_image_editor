@@ -40,6 +40,7 @@ class RoundedBackgroundTextField extends StatefulWidget {
     this.box,
     this.gradient,
     this.textWrapWidth,
+    this.curvature = 0,
   });
 
   /// Where the lines wrap, measured the way a painted layer wraps them: the
@@ -122,6 +123,16 @@ class RoundedBackgroundTextField extends StatefulWidget {
   /// [style], or `null` to fill them with that color.
   final TextGradient? gradient;
 
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. See `TextLayer.curvature`.
+  ///
+  /// Bent text cannot be typed into, so the field shows it bent, as the
+  /// finished layer paints it, only while it does not have [focusNode], such
+  /// as while a slider for this is dragged with the keyboard hidden. The
+  /// field keeps its place and its size meanwhile, and tapping it brings
+  /// the straight text back to type into.
+  final double curvature;
+
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
   bool get _hasGradient => gradient?.isValid ?? false;
@@ -146,6 +157,21 @@ class _RoundedBackgroundTextFieldState
     super.initState();
     _textController.addListener(_handleTextChange);
     _scrollCtrl.addListener(_handleScrollChange);
+    widget.focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant RoundedBackgroundTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode.removeListener(_handleFocusChange);
+      widget.focusNode.addListener(_handleFocusChange);
+    }
+  }
+
+  /// Bent text shows while the field does not have focus.
+  void _handleFocusChange() {
+    if (mounted && widget.curvature != 0) setState(() {});
   }
 
   void _handleTextChange() {
@@ -159,14 +185,89 @@ class _RoundedBackgroundTextFieldState
   @override
   void dispose() {
     _textController.removeListener(_handleTextChange);
+    widget.focusNode.removeListener(_handleFocusChange);
     _scrollCtrl.dispose();
     super.dispose();
   }
 
+  /// Whether the text shows bent instead of in the field, see
+  /// [RoundedBackgroundTextField.curvature].
+  bool get _showsCurve =>
+      widget.curvature != 0 &&
+      !widget.focusNode.hasFocus &&
+      _textController.text.isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
-    if (widget.box != null) return _buildBoxed(context);
-    return _buildFree(context);
+    final field = widget.box != null
+        ? _buildBoxed(context)
+        : _buildFree(context);
+    final showsCurve = _showsCurve;
+    // The tree keeps its shape whether the text is bent or not, so the field
+    // keeps its state and its focus node stays attached. While the bent text
+    // shows, the field is not painted but keeps its size, which the bent
+    // text is centered on, and a tap on it still starts typing.
+    return Stack(
+      fit: StackFit.passthrough,
+      clipBehavior: Clip.none,
+      children: [
+        Visibility(
+          visible: !showsCurve,
+          maintainState: true,
+          maintainAnimation: true,
+          maintainSize: true,
+          maintainInteractivity: true,
+          maintainFocusability: true,
+          child: field,
+        ),
+        if (showsCurve)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: OverflowBox(
+                minWidth: 0,
+                minHeight: 0,
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                child: _buildCurvedText(context),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// The text bent the way the finished layer paints it.
+  Widget _buildCurvedText(BuildContext context) {
+    final box = widget.box;
+    final leading = widget.configs.style.leadingDistribution;
+    final fontSize =
+        widget.style.fontSize ?? DefaultTextStyle.of(context).style.fontSize;
+    // Wrapped where the field wraps the straight text, see
+    // [_buildBackgroundText].
+    final wrapWidth =
+        widget.textWrapWidth ??
+        widget.maxTextWidth -
+            widget.cursorWidth -
+            2 * _preferredLineHeight(fontSize ?? 16) * 0.3;
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      // The plain text: a controller may decorate all of its span.
+      child: RoundedBackgroundText(
+        _textController.text,
+        style: _glyphStyle.copyWith(leadingDistribution: leading),
+        maxTextWidth: box == null ? wrapWidth : widget.maxTextWidth,
+        box: box,
+        textAlign: widget.textAlign,
+        backgroundColor: widget.backgroundColor,
+        enableHitBoxCorrection: true,
+        leadingDistribution: leading,
+        reserveEffectSpace: true,
+        outlineWidth: widget.outlineWidth,
+        outlineColor: widget.outlineColor,
+        gradient: widget.gradient,
+        curvature: widget.curvature,
+      ),
+    );
   }
 
   /// The field filling [RoundedBackgroundTextField.box], clipped to it.
@@ -594,6 +695,7 @@ class _RoundedBackgroundTextFieldState
       ..add(ColorProperty('backgroundColor', widget.backgroundColor))
       ..add(DoubleProperty('outlineWidth', widget.outlineWidth))
       ..add(ColorProperty('outlineColor', widget.outlineColor))
+      ..add(DoubleProperty('curvature', widget.curvature, defaultValue: 0))
       ..add(
         DiagnosticsProperty<TextGradient>(
           'gradient',

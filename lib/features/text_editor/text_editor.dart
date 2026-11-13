@@ -114,6 +114,23 @@ class TextEditorState extends State<TextEditor>
     setState(() => _gradient = gradient);
   }
 
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. See [TextLayer.curvature].
+  ///
+  /// The text field shows the text bent while it does not have [focusNode],
+  /// such as while a slider for this is dragged with the keyboard hidden,
+  /// and straight while it is typed into.
+  double get curvature => _curvature;
+  late double _curvature = TextLayer.clampCurvature(
+    widget.layer?.curvature ?? 0,
+  );
+
+  /// Bends the text into an arc by [curvature], kept between `-1` and `1`;
+  /// `0` straightens it again.
+  void setCurvature(double curvature) {
+    setState(() => _curvature = TextLayer.clampCurvature(curvature));
+  }
+
   /// Whether the text goes into a fixed box (see [TextLayer.box]) when
   /// editing is done.
   bool get boxEnabled => _boxEnabled;
@@ -423,6 +440,7 @@ class TextEditorState extends State<TextEditor>
         outlineColor: _outlineColor,
         gradient: _gradient,
         wrapAtLayerBounds: _wrapAtLayerBounds,
+        curvature: _curvature,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth: maxTextWidth,
         // The editor changes how the text looks, not when it shows.
@@ -630,6 +648,7 @@ class TextEditorState extends State<TextEditor>
       outlineWidth: _outlineWidth * _fontScale,
       outlineColor: _outlineColor,
       gradient: _gradient,
+      curvature: _curvature,
     );
   }
 
@@ -657,6 +676,7 @@ class TextEditorState extends State<TextEditor>
       ..add(DoubleProperty('outlineWidth', _outlineWidth))
       ..add(ColorProperty('outlineColor', _outlineColor))
       ..add(DiagnosticsProperty<TextGradient>('gradient', _gradient))
+      ..add(DoubleProperty('curvature', _curvature, defaultValue: 0))
       ..add(ColorProperty('primaryColor', primaryColor))
       ..add(ColorProperty('secondaryColor', secondaryColor))
       ..add(DiagnosticsProperty<Size>('editorBodySize', editorBodySize));

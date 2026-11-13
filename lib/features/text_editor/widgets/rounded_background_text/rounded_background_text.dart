@@ -8,6 +8,7 @@ import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer_box.dart';
 import '../../utils/rounded_background_painter.dart';
 import '../../utils/scaled_text_lines.dart';
+import '../../utils/text_curve.dart';
 
 /// Creates a [RoundedBackgroundText] widget with plain text and optional
 /// styling.
@@ -42,6 +43,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.visibleLength,
     this.box,
     this.gradient,
+    this.curvature = 0,
   }) : text = TextSpan(text: text, style: style);
 
   /// Creates a [RoundedBackgroundText] widget with rich text using
@@ -68,6 +70,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.visibleLength,
     this.box,
     this.gradient,
+    this.curvature = 0,
   });
 
   /// A flag to enable or disable hitBox correction for the text.
@@ -173,6 +176,20 @@ class RoundedBackgroundText extends StatelessWidget {
   /// ignored.
   final TextGradient? gradient;
 
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. See `TextLayer.curvature` for the shape it takes.
+  ///
+  /// The text is laid out straight first, so it wraps where it would
+  /// unbent. Then each letter is placed on the curve, the background bends
+  /// along with it, and the widget takes the size of the bent text, with
+  /// room for the background when [enableHitBoxCorrection] is set and for
+  /// the effects when [reserveEffectSpace] is. Hit testing reads the bent
+  /// background. The [gradient] runs across the bent text as it shows.
+  ///
+  /// Text with a placeholder, or a line limit from the ambient
+  /// [DefaultTextStyle], stays straight.
+  final double curvature;
+
   bool get _hasOutline => outlineWidth > 0 && outlineColor.a > 0;
 
   /// Text with a font larger than this, in logical pixels, draws its glyphs
@@ -214,6 +231,9 @@ class RoundedBackgroundText extends StatelessWidget {
 
   /// The font size Flutter uses for a style that sets none.
   static const double _defaultFontSize = 14;
+
+  /// About how much of a font's ascent its capitals fill.
+  static const double _capHeightShare = 0.7;
 
   @override
   Widget build(BuildContext context) {
@@ -283,11 +303,13 @@ class RoundedBackgroundText extends StatelessWidget {
       return false;
     }
     const constraints = BoxConstraints();
-    final limited = _layout(context, constraints).painter;
+    // A curve does not change where the lines break.
+    final limited = _layout(context, constraints, bendLines: false).painter;
     final unlimited = _layout(
       context,
       constraints,
       applyWidthLimits: false,
+      bendLines: false,
     ).painter;
     try {
       return limited.painter.computeLineMetrics().length >
@@ -302,6 +324,9 @@ class RoundedBackgroundText extends StatelessWidget {
     for (final lines in painter.scaledText.values) {
       lines.dispose();
     }
+    for (final runs in painter.curvedText.values) {
+      runs.dispose();
+    }
     painter.painter.dispose();
     painter.outlinePainter?.dispose();
     for (final silhouette in painter.silhouettePainters) {
@@ -312,11 +337,14 @@ class RoundedBackgroundText extends StatelessWidget {
   /// Lays the text out within [constraints] and returns the painter that
   /// draws it together with the size it paints at.
   ///
-  /// Without [applyWidthLimits], [maxWidth] and [softMaxWidth] are ignored.
+  /// Without [applyWidthLimits], [maxWidth] and [softMaxWidth] are ignored,
+  /// and without [bendLines] the text stays straight whatever [curvature]
+  /// says.
   ({RoundedBackgroundTextPainter painter, Size size}) _layout(
     BuildContext context,
     BoxConstraints constraints, {
     bool applyWidthLimits = true,
+    bool bendLines = true,
   }) {
     final defaultTextStyle = DefaultTextStyle.of(context);
     final style = text.style ?? defaultTextStyle.style;
@@ -326,6 +354,12 @@ class RoundedBackgroundText extends StatelessWidget {
     ).merge(style);
     final shadows = style.shadows ?? const <Shadow>[];
     final hasOutline = _hasOutline;
+    final maxLines = defaultTextStyle.maxLines;
+    final bend = curvature.isNaN ? 0.0 : curvature.clamp(-1.0, 1.0);
+    // Only text spans can be cut into pieces, and the ellipsis of a line
+    // limit is not part of the text.
+    final curved =
+        bendLines && bend != 0 && maxLines == null && _isPlainText(text);
 
     // Below 1 while a box shrinks its text to fit, which the outline and the
     // shadows follow.
@@ -395,8 +429,10 @@ class RoundedBackgroundText extends StatelessWidget {
     final glyphScale = _glyphScale(
       style,
       textScale: textScale,
-      textAlign: align,
-      maxLines: defaultTextStyle.maxLines,
+      // Pieces placed on a curve are copied one by one, so a justified line
+      // keeps the place it stretched each of them to.
+      textAlign: curved ? TextAlign.start : align,
+      maxLines: maxLines,
     );
 
     // With an outline, the shadows are cast by the outlined glyphs, which the
@@ -405,11 +441,14 @@ class RoundedBackgroundText extends StatelessWidget {
     // blur of a text shadow does not shrink in step with its font.
     // [paintShadows] keeps the same space while leaving the drawing to a
     // caller that paints the shadows itself.
+    // Bent text casts them from silhouettes as well, so every letter casts
+    // its shadow the same way instead of turning it with the letter.
     final scaledShadows = glyphScale != 1 && paintShadows;
+    final curvedShadows = curved && paintShadows;
     final castsSilhouetteShadows =
-        shadows.isNotEmpty && (hasOutline || scaledShadows);
+        shadows.isNotEmpty && (hasOutline || scaledShadows || curvedShadows);
     final TextStyle Function(TextStyle style)? fillRestyle =
-        hasOutline || !paintShadows || scaledShadows
+        hasOutline || !paintShadows || scaledShadows || curvedShadows
         ? (style) => style.copyWith(shadows: const [])
         : textScale == 1
         ? null
@@ -438,9 +477,13 @@ class RoundedBackgroundText extends StatelessWidget {
           ]
         : const <TextPainter>[];
 
+    final emojiScale = glyphScale == 1
+        ? 1.0
+        : max(1.0, glyphScale * _glyphFontSize / _emojiGlyphFontSize);
+
     // Built once the passes are laid out, see [_scaledGlyphThreshold].
     Map<TextPainter, ScaledTextLines> scaleGlyphs() {
-      if (glyphScale == 1) return const {};
+      if (glyphScale == 1 || curved) return const {};
       final gradient = this.gradient;
       final scaled = <TextPainter, ScaledTextLines>{};
       for (final textPainter in [
@@ -451,10 +494,7 @@ class RoundedBackgroundText extends StatelessWidget {
         final lines = ScaledTextLines.create(
           textPainter,
           scale: glyphScale,
-          emojiScale: max(
-            1.0,
-            glyphScale * _glyphFontSize / _emojiGlyphFontSize,
-          ),
+          emojiScale: emojiScale,
           gradient:
               identical(textPainter, painter) && (gradient?.isValid ?? false)
               ? gradient
@@ -471,10 +511,98 @@ class RoundedBackgroundText extends StatelessWidget {
     double horizontalSpace = enableHitBoxCorrection ? height * 0.3 : 0;
     double verticalSpace = enableHitBoxCorrection ? height * 0.1 : 0;
 
+    // Built once the passes are laid out: the curve follows the lines, and
+    // the gradient the bent glyphs.
+    _BentText? bendText() {
+      if (!curved) return null;
+      final pieces = TextCurvePiece.split(
+        painter,
+        keepSpaces: _hasDecoration(text, rootStyle),
+      );
+      if (pieces.isEmpty) return null;
+
+      // The line nearest the center keeps its spacing where its letters face
+      // the center: the baseline of the last line of an arch, the top of the
+      // capitals of the first line of a bowl. The letters spread from there.
+      var reference = pieces.first.line;
+      for (final piece in pieces) {
+        final line = piece.line;
+        if (bend > 0
+            ? line.baseline > reference.baseline
+            : line.baseline < reference.baseline) {
+          reference = line;
+        }
+      }
+      // What is drawn on the side of that line facing the center, glyphs,
+      // background and effects, keeps clear of the center.
+      final effects = _effectSpace(
+        outlineWidth: hasOutline ? outlineWidth : 0,
+        shadows: shadows,
+      );
+      final lineHeight = painter.preferredLineHeight;
+      final referenceY = bend > 0
+          ? reference.baseline
+          : reference.baseline - reference.unscaledAscent * _capHeightShare;
+      final inward =
+          (bend > 0
+              ? reference.baseline + reference.descent - referenceY
+              : referenceY - (reference.baseline - reference.ascent)) +
+          lineHeight * 0.1 +
+          effects.dy;
+      final lines = _linesBounds(painter);
+      final curve = TextCurve.create(
+        curvature: bend,
+        width: lines.width,
+        centerX: lines.center.dx,
+        referenceY: referenceY,
+        minRadius: inward + lineHeight * 0.25,
+      );
+      if (curve == null) return null;
+
+      var bounds = curve.placeRect(pieces.first.pivot, pieces.first.rect);
+      for (final piece in pieces) {
+        bounds = bounds.expandToInclude(
+          curve.placeRect(piece.pivot, piece.rect),
+        );
+      }
+      // Hidden pieces count for the bounds and the gradient, so a text
+      // that types itself out keeps its size and colors, but draw nothing.
+      final visible = visibleLength;
+      final drawn = visible == null
+          ? pieces
+          : pieces.where((piece) => piece.start < visible).toList();
+      final gradient = this.gradient;
+      return _BentText(
+        curve: curve,
+        bounds: bounds,
+        runs: {
+          for (final textPainter in [
+            painter,
+            ?outlinePainter,
+            ...silhouettePainters,
+          ])
+            textPainter: CurvedTextRuns.create(
+              textPainter,
+              curve: curve,
+              pieces: drawn,
+              scale: glyphScale,
+              emojiScale: emojiScale,
+              gradient:
+                  identical(textPainter, painter) &&
+                      (gradient?.isValid ?? false)
+                  ? gradient
+                  : null,
+              gradientBounds: bounds,
+            ),
+        },
+      );
+    }
+
     final overflowsBox = box?.overflow == TextLayerBoxOverflow.visible;
     RoundedBackgroundTextPainter createBackgroundPainter(
       Offset textOffset, {
       Size? boxSize,
+      _BentText? bent,
     }) {
       return RoundedBackgroundTextPainter(
         backgroundColor: backgroundColor ?? Colors.transparent,
@@ -500,7 +628,10 @@ class RoundedBackgroundText extends StatelessWidget {
                 shadows: shadows,
               )
             : Offset.zero,
-        scaledText: scaleGlyphs(),
+        scaledText: bent == null ? scaleGlyphs() : const {},
+        curve: bent?.curve,
+        curvedText: bent?.runs ?? const {},
+        curvedBounds: bent?.bounds,
       );
     }
 
@@ -512,6 +643,24 @@ class RoundedBackgroundText extends StatelessWidget {
         textPainter.layout(minWidth: room.width, maxWidth: room.width);
       }
       fillWithGradient(room.width, room.width);
+      if (bendText() case final bent?) {
+        // The text keeps its place across the box and is aligned in it by
+        // the height it takes bent.
+        final glyphs = bent.bounds;
+        final freeHeight = max(0.0, room.height - glyphs.height);
+        final shift = Offset(
+          inset.dx,
+          inset.dy + freeHeight * box.verticalAlign.factor - glyphs.top,
+        );
+        return (
+          painter: createBackgroundPainter(
+            shift,
+            boxSize: box.size,
+            bent: bent,
+          ),
+          size: constraints.constrain(box.size),
+        );
+      }
       final freeHeight = max(0.0, room.height - painter.height);
       final textOffset = inset.translate(
         0,
@@ -547,6 +696,31 @@ class RoundedBackgroundText extends StatelessWidget {
     outlinePainter?.layout(maxWidth: textMaxWidth);
     for (final silhouette in silhouettePainters) {
       silhouette.layout(maxWidth: textMaxWidth);
+    }
+
+    if (bendText() case final bent?) {
+      // The widget takes the size of the bent text, with the room around
+      // it the straight text keeps: its background, which hit testing
+      // reads, and its effects.
+      var bounds = bent.bounds;
+      if (enableHitBoxCorrection) {
+        bounds = bounds.expandToInclude(
+          createBackgroundPainter(Offset.zero, bent: bent).backgroundBounds,
+        );
+      }
+      bounds = Rect.fromLTRB(
+        bounds.left - effectSpace.dx,
+        bounds.top - effectSpace.dy,
+        bounds.right + effectSpace.dx,
+        bounds.bottom + effectSpace.dy,
+      );
+      return (
+        painter: createBackgroundPainter(-bounds.topLeft, bent: bent),
+        size: Size(
+          bounds.width.clamp(0, constraints.maxWidth),
+          bounds.height.clamp(0, constraints.maxHeight),
+        ),
+      );
     }
 
     return (
@@ -733,6 +907,32 @@ class RoundedBackgroundText extends StatelessWidget {
     return Rect.fromLTRB(left, 0, right, painter.height);
   }
 
+  /// Whether [span] holds only text spans, which a curve can cut into
+  /// pieces.
+  static bool _isPlainText(InlineSpan span) {
+    if (span is! TextSpan) return false;
+    return span.children?.every(_isPlainText) ?? true;
+  }
+
+  /// Whether [span], in [rootStyle], draws a decoration such as an
+  /// underline, which spaces draw too.
+  static bool _hasDecoration(InlineSpan span, TextStyle rootStyle) {
+    bool draws(TextStyle? style) {
+      final decoration = style?.decoration;
+      return decoration != null && decoration != TextDecoration.none;
+    }
+
+    var found = draws(rootStyle);
+    void visit(InlineSpan span) {
+      if (found) return;
+      if (draws(span.style)) found = true;
+      if (span is TextSpan) span.children?.forEach(visit);
+    }
+
+    visit(span);
+    return found;
+  }
+
   /// A copy of [span] filled with [paint]: its own style takes [paint] as its
   /// foreground, which every descendant inherits unless it sets a color of
   /// its own.
@@ -905,6 +1105,7 @@ class RoundedBackgroundText extends StatelessWidget {
       ..add(DoubleProperty('outlineWidth', outlineWidth, defaultValue: 0))
       ..add(ColorProperty('outlineColor', outlineColor))
       ..add(IntProperty('visibleLength', visibleLength, defaultValue: null))
+      ..add(DoubleProperty('curvature', curvature, defaultValue: 0))
       ..add(
         DiagnosticsProperty<TextGradient>(
           'gradient',
@@ -928,4 +1129,19 @@ class RoundedBackgroundText extends StatelessWidget {
         ),
       );
   }
+}
+
+/// Text bent along [curve]: its glyphs placed on it by [runs], one entry for
+/// each pass that draws them, and the box around them in the coordinates of
+/// the curve.
+class _BentText {
+  const _BentText({
+    required this.curve,
+    required this.runs,
+    required this.bounds,
+  });
+
+  final TextCurve curve;
+  final Map<TextPainter, CurvedTextRuns> runs;
+  final Rect bounds;
 }

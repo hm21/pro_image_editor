@@ -39,6 +39,20 @@ void main() {
       expect(copy.gradient, gradient);
     });
 
+    test('keeps the curvature of a text layer', () {
+      final layer = TextLayer(text: 'Curved', curvature: -0.4);
+
+      final copy = LayerCopyManager().copyLayer(layer) as TextLayer;
+      final duplicate = LayerCopyManager().createCopyTextLayer(
+        layer,
+        enableCopyId: false,
+        offset: const Offset(10, 10),
+      );
+
+      expect(copy.curvature, -0.4);
+      expect(duplicate.curvature, -0.4);
+    });
+
     test('keeps a text layer that does not wrap at the layer bounds', () {
       final layer = TextLayer(text: 'Wide', wrapAtLayerBounds: false);
 

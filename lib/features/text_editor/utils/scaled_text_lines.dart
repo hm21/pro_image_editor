@@ -75,7 +75,7 @@ class ScaledTextLines {
     final text = source.text;
     if (text == null) return null;
     final plainText = source.plainText;
-    final runs = <_ScaledRun>[];
+    final runs = <ScaledTextRun>[];
 
     ScaledTextLines? fail() {
       for (final run in runs) {
@@ -100,7 +100,7 @@ class ScaledTextLines {
       }
 
       for (final segment in segments(plainText, lineStart, end)) {
-        final run = _ScaledRun.create(
+        final run = ScaledTextRun.create(
           source: source,
           text: text,
           start: segment.start,
@@ -117,7 +117,7 @@ class ScaledTextLines {
     return ScaledTextLines._(runs);
   }
 
-  final List<_ScaledRun> _runs;
+  final List<ScaledTextRun> _runs;
 
   /// Draws the glyphs where the [TextPainter] they were copied from draws
   /// them when painted at [offset].
@@ -136,7 +136,6 @@ class ScaledTextLines {
 
   /// Splits [text] between the UTF-16 offsets [start] and [end] into runs of
   /// emoji and runs of everything else.
-  @visibleForTesting
   static List<({int start, int end, bool isEmoji})> segments(
     String text,
     int start,
@@ -210,9 +209,13 @@ class ScaledTextLines {
   }
 }
 
-/// A run of one line, laid out alone in the smaller font.
-class _ScaledRun {
-  _ScaledRun({
+/// A run of one line, laid out alone in a font [scale] times smaller and
+/// drawn [scale] times larger where the line it was copied from draws it.
+///
+/// [ScaledTextLines] draws large text from these; a curved text places each
+/// of its pieces with one, at a [scale] of `1` unless it is large.
+class ScaledTextRun {
+  ScaledTextRun._({
     required this.painter,
     required this.target,
     required this.anchor,
@@ -223,9 +226,15 @@ class _ScaledRun {
   /// [source], out in a font [scale] times smaller, held where [source]
   /// draws it.
   ///
+  /// [gradient] replaces the shader of the copy's paints, spread across
+  /// [gradientBounds]. Those lie in the coordinates of [source] unless
+  /// [fromGradientSpace] maps their points there; it must keep angles and
+  /// proportions, as turning, moving and evenly scaling do. [boxes] are
+  /// where [source] draws the part, when they are known already.
+  ///
   /// Gives no [run] for a part that draws nothing, and [failed] when the
   /// copy does not stay on one line.
-  static ({_ScaledRun? run, bool failed}) create({
+  static ({ScaledTextRun? run, bool failed}) create({
     required TextPainter source,
     required InlineSpan text,
     required int start,
@@ -234,12 +243,16 @@ class _ScaledRun {
     required double scale,
     required TextGradient? gradient,
     required Rect? gradientBounds,
+    Offset Function(Offset point)? fromGradientSpace,
+    List<TextBox>? boxes,
   }) {
     final slice = _slice(text, start, end);
     if (slice == null) return (run: null, failed: false);
-    final realBoxes = source.getBoxesForSelection(
-      TextSelection(baseOffset: start, extentOffset: end),
-    );
+    final realBoxes =
+        boxes ??
+        source.getBoxesForSelection(
+          TextSelection(baseOffset: start, extentOffset: end),
+        );
     if (realBoxes.isEmpty) return (run: null, failed: false);
 
     TextPainter layout(Shader? shader) {
@@ -255,10 +268,10 @@ class _ScaledRun {
 
     var painter = layout(null);
     final lines = painter.computeLineMetrics();
-    final boxes = painter.getBoxesForSelection(
+    final copyBoxes = painter.getBoxesForSelection(
       TextSelection(baseOffset: 0, extentOffset: end - start),
     );
-    if (lines.length != 1 || boxes.isEmpty) {
+    if (lines.length != 1 || copyBoxes.isEmpty) {
       painter.dispose();
       return (run: null, failed: true);
     }
@@ -272,26 +285,26 @@ class _ScaledRun {
       _drawnBaseline(line),
     );
     final anchor = Offset(
-      boxes.map((box) => box.left).reduce(min),
+      copyBoxes.map((box) => box.left).reduce(min),
       _drawnBaseline(lines.single),
     );
 
     if (gradient != null && gradientBounds != null) {
       // Laid out once more with the gradient spread across the bounds as
       // they lie in this run's own coordinates. The layout is the same.
-      Offset toRun(Offset point) => anchor + (point - target) / scale;
-      final shader = gradient.createShader(
-        Rect.fromPoints(
-          toRun(gradientBounds.topLeft),
-          toRun(gradientBounds.bottomRight),
-        ),
-      );
+      Offset toRun(Offset point) {
+        final inSource = fromGradientSpace?.call(point) ?? point;
+        return anchor + (inSource - target) / scale;
+      }
+
+      final ends = gradient.endpointsIn(gradientBounds);
+      final shader = gradient.shaderBetween(toRun(ends.start), toRun(ends.end));
       painter.dispose();
       painter = layout(shader);
     }
 
     return (
-      run: _ScaledRun(
+      run: ScaledTextRun._(
         painter: painter,
         target: target,
         anchor: anchor,
@@ -314,6 +327,8 @@ class _ScaledRun {
   /// How much larger than [painter] lays it out the run is drawn.
   final double scale;
 
+  /// Draws the run where the [TextPainter] it was copied from draws it
+  /// when painted at [offset].
   void paint(Canvas canvas, Offset offset) {
     // Painted at the origin of its own coordinates, where its gradient was
     // spread: a shader does not move with the offset a paragraph is painted

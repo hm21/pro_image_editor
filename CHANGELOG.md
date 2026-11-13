@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.27.0
+- **FEAT**(text-editor): Add `TextLayer.curvature` to bend text into an arch or a bowl, with `TextEditorState.setCurvature` and `InlineTextEditSession.setCurvature`; the editor field previews the curve while it does not have focus.
+
 ## 14.26.1
 - **FIX**(paint-editor): The pixelate shaders no longer return early from `main()`, which Flutter warns can break shader compilation on Windows.
 

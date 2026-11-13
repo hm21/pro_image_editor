@@ -175,6 +175,89 @@ void main() {
       });
     });
 
+    group('curvature', () {
+      test('is straight by default without writing it', () {
+        final textLayer = TextLayer(text: 'Sample Text');
+
+        expect(textLayer.curvature, 0);
+        expect(textLayer.isCurved, isFalse);
+        expect(textLayer.toMap(), isNot(contains('curvature')));
+      });
+
+      test('survives a map round trip', () {
+        final restored =
+            Layer.fromMap(
+                  TextLayer(text: 'Sample Text', curvature: -0.35).toMap(),
+                )
+                as TextLayer;
+
+        expect(restored.curvature, -0.35);
+        expect(restored.isCurved, isTrue);
+      });
+
+      test('round-trips through minified keys', () {
+        final minifier = EditorKeyMinifier(enableMinify: true);
+        final layer = TextLayer(text: 'Sample Text', curvature: 0.8);
+        final minified = {
+          for (final entry in layer.toMap().entries)
+            minifier.convertLayerKey(entry.key): entry.value,
+        };
+
+        expect(minified['cv'], 0.8);
+        final restored =
+            Layer.fromMap(minified, minifier: minifier) as TextLayer;
+        expect(restored.curvature, 0.8);
+      });
+
+      test('fromMap keeps a curvature within -1 and 1', () {
+        Map<String, dynamic> mapWith(Object? value) =>
+            TextLayer(text: 'Sample Text').toMap()..['curvature'] = value;
+
+        double read(Object? value) =>
+            (Layer.fromMap(mapWith(value)) as TextLayer).curvature;
+
+        expect(read(4), 1);
+        expect(read(-2.5), -1);
+        expect(read('0.25'), 0.25);
+        expect(read('not a number'), 0);
+        expect(read(null), 0);
+      });
+
+      test('is kept by copyWith unless replaced', () {
+        final textLayer = TextLayer(text: 'Sample Text', curvature: 0.5);
+
+        expect(textLayer.copyWith(text: 'Other').curvature, 0.5);
+        expect(textLayer.copyWith(curvature: -1).curvature, -1);
+      });
+
+      test('a later step that straightens the text does not import it '
+          'bent again', () {
+        final reference = TextLayer(text: 'Sample Text', curvature: 0.6);
+        final updated = reference.copyWith(curvature: 0);
+
+        final diff = updated.toMapFromReference(reference);
+        expect(diff['curvature'], 0);
+
+        // The import merges each history entry over the previous state.
+        final restored = TextLayer.fromMap(reference, {
+          ...reference.toMap(),
+          ...diff,
+        });
+
+        expect(restored.curvature, 0);
+      });
+
+      test('toMapFromReference omits a curvature that did not change', () {
+        final reference = TextLayer(text: 'Sample Text', curvature: 0.6);
+
+        final map = reference
+            .copyWith(text: 'Other')
+            .toMapFromReference(reference);
+
+        expect(map, isNot(contains('curvature')));
+      });
+    });
+
     group('toMapFromReference', () {
       const shadow = Shadow(
         color: Color(0x80000000),

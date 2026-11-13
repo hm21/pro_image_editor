@@ -26,6 +26,7 @@ class TextEditorInput extends StatefulWidget {
   /// - [outlineWidth]: The outline thickness at [textFontSize].
   /// - [outlineColor]: The color of the outline.
   /// - [gradient]: The color gradient that fills the glyphs, if any.
+  /// - [curvature]: How far the text bends into an arc.
   const TextEditorInput({
     super.key,
     required this.callbacks,
@@ -46,6 +47,7 @@ class TextEditorInput extends StatefulWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.gradient,
+    this.curvature = 0,
   });
 
   /// Optional callbacks for text editor interactions.
@@ -103,6 +105,11 @@ class TextEditorInput extends StatefulWidget {
   /// A color gradient that fills the glyphs in place of [textColor], or
   /// `null` to fill them with [textColor].
   final TextGradient? gradient;
+
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. The field shows the bend while it does not have
+  /// [focusNode]. See [TextLayer.curvature].
+  final double curvature;
 
   @override
   State<TextEditorInput> createState() => _TextEditorInputState();
@@ -239,6 +246,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
             outlineWidth: widget.outlineWidth,
             outlineColor: widget.outlineColor,
             gradient: widget.gradient,
+            curvature: widget.curvature,
 
             /// If we edit an layer we focus to the textfield after the
             /// hero animation is done
