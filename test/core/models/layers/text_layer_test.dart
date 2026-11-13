@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/core/models/layers/enums/layer_background_mode.dart';
@@ -221,6 +223,19 @@ void main() {
         expect(read('0.25'), 0.25);
         expect(read('not a number'), 0);
         expect(read(null), 0);
+      });
+
+      test('toMap writes a curvature within -1 and 1', () {
+        expect(
+          TextLayer(text: 'Sample Text', curvature: 3).toMap(),
+          containsPair('curvature', 1),
+        );
+        final notANumber = TextLayer(
+          text: 'Sample Text',
+          curvature: double.nan,
+        );
+        expect(notANumber.toMap(), isNot(contains('curvature')));
+        expect(() => jsonEncode(notANumber.toMap()), returnsNormally);
       });
 
       test('is kept by copyWith unless replaced', () {

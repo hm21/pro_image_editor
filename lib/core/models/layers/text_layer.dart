@@ -531,7 +531,8 @@ class TextLayer extends Layer {
       if (gradient != null)
         'gradient': gradient!.toMap(maxDecimalPlaces: maxDecimalPlaces),
       if (!wrapAtLayerBounds) 'wrapAtLayerBounds': wrapAtLayerBounds,
-      if (curvature != 0) 'curvature': curvature.roundSmart(maxDecimalPlaces),
+      if (isCurved)
+        'curvature': clampCurvature(curvature).roundSmart(maxDecimalPlaces),
     };
     return result;
   }
@@ -604,8 +605,8 @@ class TextLayer extends Layer {
         'wrapAtLayerBounds': wrapAtLayerBounds,
       // `0` is written too, so text straightened again does not import the
       // previous step's curve.
-      if (paintLayer.curvature != curvature)
-        'curvature': curvature.roundSmart(maxDecimalPlaces),
+      if (clampCurvature(paintLayer.curvature) != clampCurvature(curvature))
+        'curvature': clampCurvature(curvature).roundSmart(maxDecimalPlaces),
     };
   }
 

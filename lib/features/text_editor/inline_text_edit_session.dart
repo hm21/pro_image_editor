@@ -77,7 +77,7 @@ class InlineTextEditSession {
       outlineWidth: layer.outlineWidth,
       outlineColor: layer.outlineColor,
       gradient: layer.gradient,
-      curvature: layer.curvature,
+      curvature: TextLayer.clampCurvature(layer.curvature),
       boxEnabled: layer.box != null,
       primaryColor: primary,
       secondaryColor: secondary,

@@ -84,21 +84,7 @@ class ScaledTextLines {
       return null;
     }
 
-    var start = 0;
-    for (final metrics in source.computeLineMetrics()) {
-      // A line ended by a line break does not include it, a soft wrapped
-      // one includes the whitespace it wraps after.
-      final boundary = source.getLineBoundary(TextPosition(offset: start));
-      final lineStart = boundary.start;
-      var end = boundary.end;
-      start = end < plainText.length && plainText.codeUnitAt(end) == 0x0A
-          ? end + 1
-          : end;
-      // Trailing whitespace draws nothing.
-      while (end > lineStart && _isSpace(plainText.codeUnitAt(end - 1))) {
-        end--;
-      }
-
+    for (final (:metrics, start: lineStart, :end) in lines(source)) {
       for (final segment in segments(plainText, lineStart, end)) {
         final run = ScaledTextRun.create(
           source: source,
@@ -132,6 +118,54 @@ class ScaledTextLines {
     for (final run in _runs) {
       run.painter.dispose();
     }
+  }
+
+  /// The lines [painter] laid out, each with the UTF-16 range of the text
+  /// it draws: without the line break that ends it or the whitespace it
+  /// wraps after, which draw nothing.
+  static List<({LineMetrics metrics, int start, int end})> lines(
+    TextPainter painter,
+  ) {
+    final plainText = painter.plainText;
+    final result = <({LineMetrics metrics, int start, int end})>[];
+    var start = 0;
+    for (final metrics in painter.computeLineMetrics()) {
+      // A line ended by a line break does not include it, a soft wrapped
+      // one includes the whitespace it wraps after. The next line starts
+      // after the break, or else the same line is found again.
+      final boundary = painter.getLineBoundary(TextPosition(offset: start));
+      final lineStart = boundary.start;
+      var end = boundary.end;
+      start = end < plainText.length && _isLineBreak(plainText.codeUnitAt(end))
+          ? end + 1
+          : end;
+      while (end > lineStart && _drawsNothing(plainText.codeUnitAt(end - 1))) {
+        end--;
+      }
+      result.add((metrics: metrics, start: lineStart, end: end));
+    }
+    return result;
+  }
+
+  /// Whether [codeUnit] ends a line wherever it stands.
+  static bool _isLineBreak(int codeUnit) {
+    return codeUnit == 0x0A || // line feed
+        codeUnit == 0x0B || // vertical tab
+        codeUnit == 0x0C || // form feed
+        codeUnit == 0x2028 || // line separator
+        codeUnit == 0x2029; // paragraph separator
+  }
+
+  /// Whether [codeUnit] draws nothing at the end of a line: whitespace, or
+  /// the carriage return of a `\r\n` break, which the line keeps.
+  static bool _drawsNothing(int codeUnit) {
+    return codeUnit == 0x20 ||
+        codeUnit == 0x09 ||
+        codeUnit == 0x0D ||
+        codeUnit == 0x1680 ||
+        (codeUnit >= 0x2000 && codeUnit <= 0x200A) ||
+        codeUnit == 0x205F ||
+        codeUnit == 0x3000;
   }
 
   /// Splits [text] between the UTF-16 offsets [start] and [end] into runs of
@@ -197,15 +231,6 @@ class ScaledTextLines {
         codePoint == 0xFE0F ||
         codePoint == 0x20E3 ||
         (codePoint >= 0xE0020 && codePoint <= 0xE007F);
-  }
-
-  static bool _isSpace(int codeUnit) {
-    return codeUnit == 0x20 ||
-        codeUnit == 0x09 ||
-        codeUnit == 0x1680 ||
-        (codeUnit >= 0x2000 && codeUnit <= 0x200A) ||
-        codeUnit == 0x205F ||
-        codeUnit == 0x3000;
   }
 }
 

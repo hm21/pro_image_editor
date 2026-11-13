@@ -227,20 +227,10 @@ class TextCurvePiece {
   }) {
     final plainText = painter.plainText;
     final pieces = <TextCurvePiece>[];
-    var start = 0;
-    for (final metrics in painter.computeLineMetrics()) {
-      // A line ended by a line break does not include it, a soft wrapped
-      // one includes the whitespace it wraps after.
-      final boundary = painter.getLineBoundary(TextPosition(offset: start));
-      final lineStart = boundary.start;
-      var end = boundary.end;
-      start = end < plainText.length && plainText.codeUnitAt(end) == 0x0A
-          ? end + 1
-          : end;
-      // Trailing whitespace draws nothing, not even an underline.
-      while (end > lineStart && _isSpace(plainText.codeUnitAt(end - 1))) {
-        end--;
-      }
+    // Each line without the whitespace it ends with, which draws nothing,
+    // not even an underline.
+    final lines = ScaledTextLines.lines(painter);
+    for (final (:metrics, start: lineStart, :end) in lines) {
       if (end <= lineStart) continue;
 
       final ranges = <({int start, int end, bool joins})>[];
@@ -317,15 +307,6 @@ class TextCurvePiece {
         (codePoint >= 0xFE70 && codePoint <= 0xFEFF) ||
         (codePoint >= 0x10D00 && codePoint <= 0x10D3F) || // Hanifi Rohingya
         (codePoint >= 0x1E900 && codePoint <= 0x1E95F); // Adlam
-  }
-
-  static bool _isSpace(int codeUnit) {
-    return codeUnit == 0x20 ||
-        codeUnit == 0x09 ||
-        codeUnit == 0x1680 ||
-        (codeUnit >= 0x2000 && codeUnit <= 0x200A) ||
-        codeUnit == 0x205F ||
-        codeUnit == 0x3000;
   }
 }
 

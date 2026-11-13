@@ -217,6 +217,17 @@ void main() {
       expect(piecesOf('ab\ncd'), ['a', 'b', 'c', 'd']);
     });
 
+    test('splits lines after any line break', () {
+      for (final lineBreak in ['\r\n', '\u2028', '\u2029']) {
+        expect(piecesOf('ab${lineBreak}cd'), [
+          'a',
+          'b',
+          'c',
+          'd',
+        ], reason: lineBreak.codeUnits.toString());
+      }
+    });
+
     test('places right-to-left text from the right', () {
       final painter = TextPainter(
         text: const TextSpan(text: 'אבג', style: style),
