@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer_box.dart';
+import '/shared/utils/text_capitals.dart';
 import 'rounded_background_text.dart';
 
 /// A customizable text field widget that displays editable text over a
@@ -236,6 +237,23 @@ class _RoundedBackgroundTextFieldState
     );
   }
 
+  /// Whether the controller shows its text in capitals.
+  bool get _showsCapitals {
+    final controller = _textController;
+    return controller is CapitalsTextEditingController && controller.capitals;
+  }
+
+  /// The text as the field shows it, without the controller's decoration.
+  String get _plainDisplayText => _showsCapitals
+      ? textInCapitals(_textController.text)
+      : _textController.text;
+
+  /// The field's spell check. Once it has results, the field builds its text
+  /// from them instead of from the controller, so it is off while the
+  /// controller shows capitals; the field would type in lowercase otherwise.
+  SpellCheckConfiguration? get _spellCheckConfiguration =>
+      _showsCapitals ? null : widget.configs.spellCheckConfiguration;
+
   /// The text bent the way the finished layer paints it.
   Widget _buildCurvedText(BuildContext context) {
     final box = widget.box;
@@ -251,9 +269,10 @@ class _RoundedBackgroundTextFieldState
             2 * _preferredLineHeight(fontSize ?? 16) * 0.3;
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-      // The plain text: a controller may decorate all of its span.
+      // The plain text, in capitals where the field shows them: a controller
+      // may decorate all of its span.
       child: RoundedBackgroundText(
-        _textController.text,
+        _plainDisplayText,
         style: _glyphStyle.copyWith(leadingDistribution: leading),
         maxTextWidth: box == null ? wrapWidth : widget.maxTextWidth,
         box: box,
@@ -281,7 +300,13 @@ class _RoundedBackgroundTextFieldState
     final outlined = widget._hasOutline;
     final scale = box.overflow == TextLayerBoxOverflow.shrink
         ? RoundedBackgroundText.scaleForBox(
-            text: TextSpan(text: _textController.text, style: glyph),
+            // As the field shows it, in capitals when the controller draws
+            // them.
+            text: _textController.buildTextSpan(
+              context: context,
+              style: glyph,
+              withComposing: false,
+            ),
             style: glyph,
             boxSize: box.size,
             enableHitBoxCorrection: true,
@@ -366,7 +391,7 @@ class _RoundedBackgroundTextFieldState
         showCursor: true,
         autocorrect: widget.configs.enableAutocorrect,
         enableSuggestions: widget.configs.enableSuggestions,
-        spellCheckConfiguration: widget.configs.spellCheckConfiguration,
+        spellCheckConfiguration: _spellCheckConfiguration,
         clipBehavior: visible ? Clip.none : Clip.hardEdge,
         decoration: InputDecoration.collapsed(
           hintText: _textController.text.isEmpty ? widget.hint : '',
@@ -650,7 +675,7 @@ class _RoundedBackgroundTextFieldState
             shadows: widget._backgroundPaintsShadows ? const [] : null,
             color: widget._hasGradient ? Colors.transparent : null,
           ),
-          spellCheckConfiguration: widget.configs.spellCheckConfiguration,
+          spellCheckConfiguration: _spellCheckConfiguration,
           decoration: InputDecoration.collapsed(
             hintText: _textController.text.isEmpty ? widget.hint : '',
             hintStyle:

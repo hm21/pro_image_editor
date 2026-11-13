@@ -1,5 +1,12 @@
 # Changelog
 
+## 14.28.0
+- **FEAT**(text-editor): Add `TextLayer.uppercase` to draw a text in capital letters while `TextLayer.text` keeps the letters as typed, with `TextEditorState.setUppercase` and `InlineTextEditSession.setUppercase`.
+- **FIX**(text-editor): The letter and word spacing of a text layer's style grow with the layer's scale and font scale, like its shadows and outline.
+- **FIX**(text-editor): The text editor's input shows the letter spacing and the decoration (underline, line-through) of the layer's style, as the finished layer draws them.
+- **FIX**(text-editor): Exporting a history step whose text style lost its font weight or font style no longer throws.
+- **FIX**(text-editor): `composingTextDecoration` decorates only the composing region instead of the whole input.
+
 ## 14.27.0
 - **FEAT**(text-editor): Add `TextLayer.curvature` to bend text into an arc, set via `TextEditorState.setCurvature` / `InlineTextEditSession.setCurvature`.
 - **FIX**(text-editor): Large text no longer repeats a line after a Unicode line or paragraph separator.
