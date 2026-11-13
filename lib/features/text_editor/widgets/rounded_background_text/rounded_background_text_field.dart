@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer_box.dart';
+import '/shared/utils/text_capitals.dart';
 import 'rounded_background_text.dart';
 
 /// A customizable text field widget that displays editable text over a
@@ -236,6 +237,14 @@ class _RoundedBackgroundTextFieldState
     );
   }
 
+  /// The text as the field shows it, without the controller's decoration.
+  String get _plainDisplayText {
+    final controller = _textController;
+    return controller is CapitalsTextEditingController && controller.capitals
+        ? textInCapitals(controller.text)
+        : controller.text;
+  }
+
   /// The text bent the way the finished layer paints it.
   Widget _buildCurvedText(BuildContext context) {
     final box = widget.box;
@@ -251,9 +260,10 @@ class _RoundedBackgroundTextFieldState
             2 * _preferredLineHeight(fontSize ?? 16) * 0.3;
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-      // The plain text: a controller may decorate all of its span.
+      // The plain text, in capitals where the field shows them: a controller
+      // may decorate all of its span.
       child: RoundedBackgroundText(
-        _textController.text,
+        _plainDisplayText,
         style: _glyphStyle.copyWith(leadingDistribution: leading),
         maxTextWidth: box == null ? wrapWidth : widget.maxTextWidth,
         box: box,
@@ -281,7 +291,13 @@ class _RoundedBackgroundTextFieldState
     final outlined = widget._hasOutline;
     final scale = box.overflow == TextLayerBoxOverflow.shrink
         ? RoundedBackgroundText.scaleForBox(
-            text: TextSpan(text: _textController.text, style: glyph),
+            // As the field shows it, in capitals when the controller draws
+            // them.
+            text: _textController.buildTextSpan(
+              context: context,
+              style: glyph,
+              withComposing: false,
+            ),
             style: glyph,
             boxSize: box.size,
             enableHitBoxCorrection: true,

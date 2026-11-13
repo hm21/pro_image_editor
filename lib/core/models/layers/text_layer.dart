@@ -9,6 +9,7 @@ import '/shared/extensions/num_extension.dart';
 import '/shared/utils/layer_animation_progress.dart';
 import '/shared/utils/parser/double_parser.dart';
 import '/shared/utils/parser/int_parser.dart';
+import '/shared/utils/text_capitals.dart';
 import 'enums/layer_background_mode.dart';
 import 'layer.dart';
 import 'layer_interaction.dart';
@@ -37,6 +38,8 @@ class TextLayer extends Layer {
   /// (it wraps by default).
   /// The [curvature] parameter bends the text into an arc (straight by
   /// default).
+  /// The [uppercase] parameter draws the text in capital letters without
+  /// changing [text] (off by default).
   /// The other optional parameters such as [textStyle], [offset], [rotation],
   /// [scale], [id], [flipX], and [flipY]
   /// can be used to customize the position, appearance, and behavior of the
@@ -58,6 +61,7 @@ class TextLayer extends Layer {
     this.gradient,
     this.wrapAtLayerBounds = true,
     this.curvature = 0,
+    this.uppercase = false,
     List<TextHighlight>? highlights,
     this.highlightColor = kDefaultTextHighlightColor,
     super.offset,
@@ -202,6 +206,7 @@ class TextLayer extends Layer {
       curvature: clampCurvature(
         tryParseDouble(map[keyConverter('curvature')]) ?? 0,
       ),
+      uppercase: map[keyConverter('uppercase')] ?? false,
       textStyle:
           fontFamily != null ||
               wordSpacing != null ||
@@ -256,6 +261,19 @@ class TextLayer extends Layer {
 
   /// The text content of the layer.
   String text;
+
+  /// Whether the text is drawn in capital letters.
+  ///
+  /// [text] keeps the letters as they were typed, so turning it off brings
+  /// them back. Each character keeps its length in capitals (see
+  /// [displayText]), so [highlights] and the reveal animation point at the
+  /// same characters either way.
+  bool uppercase;
+
+  /// The text as the layer draws it: [text], in capitals when [uppercase] is
+  /// on. A character whose capital is longer than itself stays as it is,
+  /// apart from `ß`, which becomes `ẞ`.
+  String get displayText => uppercase ? textInCapitals(text) : text;
 
   /// The color mode for the text.
   LayerBackgroundMode colorMode;
@@ -533,6 +551,7 @@ class TextLayer extends Layer {
       if (!wrapAtLayerBounds) 'wrapAtLayerBounds': wrapAtLayerBounds,
       if (isCurved)
         'curvature': clampCurvature(curvature).roundSmart(maxDecimalPlaces),
+      if (uppercase) 'uppercase': uppercase,
     };
     return result;
   }
@@ -565,10 +584,12 @@ class TextLayer extends Layer {
         'highlightColor': highlightColor.toHex(),
       if (paintLayer.textStyle?.fontFamily != textStyle?.fontFamily)
         'fontFamily': textStyle?.fontFamily,
+      // `null` is written when the style lost its value, so the import does
+      // not keep the previous step's.
       if (paintLayer.textStyle?.fontStyle != textStyle?.fontStyle)
-        'fontStyle': textStyle?.fontStyle!.name,
+        'fontStyle': textStyle?.fontStyle?.name,
       if (paintLayer.textStyle?.fontWeight != textStyle?.fontWeight)
-        'fontWeight': textStyle?.fontWeight!.value,
+        'fontWeight': textStyle?.fontWeight?.value,
       if (paintLayer.textStyle?.letterSpacing != textStyle?.letterSpacing)
         'letterSpacing': textStyle?.letterSpacing?.roundSmart(maxDecimalPlaces),
       if (paintLayer.textStyle?.height != textStyle?.height)
@@ -607,6 +628,9 @@ class TextLayer extends Layer {
       // previous step's curve.
       if (clampCurvature(paintLayer.curvature) != clampCurvature(curvature))
         'curvature': clampCurvature(curvature).roundSmart(maxDecimalPlaces),
+      // `false` is written too, so capitals that are turned off do not
+      // import the previous step's `true`.
+      if (paintLayer.uppercase != uppercase) 'uppercase': uppercase,
     };
   }
 
@@ -644,6 +668,7 @@ class TextLayer extends Layer {
     TextGradient? gradient,
     bool? wrapAtLayerBounds,
     double? curvature,
+    bool? uppercase,
     List<TextHighlight>? highlights,
     Color? highlightColor,
     bool? hit,
@@ -685,6 +710,7 @@ class TextLayer extends Layer {
       gradient: gradient ?? this.gradient,
       wrapAtLayerBounds: wrapAtLayerBounds ?? this.wrapAtLayerBounds,
       curvature: curvature ?? this.curvature,
+      uppercase: uppercase ?? this.uppercase,
       highlights: highlights ?? this.highlights,
       highlightColor: highlightColor ?? this.highlightColor,
       offset: offset ?? this.offset,
@@ -732,6 +758,7 @@ class TextLayer extends Layer {
       ..add(DiagnosticsProperty<TextGradient>('gradient', gradient))
       ..add(DiagnosticsProperty<bool>('wrapAtLayerBounds', wrapAtLayerBounds))
       ..add(DoubleProperty('curvature', curvature, defaultValue: 0))
+      ..add(DiagnosticsProperty<bool>('uppercase', uppercase))
       ..add(DiagnosticsProperty<TextStyle>('textStyle', textStyle))
       ..add(IterableProperty<TextHighlight>('highlights', highlights))
       ..add(ColorProperty('highlightColor', highlightColor))

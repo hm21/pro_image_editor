@@ -13,6 +13,8 @@ import '/features/text_editor/widgets/text_editor_color_picker.dart';
 import '/features/text_editor/widgets/text_editor_input.dart';
 import '/pro_image_editor.dart';
 import '/shared/extensions/color_extension.dart';
+import '/shared/extensions/text_style_extension.dart';
+import '/shared/utils/text_capitals.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import 'widgets/text_editor_bottom_bar.dart';
 
@@ -152,13 +154,10 @@ class TextEditorState extends State<TextEditor>
     if (original?.box case final box?) return box;
     final scale = original?.scale ?? 1;
     return TextLayerBox.fit(
-      text: text,
-      style: selectedTextStyle.copyWith(
-        fontSize: _textFontSize,
-        shadows: selectedTextStyle.shadows
-            ?.map((shadow) => shadow.scale(_fontScale))
-            .toList(),
-      ),
+      text: uppercase ? textInCapitals(text) : text,
+      style: selectedTextStyle
+          .scaleLayerEffects(_fontScale)
+          .copyWith(fontSize: _textFontSize),
       maxTextWidth: maxTextWidth,
       align: align,
       outlineWidth: _outlineWidth * _fontScale,
@@ -178,6 +177,19 @@ class TextEditorState extends State<TextEditor>
   void setWrapAtLayerBounds(bool wrap) {
     setState(() => _wrapAtLayerBounds = wrap);
   }
+
+  /// Whether the text is drawn in capital letters. See
+  /// [TextLayer.uppercase].
+  bool get uppercase => _capitalsCtrl.capitals;
+
+  /// Draws the text in capital letters, or as it was typed again. The typed
+  /// letters are kept either way.
+  void setUppercase(bool uppercase) {
+    setState(() => _capitalsCtrl.capitals = uppercase);
+  }
+
+  /// [textCtrl], which shows the text in capitals while [uppercase] is on.
+  late final _ComposingStyleTextEditingController _capitalsCtrl;
 
   /// Sets the outline drawn around each glyph; a [width] of `0` removes it.
   ///
@@ -221,7 +233,7 @@ class TextEditorState extends State<TextEditor>
   @override
   void initState() {
     super.initState();
-    textCtrl = _ComposingStyleTextEditingController(
+    textCtrl = _capitalsCtrl = _ComposingStyleTextEditingController(
       composingTextDecoration: textEditorConfigs.composingTextDecoration,
     );
     _rebuildController = StreamController.broadcast();
@@ -261,6 +273,7 @@ class TextEditorState extends State<TextEditor>
   void _initializeFromLayer() {
     if (widget.layer != null) {
       textCtrl.text = widget.layer!.text;
+      _capitalsCtrl.capitals = widget.layer!.uppercase;
       align = widget.layer!.align;
       _fontScale = widget.layer!.fontScale;
       _outlineWidth = widget.layer!.outlineWidth;
@@ -441,6 +454,7 @@ class TextEditorState extends State<TextEditor>
         gradient: _gradient,
         wrapAtLayerBounds: _wrapAtLayerBounds,
         curvature: _curvature,
+        uppercase: uppercase,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth: maxTextWidth,
         // The editor changes how the text looks, not when it shows.
@@ -674,6 +688,7 @@ class TextEditorState extends State<TextEditor>
       )
       ..add(DoubleProperty('fontScale', _fontScale))
       ..add(DoubleProperty('outlineWidth', _outlineWidth))
+      ..add(DiagnosticsProperty<bool>('uppercase', uppercase))
       ..add(ColorProperty('outlineColor', _outlineColor))
       ..add(DiagnosticsProperty<TextGradient>('gradient', _gradient))
       ..add(DoubleProperty('curvature', _curvature, defaultValue: 0))
@@ -685,7 +700,8 @@ class TextEditorState extends State<TextEditor>
 
 /// A [TextEditingController] that applies a custom [TextDecoration] to the
 /// composing region instead of the default underline.
-class _ComposingStyleTextEditingController extends TextEditingController {
+class _ComposingStyleTextEditingController
+    extends CapitalsTextEditingController {
   _ComposingStyleTextEditingController({required this.composingTextDecoration});
 
   final TextDecoration composingTextDecoration;
