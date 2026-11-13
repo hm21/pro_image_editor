@@ -42,50 +42,52 @@ void main() {
     vec2 device = coord / scale;
     int count = int(u_params.y);
 
-    if (count <= 0) {
-        frag_color = texture(u_texture_input, coord / u_size);
-        return;
+    /// Without areas, the input stays as it is. `main()` samples the texture
+    /// once at its end and has no `return`: Windows fails to compile shaders
+    /// that sample alongside several exits from `main()`; see
+    /// https://github.com/flutter/flutter/issues/190809.
+    vec2 source = coord;
+
+    if (count > 0) {
+        vec4 chosen = vec4(0.0);
+        float nearest = 0.0;
+
+        for (int i = MAX_AREAS - 1; i >= 0; i--) {
+            if (i >= count) {
+                continue;
+            }
+            vec4 row0 = u_areas[i * 3];
+            vec4 row1 = u_areas[i * 3 + 1];
+            vec4 grid = u_areas[i * 3 + 2];
+            vec2 uv = vec2(
+                dot(row0.xy, device) + row0.z,
+                dot(row1.xy, device) + row1.z
+            );
+            /// How far the pixel lies outside the area, in device pixels. A
+            /// device pixel spans this much of the unit square.
+            vec2 pixel = vec2(length(row0.xy), length(row1.xy));
+            vec2 beyond = max(-uv, uv - 1.0) / pixel;
+            float outside = grid.w > 0.5
+                ? (distance(uv, vec2(0.5)) - 0.5) / max(pixel.x, pixel.y)
+                : max(beyond.x, beyond.y);
+            /// The area's clip is antialiased, so it also partly covers
+            /// pixels whose centers lie up to a pixel outside it; those take
+            /// its grid as well.
+            if (outside <= 1.0) {
+                chosen = grid;
+                break;
+            }
+            if (i == count - 1 || outside < nearest) {
+                chosen = grid;
+                nearest = outside;
+            }
+        }
+
+        float block = chosen.z * scale;
+        vec2 origin = chosen.xy * scale;
+        vec2 cell = floor((coord - origin) / block);
+        source = origin + (cell + 0.5) * block;
     }
 
-    vec4 chosen = vec4(0.0);
-    float nearest = 0.0;
-
-    for (int i = MAX_AREAS - 1; i >= 0; i--) {
-        if (i >= count) {
-            continue;
-        }
-        vec4 row0 = u_areas[i * 3];
-        vec4 row1 = u_areas[i * 3 + 1];
-        vec4 grid = u_areas[i * 3 + 2];
-        vec2 uv = vec2(
-            dot(row0.xy, device) + row0.z,
-            dot(row1.xy, device) + row1.z
-        );
-        /// How far the pixel lies outside the area, in device pixels. A
-        /// device pixel spans this much of the unit square.
-        vec2 pixel = vec2(length(row0.xy), length(row1.xy));
-        vec2 beyond = max(-uv, uv - 1.0) / pixel;
-        float outside = grid.w > 0.5
-            ? (distance(uv, vec2(0.5)) - 0.5) / max(pixel.x, pixel.y)
-            : max(beyond.x, beyond.y);
-        /// The area's clip is antialiased, so it also partly covers pixels
-        /// whose centers lie up to a pixel outside it; those take its grid
-        /// as well.
-        if (outside <= 1.0) {
-            chosen = grid;
-            break;
-        }
-        if (i == count - 1 || outside < nearest) {
-            chosen = grid;
-            nearest = outside;
-        }
-    }
-
-    float block = chosen.z * scale;
-    vec2 origin = chosen.xy * scale;
-    vec2 cell = floor((coord - origin) / block);
-    frag_color = texture(
-        u_texture_input,
-        (origin + (cell + 0.5) * block) / u_size
-    );
+    frag_color = texture(u_texture_input, source / u_size);
 }

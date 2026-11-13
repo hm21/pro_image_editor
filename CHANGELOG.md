@@ -1,5 +1,8 @@
 # Changelog
 
+## 14.26.1
+- **FIX**(paint-editor): The pixelate shaders no longer return early from `main()`, which Flutter warns can break shader compilation on Windows.
+
 ## 14.26.0
 - **FEAT**(layers): Add `LayerAnimationType.drawOn` to draw a paint layer's strokes in the order they were drawn, or take them away in reverse; a `switch` over `LayerAnimationType` must handle the new value.
 - **FEAT**(video): A paint layer that draws itself exports one image per frame in `ExportedLayer.drawOnBytes`, at `ImageGenerationConfigs.drawOnFrameRate`.
