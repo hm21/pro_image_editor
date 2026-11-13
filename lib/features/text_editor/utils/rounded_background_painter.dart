@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/line_metrics_model.dart';
 import 'scaled_text_lines.dart';
+import 'text_curve.dart';
 
 /// A [CustomPainter] that paints text with a rounded background, optional
 /// padding, and an optional cursor indicator.
@@ -38,6 +39,9 @@ class RoundedBackgroundTextPainter extends CustomPainter {
     this.clipToBox = true,
     this.effectSpace = Offset.zero,
     this.scaledText = const {},
+    this.curve,
+    this.curvedText = const {},
+    this.curvedBounds,
   });
 
   /// Callback function triggered with the result of a hit test on the text
@@ -119,8 +123,30 @@ class RoundedBackgroundTextPainter extends CustomPainter {
   /// painters themselves.
   final Map<TextPainter, ScaledTextLines> scaledText;
 
+  /// Bends the text into an arc, or `null` for straight text.
+  ///
+  /// The background is bent along with it and [curvedText] draws the
+  /// glyphs. Everything is then measured in the coordinates of the curve,
+  /// which [hitBoxCorrectionOffset] moves into the widget, and hit testing
+  /// reads the bent background.
+  final TextCurve? curve;
+
+  /// Draws the glyphs of the text painters it holds, placed on [curve], in
+  /// place of those painters. Layout and the background still read the
+  /// painters themselves.
+  final Map<TextPainter, CurvedTextRuns> curvedText;
+
+  /// The box around the glyphs placed on [curve], in its coordinates, which
+  /// the shadows are drawn within.
+  final Rect? curvedBounds;
+
   /// Draws the glyphs of [textPainter] at [offset].
   void _paintText(Canvas canvas, TextPainter textPainter, Offset offset) {
+    final curved = curvedText[textPainter];
+    if (curved != null) {
+      curved.paint(canvas, offset);
+      return;
+    }
     final scaled = scaledText[textPainter];
     if (scaled != null) {
       scaled.paint(canvas, offset);
@@ -128,6 +154,19 @@ class RoundedBackgroundTextPainter extends CustomPainter {
       textPainter.paint(canvas, offset);
     }
   }
+
+  /// The background behind the drawn text, or behind all of it when
+  /// [revealedOnly] is `false` (see [visibleLength]), bent along [curve].
+  Path _backgroundPath({bool revealedOnly = true}) {
+    final path = _buildBackgroundPath(revealedOnly: revealedOnly);
+    return curve?.warp(path) ?? path;
+  }
+
+  /// The box around the background of the whole text, bent along [curve].
+  ///
+  /// Hit testing reads that background, so a widget that wants to be hit
+  /// wherever its background would be makes room for it.
+  Rect get backgroundBounds => _backgroundPath(revealedOnly: false).getBounds();
 
   /// The background behind the drawn text, or behind all of it when
   /// [revealedOnly] is `false` (see [visibleLength]).
@@ -560,7 +599,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
       return;
     }
 
-    final background = _buildBackgroundPath();
+    final background = _backgroundPath();
     // Only the background of the whole text serves hit testing.
     if (visibleLength == null) _cachedPath = background;
     canvas
@@ -583,7 +622,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
 
     // Glyphs may paint beyond the line boxes, e.g. with a `height` below 1 or
     // an italic overhang, and the layer clips whatever lies outside it.
-    final textBounds = (Offset.zero & painter.size).inflate(
+    final textBounds = (curvedBounds ?? Offset.zero & painter.size).inflate(
       painter.preferredLineHeight,
     );
     for (final shadow in silhouetteShadows) {
@@ -619,7 +658,7 @@ class RoundedBackgroundTextPainter extends CustomPainter {
       onHitTestResult?.call(hasHit);
       return hasHit;
     }
-    final path = _cachedPath ??= _buildBackgroundPath(revealedOnly: false);
+    final path = _cachedPath ??= _backgroundPath(revealedOnly: false);
 
     bool hasHit = path.contains(position - hitBoxCorrectionOffset);
 
@@ -651,7 +690,10 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         oldDelegate.visibleLength != visibleLength ||
         oldDelegate.boxSize != boxSize ||
         oldDelegate.clipToBox != clipToBox ||
-        !mapEquals(oldDelegate.scaledText, scaledText);
+        !mapEquals(oldDelegate.scaledText, scaledText) ||
+        oldDelegate.curve != curve ||
+        oldDelegate.curvedBounds != curvedBounds ||
+        !mapEquals(oldDelegate.curvedText, curvedText);
 
     if (changed) _cachedPath = null; // invalidate cache
 
@@ -680,7 +722,10 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         other.visibleLength == visibleLength &&
         other.boxSize == boxSize &&
         other.clipToBox == clipToBox &&
-        mapEquals(other.scaledText, scaledText);
+        mapEquals(other.scaledText, scaledText) &&
+        other.curve == curve &&
+        other.curvedBounds == curvedBounds &&
+        mapEquals(other.curvedText, curvedText);
   }
 
   @override
@@ -702,6 +747,9 @@ class RoundedBackgroundTextPainter extends CustomPainter {
         visibleLength.hashCode ^
         boxSize.hashCode ^
         clipToBox.hashCode ^
-        Object.hashAllUnordered(scaledText.values);
+        Object.hashAllUnordered(scaledText.values) ^
+        curve.hashCode ^
+        curvedBounds.hashCode ^
+        Object.hashAllUnordered(curvedText.values);
   }
 }

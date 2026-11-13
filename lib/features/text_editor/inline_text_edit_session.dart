@@ -26,6 +26,7 @@ class InlineTextEditSession {
     required this.outlineWidth,
     required this.outlineColor,
     required this.gradient,
+    required this.curvature,
     required this.boxEnabled,
     required this._primaryColor,
     required this._secondaryColor,
@@ -76,6 +77,7 @@ class InlineTextEditSession {
       outlineWidth: layer.outlineWidth,
       outlineColor: layer.outlineColor,
       gradient: layer.gradient,
+      curvature: TextLayer.clampCurvature(layer.curvature),
       boxEnabled: layer.box != null,
       primaryColor: primary,
       secondaryColor: secondary,
@@ -162,6 +164,22 @@ class InlineTextEditSession {
   void setGradient(TextGradient? gradient) {
     if (_closed || gradient == this.gradient) return;
     this.gradient = gradient;
+    onChanged();
+  }
+
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. See [TextLayer.curvature].
+  ///
+  /// The field shows the text bent while it does not have focus, such as
+  /// while a slider for this is dragged with the keyboard hidden, and
+  /// straight while it is typed into.
+  double curvature;
+
+  /// Bends the text by [curvature], kept between `-1` and `1`.
+  void setCurvature(double curvature) {
+    final next = TextLayer.clampCurvature(curvature);
+    if (_closed || next == this.curvature) return;
+    this.curvature = next;
     onChanged();
   }
 
@@ -387,6 +405,7 @@ class InlineTextEditSession {
       outlineWidth: outlineWidth,
       outlineColor: outlineColor,
       gradient: gradient,
+      curvature: curvature,
       wrapAtLayerBounds: live.wrapAtLayerBounds,
       customSecondaryColor: _secondaryColor != null,
       maxTextWidth: live.maxTextWidth,
@@ -426,6 +445,7 @@ class InlineTextEditSession {
         result.outlineWidth != live.outlineWidth ||
         result.outlineColor != live.outlineColor ||
         result.gradient != live.gradient ||
+        result.curvature != live.curvature ||
         result.customSecondaryColor != live.customSecondaryColor ||
         result.box != live.box;
   }

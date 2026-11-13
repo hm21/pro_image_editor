@@ -192,6 +192,33 @@ void main() {
       });
     });
 
+    group('lines', () {
+      List<String> linesOf(String text) {
+        final painter = layout(TextSpan(text: text));
+        addTearDown(painter.dispose);
+        return [
+          for (final line in ScaledTextLines.lines(painter))
+            text.substring(line.start, line.end),
+        ];
+      }
+
+      test('gives every line its own text', () {
+        expect(linesOf('ab\ncd'), ['ab', 'cd']);
+        expect(linesOf('ab\n\ncd'), ['ab', '', 'cd']);
+        expect(linesOf('ab  \ncd\t'), ['ab', 'cd']);
+      });
+
+      test('steps over every kind of line break', () {
+        for (final lineBreak in ['\r\n', '\u2028', '\u2029', '\u000B']) {
+          expect(linesOf('ab${lineBreak}cd'), [
+            'ab',
+            'cd',
+          ], reason: lineBreak.codeUnits.toString());
+        }
+        expect(linesOf('ab\u2028\u2028cd'), ['ab', '', 'cd']);
+      });
+    });
+
     group('create', () {
       const style = TextStyle(fontSize: 120, color: Color(0xFFFFFFFF));
 
@@ -233,6 +260,22 @@ void main() {
           textAlign: TextAlign.center,
         );
       });
+
+      for (final (name, lineBreak) in [
+        ('a carriage return and line feed', '\r\n'),
+        ('a line separator', '\u2028'),
+        ('a paragraph separator', '\u2029'),
+        ('a vertical tab', '\u000B'),
+        ('a form feed', '\u000C'),
+      ]) {
+        test('draws the line after $name where its painter does', () async {
+          // Lines of different widths, so a line drawn with the text of
+          // the one before it shows.
+          await expectSame(
+            TextSpan(text: 'I${lineBreak}Wide words', style: style),
+          );
+        });
+      }
 
       test('draws spans in other sizes where their painter does', () async {
         await expectSame(

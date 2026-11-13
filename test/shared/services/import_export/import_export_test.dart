@@ -495,6 +495,52 @@ void main() {
     }
 
     for (final minify in [false, true]) {
+      testWidgets('keeps a curvature, and its straightening, across history '
+          'steps (${minify ? 'minified' : 'not minified'})', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final editor = await pumpTestEditor(tester);
+          editor
+            ..addLayer(TextLayer(text: 'curved', curvature: 0.5))
+            ..replaceLayer(
+              index: 0,
+              layer: (editor.activeLayers.single as TextLayer).copyWith(
+                curvature: -0.25,
+              ),
+            )
+            ..replaceLayer(
+              index: 0,
+              layer: (editor.activeLayers.single as TextLayer).copyWith(
+                curvature: 0,
+              ),
+            );
+
+          final history = await editor.exportStateHistory(
+            configs: ExportEditorConfigs(
+              enableMinify: minify,
+              historySpan: ExportHistorySpan.all,
+            ),
+          );
+          final map = await history.toMap();
+
+          editor.removeAllLayers();
+          await editor.importStateHistory(
+            ImportStateHistory.fromMap(map, configs: importConfigs),
+          );
+
+          double curvature() =>
+              (editor.activeLayers.single as TextLayer).curvature;
+          expect(curvature(), 0);
+          editor.undoAction();
+          expect(curvature(), -0.25);
+          editor.undoAction();
+          expect(curvature(), 0.5);
+        });
+      });
+    }
+
+    for (final minify in [false, true]) {
       testWidgets('keeps a blend mode, and its removal, across history steps '
           '(${minify ? 'minified' : 'not minified'})', (
         WidgetTester tester,

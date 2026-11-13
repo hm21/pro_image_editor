@@ -149,6 +149,7 @@ class LayerCopyManager {
       outlineColor: layer.outlineColor,
       gradient: layer.gradient,
       wrapAtLayerBounds: layer.wrapAtLayerBounds,
+      curvature: layer.curvature,
       highlights: List<TextHighlight>.of(layer.highlights),
       highlightColor: layer.highlightColor,
       opacity: layer.opacity,
