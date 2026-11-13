@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/features/main_editor/services/layer_copy_manager.dart';
@@ -96,6 +97,23 @@ void main() {
       expect(diff, containsPair('fontWeight', null));
       expect(diff, containsPair('fontStyle', null));
     });
+
+    test('writes a removed decoration as null', () {
+      final reference = TextLayer(
+        text: 'Hi',
+        textStyle: const TextStyle(decoration: TextDecoration.underline),
+      );
+      final updated = reference.copyWith(textStyle: const TextStyle());
+
+      final diff = updated.toMapFromReference(reference);
+      final restored = TextLayer.fromMap(reference, {
+        ...reference.toMap(),
+        ...diff,
+      });
+
+      expect(diff, containsPair('decoration', null));
+      expect(restored.textStyle?.decoration, isNull);
+    });
   });
 
   group(LayerWidgetTextItem, () {
@@ -160,6 +178,7 @@ void main() {
       TextLayer? layer,
       void Function(TextEditorState editor) change, {
       Future<void> Function(WidgetTester tester)? beforeDone,
+      ProImageEditorConfigs configs = const ProImageEditorConfigs(),
     }) async {
       TextLayer? result;
       await tester.pumpWidget(
@@ -173,6 +192,7 @@ void main() {
                       key: key,
                       theme: ThemeData.dark(),
                       layer: layer,
+                      configs: configs,
                     ),
                   ),
                 );
@@ -274,6 +294,79 @@ void main() {
         },
       );
     });
+
+    testWidgets('decorates only the composing region with the composing '
+        'decoration', (tester) async {
+      await edit(
+        tester,
+        TextLayer(text: 'Hello', uppercase: true),
+        (editor) {
+          editor.textCtrl.value = const TextEditingValue(
+            text: 'Hello',
+            composing: TextRange(start: 1, end: 3),
+          );
+          const style = TextStyle(decoration: TextDecoration.lineThrough);
+          final context = key.currentContext!;
+
+          final composing = editor.textCtrl.buildTextSpan(
+            context: context,
+            style: style,
+            withComposing: true,
+          );
+          expect(composing.style, style);
+          expect(composing.toPlainText(), 'HELLO');
+          final parts = composing.children!.cast<TextSpan>();
+          expect(parts.map((part) => part.text), ['H', 'EL', 'LO']);
+          expect(parts[0].style, isNull);
+          expect(parts[1].style!.decoration, TextDecoration.underline);
+          expect(parts[2].style, isNull);
+
+          final plain = editor.textCtrl.buildTextSpan(
+            context: context,
+            style: style,
+            withComposing: false,
+          );
+          expect(plain.style, style);
+          expect(plain.text, 'HELLO');
+        },
+        configs: const ProImageEditorConfigs(
+          textEditor: TextEditorConfigs(
+            composingTextDecoration: TextDecoration.underline,
+          ),
+        ),
+      );
+    });
+
+    testWidgets('turns spell check off while the text shows in capitals', (
+      tester,
+    ) async {
+      final spellCheck = SpellCheckConfiguration(
+        spellCheckService: _MisspelledEverywhere(),
+      );
+      SpellCheckConfiguration? fieldSpellCheck() => tester
+          .widget<TextField>(find.byType(TextField))
+          .spellCheckConfiguration;
+
+      await edit(
+        tester,
+        TextLayer(text: 'Helo'),
+        (editor) {
+          expect(fieldSpellCheck(), isNotNull);
+          editor.setUppercase(true);
+        },
+        beforeDone: (tester) async {
+          expect(fieldSpellCheck(), isNull);
+          final shown = tester
+              .state<EditableTextState>(find.byType(EditableText))
+              .buildTextSpan()
+              .toPlainText();
+          expect(shown, 'HELO');
+        },
+        configs: ProImageEditorConfigs(
+          textEditor: TextEditorConfigs(spellCheckConfiguration: spellCheck),
+        ),
+      );
+    });
   });
 
   group(InlineTextEditSession, () {
@@ -298,4 +391,15 @@ void main() {
       expect(session.buildResult(layer).text, 'Hello');
     });
   });
+}
+
+/// Marks every word as misspelled.
+class _MisspelledEverywhere implements SpellCheckService {
+  @override
+  Future<List<SuggestionSpan>?> fetchSpellCheckSuggestions(
+    Locale locale,
+    String text,
+  ) async => [
+    SuggestionSpan(TextRange(start: 0, end: text.length), const ['Hello']),
+  ];
 }

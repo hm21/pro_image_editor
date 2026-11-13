@@ -237,13 +237,22 @@ class _RoundedBackgroundTextFieldState
     );
   }
 
-  /// The text as the field shows it, without the controller's decoration.
-  String get _plainDisplayText {
+  /// Whether the controller shows its text in capitals.
+  bool get _showsCapitals {
     final controller = _textController;
-    return controller is CapitalsTextEditingController && controller.capitals
-        ? textInCapitals(controller.text)
-        : controller.text;
+    return controller is CapitalsTextEditingController && controller.capitals;
   }
+
+  /// The text as the field shows it, without the controller's decoration.
+  String get _plainDisplayText => _showsCapitals
+      ? textInCapitals(_textController.text)
+      : _textController.text;
+
+  /// The field's spell check. Once it has results, the field builds its text
+  /// from them instead of from the controller, so it is off while the
+  /// controller shows capitals; the field would type in lowercase otherwise.
+  SpellCheckConfiguration? get _spellCheckConfiguration =>
+      _showsCapitals ? null : widget.configs.spellCheckConfiguration;
 
   /// The text bent the way the finished layer paints it.
   Widget _buildCurvedText(BuildContext context) {
@@ -382,7 +391,7 @@ class _RoundedBackgroundTextFieldState
         showCursor: true,
         autocorrect: widget.configs.enableAutocorrect,
         enableSuggestions: widget.configs.enableSuggestions,
-        spellCheckConfiguration: widget.configs.spellCheckConfiguration,
+        spellCheckConfiguration: _spellCheckConfiguration,
         clipBehavior: visible ? Clip.none : Clip.hardEdge,
         decoration: InputDecoration.collapsed(
           hintText: _textController.text.isEmpty ? widget.hint : '',
@@ -666,7 +675,7 @@ class _RoundedBackgroundTextFieldState
             shadows: widget._backgroundPaintsShadows ? const [] : null,
             color: widget._hasGradient ? Colors.transparent : null,
           ),
-          spellCheckConfiguration: widget.configs.spellCheckConfiguration,
+          spellCheckConfiguration: _spellCheckConfiguration,
           decoration: InputDecoration.collapsed(
             hintText: _textController.text.isEmpty ? widget.hint : '',
             hintStyle:

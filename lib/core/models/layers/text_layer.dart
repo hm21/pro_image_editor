@@ -584,8 +584,8 @@ class TextLayer extends Layer {
         'highlightColor': highlightColor.toHex(),
       if (paintLayer.textStyle?.fontFamily != textStyle?.fontFamily)
         'fontFamily': textStyle?.fontFamily,
-      // `null` is written when the style lost its value, so the import does
-      // not keep the previous step's.
+      // `null` is written when the style lost its value (here and for the
+      // decoration), so the import does not keep the previous step's.
       if (paintLayer.textStyle?.fontStyle != textStyle?.fontStyle)
         'fontStyle': textStyle?.fontStyle?.name,
       if (paintLayer.textStyle?.fontWeight != textStyle?.fontWeight)
@@ -597,7 +597,7 @@ class TextLayer extends Layer {
       if (paintLayer.textStyle?.wordSpacing != textStyle?.wordSpacing)
         'wordSpacing': textStyle?.wordSpacing?.roundSmart(maxDecimalPlaces),
       if (paintLayer.textStyle?.decoration != textStyle?.decoration)
-        'decoration': textStyle?.decoration.toString(),
+        'decoration': textStyle?.decoration?.toString(),
       if (paintLayer.maxTextWidth != maxTextWidth)
         'maxTextWidth': maxTextWidth?.roundSmart(maxDecimalPlaces),
       // `null` is written too, so a removed box does not come back from the

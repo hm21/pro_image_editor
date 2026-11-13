@@ -712,38 +712,33 @@ class _ComposingStyleTextEditingController
     TextStyle? style,
     required bool withComposing,
   }) {
-    // When there is no composing or decoration is none, skip composing
-    // entirely to avoid the default underline.
-    if (composingTextDecoration == TextDecoration.none) {
-      return super.buildTextSpan(
-        context: context,
-        style: style,
-        withComposing: false,
-      );
-    }
-
-    // Build with composing enabled, then override the decoration.
+    // Built without composing, which skips Flutter's default underline. The
+    // span holds the text as shown, in capitals when they are on.
     final span = super.buildTextSpan(
       context: context,
       style: style,
-      withComposing: withComposing,
+      withComposing: false,
     );
+    if (composingTextDecoration == TextDecoration.none ||
+        !withComposing ||
+        !value.isComposingRangeValid) {
+      return span;
+    }
 
-    return _applyDecoration(span);
-  }
-
-  TextSpan _applyDecoration(TextSpan span) {
+    // Only the composing region gets the decoration; the rest keeps the
+    // style's own, such as the layer's underline.
+    final composing = value.composing;
+    final text = span.text ?? '';
     return TextSpan(
-      text: span.text,
-      style:
-          span.style?.copyWith(decoration: composingTextDecoration) ??
-          TextStyle(decoration: composingTextDecoration),
-      children: span.children?.map((child) {
-        if (child is TextSpan) return _applyDecoration(child);
-        return child;
-      }).toList(),
-      recognizer: span.recognizer,
-      semanticsLabel: span.semanticsLabel,
+      style: style,
+      children: [
+        TextSpan(text: composing.textBefore(text)),
+        TextSpan(
+          text: composing.textInside(text),
+          style: TextStyle(decoration: composingTextDecoration),
+        ),
+        TextSpan(text: composing.textAfter(text)),
+      ],
     );
   }
 }
