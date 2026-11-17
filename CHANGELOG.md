@@ -1,5 +1,10 @@
 # Changelog
 
+## 14.29.0
+- **FEAT**(paint-editor): Add `PaintEditorConfigs.mergeNewLayersOnDone` to return the strokes of one session as a single `PaintLayer`; a censor area stays its own layer.
+- **FEAT**(main-editor): Add `ProImageEditorState.splitSelectedLayers` / `canSplitSelectedLayers` and `PaintLayerSplitManager` to split a multi-stroke paint layer into one layer per stroke.
+- **FEAT**(main-editor): Add `PaintLayerMergeManager.mergeRuns` and export `PaintLayerMergeManager` and `PaintLayerSplitManager`.
+
 ## 14.28.0
 - **FEAT**(text-editor): Add `TextLayer.uppercase` to draw a text in capital letters while `TextLayer.text` keeps the letters as typed, with `TextEditorState.setUppercase` and `InlineTextEditSession.setUppercase`.
 - **FIX**(text-editor): The letter and word spacing of a text layer's style grow with the layer's scale and font scale, like its shadows and outline.

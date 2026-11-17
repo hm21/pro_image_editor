@@ -50,6 +50,42 @@ class PaintLayerMergeManager {
     return mergeableLayers(layers).length >= 2;
   }
 
+  /// Merges every run of two or more consecutive layers in [layers] (given in
+  /// z-order, bottom-most first) that are [isMergeable] and pass [test] into
+  /// one layer, placed where the run's top-most layer was.
+  ///
+  /// Any other layer, such as a censor area, ends a run and keeps its place,
+  /// so the result stacks exactly as [layers] did. A run of a single layer is
+  /// kept as it is.
+  static List<PaintLayer> mergeRuns(
+    List<PaintLayer> layers, {
+    bool Function(PaintLayer layer)? test,
+  }) {
+    final List<PaintLayer> result = [];
+    final List<PaintLayer> run = [];
+
+    void endRun() {
+      if (run.length >= 2) {
+        result.add(merge(run));
+      } else {
+        result.addAll(run);
+      }
+      run.clear();
+    }
+
+    for (final layer in layers) {
+      if (isMergeable(layer) && (test?.call(layer) ?? true)) {
+        run.add(layer);
+      } else {
+        endRun();
+        result.add(layer);
+      }
+    }
+    endRun();
+
+    return result;
+  }
+
   /// Merges [layers] (given in z-order, bottom-most first) into a single
   /// [PaintLayer].
   ///

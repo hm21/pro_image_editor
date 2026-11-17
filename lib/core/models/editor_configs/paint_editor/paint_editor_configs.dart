@@ -44,6 +44,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.enableGesturePop = true,
     this.enableEdit = true,
     this.enableKeyboardShortcuts = true,
+    this.mergeNewLayersOnDone = false,
     this.tools = const [
       PaintMode.moveAndZoom,
       PaintMode.freeStyle,
@@ -138,6 +139,22 @@ class PaintEditorConfigs extends ZoomConfigs
   /// Individual events can also be intercepted with
   /// [PaintEditorCallbacks.onKeyboardEvent].
   final bool enableKeyboardShortcuts;
+
+  /// Whether the strokes drawn in one paint editor session are returned as a
+  /// single [PaintLayer] when the editor closes, instead of one layer per
+  /// stroke.
+  ///
+  /// The new layers are merged with [PaintLayerMergeManager.merge], so the
+  /// drawing looks the same and can be moved, scaled and timed as one. A
+  /// censor area (blur or pixelate) stays a layer of its own and splits the
+  /// strokes drawn before it from those drawn after it, which keeps the
+  /// stacking order. Layers that existed before the editor opened, such as
+  /// one the eraser changed, are returned as they are.
+  ///
+  /// Use [PaintLayerSplitManager.split] or
+  /// [ProImageEditorState.splitSelectedLayers] to break a drawing back into
+  /// its strokes. Defaults to `false`.
+  final bool mergeNewLayersOnDone;
 
   /// Defines which paint tools are available in the editor.
   ///
@@ -350,6 +367,7 @@ class PaintEditorConfigs extends ZoomConfigs
     bool? enableGesturePop,
     bool? enableEdit,
     bool? enableKeyboardShortcuts,
+    bool? mergeNewLayersOnDone,
     bool? showToggleFillButton,
     bool? showLineWidthAdjustmentButton,
     bool? showOpacityAdjustmentButton,
@@ -398,6 +416,7 @@ class PaintEditorConfigs extends ZoomConfigs
       enableEdit: enableEdit ?? this.enableEdit,
       enableKeyboardShortcuts:
           enableKeyboardShortcuts ?? this.enableKeyboardShortcuts,
+      mergeNewLayersOnDone: mergeNewLayersOnDone ?? this.mergeNewLayersOnDone,
       tools: tools ?? this.tools,
       showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,
       showLineWidthAdjustmentButton:
