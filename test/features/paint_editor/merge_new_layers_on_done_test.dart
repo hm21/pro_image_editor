@@ -89,5 +89,48 @@ void main() {
 
       expect(state.activeLayers, hasLength(4));
     });
+
+    testWidgets('draws every merged stroke where it drew on its own', (
+      tester,
+    ) async {
+      /// The canvas position and on-canvas stroke width of every point of
+      /// every non-censor stroke, bottom-most first. Fresh and merged layers
+      /// are never rotated or flipped.
+      List<(Offset, double)> drawnPoints(ProImageEditorState state) => [
+        for (final layer in state.activeLayers.cast<PaintLayer>())
+          if (!layer.isCensor)
+            for (final item in layer.items)
+              for (final point in item.offsets.nonNulls)
+                (
+                  layer.offset +
+                      (point -
+                              Offset(
+                                layer.rawSize.width / 2,
+                                layer.rawSize.height / 2,
+                              )) *
+                          layer.scale,
+                  item.strokeWidth * layer.scale,
+                ),
+      ];
+
+      final separate = await pumpEditor(tester, mergeNewLayersOnDone: false);
+      await drawSession(tester, separate);
+      final expected = drawnPoints(separate);
+      // Tear the first editor down so the second one starts from scratch.
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      final merged = await pumpEditor(tester, mergeNewLayersOnDone: true);
+      await drawSession(tester, merged);
+      final actual = drawnPoints(merged);
+
+      expect(actual, hasLength(expected.length));
+      for (var i = 0; i < expected.length; i++) {
+        final (point, width) = actual[i];
+        final (expectedPoint, expectedWidth) = expected[i];
+        expect(point.dx, closeTo(expectedPoint.dx, 1e-6));
+        expect(point.dy, closeTo(expectedPoint.dy, 1e-6));
+        expect(width, closeTo(expectedWidth, 1e-6));
+      }
+    });
   });
 }

@@ -1,9 +1,9 @@
 # Changelog
 
 ## 14.29.0
-- **FEAT**(paint-editor): Add `PaintEditorConfigs.mergeNewLayersOnDone` to return the strokes drawn in one session as a single `PaintLayer` instead of one layer per stroke. A censor area stays a layer of its own between the strokes around it.
-- **FEAT**(main-editor): Add `PaintLayerSplitManager` and `ProImageEditorState.splitSelectedLayers` / `canSplitSelectedLayers` to split a multi-stroke paint layer into one layer per stroke, the inverse of `mergeSelectedLayers`. Each part keeps its place and look.
-- **FEAT**(main-editor): Add `PaintLayerMergeManager.mergeRuns` and export `PaintLayerMergeManager` and `PaintLayerSplitManager` from the package.
+- **FEAT**(paint-editor): Add `PaintEditorConfigs.mergeNewLayersOnDone` to return the strokes of one session as a single `PaintLayer`; a censor area stays its own layer.
+- **FEAT**(main-editor): Add `ProImageEditorState.splitSelectedLayers` / `canSplitSelectedLayers` and `PaintLayerSplitManager` to split a multi-stroke paint layer into one layer per stroke.
+- **FEAT**(main-editor): Add `PaintLayerMergeManager.mergeRuns` and export `PaintLayerMergeManager` and `PaintLayerSplitManager`.
 
 ## 14.28.0
 - **FEAT**(text-editor): Add `TextLayer.uppercase` to draw a text in capital letters while `TextLayer.text` keeps the letters as typed, with `TextEditorState.setUppercase` and `InlineTextEditSession.setUppercase`.

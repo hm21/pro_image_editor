@@ -155,9 +155,11 @@ class PaintLayer extends Layer {
   /// The custom-painted strokes to display on the layer.
   ///
   /// Always holds at least one entry. A layer drawn in the paint editor has a
-  /// single entry; a layer produced by [mergeSelectedLayers] holds every
-  /// baked-in stroke, each with its own color/mode/strokeWidth/opacity and
-  /// erased offsets.
+  /// single entry; a layer produced by [mergeSelectedLayers] or by
+  /// `PaintEditorConfigs.mergeNewLayersOnDone` holds every baked-in stroke,
+  /// each with its own color/mode/strokeWidth/opacity and erased offsets.
+  /// `ProImageEditorState.splitSelectedLayers` breaks it back into one layer
+  /// per stroke.
   List<PaintedModel> items;
 
   /// The primary painted item.
