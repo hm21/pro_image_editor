@@ -197,6 +197,14 @@ class _LayerGroupingExampleState extends State<LayerGroupingExample>
                   : null,
               child: const Text('Combine Paint Layers'),
             ),
+            FilledButton(
+              // Split the selected multi-stroke paint layers into one layer
+              // per stroke, the inverse of combining them.
+              onPressed: editor.canSplitSelectedLayers
+                  ? () => editor.splitSelectedLayers()
+                  : null,
+              child: const Text('Split Paint Layers'),
+            ),
           ],
         ),
       ),

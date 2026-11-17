@@ -787,7 +787,12 @@ class PaintEditorState extends State<PaintEditor>
         }).toList();
         Navigator.of(context).pop(
           PaintEditorResponse(
-            layers: transformedLayers,
+            layers: paintEditorConfigs.mergeNewLayersOnDone
+                ? PaintLayerMergeManager.mergeRuns(
+                    transformedLayers,
+                    test: (layer) => !originalErasedMap.containsKey(layer.id),
+                  )
+                : transformedLayers,
             removedLayers: activeHistory.removedLayers,
           ),
         );

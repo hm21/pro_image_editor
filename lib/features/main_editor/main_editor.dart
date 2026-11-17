@@ -51,7 +51,6 @@ import 'services/layer_copy_manager.dart';
 import 'services/layer_drag_selection_service.dart';
 import 'services/layer_interaction_manager.dart';
 import 'services/main_editor_state_history_service.dart';
-import 'services/paint_layer_merge_manager.dart';
 import 'services/sizes_manager.dart';
 import 'widgets/main_editor_interactive_content.dart';
 
@@ -3743,6 +3742,55 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
 
     return mergedLayer;
+  }
+
+  /// Whether a selected layer can be split into one paint layer per stroke.
+  ///
+  /// Returns `true` when at least one selected layer is a [PaintLayer] that
+  /// [PaintLayerSplitManager.canSplit] accepts. Host apps can use this to
+  /// enable/disable a "Split" action. See [splitSelectedLayers].
+  bool get canSplitSelectedLayers =>
+      selectedLayers.any(PaintLayerSplitManager.canSplit);
+
+  /// Splits every selected multi-stroke paint layer into one [PaintLayer] per
+  /// stroke, the inverse of [mergeSelectedLayers].
+  ///
+  /// Each part renders exactly where and how its stroke rendered inside the
+  /// source (see [PaintLayerSplitManager.split]). The parts take the source's
+  /// z-index in stroke order, the source is removed, the parts are selected
+  /// and the whole operation is recorded as a single undo entry.
+  ///
+  /// Selected layers [PaintLayerSplitManager.canSplit] rejects are ignored.
+  /// Returns the new parts, or an empty list when no selected layer could be
+  /// split.
+  List<PaintLayer> splitSelectedLayers() {
+    final selectedIds = layerInteractionManager.selectedLayerIds;
+
+    final List<PaintLayer> parts = [];
+    final List<Layer> newLayers = [];
+    for (final layer in activeLayers) {
+      if (selectedIds.contains(layer.id) &&
+          PaintLayerSplitManager.canSplit(layer)) {
+        final split = PaintLayerSplitManager.split(layer as PaintLayer);
+        parts.addAll(split);
+        newLayers.addAll(split);
+      } else {
+        // Copied so the previous history entry keeps its own instances.
+        newLayers.add(_layerCopyManager.copyLayer(layer));
+      }
+    }
+
+    if (parts.isEmpty) return parts;
+
+    layerInteractionManager.clearSelectedLayers();
+    addHistory(layers: newLayers);
+    for (final part in parts) {
+      layerInteractionManager.addSelectedLayer(part.id);
+    }
+    _controllers.uiLayerCtrl.add(null);
+    setState(() {});
+
+    return parts;
   }
 
   @override
