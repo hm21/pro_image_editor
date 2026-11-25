@@ -237,12 +237,39 @@ class StateManager {
     while (_historyPointer > limit) {
       if (_historyPointer > 0) {
         _historyPointer--;
-        _stateHistory.removeAt(0);
+        _keepTrimmedTransformAndBlur(_stateHistory.removeAt(0));
         if (enableScreenshotLimit) screenshots.removeAt(0);
       } else {
         _stateHistory.removeLast();
         if (enableScreenshotLimit) screenshots.removeLast();
       }
+    }
+  }
+
+  /// Keeps the transform and blur of a trimmed history entry in effect.
+  ///
+  /// An entry stores a transform or blur only when it changes them, and later
+  /// entries inherit it. The new first entry takes over what it inherited
+  /// from [removed]. Exports treat the first entry as the initial state and
+  /// skip it, so a crop or blur also moves to the entry after it.
+  void _keepTrimmedTransformAndBlur(EditorStateHistory removed) {
+    var first = _stateHistory.first;
+    if (first.blur == null && removed.blur != null) {
+      first = _stateHistory[0] = first.copyWith(blur: removed.blur);
+    }
+    first.transformConfigs ??= removed.transformConfigs;
+    if (_stateHistory.length < 2) return;
+
+    final next = _stateHistory[1];
+    final transform = first.transformConfigs;
+    if (next.transformConfigs == null &&
+        transform != null &&
+        transform.isNotEmpty) {
+      next.transformConfigs = transform;
+    }
+    final blur = first.blur;
+    if (next.blur == null && blur != null && blur != 0) {
+      _stateHistory[1] = next.copyWith(blur: blur);
     }
   }
 
