@@ -91,6 +91,18 @@ void main() {
       expect(updated.keyframes.last.offset, isNot(const Offset(-30, 5)));
     });
 
+    test('keeps the curvature of a text layer it moves', () {
+      final generator = LayerTransformGenerator(
+        layers: [TextLayer(text: 'Curved', curvature: 0.7)],
+        undoChanges: false,
+        activeTransformConfigs: _configs(),
+        newTransformConfigs: _configs(angle: 1.5708, flipX: true),
+        layerDrawAreaSize: const Size(100, 100),
+      );
+
+      expect((generator.updatedLayers.single as TextLayer).curvature, 0.7);
+    });
+
     test('keeps the turned keyframes when the layers are put back on their '
         'image points', () {
       final from = _configs();

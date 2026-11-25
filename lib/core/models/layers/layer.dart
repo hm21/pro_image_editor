@@ -31,6 +31,7 @@ import 'layer_interaction.dart';
 import 'layer_keyframe.dart';
 import 'layer_mask.dart';
 import 'paint_layer.dart';
+import 'paint_layer_timeline.dart';
 import 'text_layer.dart';
 import 'text_layer_timeline.dart';
 import 'widget_layer.dart';
@@ -41,6 +42,7 @@ export 'emoji_layer.dart';
 export 'layer_animation.dart';
 export 'layer_keyframe.dart';
 export 'layer_mask.dart';
+export 'layer_mask_keyframe.dart';
 export 'paint_layer.dart';
 export 'text_gradient.dart';
 export 'text_highlight.dart';
@@ -203,7 +205,9 @@ class Layer {
 
   /// The time at which this layer stops being visible.
   ///
-  /// Only used in the video editor. When `null`, the layer is always visible.
+  /// The layer is shown up to, but not at, this time; see
+  /// [isWithinTimeRange]. Only used in the video editor. When `null`, the
+  /// layer is always visible.
   Duration? endTime;
 
   /// How long the fade-in animation lasts in **video time**.
@@ -267,7 +271,9 @@ class Layer {
   /// turns with the layer and its [keyframes]. It applies on the canvas and
   /// [captureAsPng] bakes it into the captured image, whether or not
   /// transforms are applied: unlike a turn or a flip, it changes the layer's
-  /// content rather than how that content is placed.
+  /// content rather than how that content is placed. A mask with its own
+  /// [LayerMask.keyframes] changes over time, measured from [keyframeOrigin]
+  /// (see [maskAt]); the capture leaves it out, for a renderer to apply.
   ///
   /// Set it to `null` to remove the mask; [copyWith] cannot clear it.
   LayerMask? mask;
@@ -341,6 +347,16 @@ class Layer {
   /// bounds the memory one keyframed layer can take.
   static const double kMaxKeyframeCaptureGrowth = 4;
 
+  /// Whether the layer shows at [videoTime]: from [startTime] up to, but not
+  /// at, [endTime]. A missing bound does not limit that side.
+  ///
+  /// The range is half-open like a clip's in a composition, so a video
+  /// renderer and this preview agree on the frame at [endTime], and a layer
+  /// split into frames that touch shows exactly one of them at the seam.
+  bool isWithinTimeRange(Duration videoTime) =>
+      (startTime == null || videoTime >= startTime!) &&
+      (endTime == null || videoTime < endTime!);
+
   /// The point in video time [LayerKeyframe.time] is measured from.
   Duration get keyframeOrigin => startTime ?? Duration.zero;
 
@@ -348,6 +364,12 @@ class Layer {
   /// when it has none.
   LayerPlacement? keyframePlacementAt(Duration videoTime) =>
       layerKeyframePlacementAt(keyframes, videoTime - keyframeOrigin);
+
+  /// The still mask the layer shows through at [videoTime]: [mask] as its
+  /// [LayerMask.keyframes] make it then, which are measured from
+  /// [keyframeOrigin] like the layer's own [keyframes]. `null` when the layer
+  /// has no mask.
+  LayerMask? maskAt(Duration videoTime) => mask?.at(videoTime - keyframeOrigin);
 
   /// The loop effects the [keyframes] play between them, placed on the
   /// video's timeline with their cycles fitted to their stretch. See
@@ -666,6 +688,11 @@ class Layer {
     int maxDecimalPlaces = kMaxSafeDecimalPlaces,
     bool enableMinify = false,
   }) {
+    // Empty when only [LayerInteraction.bounds] changed, which is not stored.
+    final interactionChanges = interaction.toMapFromReference(
+      layer.interaction,
+      enableMinify: enableMinify,
+    );
     return {
       'id': id,
       if (layer.offset.dx != offset.dx)
@@ -678,11 +705,7 @@ class Layer {
       if (layer.flipX != flipX) 'flipX': flipX.minify(enableMinify),
       if (layer.flipY != flipY) 'flipY': flipY.minify(enableMinify),
       if (!mapIsEqual(layer.meta, meta)) 'meta': meta,
-      if (layer.interaction != interaction)
-        'interaction': interaction.toMapFromReference(
-          layer.interaction,
-          enableMinify: enableMinify,
-        ),
+      if (interactionChanges.isNotEmpty) 'interaction': interactionChanges,
       if (layer.boxConstraints != boxConstraints)
         'boxConstraints': boxConstraints!.toMap(
           maxDecimalPlaces: maxDecimalPlaces,
@@ -735,7 +758,9 @@ class Layer {
   /// is captured opaque, as their opacity changes over time; a [PaintLayer]
   /// always carries the opacity it draws its strokes with. A [mask] is
   /// applied either way, and the [blendMode] never: it combines the layer with
-  /// what is beneath it, which the captured image does not hold.
+  /// what is beneath it, which the captured image does not hold. Neither is a
+  /// mask with [LayerMask.keyframes], which changes over time: a renderer
+  /// applies it to the image over the layer's box, frame by frame.
   ///
   /// A [TextLayer] with [TextLayer.highlights] or a text reveal is captured
   /// with no highlight active and its whole text shown, whatever the playback
@@ -763,10 +788,11 @@ class Layer {
   /// Captures the layer like [captureAsPng], or a [TextLayer] with the entry
   /// of [TextLayer.highlights] at [highlightIndex] active and only the first
   /// [revealedLength] UTF-16 code units of its text drawn, when either is
-  /// given.
+  /// given, or a [PaintLayer] with its strokes drawn [drawnFraction] of the
+  /// way.
   ///
-  /// Returns `null` when the layer is not mounted, or when a text state is
-  /// given for a layer that has none to render.
+  /// Returns `null` when the layer is not mounted, or when a text or paint
+  /// state is given for a layer that has none to render.
   Future<Uint8List?> _capture({
     required double? pixelRatio,
     required double? basePixelRatio,
@@ -776,6 +802,7 @@ class Layer {
     required LayerCapturePixelRatio? capturePixelRatio,
     int? highlightIndex,
     int? revealedLength,
+    double? drawnFraction,
   }) async {
     final context = repaintBoundaryKey.currentContext;
     if (context == null) return null;
@@ -809,7 +836,11 @@ class Layer {
         ? boundaryWidget
         : null;
     ui.Image rawImage;
-    if (highlightIndex != null || revealedLength != null) {
+    if (drawnFraction != null) {
+      final renderPaintState = boundary?.renderPaintState;
+      if (renderPaintState == null) return null;
+      rawImage = await renderPaintState(effectivePixelRatio, drawnFraction);
+    } else if (highlightIndex != null || revealedLength != null) {
       final renderTextState = boundary?.renderTextState;
       if (renderTextState == null) return null;
       rawImage = await renderTextState(
@@ -836,8 +867,9 @@ class Layer {
 
     // Every source above is unmasked — the canvas applies the mask outside
     // the boundary, and the renderers draw from the model — so it is baked in
-    // here, before the image is turned, flipped or faded like the layer.
-    if (mask case final mask?) {
+    // here, before the image is turned, flipped or faded like the layer. A
+    // mask that changes over time is left to the renderer.
+    if (mask case final mask? when !mask.hasKeyframes) {
       final masked = await mask.applyTo(rawImage);
       rawImage.dispose();
       rawImage = masked;
@@ -955,7 +987,9 @@ class Layer {
   ///
   /// A [TextLayer] with [TextLayer.highlights] is also captured once per
   /// highlight, into [ExportedLayer.highlightBytes], and one that reveals its
-  /// text once per step of the reveal, into [ExportedLayer.revealBytes];
+  /// text once per step of the reveal, into [ExportedLayer.revealBytes]; a
+  /// [PaintLayer] that draws itself is captured once per frame at
+  /// [drawOnFrameRate] while it draws, into [ExportedLayer.drawOnBytes].
   /// [ExportedLayer.frames] lays those images out along the layer's time
   /// range.
   ///
@@ -970,7 +1004,9 @@ class Layer {
     ui.ImageByteFormat format = ui.ImageByteFormat.png,
     ContentRecorderController? recorder,
     LayerCapturePixelRatio? capturePixelRatio,
+    int drawOnFrameRate = 30,
   }) async {
+    assert(drawOnFrameRate > 0, 'drawOnFrameRate must be greater than 0');
     ContentRecorderController? localRecorder;
     ContentRecorderController? sharedRecorder = recorder;
 
@@ -988,6 +1024,7 @@ class Layer {
         format: format,
         recorder: sharedRecorder,
         capturePixelRatio: capturePixelRatio,
+        drawOnFrameRate: drawOnFrameRate,
       );
     } finally {
       if (localRecorder != null) {
@@ -1004,8 +1041,10 @@ class Layer {
     required ui.ImageByteFormat format,
     required ContentRecorderController? recorder,
     required LayerCapturePixelRatio? capturePixelRatio,
+    required int drawOnFrameRate,
   }) async {
     final logicalSizes = <Size>[];
+    final boxSizes = <Size>[];
     for (var i = 0; i < layers.length; i++) {
       final layer = layers[i];
       final box =
@@ -1017,6 +1056,7 @@ class Layer {
           ? box.captureBounds.size
           : box?.size ?? Size.zero;
 
+      boxSizes.add(size);
       if (applyTransforms && (layer.rotation != 0)) {
         final double cosR = math.cos(layer.rotation).abs();
         final double sinR = math.sin(layer.rotation).abs();
@@ -1049,6 +1089,7 @@ class Layer {
           layer: layer,
           bytes: bytes,
           logicalSize: logicalSizes[i],
+          boxSize: boxSizes[i],
           // Only highlighted text pays for the extra captures, or even an
           // extra await: a layer without highlights completes exactly as
           // before.
@@ -1073,11 +1114,58 @@ class Layer {
                   capturePixelRatio: capturePixelRatio,
                 )
               : const {},
+          drawOnBytes: layer is PaintLayer && layer.drawsOn
+              ? await layer._captureDrawOn(
+                  pixelRatio: pixelRatio,
+                  basePixelRatio: basePixelRatio,
+                  applyTransforms: applyTransforms,
+                  format: format,
+                  recorder: recorder,
+                  capturePixelRatio: capturePixelRatio,
+                  frameRate: drawOnFrameRate,
+                )
+              : const {},
+          drawOnFrameRate: drawOnFrameRate,
         ),
       );
     }
 
     return exported;
+  }
+
+  /// Captures this paint layer once per fraction its drawing is partly drawn
+  /// at over the frames at [frameRate], as `ExportedLayer.frames` will look
+  /// them up. Empty for any other layer.
+  Future<Map<double, Uint8List>> _captureDrawOn({
+    required double? pixelRatio,
+    required double? basePixelRatio,
+    required bool applyTransforms,
+    required ui.ImageByteFormat format,
+    required ContentRecorderController? recorder,
+    required LayerCapturePixelRatio? capturePixelRatio,
+    required int frameRate,
+  }) async {
+    final layer = this;
+    if (layer is! PaintLayer) return const {};
+
+    final fractions = {
+      for (final span in paintLayerTimeline(layer, frameRate: frameRate))
+        ?span.drawnFraction,
+    };
+    final captured = <double, Uint8List>{};
+    for (final fraction in fractions) {
+      final bytes = await _capture(
+        pixelRatio: pixelRatio,
+        basePixelRatio: basePixelRatio,
+        applyTransforms: applyTransforms,
+        format: format,
+        recorder: recorder,
+        capturePixelRatio: capturePixelRatio,
+        drawnFraction: fraction,
+      );
+      if (bytes != null) captured[fraction] = bytes;
+    }
+    return captured;
   }
 
   /// Captures this text layer once per state its text reveal shows only

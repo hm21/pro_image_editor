@@ -304,6 +304,7 @@ class PaintEditorState extends State<PaintEditor>
       color: paintEditorConfigs.style.initialColor,
       opacity: paintEditorConfigs.style.initialOpacity,
       strokeMultiplier: 1,
+      freeStyleCustomModes: paintEditorConfigs.freeStyleCustomModes,
     );
 
     _isFillMode = paintEditorConfigs.isInitiallyFilled;
@@ -786,7 +787,12 @@ class PaintEditorState extends State<PaintEditor>
         }).toList();
         Navigator.of(context).pop(
           PaintEditorResponse(
-            layers: transformedLayers,
+            layers: paintEditorConfigs.mergeNewLayersOnDone
+                ? PaintLayerMergeManager.mergeRuns(
+                    transformedLayers,
+                    test: (layer) => !originalErasedMap.containsKey(layer.id),
+                  )
+                : transformedLayers,
             removedLayers: activeHistory.removedLayers,
           ),
         );
@@ -887,7 +893,7 @@ class PaintEditorState extends State<PaintEditor>
     Size size = layerRect.size;
 
     bool onlyStrokeMode =
-        rawLayer.mode.isFreeStyleMode ||
+        paintEditorConfigs.isFreeStyleMode(rawLayer.mode) ||
         rawLayer.mode == PaintMode.line ||
         rawLayer.mode == PaintMode.dashLine ||
         rawLayer.mode == PaintMode.dashDotLine ||
@@ -1161,6 +1167,7 @@ class PaintEditorState extends State<PaintEditor>
                           layers: activeHistory.layers,
                           transformHelper: _layerStackTransformHelper,
                           overlayColor: paintEditorConfigs.style.background,
+                          playTimeNotifier: videoController?.playTimeNotifier,
                           clipBehavior: Clip.none,
                           enableLayerKey: true,
                           suspendPaintLayerRasterCache:
@@ -1252,6 +1259,7 @@ class PaintEditorState extends State<PaintEditor>
       layers: activeHistory.layers,
       eraserMode: eraserMode,
       eraserRadius: eraserRadius,
+      playTimeNotifier: videoController?.playTimeNotifier,
       onTap: (details) =>
           callbacks.paintEditorCallbacks?.onTap?.call(this, details),
       onRemoveLayer: (removeIdList) {

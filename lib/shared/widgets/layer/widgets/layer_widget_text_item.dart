@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '/core/models/editor_configs/text_editor_configs.dart';
 import '/core/models/layers/text_layer.dart';
+import '/shared/extensions/text_style_extension.dart';
 import '../../../../features/text_editor/inline_text_edit_session.dart';
 import '../../../../features/text_editor/widgets/rounded_background_text/rounded_background_text.dart';
 import '../../../../features/text_editor/widgets/rounded_background_text/rounded_background_text_field.dart';
@@ -195,22 +196,22 @@ class LayerWidgetTextItem extends StatefulWidget {
       mainEditorLayer,
     );
 
-    // Shadows and the outline are measured at the unscaled font size, so they
-    // grow with the text when the layer is scaled.
+    // Shadows, the outline and the letter and word spacing are measured at
+    // the unscaled font size, so they grow with the text when the layer is
+    // scaled.
     final effectScale = layer.scale * layer.fontScale;
 
     // Get the full style including shadows
     TextStyle finalStyle;
     if (layer.textStyle != null) {
-      finalStyle = layer.textStyle!.copyWith(
-        fontSize: style.fontSize,
-        fontWeight: layer.textStyle!.fontWeight ?? style.fontWeight,
-        color: style.color,
-        fontFamily: layer.textStyle!.fontFamily ?? style.fontFamily,
-        shadows: layer.textStyle!.shadows
-            ?.map((shadow) => shadow.scale(effectScale))
-            .toList(),
-      );
+      finalStyle = layer.textStyle!
+          .scaleLayerEffects(effectScale)
+          .copyWith(
+            fontSize: style.fontSize,
+            fontWeight: layer.textStyle!.fontWeight ?? style.fontWeight,
+            color: style.color,
+            fontFamily: layer.textStyle!.fontFamily ?? style.fontFamily,
+          );
     } else {
       finalStyle = style;
     }
@@ -234,6 +235,7 @@ class LayerWidgetTextItem extends StatefulWidget {
       outlineWidth: layer.outlineWidth * effectScale,
       outlineColor: layer.outlineColor,
       gradient: layer.gradient,
+      curvature: layer.curvature,
       reserveEffectSpace: true,
       visibleLength: revealedLength,
     );
@@ -249,7 +251,7 @@ class LayerWidgetTextItem extends StatefulWidget {
     TextStyle style,
     int? highlightIndex,
   ) {
-    final text = layer.text;
+    final text = layer.displayText;
     if (highlightIndex == null || highlightIndex >= layer.highlights.length) {
       return TextSpan(text: text, style: style);
     }
@@ -370,13 +372,9 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
     final configs = widget.textEditorConfigs;
     final fontSize = configs.initFontSize * layer.scale * session.fontScale;
     final effectScale = layer.scale * session.fontScale;
-    final style = session.selectedTextStyle.copyWith(
-      fontSize: fontSize,
-      color: session.textColor,
-      shadows: session.selectedTextStyle.shadows
-          ?.map((shadow) => shadow.scale(effectScale))
-          .toList(),
-    );
+    final style = session.selectedTextStyle
+        .scaleLayerEffects(effectScale)
+        .copyWith(fontSize: fontSize, color: session.textColor);
     final box = session.editingBox(layer);
     final scaledBox = box?.copyWith(size: box.size * layer.scale);
     final wrapWidth = layer.maxTextWidth == null
@@ -398,6 +396,7 @@ class _LayerWidgetTextItemState extends State<LayerWidgetTextItem> {
       outlineWidth: session.outlineWidth * effectScale,
       outlineColor: session.outlineColor,
       gradient: session.gradient,
+      curvature: session.curvature,
       box: scaledBox,
       // The editor ends the edit on a click outside the layer. Any other
       // click, on the padding, a handle or a format bar, keeps typing.

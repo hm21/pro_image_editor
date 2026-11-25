@@ -6,6 +6,7 @@ import '/core/models/layers/layer.dart';
 import '/core/models/transform_helper.dart';
 import '/features/crop_rotate_editor/enums/crop_mode.enum.dart';
 import '/features/crop_rotate_editor/widgets/crop_layer_painter.dart';
+import '/features/main_editor/services/paint_layer_raster_cache.dart';
 import '/shared/widgets/censor/censor_scope.dart';
 import 'layer_widget.dart';
 import 'paint_layer_raster_cache_host.dart';
@@ -48,6 +49,7 @@ class LayerStack extends StatefulWidget {
     this.suspendPaintLayerRasterCache = false,
     this.mainBodySize,
     this.mainEditorLayers,
+    this.playTimeNotifier,
   });
 
   /// The outside overlay color for layers.
@@ -114,6 +116,14 @@ class LayerStack extends StatefulWidget {
   /// Text layers then wrap their lines where the main editor wraps them.
   final List<Layer>? mainEditorLayers;
 
+  /// The video's playback position, when the layers belong to a video.
+  ///
+  /// Each layer then shows as the main editor shows it at that position:
+  /// hidden outside its [Layer.startTime] to [Layer.endTime] window, and
+  /// placed by its keyframes and animations. Without it, every layer shows
+  /// at its rest placement.
+  final ValueNotifier<Duration>? playTimeNotifier;
+
   @override
   State<LayerStack> createState() => _LayerStackState();
 }
@@ -122,6 +132,47 @@ class _LayerStackState extends State<LayerStack>
     with PaintLayerRasterCacheHost {
   @override
   ProImageEditorConfigs get configs => widget.configs;
+
+  /// The [PaintLayerRasterCache.timelineSignature] of the last build.
+  int? _timelineSignature;
+
+  @override
+  void initState() {
+    super.initState();
+    if (rasterCache != null) {
+      widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant LayerStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (rasterCache == null ||
+        oldWidget.playTimeNotifier == widget.playTimeNotifier) {
+      return;
+    }
+    oldWidget.playTimeNotifier?.removeListener(_onPlayTimeChanged);
+    widget.playTimeNotifier?.addListener(_onPlayTimeChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.playTimeNotifier?.removeListener(_onPlayTimeChanged);
+    super.dispose();
+  }
+
+  /// Rebuilds when a paint layer enters or leaves its timeline window, which
+  /// moves it between the cache and live rendering. Everything else follows
+  /// the position on its own, through each layer's [LayerWidget].
+  void _onPlayTimeChanged() {
+    if (!mounted) return;
+    final signature = PaintLayerRasterCache.timelineSignature(
+      widget.layers,
+      widget.playTimeNotifier?.value,
+    );
+    if (signature == _timelineSignature) return;
+    setState(() {});
+  }
 
   bool get _cutOutsideImageArea =>
       widget.cutOutsideImageArea ??
@@ -183,8 +234,14 @@ class _LayerStackState extends State<LayerStack>
       for (final layer in widget.mainEditorLayers ?? const <Layer>[])
         layer.id: layer,
     };
+    final playTime = widget.playTimeNotifier?.value;
+    _timelineSignature = PaintLayerRasterCache.timelineSignature(
+      widget.layers,
+      playTime,
+    );
     return buildRasterCachedLayers(
       layers: widget.layers,
+      playTime: playTime,
       editorBodySize: widget.transformHelper.editorBodySize,
       pixelRatio:
           MediaQuery.devicePixelRatioOf(context) * widget.transformHelper.scale,
@@ -210,6 +267,7 @@ class _LayerStackState extends State<LayerStack>
       mainBodySize: _mainBodySize,
       mainEditorLayer: mainEditorLayer,
       isRasterCached: isRasterCached,
+      playTimeNotifier: widget.playTimeNotifier,
     );
   }
 

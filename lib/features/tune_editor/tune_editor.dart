@@ -517,6 +517,7 @@ class TuneEditorState extends State<TuneEditor>
       layers: layers!,
       clipBehavior: Clip.none,
       overlayColor: tuneEditorConfigs.style.background,
+      playTimeNotifier: videoController?.playTimeNotifier,
     );
   }
 

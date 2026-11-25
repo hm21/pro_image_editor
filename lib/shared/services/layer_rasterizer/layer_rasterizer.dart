@@ -276,6 +276,7 @@ class LayerRasterizer extends ChangeNotifier {
         applyTransforms: applyTransforms,
         format: format,
         capturePixelRatio: configs.imageGeneration.layerCapturePixelRatio,
+        drawOnFrameRate: configs.imageGeneration.drawOnFrameRate,
       );
     } finally {
       _request = null;

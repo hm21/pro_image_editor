@@ -13,6 +13,8 @@ import '/features/text_editor/widgets/text_editor_color_picker.dart';
 import '/features/text_editor/widgets/text_editor_input.dart';
 import '/pro_image_editor.dart';
 import '/shared/extensions/color_extension.dart';
+import '/shared/extensions/text_style_extension.dart';
+import '/shared/utils/text_capitals.dart';
 import '/shared/widgets/slider_bottom_sheet.dart';
 import 'widgets/text_editor_bottom_bar.dart';
 
@@ -114,6 +116,23 @@ class TextEditorState extends State<TextEditor>
     setState(() => _gradient = gradient);
   }
 
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. See [TextLayer.curvature].
+  ///
+  /// The text field shows the text bent while it does not have [focusNode],
+  /// such as while a slider for this is dragged with the keyboard hidden,
+  /// and straight while it is typed into.
+  double get curvature => _curvature;
+  late double _curvature = TextLayer.clampCurvature(
+    widget.layer?.curvature ?? 0,
+  );
+
+  /// Bends the text into an arc by [curvature], kept between `-1` and `1`;
+  /// `0` straightens it again.
+  void setCurvature(double curvature) {
+    setState(() => _curvature = TextLayer.clampCurvature(curvature));
+  }
+
   /// Whether the text goes into a fixed box (see [TextLayer.box]) when
   /// editing is done.
   bool get boxEnabled => _boxEnabled;
@@ -135,13 +154,10 @@ class TextEditorState extends State<TextEditor>
     if (original?.box case final box?) return box;
     final scale = original?.scale ?? 1;
     return TextLayerBox.fit(
-      text: text,
-      style: selectedTextStyle.copyWith(
-        fontSize: _textFontSize,
-        shadows: selectedTextStyle.shadows
-            ?.map((shadow) => shadow.scale(_fontScale))
-            .toList(),
-      ),
+      text: uppercase ? textInCapitals(text) : text,
+      style: selectedTextStyle
+          .scaleLayerEffects(_fontScale)
+          .copyWith(fontSize: _textFontSize),
       maxTextWidth: maxTextWidth,
       align: align,
       outlineWidth: _outlineWidth * _fontScale,
@@ -161,6 +177,19 @@ class TextEditorState extends State<TextEditor>
   void setWrapAtLayerBounds(bool wrap) {
     setState(() => _wrapAtLayerBounds = wrap);
   }
+
+  /// Whether the text is drawn in capital letters. See
+  /// [TextLayer.uppercase].
+  bool get uppercase => _capitalsCtrl.capitals;
+
+  /// Draws the text in capital letters, or as it was typed again. The typed
+  /// letters are kept either way.
+  void setUppercase(bool uppercase) {
+    setState(() => _capitalsCtrl.capitals = uppercase);
+  }
+
+  /// [textCtrl], which shows the text in capitals while [uppercase] is on.
+  late final _ComposingStyleTextEditingController _capitalsCtrl;
 
   /// Sets the outline drawn around each glyph; a [width] of `0` removes it.
   ///
@@ -204,7 +233,7 @@ class TextEditorState extends State<TextEditor>
   @override
   void initState() {
     super.initState();
-    textCtrl = _ComposingStyleTextEditingController(
+    textCtrl = _capitalsCtrl = _ComposingStyleTextEditingController(
       composingTextDecoration: textEditorConfigs.composingTextDecoration,
     );
     _rebuildController = StreamController.broadcast();
@@ -244,6 +273,7 @@ class TextEditorState extends State<TextEditor>
   void _initializeFromLayer() {
     if (widget.layer != null) {
       textCtrl.text = widget.layer!.text;
+      _capitalsCtrl.capitals = widget.layer!.uppercase;
       align = widget.layer!.align;
       _fontScale = widget.layer!.fontScale;
       _outlineWidth = widget.layer!.outlineWidth;
@@ -423,6 +453,8 @@ class TextEditorState extends State<TextEditor>
         outlineColor: _outlineColor,
         gradient: _gradient,
         wrapAtLayerBounds: _wrapAtLayerBounds,
+        curvature: _curvature,
+        uppercase: uppercase,
         customSecondaryColor: _secondaryColor != null,
         maxTextWidth: maxTextWidth,
         // The editor changes how the text looks, not when it shows.
@@ -630,6 +662,7 @@ class TextEditorState extends State<TextEditor>
       outlineWidth: _outlineWidth * _fontScale,
       outlineColor: _outlineColor,
       gradient: _gradient,
+      curvature: _curvature,
     );
   }
 
@@ -655,8 +688,10 @@ class TextEditorState extends State<TextEditor>
       )
       ..add(DoubleProperty('fontScale', _fontScale))
       ..add(DoubleProperty('outlineWidth', _outlineWidth))
+      ..add(DiagnosticsProperty<bool>('uppercase', uppercase))
       ..add(ColorProperty('outlineColor', _outlineColor))
       ..add(DiagnosticsProperty<TextGradient>('gradient', _gradient))
+      ..add(DoubleProperty('curvature', _curvature, defaultValue: 0))
       ..add(ColorProperty('primaryColor', primaryColor))
       ..add(ColorProperty('secondaryColor', secondaryColor))
       ..add(DiagnosticsProperty<Size>('editorBodySize', editorBodySize));
@@ -665,7 +700,8 @@ class TextEditorState extends State<TextEditor>
 
 /// A [TextEditingController] that applies a custom [TextDecoration] to the
 /// composing region instead of the default underline.
-class _ComposingStyleTextEditingController extends TextEditingController {
+class _ComposingStyleTextEditingController
+    extends CapitalsTextEditingController {
   _ComposingStyleTextEditingController({required this.composingTextDecoration});
 
   final TextDecoration composingTextDecoration;
@@ -676,38 +712,33 @@ class _ComposingStyleTextEditingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    // When there is no composing or decoration is none, skip composing
-    // entirely to avoid the default underline.
-    if (composingTextDecoration == TextDecoration.none) {
-      return super.buildTextSpan(
-        context: context,
-        style: style,
-        withComposing: false,
-      );
-    }
-
-    // Build with composing enabled, then override the decoration.
+    // Built without composing, which skips Flutter's default underline. The
+    // span holds the text as shown, in capitals when they are on.
     final span = super.buildTextSpan(
       context: context,
       style: style,
-      withComposing: withComposing,
+      withComposing: false,
     );
+    if (composingTextDecoration == TextDecoration.none ||
+        !withComposing ||
+        !value.isComposingRangeValid) {
+      return span;
+    }
 
-    return _applyDecoration(span);
-  }
-
-  TextSpan _applyDecoration(TextSpan span) {
+    // Only the composing region gets the decoration; the rest keeps the
+    // style's own, such as the layer's underline.
+    final composing = value.composing;
+    final text = span.text ?? '';
     return TextSpan(
-      text: span.text,
-      style:
-          span.style?.copyWith(decoration: composingTextDecoration) ??
-          TextStyle(decoration: composingTextDecoration),
-      children: span.children?.map((child) {
-        if (child is TextSpan) return _applyDecoration(child);
-        return child;
-      }).toList(),
-      recognizer: span.recognizer,
-      semanticsLabel: span.semanticsLabel,
+      style: style,
+      children: [
+        TextSpan(text: composing.textBefore(text)),
+        TextSpan(
+          text: composing.textInside(text),
+          style: TextStyle(decoration: composingTextDecoration),
+        ),
+        TextSpan(text: composing.textAfter(text)),
+      ],
     );
   }
 }

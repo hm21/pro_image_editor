@@ -1,5 +1,61 @@
 # Changelog
 
+## 14.29.0
+- **FEAT**(paint-editor): Add `PaintEditorConfigs.mergeNewLayersOnDone` to return the strokes of one session as a single `PaintLayer`; a censor area stays its own layer.
+- **FEAT**(main-editor): Add `ProImageEditorState.splitSelectedLayers` / `canSplitSelectedLayers` and `PaintLayerSplitManager` to split a multi-stroke paint layer into one layer per stroke.
+- **FEAT**(main-editor): Add `PaintLayerMergeManager.mergeRuns` and export `PaintLayerMergeManager` and `PaintLayerSplitManager`.
+
+## 14.28.0
+- **FEAT**(text-editor): Add `TextLayer.uppercase` to draw a text in capital letters while `TextLayer.text` keeps the letters as typed, with `TextEditorState.setUppercase` and `InlineTextEditSession.setUppercase`.
+- **FIX**(text-editor): The letter and word spacing of a text layer's style grow with the layer's scale and font scale, like its shadows and outline.
+- **FIX**(text-editor): The text editor's input shows the letter spacing and the decoration (underline, line-through) of the layer's style, as the finished layer draws them.
+- **FIX**(text-editor): Exporting a history step whose text style lost its font weight or font style no longer throws.
+- **FIX**(text-editor): `composingTextDecoration` decorates only the composing region instead of the whole input.
+
+## 14.27.0
+- **FEAT**(text-editor): Add `TextLayer.curvature` to bend text into an arc, set via `TextEditorState.setCurvature` / `InlineTextEditSession.setCurvature`.
+- **FIX**(text-editor): Large text no longer repeats a line after a Unicode line or paragraph separator.
+
+## 14.26.1
+- **FIX**(paint-editor): The pixelate shaders no longer return early from `main()`, which Flutter warns can break shader compilation on Windows.
+
+## 14.26.0
+- **FEAT**(layers): Add `LayerAnimationType.drawOn` to draw a paint layer's strokes in the order they were drawn, or take them away in reverse; a `switch` over `LayerAnimationType` must handle the new value.
+- **FEAT**(video): A paint layer that draws itself exports one image per frame in `ExportedLayer.drawOnBytes`, at `ImageGenerationConfigs.drawOnFrameRate`.
+
+## 14.25.2
+- **FIX**(audio-editor): The default audio track tile no longer reports a ListTile background error in debug mode, and its tap and selected colors paint above the dimmed track list.
+
+## 14.25.1
+- **FIX**(video): Layers, filters and tune adjustments are hidden at their exact `endTime` (`[startTime, endTime)`), matching the video export.
+
+## 14.25.0
+- **FIX**(sub-editors): In a video, the paint, filter, tune, blur and crop editors show layers at the playback position (time range, keyframes, animations) instead of all at once.
+- **FIX**(paint-editor): In a video, the eraser skips layers hidden at the playback position and hits keyframed layers where they are shown.
+- **FEAT**(layers): Add `Layer.isWithinTimeRange`.
+
+## 14.24.0
+- **FEAT**(paint-editor): Add `PaintEditorConfigs.freeStyleCustomModes` so a custom paint mode records the whole stroke, like `PaintMode.freeStyle`, and its custom path builder can draw a brush.
+- **FEAT**(paint-editor): Export `PathBuilderFreestyle` and add `PathBuilderBase.drawInLayer`, so a custom brush that overrides `draw` with several draw calls keeps the opacity and the eraser working.
+
+## 14.23.1
+- **FIX**(main-editor): `textLayerWrapsAtBounds` returns `false` instead of throwing while the editor is out of the tree.
+
+## 14.23.0
+- **FEAT**(layers): Add `LayerInteraction.bounds`, `minScale` and `maxScale` to keep one layer inside an area and within a scale range.
+- **FIX**(import-export): A history step that changes one interaction setting of a layer no longer resets its other settings on import.
+
+## 14.22.0
+- **FEAT**(layers): Add `LayerAnimationType.spin` and `LayerAnimationType.flip` (around a `FlipAxis`) to turn a layer by `LayerAnimation.turns`; a `switch` over `LayerAnimationType` must handle the new values.
+
+## 14.21.1
+- **FIX**(text-editor): Text scaled up very large no longer corrupts Impeller's glyph atlas, which garbled text across the whole app until a restart.
+
+## 14.21.0
+- **FEAT**(layers): Add `LayerMask.keyframes` to animate a shape mask over time (`LayerMask.at`, `Layer.maskAt`); `Layer.captureAsPng` leaves a keyframed mask to the renderer.
+- **FEAT**(main-editor): `setLayerTimeline` takes a `mask` to rebase its keyframes with a trimmed start.
+- **FEAT**(layers): Add `ExportedLayer.boxSize`, the unturned box a renderer places a mask in.
+
 ## 14.20.0
 - **FEAT**(text-editor): Add `TextLayerBoxOverflow.visible` and `TextEditorConfigs.boxOverflow` to draw lines that do not fit past a text box; a `switch` over `TextLayerBoxOverflow` must handle the new value.
 - **FEAT**(main-editor): Add `InlineTextEditSession.setFontScale` to resize the text while typing on the canvas.

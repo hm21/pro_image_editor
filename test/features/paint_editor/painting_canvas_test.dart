@@ -123,6 +123,67 @@ void main() {
       expect(ctrl.mode, PaintMode.freeStyle);
     });
 
+    for (final (:recordsStroke, :label) in [
+      (recordsStroke: true, label: 'records every point'),
+      (recordsStroke: false, label: 'records only start and end'),
+    ]) {
+      testWidgets('a custom mode $label when it is '
+          '${recordsStroke ? '' : 'not '}a free-style custom mode', (
+        WidgetTester tester,
+      ) async {
+        final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
+        final configs = PaintEditorConfigs(
+          customPathBuilders: {PaintMode.custom1: _PolylineBuilder.new},
+          freeStyleCustomModes: recordsStroke ? {PaintMode.custom1} : {},
+        );
+        final ctrl = PaintController(
+          color: Colors.red,
+          mode: PaintMode.custom1,
+          fill: false,
+          strokeWidth: 1,
+          strokeMultiplier: 1,
+          opacity: 1,
+          freeStyleCustomModes: configs.freeStyleCustomModes,
+        );
+        PaintedModel? created;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: PaintCanvas(
+                layers: const [],
+                key: canvasKey,
+                drawAreaSize: const Size(1000, 1000),
+                editorBodySize: const Size(1000, 1000),
+                layerStackScaleFactor: 1,
+                paintCtrl: ctrl,
+                eraserMode: EraserMode.partial,
+                eraserRadius: 8.0,
+                paintEditorConfigs: configs,
+                onRefresh: () {},
+                onCreated: (PaintedModel item) => created = item,
+                onRemoveLayer: (List<String> value) {},
+                onRemovePartialStart: () {},
+                onRemovePartialEnd: (bool hasRemovedAreas) {},
+                onTap: (TapDownDetails details) {},
+              ),
+            ),
+          ),
+        );
+
+        final center = tester.getCenter(find.byKey(canvasKey));
+        final gesture = await tester.startGesture(center);
+        await gesture.moveTo(center + const Offset(0, 50));
+        await gesture.moveTo(center + const Offset(50, 0));
+        await gesture.moveTo(center + const Offset(50, 50));
+        await gesture.up();
+        await tester.pump();
+
+        expect(created, isNotNull);
+        expect(created!.mode, PaintMode.custom1);
+        expect(created!.offsets, hasLength(recordsStroke ? 4 : 2));
+      });
+    }
+
     testWidgets('cancelActiveDrawing discards an in-progress stroke', (
       WidgetTester tester,
     ) async {
@@ -406,6 +467,7 @@ void main() {
         required void Function() onRemovePartialStart,
         required void Function(bool hasRemovedAreas) onRemovePartialEnd,
         void Function(List<String> ids)? onRemoveLayer,
+        ValueNotifier<Duration>? playTimeNotifier,
       }) async {
         final GlobalKey<PaintCanvasState> canvasKey = GlobalKey();
         await tester.pumpWidget(
@@ -434,11 +496,22 @@ void main() {
                 onRemovePartialStart: onRemovePartialStart,
                 onRemovePartialEnd: onRemovePartialEnd,
                 onTap: (TapDownDetails details) {},
+                playTimeNotifier: playTimeNotifier,
               ),
             ),
           ),
         );
         return canvasKey;
+      }
+
+      /// Drags the eraser down onto [target], the way a user wipes across a
+      /// horizontal stroke.
+      Future<void> eraseAcross(WidgetTester tester, Offset target) async {
+        final TestGesture gesture = await tester.startGesture(
+          target + const Offset(0, 40),
+        );
+        await gesture.moveTo(target);
+        await gesture.up();
       }
 
       testWidgets('a partial erase that turns into a pinch is still ended', (
@@ -506,6 +579,114 @@ void main() {
         expect(starts, 0);
         expect(ends, 0);
       });
+
+      testWidgets('leaves a layer alone that is hidden at the play time', (
+        WidgetTester tester,
+      ) async {
+        final playTime = ValueNotifier(Duration.zero);
+        addTearDown(playTime.dispose);
+        final removed = <String>[];
+        final layer = stroke()..startTime = const Duration(seconds: 1);
+        final canvasKey = await pumpEraser(
+          tester,
+          eraserMode: EraserMode.object,
+          layers: [layer],
+          onRemovePartialStart: () {},
+          onRemovePartialEnd: (_) {},
+          onRemoveLayer: removed.addAll,
+          playTimeNotifier: playTime,
+        );
+        final Offset center =
+            tester.getTopLeft(find.byKey(canvasKey)) + const Offset(500, 500);
+
+        await eraseAcross(tester, center);
+        expect(removed, isEmpty);
+
+        playTime.value = const Duration(seconds: 1);
+        await eraseAcross(tester, center);
+        expect(removed, [layer.id]);
+      });
+
+      testWidgets('meets a keyframed layer where its keyframes place it', (
+        WidgetTester tester,
+      ) async {
+        final playTime = ValueNotifier(Duration.zero);
+        addTearDown(playTime.dispose);
+        final removed = <String>[];
+        final layer = stroke()
+          ..keyframes = const [
+            LayerKeyframe(time: Duration.zero, offset: Offset(0, -200)),
+          ];
+        final canvasKey = await pumpEraser(
+          tester,
+          eraserMode: EraserMode.object,
+          layers: [layer],
+          onRemovePartialStart: () {},
+          onRemovePartialEnd: (_) {},
+          onRemoveLayer: removed.addAll,
+          playTimeNotifier: playTime,
+        );
+        final Offset center =
+            tester.getTopLeft(find.byKey(canvasKey)) + const Offset(500, 500);
+
+        // Its rest placement is empty canvas while the keyframe holds it.
+        await eraseAcross(tester, center);
+        expect(removed, isEmpty);
+
+        await eraseAcross(tester, center + const Offset(0, -200));
+        expect(removed, [layer.id]);
+      });
+
+      testWidgets('leaves a layer alone that its keyframes fade out', (
+        WidgetTester tester,
+      ) async {
+        final playTime = ValueNotifier(Duration.zero);
+        addTearDown(playTime.dispose);
+        final removed = <String>[];
+        final layer = stroke()
+          ..keyframes = const [
+            LayerKeyframe(time: Duration.zero, offset: Offset.zero, opacity: 0),
+            LayerKeyframe(time: Duration(seconds: 1), offset: Offset.zero),
+          ];
+        final canvasKey = await pumpEraser(
+          tester,
+          eraserMode: EraserMode.object,
+          layers: [layer],
+          onRemovePartialStart: () {},
+          onRemovePartialEnd: (_) {},
+          onRemoveLayer: removed.addAll,
+          playTimeNotifier: playTime,
+        );
+        final Offset center =
+            tester.getTopLeft(find.byKey(canvasKey)) + const Offset(500, 500);
+
+        await eraseAcross(tester, center);
+        expect(removed, isEmpty);
+
+        playTime.value = const Duration(seconds: 1);
+        await eraseAcross(tester, center);
+        expect(removed, [layer.id]);
+      });
     });
   });
+}
+
+/// Draws [PaintedModel.offsets] as one connected line.
+class _PolylineBuilder extends PathBuilderBase {
+  _PolylineBuilder({
+    required super.item,
+    required super.scale,
+    required super.paintEditorConfigs,
+  });
+
+  @override
+  Path build() {
+    final points = offsets.whereType<Offset>().map((o) => o * scale).toList();
+    if (points.isEmpty) return path;
+    path.moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+    return path;
+  }
 }

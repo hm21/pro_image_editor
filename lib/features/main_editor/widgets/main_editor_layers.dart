@@ -18,6 +18,7 @@ import '/shared/widgets/layer/paint_layer_raster_cache_host.dart';
 import '../main_editor.dart';
 import '../services/layer_drag_selection_service.dart';
 import '../services/main_editor_layers_service.dart';
+import '../services/paint_layer_raster_cache.dart';
 
 /// A widget that manages and displays layers in the main editor, handling
 /// interactions, configurations, and callbacks for user actions.
@@ -197,21 +198,10 @@ class _MainEditorLayersState extends State<MainEditorLayers>
   bool get _isZoomed =>
       widget.state.interactiveViewer.currentState?.isZoomed ?? false;
 
-  int _computeTimelineSignature() {
-    final playTime = widget.playTimeNotifier?.value;
-    var signature = 17;
-    for (final layer in widget.activeLayers) {
-      if (layer is! PaintLayer) continue;
-      final start = layer.startTime;
-      final end = layer.endTime;
-      final visible =
-          playTime == null ||
-          ((start == null || playTime >= start) &&
-              (end == null || playTime <= end));
-      signature = Object.hash(signature, layer.id, visible);
-    }
-    return signature;
-  }
+  int _computeTimelineSignature() => PaintLayerRasterCache.timelineSignature(
+    widget.activeLayers,
+    widget.playTimeNotifier?.value,
+  );
 
   /// The stack children, with static paint layers drawn from the cache.
   ///

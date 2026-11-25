@@ -27,6 +27,12 @@ typedef LayerTextStateRenderer =
       int? revealedLength,
     });
 
+/// Renders a paint layer's untransformed content at [pixelRatio] with its
+/// strokes drawn [drawnFraction] of the way, see
+/// `PaintLayer.drawnFractionAt`.
+typedef LayerPaintStateRenderer =
+    Future<ui.Image> Function(double pixelRatio, double drawnFraction);
+
 /// The repaint boundary a layer's content paints into — what
 /// `Layer.captureAsPng` reads through `Layer.repaintBoundaryKey`.
 ///
@@ -39,6 +45,10 @@ typedef LayerTextStateRenderer =
 /// paints whatever the playback position is on, so its capture comes from
 /// [renderContent] too, with no highlight active and the whole text shown,
 /// and [renderHighlight] and [renderTextState] draw the other states.
+///
+/// A paint layer that draws itself shows as much of its drawing as the
+/// playback position is on, so its capture comes from [renderContent] with
+/// the whole drawing, and [renderPaintState] draws the partly drawn states.
 class LayerRepaintBoundary extends RepaintBoundary {
   /// Creates the boundary for a layer's content.
   const LayerRepaintBoundary({
@@ -47,6 +57,7 @@ class LayerRepaintBoundary extends RepaintBoundary {
     this.renderContent,
     this.renderHighlight,
     this.renderTextState,
+    this.renderPaintState,
     this.captureOverflow = true,
   });
 
@@ -61,6 +72,10 @@ class LayerRepaintBoundary extends RepaintBoundary {
   /// Renders a text layer in any state its highlights and its text reveal
   /// can be in, or `null` when the layer has neither.
   final LayerTextStateRenderer? renderTextState;
+
+  /// Renders a paint layer with its strokes partly drawn, or `null` when the
+  /// layer does not draw itself (`LayerAnimationType.drawOn`).
+  final LayerPaintStateRenderer? renderPaintState;
 
   /// Whether a capture includes the text a box shows past itself, see
   /// [RenderLayerRepaintBoundary.captureBounds].

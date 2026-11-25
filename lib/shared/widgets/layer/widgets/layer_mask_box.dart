@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 // Flutter imports:
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -15,17 +16,39 @@ import '/core/models/layers/layer_mask.dart';
 /// child paints, including a video [Texture] and other composited layers:
 /// a hard edge is a path clip, a [LayerMask.feather]ed one a shader mask.
 ///
+/// A mask with [LayerMask.keyframes] changes as [playTime] moves, read
+/// [keyframeOrigin] after its start (see [LayerMask.at]). Without [playTime]
+/// it shows as it is at its start.
+///
 /// With [mask] `null` the child paints as it is.
 class LayerMaskBox extends SingleChildRenderObjectWidget {
   /// Creates a [LayerMaskBox].
-  const LayerMaskBox({super.key, required this.mask, super.child});
+  const LayerMaskBox({
+    super.key,
+    required this.mask,
+    this.playTime,
+    this.keyframeOrigin = Duration.zero,
+    super.child,
+  });
 
   /// The mask to show [child] through, or `null` to show all of it.
   final LayerMask? mask;
 
+  /// The video position the [LayerMask.keyframes] of [mask] are read at, or
+  /// `null` outside a video.
+  final ValueListenable<Duration>? playTime;
+
+  /// The video position the [LayerMask.keyframes] of [mask] are measured
+  /// from, such as the masked layer's `Layer.keyframeOrigin`.
+  final Duration keyframeOrigin;
+
   @override
   RenderLayerMaskBox createRenderObject(BuildContext context) {
-    return RenderLayerMaskBox(mask: mask);
+    return RenderLayerMaskBox(
+      mask: mask,
+      playTime: playTime,
+      keyframeOrigin: keyframeOrigin,
+    );
   }
 
   @override
@@ -33,7 +56,10 @@ class LayerMaskBox extends SingleChildRenderObjectWidget {
     BuildContext context,
     RenderLayerMaskBox renderObject,
   ) {
-    renderObject.mask = mask;
+    renderObject
+      ..mask = mask
+      ..playTime = playTime
+      ..keyframeOrigin = keyframeOrigin;
   }
 }
 
@@ -47,14 +73,27 @@ class LayerMaskBox extends SingleChildRenderObjectWidget {
 /// the child is drawn on screen and reused until the mask, the box size or
 /// the needed resolution changes. A soft edge stays smooth when that image
 /// is scaled up for a capture.
+///
+/// A mask with keyframes is drawn as it is at [playTime], and repainted
+/// whenever that changes what it shows; it is never rebuilt for it.
 class RenderLayerMaskBox extends RenderProxyBox {
   /// Creates a [RenderLayerMaskBox].
-  RenderLayerMaskBox({LayerMask? mask, RenderBox? child})
-    : // The setter drops the cached mask, so the field stays private and the
-      // parameter cannot initialize it directly.
-      // ignore: prefer_initializing_formals
-      _mask = mask,
-      super(child);
+  RenderLayerMaskBox({
+    LayerMask? mask,
+    ValueListenable<Duration>? playTime,
+    Duration keyframeOrigin = Duration.zero,
+    RenderBox? child,
+  }) : // The setters drop the cached mask, so the fields stay private and the
+       // parameters cannot initialize them directly.
+       // ignore: prefer_initializing_formals
+       _mask = mask,
+       // ignore: prefer_initializing_formals
+       _playTime = playTime,
+       // ignore: prefer_initializing_formals
+       _keyframeOrigin = keyframeOrigin,
+       super(child) {
+    _shown = _resolve();
+  }
 
   /// The longest side, in pixels, a mask image is rendered at.
   ///
@@ -68,16 +107,74 @@ class RenderLayerMaskBox extends RenderProxyBox {
   LayerMask? get mask => _mask;
   set mask(LayerMask? value) {
     if (value == _mask) return;
-    final wasSoft = _isSoft;
     _mask = value;
+    _show(_resolve());
+  }
+
+  ValueListenable<Duration>? _playTime;
+
+  /// The video position a [mask] with keyframes is drawn at.
+  ValueListenable<Duration>? get playTime => _playTime;
+  set playTime(ValueListenable<Duration>? value) {
+    if (value == _playTime) return;
+    if (attached) _playTime?.removeListener(_onPlayTimeChanged);
+    _playTime = value;
+    if (attached) _playTime?.addListener(_onPlayTimeChanged);
+    _show(_resolve());
+  }
+
+  Duration _keyframeOrigin;
+
+  /// The video position the keyframes of [mask] are measured from.
+  Duration get keyframeOrigin => _keyframeOrigin;
+  set keyframeOrigin(Duration value) {
+    if (value == _keyframeOrigin) return;
+    _keyframeOrigin = value;
+    _show(_resolve());
+  }
+
+  /// The still mask drawn now: [mask] at [playTime].
+  LayerMask? _shown;
+
+  /// The still mask [mask] makes at [playTime].
+  LayerMask? _resolve() {
+    final mask = _mask;
+    if (mask == null || !mask.hasKeyframes) return mask;
+    final time = _playTime?.value;
+    return mask.at(time == null ? Duration.zero : time - _keyframeOrigin);
+  }
+
+  /// Draws [shown] from the next frame on, if it differs from what shows.
+  void _show(LayerMask? shown) {
+    if (shown == _shown) return;
+    final wasSoft = _isSoft;
+    _shown = shown;
     _disposeImage();
     _area = null;
     if (wasSoft != _isSoft) markNeedsCompositingBitsUpdate();
     markNeedsPaint();
   }
 
+  void _onPlayTimeChanged() {
+    if (_mask?.hasKeyframes ?? false) _show(_resolve());
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _playTime?.addListener(_onPlayTimeChanged);
+    // The position may have moved while the box was detached.
+    _show(_resolve());
+  }
+
+  @override
+  void detach() {
+    _playTime?.removeListener(_onPlayTimeChanged);
+    super.detach();
+  }
+
   /// Whether the mask has a soft edge and so is applied as a shader mask.
-  bool get _isSoft => (_mask?.feather ?? 0) > 0;
+  bool get _isSoft => (_shown?.feather ?? 0) > 0;
 
   ui.Image? _image;
   Size _imageSize = Size.zero;
@@ -150,7 +247,7 @@ class RenderLayerMaskBox extends RenderProxyBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    final mask = _mask;
+    final mask = _shown;
     if (child == null || mask == null || size.isEmpty) {
       layer = null;
       super.paint(context, offset);

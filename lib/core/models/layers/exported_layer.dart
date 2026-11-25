@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import 'layer.dart';
+import 'paint_layer_timeline.dart';
 import 'text_layer_timeline.dart';
 
 /// Contains one exported layer with its encoded bytes and layout metadata.
@@ -12,9 +13,12 @@ class ExportedLayer {
     required this.layer,
     required this.bytes,
     required this.logicalSize,
+    Size? boxSize,
     this.highlightBytes = const {},
     this.revealBytes = const {},
-  });
+    this.drawOnBytes = const {},
+    this.drawOnFrameRate = 30,
+  }) : boxSize = boxSize ?? logicalSize;
 
   /// The source layer that was exported.
   final Layer layer;
@@ -37,6 +41,15 @@ class ExportedLayer {
   /// the same amount on opposite sides, so it stays centered on the layer.
   final Size logicalSize;
 
+  /// The logical size of the captured layer before it is turned; for a layer
+  /// with a [Layer.mask], the box the mask is measured in.
+  ///
+  /// The same as [logicalSize] unless the layer was captured with its
+  /// rotation applied, which makes [logicalSize] the box around the turned
+  /// layer. A renderer that applies a mask itself, such as one with
+  /// [LayerMask.keyframes], places it in the captured image with this.
+  final Size boxSize;
+
   /// Encoded images of a [TextLayer] with one of its [TextLayer.highlights]
   /// active, keyed by the highlight's index. Every image has the size of
   /// [bytes], so it can stand in for it at the same position.
@@ -54,10 +67,25 @@ class ExportedLayer {
   /// which image shows when.
   final Map<ExportedTextState, Uint8List> revealBytes;
 
+  /// Encoded images of a [PaintLayer] whose strokes are only partly drawn by
+  /// a [LayerAnimationType.drawOn] animation, keyed by how much of the
+  /// drawing each one shows (see [PaintLayer.drawnFractionAt]). Every image
+  /// has the size of [bytes], which holds the whole drawing.
+  ///
+  /// Empty for a layer without such an animation. Use [frames] to find out
+  /// which image shows when.
+  final Map<double, Uint8List> drawOnBytes;
+
+  /// The frame rate [drawOnBytes] were captured at, see
+  /// `ImageGenerationConfigs.drawOnFrameRate`: while the drawing draws
+  /// itself, [frames] holds one image per frame of a video at this rate.
+  final int drawOnFrameRate;
+
   /// The images to show over the layer's time range, in order and without
   /// gaps: an image from [revealBytes] while the text is partly revealed,
-  /// one from [highlightBytes] while a highlight is active, and [bytes] the
-  /// rest of the time.
+  /// one from [highlightBytes] while a highlight is active, one from
+  /// [drawOnBytes] while a drawing is partly drawn, and [bytes] the rest of
+  /// the time.
   ///
   /// The first frame starts at the layer's [Layer.startTime] and the last one
   /// ends at its [Layer.endTime]; either is `null` when the layer has none.
@@ -70,13 +98,18 @@ class ExportedLayer {
   /// the layer's animations together with its range as
   /// `ImageLayer.animationStartTime` and `ImageLayer.animationEndTime`.
   ///
-  /// A reveal is cut into frames at a resolution of one millisecond. A
-  /// [AnimationPhase.loop] reveal on a layer without an [Layer.endTime]
-  /// cannot be cut, as it never ends, and shows its whole text.
+  /// A reveal is cut into frames at a resolution of one millisecond, a
+  /// drawing that draws itself at the frames of a video at
+  /// [drawOnFrameRate]. A [AnimationPhase.loop] reveal or draw-on on a layer
+  /// without an [Layer.endTime] cannot be cut, as it never ends, and shows
+  /// the whole text or drawing.
   List<ExportedLayerFrame> get frames {
     final layer = this.layer;
     final start = layer.startTime;
     final end = layer.endTime;
+    if (layer is PaintLayer && drawOnBytes.isNotEmpty) {
+      return _drawOnFrames(layer);
+    }
     if (layer is! TextLayer ||
         (highlightBytes.isEmpty && revealBytes.isEmpty)) {
       return [ExportedLayerFrame(bytes: bytes, startTime: start, endTime: end)];
@@ -93,6 +126,26 @@ class ExportedLayer {
       reveals: revealBytes.isNotEmpty,
     )) {
       final frameBytes = _bytesFor(span.state);
+      if (frames.isNotEmpty && identical(frames.last.bytes, frameBytes)) {
+        frames.last = frames.last._extendedTo(span.endTime);
+      } else {
+        frames.add(
+          ExportedLayerFrame(
+            bytes: frameBytes,
+            startTime: span.startTime,
+            endTime: span.endTime,
+          ),
+        );
+      }
+    }
+    return frames;
+  }
+
+  List<ExportedLayerFrame> _drawOnFrames(PaintLayer layer) {
+    final frames = <ExportedLayerFrame>[];
+    for (final span in paintLayerTimeline(layer, frameRate: drawOnFrameRate)) {
+      final drawn = span.drawnFraction;
+      final frameBytes = drawn == null ? bytes : drawOnBytes[drawn] ?? bytes;
       if (frames.isNotEmpty && identical(frames.last.bytes, frameBytes)) {
         frames.last = frames.last._extendedTo(span.endTime);
       } else {

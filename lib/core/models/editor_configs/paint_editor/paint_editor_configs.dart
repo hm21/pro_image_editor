@@ -13,6 +13,7 @@ import 'censor_configs.dart';
 
 export '/features/paint_editor/models/path_builder/custom_path_builder.dart';
 export '/features/paint_editor/models/path_builder/path_builder_base.dart';
+export '/features/paint_editor/models/path_builder/path_builder_freestyle.dart';
 export '../../custom_widgets/paint_editor_widgets.dart';
 export '../../icons/paint_editor_icons.dart';
 export '../../styles/paint_editor_style.dart';
@@ -43,6 +44,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.enableGesturePop = true,
     this.enableEdit = true,
     this.enableKeyboardShortcuts = true,
+    this.mergeNewLayersOnDone = false,
     this.tools = const [
       PaintMode.moveAndZoom,
       PaintMode.freeStyle,
@@ -87,6 +89,7 @@ class PaintEditorConfigs extends ZoomConfigs
     this.icons = const PaintEditorIcons(),
     this.widgets = const PaintEditorWidgets(),
     this.customPathBuilders = const {},
+    this.freeStyleCustomModes = const {},
   }) : assert(
          maxScale >= minScale,
          'maxScale must be greater than or equal to minScale',
@@ -136,6 +139,22 @@ class PaintEditorConfigs extends ZoomConfigs
   /// Individual events can also be intercepted with
   /// [PaintEditorCallbacks.onKeyboardEvent].
   final bool enableKeyboardShortcuts;
+
+  /// Whether the strokes drawn in one paint editor session are returned as a
+  /// single [PaintLayer] when the editor closes, instead of one layer per
+  /// stroke.
+  ///
+  /// The new layers are merged with [PaintLayerMergeManager.merge], so the
+  /// drawing looks the same and can be moved, scaled and timed as one. A
+  /// censor area (blur or pixelate) stays a layer of its own and splits the
+  /// strokes drawn before it from those drawn after it, which keeps the
+  /// stacking order. Layers that existed before the editor opened, such as
+  /// one the eraser changed, are returned as they are.
+  ///
+  /// Use [PaintLayerSplitManager.split] or
+  /// [ProImageEditorState.splitSelectedLayers] to break a drawing back into
+  /// its strokes. Defaults to `false`.
+  final bool mergeNewLayersOnDone;
 
   /// Defines which paint tools are available in the editor.
   ///
@@ -310,6 +329,33 @@ class PaintEditorConfigs extends ZoomConfigs
   /// ```
   final Map<PaintMode, CustomPathBuilderFactory> customPathBuilders;
 
+  /// The custom paint modes that record every point of a drag, like
+  /// [PaintMode.freeStyle], instead of only its start and end.
+  ///
+  /// Only [PaintMode.custom1], [PaintMode.custom2] and [PaintMode.custom3]
+  /// take effect; their [customPathBuilders] then receive the whole stroke in
+  /// [PaintedModel.offsets], so they can draw brushes rather than shapes.
+  ///
+  /// A brush can extend [PathBuilderFreestyle] to reuse its path and its hit
+  /// test, which runs once per point instead of along the drawn length. One
+  /// that overrides [PathBuilderBase.draw] with several draw calls paints them
+  /// through [PathBuilderBase.drawInLayer], so the eraser clears all of them.
+  ///
+  /// Example:
+  /// ```dart
+  /// PaintEditorConfigs(
+  ///   customPathBuilders: {PaintMode.custom1: NeonBrushBuilder.new},
+  ///   freeStyleCustomModes: {PaintMode.custom1},
+  /// )
+  /// ```
+  final Set<PaintMode> freeStyleCustomModes;
+
+  /// Whether [mode] records every point of a drag: one of the built-in
+  /// freehand modes or a mode in [freeStyleCustomModes].
+  bool isFreeStyleMode(PaintMode mode) =>
+      mode.isFreeStyleMode ||
+      (mode.isCustomMode && freeStyleCustomModes.contains(mode));
+
   /// Creates a copy of this `PaintEditorConfigs` object with the given fields
   /// replaced with new values.
   ///
@@ -321,6 +367,7 @@ class PaintEditorConfigs extends ZoomConfigs
     bool? enableGesturePop,
     bool? enableEdit,
     bool? enableKeyboardShortcuts,
+    bool? mergeNewLayersOnDone,
     bool? showToggleFillButton,
     bool? showLineWidthAdjustmentButton,
     bool? showOpacityAdjustmentButton,
@@ -360,6 +407,7 @@ class PaintEditorConfigs extends ZoomConfigs
     double? dashDotLineSpacingFactor,
     double? dashDotLineWidthFactor,
     Map<PaintMode, CustomPathBuilderFactory>? customPathBuilders,
+    Set<PaintMode>? freeStyleCustomModes,
   }) {
     return PaintEditorConfigs(
       layerFractionalOffset:
@@ -368,6 +416,7 @@ class PaintEditorConfigs extends ZoomConfigs
       enableEdit: enableEdit ?? this.enableEdit,
       enableKeyboardShortcuts:
           enableKeyboardShortcuts ?? this.enableKeyboardShortcuts,
+      mergeNewLayersOnDone: mergeNewLayersOnDone ?? this.mergeNewLayersOnDone,
       tools: tools ?? this.tools,
       showToggleFillButton: showToggleFillButton ?? this.showToggleFillButton,
       showLineWidthAdjustmentButton:
@@ -417,6 +466,7 @@ class PaintEditorConfigs extends ZoomConfigs
       dashDotLineWidthFactor:
           dashDotLineWidthFactor ?? this.dashDotLineWidthFactor,
       customPathBuilders: customPathBuilders ?? this.customPathBuilders,
+      freeStyleCustomModes: freeStyleCustomModes ?? this.freeStyleCustomModes,
     );
   }
 }

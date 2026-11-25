@@ -363,6 +363,7 @@ class FilterEditorState extends State<FilterEditor>
                       layers: layers!,
                       clipBehavior: Clip.none,
                       overlayColor: filterEditorConfigs.style.background,
+                      playTimeNotifier: videoController?.playTimeNotifier,
                     ),
                   if (filterEditorConfigs.widgets.bodyItemsRecorded != null)
                     ...filterEditorConfigs.widgets.bodyItemsRecorded!(

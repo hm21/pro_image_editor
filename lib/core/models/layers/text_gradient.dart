@@ -67,14 +67,31 @@ class TextGradient {
   /// touch the corners of [rect], so its first and last colors reach the
   /// corners whatever the direction.
   ui.Shader createShader(Rect rect) {
+    final (:start, :end) = endpointsIn(rect);
+    return shaderBetween(start, end);
+  }
+
+  /// Where the gradient starts and ends when [createShader] spreads it
+  /// across [rect].
+  ({Offset start, Offset end}) endpointsIn(Rect rect) {
     final direction = Offset(math.cos(angle), math.sin(angle));
     final halfLength =
         (rect.width * direction.dx.abs() + rect.height * direction.dy.abs()) /
         2;
     final reach = direction * halfLength;
+    return (start: rect.center - reach, end: rect.center + reach);
+  }
+
+  /// A shader that paints the gradient from [start] to [end], ignoring
+  /// [angle].
+  ///
+  /// Moving, turning or evenly scaling both points along with whatever they
+  /// were measured on moves the gradient the same way, so a gradient laid
+  /// out for one space can be painted in another.
+  ui.Shader shaderBetween(Offset start, Offset end) {
     return ui.Gradient.linear(
-      rect.center - reach,
-      rect.center + reach,
+      start,
+      end,
       colors,
       // The engine only spaces two colors by itself.
       stops ??

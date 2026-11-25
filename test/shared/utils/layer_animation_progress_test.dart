@@ -140,6 +140,65 @@ void main() {
       expect(at(1000), const LayerAnimationProgress(1));
     });
 
+    test('turns a spin into place the way it turns away', () {
+      const spin = LayerAnimation(
+        type: LayerAnimationType.spin,
+        phase: AnimationPhase.animateInOut,
+        duration: Duration(seconds: 1),
+        turns: 2,
+      );
+      double turn(int t) => layerAnimationProgress(
+        spin,
+        ms(t),
+        start: Duration.zero,
+        end: ms(5000),
+      )!.turn;
+      // Two turns back at the start, up to rest, and on beyond it at the end:
+      // clockwise throughout.
+      expect(turn(0), -2);
+      expect(turn(750), -0.5);
+      expect(turn(4250), 0.5);
+      expect(turn(5000), 2);
+    });
+
+    test('keeps a spin turning on in a loop', () {
+      const spin = LayerAnimation(
+        type: LayerAnimationType.spin,
+        phase: AnimationPhase.loop,
+        duration: Duration(seconds: 1),
+        turns: 0.25,
+      );
+      double turn(int t) =>
+          layerAnimationProgress(spin, ms(t), start: null, end: null)!.turn;
+      expect(turn(0), 0);
+      expect(turn(500), 0.125);
+      // A quarter turn per cycle, picking up where the last cycle stopped.
+      expect(turn(1500), 0.375);
+      // Whole turns are taken off.
+      expect(turn(4500), 0.125);
+    });
+
+    test('eases a flip over each cycle of a loop', () {
+      final flip = LayerAnimation(
+        type: LayerAnimationType.flip,
+        phase: AnimationPhase.loop,
+        duration: ms(1000),
+        curve: AnimationCurve.easeIn,
+      );
+      expect(
+        layerAnimationProgress(flip, ms(2500), start: null, end: null),
+        const LayerAnimationProgress(1, turn: 0.25),
+      );
+    });
+
+    test('does not turn any other type', () {
+      final fade = animation(LayerAnimationType.fade, AnimationPhase.animateIn);
+      expect(
+        layerAnimationProgress(fade, ms(0), start: null, end: null)!.turn,
+        0,
+      );
+    });
+
     test('does not play without a duration', () {
       const wiggle = LayerAnimation(
         type: LayerAnimationType.wiggle,

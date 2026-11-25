@@ -499,7 +499,15 @@ class LayerInteractionManager {
   /// Snap may rewrite [Layer.offset] for display; this value keeps accumulating
   /// the finger/mouse delta so release can be measured from the intended
   /// position rather than the glued snapped position.
+  ///
+  /// It is also where [LayerInteraction.bounds] measure a layer from, so it
+  /// follows the finger again once the finger is back, and where a pinch
+  /// found it, so it moves back once it is small enough again.
   final Map<String, Offset> _unconstrainedOffsets = {};
+
+  /// The size of each layer with [LayerInteraction.bounds] at a scale of 1,
+  /// measured by [measureLayerSizes] when the running gesture started.
+  final Map<String, Size> _unitSizes = {};
 
   /// Optional override for helper line configuration at runtime.
   ///
@@ -853,7 +861,11 @@ class LayerInteractionManager {
       /// transformed using a single layer interaction button.
       if (activeInteractionLayer?.id != layer.id) continue;
 
-      Offset layerOffset = layer.offset;
+      // Turned around where the gesture found the layer, which its bounds
+      // may have pushed it away from since.
+      Offset layerOffset = layer.interaction.bounds != null
+          ? _unconstrainedOffsets[layer.id] ?? layer.offset
+          : layer.offset;
 
       Offset realTouchPosition =
           (details.localFocalPoint - editorScaleOffset) / editorScaleFactor;
@@ -900,6 +912,8 @@ class LayerInteractionManager {
           editorScaleFactor: editorScaleFactor,
         );
       }
+
+      _keepTransformedLayerInBounds(layer, editorSize);
     }
   }
 
@@ -940,6 +954,11 @@ class LayerInteractionManager {
             (_unconstrainedOffsets[layer.id] ?? layer.offset) + pointerDelta;
         _unconstrainedOffsets[layer.id] = intended;
         layer.offset = intended;
+      } else if (layer.interaction.bounds != null) {
+        // Moved on from where the finger put it rather than from where its
+        // bounds stopped it.
+        layer.offset =
+            (_unconstrainedOffsets[layer.id] ?? layer.offset) + pointerDelta;
       } else {
         layer.offset = Offset(
           layer.offset.dx + pointerDelta.dx,
@@ -950,6 +969,7 @@ class LayerInteractionManager {
       if (hasMultiSelection ||
           (editorScaleFactor > 1 && helperLineConfigs.isDisabledAtZoom) ||
           _excludePaintFromLayerAlign(layer)) {
+        _keepMovedLayerInBounds(layer, editorBodySize);
         continue;
       }
 
@@ -1187,6 +1207,7 @@ class LayerInteractionManager {
             );
           }
         }
+        _keepTransformedLayerInBounds(layer, editorSize);
       }
     }
 
@@ -1269,6 +1290,7 @@ class LayerInteractionManager {
 
     for (Layer layer in selectedLayers) {
       _unconstrainedOffsets[layer.id] = layer.offset;
+      if (!_unitSizes.containsKey(layer.id)) measureLayerSizes([layer]);
       _baseScaleFactor[layer.id] = layer.scale;
       _baseAngleFactor[layer.id] = layer.rotation;
       _snapStartRotation[layer.id] = layer.rotation * 180 / pi;
@@ -1326,6 +1348,7 @@ class LayerInteractionManager {
     _heldAlignXTargets.clear();
     _heldAlignYTargets.clear();
     _unconstrainedOffsets.clear();
+    _unitSizes.clear();
   }
 
   /// Rotate a layer.
@@ -1439,27 +1462,190 @@ class LayerInteractionManager {
   }
 
   void _setMinMaxScaleFactor(ProImageEditorConfigs configs, Layer layer) {
-    if (layer is PaintLayer) {
-      layer.scale = layer.scale.clamp(
+    final (minScale, maxScale) = _scaleLimits(configs, layer);
+    layer.scale = layer.scale.clamp(minScale, maxScale);
+  }
+
+  /// The smallest and the largest scale a gesture may give [layer]: the
+  /// limits of its [LayerInteraction], or else those of its type.
+  (double, double) _scaleLimits(ProImageEditorConfigs configs, Layer layer) {
+    final (typeMin, typeMax) = switch (layer) {
+      PaintLayer() => (
         configs.paintEditor.minScale,
         configs.paintEditor.maxScale,
-      );
-    } else if (layer is TextLayer) {
-      layer.scale = layer.scale.clamp(
-        configs.textEditor.minScale,
-        configs.textEditor.maxScale,
-      );
-    } else if (layer is EmojiLayer) {
-      layer.scale = layer.scale.clamp(
+      ),
+      TextLayer() => (configs.textEditor.minScale, configs.textEditor.maxScale),
+      EmojiLayer() => (
         configs.emojiEditor.minScale,
         configs.emojiEditor.maxScale,
-      );
-    } else if (layer is WidgetLayer) {
-      layer.scale = layer.scale.clamp(
+      ),
+      WidgetLayer() => (
         configs.stickerEditor.minScale,
         configs.stickerEditor.maxScale,
-      );
+      ),
+      _ => (double.negativeInfinity, double.infinity),
+    };
+    final interaction = layer.interaction;
+    var minScale = interaction.minScale ?? typeMin;
+    var maxScale = interaction.maxScale ?? typeMax;
+    // A limit of the layer wins over the one of its type it crosses.
+    if (minScale > maxScale) {
+      if (interaction.maxScale == null) {
+        maxScale = minScale;
+      } else {
+        minScale = maxScale;
+      }
     }
+    return (minScale, maxScale);
+  }
+
+  /// Remembers how large [layers] are laid out now, so their
+  /// [LayerInteraction.bounds] can hold them at any scale and rotation a
+  /// gesture gives them before they are laid out again.
+  ///
+  /// The editor calls this when a gesture starts, before the history step it
+  /// adds copies the layers, as the copies are laid out only a frame later.
+  /// The sizes are kept until [onScaleEnd]. Layers without bounds are
+  /// skipped.
+  void measureLayerSizes(Iterable<Layer> layers) {
+    for (final layer in layers) {
+      if (layer.interaction.bounds == null) continue;
+      final size = layer.renderSize;
+      if (size == null || size.isEmpty || layer.scale <= 0) continue;
+      _unitSizes[layer.id] = size / layer.scale;
+    }
+  }
+
+  /// Keeps [layer] within the limits of its [Layer.interaction]: scales it
+  /// into [LayerInteraction.minScale] and [LayerInteraction.maxScale], and
+  /// moves it inside [LayerInteraction.bounds], shrinking it first when it is
+  /// larger than they are.
+  ///
+  /// The gestures of the editor keep layers within their limits on their
+  /// own. Call this after changing a layer from code to do the same, such as
+  /// after adding one once it is laid out: the bounds measure the layer from
+  /// its layout, so a layer that is not laid out yet is only scaled.
+  /// [editorBodySize] is the size of the main editor's body, which the
+  /// bounds are measured in. [laidOutScale] is the scale the layer was laid
+  /// out at, when its scale changed since; it defaults to its scale.
+  void applyLayerLimits(
+    Layer layer, {
+    required Size editorBodySize,
+    double? laidOutScale,
+  }) {
+    final interaction = layer.interaction;
+    if (interaction.minScale case final minScale? when layer.scale < minScale) {
+      layer.scale = minScale;
+    }
+    if (interaction.maxScale case final maxScale? when layer.scale > maxScale) {
+      layer.scale = maxScale;
+    }
+    _keepInsideBounds(layer, editorBodySize, laidOutScale: laidOutScale);
+  }
+
+  /// Keeps [layer], which a drag moved, inside its [LayerInteraction.bounds]
+  /// and returns how far they moved it.
+  ///
+  /// The place the drag put it is kept, so the next step of the drag moves
+  /// on from there; with smart alignment it is kept already. A canvas helper
+  /// line the layer was snapped to is hidden once the bounds move it off.
+  Offset _keepMovedLayerInBounds(Layer layer, Size editorBodySize) {
+    if (layer.interaction.bounds == null) return Offset.zero;
+    if (!helperLineConfigs.enableSmartAlignment) {
+      _unconstrainedOffsets[layer.id] = layer.offset;
+    }
+    final shift = _keepInsideBounds(layer, editorBodySize);
+    if (shift.dx != 0) showVerticalHelperLine = false;
+    if (shift.dy != 0) showHorizontalHelperLine = false;
+    return shift;
+  }
+
+  /// Keeps [layer], which a pinch or the scale button scaled or rotated,
+  /// inside its [LayerInteraction.bounds].
+  ///
+  /// It is placed where the gesture found it first, so it moves back once it
+  /// is small enough again, and the rotation helper line moves with it.
+  void _keepTransformedLayerInBounds(Layer layer, Size editorBodySize) {
+    if (layer.interaction.bounds == null) return;
+    // Where the previous step left it, which the rotation helper line was
+    // placed at.
+    final shownOffset = layer.offset;
+    layer.offset = _unconstrainedOffsets[layer.id] ?? layer.offset;
+    _keepInsideBounds(layer, editorBodySize);
+    if (showRotationHelperLine) {
+      rotationHelperLineX += layer.offset.dx - shownOffset.dx;
+      rotationHelperLineY += layer.offset.dy - shownOffset.dy;
+    }
+  }
+
+  /// Moves [layer] inside its [LayerInteraction.bounds], after shrinking it
+  /// to their size when it is larger, though not below its smallest scale,
+  /// and returns how far it moved.
+  ///
+  /// The layer covers the box it is drawn in at its scale, turned by its
+  /// rotation. That box is measured by [measureLayerSizes] for a running
+  /// gesture, or else from the layer's layout at [laidOutScale]. Does nothing
+  /// for a layer without bounds, or before it or the body is laid out.
+  Offset _keepInsideBounds(
+    Layer layer,
+    Size editorBodySize, {
+    double? laidOutScale,
+  }) {
+    final boundsOf = layer.interaction.bounds;
+    if (boundsOf == null ||
+        editorBodySize.isEmpty ||
+        !editorBodySize.isFinite) {
+      return Offset.zero;
+    }
+    var unitSize = _unitSizes[layer.id];
+    if (unitSize == null) {
+      final size = layer.renderSize;
+      final scale = laidOutScale ?? layer.scale;
+      if (size == null || size.isEmpty || scale <= 0) return Offset.zero;
+      unitSize = size / scale;
+    }
+    final bounds = boundsOf(editorBodySize);
+
+    final unitCover = _rotatedBoundingSize(unitSize, layer.rotation);
+    if (!bounds.isEmpty && unitCover.width > 0 && unitCover.height > 0) {
+      final fitScale = min(
+        bounds.width / unitCover.width,
+        bounds.height / unitCover.height,
+      );
+      if (layer.scale > fitScale) {
+        layer.scale = max(fitScale, _scaleLimits(configs, layer).$1);
+      }
+    }
+
+    final size = unitSize * layer.scale;
+    final cover = _rotatedBoundingSize(size, layer.rotation);
+    final fractionalOffset = _getFractionalLayerOffset(layer);
+    final center =
+        editorBodySize.center(layer.offset) +
+        Offset(
+          size.width * (fractionalOffset.dx + 0.5),
+          size.height * (fractionalOffset.dy + 0.5),
+        );
+
+    double keepInside(
+      double center,
+      double halfLength,
+      double from,
+      double to,
+    ) {
+      // Centered along a side it does not fit.
+      if (to - from <= halfLength * 2) return (from + to) / 2;
+      return center.clamp(from + halfLength, to - halfLength);
+    }
+
+    final shift = Offset(
+      keepInside(center.dx, cover.width / 2, bounds.left, bounds.right) -
+          center.dx,
+      keepInside(center.dy, cover.height / 2, bounds.top, bounds.bottom) -
+          center.dy,
+    );
+    if (shift != Offset.zero) layer.offset += shift;
+    return shift;
   }
 
   void _updateAlignmentGuides({
@@ -1472,7 +1658,10 @@ class LayerInteractionManager {
   }) {
     final showLayerAlign = helperLineConfigs.showLayerAlignLine;
     final customGuides = helperLineConfigs.customGuides;
-    if (!showLayerAlign && customGuides.isEmpty) return;
+    if (!showLayerAlign && customGuides.isEmpty) {
+      _keepMovedLayerInBounds(activeLayer, editorBodySize);
+      return;
+    }
 
     final snapThreshold = 3.0 / editorScaleFactor;
     final releaseThreshold = helperLineConfigs.releaseThreshold;
@@ -1712,6 +1901,12 @@ class LayerInteractionManager {
         matchedY.position - matchedYAnchor!.localOffset,
       );
     }
+
+    // The bounds win over a guide: one the layer cannot stay on is not
+    // shown, and it does not signal a hit on every step of the drag.
+    final boundsShift = _keepMovedLayerInBounds(activeLayer, editorBodySize);
+    if (boundsShift.dx != 0) isVerticalGuideVisible = false;
+    if (boundsShift.dy != 0) isHorizontalGuideVisible = false;
 
     // Notify UI only if something changed
     final hasChanged =

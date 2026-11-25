@@ -161,4 +161,78 @@ void main() {
     expect(state.mergeSelectedLayers(), isNull);
     expect(state.activeLayers.length, 1);
   });
+
+  testWidgets('splits a merged layer back in place as one undo entry', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+
+    final below = buildPaintLayer(const Offset(0, -60));
+    final layerA = buildPaintLayer(const Offset(-40, 0));
+    final layerB = buildPaintLayer(const Offset(40, 0));
+    final above = buildPaintLayer(const Offset(0, 60));
+    for (final layer in [below, layerA, layerB, above]) {
+      state.addLayer(
+        layer,
+        autoCorrectZoomOffset: false,
+        autoCorrectZoomScale: false,
+      );
+    }
+    await tester.pump();
+    selectAll(state, [layerA, layerB]);
+    final merged = state.mergeSelectedLayers()!;
+    await tester.pump();
+
+    selectAll(state, [merged]);
+    expect(state.canSplitSelectedLayers, isTrue);
+    final historyLengthBefore = state.stateHistory.length;
+    final parts = state.splitSelectedLayers();
+    await tester.pump();
+
+    expect(parts, hasLength(2));
+    expect(state.stateHistory.length, historyLengthBefore + 1);
+    // The parts take the merged layer's place, between the two others.
+    expect(state.activeLayers.map((layer) => layer.id), [
+      below.id,
+      parts[0].id,
+      parts[1].id,
+      above.id,
+    ]);
+    expect(parts[0].offset.dx, closeTo(-40, 1e-6));
+    expect(parts[1].offset.dx, closeTo(40, 1e-6));
+    expect(state.layerInteractionManager.selectedLayerIds, {
+      parts[0].id,
+      parts[1].id,
+    });
+
+    state.undoAction();
+    await tester.pump();
+
+    expect(state.activeLayers.map((layer) => layer.id), [
+      below.id,
+      merged.id,
+      above.id,
+    ]);
+  });
+
+  testWidgets('splitSelectedLayers leaves a single stroke alone', (
+    tester,
+  ) async {
+    final state = await pumpEditor(tester);
+
+    final layerA = buildPaintLayer(const Offset(-40, 0));
+    state.addLayer(
+      layerA,
+      autoCorrectZoomOffset: false,
+      autoCorrectZoomScale: false,
+    );
+    await tester.pump();
+
+    selectAll(state, [layerA]);
+    final historyLengthBefore = state.stateHistory.length;
+    expect(state.canSplitSelectedLayers, isFalse);
+    expect(state.splitSelectedLayers(), isEmpty);
+    expect(state.stateHistory.length, historyLengthBefore);
+    expect(state.activeLayers.single.id, layerA.id);
+  });
 }

@@ -42,6 +42,7 @@ Widget _layerStack(
   List<Layer> layers, {
   bool enableCache = true,
   bool suspend = false,
+  ValueNotifier<Duration>? playTimeNotifier,
 }) {
   return LayerStack(
     configs: ProImageEditorConfigs(
@@ -55,6 +56,7 @@ Widget _layerStack(
       mainImageSize: _body,
     ),
     suspendPaintLayerRasterCache: suspend,
+    playTimeNotifier: playTimeNotifier,
   );
 }
 
@@ -63,11 +65,13 @@ Widget _stack(
   bool enableCache = true,
   bool suspend = false,
   ContentRecorderController? recorder,
+  ValueNotifier<Duration>? playTimeNotifier,
 }) {
   Widget stack = _layerStack(
     layers,
     enableCache: enableCache,
     suspend: suspend,
+    playTimeNotifier: playTimeNotifier,
   );
   if (recorder != null) {
     stack = ContentRecorder(
@@ -121,6 +125,27 @@ void main() {
 
       expect(_cachedFlags(tester), [true, true]);
       expect(find.byType(PaintRunImage), findsOneWidget);
+    });
+
+    testWidgets('stops drawing a layer from the image once playback hides it', (
+      tester,
+    ) async {
+      final playTime = ValueNotifier(const Duration(milliseconds: 500));
+      addTearDown(playTime.dispose);
+      final layer = _stroke(Offset.zero)
+        ..startTime = Duration.zero
+        ..endTime = const Duration(seconds: 1);
+      await tester.pumpWidget(_stack([layer], playTimeNotifier: playTime));
+      await _pumpUntilCached(tester);
+      expect(_cachedFlags(tester), [true]);
+
+      playTime.value = const Duration(seconds: 2);
+      await tester.pump();
+
+      // The image would keep showing the strokes; live, the layer's timeline
+      // hides them.
+      expect(_cachedFlags(tester), [false]);
+      expect(find.byType(PaintRunImage), findsNothing);
     });
 
     testWidgets('stays live while suspended', (tester) async {

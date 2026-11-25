@@ -10,6 +10,7 @@ class DrawPaintItem extends CustomPainter {
   DrawPaintItem({
     this.selected = false,
     required this.item,
+    this.paintedItem,
     this.paintEditorConfigs = const PaintEditorConfigs(),
     this.onHitChanged,
     this.scale = 1,
@@ -20,6 +21,14 @@ class DrawPaintItem extends CustomPainter {
 
   /// The model containing information about the painting.
   final PaintedModel item;
+
+  /// What [paint] draws instead of [item], such as the part of it a
+  /// `LayerAnimationType.drawOn` animation has drawn so far, or `null` to
+  /// draw [item].
+  ///
+  /// Hit-testing keeps working on [item], so a layer can be selected and
+  /// dragged by all of its strokes while it is only partly drawn.
+  final PaintedModel? paintedItem;
 
   /// The scaling factor applied to the canvas.
   final double scale;
@@ -61,7 +70,7 @@ class DrawPaintItem extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (skipPaint) return;
     PathBuilderBase.fromMode(
-        item: item,
+        item: paintedItem ?? item,
         scale: scale,
         paintEditorConfigs: paintEditorConfigs,
       )
@@ -72,6 +81,7 @@ class DrawPaintItem extends CustomPainter {
   @override
   bool shouldRepaint(DrawPaintItem oldDelegate) {
     return oldDelegate.item != item ||
+        oldDelegate.paintedItem != paintedItem ||
         oldDelegate.opacity != opacity ||
         oldDelegate.skipPaint != skipPaint;
   }

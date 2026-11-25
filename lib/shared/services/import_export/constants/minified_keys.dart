@@ -66,6 +66,8 @@ const Map<String, String> kMinifiedLayerKeys = {
   'outlineColor': 'oc',
   'gradient': 'gr',
   'wrapAtLayerBounds': 'wb',
+  'curvature': 'cv',
+  'uppercase': 'uc',
   'startTime': 'st',
   'endTime': 'et',
   'enterDuration': 'ed',
@@ -91,6 +93,8 @@ const Map<String, String> kMinifiedLayerInteractionKeys = {
   'enableRotate': 'r',
   'enableSelection': 't',
   'enableEdit': 'e',
+  'minScale': 'n',
+  'maxScale': 'x',
 };
 
 /// A constant map containing minified paint-item keys for import/export

@@ -52,6 +52,8 @@ export 'features/filter_editor/filter_editor.dart';
 export 'features/tune_editor/tune_editor.dart';
 export '/shared/utils/debounce.dart';
 export '/features/main_editor/services/state_manager.dart';
+export '/features/main_editor/services/paint_layer_merge_manager.dart';
+export '/features/main_editor/services/paint_layer_split_manager.dart';
 export '/features/tune_editor/models/tune_adjustment_matrix.dart';
 export '/features/clips_editor/models/video_clip.dart';
 

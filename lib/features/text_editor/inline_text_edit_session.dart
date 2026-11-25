@@ -7,6 +7,8 @@ import '/core/models/layers/enums/layer_background_mode.dart';
 import '/core/models/layers/text_gradient.dart';
 import '/core/models/layers/text_layer.dart';
 import '/core/models/layers/text_layer_box.dart';
+import '/shared/extensions/text_style_extension.dart';
+import '/shared/utils/text_capitals.dart';
 
 /// One in-progress edit of a text layer on the canvas.
 ///
@@ -26,7 +28,9 @@ class InlineTextEditSession {
     required this.outlineWidth,
     required this.outlineColor,
     required this.gradient,
+    required this.curvature,
     required this.boxEnabled,
+    required bool uppercase,
     required this._primaryColor,
     required this._secondaryColor,
     required this.onChanged,
@@ -34,7 +38,9 @@ class InlineTextEditSession {
     required this.onDone,
     required this.onCancel,
   }) {
-    textCtrl.text = text;
+    textCtrl
+      ..text = text
+      ..capitals = uppercase;
     _lastText = text;
     textCtrl.addListener(_handleText);
   }
@@ -76,7 +82,9 @@ class InlineTextEditSession {
       outlineWidth: layer.outlineWidth,
       outlineColor: layer.outlineColor,
       gradient: layer.gradient,
+      curvature: TextLayer.clampCurvature(layer.curvature),
       boxEnabled: layer.box != null,
+      uppercase: layer.uppercase,
       primaryColor: primary,
       secondaryColor: secondary,
       onChanged: onChanged,
@@ -95,8 +103,9 @@ class InlineTextEditSession {
   /// The text the layer had when the session started.
   final String originalText;
 
-  /// The text being typed.
-  final TextEditingController textCtrl = TextEditingController();
+  /// The text being typed, shown in capitals while [uppercase] is on.
+  final CapitalsTextEditingController textCtrl =
+      CapitalsTextEditingController();
 
   /// Focus for the layer's field.
   final FocusNode focusNode = FocusNode();
@@ -162,6 +171,22 @@ class InlineTextEditSession {
   void setGradient(TextGradient? gradient) {
     if (_closed || gradient == this.gradient) return;
     this.gradient = gradient;
+    onChanged();
+  }
+
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. See [TextLayer.curvature].
+  ///
+  /// The field shows the text bent while it does not have focus, such as
+  /// while a slider for this is dragged with the keyboard hidden, and
+  /// straight while it is typed into.
+  double curvature;
+
+  /// Bends the text by [curvature], kept between `-1` and `1`.
+  void setCurvature(double curvature) {
+    final next = TextLayer.clampCurvature(curvature);
+    if (_closed || next == this.curvature) return;
+    this.curvature = next;
     onChanged();
   }
 
@@ -257,6 +282,17 @@ class InlineTextEditSession {
       LayerBackgroundMode.backgroundAndColorWithOpacity =>
         LayerBackgroundMode.onlyColor,
     };
+    onChanged();
+  }
+
+  /// Whether the text is drawn in capital letters. See
+  /// [TextLayer.uppercase].
+  bool get uppercase => textCtrl.capitals;
+
+  /// Draws the text in capital letters, or as it was typed again.
+  void setUppercase(bool uppercase) {
+    if (_closed || uppercase == textCtrl.capitals) return;
+    textCtrl.capitals = uppercase;
     onChanged();
   }
 
@@ -360,11 +396,14 @@ class InlineTextEditSession {
   TextLayerBox _fitBox(TextLayer live) {
     final fontSize = configs.initFontSize * fontScale;
     return TextLayerBox.fit(
-      text: textCtrl.text.isEmpty ? ' ' : textCtrl.text,
-      style: selectedTextStyle.copyWith(
-        fontSize: fontSize,
-        shadows: _scaledShadows(selectedTextStyle.shadows, fontScale),
-      ),
+      text: textCtrl.text.isEmpty
+          ? ' '
+          : uppercase
+          ? textInCapitals(textCtrl.text)
+          : textCtrl.text,
+      style: selectedTextStyle
+          .scaleLayerEffects(fontScale)
+          .copyWith(fontSize: fontSize),
       maxTextWidth: live.maxTextWidth,
       align: align,
       outlineWidth: outlineWidth * fontScale,
@@ -387,7 +426,9 @@ class InlineTextEditSession {
       outlineWidth: outlineWidth,
       outlineColor: outlineColor,
       gradient: gradient,
+      curvature: curvature,
       wrapAtLayerBounds: live.wrapAtLayerBounds,
+      uppercase: uppercase,
       customSecondaryColor: _secondaryColor != null,
       maxTextWidth: live.maxTextWidth,
       startTime: live.startTime,
@@ -426,6 +467,8 @@ class InlineTextEditSession {
         result.outlineWidth != live.outlineWidth ||
         result.outlineColor != live.outlineColor ||
         result.gradient != live.gradient ||
+        result.curvature != live.curvature ||
+        result.uppercase != live.uppercase ||
         result.customSecondaryColor != live.customSecondaryColor ||
         result.box != live.box;
   }
@@ -456,18 +499,6 @@ class InlineTextEditSession {
       ..dispose();
     focusNode.dispose();
   }
-}
-
-List<Shadow>? _scaledShadows(List<Shadow>? shadows, double factor) {
-  if (shadows == null) return null;
-  return [
-    for (final shadow in shadows)
-      Shadow(
-        color: shadow.color,
-        blurRadius: shadow.blurRadius * factor,
-        offset: shadow.offset * factor,
-      ),
-  ];
 }
 
 /// Marks a format bar so a click on it does not save and close the inline

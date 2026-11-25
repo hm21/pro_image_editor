@@ -91,6 +91,44 @@ void main() {
     });
   });
 
+  group('Layer.isWithinTimeRange', () {
+    test('includes the start and excludes the end', () {
+      final layer = Layer(
+        startTime: const Duration(seconds: 1),
+        endTime: const Duration(seconds: 2),
+      );
+
+      expect(layer.isWithinTimeRange(const Duration(milliseconds: 999)), false);
+      expect(layer.isWithinTimeRange(const Duration(seconds: 1)), true);
+      expect(
+        layer.isWithinTimeRange(
+          const Duration(seconds: 2) - const Duration(microseconds: 1),
+        ),
+        true,
+      );
+      expect(layer.isWithinTimeRange(const Duration(seconds: 2)), false);
+    });
+
+    test('shows exactly one of two layers that touch', () {
+      final first = Layer(endTime: const Duration(seconds: 1));
+      final second = Layer(startTime: const Duration(seconds: 1));
+
+      const seam = Duration(seconds: 1);
+      expect(first.isWithinTimeRange(seam), false);
+      expect(second.isWithinTimeRange(seam), true);
+    });
+
+    test('leaves a side without a bound open', () {
+      final fromOneSecond = Layer(startTime: const Duration(seconds: 1));
+      final untilOneSecond = Layer(endTime: const Duration(seconds: 1));
+
+      expect(fromOneSecond.isWithinTimeRange(const Duration(hours: 1)), true);
+      expect(fromOneSecond.isWithinTimeRange(Duration.zero), false);
+      expect(untilOneSecond.isWithinTimeRange(Duration.zero), true);
+      expect(untilOneSecond.isWithinTimeRange(const Duration(hours: 1)), false);
+    });
+  });
+
   group('Layer toMap/fromMap tests', () {
     test('Base Layer', () {
       final original = Layer(

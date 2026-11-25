@@ -148,6 +148,18 @@ void main() {
       await seek(tester, notifier, const Duration(seconds: 11));
       expect(find.byType(IgnorePointer), findsOneWidget);
     });
+
+    testWidgets('hides at its end time and shows just before it', (
+      tester,
+    ) async {
+      final notifier = await pumpVisibility(tester, layer);
+
+      await seek(tester, notifier, _justBeforeEnd);
+      expect(find.byType(IgnorePointer), findsNothing);
+
+      await seek(tester, notifier, const Duration(seconds: 10));
+      expect(find.byType(IgnorePointer), findsOneWidget);
+    });
   });
 
   group('LayerTimelineVisibility edge-aware slide', () {
@@ -165,8 +177,9 @@ void main() {
       ],
     );
 
-    // At the end of the window invP = 1, so each direction must move the
-    // layer's nearest edge exactly onto the matching canvas border. With a
+    // A microsecond before the end of the window invP is all but 1 (at the
+    // end itself the layer is hidden), so each direction must move the
+    // layer's nearest edge onto the matching canvas border. With a
     // centered layer (50,50) on a 100×100 canvas the absolute component is the
     // distance from the center to that border and the fractional component is
     // a half layer size in the slide direction.
@@ -194,10 +207,10 @@ void main() {
         tester,
       ) async {
         final notifier = await pumpVisibility(tester, slideOutLayer(entry.key));
-        await seek(tester, notifier, const Duration(seconds: 10));
+        await seek(tester, notifier, _justBeforeEnd);
 
-        expect(slideAbsolute(tester), entry.value.absolute);
-        expect(slideFractional(tester), entry.value.fractional);
+        expect(slideAbsolute(tester), _closeTo(entry.value.absolute));
+        expect(slideFractional(tester), _closeTo(entry.value.fractional));
       });
     }
 
@@ -212,10 +225,10 @@ void main() {
         slideOutLayer(SlideDirection.left),
         center: const Offset(20, 80),
       );
-      await seek(tester, notifier, const Duration(seconds: 10));
+      await seek(tester, notifier, _justBeforeEnd);
 
-      expect(slideAbsolute(tester), const Offset(-20, 0));
-      expect(slideFractional(tester), const Offset(-0.5, 0));
+      expect(slideAbsolute(tester), _closeTo(const Offset(-20, 0)));
+      expect(slideFractional(tester), _closeTo(const Offset(-0.5, 0)));
     });
   });
 
@@ -307,9 +320,9 @@ void main() {
         ],
       );
       final notifier = await pumpVisibility(tester, layer);
-      await seek(tester, notifier, const Duration(seconds: 10));
+      await seek(tester, notifier, _justBeforeEnd);
 
-      expect(slideAbsolute(tester), travel);
+      expect(slideAbsolute(tester), _closeTo(travel));
     });
   });
 
@@ -582,6 +595,123 @@ void main() {
     });
   });
 
+  group('LayerTimelineVisibility spin and flip', () {
+    Layer layerWith(List<LayerAnimation> animations) => Layer(
+      startTime: Duration.zero,
+      endTime: const Duration(seconds: 10),
+      animations: animations,
+    );
+
+    // The width and height of the box around the child as it is painted.
+    Size paintedBox(WidgetTester tester) {
+      final box = tester.renderObject<RenderBox>(find.byKey(childKey));
+      final corners = [
+        box.localToGlobal(Offset.zero),
+        box.localToGlobal(Offset(box.size.width, 0)),
+        box.localToGlobal(Offset(0, box.size.height)),
+        box.localToGlobal(box.size.bottomRight(Offset.zero)),
+      ];
+      double extent(double Function(Offset) axis) =>
+          corners.map(axis).reduce(math.max) -
+          corners.map(axis).reduce(math.min);
+      return Size(extent((c) => c.dx), extent((c) => c.dy));
+    }
+
+    testWidgets('spins into place clockwise', (tester) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.spin,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // A quarter of a turn done, three quarters to go: turned a quarter
+      // clockwise from where it started.
+      await seek(tester, notifier, const Duration(milliseconds: 250));
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(
+        math.atan2(matrix.storage[1], matrix.storage[0]),
+        closeTo(math.pi / 2, 1e-9),
+      );
+    });
+
+    testWidgets('squeezes a flip across the axis it turns around', (
+      tester,
+    ) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateIn,
+          duration: Duration(seconds: 1),
+          turns: 0.5,
+          flipAxis: FlipAxis.horizontal,
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // Half a turn away, it shows its mirror image.
+      await seek(tester, notifier, Duration.zero);
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(matrix.storage[0], closeTo(1, 1e-9));
+      expect(matrix.storage[5], closeTo(-1, 1e-9));
+
+      // A quarter turn away, it is edge-on.
+      await seek(tester, notifier, const Duration(milliseconds: 500));
+      expect(paintedBox(tester).height, closeTo(0, 1e-9));
+      expect(paintedBox(tester).width, closeTo(100, 1e-9));
+    });
+
+    testWidgets('flips around the vertical axis without one of its own', (
+      tester,
+    ) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.animateOut,
+          duration: Duration(seconds: 1),
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // Half a turn on its way out, it shows its mirror image sideways.
+      await seek(tester, notifier, const Duration(milliseconds: 9500));
+      final matrix = tester.widget<Transform>(find.byType(Transform)).transform;
+      expect(matrix.storage[0], closeTo(-1, 1e-9));
+      expect(matrix.storage[5], closeTo(1, 1e-9));
+
+      // Three quarters of a turn, it is edge-on across its width.
+      await seek(tester, notifier, const Duration(milliseconds: 9750));
+      expect(paintedBox(tester).width, closeTo(0, 1e-9));
+      expect(paintedBox(tester).height, closeTo(50, 1e-9));
+    });
+
+    testWidgets('squeezes the layer before turning it', (tester) async {
+      final layer = layerWith(const [
+        LayerAnimation(
+          type: LayerAnimationType.spin,
+          phase: AnimationPhase.loop,
+          duration: Duration(seconds: 4),
+        ),
+        LayerAnimation(
+          type: LayerAnimationType.flip,
+          phase: AnimationPhase.loop,
+          duration: Duration(milliseconds: 1200),
+          flipAxis: FlipAxis.horizontal,
+        ),
+      ]);
+      final notifier = await pumpVisibility(tester, layer);
+
+      // A quarter spin and five sixths of a flip: the 100 × 50 child is
+      // squeezed to 100 × 25 and then stood on end.
+      await seek(tester, notifier, const Duration(seconds: 1));
+      final box = paintedBox(tester);
+      expect(box.width, closeTo(25, 1e-9));
+      expect(box.height, closeTo(100, 1e-9));
+    });
+  });
+
   group('LayerTimelineVisibility legacy fade path', () {
     testWidgets('uses the transitionBuilder when animations is empty', (
       tester,
@@ -807,3 +937,11 @@ void main() {
     });
   });
 }
+
+/// The last moment a layer ending at 10 s shows: its range is half-open, so at
+/// 10 s itself it is hidden.
+const _justBeforeEnd = Duration(microseconds: 9999999);
+
+/// Matches an [Offset] [_justBeforeEnd] leaves a hair short of [expected].
+Matcher _closeTo(Offset expected) =>
+    within<Offset>(distance: 0.01, from: expected);

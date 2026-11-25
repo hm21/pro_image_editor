@@ -185,12 +185,9 @@ class PaintLayerRasterCache extends ChangeNotifier {
       return false;
     }
     if (layer.transitionBuilder != null) return false;
-    final start = layer.startTime;
-    final end = layer.endTime;
     if (playTime != null) {
-      if (start != null && playTime < start) return false;
-      if (end != null && playTime > end) return false;
-      if ((start != null || end != null) &&
+      if (!layer.isWithinTimeRange(playTime)) return false;
+      if ((layer.startTime != null || layer.endTime != null) &&
           configs.videoEditor.layerTimeline.transitionBuilder !=
               LayerTimelineConfigs.defaultFadeTransition) {
         return false;
@@ -212,6 +209,22 @@ class PaintLayerRasterCache extends ChangeNotifier {
 
   static bool _isPositive(Duration? duration) =>
       duration != null && duration > Duration.zero;
+
+  /// Which paint layers of [layers] lie within their timeline window at
+  /// [playTime], as a hash.
+  ///
+  /// It changes exactly when one of them enters or leaves its window, which
+  /// moves it between the cache and live rendering, so a host rebuilds only
+  /// then rather than on every playback tick.
+  static int timelineSignature(List<Layer> layers, Duration? playTime) {
+    var signature = 17;
+    for (final layer in layers) {
+      if (layer is! PaintLayer) continue;
+      final visible = playTime == null || layer.isWithinTimeRange(playTime);
+      signature = Object.hash(signature, layer.id, visible);
+    }
+    return signature;
+  }
 
   /// Groups the cacheable members of [layers] into runs.
   ///
@@ -614,15 +627,33 @@ class PaintLayerRasterCache extends ChangeNotifier {
   /// because the boundary paints nothing then. The cache only admits layers
   /// whose paint it reproduces exactly, so the result is what the boundary
   /// would have captured.
+  ///
+  /// A layer that draws itself (`LayerAnimationType.drawOn`) is captured
+  /// from here as well, as its boundary shows only as much as the playback
+  /// position has drawn: the whole drawing, or [drawnFraction] of it when
+  /// given (see `PaintLayer.drawnItemsAt`). A stroke drawn by a custom path
+  /// builder and the strokes of a merged layer get their opacity as
+  /// `LayerWidgetPaintItem` gives it, through an offscreen.
   static Future<ui.Image> renderLayerContent(
     PaintLayer layer, {
     required double pixelRatio,
     required PaintEditorConfigs paintEditorConfigs,
+    double? drawnFraction,
   }) async {
     final size = layer.size;
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder)..scale(pixelRatio);
-    _drawLayer(canvas, layer, paintEditorConfigs: paintEditorConfigs);
+    _drawLayer(
+      canvas,
+      layer,
+      paintEditorConfigs: paintEditorConfigs,
+      drawnItems: drawnFraction == null
+          ? null
+          : layer.drawnItemsAt(
+              drawnFraction,
+              paintEditorConfigs: paintEditorConfigs,
+            ),
+    );
     final picture = recorder.endRecording();
     try {
       return await picture.toImage(
@@ -636,24 +667,38 @@ class PaintLayerRasterCache extends ChangeNotifier {
 
   /// Strokes [layer]'s items in its own box coordinates, with the opacity
   /// baked the way `LayerWidgetPaintItem` bakes it.
+  ///
+  /// [drawnItems] replaces the items with as much of each as is drawn, one
+  /// entry per item and `null` for one not drawn at all; see
+  /// `PaintLayer.drawnItemsAt`.
   static void _drawLayer(
     Canvas canvas,
     PaintLayer layer, {
     required PaintEditorConfigs paintEditorConfigs,
+    List<PaintedModel?>? drawnItems,
   }) {
     final size = layer.size;
+    final items = drawnItems ?? layer.items;
+    final layerOpacity = layer.hasKeyframes ? 1.0 : layer.opacity;
     if (layer.items.length == 1) {
+      final item = items.first;
+      if (item == null) return;
       _drawItem(
         canvas,
-        layer.items.first,
+        item,
         size: size,
         scale: layer.scale,
-        opacity: layer.hasKeyframes ? 1.0 : layer.opacity,
+        opacity: layerOpacity,
         paintEditorConfigs: paintEditorConfigs,
       );
       return;
     }
-    for (final item in layer.items) {
+    // The strokes of a merged layer overlap, so a layer opacity below 1 fades
+    // them together.
+    final fadesTogether = layerOpacity < 1.0;
+    if (fadesTogether) _saveFadeLayer(canvas, layerOpacity);
+    for (final item in items) {
+      if (item == null) continue;
       _drawItem(
         canvas,
         item,
@@ -663,6 +708,7 @@ class PaintLayerRasterCache extends ChangeNotifier {
         paintEditorConfigs: paintEditorConfigs,
       );
     }
+    if (fadesTogether) canvas.restore();
   }
 
   static void _drawItem(
@@ -673,13 +719,27 @@ class PaintLayerRasterCache extends ChangeNotifier {
     required double opacity,
     required PaintEditorConfigs paintEditorConfigs,
   }) {
+    // A custom builder may draw several times, so its opacity applies to the
+    // result, as the Opacity widget around it applies it in the editor.
+    final fadesResult =
+        opacity < 1.0 &&
+        paintEditorConfigs.customPathBuilders.containsKey(item.mode);
+    if (fadesResult) _saveFadeLayer(canvas, opacity);
     PathBuilderBase.fromMode(
         item: item,
         scale: scale,
         paintEditorConfigs: paintEditorConfigs,
       )
-      ..opacity = opacity
+      ..opacity = fadesResult ? 1.0 : opacity
       ..draw(canvas: canvas, size: size);
+    if (fadesResult) canvas.restore();
+  }
+
+  static void _saveFadeLayer(Canvas canvas, double opacity) {
+    canvas.saveLayer(
+      null,
+      Paint()..color = Color.fromRGBO(0, 0, 0, opacity.clamp(0.0, 1.0)),
+    );
   }
 
   /// Plans this build's runs, starts rendering any missing image and returns

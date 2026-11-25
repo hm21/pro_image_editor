@@ -51,7 +51,6 @@ import 'services/layer_copy_manager.dart';
 import 'services/layer_drag_selection_service.dart';
 import 'services/layer_interaction_manager.dart';
 import 'services/main_editor_state_history_service.dart';
-import 'services/paint_layer_merge_manager.dart';
 import 'services/sizes_manager.dart';
 import 'widgets/main_editor_interactive_content.dart';
 
@@ -609,6 +608,10 @@ class ProImageEditorState extends State<ProImageEditor>
   DateTime _tapDownTimestamp = DateTime.now();
   final _audioBottomBarNotifier = ValueNotifier(false);
 
+  /// Whether the editor is in the tree. A deactivated editor stays [mounted]
+  /// until the end of the frame but can no longer look up inherited widgets.
+  bool _isActive = true;
+
   @override
   void initState() {
     super.initState();
@@ -624,6 +627,12 @@ class ProImageEditorState extends State<ProImageEditor>
       onUpdateUI: mainEditorCallbacks?.handleUpdateUI,
       setState: setState,
       keyframeTime: () => _videoController?.playTimeNotifier.value,
+      applyLayerLimits: (layer, laidOutScale) =>
+          layerInteractionManager.applyLayerLimits(
+            layer,
+            editorBodySize: sizesManager.bodySize,
+            laidOutScale: laidOutScale,
+          ),
     );
     sizesManager = SizesManager(configs: configs, context: context);
     layerInteractionManager.scaleDebounce = Debounce(
@@ -683,6 +692,18 @@ class ProImageEditorState extends State<ProImageEditor>
       BrowserContextMenu.enableContextMenu();
     }
     super.dispose();
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    _isActive = true;
+  }
+
+  @override
+  void deactivate() {
+    _isActive = false;
+    super.deactivate();
   }
 
   @override
@@ -912,7 +933,8 @@ class ProImageEditorState extends State<ProImageEditor>
   /// Pass [keyframes] to set the layer's placement over time (see
   /// [Layer.keyframes]); an empty list removes them. Their times are measured
   /// from the layer's start, so a new [startTime] alone moves them along with
-  /// the layer.
+  /// the layer. So are the keyframes of a [Layer.mask]; pass [mask] to set
+  /// one rebased onto a new start.
   void setLayerTimeline({
     required int index,
     Duration? startTime,
@@ -924,6 +946,7 @@ class ProImageEditorState extends State<ProImageEditor>
     LayerTimelineTransitionBuilder? transitionBuilder,
     List<LayerAnimation>? animations,
     List<LayerKeyframe>? keyframes,
+    LayerMask? mask,
     Map<String, dynamic>? meta,
     bool skipUpdateHistory = false,
   }) {
@@ -940,6 +963,7 @@ class ProImageEditorState extends State<ProImageEditor>
             transitionBuilder == current.transitionBuilder) &&
         (animations == null || listEquals(animations, current.animations)) &&
         (keyframes == null || listEquals(keyframes, current.keyframes)) &&
+        (mask == null || mask == current.mask) &&
         meta == null) {
       return;
     }
@@ -967,6 +991,7 @@ class ProImageEditorState extends State<ProImageEditor>
       layer.animations = List<LayerAnimation>.of(animations);
     }
     if (keyframes != null) layer.keyframes = keyframes;
+    if (mask != null) layer.mask = mask;
     if (meta != null) layer.meta = {...layer.meta ?? {}, ...meta};
 
     if (!skipUpdateHistory) {
@@ -1521,6 +1546,9 @@ class ProImageEditorState extends State<ProImageEditor>
     /// mid-gesture pointer change (e.g. a third finger touching down), which
     /// would otherwise corrupt the history/screenshot stack (issue #850).
     if (hasSelectedLayers && !isLayerBeingTransformed) {
+      // Before the history step copies the layers, which are laid out only a
+      // frame later, and before keyframes place them elsewhere.
+      layerInteractionManager.measureLayerSizes(selectedLayers);
       addHistory(blockCaptureScreenshot: true);
       _startKeyframeEdit();
     }
@@ -1810,8 +1838,10 @@ class ProImageEditorState extends State<ProImageEditor>
   ///
   /// A host can offer to turn [TextLayer.wrapAtLayerBounds] off only while
   /// that changes anything. Always `false` for a layer that does not wrap at
-  /// the bounds, and before the editor body has a size.
+  /// the bounds, before the editor body has a size, and while the editor is
+  /// out of the tree, even when it is still [mounted].
   bool textLayerWrapsAtBounds(TextLayer layer) {
+    if (!_isActive) return false;
     return LayerWidgetTextItem.wrapsAtLayerBounds(
       context,
       layer: layer,
@@ -3401,6 +3431,7 @@ class ProImageEditorState extends State<ProImageEditor>
           ? _controllers.screenshot
           : null,
       capturePixelRatio: configs.imageGeneration.layerCapturePixelRatio,
+      drawOnFrameRate: configs.imageGeneration.drawOnFrameRate,
     );
   }
 
@@ -3711,6 +3742,55 @@ class ProImageEditorState extends State<ProImageEditor>
     setState(() {});
 
     return mergedLayer;
+  }
+
+  /// Whether a selected layer can be split into one paint layer per stroke.
+  ///
+  /// Returns `true` when at least one selected layer is a [PaintLayer] that
+  /// [PaintLayerSplitManager.canSplit] accepts. Host apps can use this to
+  /// enable/disable a "Split" action. See [splitSelectedLayers].
+  bool get canSplitSelectedLayers =>
+      selectedLayers.any(PaintLayerSplitManager.canSplit);
+
+  /// Splits every selected multi-stroke paint layer into one [PaintLayer] per
+  /// stroke, the inverse of [mergeSelectedLayers].
+  ///
+  /// Each part renders exactly where and how its stroke rendered inside the
+  /// source (see [PaintLayerSplitManager.split]). The parts take the source's
+  /// z-index in stroke order, the source is removed, the parts are selected
+  /// and the whole operation is recorded as a single undo entry.
+  ///
+  /// Selected layers [PaintLayerSplitManager.canSplit] rejects are ignored.
+  /// Returns the new parts, or an empty list when no selected layer could be
+  /// split.
+  List<PaintLayer> splitSelectedLayers() {
+    final selectedIds = layerInteractionManager.selectedLayerIds;
+
+    final List<PaintLayer> parts = [];
+    final List<Layer> newLayers = [];
+    for (final layer in activeLayers) {
+      if (selectedIds.contains(layer.id) &&
+          PaintLayerSplitManager.canSplit(layer)) {
+        final split = PaintLayerSplitManager.split(layer as PaintLayer);
+        parts.addAll(split);
+        newLayers.addAll(split);
+      } else {
+        // Copied so the previous history entry keeps its own instances.
+        newLayers.add(_layerCopyManager.copyLayer(layer));
+      }
+    }
+
+    if (parts.isEmpty) return parts;
+
+    layerInteractionManager.clearSelectedLayers();
+    addHistory(layers: newLayers);
+    for (final part in parts) {
+      layerInteractionManager.addSelectedLayer(part.id);
+    }
+    _controllers.uiLayerCtrl.add(null);
+    setState(() {});
+
+    return parts;
   }
 
   @override

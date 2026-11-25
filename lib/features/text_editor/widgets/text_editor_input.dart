@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '/core/models/editor_callbacks/text_editor_callbacks.dart';
 import '/core/models/editor_configs/pro_image_editor_configs.dart';
 import '/core/models/layers/layer.dart';
+import '/shared/extensions/text_style_extension.dart';
 import 'rounded_background_text/rounded_background_text_field.dart';
 
 /// A widget for managing the text input in the text editor, providing a
@@ -26,6 +27,7 @@ class TextEditorInput extends StatefulWidget {
   /// - [outlineWidth]: The outline thickness at [textFontSize].
   /// - [outlineColor]: The color of the outline.
   /// - [gradient]: The color gradient that fills the glyphs, if any.
+  /// - [curvature]: How far the text bends into an arc.
   const TextEditorInput({
     super.key,
     required this.callbacks,
@@ -46,6 +48,7 @@ class TextEditorInput extends StatefulWidget {
     this.outlineWidth = 0,
     this.outlineColor = const Color(0xFF000000),
     this.gradient,
+    this.curvature = 0,
   });
 
   /// Optional callbacks for text editor interactions.
@@ -104,19 +107,22 @@ class TextEditorInput extends StatefulWidget {
   /// `null` to fill them with [textColor].
   final TextGradient? gradient;
 
+  /// How far the text bends into an arc, from `-1` to `1`; `0` keeps it
+  /// straight. The field shows the bend while it does not have
+  /// [focusNode]. See [TextLayer.curvature].
+  final double curvature;
+
   @override
   State<TextEditorInput> createState() => _TextEditorInputState();
 }
 
 class _TextEditorInputState extends State<TextEditorInput> {
-  /// The shadows of the selected style, grown with the font size as the
-  /// finished layer grows them (see `LayerWidgetTextItem`).
-  List<Shadow>? get _layerShadows {
-    final shadows = widget.selectedTextStyle.shadows;
-    if (shadows == null) return null;
-    final scale = widget.textFontSize / widget.configs.initFontSize;
-    return shadows.map((shadow) => shadow.scale(scale)).toList();
-  }
+  /// The selected style with its shadows and its letter and word spacing
+  /// grown with the font size, as the finished layer grows them (see
+  /// `LayerWidgetTextItem`).
+  TextStyle get _layerStyle => widget.selectedTextStyle.scaleLayerEffects(
+    widget.textFontSize / widget.configs.initFontSize,
+  );
 
   Widget _flightShuttleBuilder(
     BuildContext flightContext,
@@ -189,6 +195,7 @@ class _TextEditorInputState extends State<TextEditorInput> {
   }
 
   Widget _buildInputField() {
+    final layerStyle = _layerStyle;
     return Transform.scale(
       scale: widget.scaleFactor,
       child: Hero(
@@ -226,19 +233,24 @@ class _TextEditorInputState extends State<TextEditorInput> {
               color: widget.configs.style.inputHintColor,
               fontSize: widget.textFontSize,
               letterSpacing: widget.configs.style.inputLetterSpacing,
-              shadows: widget.configs.style.inputShadows ?? _layerShadows,
+              shadows: widget.configs.style.inputShadows ?? layerStyle.shadows,
             ),
             backgroundColor: widget.backgroundColor,
-            style: widget.selectedTextStyle.copyWith(
+            // The spacing and the decoration of the layer's own style show
+            // while it is typed, as the finished layer draws them.
+            style: layerStyle.copyWith(
               color: widget.textColor,
               fontSize: widget.textFontSize,
-              letterSpacing: widget.configs.style.inputLetterSpacing,
-              shadows: widget.configs.style.inputShadows ?? _layerShadows,
-              decoration: TextDecoration.none,
+              letterSpacing:
+                  layerStyle.letterSpacing ??
+                  widget.configs.style.inputLetterSpacing,
+              shadows: widget.configs.style.inputShadows ?? layerStyle.shadows,
+              decoration: layerStyle.decoration ?? TextDecoration.none,
             ),
             outlineWidth: widget.outlineWidth,
             outlineColor: widget.outlineColor,
             gradient: widget.gradient,
+            curvature: widget.curvature,
 
             /// If we edit an layer we focus to the textfield after the
             /// hero animation is done

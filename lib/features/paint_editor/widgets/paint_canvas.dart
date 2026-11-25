@@ -41,6 +41,7 @@ class PaintCanvas extends StatefulWidget {
     required this.layerStackScaleFactor,
     required this.eraserMode,
     required this.eraserRadius,
+    this.playTimeNotifier,
   });
 
   /// Callback function when the active paint is done.
@@ -106,6 +107,13 @@ class PaintCanvas extends StatefulWidget {
   /// from the canvas. A larger radius creates a bigger eraser area.
   final double eraserRadius;
 
+  /// The video's playback position, when [layers] belong to a video.
+  ///
+  /// The eraser then leaves layers alone that are hidden at that position
+  /// and meets keyframed ones where their keyframes place them, as the
+  /// layer stack shows them.
+  final ValueNotifier<Duration>? playTimeNotifier;
+
   @override
   PaintCanvasState createState() => PaintCanvasState();
 }
@@ -148,10 +156,7 @@ class PaintCanvasState extends State<PaintCanvas> {
 
   bool get _isPartialEraser => widget.eraserMode == EraserMode.partial;
   bool get _isFreeStyleMode =>
-      _paintCtrl.mode == PaintMode.freeStyle ||
-      _paintCtrl.mode == PaintMode.freeStyleArrowStart ||
-      _paintCtrl.mode == PaintMode.freeStyleArrowEnd ||
-      _paintCtrl.mode == PaintMode.freeStyleArrowStartEnd;
+      widget.paintEditorConfigs.isFreeStyleMode(_paintCtrl.mode);
 
   @override
   void initState() {
@@ -413,21 +418,28 @@ class PaintCanvasState extends State<PaintCanvas> {
         Offset(widget.editorBodySize.width, widget.editorBodySize.height) / 2;
     final bool useRoundCensor =
         widget.paintEditorConfigs.censorConfigs.enableRoundArea;
+    final playTime = widget.playTimeNotifier?.value;
 
     for (var layer in widget.layers) {
       if (!layer.isPaintLayer) continue;
+      if (playTime != null && !layer.isWithinTimeRange(playTime)) continue;
       final paintLayer = layer as PaintLayer;
-      final layerScale = paintLayer.scale;
+      final placement = playTime == null
+          ? null
+          : paintLayer.keyframePlacementAt(playTime);
+      // Faded out by its keyframes, the layer shows nothing there.
+      if (placement != null && placement.opacity <= 0) continue;
+      final layerScale = placement?.scale ?? paintLayer.scale;
       Offset position = focalPoint - editorHalfSize;
 
       final Size scaledRawSize = paintLayer.rawSize * stackScale * layerScale;
 
       position += Offset(scaledRawSize.width, scaledRawSize.height) / 2;
-      position -= paintLayer.offset * stackScale;
+      position -= (placement?.offset ?? paintLayer.offset) * stackScale;
 
       if (_isPartialEraser) {
         // Apply inverse rotation to get the correct position in layer space
-        final double rotation = paintLayer.rotation;
+        final double rotation = placement?.rotation ?? paintLayer.rotation;
         final Offset center =
             Offset(scaledRawSize.width, scaledRawSize.height) / 2;
         final Offset rotatedPosition = _rotatePoint(

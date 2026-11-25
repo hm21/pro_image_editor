@@ -18,24 +18,26 @@ void main() {
         ? u_size.x / u_device_size.x
         : u_size.y / u_device_size.y;
 
+    /// Calculate the real pixel block size
+    float pixelBlockSize = u_pixel_block_size * generationHelper;
+
+    /// `main()` samples the texture once at its end and has no `return`:
+    /// Windows fails to compile shaders that sample alongside several exits
+    /// from `main()`; see https://github.com/flutter/flutter/issues/190809.
+    vec2 pixelated_uv;
     if (u_layer_space > 0.5) {
         /// Blocks of the layer's own size, starting at its corner, each
         /// filled with the color at its center.
-        float block = u_pixel_block_size * generationHelper;
         vec2 origin = u_origin * generationHelper;
-        vec2 cell = floor((FlutterFragCoord().xy - origin) / block);
-        frag_color = texture(u_texture_input, (origin + (cell + 0.5) * block) / u_size);
-        return;
+        vec2 cell = floor((FlutterFragCoord().xy - origin) / pixelBlockSize);
+        pixelated_uv = (origin + (cell + 0.5) * pixelBlockSize) / u_size;
+    } else {
+        /// Normalize coordinates
+        vec2 uv = FlutterFragCoord().xy / u_size;
+
+        /// Calculate the pixelated UV by snapping to the grid
+        pixelated_uv = floor(uv * u_size / pixelBlockSize) * pixelBlockSize / u_size;
     }
-
-    /// Normalize coordinates
-    vec2 uv = FlutterFragCoord().xy / u_size; 
-
-    /// Calculate the real pixel block size
-	float pixelBlockSize = u_pixel_block_size * generationHelper;
-
-    /// Calculate the pixelated UV by snapping to the grid
-    vec2 pixelated_uv = floor(uv * u_size / pixelBlockSize) * pixelBlockSize / u_size;
 
     /// Sample the texture using the pixelated coordinates
     frag_color = texture(u_texture_input, pixelated_uv);
