@@ -238,6 +238,7 @@ class StateManager {
       if (_historyPointer > 0) {
         _historyPointer--;
         _keepTrimmedTransformAndBlur(_stateHistory.removeAt(0));
+        _shiftTrimmedBackgroundImages();
         if (enableScreenshotLimit) screenshots.removeAt(0);
       } else {
         _stateHistory.removeLast();
@@ -252,25 +253,46 @@ class StateManager {
   /// entries inherit it. The new first entry takes over what it inherited
   /// from [removed]. Exports treat the first entry as the initial state and
   /// skip it, so a crop or blur also moves to the entry after it.
+  ///
+  /// Entries are replaced, not changed in place, because others may still
+  /// hold them.
   void _keepTrimmedTransformAndBlur(EditorStateHistory removed) {
-    var first = _stateHistory.first;
-    if (first.blur == null && removed.blur != null) {
-      first = _stateHistory[0] = first.copyWith(blur: removed.blur);
+    final first = _stateHistory.first;
+    final transform = first.transformConfigs ?? removed.transformConfigs;
+    final blur = first.blur ?? removed.blur;
+    if (transform != first.transformConfigs || blur != first.blur) {
+      _stateHistory[0] = first.copyWith(
+        transformConfigs: transform,
+        blur: blur,
+      );
     }
-    first.transformConfigs ??= removed.transformConfigs;
     if (_stateHistory.length < 2) return;
 
     final next = _stateHistory[1];
-    final transform = first.transformConfigs;
-    if (next.transformConfigs == null &&
+    final carryTransform =
+        next.transformConfigs == null &&
         transform != null &&
-        transform.isNotEmpty) {
-      next.transformConfigs = transform;
+        transform.isNotEmpty;
+    final carryBlur = next.blur == null && blur != null && blur != 0;
+    if (carryTransform || carryBlur) {
+      _stateHistory[1] = next.copyWith(
+        transformConfigs: carryTransform ? transform : null,
+        blur: carryBlur ? blur : null,
+      );
     }
-    final blur = first.blur;
-    if (next.blur == null && blur != null && blur != 0) {
-      _stateHistory[1] = next.copyWith(blur: blur);
-    }
+  }
+
+  /// Moves the background images one index down after the first history
+  /// entry was trimmed, so each stays with the entry it belongs to.
+  void _shiftTrimmedBackgroundImages() {
+    if (_backgroundImages.isEmpty) return;
+    final shifted = {
+      for (final MapEntry(:key, :value) in _backgroundImages.entries)
+        if (key > 0) key - 1: value,
+    };
+    _backgroundImages
+      ..clear()
+      ..addAll(shifted);
   }
 
   /// Adds a new entry to the history of image editor changes and updates the

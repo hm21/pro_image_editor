@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.29.1
+- **FIX**(main-editor): A crop or blur stays applied and exported when `stateHistoryLimit` trims the history step that set it.
+- **FIX**(main-editor): Undo shows the right background image after `stateHistoryLimit` trims the history.
+
 ## 14.29.0
 - **FEAT**(paint-editor): Add `PaintEditorConfigs.mergeNewLayersOnDone` to return the strokes of one session as a single `PaintLayer`; a censor area stays its own layer.
 - **FEAT**(main-editor): Add `ProImageEditorState.splitSelectedLayers` / `canSplitSelectedLayers` and `PaintLayerSplitManager` to split a multi-stroke paint layer into one layer per stroke.

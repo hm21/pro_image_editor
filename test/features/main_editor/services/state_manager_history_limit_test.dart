@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pro_image_editor/core/models/editor_configs/pro_image_editor_configs.dart';
+import 'package:pro_image_editor/core/models/editor_image.dart';
 import 'package:pro_image_editor/core/models/history/state_history.dart';
 import 'package:pro_image_editor/features/main_editor/services/state_manager.dart';
 import 'package:pro_image_editor/shared/services/content_recorder/controllers/content_recorder_controller.dart';
@@ -142,6 +143,43 @@ void main() {
         expect(entry.containsKey('transform'), isFalse);
         expect(entry.containsKey('blur'), isFalse);
       }
+    });
+
+    test('does not change trimmed-into entries in place', () {
+      final crop = _crop(10);
+      final manager = _manager();
+      _add(manager, EditorStateHistory(transformConfigs: crop, blur: 4));
+      final held = <EditorStateHistory>[];
+      for (var i = 0; i < _limit * 2; i++) {
+        final entry = EditorStateHistory();
+        held.add(entry);
+        _add(manager, entry);
+      }
+
+      for (final entry in held) {
+        expect(entry.transformConfigs, isNull);
+        expect(entry.blur, isNull);
+      }
+      expect(manager.transformConfigs, crop);
+      expect(manager.activeBlur, 4);
+    });
+
+    test('keeps background images with their entries after trimming', () {
+      final oldImage = EditorImage(networkUrl: 'old');
+      final newImage = EditorImage(networkUrl: 'new');
+      final manager = _manager()..activeBackgroundImage = oldImage;
+      _add(manager);
+      _add(manager);
+      _add(manager);
+      manager.updateBackgroundImages(oldImage: oldImage, newImage: newImage);
+      _add(manager);
+
+      final seen = [manager.activeBackgroundImage?.networkUrl];
+      while (manager.canUndo) {
+        manager.undo();
+        seen.add(manager.activeBackgroundImage?.networkUrl);
+      }
+      expect(seen, ['new', 'new', 'old', 'old']);
     });
 
     test('keeps a crop with a history limit of one', () async {
