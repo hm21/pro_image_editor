@@ -63,12 +63,11 @@ enum ColorFilterStepType {
 class ColorFilterStep {
   /// Creates a step of [type] with [values], as many as
   /// [ColorFilterStepType.valueCount] says.
+  ///
+  /// Throws an [ArgumentError] for the wrong number of values, in release
+  /// builds too, since [matrix] would otherwise fail or ignore values later.
   ColorFilterStep(this.type, List<double> values)
-    : assert(
-        values.length == type.valueCount,
-        '${type.name} takes ${type.valueCount} values, not ${values.length}',
-      ),
-      values = List.unmodifiable(values);
+    : values = List.unmodifiable(_checkValueCount(type, values));
 
   /// A [ColorFilterAddons.colorOverlay] step.
   ColorFilterStep.colorOverlay(double r, double g, double b, double scale)
@@ -185,6 +184,20 @@ class ColorFilterStep {
     ColorFilterStepType.fade => ColorFilterAddons.fade(values[0]),
     ColorFilterStepType.tint => ColorFilterAddons.tint(values[0]),
   };
+
+  static List<double> _checkValueCount(
+    ColorFilterStepType type,
+    List<double> values,
+  ) {
+    if (values.length != type.valueCount) {
+      throw ArgumentError.value(
+        values,
+        'values',
+        '${type.name} takes ${type.valueCount} values, not ${values.length}',
+      );
+    }
+    return values;
+  }
 
   /// A step of the same [type] with [values].
   ColorFilterStep copyWith({List<double>? values}) =>

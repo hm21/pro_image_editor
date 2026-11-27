@@ -231,6 +231,28 @@ void main() {
       expect(key.currentState!.filterMatrix, isEmpty);
     });
 
+    testWidgets('filterMatrix leaves out the applied filters', (tester) async {
+      final editorKey = GlobalKey<FilterEditorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FilterEditor.memory(
+              mockMemoryImage,
+              key: editorKey,
+              initConfigs: FilterEditorInitConfigs(
+                theme: ThemeData(),
+                appliedFilters: PresetFilters.addictiveRed.filters,
+              ),
+            ),
+          ),
+        ),
+      );
+      final editor = editorKey.currentState!
+        ..setFilter(PresetFilters.addictiveBlue);
+
+      expect(editor.filterMatrix, PresetFilters.addictiveBlue.filters);
+    });
+
     testWidgets('a custom filter button gets the filter with its steps', (
       tester,
     ) async {

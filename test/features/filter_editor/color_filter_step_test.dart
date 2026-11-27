@@ -107,6 +107,17 @@ void main() {
 
         expect(step, ColorFilterStep.brightness(0.3));
       });
+
+      test('throws an ArgumentError for the wrong number of values', () {
+        expect(
+          () => ColorFilterStep.brightness(0.1).copyWith(values: [0.3, 0.4]),
+          throwsArgumentError,
+        );
+        expect(
+          () => ColorFilterStep(ColorFilterStepType.rgbScale, const [1, 1]),
+          throwsArgumentError,
+        );
+      });
     });
   });
 
