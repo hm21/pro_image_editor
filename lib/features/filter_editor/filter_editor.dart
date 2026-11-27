@@ -22,6 +22,7 @@ import 'utils/lerp_color_matrix_utils.dart';
 
 export 'types/filter_matrix.dart';
 export 'types/filter_state.dart';
+export 'utils/filter_generator/color_filter_step.dart';
 export 'utils/filter_generator/filter_addons.dart';
 export 'utils/filter_generator/filter_model.dart';
 export 'utils/filter_generator/filter_presets.dart';
@@ -186,6 +187,17 @@ class FilterEditorState extends State<FilterEditor>
     setFilterOpacity(value);
   }
 
+  /// The matrices of the [selectedFilter] at [filterOpacity], or empty with
+  /// no filter picked.
+  ///
+  /// This is the filter [done] returns, without the applied filters it is
+  /// previewed on. An app can commit it in a history step of its own, for
+  /// example to replace a filter it reopened instead of adding a second one.
+  FilterMatrix get filterMatrix => [
+    for (final matrix in selectedFilter.filters)
+      lerpColorMatrix(identityMatrix, matrix, filterOpacity),
+  ];
+
   @override
   FilterEditorCallbacks? get standaloneEditorCallbacks => filterEditorCallbacks;
 
@@ -219,9 +231,11 @@ class FilterEditorState extends State<FilterEditor>
   void done() async {
     doneEditing(
       editorImage: widget.editorImage,
+      // Only the picked filter: the main editor adds it on top of the applied
+      // filters, which would apply them twice if they were part of it.
       returnValue: FilterState(
         name: selectedFilter.name,
-        matrices: _getActiveFilters(),
+        matrices: filterMatrix,
       ),
       blur: appliedBlurFactor,
       matrixFilterList: _getActiveFilters(),
@@ -244,9 +258,7 @@ class FilterEditorState extends State<FilterEditor>
 
     return [
       if (filterEditorConfigs.enableMultiSelection) ...appliedFilters,
-      ...selectedFilter.filters.map(
-        (matrix) => lerpColorMatrix(identityMatrix, matrix, filterOpacity),
-      ),
+      ...filterMatrix,
     ];
   }
 

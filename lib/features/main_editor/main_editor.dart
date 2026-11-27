@@ -2769,7 +2769,10 @@ class ProImageEditorState extends State<ProImageEditor>
 
     addHistory(
       filters: [
-        ...stateManager.activeFilters.map((item) => item.copy()),
+        // Without multi-selection the editor previews the picked filter alone,
+        // so it replaces the active filters instead of stacking on them.
+        if (filterEditorConfigs.enableMultiSelection)
+          ...stateManager.activeFilters.map((item) => item.copy()),
         filterState,
       ],
       heroScreenshotRequired: true,

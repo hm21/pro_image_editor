@@ -1,5 +1,5 @@
 // Project imports:
-import 'filter_addons.dart';
+import 'color_filter_step.dart';
 import 'filter_model.dart';
 
 /// Preset filters that can be used directly
@@ -8,385 +8,358 @@ class PresetFilters {
   static FilterModel none = const FilterModel(name: 'No Filter', filters: []);
 
   /// Clarendon: adds light to lighter areas and dark to darker areas
-  static FilterModel clarendon = FilterModel(
+  static FilterModel clarendon = FilterModel.fromSteps(
     name: 'Clarendon',
-    filters: [
-      ColorFilterAddons.brightness(.1),
-      ColorFilterAddons.contrast(.1),
-      ColorFilterAddons.saturation(.15),
+    steps: [
+      ColorFilterStep.brightness(.1),
+      ColorFilterStep.contrast(.1),
+      ColorFilterStep.saturation(.15),
     ],
   );
 
   /// Increase red color gradient
-  static FilterModel addictiveRed = FilterModel(
+  static FilterModel addictiveRed = FilterModel.fromSteps(
     name: 'AddictiveRed',
-    filters: [ColorFilterAddons.addictiveColor(50, 0, 0)],
+    steps: [ColorFilterStep.addictiveColor(50, 0, 0)],
   );
 
   /// Increase blue color gradient
-  static FilterModel addictiveBlue = FilterModel(
+  static FilterModel addictiveBlue = FilterModel.fromSteps(
     name: 'AddictiveBlue',
-    filters: [ColorFilterAddons.addictiveColor(0, 0, 50)],
+    steps: [ColorFilterStep.addictiveColor(0, 0, 50)],
   );
 
   /// Gingham: Vintage-inspired, taking some color out
-  static FilterModel gingham = FilterModel(
+  static FilterModel gingham = FilterModel.fromSteps(
     name: 'Gingham',
-    filters: [ColorFilterAddons.sepia(.04), ColorFilterAddons.contrast(-.15)],
+    steps: [ColorFilterStep.sepia(.04), ColorFilterStep.contrast(-.15)],
   );
 
   /// Moon: B/W, increase brightness and decrease contrast
-  static FilterModel moon = FilterModel(
+  static FilterModel moon = FilterModel.fromSteps(
     name: 'Moon',
-    filters: [
-      ColorFilterAddons.grayscale(),
-      ColorFilterAddons.contrast(-.04),
-      ColorFilterAddons.brightness(0.1),
+    steps: [
+      ColorFilterStep.grayscale(),
+      ColorFilterStep.contrast(-.04),
+      ColorFilterStep.brightness(0.1),
     ],
   );
 
   /// Lark: Brightens and intensifies colours but not red hues
-  static FilterModel lark = FilterModel(
+  static FilterModel lark = FilterModel.fromSteps(
     name: 'Lark',
-    filters: [
-      ColorFilterAddons.brightness(0.08),
-      ColorFilterAddons.grayscale(),
-      ColorFilterAddons.contrast(-.04),
+    steps: [
+      ColorFilterStep.brightness(0.08),
+      ColorFilterStep.grayscale(),
+      ColorFilterStep.contrast(-.04),
     ],
   );
 
   /// Reyes: a vintage filter, gives your photos a “dusty” look
-  static FilterModel reyes = FilterModel(
+  static FilterModel reyes = FilterModel.fromSteps(
     name: 'Reyes',
-    filters: [
-      ColorFilterAddons.sepia(0.4),
-      ColorFilterAddons.brightness(0.13),
-      ColorFilterAddons.contrast(-.05),
+    steps: [
+      ColorFilterStep.sepia(0.4),
+      ColorFilterStep.brightness(0.13),
+      ColorFilterStep.contrast(-.05),
     ],
   );
 
   /// Juno: Brightens colors, and intensifies red and yellow hues
-  static FilterModel juno = FilterModel(
+  static FilterModel juno = FilterModel.fromSteps(
     name: 'Juno',
-    filters: [
-      ColorFilterAddons.rgbScale(1.01, 1.04, 1),
-      ColorFilterAddons.saturation(0.3),
+    steps: [
+      ColorFilterStep.rgbScale(1.01, 1.04, 1),
+      ColorFilterStep.saturation(0.3),
     ],
   );
 
   /// Slumber: Desaturates the image as well as adds haze for a retro, dreamy
   /// look – with an emphasis on blacks and blues
-  static FilterModel slumber = FilterModel(
+  static FilterModel slumber = FilterModel.fromSteps(
     name: 'Slumber',
-    filters: [
-      ColorFilterAddons.brightness(.1),
-      ColorFilterAddons.saturation(-0.5),
-    ],
+    steps: [ColorFilterStep.brightness(.1), ColorFilterStep.saturation(-0.5)],
   );
 
   /// Crema: Adds a creamy look that both warms and cools the image
-  static FilterModel crema = FilterModel(
+  static FilterModel crema = FilterModel.fromSteps(
     name: 'Crema',
-    filters: [
-      ColorFilterAddons.rgbScale(1.04, 1, 1.02),
-      ColorFilterAddons.saturation(-0.05),
+    steps: [
+      ColorFilterStep.rgbScale(1.04, 1, 1.02),
+      ColorFilterStep.saturation(-0.05),
     ],
   );
 
   /// Ludwig: A slight hint of desaturation that also enhances light
-  static FilterModel ludwig = FilterModel(
+  static FilterModel ludwig = FilterModel.fromSteps(
     name: 'Ludwig',
-    filters: [
-      ColorFilterAddons.brightness(.05),
-      ColorFilterAddons.saturation(-0.03),
-    ],
+    steps: [ColorFilterStep.brightness(.05), ColorFilterStep.saturation(-0.03)],
   );
 
   /// Aden: This filter gives a blue/pink natural look
-  static FilterModel aden = FilterModel(
+  static FilterModel aden = FilterModel.fromSteps(
     name: 'Aden',
-    filters: [
-      ColorFilterAddons.colorOverlay(228, 130, 225, 0.13),
-      ColorFilterAddons.saturation(-0.2),
+    steps: [
+      ColorFilterStep.colorOverlay(228, 130, 225, 0.13),
+      ColorFilterStep.saturation(-0.2),
     ],
   );
 
   /// Perpetua: Adding a pastel look, this filter is ideal for portraits
-  static FilterModel perpetua = FilterModel(
+  static FilterModel perpetua = FilterModel.fromSteps(
     name: 'Perpetua',
-    filters: [ColorFilterAddons.rgbScale(1.05, 1.1, 1)],
+    steps: [ColorFilterStep.rgbScale(1.05, 1.1, 1)],
   );
 
   /// Amaro: Adds light to an image, with the focus on the centre
-  static FilterModel amaro = FilterModel(
+  static FilterModel amaro = FilterModel.fromSteps(
     name: 'Amaro',
-    filters: [
-      ColorFilterAddons.saturation(0.3),
-      ColorFilterAddons.brightness(0.15),
-    ],
+    steps: [ColorFilterStep.saturation(0.3), ColorFilterStep.brightness(0.15)],
   );
 
   /// Mayfair: Applies a warm pink tone, subtle vignetting to brighten the
   /// photograph center and a thin black border
-  static FilterModel mayfair = FilterModel(
+  static FilterModel mayfair = FilterModel.fromSteps(
     name: 'Mayfair',
-    filters: [
-      ColorFilterAddons.colorOverlay(230, 115, 108, 0.05),
-      ColorFilterAddons.saturation(0.15),
+    steps: [
+      ColorFilterStep.colorOverlay(230, 115, 108, 0.05),
+      ColorFilterStep.saturation(0.15),
     ],
   );
 
   /// Rise: Adds a "glow" to the image, with softer lighting of the subject
-  static FilterModel rise = FilterModel(
+  static FilterModel rise = FilterModel.fromSteps(
     name: 'Rise',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 170, 0, 0.1),
-      ColorFilterAddons.brightness(0.09),
-      ColorFilterAddons.saturation(0.1),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 170, 0, 0.1),
+      ColorFilterStep.brightness(0.09),
+      ColorFilterStep.saturation(0.1),
     ],
   );
 
   /// Hudson: Creates an "icy" illusion with heightened shadows, cool tint and
   /// dodged center
-  static FilterModel hudson = FilterModel(
+  static FilterModel hudson = FilterModel.fromSteps(
     name: 'Hudson',
-    filters: [
-      ColorFilterAddons.rgbScale(1, 1, 1.25),
-      ColorFilterAddons.contrast(0.1),
-      ColorFilterAddons.brightness(0.15),
+    steps: [
+      ColorFilterStep.rgbScale(1, 1, 1.25),
+      ColorFilterStep.contrast(0.1),
+      ColorFilterStep.brightness(0.15),
     ],
   );
 
   /// Valencia: Fades the image by increasing exposure and warming the colors,
   /// to give it an antique feel
-  static FilterModel valencia = FilterModel(
+  static FilterModel valencia = FilterModel.fromSteps(
     name: 'Valencia',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 225, 80, 0.08),
-      ColorFilterAddons.saturation(0.1),
-      ColorFilterAddons.contrast(0.05),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 225, 80, 0.08),
+      ColorFilterStep.saturation(0.1),
+      ColorFilterStep.contrast(0.05),
     ],
   );
 
   /// X-Pro II: Increases color vibrance with a golden tint, high contrast and
   /// slight vignette added to the edges
-  static FilterModel xProII = FilterModel(
+  static FilterModel xProII = FilterModel.fromSteps(
     name: 'X-Pro II',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 255, 0, 0.07),
-      ColorFilterAddons.saturation(0.2),
-      ColorFilterAddons.contrast(0.15),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 255, 0, 0.07),
+      ColorFilterStep.saturation(0.2),
+      ColorFilterStep.contrast(0.15),
     ],
   );
 
   /// Sierra: Gives a faded, softer look
-  static FilterModel sierra = FilterModel(
+  static FilterModel sierra = FilterModel.fromSteps(
     name: 'Sierra',
-    filters: [
-      ColorFilterAddons.contrast(-0.15),
-      ColorFilterAddons.saturation(0.1),
-    ],
+    steps: [ColorFilterStep.contrast(-0.15), ColorFilterStep.saturation(0.1)],
   );
 
   /// Willow: A monochromatic filter with subtle purple tones and a translucent
   /// white border
-  static FilterModel willow = FilterModel(
+  static FilterModel willow = FilterModel.fromSteps(
     name: 'Willow',
-    filters: [
-      ColorFilterAddons.grayscale(),
-      ColorFilterAddons.colorOverlay(100, 28, 210, 0.03),
-      ColorFilterAddons.brightness(0.1),
+    steps: [
+      ColorFilterStep.grayscale(),
+      ColorFilterStep.colorOverlay(100, 28, 210, 0.03),
+      ColorFilterStep.brightness(0.1),
     ],
   );
 
   /// Lo-Fi: Enriches color and adds strong shadows through the use of
   /// saturation and "warming" the temperature
-  static FilterModel loFi = FilterModel(
+  static FilterModel loFi = FilterModel.fromSteps(
     name: 'Lo-Fi',
-    filters: [
-      ColorFilterAddons.contrast(0.15),
-      ColorFilterAddons.saturation(0.2),
-    ],
+    steps: [ColorFilterStep.contrast(0.15), ColorFilterStep.saturation(0.2)],
   );
 
   /// Inkwell: Direct shift to black and white
-  static FilterModel inkwell = FilterModel(
+  static FilterModel inkwell = FilterModel.fromSteps(
     name: 'Inkwell',
-    filters: [ColorFilterAddons.grayscale()],
+    steps: [ColorFilterStep.grayscale()],
   );
 
   /// Hefe: Hight contrast and saturation, with a similar effect to Lo-Fi but
   /// not quite as dramatic
-  static FilterModel hefe = FilterModel(
+  static FilterModel hefe = FilterModel.fromSteps(
     name: 'Hefe',
-    filters: [
-      ColorFilterAddons.contrast(0.1),
-      ColorFilterAddons.saturation(0.15),
-    ],
+    steps: [ColorFilterStep.contrast(0.1), ColorFilterStep.saturation(0.15)],
   );
 
   /// Nashville: Warms the temperature, lowers contrast and increases exposure
   /// to give a light "pink" tint – making it feel "nostalgic"
-  static FilterModel nashville = FilterModel(
+  static FilterModel nashville = FilterModel.fromSteps(
     name: 'Nashville',
-    filters: [
-      ColorFilterAddons.colorOverlay(220, 115, 188, 0.12),
-      ColorFilterAddons.contrast(-0.05),
+    steps: [
+      ColorFilterStep.colorOverlay(220, 115, 188, 0.12),
+      ColorFilterStep.contrast(-0.05),
     ],
   );
 
   /// Stinson: washing out the colors ever so slightly
-  static FilterModel stinson = FilterModel(
+  static FilterModel stinson = FilterModel.fromSteps(
     name: 'Stinson',
-    filters: [ColorFilterAddons.brightness(0.1), ColorFilterAddons.sepia(0.3)],
+    steps: [ColorFilterStep.brightness(0.1), ColorFilterStep.sepia(0.3)],
   );
 
   /// Vesper: adds a yellow tint that
-  static FilterModel vesper = FilterModel(
+  static FilterModel vesper = FilterModel.fromSteps(
     name: 'Vesper',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 225, 0, 0.05),
-      ColorFilterAddons.brightness(0.06),
-      ColorFilterAddons.contrast(0.06),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 225, 0, 0.05),
+      ColorFilterStep.brightness(0.06),
+      ColorFilterStep.contrast(0.06),
     ],
   );
 
   /// Earlybird: Gives an older look with a sepia tint and warm temperature
-  static FilterModel earlybird = FilterModel(
+  static FilterModel earlybird = FilterModel.fromSteps(
     name: 'Earlybird',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 165, 40, 0.2),
-      ColorFilterAddons.saturation(0.15),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 165, 40, 0.2),
+      ColorFilterStep.saturation(0.15),
     ],
   );
 
   /// Brannan: Increases contrast and exposure and adds a metallic tint
-  static FilterModel brannan = FilterModel(
+  static FilterModel brannan = FilterModel.fromSteps(
     name: 'Brannan',
-    filters: [
-      ColorFilterAddons.contrast(0.2),
-      ColorFilterAddons.colorOverlay(140, 10, 185, 0.1),
+    steps: [
+      ColorFilterStep.contrast(0.2),
+      ColorFilterStep.colorOverlay(140, 10, 185, 0.1),
     ],
   );
 
   /// Sutro: Burns photo edges, increases highlights and shadows dramatically
   /// with a focus on purple and brown colors
-  static FilterModel sutro = FilterModel(
+  static FilterModel sutro = FilterModel.fromSteps(
     name: 'Sutro',
-    filters: [
-      ColorFilterAddons.brightness(-0.1),
-      ColorFilterAddons.saturation(-0.1),
-    ],
+    steps: [ColorFilterStep.brightness(-0.1), ColorFilterStep.saturation(-0.1)],
   );
 
   /// Toaster: Ages the image by "burning" the centre and adds a dramatic
   /// vignette
-  static FilterModel toaster = FilterModel(
+  static FilterModel toaster = FilterModel.fromSteps(
     name: 'Toaster',
-    filters: [
-      ColorFilterAddons.sepia(0.1),
-      ColorFilterAddons.colorOverlay(255, 145, 0, 0.2),
+    steps: [
+      ColorFilterStep.sepia(0.1),
+      ColorFilterStep.colorOverlay(255, 145, 0, 0.2),
     ],
   );
 
   /// Walden: Increases exposure and adds a yellow tint
-  static FilterModel walden = FilterModel(
+  static FilterModel walden = FilterModel.fromSteps(
     name: 'Walden',
-    filters: [
-      ColorFilterAddons.brightness(0.1),
-      ColorFilterAddons.colorOverlay(255, 255, 0, 0.2),
+    steps: [
+      ColorFilterStep.brightness(0.1),
+      ColorFilterStep.colorOverlay(255, 255, 0, 0.2),
     ],
   );
 
   /// 1977: The increased exposure with a red tint gives the photograph a rosy,
   /// brighter, faded look.
-  static FilterModel f1977 = FilterModel(
+  static FilterModel f1977 = FilterModel.fromSteps(
     name: '1977',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 25, 0, 0.15),
-      ColorFilterAddons.brightness(0.1),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 25, 0, 0.15),
+      ColorFilterStep.brightness(0.1),
     ],
   );
 
   /// Kelvin: Increases saturation and temperature to give it a radiant "glow"
-  static FilterModel kelvin = FilterModel(
+  static FilterModel kelvin = FilterModel.fromSteps(
     name: 'Kelvin',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 140, 0, 0.1),
-      ColorFilterAddons.rgbScale(1.15, 1.05, 1),
-      ColorFilterAddons.saturation(0.35),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 140, 0, 0.1),
+      ColorFilterStep.rgbScale(1.15, 1.05, 1),
+      ColorFilterStep.saturation(0.35),
     ],
   );
 
   /// Maven: darkens images, increases shadows, and adds a slightly yellow tint
   /// overal
-  static FilterModel maven = FilterModel(
+  static FilterModel maven = FilterModel.fromSteps(
     name: 'Maven',
-    filters: [
-      ColorFilterAddons.colorOverlay(225, 240, 0, 0.1),
-      ColorFilterAddons.saturation(0.25),
-      ColorFilterAddons.contrast(0.05),
+    steps: [
+      ColorFilterStep.colorOverlay(225, 240, 0, 0.1),
+      ColorFilterStep.saturation(0.25),
+      ColorFilterStep.contrast(0.05),
     ],
   );
 
   /// Ginza: brightens and adds a warm glow
-  static FilterModel ginza = FilterModel(
+  static FilterModel ginza = FilterModel.fromSteps(
     name: 'Ginza',
-    filters: [ColorFilterAddons.sepia(0.06), ColorFilterAddons.brightness(0.1)],
+    steps: [ColorFilterStep.sepia(0.06), ColorFilterStep.brightness(0.1)],
   );
 
   /// Skyline: brightens to the image pop
-  static FilterModel skyline = FilterModel(
+  static FilterModel skyline = FilterModel.fromSteps(
     name: 'Skyline',
-    filters: [
-      ColorFilterAddons.saturation(0.35),
-      ColorFilterAddons.brightness(0.1),
-    ],
+    steps: [ColorFilterStep.saturation(0.35), ColorFilterStep.brightness(0.1)],
   );
 
   /// Dogpatch: increases the contrast, while washing out the lighter colors
-  static FilterModel dogpatch = FilterModel(
+  static FilterModel dogpatch = FilterModel.fromSteps(
     name: 'Dogpatch',
-    filters: [
-      ColorFilterAddons.contrast(0.15),
-      ColorFilterAddons.brightness(0.1),
-    ],
+    steps: [ColorFilterStep.contrast(0.15), ColorFilterStep.brightness(0.1)],
   );
 
   /// Brooklyn
-  static FilterModel brooklyn = FilterModel(
+  static FilterModel brooklyn = FilterModel.fromSteps(
     name: 'Brooklyn',
-    filters: [
-      ColorFilterAddons.colorOverlay(25, 240, 252, 0.05),
-      ColorFilterAddons.sepia(0.3),
+    steps: [
+      ColorFilterStep.colorOverlay(25, 240, 252, 0.05),
+      ColorFilterStep.sepia(0.3),
     ],
   );
 
   /// Helena: adds an orange and teal vibe
-  static FilterModel helena = FilterModel(
+  static FilterModel helena = FilterModel.fromSteps(
     name: 'Helena',
-    filters: [
-      ColorFilterAddons.colorOverlay(208, 208, 86, 0.2),
-      ColorFilterAddons.contrast(0.15),
+    steps: [
+      ColorFilterStep.colorOverlay(208, 208, 86, 0.2),
+      ColorFilterStep.contrast(0.15),
     ],
   );
 
   /// Ashby: gives images a great golden glow and a subtle vintage feel
-  static FilterModel ashby = FilterModel(
+  static FilterModel ashby = FilterModel.fromSteps(
     name: 'Ashby',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 160, 25, 0.1),
-      ColorFilterAddons.brightness(0.1),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 160, 25, 0.1),
+      ColorFilterStep.brightness(0.1),
     ],
   );
 
   /// Charmes: a high contrast filter, warming up colors in your image with a
   /// red tint
-  static FilterModel charmes = FilterModel(
+  static FilterModel charmes = FilterModel.fromSteps(
     name: 'Charmes',
-    filters: [
-      ColorFilterAddons.colorOverlay(255, 50, 80, 0.12),
-      ColorFilterAddons.contrast(0.05),
+    steps: [
+      ColorFilterStep.colorOverlay(255, 50, 80, 0.12),
+      ColorFilterStep.contrast(0.05),
     ],
   );
 }
