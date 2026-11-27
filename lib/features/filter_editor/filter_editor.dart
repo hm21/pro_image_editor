@@ -22,6 +22,7 @@ import 'utils/lerp_color_matrix_utils.dart';
 
 export 'types/filter_matrix.dart';
 export 'types/filter_state.dart';
+export 'utils/filter_generator/color_filter_step.dart';
 export 'utils/filter_generator/filter_addons.dart';
 export 'utils/filter_generator/filter_model.dart';
 export 'utils/filter_generator/filter_presets.dart';
@@ -185,6 +186,13 @@ class FilterEditorState extends State<FilterEditor>
   set filterOpacity(double value) {
     setFilterOpacity(value);
   }
+
+  /// The matrices [done] applies: the [selectedFilter] at [filterOpacity],
+  /// after the applied filters when multi-selection is on.
+  ///
+  /// Lets an app commit the filter in its own history step, for example to
+  /// replace a filter it reopened instead of adding a second one.
+  FilterMatrix get filterMatrix => _getActiveFilters();
 
   @override
   FilterEditorCallbacks? get standaloneEditorCallbacks => filterEditorCallbacks;

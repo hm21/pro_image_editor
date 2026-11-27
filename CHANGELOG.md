@@ -1,5 +1,11 @@
 # Changelog
 
+## 14.30.0
+- **FEAT**(filter-editor): Add `ColorFilterStep` and `FilterModel.fromSteps`, so a filter keeps the recipe it is built from: each step's `ColorFilterAddons` method and values. `FilterModel.steps` exposes them, `FilterModel.copyWith(steps: ...)` rebuilds the filter from changed values, and `ColorFilterStep.toMap` / `fromMap` store them.
+- **FEAT**(filter-editor): Every `PresetFilters` preset is built from steps; its matrices are unchanged.
+- **FEAT**(filter-editor): Add `FilterEditorState.filterMatrix`, the matrices `done()` applies, so an app can commit the filter in a history step of its own.
+- **FIX**(filter-editor): A custom `FilterEditorWidgets.filterButton` receives the filter with its steps.
+
 ## 14.29.1
 - **FIX**(main-editor): A crop or blur stays applied and exported when `stateHistoryLimit` trims the history step that set it.
 - **FIX**(main-editor): Undo shows the right background image after `stateHistoryLimit` trims the history.

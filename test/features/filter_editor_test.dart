@@ -5,6 +5,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:pro_image_editor/core/models/init_configs/filter_editor_init_configs.dart';
 import 'package:pro_image_editor/features/filter_editor/filter_editor.dart';
+import 'package:pro_image_editor/pro_image_editor.dart'
+    show FilterEditorConfigs, FilterEditorWidgets, ProImageEditorConfigs;
 
 // Project imports:
 import '../mock/mock_image.dart';
@@ -204,6 +206,61 @@ void main() {
 
       expect(editor.selectedFilter.name, filter.name);
       expect(editor.selectedFilter.filters, filter.filters);
+    });
+
+    testWidgets('filterMatrix fades the selected filter by its opacity', (
+      tester,
+    ) async {
+      await pumpEditor(tester);
+      final editor = key.currentState!
+        ..setFilter(PresetFilters.addictiveRed)
+        ..setFilterOpacity(0.5);
+
+      final matrix = editor.filterMatrix.single;
+
+      // AddictiveRed adds 50 to red; at half opacity it adds 25.
+      expect(matrix[4], closeTo(25, 1e-9));
+      expect(matrix[0], closeTo(1, 1e-9));
+    });
+
+    testWidgets('filterMatrix is empty without a filter or applied filters', (
+      tester,
+    ) async {
+      await pumpEditor(tester);
+
+      expect(key.currentState!.filterMatrix, isEmpty);
+    });
+
+    testWidgets('a custom filter button gets the filter with its steps', (
+      tester,
+    ) async {
+      final buttonFilters = <FilterModel>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FilterEditor.memory(
+              mockMemoryImage,
+              initConfigs: FilterEditorInitConfigs(
+                theme: ThemeData(),
+                configs: ProImageEditorConfigs(
+                  filterEditor: FilterEditorConfigs(
+                    filterList: [PresetFilters.clarendon],
+                    widgets: FilterEditorWidgets(
+                      filterButton:
+                          (filter, isSelected, scale, onSelect, preview, key) {
+                            buttonFilters.add(filter);
+                            return SizedBox(key: key);
+                          },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(buttonFilters.last.steps, PresetFilters.clarendon.steps);
     });
   });
 

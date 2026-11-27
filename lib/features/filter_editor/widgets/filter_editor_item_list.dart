@@ -176,11 +176,10 @@ class _FilterEditorItemListState extends State<FilterEditorItemList> {
 
     if (_filterConfigs.widgets.filterButton != null) {
       return _filterConfigs.widgets.filterButton!.call(
-        FilterModel(
+        filter.copyWith(
           name: widget.configs.i18n.filterEditor.filters.getFilterI18n(
             filter.name,
           ),
-          filters: filter.filters,
         ),
         isSelected,
         widget.itemScaleFactor,
